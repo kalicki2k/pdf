@@ -1,6 +1,8 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+namespace Kalle\Pdf\Core;
+
+use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 class Catalog extends IndirectObject
 {
@@ -19,7 +21,7 @@ class Catalog extends IndirectObject
 
         if ($this->document->getVersion() >= 1.4) {
             $output .= "/MarkInfo << /Marked true >>\n";
-            $output .= "/Lang ({$this->document->getLanguage()})\n";
+            $output .= "/Lang (" . PdfStringEscaper::escape($this->document->getLanguage()) . ")\n";
             $output .= "/StructTreeRoot {$this->document->getStructTreeRoot()->getId()} 0 R\n";
         }
 

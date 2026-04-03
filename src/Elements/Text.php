@@ -1,8 +1,9 @@
 <?php
 
-namespace Shopware\Pdf\Elements;
+namespace Kalle\Pdf\Elements;
 
-use Shopware\Pdf\Core\Element;
+use Kalle\Pdf\Core\Element;
+use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 class Text extends Element
 {
@@ -33,7 +34,7 @@ class Text extends Element
 
     public function render(): string
     {
-        $content = iconv('UTF-8', 'Windows-1252', $this->content);
+        $content = PdfStringEscaper::escape(iconv('UTF-8', 'Windows-1252', $this->content));
 
         $output = "BT\n";
         $output .= "/{$this->font} {$this->size} Tf\n";

@@ -1,8 +1,9 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+namespace Kalle\Pdf\Core;
 
 use DateTime;
+use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 class Info extends IndirectObject
 {
@@ -23,23 +24,23 @@ class Info extends IndirectObject
     {
         $output = "{$this->id} 0 obj\n";
         $output .= "<<\n";
-        $output .= "/Title ({$this->document->getTitle()})\n";
-        $output .= "/Author ({$this->document->getAuthor()})\n";
+        $output .= "/Title (" . PdfStringEscaper::escape($this->document->getTitle()) . ")\n";
+        $output .= "/Author (" . PdfStringEscaper::escape($this->document->getAuthor()) . ")\n";
 
         if (!empty($this->document->getSubject())) {
-            $output .= "/Subject ({$this->document->getSubject()})\n";
+            $output .= "/Subject (" . PdfStringEscaper::escape($this->document->getSubject()) . ")\n";
         }
 
         if (!empty($this->document->getKeywords())) {
-            $output .= "/Keywords (". implode(', ', $this->document->getKeywords()) .")\n";
+            $output .= "/Keywords (" . PdfStringEscaper::escape(implode(', ', $this->document->getKeywords())) . ")\n";
         }
 
-        $output .= "/Creator ({$this->producer})\n";
-        $output .= "/Producer ({$this->producer})\n";
-        $output .= "/CreationDate (D:{$this->creationDate})\n";
+        $output .= "/Creator (" . PdfStringEscaper::escape($this->producer) . ")\n";
+        $output .= "/Producer (" . PdfStringEscaper::escape($this->producer) . ")\n";
+        $output .= "/CreationDate (D:" . PdfStringEscaper::escape($this->creationDate) . ")\n";
 
         if ($this->document->getVersion() >= 1.4) {
-            $output .= "/Lang ({$this->document->getLanguage()})\n";
+            $output .= "/Lang (" . PdfStringEscaper::escape($this->document->getLanguage()) . ")\n";
         }
 
         $output .= ">>\n";

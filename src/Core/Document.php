@@ -1,8 +1,8 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+namespace Kalle\Pdf\Core;
 
-use Shopware\Pdf\Render\PdfRenderer;
+use Kalle\Pdf\Render\PdfRenderer;
 
 class Document
 {
@@ -97,7 +97,6 @@ class Document
         return $this->catalog;
     }
 
-
     public function getInfo(): Info
     {
         return $this->info;
@@ -120,6 +119,36 @@ class Document
 
     public function getFonts(): array {
         return $this->fonts;
+    }
+
+    public function getDocumentObjects(): array
+    {
+        $objects = [];
+
+        $objects[] = $this->catalog;
+        $objects[] = $this->pages;
+
+        if ($this->version >= 1.4) {
+            $objects[] = $this->structTreeRoot;
+
+            foreach ($this->structElems as $structElem) {
+                $objects[] = $structElem;
+            }
+        }
+
+        $objects[] = $this->info;
+        $objects[] = $this->resources;
+
+        foreach ($this->fonts as $font) {
+            $objects[] = $font;
+        }
+
+        foreach ($this->pages->getPages() as $page) {
+            $objects[] = $page;
+            $objects[] = $page->getContents();
+        }
+
+        return $objects;
     }
 
     public function addPage(float $width = 210.0, float $height = 297.0): Page
