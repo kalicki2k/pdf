@@ -29,12 +29,12 @@ final class PagesTest extends TestCase
         $document = new Document(version: 1.4);
         $pages = new Pages(2, $document);
 
-        $page = $pages->addPage(6, 7, 8, 100.0, 200.0);
+        $page = $pages->addPage(6, 7, 8, 0, 100.0, 200.0);
 
         self::assertSame($page, $pages->pages[0]);
         self::assertSame(6, $page->id);
         self::assertSame(
-            "6 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 8 0 R /Contents 7 0 R >>\nendobj\n",
+            "6 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 8 0 R /Contents 7 0 R /StructParents 0 >>\nendobj\n",
             $page->render(),
         );
     }
@@ -44,8 +44,8 @@ final class PagesTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $pages = new Pages(2, $document);
-        $pages->addPage(6, 7, 8, 100.0, 200.0);
-        $pages->addPage(9, 10, 11, 210.0, 297.0);
+        $pages->addPage(6, 7, 8, 0, 100.0, 200.0);
+        $pages->addPage(9, 10, 11, 1, 210.0, 297.0);
 
         self::assertSame(
             "2 0 obj\n<< /Type /Pages /Kids [6 0 R 9 0 R] /Count 2 >>\nendobj\n",

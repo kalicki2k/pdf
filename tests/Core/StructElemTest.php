@@ -26,12 +26,14 @@ final class StructElemTest extends TestCase
     public function it_adds_kids_and_renders_their_references(): void
     {
         $structElem = new StructElem(10, 'P');
+        $firstChild = new StructElem(11, 'Span');
+        $secondChild = new StructElem(12, 'Span');
 
-        $result = $structElem->addKid(0)->addKid(1);
+        $result = $structElem->addKid($firstChild)->addKid($secondChild);
 
         self::assertSame($structElem, $result);
         self::assertSame(
-            "10 0 obj\n<< /Type /StructElem /S /P /K [0 0 R 1 0 R] >>\nendobj\n",
+            "10 0 obj\n<< /Type /StructElem /S /P /K [11 0 R 12 0 R] >>\nendobj\n",
             $structElem->render(),
         );
     }

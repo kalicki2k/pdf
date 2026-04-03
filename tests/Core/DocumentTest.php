@@ -29,7 +29,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4, language: 'de-DE');
 
-        self::assertSame([1, 2, 3, 4, 5], array_map(
+        self::assertSame([1, 2, 3, 4, 5, 6], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -46,11 +46,11 @@ final class DocumentTest extends TestCase
 
         self::assertSame($document, $returnedDocument);
         self::assertCount(1, $document->fonts);
-        self::assertSame(6, $document->fonts[0]->id);
-        self::assertSame(7, $page->id);
-        self::assertSame(8, $page->contents->id);
-        self::assertSame(9, $page->resources->id);
-        self::assertSame([1, 2, 3, 4, 5, 6, 7, 9, 8], array_map(
+        self::assertSame(7, $document->fonts[0]->id);
+        self::assertSame(8, $page->id);
+        self::assertSame(9, $page->contents->id);
+        self::assertSame(10, $page->resources->id);
+        self::assertSame([1, 2, 3, 4, 5, 6, 7, 8, 10, 9], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -78,12 +78,12 @@ final class DocumentTest extends TestCase
         $result = $document->addStructElem('P', 42);
 
         self::assertSame($document, $result);
-        self::assertSame([1, 2, 3, 4, 6, 5], array_map(
+        self::assertSame([1, 2, 3, 4, 5, 7, 6], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
-        self::assertStringContainsString('4 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [6 0 R] >>', $document->render());
-        self::assertStringContainsString('6 0 obj' . "\n" . '<< /Type /StructElem /S /P /K [42 0 R] >>', $document->render());
+        self::assertStringContainsString('5 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [7 0 R] >>', $document->render());
+        self::assertStringContainsString('7 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 5 0 R /K [] >>', $document->render());
     }
 
     #[Test]
@@ -110,8 +110,8 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/Keywords (pdf)', $output);
         self::assertStringContainsString('/Lang (de-DE)', $output);
         self::assertStringContainsString('/StructTreeRoot 3 0 R', $output);
-        self::assertStringContainsString("xref\n0 10\n", $output);
-        self::assertStringContainsString("trailer\n<< /Size 10\n/Root 1 0 R\n/Info 5 0 R >>\n", $output);
+        self::assertStringContainsString("xref\n0 11\n", $output);
+        self::assertStringContainsString("trailer\n<< /Size 11\n/Root 1 0 R\n/Info 6 0 R >>\n", $output);
         self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}\)/', $output);
         self::assertStringEndsWith('%%EOF', $output);
     }
