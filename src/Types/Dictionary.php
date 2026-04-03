@@ -13,7 +13,7 @@ final class Dictionary implements Value
     {
     }
 
-    public function add(string $name, Value|string|int|float $entry): self
+    public function add(string $name, Value | string | int | float $entry): self
     {
         $this->entries[$name] = $entry;
 
@@ -31,8 +31,8 @@ final class Dictionary implements Value
         return '<< ' . implode(' ', $parts) . ' >>';
     }
 
-    private static function renderValue(Value|string|int|float $value): string
+    private static function renderValue(Value | string | int | float $value): string
     {
-        return $value instanceof Value ? $value->render() : (string)$value;
+        return $value instanceof Value ? $value->render() : (string) $value;
     }
 }

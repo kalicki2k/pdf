@@ -26,9 +26,9 @@ class PdfRenderer
         $output .= $this->generateTrailer(
             $maxObjectId + 1,
             $document->catalog->id,
-            $document->info->id
+            $document->info->id,
         );
-        $output .= "startxref" . PHP_EOL . $startxref . PHP_EOL . "%%EOF";
+        $output .= 'startxref' . PHP_EOL . $startxref . PHP_EOL . '%%EOF';
 
         return $output;
     }
@@ -42,9 +42,9 @@ class PdfRenderer
         ksort($offsetsByObjectId);
         $maxObjectId = count($offsetsByObjectId) === 0 ? 0 : max(array_keys($offsetsByObjectId));
 
-        $xref = "xref" . PHP_EOL;
-        $xref .= "0 " . ($maxObjectId + 1) . PHP_EOL;
-        $xref .= "0000000000 65535 f " . PHP_EOL;
+        $xref = 'xref' . PHP_EOL;
+        $xref .= '0 ' . ($maxObjectId + 1) . PHP_EOL;
+        $xref .= '0000000000 65535 f ' . PHP_EOL;
 
         for ($objectId = 1; $objectId <= $maxObjectId; $objectId++) {
             if (isset($offsetsByObjectId[$objectId])) {
@@ -52,7 +52,7 @@ class PdfRenderer
                 continue;
             }
 
-            $xref .= "0000000000 65535 f " . PHP_EOL;
+            $xref .= '0000000000 65535 f ' . PHP_EOL;
         }
 
         return $xref;
@@ -60,7 +60,7 @@ class PdfRenderer
 
     private function generateTrailer(int $size, int $rootId, int $infoId): string
     {
-        return "trailer" . PHP_EOL
+        return 'trailer' . PHP_EOL
             . "<< /Size $size" . PHP_EOL
             . "/Root $rootId 0 R" . PHP_EOL
             . "/Info $infoId 0 R >>" . PHP_EOL;

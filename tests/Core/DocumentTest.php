@@ -113,6 +113,6 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString("xref\n0 10\n", $output);
         self::assertStringContainsString("trailer\n<< /Size 10\n/Root 1 0 R\n/Info 5 0 R >>\n", $output);
         self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}\)/', $output);
-        self::assertStringEndsWith("%%EOF", $output);
+        self::assertStringEndsWith('%%EOF', $output);
     }
 }

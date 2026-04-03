@@ -22,9 +22,8 @@ class Text extends Element
         float $y,
         string $font,
         float $size,
-        string $tag
-    )
-    {
+        string $tag,
+    ) {
         $this->markedContentId = $markedContentId;
         $this->content = $content;
         $this->x = $x;

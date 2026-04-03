@@ -10,6 +10,7 @@ use Kalle\Pdf\Types\ArrayValue;
 use Kalle\Pdf\Types\Dictionary;
 use Kalle\Pdf\Types\Name;
 use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\StringValue;
 
 final class Page extends IndirectObject
 {
@@ -21,11 +22,11 @@ final class Page extends IndirectObject
         public int                $id,
         int                       $contentsId,
         int                       $resourcesId,
+        public readonly int       $structParentId,
         private readonly float    $width,
         private readonly float    $height,
-        private readonly Document $document
-    )
-    {
+        private readonly Document $document,
+    ) {
         parent::__construct($this->id);
 
         $this->contents = new Contents($contentsId);
@@ -49,7 +50,7 @@ final class Page extends IndirectObject
         }
 
         $this->contents->addElement(new Text($markedContentId, $text, $x, $y, $this->resources->addFont($font), $size, $tag));
-        $this->document->addStructElem($tag, $markedContentId);
+        $this->document->addStructElem($tag, $markedContentId, $this);
 
         return $this;
     }
@@ -67,6 +68,7 @@ final class Page extends IndirectObject
             'MediaBox' => new ArrayValue([0, 0, $this->width, $this->height]),
             'Resources' => new Reference($this->resources),
             'Contents' => new Reference($this->contents),
+            'StructParents' => $this->structParentId,
         ]);
 
         return $this->id . ' 0 obj' . PHP_EOL

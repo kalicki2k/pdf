@@ -16,8 +16,7 @@ final class Font extends IndirectObject
         private readonly string $subtype,
         private readonly string $encoding,
         private readonly float  $version,
-    )
-    {
+    ) {
         parent::__construct($id);
         $this->validate();
     }
@@ -42,7 +41,7 @@ final class Font extends IndirectObject
             'StandardEncoding',
             'ISOLatin1Encoding',
             'SymbolEncoding',
-            'ZapfDingbatsEncoding'
+            'ZapfDingbatsEncoding',
         ];
 
         $symbolFonts = ['Symbol'];

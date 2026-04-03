@@ -8,15 +8,19 @@ use Kalle\Pdf\Types\ArrayValue;
 use Kalle\Pdf\Types\Dictionary;
 use Kalle\Pdf\Types\Name;
 use Kalle\Pdf\Types\RawValue;
+use Kalle\Pdf\Types\Reference;
 
 final class StructTreeRoot extends IndirectObject
 {
     /** @var int[]  */
     private array $kids = [];
 
+    public ?ParentTree $parentTree = null;
+
     public function addKid(int $id): self
     {
         $this->kids[] = $id;
+
         return $this;
     }
 
@@ -32,6 +36,10 @@ final class StructTreeRoot extends IndirectObject
             'Type' => new Name('StructTreeRoot'),
             'K' => new ArrayValue($kidReferences),
         ]);
+
+        if ($this->parentTree !== null) {
+            $dictionary->add('ParentTree', new Reference($this->parentTree));
+        }
 
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL

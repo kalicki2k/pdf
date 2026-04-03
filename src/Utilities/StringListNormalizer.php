@@ -14,7 +14,7 @@ final class StringListNormalizer
     {
         return array_values(array_unique(array_map(
             static fn (string $value) => trim($value),
-            $values
+            $values,
         )));
     }
 }

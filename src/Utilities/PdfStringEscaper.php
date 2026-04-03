@@ -11,7 +11,7 @@ final class PdfStringEscaper
         return str_replace(
             ['\\', '(', ')', "\r", "\n", "\t", chr(8), "\f"],
             ['\\\\', '\(', '\)', '\r', '\n', '\t', '\b', '\f'],
-            $value
+            $value,
         );
     }
 }

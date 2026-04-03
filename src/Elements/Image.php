@@ -19,7 +19,7 @@ class Image extends Element
         int $height,
         string $colorSpace,
         string $filter,
-        string $data
+        string $data,
     ) {
         $this->width = $width;
         $this->height = $height;
@@ -30,17 +30,17 @@ class Image extends Element
 
     public function render(): string
     {
-        $output = "<< /Type /XObject" . PHP_EOL;
-        $output .= "/Subtype /Image" . PHP_EOL;
+        $output = '<< /Type /XObject' . PHP_EOL;
+        $output .= '/Subtype /Image' . PHP_EOL;
         $output .= "/Width {$this->width}" . PHP_EOL;
         $output .= "/Height {$this->height}" . PHP_EOL;
         $output .= "/ColorSpace /{$this->colorSpace}" . PHP_EOL;
-        $output .= "/BitsPerComponent 8" . PHP_EOL;
+        $output .= '/BitsPerComponent 8' . PHP_EOL;
         $output .= "/Filter /{$this->filter}" . PHP_EOL;
-        $output .= "/Length " . strlen($this->data) . " >>" . PHP_EOL;
-        $output .= "stream" . PHP_EOL;
+        $output .= '/Length ' . strlen($this->data) . ' >>' . PHP_EOL;
+        $output .= 'stream' . PHP_EOL;
         $output .= $this->data . PHP_EOL;
-        $output .= "endstream" . PHP_EOL;
+        $output .= 'endstream' . PHP_EOL;
 
         return $output;
     }

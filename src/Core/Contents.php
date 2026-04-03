@@ -14,6 +14,7 @@ final class Contents extends IndirectObject
     public function addElement(Element $element): self
     {
         $this->elements[] = $element;
+
         return $this;
     }
 
@@ -21,18 +22,18 @@ final class Contents extends IndirectObject
     {
         $contents = implode(
             PHP_EOL,
-            array_map(static fn (Element $element): string => $element->render(), $this->elements)
+            array_map(static fn (Element $element): string => $element->render(), $this->elements),
         );
 
         $dictionary = new Dictionary([
             'Length' => strlen($contents),
         ]);
 
-        return "{$this->id} 0 obj" . PHP_EOL
+        return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
-            . "stream" . PHP_EOL
+            . 'stream' . PHP_EOL
             . $contents . PHP_EOL
-            . "endstream" . PHP_EOL
-            . "endobj" . PHP_EOL;
+            . 'endstream' . PHP_EOL
+            . 'endobj' . PHP_EOL;
     }
 }

@@ -20,14 +20,14 @@ final class Pages extends IndirectObject
     }
 
     public function addPage(
-        int $pageId,
-        int $contentsId,
-        int $resourcesId,
+        int   $pageId,
+        int   $contentsId,
+        int   $resourcesId,
+        int   $structParentId,
         float $width,
-        float $height
-    ): Page
-    {
-        $page = new Page($pageId, $contentsId, $resourcesId, $width, $height, $this->document);
+        float $height,
+    ): Page {
+        $page = new Page($pageId, $contentsId, $resourcesId, $structParentId, $width, $height, $this->document);
         $this->pages[] = $page;
 
         return $page;

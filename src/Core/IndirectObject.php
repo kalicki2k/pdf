@@ -11,7 +11,7 @@ abstract class IndirectObject
             get {
                 return $this->id;
             }
-        }
+        },
     )
     {
     }

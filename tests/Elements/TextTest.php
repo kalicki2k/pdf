@@ -22,7 +22,7 @@ final class TextTest extends TestCase
             . "/P << /MCID 3 >> BDC\n"
             . "(Hello \\(PDF\\)\\n) Tj\n"
             . "EMC\n"
-            . "ET",
+            . 'ET',
             $text->render(),
         );
     }
@@ -39,7 +39,7 @@ final class TextTest extends TestCase
             . "/Span << /MCID 0 >> BDC\n"
             . "(漢) Tj\n"
             . "EMC\n"
-            . "ET",
+            . 'ET',
             $text->render(),
         );
     }

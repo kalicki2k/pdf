@@ -16,15 +16,15 @@ final readonly class ArrayValue implements Value
     public function render(): string
     {
         $items = array_map(
-            static fn(Value|int|float $value): string => self::renderValue($value),
+            static fn (Value | int | float $value): string => self::renderValue($value),
             $this->values,
         );
 
         return '[' . implode(' ', $items) . ']';
     }
 
-    private static function renderValue(Value|int|float $value): string
+    private static function renderValue(Value | int | float $value): string
     {
-        return $value instanceof Value ? $value->render() : (string)$value;
+        return $value instanceof Value ? $value->render() : (string) $value;
     }
 }
