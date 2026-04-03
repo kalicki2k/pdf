@@ -1,79 +1,76 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Core;
 
 use InvalidArgumentException;
-use Shopware\Pdf\Elements\Text;
+use Kalle\Pdf\Elements\Text;
+use Kalle\Pdf\Types\ArrayValue;
+use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\Name;
+use Kalle\Pdf\Types\Reference;
 
-// Todo: Jede Page bekommt sein eigenes Resource Object / Klasse
-class Page extends IndirectObject
+final class Page extends IndirectObject
 {
-    private float $width;
-    private float $height;
     private int $markedContentId = 0;
-    private Document $document;
-    private Contents $contents;
+    public Contents $contents;
+    public Resources $resources;
 
     public function __construct(
-        int $id,
-        int $contentsId,
-        float $width,
-        float $height,
-
-        Document $document
+        public int                $id,
+        int                       $contentsId,
+        int                       $resourcesId,
+        private readonly float    $width,
+        private readonly float    $height,
+        private readonly Document $document
     )
     {
-        parent::__construct($id);
+        parent::__construct($this->id);
 
-        $this->id = $id;
-        $this->width = $width;
-        $this->height = $height;
-
-        $this->document = $document;
         $this->contents = new Contents($contentsId);
-    }
-
-    public function getContents(): Contents
-    {
-        return $this->contents;
+        $this->resources = new Resources($resourcesId);
     }
 
     public function addText(string $text, float $x, float $y, string $baseFont, int $size, string $tag): self
     {
-        $fontId = null;
+        $font = null;
         $markedContentId = $this->markedContentId++;
 
-        foreach ($this->document->getFonts() as $index => $font) {
-            if ($font->getBaseFont() === $baseFont) {
-                $fontId = $index + 1;
+        foreach ($this->document->fonts as $registeredFont) {
+            if ($registeredFont->getBaseFont() === $baseFont) {
+                $font = $registeredFont;
                 break;
             }
         }
 
-        if ($fontId === null) {
-            throw new InvalidArgumentException("Font '{$font}' is not registered.");
+        if ($font === null) {
+            throw new InvalidArgumentException("Font '$baseFont' is not registered.");
         }
 
-        $this->contents->addElement(new Text($markedContentId, $text, $x, $y, "F{$fontId}", $size, $tag));
+        $this->contents->addElement(new Text($markedContentId, $text, $x, $y, $this->resources->addFont($font), $size, $tag));
         $this->document->addStructElem($tag, $markedContentId);
 
         return $this;
     }
 
-    public function addImage(): self {
+    public function addImage(): self
+    {
         return $this;
     }
 
     public function render(): string
     {
-        $output = "{$this->id} 0 obj\n";
-        $output .= "<< /Type /Page\n";
-        $output .= "/Parent {$this->document->getPages()->getId()} 0 R\n";
-        $output .= "/MediaBox [0 0 {$this->width} {$this->height}]\n";
-        $output .= "/Resources {$this->document->getResources()->getId()} 0 R\n";
-        $output .= "/Contents {$this->contents->getId()} 0 R >>\n";
-        $output .= "endobj\n";
+        $dictionary = new Dictionary([
+            'Type' => new Name('Page'),
+            'Parent' => new Reference($this->document->pages),
+            'MediaBox' => new ArrayValue([0, 0, $this->width, $this->height]),
+            'Resources' => new Reference($this->resources),
+            'Contents' => new Reference($this->contents),
+        ]);
 
-        return $output;
+        return $this->id . ' 0 obj' . PHP_EOL
+            . $dictionary->render() . PHP_EOL
+            . 'endobj' . PHP_EOL;
     }
 }

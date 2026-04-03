@@ -1,33 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf\Core;
 
-use Kalle\Pdf\Utilities\PdfStringEscaper;
+use Kalle\Pdf\Types\BooleanValue;
+use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\Name;
+use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\StringValue;
 
-class Catalog extends IndirectObject
+final class Catalog extends IndirectObject
 {
-    private Document $document;
-
-    public function __construct(int $id, Document $document)
+    public function __construct(int $id, private readonly Document $document)
     {
         parent::__construct($id);
-
-        $this->document = $document;
     }
 
-    public function render(): string {
-        $output = "{$this->id} 0 obj\n";
-        $output .= "<< /Type /Catalog\n";
+    public function render(): string
+    {
+        $dictionary = new Dictionary([
+            'Type' => new Name('Catalog'),
+            'Pages' => new Reference($this->document->pages),
+        ]);
 
-        if ($this->document->getVersion() >= 1.4) {
-            $output .= "/MarkInfo << /Marked true >>\n";
-            $output .= "/Lang (" . PdfStringEscaper::escape($this->document->getLanguage()) . ")\n";
-            $output .= "/StructTreeRoot {$this->document->getStructTreeRoot()->getId()} 0 R\n";
+        if ($this->document->version >= 1.4) {
+            $dictionary->add('MarkInfo', new Dictionary([
+                'Marked' => new BooleanValue(true),
+            ]));
+            $dictionary->add('Lang', new StringValue($this->document->language ?? ''));
+            $dictionary->add('StructTreeRoot', new Reference($this->document->structTreeRoot));
         }
 
-        $output .= "/Pages {$this->document->getPages()->getId()} 0 R >>\n";
-        $output .= "endobj\n";
-
-        return $output;
+        return "$this->id 0 obj" . PHP_EOL
+            . $dictionary->render() . PHP_EOL
+            . 'endobj' . PHP_EOL;
     }
 }

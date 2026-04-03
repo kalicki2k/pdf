@@ -1,9 +1,14 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+declare(strict_types=1);
 
-class Contents extends IndirectObject
+namespace Kalle\Pdf\Core;
+
+use Kalle\Pdf\Types\Dictionary;
+
+final class Contents extends IndirectObject
 {
+    /** @var Element[] */
     private array $elements = [];
 
     public function addElement(Element $element): self
@@ -14,15 +19,20 @@ class Contents extends IndirectObject
 
     public function render(): string
     {
-        $contents = implode("\n", array_map(fn($elements) => $elements->render(), $this->elements));
+        $contents = implode(
+            PHP_EOL,
+            array_map(static fn (Element $element): string => $element->render(), $this->elements)
+        );
 
-        $output = "{$this->id} 0 obj\n";
-        $output .= "<< /Length ". strlen($contents) ." >>\n";
-        $output .= "stream\n";
-        $output .= "{$contents}\n";
-        $output .= "endstream\n";
-        $output .= "endobj\n";
+        $dictionary = new Dictionary([
+            'Length' => strlen($contents),
+        ]);
 
-        return $output;
+        return "{$this->id} 0 obj" . PHP_EOL
+            . $dictionary->render() . PHP_EOL
+            . "stream" . PHP_EOL
+            . $contents . PHP_EOL
+            . "endstream" . PHP_EOL
+            . "endobj" . PHP_EOL;
     }
 }

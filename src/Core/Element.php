@@ -1,20 +1,12 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Core;
 
 abstract class Element {
-    protected float $x;
-    protected float $y;
-
-    public function getX(): float
-    {
-        return $this->x;
-    }
-
-    public function getY(): float
-    {
-        return $this->y;
-    }
+    public float $x;
+    public  float $y;
 
     public function setPosition(float $x, float $y): self
     {

@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf\Elements;
 
 use Kalle\Pdf\Core\Element;
-use Kalle\Pdf\Utilities\PdfStringEscaper;
+use Kalle\Pdf\Types\StringValue;
 
 class Text extends Element
 {
     private int $markedContentId;
     private string $content;
     private string $font;
-    private string $size;
+    private float $size;
     private string $tag;
 
     public function __construct(
@@ -34,24 +36,18 @@ class Text extends Element
 
     public function render(): string
     {
-        $content = PdfStringEscaper::escape(iconv('UTF-8', 'Windows-1252', $this->content));
+        $content = iconv('UTF-8', 'Windows-1252', $this->content);
 
-        $output = "BT\n";
-        $output .= "/{$this->font} {$this->size} Tf\n";
-        $output .= "{$this->x} {$this->y} Td\n";
-        $output .= "/{$this->tag} << /MCID {$this->markedContentId} >> BDC\n";
-        $output .= "({$content}) Tj\n";
-        $output .= "EMC\n";
-        $output .= "ET";
+        if ($content === false) {
+            $content = $this->content;
+        }
 
-        return $output;
+        return 'BT' . PHP_EOL
+            . "/{$this->font} {$this->size} Tf" . PHP_EOL
+            . "{$this->x} {$this->y} Td" . PHP_EOL
+            . "/{$this->tag} << /MCID {$this->markedContentId} >> BDC" . PHP_EOL
+            . new StringValue($content)->render() . ' Tj' . PHP_EOL
+            . 'EMC' . PHP_EOL
+            . 'ET';
     }
 }
-
-// BT
-// /F1 12 Tf
-// 50 700 Td
-// /P << /MCID 0 >> BDC  % Begin Marked Content
-// (Dies ist ein Absatz.) Tj
-// EMC                      % End Marked Content
-// ET

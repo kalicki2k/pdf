@@ -1,51 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf\Core;
 
 use DateTime;
-use Kalle\Pdf\Utilities\PdfStringEscaper;
+use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\StringValue;
 
-class Info extends IndirectObject
+final class Info extends IndirectObject
 {
-    private Document $document;
     private string $producer;
     private string $creationDate;
 
-    public function __construct(int $id, Document $document)
+    public function __construct(int $id, private readonly Document $document)
     {
         parent::__construct($id);
 
-        $this->document = $document;
-        $this->producer = 'swagPDF';
-        $this->creationDate = (new DateTime())->format('YmdHis');
+        $this->producer = 'kalle/pdf';
+        $this->creationDate = new DateTime()->format('YmdHis');
     }
 
     public function render(): string
     {
-        $output = "{$this->id} 0 obj\n";
-        $output .= "<<\n";
-        $output .= "/Title (" . PdfStringEscaper::escape($this->document->getTitle()) . ")\n";
-        $output .= "/Author (" . PdfStringEscaper::escape($this->document->getAuthor()) . ")\n";
+        $dictionary = new Dictionary([
+            'Title' => new StringValue($this->document->title ?? ''),
+            'Author' => new StringValue($this->document->author ?? ''),
+            'Creator' => new StringValue($this->producer),
+            'Producer' => new StringValue($this->producer),
+            'CreationDate' => new StringValue('D:' . $this->creationDate),
+        ]);
 
-        if (!empty($this->document->getSubject())) {
-            $output .= "/Subject (" . PdfStringEscaper::escape($this->document->getSubject()) . ")\n";
+        if (!empty($this->document->subject)) {
+            $dictionary->add('Subject', new StringValue($this->document->subject));
         }
 
-        if (!empty($this->document->getKeywords())) {
-            $output .= "/Keywords (" . PdfStringEscaper::escape(implode(', ', $this->document->getKeywords())) . ")\n";
+        if (!empty($this->document->keywords)) {
+            $dictionary->add('Keywords', new StringValue(implode(', ', $this->document->keywords)));
         }
 
-        $output .= "/Creator (" . PdfStringEscaper::escape($this->producer) . ")\n";
-        $output .= "/Producer (" . PdfStringEscaper::escape($this->producer) . ")\n";
-        $output .= "/CreationDate (D:" . PdfStringEscaper::escape($this->creationDate) . ")\n";
-
-        if ($this->document->getVersion() >= 1.4) {
-            $output .= "/Lang (" . PdfStringEscaper::escape($this->document->getLanguage()) . ")\n";
+        if ($this->document->version >= 1.4) {
+            $dictionary->add('Lang', new StringValue($this->document->language ?? ''));
         }
 
-        $output .= ">>\n";
-        $output .= "endobj\n";
-
-        return $output;
+        return $this->id . ' 0 obj' . PHP_EOL
+            . $dictionary->render() . PHP_EOL
+            . 'endobj' . PHP_EOL;
     }
 }

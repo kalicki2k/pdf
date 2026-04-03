@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf\Render;
 
 use Kalle\Pdf\Core\Document;
@@ -8,42 +10,53 @@ class PdfRenderer
 {
     public function render(Document $document): string
     {
-        $output = "%PDF-{$document->getVersion()}\n";
+        $output = "%PDF-{$document->version}" . PHP_EOL;
         $offsets = [];
 
         foreach ($document->getDocumentObjects() as $object) {
-            $offsets[$object->getId()] = mb_strlen($output, '8bit');
+            $offsets[$object->id] = mb_strlen($output, '8bit');
             $output .= $object->render();
         }
 
         $startxref = mb_strlen($output, '8bit');
         $output .= $this->generateCrossReferenceTable($offsets);
+        $objectIds = array_keys($offsets);
+        $maxObjectId = 0;
+
+        if ($objectIds !== []) {
+            $maxObjectId = max($objectIds);
+        }
+
         $output .= $this->generateTrailer(
-            max(array_keys($offsets)) + 1,
-            $document->getCatalog()->getId(),
-            $document->getInfo()->getId()
+            $maxObjectId + 1,
+            $document->catalog->id,
+            $document->info->id
         );
-        $output .= "startxref\n{$startxref}\n%%EOF";
+        $output .= "startxref" . PHP_EOL . $startxref . PHP_EOL . "%%EOF";
 
         return $output;
     }
 
+    /**
+     * @param int[] $offsetsByObjectId
+     * @return string
+     */
     private function generateCrossReferenceTable(array $offsetsByObjectId): string
     {
         ksort($offsetsByObjectId);
         $maxObjectId = count($offsetsByObjectId) === 0 ? 0 : max(array_keys($offsetsByObjectId));
 
-        $xref = "xref\n";
-        $xref .= "0 " . ($maxObjectId + 1) . "\n";
-        $xref .= "0000000000 65535 f \n";
+        $xref = "xref" . PHP_EOL;
+        $xref .= "0 " . ($maxObjectId + 1) . PHP_EOL;
+        $xref .= "0000000000 65535 f " . PHP_EOL;
 
         for ($objectId = 1; $objectId <= $maxObjectId; $objectId++) {
             if (isset($offsetsByObjectId[$objectId])) {
-                $xref .= sprintf("%010d 00000 n \n", $offsetsByObjectId[$objectId]);
+                $xref .= sprintf('%010d 00000 n %s', $offsetsByObjectId[$objectId], PHP_EOL);
                 continue;
             }
 
-            $xref .= "0000000000 65535 f \n";
+            $xref .= "0000000000 65535 f " . PHP_EOL;
         }
 
         return $xref;
@@ -51,6 +64,9 @@ class PdfRenderer
 
     private function generateTrailer(int $size, int $rootId, int $infoId): string
     {
-        return "trailer\n<< /Size $size\n/Root $rootId 0 R\n/Info $infoId 0 R >>\n";
+        return "trailer" . PHP_EOL
+            . "<< /Size $size" . PHP_EOL
+            . "/Root $rootId 0 R" . PHP_EOL
+            . "/Info $infoId 0 R >>" . PHP_EOL;
     }
 }

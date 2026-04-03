@@ -1,13 +1,21 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Core;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Types\ArrayValue;
+use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\Name;
+use Kalle\Pdf\Types\RawValue;
 
-class StructElem extends IndirectObject
+final class StructElem extends IndirectObject
 {
-    private string $tag;
+    /** @var string[] */
     private array $kids = [];
+
+    /** @var string[]  */
     private array $allowedTags = [
         // Text-Tags
         'Document',
@@ -23,38 +31,44 @@ class StructElem extends IndirectObject
         // ...
     ];
 
-    public function __construct(int $id, string $tag)
+    public function __construct(
+        int                     $id,
+        private readonly string $tag,
+    )
     {
         parent::__construct($id);
-
-        $this->tag = $tag;
-
         $this->validate();
     }
 
-    public function addKid(string $id): self
+    public function addKid(int $id): self
     {
-        $this->kids[] = $id;
+        $this->kids[] = (string)$id;
         return $this;
     }
 
     public function render(): string
     {
-        $kids = implode(" ", array_map(fn($id) => $id." 0 R", $this->kids));
+        $kidReferences = [];
 
-        $output = "{$this->id} 0 obj\n";
-        $output .= "<< /Type /StructElem\n";
-        $output .= "/S /{$this->tag}\n";
-        $output .= "/K [{$kids}] >>\n";
-        $output .= "endobj\n";
+        foreach ($this->kids as $id) {
+            $kidReferences[] = new RawValue($id . ' 0 R');
+        }
 
-        return $output;
+        $dictionary = new Dictionary([
+            'Type' => new Name('StructElem'),
+            'S' => new Name($this->tag),
+            'K' => new ArrayValue($kidReferences),
+        ]);
+
+        return $this->id . ' 0 obj' . PHP_EOL
+            . $dictionary->render() . PHP_EOL
+            . 'endobj' . PHP_EOL;
     }
 
     private function validate(): void
     {
         if (!in_array($this->tag, $this->allowedTags)) {
-            throw new InvalidArgumentException("Tag '{$this->tag}' is not allowed.");
+            throw new InvalidArgumentException("Tag '$this->tag' is not allowed.");
         }
     }
 }

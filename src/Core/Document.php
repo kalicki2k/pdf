@@ -1,52 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf\Core;
 
 use Kalle\Pdf\Render\PdfRenderer;
+use Kalle\Pdf\Utilities\StringListNormalizer;
 
-class Document
+final class Document
 {
     private int $objectId = 0;
-    private float $version;
-    private string $title;
-    private string $author;
-    private ?string $subject;
-    private string $language;
-    private array $fonts = [];
-    private array $keywords = [];
+
+    /** @var Font[] */
+    public array $fonts = [];
+
+    /** @var string[] */
+    public array $keywords = [];
+
+    /** @var StructElem[]  */
     private array $structElems = [];
-    private Catalog $catalog;
-    private Info $info;
-    private Pages $pages;
-    private Resources $resources;
-    private StructTreeRoot $structTreeRoot;
+    public Catalog $catalog;
+    public Info $info;
+    public Pages $pages;
+    public StructTreeRoot $structTreeRoot;
 
     public function __construct(
-        float $version = 1.0,
-        string $title = '',
-        string $author = '',
-        ?string $subject = '',
-        string $language = ''
+        public readonly float   $version = 1.0,
+        public readonly ?string $title = null,
+        public readonly ?string $author = null,
+        public readonly ?string $subject = null,
+        public readonly ?string $language = null,
     )
     {
-        $this->version = $version;
-        $this->title = $title;
-        $this->author = $author;
-        $this->subject = $subject;
-        $this->language = $language;
-
         $this->catalog = new Catalog(++$this->objectId, $this);
         $this->pages = new Pages(++$this->objectId, $this);
 
         if ($this->version >= 1.4) {
             $this->structTreeRoot = new StructTreeRoot(++$this->objectId);
             $structElem = new StructElem(++$this->objectId, 'Document');
-            $this->structTreeRoot->addKid($structElem->getId());
+            $this->structTreeRoot->addKid($structElem->id);
             $this->structElems['document'] = $structElem;
         }
 
         $this->info = new Info(++$this->objectId, $this);
-        $this->resources = new Resources(++$this->objectId);
     }
 
     /**
@@ -57,70 +53,9 @@ class Document
         return ++$this->objectId;
     }
 
-    public function getVersion(): string
-    {
-        return $this->version;
-    }
-
-    public function getTitle(): string
-    {
-        return $this->title;
-    }
-
-    public function getAuthor(): string
-    {
-        return $this->author;
-    }
-
-    public function getSubject(): ?string
-    {
-        return $this->subject;
-    }
-
-    public function getLanguage(): string
-    {
-        return $this->language;
-    }
-
-    public function getKeywords(): array
-    {
-        return $this->keywords;
-    }
-
-    public function getStructElems(): array
-    {
-        return $this->structElems;
-    }
-
-    public function getCatalog(): Catalog
-    {
-        return $this->catalog;
-    }
-
-    public function getInfo(): Info
-    {
-        return $this->info;
-    }
-
-    public function getPages(): Pages
-    {
-        return $this->pages;
-    }
-
-    public function getResources(): Resources
-    {
-        return $this->resources;
-    }
-
-    public function getStructTreeRoot(): StructTreeRoot
-    {
-        return $this->structTreeRoot;
-    }
-
-    public function getFonts(): array {
-        return $this->fonts;
-    }
-
+    /**
+     * @return IndirectObject[]
+     */
     public function getDocumentObjects(): array
     {
         $objects = [];
@@ -137,15 +72,14 @@ class Document
         }
 
         $objects[] = $this->info;
-        $objects[] = $this->resources;
 
         foreach ($this->fonts as $font) {
             $objects[] = $font;
         }
-
-        foreach ($this->pages->getPages() as $page) {
+        foreach ($this->pages->pages as $page) {
             $objects[] = $page;
-            $objects[] = $page->getContents();
+            $objects[] = $page->resources;
+            $objects[] = $page->contents;
         }
 
         return $objects;
@@ -153,33 +87,38 @@ class Document
 
     public function addPage(float $width = 210.0, float $height = 297.0): Page
     {
-        return $this->pages->addPage(++$this->objectId, ++$this->objectId, $width, $height);
+        return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, $width, $height);
     }
 
-    public function addFont(string $baseFont, string $subtype = 'Type1', string $encoding = 'WinAnsiEncoding'): self {
+    public function addFont(string $baseFont, string $subtype = 'Type1', string $encoding = 'WinAnsiEncoding'): self
+    {
         $font = new Font(++$this->objectId, $baseFont, $subtype, $encoding, $this->version);
 
-        $this->fonts[] = $font;
-        $this->resources->addFont($font);
+        $this->fonts = [...$this->fonts, $font];
 
         return $this;
     }
 
-    // TODO:
-    public function addStructElem(string $tag, $kid): self
+    /**
+     * @param string $tag
+     * @param int $kid
+     * @return $this
+     */
+    public function addStructElem(string $tag, int $kid): self
     {
         $structElem = new StructElem(++$this->objectId, $tag);
         $structElem->addKid($kid);
 
         $this->structElems[] = $structElem;
-        $this->structElems['document']->addKid($structElem->getId());
+        $this->structElems['document']->addKid($structElem->id);
 
         return $this;
     }
 
     public function addKeyword(string $keyword): self
     {
-        $this->keywords[] = $keyword;
+        $this->keywords = StringListNormalizer::unique([...$this->keywords, $keyword]);
+
         return $this;
     }
 

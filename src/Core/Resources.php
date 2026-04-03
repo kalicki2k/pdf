@@ -1,9 +1,15 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+declare(strict_types=1);
 
-class Resources extends IndirectObject
+namespace Kalle\Pdf\Core;
+
+use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\Reference;
+
+final class Resources extends IndirectObject
 {
+    /** @var Font[]  */
     private array $fonts = [];
 
     public function __construct(int $id)
@@ -11,24 +17,33 @@ class Resources extends IndirectObject
         parent::__construct($id);
     }
 
-    public function addFont(Font $font): self
+    public function addFont(Font $font): string
     {
+        foreach ($this->fonts as $index => $registeredFont) {
+            if ($registeredFont->id === $font->id) {
+                return 'F' . ($index + 1);
+            }
+        }
+
         $this->fonts[] = $font;
-        return $this;
+
+        return 'F' . count($this->fonts);
     }
 
     public function render(): string
     {
-        $fonts = implode(" ", array_map(
-            fn($font, $i) => "/F".($i+1)." ".$font->getId()." 0 R",
-            $this->fonts,
-            array_keys($this->fonts)
-        ));
+        $fontReferences = [];
 
-        $output = "{$this->id} 0 obj\n";
-        $output .= "<< /Font << ". $fonts ." >> >>\n";
-        $output .= "endobj\n";
+        foreach ($this->fonts as $index => $registeredFont) {
+            $fontReferences['F' . ($index + 1)] = new Reference($registeredFont);
+        }
 
-        return $output;
+        $dictionary = new Dictionary([
+            'Font' => new Dictionary($fontReferences),
+        ]);
+
+        return $this->id . ' 0 obj' . PHP_EOL
+            . $dictionary->render() . PHP_EOL
+            . 'endobj' . PHP_EOL;
     }
 }

@@ -1,14 +1,21 @@
 {
-  "name": "shopware/pdf",
-  "description": "A PDF library by Shopware",
+  "name": "kalle/pdf",
+  "description": "A PDF library",
   "type": "library",
   "autoload": {
     "psr-4": {
-      "Shopware\\Pdf\\": "src/"
+      "Kalle\\Pdf\\": "src/"
     }
   },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1"
+  },
+  "scripts": {
+    "phpstan": "phpstan analyse --debug"
+  },
   "require": {
-    "php": ">=7.4",
+    "php": "^8.4",
+    "ext-iconv": "*",
     "ext-mbstring": "*"
   }
 }

@@ -1,19 +1,19 @@
 <?php
 
-namespace Shopware\Pdf\Core;
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Core;
 
 abstract class IndirectObject
 {
-    protected int $id;
-
-    public function __construct(int $id)
+    public function __construct(
+        public int $id {
+            get {
+                return $this->id;
+            }
+        }
+    )
     {
-        $this->id = $id;
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     abstract public function render(): string;
