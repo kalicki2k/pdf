@@ -38,7 +38,7 @@ final class Page extends IndirectObject
         $markedContentId = $this->markedContentId++;
 
         foreach ($this->document->fonts as $registeredFont) {
-            if ($registeredFont->getBaseFont() === $baseFont) {
+            if ($registeredFont->baseFont === $baseFont) {
                 $font = $registeredFont;
                 break;
             }

@@ -12,7 +12,7 @@ final class Font extends IndirectObject
 {
     public function __construct(
         int                     $id,
-        private readonly string $baseFont,
+        public readonly string $baseFont,
         private readonly string $subtype,
         private readonly string $encoding,
         private readonly float  $version,
@@ -20,11 +20,6 @@ final class Font extends IndirectObject
     {
         parent::__construct($id);
         $this->validate();
-    }
-
-    public function getBaseFont(): string
-    {
-        return $this->baseFont;
     }
 
     public function render(): string
