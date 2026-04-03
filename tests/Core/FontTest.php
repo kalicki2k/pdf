@@ -1,0 +1,59 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Tests\Core;
+
+use InvalidArgumentException;
+use Kalle\Pdf\Core\Font;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+
+final class FontTest extends TestCase
+{
+    #[Test]
+    public function it_returns_the_base_font_name(): void
+    {
+        $font = new Font(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);
+
+        self::assertSame('Helvetica', $font->baseFont);
+    }
+
+    #[Test]
+    public function it_renders_the_font_dictionary(): void
+    {
+        $font = new Font(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);
+
+        self::assertSame(
+            "6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\nendobj\n",
+            $font->render(),
+        );
+    }
+
+    #[Test]
+    public function it_rejects_disallowed_encodings_for_pdf_1_0(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Encoding 'WinAnsiEncoding' ist in PDF 1.0 nicht erlaubt.");
+
+        new Font(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.0);
+    }
+
+    #[Test]
+    public function it_rejects_non_symbol_fonts_for_symbol_encoding(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("BaseFont 'Helvetica' ist nicht kompatibel mit 'SymbolEncoding'.");
+
+        new Font(6, 'Helvetica', 'Type1', 'SymbolEncoding', 1.4);
+    }
+
+    #[Test]
+    public function it_rejects_non_zapf_dingbats_fonts_for_zapf_dingbats_encoding(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("BaseFont 'Helvetica' ist nicht kompatibel mit 'ZapfDingbatsEncoding'.");
+
+        new Font(6, 'Helvetica', 'Type1', 'ZapfDingbatsEncoding', 1.4);
+    }
+}

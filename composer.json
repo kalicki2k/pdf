@@ -7,11 +7,20 @@
       "Kalle\\Pdf\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Kalle\\Pdf\\Tests\\": "tests/"
+    }
+  },
   "require-dev": {
-    "phpstan/phpstan": "^2.1"
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^11.5"
   },
   "scripts": {
-    "phpstan": "phpstan analyse --debug"
+    "phpstan": "phpstan analyse --debug",
+    "test": "phpunit --configuration phpunit.xml.dist",
+    "test:coverage": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-text",
+    "test:coverage-html": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-html var/coverage"
   },
   "require": {
     "php": "^8.4",

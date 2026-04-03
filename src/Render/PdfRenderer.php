@@ -21,11 +21,7 @@ class PdfRenderer
         $startxref = mb_strlen($output, '8bit');
         $output .= $this->generateCrossReferenceTable($offsets);
         $objectIds = array_keys($offsets);
-        $maxObjectId = 0;
-
-        if ($objectIds !== []) {
-            $maxObjectId = max($objectIds);
-        }
+        $maxObjectId = max($objectIds ?: [0]);
 
         $output .= $this->generateTrailer(
             $maxObjectId + 1,
