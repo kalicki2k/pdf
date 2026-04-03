@@ -4,5 +4,5 @@ parameters:
         - src
         - example.php
     parallel:
-        maximumNumberOfProcesses: 1
+        maximumNumberOfProcesses: 3
     tmpDir: var/phpstan
