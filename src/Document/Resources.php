@@ -14,6 +14,8 @@ final class Resources extends IndirectObject
 {
     /** @var array<int, FontDefinition&IndirectObject>  */
     private array $fonts = [];
+    /** @var ImageObject[] */
+    private array $images = [];
     /** @var list<string> */
     private array $extGStates = [];
 
@@ -55,9 +57,31 @@ final class Resources extends IndirectObject
         return 'GS' . count($this->extGStates);
     }
 
+    public function addImage(ImageObject $image): string
+    {
+        foreach ($this->images as $index => $registeredImage) {
+            if ($registeredImage->getId() === $image->getId()) {
+                return 'Im' . ($index + 1);
+            }
+        }
+
+        $this->images[] = $image;
+
+        return 'Im' . count($this->images);
+    }
+
+    /**
+     * @return list<ImageObject>
+     */
+    public function getImages(): array
+    {
+        return array_values($this->images);
+    }
+
     public function render(): string
     {
         $fontReferences = [];
+        $imageReferences = [];
         $extGStateEntries = [];
 
         foreach ($this->fonts as $index => $registeredFont) {
@@ -68,9 +92,17 @@ final class Resources extends IndirectObject
             $extGStateEntries['GS' . ($index + 1)] = $registeredExtGState;
         }
 
+        foreach ($this->images as $index => $registeredImage) {
+            $imageReferences['Im' . ($index + 1)] = new Reference($registeredImage);
+        }
+
         $dictionary = new Dictionary([
             'Font' => new Dictionary($fontReferences),
         ]);
+
+        if ($imageReferences !== []) {
+            $dictionary->add('XObject', new Dictionary($imageReferences));
+        }
 
         if ($extGStateEntries !== []) {
             $dictionary->add('ExtGState', new Dictionary($extGStateEntries));

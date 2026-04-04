@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\TextOverflow;
+use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
@@ -42,12 +43,41 @@ final class PageTest extends TestCase
     }
 
     #[Test]
-    public function it_returns_itself_when_adding_an_image_placeholder(): void
+    public function it_adds_an_image_xobject_and_draw_command_to_the_page(): void
     {
         $document = new Document(version: 1.4);
         $page = $document->addPage();
+        $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
 
-        self::assertSame($page, $page->addImage());
+        self::assertSame($page, $page->addImage($image, 10, 20, 160, 100));
+        self::assertStringContainsString('/XObject << /Im1 7 0 R >>', $page->resources->render());
+        self::assertStringContainsString("160 0 0 100 10 20 cm\n/Im1 Do", $page->contents->render());
+        self::assertStringContainsString("7 0 obj\n<< /Type /XObject\n/Subtype /Image", $document->render());
+    }
+
+    #[Test]
+    public function it_uses_the_image_dimensions_when_no_target_size_is_given(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
+
+        $page->addImage($image, 10, 20);
+
+        self::assertStringContainsString("320 0 0 200 10 20 cm\n/Im1 Do", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_non_positive_image_dimensions(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Image width must be greater than zero.');
+
+        $page->addImage($image, 10, 20, 0, 100);
     }
 
     #[Test]

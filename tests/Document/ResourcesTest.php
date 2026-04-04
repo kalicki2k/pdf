@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\ImageObject;
 use Kalle\Pdf\Document\Resources;
+use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
@@ -74,6 +76,19 @@ final class ResourcesTest extends TestCase
         self::assertSame('GS1', $resources->addOpacity(Opacity::both(0.4)));
         self::assertSame(
             "8 0 obj\n<< /Font <<  >> /ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >> >>\nendobj\n",
+            $resources->render(),
+        );
+    }
+
+    #[Test]
+    public function it_registers_image_xobjects_as_named_resources(): void
+    {
+        $resources = new Resources(8);
+        $image = new ImageObject(9, new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123'));
+
+        self::assertSame('Im1', $resources->addImage($image));
+        self::assertSame(
+            "8 0 obj\n<< /Font <<  >> /XObject << /Im1 9 0 R >> >>\nendobj\n",
             $resources->render(),
         );
     }

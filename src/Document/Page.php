@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Element\DrawImage;
+use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontRegistry;
@@ -191,8 +193,33 @@ final class Page extends IndirectObject
         return new TextFrame($this, $x, $y, $width, $bottomMargin);
     }
 
-    public function addImage(): self
+    public function addImage(
+        Image $image,
+        float $x,
+        float $y,
+        ?float $width = null,
+        ?float $height = null,
+    ): self
     {
+        if ($width !== null && $width <= 0) {
+            throw new InvalidArgumentException('Image width must be greater than zero.');
+        }
+
+        if ($height !== null && $height <= 0) {
+            throw new InvalidArgumentException('Image height must be greater than zero.');
+        }
+
+        $width ??= $image->getWidth();
+        $height ??= $image->getHeight();
+
+        if ($width <= 0 || $height <= 0) {
+            throw new InvalidArgumentException('Image dimensions must be greater than zero.');
+        }
+
+        $imageObject = new ImageObject($this->document->getUniqObjectId(), $image);
+        $resourceName = $this->resources->addImage($imageObject);
+        $this->contents->addElement(new DrawImage($resourceName, $x, $y, $width, $height));
+
         return $this;
     }
 
