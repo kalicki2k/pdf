@@ -1,6 +1,6 @@
 # Getting Started
 
-Diese Library erzeugt PDFs direkt aus PHP. Der aktuelle Fokus liegt auf einer kleinen, klaren API fuer Dokumente, Seiten, Text, Fonts und erste Layout-Helfer.
+Diese Library erzeugt PDFs direkt aus PHP. Der aktuelle Fokus liegt auf einer kleinen, klaren API fuer Dokumente, Seiten, Text, Fonts, Bilder und erste grafische Primitive.
 
 ## Voraussetzungen
 
@@ -41,6 +41,7 @@ use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\Units;
+use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 
@@ -87,6 +88,34 @@ $frame
         overflow: TextOverflow::ELLIPSIS,
     );
 
+$page->addLine(
+    Units::mm(20),
+    Units::mm(235),
+    Units::mm(190),
+    Units::mm(235),
+    1.5,
+    Color::rgb(220, 20, 60),
+    Opacity::stroke(0.4),
+);
+
+$page->addRectangle(
+    Units::mm(20),
+    Units::mm(200),
+    Units::mm(60),
+    Units::mm(20),
+    1.0,
+    Color::rgb(220, 20, 60),
+    Color::gray(0.92),
+);
+
+$page->addImage(
+    Image::fromFile('assets/images/demo.jpg'),
+    Units::mm(100),
+    Units::mm(170),
+    Units::mm(70),
+    Units::mm(46.67),
+);
+
 $pdfContent = $document->render();
 
 file_put_contents('hello.pdf', $pdfContent);
@@ -99,7 +128,8 @@ file_put_contents('hello.pdf', $pdfContent);
 3. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
 4. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
 5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
-6. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+6. `addLine(...)`, `addRectangle(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
+7. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Einheiten
 
@@ -181,6 +211,37 @@ Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Aus
 - `TextAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `TextOverflow::CLIP` und `TextOverflow::ELLIPSIS` zusammen mit `maxLines`
 
+## Grafische Elemente und Bilder
+
+Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur Verfuegung:
+
+- `Page::addLine(...)` fuer einfache Linien mit Farbe, Linienstaerke und optionaler Stroke-Opacity
+- `Page::addRectangle(...)` fuer Stroke, Fill oder Fill+Stroke
+- `Image::fromFile(...)` fuer automatische Erkennung von `jpg`, `jpeg` und unterstuetzten `png`
+- `Page::addImage(...)` fuer die Platzierung eines Bildes an einer festen Position
+
+Beispiele:
+
+```php
+$page->addLine(20, 200, 180, 200, 2.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
+
+$page->addRectangle(20, 140, 80, 30, null, null, Color::gray(0.9));
+
+$page->addRectangle(
+    20,
+    90,
+    80,
+    30,
+    1.5,
+    Color::rgb(0, 0, 0),
+    Color::rgb(240, 240, 240),
+    Opacity::both(0.5),
+);
+
+$image = Image::fromFile('assets/images/demo.jpg');
+$page->addImage($image, 110, 80, 70, 46.67);
+```
+
 Ein kompakter Absatz mit gemischten Stilen sieht zum Beispiel so aus:
 
 ```php
@@ -215,13 +276,16 @@ Der derzeit belastbare Einstieg ist:
 - TextFrames ueber mehrere Bloecke und Seiten verwenden
 - gemischte Inline-Stile mit `TextSegment` rendern
 - Absatzumfang mit `maxLines` und `TextOverflow` begrenzen
+- Linien rendern
+- Rechtecke rendern
+- Bilder aus Dateien laden und platzieren
 
 ## Aktuelle Grenzen
 
 Der Codebestand enthaelt bereits weitere Bausteine, aber fuer den Einstieg solltest du aktuell von diesem Stand ausgehen:
 
-- Bilder sind noch nicht fertig nutzbar
-- grafische Primitive ausser Text sind noch kaum ausgebaut
+- PNG mit Alpha-Kanal, interlaced PNG und indexed PNG werden aktuell bewusst nicht ueber `Image::fromFile(...)` unterstuetzt
+- grafische Primitive sind aktuell auf Linien und Rechtecke fokussiert
 - `underline` und `strikethrough` sind aktuell heuristisch positioniert und noch nicht ueber Font-Metriken feinjustiert
 - `bold` und `italic` fuer Embedded Fonts haengen derzeit an benannten Font-Varianten wie `-Bold` oder `-Italic`
 - die Doku wird schrittweise parallel zum Code aufgebaut

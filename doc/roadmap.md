@@ -17,6 +17,8 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - `bold`, `italic`, `underline` und `strikethrough` sind vorhanden
 - `TextAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
 - `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
+- Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
+- Linien und Rechtecke sind als erste grafische Primitive vorhanden
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
 - Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
@@ -38,6 +40,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Textfluss-API ueber `addParagraph()` und `TextFrame`
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
+- erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
 
 ## Prioritaeten
 
@@ -83,10 +86,10 @@ Aktuell ist Text der belastbare End-to-End-Fall. Weitere Inhaltstypen sollten er
 
 Naechste Kandidaten:
 
-- Bilder
-- Linien und einfache grafische Primitive
 - Links oder Annotationen
+- weitere grafische Primitive oder ein allgemeinerer Path-Builder
 - Tabellen oder strukturierte Layout-Helfer
+- Ausbau der Bild-API, vor allem fuer PNG mit Alpha-Kanal
 
 Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
 
@@ -105,7 +108,7 @@ Die Font-Nutzung pro Seite ist bereits sauber getrennt, und die Font-Definitione
 
 Offene Erweiterungen:
 
-- XObjects fuer Bilder
+- Wiederverwendung und Caching von XObjects fuer Bilder
 - gemeinsam genutzte Ressourcen sauber modellieren
 - Vererbung oder zentrale Verwaltung nur dann einfuehren, wenn sie echten Nutzen bringt
 - Konfigurationsmodell fuer groessere Font-Sets weiter ausbauen, ohne `addFont()` nach aussen zu verkomplizieren

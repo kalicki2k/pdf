@@ -9,7 +9,7 @@ Die Library baut ein PDF als kleines Objektmodell in PHP auf und rendert dieses 
 Der Hauptfluss ist:
 
 1. `Document` sammelt Metadaten, Fonts und Seiten.
-2. `Page` nimmt Inhalte wie Text entgegen.
+2. `Page` nimmt Inhalte wie Text, Bilder und einfache grafische Primitive entgegen.
 3. `Contents` und `Resources` sammeln die seitenbezogenen Daten.
 4. `PdfRenderer` rendert alle indirekten Objekte in der richtigen Reihenfolge.
 5. Zum Schluss werden `xref`, `trailer` und `startxref` angehaengt.
@@ -61,7 +61,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)` und `textFrame(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)` und `addImage(...)`.
 
 Dabei passiert intern:
 
@@ -77,6 +77,12 @@ Beim Absatz-Rendering kommen zusaetzlich dazu:
 7. Der Text wird in Tokens und Zeilen fuer den Umbruch zerlegt.
 8. Optional werden Alignment, `maxLines` und `TextOverflow` auf die sichtbaren Zeilen angewendet.
 9. Stilwechsel innerhalb eines Absatzes werden ueber mehrere `Text`-Elemente gerendert.
+
+Bei grafischen Inhalten kommt stattdessen dazu:
+
+6. `Line`- und `Rectangle`-Elemente werden direkt in `Contents` abgelegt.
+7. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
+8. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
 
 ### TextFrame
 
@@ -110,10 +116,13 @@ Aktuell werden die Elemente direkt hintereinander in einen einzelnen Stream gere
 Verantwortlich fuer:
 
 - Zuordnung der auf der Seite verwendeten Fonts
-- Zuordnung von `ExtGState`-Eintraegen fuer Text-Opacity
+- Zuordnung von `ExtGState`-Eintraegen fuer Text- und Grafik-Opacity
+- Zuordnung von Bild-XObjects
 - Vergabe interner Ressourcen-Namen wie `F1`, `F2`, ...
+- Vergabe interner Bildnamen wie `Im1`, `Im2`, ...
 - Vergabe interner Graphics-State-Namen wie `GS1`, `GS2`, ...
 - Rendern des `/Font`-Dictionarys
+- Rendern des `/XObject`-Dictionarys
 - Rendern des `/ExtGState`-Dictionarys
 
 Wichtig: Fonts werden global im `Document` registriert, aber erst beim Einsatz auf einer Seite in deren `Resources` aufgenommen.
@@ -138,7 +147,7 @@ Die Reihenfolge der Objekte kommt aus `Document::getDocumentObjects()`.
 
 `Element` ist die abstrakte Basisklasse fuer renderbare Seiteninhalte.
 
-Aktuell ist im produktiven Pfad vor allem `Text` relevant.
+Aktuell sind `Text`, `Line`, `Rectangle`, `Image` und `DrawImage` relevant.
 
 ### Text
 
@@ -172,6 +181,43 @@ Dabei kombiniert das Element:
 - optionale Marked-Content-ID
 
 Die Einfassung mit `q` und `Q` isoliert den Graphics State pro Text-Element, damit Farben und Opacity nicht in nachfolgende Texte leaken.
+
+### Line
+
+`Line` rendert eine einfache stroked Linie mit PDF-Operatoren wie `m`, `l` und `S`.
+
+Optional kombiniert das Element:
+
+- Stroke-Farbe
+- Linienstaerke
+- Graphics State fuer Stroke-Opacity
+
+### Rectangle
+
+`Rectangle` rendert Rechtecke ueber den PDF-Operator `re`.
+
+Je nach Parametern entstehen drei Modi:
+
+- `S` fuer reines Stroke
+- `f` fuer reines Fill
+- `B` fuer Fill + Stroke
+
+Damit eignet sich das Element fuer Rahmen, Panels, Hintergruende und einfache Layout-Boxen.
+
+### Image und DrawImage
+
+Die Bildintegration ist bewusst in zwei Teile getrennt:
+
+- `Image` beschreibt den eigentlichen `/Subtype /Image`-XObject-Stream
+- `DrawImage` beschreibt die Platzierung im Content-Stream per Matrix `cm` und `/ImN Do`
+
+`Page::addImage(...)` verbindet beide Ebenen:
+
+1. Das Bild wird als indirektes Objekt angelegt.
+2. Die Seite registriert das Bild in `Resources` unter `/XObject`.
+3. Ein `DrawImage`-Element wird im Content-Stream abgelegt.
+
+`Image::fromFile(...)` erkennt aktuell `JPEG` direkt und unterstuetzte `PNG`-Dateien ohne Alpha-Kanal automatisch.
 
 ### TextSegment
 
