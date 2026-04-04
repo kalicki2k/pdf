@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Types\ArrayValue;
 use Kalle\Pdf\Types\Dictionary;
 use Kalle\Pdf\Types\Name;
@@ -17,6 +17,9 @@ use Kalle\Pdf\Types\Reference;
 
 final class Page extends IndirectObject
 {
+    private const DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
+    private const DEFAULT_BOTTOM_MARGIN = 20.0;
+
     private int $markedContentId = 0;
     public Contents $contents;
     public Resources $resources;
@@ -36,10 +39,10 @@ final class Page extends IndirectObject
         $this->resources = new Resources($resourcesId);
     }
 
-    public function addText(string $text, float $x, float $y, string $baseFont, int $size, string $tag): self
+    public function addText(string $text, float $x, float $y, string $baseFont, int $size, ?string $tag = null): self
     {
         $font = $this->resolveFont($baseFont);
-        $markedContentId = $this->markedContentId++;
+        $markedContentId = $tag !== null ? $this->markedContentId++ : null;
         $encodedText = $this->encodeText($font, $baseFont, $text);
         $resourceFontName = $this->registerFontResource($font);
 
@@ -54,9 +57,67 @@ final class Page extends IndirectObject
             $size,
             $tag,
         ));
-        $this->attachTextToStructure($tag, $markedContentId);
+
+        if ($tag !== null && $markedContentId !== null) {
+            $this->attachTextToStructure($tag, $markedContentId);
+        }
 
         return $this;
+    }
+
+    public function addParagraph(
+        string $text,
+        float $x,
+        float $y,
+        float $maxWidth,
+        string $baseFont,
+        int $size,
+        ?string $tag = null,
+        ?float $lineHeight = null,
+        ?float $bottomMargin = null,
+    ): self {
+        $font = $this->resolveFont($baseFont);
+        $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
+        $bottomMargin ??= self::DEFAULT_BOTTOM_MARGIN;
+
+        if ($maxWidth <= 0) {
+            throw new InvalidArgumentException('Paragraph width must be greater than zero.');
+        }
+
+        if ($lineHeight <= 0) {
+            throw new InvalidArgumentException('Line height must be greater than zero.');
+        }
+
+        $lines = $this->wrapTextIntoLines($text, $font, $size, $maxWidth);
+        $page = $this;
+        $currentY = $y;
+        $topMargin = $this->height - $y;
+
+        foreach ($lines as $line) {
+            if ($currentY < $bottomMargin) {
+                $page = $this->document->addPage($this->width, $this->height);
+                $currentY = $this->height - $topMargin;
+            }
+
+            if ($line === '') {
+                $currentY -= $lineHeight;
+                continue;
+            }
+
+            $page->addText($line, $x, $currentY, $baseFont, $size, $tag);
+            $currentY -= $lineHeight;
+        }
+
+        return $page;
+    }
+
+    public function textFrame(
+        float $x,
+        float $y,
+        float $width,
+        float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
+    ): TextFrame {
+        return new TextFrame($this, $x, $y, $width, $bottomMargin);
     }
 
     public function addImage(): self
@@ -78,6 +139,21 @@ final class Page extends IndirectObject
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'endobj' . PHP_EOL;
+    }
+
+    public function getWidth(): float
+    {
+        return $this->width;
+    }
+
+    public function getHeight(): float
+    {
+        return $this->height;
+    }
+
+    public function getDocument(): Document
+    {
+        return $this->document;
     }
 
     private function resolveFont(string $baseFont): FontDefinition
@@ -136,5 +212,100 @@ final class Page extends IndirectObject
         }
 
         $font->descendantFont->setWidths($widths);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function wrapTextIntoLines(string $text, FontDefinition $font, int $size, float $maxWidth): array
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", trim($text));
+
+        if ($text === '') {
+            return [''];
+        }
+
+        $lines = [];
+
+        foreach (explode("\n", $text) as $paragraph) {
+            if ($paragraph === '') {
+                $lines[] = '';
+                continue;
+            }
+
+            $currentLine = '';
+
+            foreach (preg_split('/\s+/u', trim($paragraph)) ?: [] as $word) {
+                if ($word === '') {
+                    continue;
+                }
+
+                $candidate = $currentLine === '' ? $word : $currentLine . ' ' . $word;
+
+                if ($font->measureTextWidth($candidate, $size) <= $maxWidth) {
+                    $currentLine = $candidate;
+                    continue;
+                }
+
+                if ($currentLine !== '') {
+                    $lines[] = $currentLine;
+                }
+
+                $chunks = $this->breakWordToFit($word, $font, $size, $maxWidth);
+
+                foreach ($chunks as $index => $chunk) {
+                    if ($index === count($chunks) - 1) {
+                        $currentLine = $chunk;
+                        continue;
+                    }
+
+                    $lines[] = $chunk;
+                }
+            }
+
+            if ($currentLine !== '') {
+                $lines[] = $currentLine;
+            }
+        }
+
+        return $lines === [] ? [''] : $lines;
+    }
+
+    public function countParagraphLines(string $text, string $baseFont, int $size, float $maxWidth): int
+    {
+        $font = $this->resolveFont($baseFont);
+
+        return count($this->wrapTextIntoLines($text, $font, $size, $maxWidth));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function breakWordToFit(string $word, FontDefinition $font, int $size, float $maxWidth): array
+    {
+        if ($font->measureTextWidth($word, $size) <= $maxWidth) {
+            return [$word];
+        }
+
+        $chunks = [];
+        $currentChunk = '';
+
+        foreach (preg_split('//u', $word, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
+            $candidate = $currentChunk . $character;
+
+            if ($currentChunk !== '' && $font->measureTextWidth($candidate, $size) > $maxWidth) {
+                $chunks[] = $currentChunk;
+                $currentChunk = $character;
+                continue;
+            }
+
+            $currentChunk = $candidate;
+        }
+
+        if ($currentChunk !== '') {
+            $chunks[] = $currentChunk;
+        }
+
+        return $chunks;
     }
 }

@@ -25,10 +25,6 @@ final class OpenTypeFontParser
     {
         $codePoint = mb_ord($character, 'UTF-8');
 
-        if ($codePoint === false) {
-            throw new InvalidArgumentException('Unable to determine Unicode code point for character.');
-        }
-
         return $this->getGlyphIdForCodePoint($codePoint);
     }
 
@@ -57,6 +53,15 @@ final class OpenTypeFontParser
         }
 
         return $this->readUInt16($hmtxOffset + (($numberOfHMetrics - 1) * 4));
+    }
+
+    public function getUnitsPerEm(): int
+    {
+        if (!isset($this->tables['head'])) {
+            throw new InvalidArgumentException('Font is missing head table.');
+        }
+
+        return $this->readUInt16($this->tables['head']['offset'] + 18);
     }
 
     private function parseTableDirectory(): void
@@ -185,7 +190,19 @@ final class OpenTypeFontParser
 
     private function readUInt16(int $offset): int
     {
-        return unpack('n', substr($this->data, $offset, 2))[1];
+        $value = unpack('n', substr($this->data, $offset, 2));
+
+        if ($value === false) {
+            throw new InvalidArgumentException('Unable to read 16-bit unsigned integer from font data.');
+        }
+
+        $result = $value[1];
+
+        if (!is_int($result)) {
+            throw new InvalidArgumentException('Expected a 16-bit integer value from font data.');
+        }
+
+        return $result;
     }
 
     private function readInt16(int $offset): int
@@ -197,6 +214,18 @@ final class OpenTypeFontParser
 
     private function readUInt32(int $offset): int
     {
-        return unpack('N', substr($this->data, $offset, 4))[1];
+        $value = unpack('N', substr($this->data, $offset, 4));
+
+        if ($value === false) {
+            throw new InvalidArgumentException('Unable to read 32-bit unsigned integer from font data.');
+        }
+
+        $result = $value[1];
+
+        if (!is_int($result)) {
+            throw new InvalidArgumentException('Expected a 32-bit integer value from font data.');
+        }
+
+        return $result;
     }
 }

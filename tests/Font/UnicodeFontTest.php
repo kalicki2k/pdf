@@ -52,4 +52,13 @@ final class UnicodeFontTest extends TestCase
             $font->render(),
         );
     }
+
+    #[Test]
+    public function it_falls_back_to_character_count_when_no_font_metrics_are_embedded(): void
+    {
+        $glyphMap = new UnicodeGlyphMap();
+        $font = new UnicodeFont(12, new CidFont(13, 'NotoSansCJKsc-Regular'), new ToUnicodeCMap(14, $glyphMap), $glyphMap);
+
+        self::assertSame(20.0, $font->measureTextWidth('漢字', 10));
+    }
 }

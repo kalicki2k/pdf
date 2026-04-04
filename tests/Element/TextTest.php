@@ -43,4 +43,19 @@ final class TextTest extends TestCase
             $text->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_unstructured_text_without_marked_content_commands(): void
+    {
+        $text = new Text(null, '(Hello)', 10, 20, 'F1', 12);
+
+        self::assertSame(
+            "BT\n"
+            . "/F1 12 Tf\n"
+            . "10 20 Td\n"
+            . "(Hello) Tj\n"
+            . 'ET',
+            $text->render(),
+        );
+    }
 }

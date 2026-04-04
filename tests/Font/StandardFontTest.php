@@ -64,4 +64,12 @@ final class StandardFontTest extends TestCase
 
         self::assertSame('(Hello \\(PDF\\)\\n)', $font->encodeText("Hello (PDF)\n"));
     }
+
+    #[Test]
+    public function it_estimates_text_width_without_embedded_font_metrics(): void
+    {
+        $font = new StandardFont(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);
+
+        self::assertSame(30.0, $font->measureTextWidth('Hello', 10));
+    }
 }

@@ -75,6 +75,21 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_can_add_text_without_creating_structure_metadata(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addText('Hello', 10, 20, 'Helvetica', 12);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('(Hello) Tj', $page->contents->render());
+        self::assertStringNotContainsString('BDC', $page->contents->render());
+        self::assertStringNotContainsString('/Type /StructElem /S /P', $document->render());
+    }
+
+    #[Test]
     public function it_rejects_text_that_is_not_supported_by_the_registered_font(): void
     {
         $document = new Document(version: 1.4);
@@ -85,5 +100,62 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage("Font 'Helvetica' does not support the provided text.");
 
         $page->addText('漢', 10, 20, 'Helvetica', 12, 'P');
+    }
+
+    #[Test]
+    public function it_wraps_a_paragraph_into_multiple_text_lines(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, 'P', 12.0, 0.0);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("10 50 Td\n/P << /MCID 0 >> BDC\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("10 38 Td\n/P << /MCID 1 >> BDC\n(world) Tj", $page->contents->render());
+        self::assertStringContainsString("10 26 Td\n/P << /MCID 2 >> BDC\n(from) Tj", $page->contents->render());
+        self::assertStringContainsString("10 14 Td\n/P << /MCID 3 >> BDC\n(PDF) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_wraps_a_paragraph_without_creating_structure_when_no_tag_is_given(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, null, 12.0, 0.0);
+
+        self::assertStringContainsString('(Hello) Tj', $page->contents->render());
+        self::assertStringNotContainsString('BDC', $page->contents->render());
+        self::assertStringNotContainsString('/Type /StructElem /S /P', $document->render());
+    }
+
+    #[Test]
+    public function it_creates_a_follow_up_page_when_a_paragraph_reaches_the_bottom_margin(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $firstPage = $document->addPage(100.0, 60.0);
+
+        $lastPage = $firstPage->addParagraph(
+            'Hello world from PDF',
+            10,
+            30,
+            40,
+            'Helvetica',
+            10,
+            'P',
+            12.0,
+            15.0,
+        );
+
+        self::assertCount(2, $document->pages->pages);
+        self::assertSame($document->pages->pages[1], $lastPage);
+        self::assertStringContainsString('(Hello)', $firstPage->contents->render());
+        self::assertStringContainsString('(world)', $firstPage->contents->render());
+        self::assertStringContainsString('(from)', $lastPage->contents->render());
+        self::assertStringContainsString('(PDF)', $lastPage->contents->render());
     }
 }

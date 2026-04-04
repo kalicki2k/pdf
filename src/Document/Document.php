@@ -28,7 +28,7 @@ final class Document
     private int $objectId = 0;
     private int $structParentId = -1;
 
-    /** @var FontDefinition[] */
+    /** @var array<int, FontDefinition&IndirectObject> */
     public array $fonts = [];
 
     /** @var string[] */
@@ -77,6 +77,7 @@ final class Document
      */
     public function getDocumentObjects(): array
     {
+        /** @var list<IndirectObject> $objects */
         $objects = [];
 
         $objects[] = $this->catalog;
@@ -192,7 +193,19 @@ final class Document
             $toUnicode = new ToUnicodeCMap(++$this->objectId, $glyphMap);
             $font = new UnicodeFont(++$this->objectId, $descendantFont, $toUnicode, $glyphMap);
         } else {
-            $font = new StandardFont(++$this->objectId, $baseFont, $subtype, $encoding, $this->version);
+            $fontParser = null;
+
+            if ($fontFilePath !== null) {
+                $fontData = file_get_contents($fontFilePath);
+
+                if ($fontData === false) {
+                    throw new \InvalidArgumentException("Unable to read font file '$fontFilePath'.");
+                }
+
+                $fontParser = new OpenTypeFontParser($fontData);
+            }
+
+            $font = new StandardFont(++$this->objectId, $baseFont, $subtype, $encoding, $this->version, $fontParser);
         }
 
         $this->fonts = [...$this->fonts, $font];

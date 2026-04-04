@@ -6,20 +6,20 @@ namespace Kalle\Pdf\Element;
 
 class Text extends Element
 {
-    private int $markedContentId;
+    private ?int $markedContentId;
     private string $content;
     private string $font;
     private float $size;
-    private string $tag;
+    private ?string $tag;
 
     public function __construct(
-        int $markedContentId,
+        ?int $markedContentId,
         string $content,
         float $x,
         float $y,
         string $font,
         float $size,
-        string $tag,
+        ?string $tag = null,
     ) {
         $this->markedContentId = $markedContentId;
         $this->content = $content;
@@ -32,12 +32,20 @@ class Text extends Element
 
     public function render(): string
     {
-        return 'BT' . PHP_EOL
+        $output = 'BT' . PHP_EOL
             . "/$this->font $this->size Tf" . PHP_EOL
-            . "$this->x $this->y Td" . PHP_EOL
-            . "/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL
-            . $this->content . ' Tj' . PHP_EOL
-            . 'EMC' . PHP_EOL
-            . 'ET';
+            . "$this->x $this->y Td" . PHP_EOL;
+
+        if ($this->tag !== null && $this->markedContentId !== null) {
+            $output .= "/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL;
+        }
+
+        $output .= $this->content . ' Tj' . PHP_EOL;
+
+        if ($this->tag !== null && $this->markedContentId !== null) {
+            $output .= 'EMC' . PHP_EOL;
+        }
+
+        return $output . 'ET';
     }
 }

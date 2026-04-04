@@ -15,6 +15,9 @@ final class CidFont extends IndirectObject
     /** @var array<string, int> */
     private array $widths;
 
+    /**
+     * @param array<string, int> $widths
+     */
     public function __construct(
         int $id,
         public readonly string $baseFont,

@@ -41,7 +41,7 @@ final class CidToGidMap extends IndirectObject
         }
 
         $maxCid = max(array_map(
-            static fn (string $code): int => hexdec($code),
+            static fn (string $code): int => (int) hexdec($code),
             array_keys($codeMap),
         ));
 

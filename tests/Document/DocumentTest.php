@@ -154,17 +154,34 @@ final class DocumentTest extends TestCase
 
         self::assertCount(2, $document->fonts);
         self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
+        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
+        self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
         self::assertSame('NotoSansCJKsc-Regular', $document->fonts[1]->getBaseFont());
         self::assertInstanceOf(UnicodeFont::class, $document->fonts[1]);
         self::assertNotNull($document->fonts[1]->descendantFont->fontDescriptor);
         self::assertNotNull($document->fonts[1]->descendantFont->cidToGidMap);
         self::assertSame(
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
             array_map(
                 static fn (object $object): int => $object->id,
                 $document->getDocumentObjects(),
             ),
         );
+    }
+
+    #[Test]
+    public function it_registers_the_sans_preset_as_an_embedded_font(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $document->addFont('sans');
+
+        self::assertCount(1, $document->fonts);
+        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
+        self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
+        self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
     }
 
     #[Test]

@@ -15,7 +15,9 @@ final class FontRegistry
                 group: 'sans',
                 baseFont: 'NotoSans-Regular',
                 path: 'assets/fonts/NotoSans-Regular.ttf',
-                unicode: false,
+                unicode: true,
+                subtype: 'CIDFontType2',
+                encoding: 'Identity-H',
             ),
             'serif' => new FontPreset(
                 group: 'serif',

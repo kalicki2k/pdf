@@ -21,7 +21,9 @@ final class FontRegistryTest extends TestCase
 
         self::assertSame('NotoSans-Regular', $sans->baseFont);
         self::assertSame('assets/fonts/NotoSans-Regular.ttf', $sans->path);
-        self::assertFalse($sans->unicode);
+        self::assertTrue($sans->unicode);
+        self::assertSame('CIDFontType2', $sans->subtype);
+        self::assertSame('Identity-H', $sans->encoding);
 
         self::assertSame('NotoSerif-Regular', $serif->baseFont);
         self::assertSame('assets/fonts/NotoSerif-Regular.ttf', $serif->path);

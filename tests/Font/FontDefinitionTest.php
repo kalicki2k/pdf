@@ -34,6 +34,11 @@ final class FontDefinitionTest extends TestCase
                 return strtoupper($text);
             }
 
+            public function measureTextWidth(string $text, float $size): float
+            {
+                return strlen($text) * $size;
+            }
+
             public function render(): string
             {
                 return '42 0 obj';
@@ -46,6 +51,7 @@ final class FontDefinitionTest extends TestCase
         self::assertTrue($fontDefinition->supportsText('abc'));
         self::assertFalse($fontDefinition->supportsText(''));
         self::assertSame('ABC', $fontDefinition->encodeText('abc'));
+        self::assertSame(30.0, $fontDefinition->measureTextWidth('abc', 10));
         self::assertSame('42 0 obj', $fontDefinition->render());
     }
 }

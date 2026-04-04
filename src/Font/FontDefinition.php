@@ -14,5 +14,7 @@ interface FontDefinition
 
     public function encodeText(string $text): string;
 
+    public function measureTextWidth(string $text, float $size): float;
+
     public function render(): string;
 }

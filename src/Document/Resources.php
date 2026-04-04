@@ -11,7 +11,7 @@ use Kalle\Pdf\Types\Reference;
 
 final class Resources extends IndirectObject
 {
-    /** @var FontDefinition[]  */
+    /** @var array<int, FontDefinition&IndirectObject>  */
     private array $fonts = [];
 
     public function __construct(int $id)
@@ -21,12 +21,17 @@ final class Resources extends IndirectObject
 
     public function addFont(FontDefinition $font): string
     {
+        if (!$font instanceof IndirectObject) {
+            throw new \InvalidArgumentException('Font resources must be indirect objects.');
+        }
+
         foreach ($this->fonts as $index => $registeredFont) {
             if ($registeredFont->getId() === $font->getId()) {
                 return 'F' . ($index + 1);
             }
         }
 
+        /** @var FontDefinition&IndirectObject $font */
         $this->fonts[] = $font;
 
         return 'F' . count($this->fonts);

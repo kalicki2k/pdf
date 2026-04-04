@@ -12,6 +12,8 @@ use Kalle\Pdf\Types\Reference;
 
 final class UnicodeFont extends IndirectObject implements FontDefinition
 {
+    private const FALLBACK_GLYPH_WIDTH = 1000;
+
     public readonly UnicodeGlyphMap $glyphMap;
 
     public function __construct(
@@ -43,6 +45,29 @@ final class UnicodeFont extends IndirectObject implements FontDefinition
     public function encodeText(string $text): string
     {
         return $this->glyphMap->encodeText($text);
+    }
+
+    public function measureTextWidth(string $text, float $size): float
+    {
+        if ($text === '') {
+            return 0.0;
+        }
+
+        if ($this->descendantFont->fontDescriptor === null) {
+            return mb_strlen($text, 'UTF-8') * $size;
+        }
+
+        $fontParser = new OpenTypeFontParser($this->descendantFont->fontDescriptor->fontFile->data);
+        $unitsPerEm = $fontParser->getUnitsPerEm();
+        $width = 0;
+
+        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
+            $glyphId = $fontParser->getGlyphIdForCharacter($character);
+            $glyphWidth = $fontParser->getAdvanceWidthForGlyphId($glyphId);
+            $width += $glyphWidth > 0 ? $glyphWidth : self::FALLBACK_GLYPH_WIDTH;
+        }
+
+        return ($width / $unitsPerEm) * $size;
     }
 
     /**
