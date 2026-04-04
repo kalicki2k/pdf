@@ -88,6 +88,7 @@ Bei Tabellen kommt zusaetzlich dazu:
 10. Zellhintergruende und Borders werden ueber `Rectangle` gerendert.
 11. Zelltext wird ueber den vorhandenen Absatzpfad in die jeweilige Zelle geschrieben.
 12. Wenn eine Zeile nicht mehr passt, erzeugt `Table` intern eine Folge-Seite und rendert dort weiter.
+13. Vor gemerkten Body-Zeilen werden vorhandene Header-Zeilen auf der neuen Seite erneut gerendert.
 
 Bei grafischen Inhalten kommt stattdessen dazu:
 
@@ -130,6 +131,7 @@ Verantwortlich fuer:
 - Startposition, Tabellenbreite und Spaltenbreiten
 - Cursor-Fuehrung zwischen den Tabellenzeilen
 - Header- und Row-Styles
+- Wiederholung von Header-Zeilen bei Seitenwechsel
 - Berechnung der Zeilenhoehe ueber den vorhandenen Absatz-Umbruch
 - Seitenwechsel, wenn eine komplette Zeile nicht mehr passt
 

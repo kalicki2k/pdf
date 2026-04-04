@@ -260,6 +260,7 @@ Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeu
 
 - feste Spaltenbreiten
 - Header-Zeilen
+- wiederholte Header-Zeilen auf Folgeseiten
 - Zellpadding
 - `string`, `TextSegment[]` oder `TableCell` als Zelleninhalt
 - automatische Zeilenhoehe durch Textumbruch
@@ -290,6 +291,23 @@ $table->addRow([
     new TableCell('Beta', TextAlign::CENTER),
     '49,00 EUR',
 ]);
+```
+
+Fuer laengere Tabellen werden Header-Zeilen automatisch auf neuen Seiten wiederholt:
+
+```php
+$table = $page->table(20, 240, 170, [20, 80, 30, 40])
+    ->font('NotoSans-Regular', 10)
+    ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
+
+for ($index = 1; $index <= 30; $index++) {
+    $table->addRow([
+        (string) $index,
+        'Eintrag ' . $index,
+        'Offen',
+        'Kommentar ' . $index,
+    ]);
+}
 ```
 
 ## Listen

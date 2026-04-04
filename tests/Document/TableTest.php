@@ -60,6 +60,7 @@ final class TableTest extends TestCase
         self::assertNotSame($page, $table->getPage());
         self::assertCount(2, $document->pages->pages);
         self::assertStringContainsString('(Kopf) Tj', $page->contents->render());
+        self::assertStringContainsString('(Kopf) Tj', $table->getPage()->contents->render());
         self::assertStringContainsString('(Body) Tj', $table->getPage()->contents->render());
     }
 

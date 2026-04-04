@@ -11,7 +11,11 @@ use Kalle\Pdf\Graphics\Opacity;
 final class Table
 {
     private const DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
+    private const CELL_BOTTOM_EPSILON = 0.01;
 
+    /** @var list<list<string|list<TextSegment>|TableCell>> */
+    private array $headerRows = [];
+    private readonly float $topMargin;
     private Page $page;
     private float $cursorY;
     private float $padding = 6.0;
@@ -63,6 +67,7 @@ final class Table
 
         $this->page = $page;
         $this->cursorY = $y;
+        $this->topMargin = $page->getHeight() - $y;
         $this->borderColor = Color::gray(0.75);
         $this->headerFillColor = Color::gray(0.92);
     }
@@ -132,6 +137,53 @@ final class Table
             throw new InvalidArgumentException('Table row cell count must match the number of columns.');
         }
 
+        if ($header) {
+            $this->headerRows[] = $cells;
+        }
+
+        $preparedRow = $this->prepareRow($cells, $header);
+        $this->ensureRowFitsOnCurrentPage($preparedRow['height'], !$header);
+        $this->renderPreparedRow($preparedRow['cells'], $preparedRow['height'], $header);
+
+        return $this;
+    }
+
+    public function getPage(): Page
+    {
+        return $this->page;
+    }
+
+    public function getCursorY(): float
+    {
+        return $this->cursorY;
+    }
+
+    private function ensureRowFitsOnCurrentPage(float $rowHeight, bool $repeatHeaders = false): void
+    {
+        if ($this->cursorY - $rowHeight >= $this->bottomMargin) {
+            return;
+        }
+
+        $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
+        $this->cursorY = $this->page->getHeight() - $this->topMargin;
+
+        if (!$repeatHeaders || $this->headerRows === []) {
+            return;
+        }
+
+        foreach ($this->headerRows as $headerRow) {
+            $preparedHeader = $this->prepareRow($headerRow, true);
+            $this->ensureRowFitsOnCurrentPage($preparedHeader['height'], false);
+            $this->renderPreparedRow($preparedHeader['cells'], $preparedHeader['height'], true);
+        }
+    }
+
+    /**
+     * @param list<string|list<TextSegment>|TableCell> $cells
+     * @return array{cells: list<TableCell>, height: float}
+     */
+    private function prepareRow(array $cells, bool $header): array
+    {
         $preparedCells = [];
         $lineHeight = $this->fontSize * $this->lineHeightFactor;
         $rowHeight = 0.0;
@@ -156,8 +208,18 @@ final class Table
             $preparedCells[] = $preparedCell;
         }
 
-        $this->ensureRowFitsOnCurrentPage($rowHeight);
+        return [
+            'cells' => $preparedCells,
+            'height' => $rowHeight,
+        ];
+    }
 
+    /**
+     * @param list<TableCell> $preparedCells
+     */
+    private function renderPreparedRow(array $preparedCells, float $rowHeight, bool $header): void
+    {
+        $lineHeight = $this->fontSize * $this->lineHeightFactor;
         $rowBottomY = $this->cursorY - $rowHeight;
         $cellX = $this->x;
 
@@ -186,7 +248,7 @@ final class Table
                 $this->fontSize,
                 null,
                 $lineHeight,
-                $rowBottomY + $this->padding,
+                ($rowBottomY + $this->padding) - self::CELL_BOTTOM_EPSILON,
                 $textColor,
                 $preparedCell->opacity,
                 $preparedCell->align,
@@ -196,29 +258,6 @@ final class Table
         }
 
         $this->cursorY = $rowBottomY;
-
-        return $this;
-    }
-
-    public function getPage(): Page
-    {
-        return $this->page;
-    }
-
-    public function getCursorY(): float
-    {
-        return $this->cursorY;
-    }
-
-    private function ensureRowFitsOnCurrentPage(float $rowHeight): void
-    {
-        if ($this->cursorY - $rowHeight >= $this->bottomMargin) {
-            return;
-        }
-
-        $topMargin = $this->page->getHeight() - $this->cursorY;
-        $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
-        $this->cursorY = $this->page->getHeight() - $topMargin;
     }
 
     /**

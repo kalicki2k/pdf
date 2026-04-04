@@ -359,6 +359,42 @@ $tablePage->table(
         'auf Anfrage',
     ]);
 
+$longTablePage = $document->addPage(PageSize::A4());
+$longTablePage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Long Table Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Ein einfaches Beispiel fuer eine lange Tabelle mit wiederholtem Header.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$longTable = $longTablePage->table(
+    Units::mm(20),
+    Units::mm(225),
+    Units::mm(170),
+    [
+        Units::mm(18),
+        Units::mm(72),
+        Units::mm(32),
+        Units::mm(48),
+    ],
+    Units::mm(20),
+)
+    ->font('NotoSans-Regular', 10)
+    ->padding(Units::mm(2))
+    ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
+    ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
+
+for ($index = 1; $index <= 38; $index++) {
+    $longTable->addRow([
+        (string) $index,
+        'Eintrag ' . $index,
+        new TableCell($index % 2 === 0 ? 'Aktiv' : 'Offen', TextAlign::CENTER),
+        'Kommentar ' . $index,
+    ]);
+}
+
 $bulletPage = $document->addPage(PageSize::A4());
 $bulletPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Bullet List Demo', 'NotoSans-Regular', 16, 'H1')
