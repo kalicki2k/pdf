@@ -6,9 +6,11 @@ use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Styles\TablePadding;
+use Kalle\Pdf\Styles\TableStyle;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
@@ -267,7 +269,7 @@ $monoPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20
     );
 
 $monoPage
-    ->path()
+    ->addPath()
     ->moveTo(60, 240)
     ->lineTo(100, 200)
     ->lineTo(60, 160)
@@ -333,9 +335,16 @@ $tablePage->addTable(
     Units::mm(20),
 )
     ->font('NotoSans-Regular', 11)
-    ->padding(Units::mm(2.5))
-    ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
-    ->rowStyle(null, Color::gray(0.15))
+    ->style(new TableStyle(
+        padding: TablePadding::all(Units::mm(2.5)),
+    ))
+    ->headerStyle(new RowStyle(
+        fillColor: Color::gray(0.92),
+        textColor: Color::rgb(180, 20, 20),
+    ))
+    ->rowStyle(new RowStyle(
+        textColor: Color::gray(0.15),
+    ))
     ->addRow(['ID', 'Titel', 'Status', 'Preis'], header: true)
     ->addRow([
         '1',
@@ -386,8 +395,13 @@ $tablePage->addTable(
     ],
 )
     ->font('NotoSans-Regular', 11)
-    ->padding(Units::mm(2.5))
-    ->headerStyle(Color::gray(0.9), Color::rgb(180, 20, 20))
+    ->style(new TableStyle(
+        padding: TablePadding::all(Units::mm(2.5)),
+    ))
+    ->headerStyle(new RowStyle(
+        fillColor: Color::gray(0.9),
+        textColor: Color::rgb(180, 20, 20),
+    ))
     ->addRow(['Standard', 'Nur unten', 'Nur links', 'Nur rechts'], header: true)
     ->addRow([
         new TableCell('Standard', style: new CellStyle(border: TableBorder::all(color: Color::rgb(0, 90, 200)))),
@@ -424,8 +438,13 @@ $paddingPage->addTable(
     Units::mm(20),
 )
     ->font('NotoSans-Regular', 11)
-    ->paddingStyle(TablePadding::symmetric(Units::mm(5), Units::mm(2)))
-    ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
+    ->style(new TableStyle(
+        padding: TablePadding::symmetric(Units::mm(5), Units::mm(2)),
+    ))
+    ->headerStyle(new RowStyle(
+        fillColor: Color::gray(0.92),
+        textColor: Color::rgb(180, 20, 20),
+    ))
     ->addRow(['Typ', 'Padding', 'Kommentar'], header: true)
     ->addRow([
         'Default',
@@ -482,9 +501,14 @@ $longTable = $longTablePage->addTable(
     Units::mm(20),
 )
     ->font('NotoSans-Regular', 10)
-    ->padding(Units::mm(2))
-    ->verticalAlign(VerticalAlign::MIDDLE)
-    ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
+    ->style(new TableStyle(
+        padding: TablePadding::all(Units::mm(2)),
+        verticalAlign: VerticalAlign::MIDDLE,
+    ))
+    ->headerStyle(new RowStyle(
+        fillColor: Color::gray(0.92),
+        textColor: Color::rgb(180, 20, 20),
+    ))
     ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
 
 $longTable->addRow([
@@ -503,7 +527,6 @@ for ($index = 1; $index <= 36; $index++) {
         $longTable->addRow([
             new TableCell(
                 'Gruppe A',
-                colspan: 1,
                 rowspan: 2,
                 style: new CellStyle(
                     horizontalAlign: HorizontalAlign::CENTER,

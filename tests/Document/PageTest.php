@@ -169,7 +169,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->path()
+        $result = $page->addPath()
             ->moveTo(60, 240)
             ->lineTo(100, 200)
             ->lineTo(60, 160)
@@ -187,7 +187,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->path()
+        $page->addPath()
             ->moveTo(60, 240)
             ->lineTo(100, 200)
             ->lineTo(60, 160)

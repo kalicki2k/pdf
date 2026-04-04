@@ -4,13 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Styles\CellStyle;
-use Kalle\Pdf\Styles\TableBorder;
-use Kalle\Pdf\Styles\TablePadding;
 
 final readonly class TableCell
 {
@@ -19,15 +13,8 @@ final readonly class TableCell
      */
     public function __construct(
         public string | array $text,
-        public HorizontalAlign $align = HorizontalAlign::LEFT,
-        public ?Color $fillColor = null,
-        public ?Color $textColor = null,
-        public ?Opacity $opacity = null,
         public int $colspan = 1,
         public int $rowspan = 1,
-        public ?TableBorder $border = null,
-        public ?VerticalAlign $verticalAlign = null,
-        public ?TablePadding $padding = null,
         public ?CellStyle $style = null,
     ) {
     }

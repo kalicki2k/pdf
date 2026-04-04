@@ -36,17 +36,19 @@ Dabei wird eine PDF-Datei im Projektverzeichnis erzeugt.
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\PageSize;
-use Kalle\Pdf\Document\BulletType;
-use Kalle\Pdf\Document\CellStyle;
-use Kalle\Pdf\Document\TableBorder;
+use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\BulletType;
+use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Styles\RowStyle;
+use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
-use Kalle\Pdf\Document\TablePadding;
-use Kalle\Pdf\Document\HorizontalAlign;
-use Kalle\Pdf\Document\TextOverflow;
+use Kalle\Pdf\Styles\TablePadding;
+use Kalle\Pdf\Styles\TableStyle;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
-use Kalle\Pdf\Document\Units;
-use Kalle\Pdf\Document\VerticalAlign;
+use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -114,7 +116,7 @@ $page->addRectangle(
     Color::gray(0.92),
 );
 
-$page->path()
+$page->addPath()
     ->moveTo(Units::mm(50), Units::mm(200))
     ->lineTo(Units::mm(60), Units::mm(210))
     ->lineTo(Units::mm(50), Units::mm(220))
@@ -204,8 +206,13 @@ $page->addTable(
     [Units::mm(22), Units::mm(88), Units::mm(30), Units::mm(30)],
 )
     ->font('NotoSans-Regular', 11)
-    ->padding(Units::mm(2.5))
-    ->headerStyle(Color::gray(0.92), Color::rgb(220, 20, 60))
+    ->style(new TableStyle(
+        padding: TablePadding::all(Units::mm(2.5)),
+    ))
+    ->headerStyle(new RowStyle(
+        fillColor: Color::gray(0.92),
+        textColor: Color::rgb(220, 20, 60),
+    ))
     ->addRow(['ID', 'Titel', 'Status', 'Preis'], header: true)
     ->addRow([
         '1',
@@ -287,9 +294,16 @@ Ein kompaktes Beispiel:
 ```php
 $table = $page->table(20, 240, 170, [30, 80, 30, 30])
     ->font('NotoSans-Regular', 11)
-    ->padding(6)
-    ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
-    ->rowStyle(null, Color::gray(0.15));
+    ->style(new TableStyle(
+        padding: TablePadding::all(6),
+    ))
+    ->headerStyle(new RowStyle(
+        fillColor: Color::gray(0.92),
+        textColor: Color::rgb(180, 20, 20),
+    ))
+    ->rowStyle(new RowStyle(
+        textColor: Color::gray(0.15),
+    ));
 
 $table->addRow(['ID', 'Titel', 'Status', 'Preis'], header: true);
 $table->addRow([
@@ -323,7 +337,9 @@ Fuer laengere Tabellen werden Header-Zeilen automatisch auf neuen Seiten wiederh
 ```php
 $table = $page->table(20, 240, 170, [20, 80, 30, 40])
     ->font('NotoSans-Regular', 10)
-    ->verticalAlign(VerticalAlign::MIDDLE)
+    ->style(new TableStyle(
+        verticalAlign: VerticalAlign::MIDDLE,
+    ))
     ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
 
 $table->addRow([
@@ -392,21 +408,23 @@ Fuer die Ausrichtung gilt:
 
 - `HorizontalAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `VerticalAlign::TOP`, `MIDDLE`, `BOTTOM`
-- `Table::verticalAlign(...)` setzt den Tabellen-Default
-- `TableCell(..., verticalAlign: ...)` kann einzelne Zellen ueberschreiben
-- `CellStyle` kann beide Ausrichtungen gebuendelt tragen
+- `TableStyle` setzt den Tabellen-Default
+- `RowStyle` setzt Defaults fuer komplette Header- oder Body-Zeilen
+- `CellStyle` kann beide Ausrichtungen pro Zelle gebuendelt ueberschreiben
 
 Fuer das Padding gilt:
 
-- `Table::padding(...)` bleibt als Shortcut fuer gleichmaessiges Padding erhalten
-- `Table::paddingStyle(...)` akzeptiert ein `TablePadding`
-- `TableCell(..., padding: ...)` kann einzelne Zellen ueberschreiben
+- `TableStyle` traegt das Tabellen-Padding
+- `RowStyle` kann Padding pro Zeile ueberschreiben
+- `CellStyle` kann Zell-Padding gezielt ueberschreiben
 - `TablePadding::all(...)`, `symmetric(...)` und `only(...)` decken die gaengigen Faelle ab
 
 Beispiel:
 
 ```php
-$table->paddingStyle(TablePadding::symmetric(10, 4));
+$table->style(new TableStyle(
+    padding: TablePadding::symmetric(10, 4),
+));
 
 $table->addRow([
     'Default',
@@ -422,7 +440,9 @@ $table->addRow([
 Fuer feinere Linien kann die Tabelle oder die einzelne Zelle ein `TableBorder` tragen:
 
 ```php
-$table->borderStyle(TableBorder::all(color: Color::gray(0.75)));
+$table->style(new TableStyle(
+    border: TableBorder::all(color: Color::gray(0.75)),
+));
 
 $table->addRow([
     new TableCell(
@@ -440,7 +460,7 @@ $table->addRow([
 ]);
 ```
 
-Wichtig: `TableCell::border` ersetzt den Tabellen-Border nicht komplett. Es werden nur die explizit gesetzten Seiten der Zelle ueberschrieben, alle anderen Seiten erben weiter vom `Table::borderStyle(...)`.
+Wichtig: Ein Border im `CellStyle` ersetzt den Tabellen-Border nicht komplett. Es werden nur die explizit gesetzten Seiten der Zelle ueberschrieben, alle anderen Seiten erben weiter vom `TableStyle`.
 
 `CellStyle` ist dabei der empfohlene Weg, um mehrere Zell-Styles zusammenzufassen, statt viele Einzelparameter an `TableCell` zu uebergeben.
 

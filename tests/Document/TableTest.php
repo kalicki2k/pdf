@@ -7,10 +7,12 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Styles\TablePadding;
+use Kalle\Pdf\Styles\TableStyle;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Graphics\Color;
@@ -29,12 +31,17 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $table = $page->addTable(20, 260, 170, [50, 70, 50])
-            ->headerStyle(Color::gray(0.9), Color::rgb(255, 0, 0))
-            ->rowStyle(null, Color::gray(0.2))
+            ->headerStyle(new RowStyle(
+                fillColor: Color::gray(0.9),
+                textColor: Color::rgb(255, 0, 0),
+            ))
+            ->rowStyle(new RowStyle(
+                textColor: Color::gray(0.2),
+            ))
             ->addRow(['ID', 'Titel', 'Preis'], header: true)
             ->addRow([
                 '1',
-                new TableCell('Produkt A', HorizontalAlign::CENTER),
+                new TableCell('Produkt A', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
                 [new TextSegment(text: '19,99 EUR', underline: true)],
             ]);
 
@@ -62,7 +69,11 @@ final class TableTest extends TestCase
             ->addRow(['#', 'Titel', 'Status', 'Preis'], header: true)
             ->addRow([
                 '1',
-                new TableCell('Zusammengefasste Beschreibung', HorizontalAlign::LEFT, colspan: 2),
+                new TableCell(
+                    'Zusammengefasste Beschreibung',
+                    colspan: 2,
+                    style: new CellStyle(horizontalAlign: HorizontalAlign::LEFT),
+                ),
                 '19,99 EUR',
             ]);
 
@@ -83,7 +94,7 @@ final class TableTest extends TestCase
         $page->addTable(20, 260, 170, [40, 60, 70])
             ->addRow(['Gruppe', 'Titel', 'Status'], header: true)
             ->addRow([
-                new TableCell('A', HorizontalAlign::CENTER, rowspan: 2),
+                new TableCell('A', rowspan: 2, style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
                 'Eintrag 1',
                 'Offen',
             ])
@@ -107,10 +118,10 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
-            ->borderStyle(TableBorder::none())
+            ->style(new TableStyle(border: TableBorder::none()))
             ->addRow([
-                new TableCell('Links', border: TableBorder::only(['left', 'bottom'], color: Color::rgb(255, 0, 0))),
-                new TableCell('Rechts', border: TableBorder::horizontal(color: Color::gray(0.5))),
+                new TableCell('Links', style: new CellStyle(border: TableBorder::only(['left', 'bottom'], color: Color::rgb(255, 0, 0)))),
+                new TableCell('Rechts', style: new CellStyle(border: TableBorder::horizontal(color: Color::gray(0.5)))),
             ]);
 
         self::assertStringContainsString("1 0 0 RG\n1 w\n20 236 m\n20 260 l\nS", $page->contents->render());
@@ -127,7 +138,7 @@ final class TableTest extends TestCase
 
         $page->addTable(20, 260, 170, [85, 85])
             ->addRow([
-                new TableCell('Links', border: TableBorder::only(['left'], color: Color::rgb(0, 255, 0))),
+                new TableCell('Links', style: new CellStyle(border: TableBorder::only(['left'], color: Color::rgb(0, 255, 0)))),
                 'Rechts',
             ]);
 
@@ -147,7 +158,7 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
-            ->verticalAlign(VerticalAlign::MIDDLE)
+            ->style(new TableStyle(verticalAlign: VerticalAlign::MIDDLE))
             ->addRow([
                 new TableCell('Kurz'),
                 "Erste Zeile\nZweite Zeile\nDritte Zeile",
@@ -167,7 +178,7 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
-            ->paddingStyle(TablePadding::symmetric(10, 4))
+            ->style(new TableStyle(padding: TablePadding::symmetric(10, 4)))
             ->addRow([
                 'Links',
                 'Rechts',
@@ -188,9 +199,9 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [170])
-            ->paddingStyle(TablePadding::all(6))
+            ->style(new TableStyle(padding: TablePadding::all(6)))
             ->addRow([
-                new TableCell('Override', padding: TablePadding::only(top: 2, right: 4, bottom: 8, left: 20)),
+                new TableCell('Override', style: new CellStyle(padding: TablePadding::only(top: 2, right: 4, bottom: 8, left: 20))),
             ]);
 
         $contents = $page->contents->render();
@@ -228,6 +239,68 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_supports_table_styles_as_defaults(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [170])
+            ->style(new TableStyle(
+                padding: TablePadding::symmetric(10, 4),
+                border: TableBorder::all(color: Color::rgb(255, 0, 0)),
+                verticalAlign: VerticalAlign::MIDDLE,
+            ))
+            ->addRow([
+                new TableCell(
+                    'Styled',
+                    style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER),
+                ),
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString("1 0 0 RG\n1 w\n20 240 170 20 re\nS", $contents);
+        self::assertStringContainsString("83.4 244 Td\n(Styled) Tj", $contents);
+    }
+
+    #[Test]
+    public function it_supports_row_styles_between_table_and_cell_defaults(): void
+    {
+        $document = new Document(version: 1.4);
+        $document
+            ->addFont('Helvetica')
+            ->addFont('Helvetica-Bold');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [85, 85])
+            ->style(new TableStyle(
+                padding: TablePadding::all(6),
+                border: TableBorder::all(color: Color::gray(0.75)),
+                verticalAlign: VerticalAlign::TOP,
+            ))
+            ->rowStyle(new RowStyle(
+                horizontalAlign: HorizontalAlign::CENTER,
+                verticalAlign: VerticalAlign::MIDDLE,
+                fillColor: Color::gray(0.9),
+                textColor: Color::rgb(255, 0, 0),
+                border: TableBorder::horizontal(color: Color::rgb(0, 0, 255)),
+            ))
+            ->addRow([
+                'Links',
+                new TableCell('Rechts', style: new CellStyle(fillColor: Color::gray(0.8))),
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString("20 236 85 24 re\nf", $contents);
+        self::assertStringContainsString("0 0 1 RG\n1 w\n20 260 m\n105 260 l\nS", $contents);
+        self::assertStringContainsString("44.5 242 Td", $contents);
+        self::assertStringContainsString("1 0 0 rg", $contents);
+        self::assertStringContainsString("105 236 85 24 re\nf", $contents);
+    }
+
+    #[Test]
     public function it_allows_cells_to_override_the_table_vertical_alignment(): void
     {
         $document = new Document(version: 1.4);
@@ -235,9 +308,9 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
-            ->verticalAlign(VerticalAlign::MIDDLE)
+            ->style(new TableStyle(verticalAlign: VerticalAlign::MIDDLE))
             ->addRow([
-                new TableCell('Kurz', verticalAlign: VerticalAlign::BOTTOM),
+                new TableCell('Kurz', style: new CellStyle(verticalAlign: VerticalAlign::BOTTOM)),
                 "Erste Zeile\nZweite Zeile\nDritte Zeile",
             ]);
 

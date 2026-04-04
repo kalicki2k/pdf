@@ -225,7 +225,7 @@ final class Page extends IndirectObject
         return new Table($this, $x, $y, $width, $columnWidths, $bottomMargin);
     }
 
-    public function path(): PathBuilder
+    public function addPath(): PathBuilder
     {
         return new PathBuilder($this);
     }
@@ -324,7 +324,7 @@ final class Page extends IndirectObject
 
         $controlOffset = $radius * 0.5522847498307936;
 
-        $path = $this->path()
+        $path = $this->addPath()
             ->moveTo($centerX, $centerY + $radius)
             ->curveTo(
                 $centerX + $controlOffset,
@@ -400,7 +400,7 @@ final class Page extends IndirectObject
         $controlOffsetX = $radiusX * 0.5522847498307936;
         $controlOffsetY = $radiusY * 0.5522847498307936;
 
-        $path = $this->path()
+        $path = $this->addPath()
             ->moveTo($centerX, $centerY + $radiusY)
             ->curveTo(
                 $centerX + $controlOffsetX,
@@ -469,7 +469,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Polygon requires either a stroke or a fill.');
         }
 
-        $path = $this->path()->moveTo((float) $points[0][0], (float) $points[0][1]);
+        $path = $this->addPath()->moveTo((float) $points[0][0], (float) $points[0][1]);
 
         foreach (array_slice($points, 1) as $point) {
             $path->lineTo((float) $point[0], (float) $point[1]);

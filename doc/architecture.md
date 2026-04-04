@@ -136,6 +136,8 @@ Verantwortlich fuer:
 - steuerbare Borders ueber `TableBorder`
 - horizontaler und vertikaler Tabellen-Default fuer Zellen
 - Tabellen-Default und Zell-Override fuer Padding ueber `TablePadding`
+- Tabellen-Defaults ueber `TableStyle`
+- Zeilen-Defaults ueber `RowStyle`
 - gebuendelte Zell-Stile ueber `CellStyle`
 - Wiederholung von Header-Zeilen bei Seitenwechsel
 - Berechnung der Zeilenhoehe ueber den vorhandenen Absatz-Umbruch
@@ -144,20 +146,29 @@ Verantwortlich fuer:
 `TableCell` repraesentiert eine einzelne Zelle mit:
 
 - `text` als `string` oder `TextSegment[]`
-- `align`
-- optionales `verticalAlign`
-- optionales `padding`
-- optionaler `fillColor`
-- optionaler `textColor`
-- optionaler `opacity`
 - `colspan`
 - `rowspan`
-- optionales `border`
 - optionales `style`
 
 `TableBorder` kapselt den Linienstil fuer Tabellen und einzelne Zellen.
 
 `TablePadding` kapselt die Innenabstaende fuer Tabellen und einzelne Zellen.
+
+`TableStyle` kapselt gebuendelt:
+
+- Padding
+- Border
+- vertikale Ausrichtung
+- optionale Fill- und Textfarbe
+
+`RowStyle` kapselt gebuendelt:
+
+- horizontale Ausrichtung
+- vertikale Ausrichtung
+- Padding
+- Fill- und Textfarbe
+- Opacity
+- Border
 
 `CellStyle` kapselt gebuendelt:
 
@@ -178,13 +189,13 @@ Aktuell unterstuetzt:
 
 Im Renderpfad gilt:
 
-- Tabellen koennen einen Default-Border ueber `Table::borderStyle(...)` tragen
-- Tabellen koennen einen vertikalen Default ueber `Table::verticalAlign(...)` tragen
-- Tabellen koennen ein Default-Padding ueber `Table::paddingStyle(...)` tragen
+- `TableStyle` liefert die Defaults fuer die gesamte Tabelle
+- `RowStyle` liefert Defaults fuer Header- oder Body-Zeilen
+- `CellStyle` liefert die feinsten Overrides pro Zelle
 - einzelne `TableCell`-Instanzen koennen einzelne Border-Seiten gezielt ueberschreiben
 - einzelne `TableCell`-Instanzen koennen horizontale und vertikale Ausrichtung gezielt ueberschreiben
 - einzelne `TableCell`-Instanzen koennen das Zell-Padding gezielt ueberschreiben
-- `TableCell::style` liefert gebuendelte Zell-Defaults, die von expliziten Zellwerten uebersteuert werden koennen
+- `TableCell::style` liefert den gebuendelten Stil pro Zelle
 - nicht gesetzte Zell-Seiten erben weiter vom Tabellen-Default
 - partielle Borders werden intern als gezielte Linien statt als komplettes Rechteck gerendert
 - vertikale Zell-Ausrichtung wird aus der echten Content-Hoehe innerhalb der Zellbox berechnet

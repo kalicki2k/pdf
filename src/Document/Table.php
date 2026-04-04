@@ -7,10 +7,13 @@ namespace Kalle\Pdf\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Styles\TablePadding;
+use Kalle\Pdf\Styles\RowStyle;
+use Kalle\Pdf\Styles\TableStyle;
 
 final class Table
 {
@@ -31,16 +34,12 @@ final class Table
     private readonly float $topMargin;
     private Page $page;
     private float $cursorY;
-    private TablePadding $padding;
     private string $baseFont = 'Helvetica';
     private int $fontSize = 12;
     private float $lineHeightFactor = self::DEFAULT_LINE_HEIGHT_FACTOR;
-    private ?TableBorder $border = null;
-    private ?Color $rowFillColor = null;
-    private ?Color $rowTextColor = null;
-    private ?Color $headerFillColor = null;
-    private ?Color $headerTextColor = null;
-    private VerticalAlign $verticalAlign = VerticalAlign::TOP;
+    private TableStyle $style;
+    private ?RowStyle $rowStyle = null;
+    private ?RowStyle $headerStyle = null;
 
     /**
      * @param list<float|int> $columnWidths
@@ -81,9 +80,12 @@ final class Table
         $this->cursorY = $y;
         $this->topMargin = $page->getHeight() - $y;
         $this->activeRowspans = array_fill(0, count($columnWidths), 0);
-        $this->padding = TablePadding::all(6.0);
-        $this->border = TableBorder::all(color: Color::gray(0.75));
-        $this->headerFillColor = Color::gray(0.92);
+        $this->style = new TableStyle(
+            padding: TablePadding::all(6.0),
+            border: TableBorder::all(color: Color::gray(0.75)),
+            verticalAlign: VerticalAlign::TOP,
+        );
+        $this->headerStyle = new RowStyle(fillColor: Color::gray(0.92));
     }
 
     public function font(string $baseFont, int $size): self
@@ -102,63 +104,29 @@ final class Table
         return $this;
     }
 
-    public function padding(float $padding): self
+    public function style(TableStyle $style): self
     {
-        $this->padding = TablePadding::all($padding);
-
-        return $this;
-    }
-
-    public function paddingStyle(TablePadding $padding): self
-    {
-        $this->padding = $padding;
-
-        return $this;
-    }
-
-    public function border(?Color $color = null, ?float $width = null, ?Opacity $opacity = null): self
-    {
-        if ($width !== null && $width <= 0) {
-            throw new InvalidArgumentException('Table border width must be greater than zero.');
-        }
-
-        $resolvedWidth = $width ?? $this->border->width ?? 1.0;
-
-        $this->border = TableBorder::all(
-            $resolvedWidth,
-            $color,
-            $opacity,
+        $this->style = new TableStyle(
+            padding: $style->padding ?? $this->style->padding,
+            border: $style->border ?? $this->style->border,
+            verticalAlign: $style->verticalAlign ?? $this->style->verticalAlign,
+            fillColor: $style->fillColor ?? $this->style->fillColor,
+            textColor: $style->textColor ?? $this->style->textColor,
         );
 
         return $this;
     }
 
-    public function borderStyle(?TableBorder $border): self
+    public function rowStyle(RowStyle $style): self
     {
-        $this->border = $border;
+        $this->rowStyle = $this->mergeRowStyle($this->rowStyle, $style);
 
         return $this;
     }
 
-    public function rowStyle(?Color $fillColor = null, ?Color $textColor = null): self
+    public function headerStyle(RowStyle $style): self
     {
-        $this->rowFillColor = $fillColor;
-        $this->rowTextColor = $textColor;
-
-        return $this;
-    }
-
-    public function headerStyle(?Color $fillColor = null, ?Color $textColor = null): self
-    {
-        $this->headerFillColor = $fillColor;
-        $this->headerTextColor = $textColor;
-
-        return $this;
-    }
-
-    public function verticalAlign(VerticalAlign $verticalAlign): self
-    {
-        $this->verticalAlign = $verticalAlign;
+        $this->headerStyle = $this->mergeRowStyle($this->headerStyle, $style);
 
         return $this;
     }
@@ -273,7 +241,10 @@ final class Table
             }
 
             $preparedCell = $this->normalizeCell($cell, $header);
-            $padding = $preparedCell->padding ?? $this->padding;
+            $rowStyle = $this->resolveRowStyle($header);
+            $cellStyle = $preparedCell->style ?? new CellStyle();
+            $rowPadding = $rowStyle instanceof RowStyle ? $rowStyle->padding : null;
+            $padding = $cellStyle->padding ?? $rowPadding ?? $this->style->padding ?? TablePadding::all(0.0);
             $columnWidth = $this->resolveColumnSpanWidth($columnIndex, $preparedCell->colspan, $this->activeRowspans);
             $contentWidth = $columnWidth - $padding->horizontal();
 
@@ -372,19 +343,12 @@ final class Table
                 throw new InvalidArgumentException('Table cell rowspan must be greater than zero.');
             }
 
-            $style = $cell->style;
+            $style = $cell->style ?? new CellStyle();
 
             return new TableCell(
                 $this->normalizeText($cell->text, $header),
-                $style !== null && $style->horizontalAlign !== null ? $style->horizontalAlign : $cell->align,
-                $cell->fillColor ?? $style?->fillColor,
-                $cell->textColor ?? $style?->textColor,
-                $cell->opacity ?? $style?->opacity,
                 $cell->colspan,
                 $cell->rowspan,
-                $cell->border ?? $style?->border,
-                $cell->verticalAlign ?? $style?->verticalAlign,
-                $cell->padding ?? $style?->padding,
                 $style,
             );
         }
@@ -474,12 +438,20 @@ final class Table
         foreach ($preparedRows as $rowIndex => $preparedRow) {
             foreach ($preparedRow['cells'] as $preparedEntry) {
                 $preparedCell = $preparedEntry['cell'];
+                $rowStyle = $this->resolveRowStyle($preparedRow['header']);
+                $cellStyle = $preparedCell->style ?? new CellStyle();
                 $spanHeight = array_sum(array_slice($rowHeights, $rowIndex, $preparedCell->rowspan));
                 $cellX = $this->x + $this->calculateColumnOffset($preparedEntry['column']);
                 $cellBottomY = $rowTopY - $spanHeight;
-                $fillColor = $preparedCell->fillColor ?? ($preparedRow['header'] ? $this->headerFillColor : $this->rowFillColor);
-                $textColor = $preparedCell->textColor ?? ($preparedRow['header'] ? $this->headerTextColor : $this->rowTextColor);
-                $verticalAlign = $preparedCell->verticalAlign ?? $this->verticalAlign;
+                $rowFillColor = $rowStyle instanceof RowStyle ? $rowStyle->fillColor : null;
+                $rowTextColor = $rowStyle instanceof RowStyle ? $rowStyle->textColor : null;
+                $rowVerticalAlign = $rowStyle instanceof RowStyle ? $rowStyle->verticalAlign : null;
+                $rowBorder = $rowStyle instanceof RowStyle ? $rowStyle->border : null;
+                $rowHorizontalAlign = $rowStyle instanceof RowStyle ? $rowStyle->horizontalAlign : null;
+                $rowOpacity = $rowStyle instanceof RowStyle ? $rowStyle->opacity : null;
+                $fillColor = $cellStyle->fillColor ?? $rowFillColor ?? $this->style->fillColor;
+                $textColor = $cellStyle->textColor ?? $rowTextColor ?? $this->style->textColor;
+                $verticalAlign = $cellStyle->verticalAlign ?? $rowVerticalAlign ?? $this->style->verticalAlign ?? VerticalAlign::TOP;
                 $padding = $preparedEntry['padding'];
                 $this->renderCellBox(
                     $cellX,
@@ -487,9 +459,12 @@ final class Table
                     $preparedEntry['width'],
                     $spanHeight,
                     $fillColor,
-                    $this->border,
-                    $preparedCell->border,
+                    $this->style->border,
+                    $rowBorder,
+                    $cellStyle->border,
                 );
+
+                $horizontalAlign = $cellStyle->horizontalAlign ?? $rowHorizontalAlign ?? HorizontalAlign::LEFT;
 
                 $this->page = $this->page->addParagraph(
                     $preparedCell->text,
@@ -509,8 +484,8 @@ final class Table
                     $lineHeight,
                     ($cellBottomY + $padding->bottom) - self::CELL_BOTTOM_EPSILON,
                     $textColor,
-                    $preparedCell->opacity,
-                    $preparedCell->align,
+                    $cellStyle->opacity ?? $rowOpacity,
+                    $horizontalAlign,
                 );
             }
 
@@ -545,16 +520,17 @@ final class Table
         float $height,
         ?Color $fillColor,
         ?TableBorder $defaultBorder,
+        ?TableBorder $rowBorder,
         ?TableBorder $cellBorder,
     ): void {
         if ($fillColor !== null) {
             $this->page->addRectangle($x, $y, $width, $height, null, null, $fillColor);
         }
 
-        $topBorder = $this->resolveBorderSide('top', $defaultBorder, $cellBorder);
-        $rightBorder = $this->resolveBorderSide('right', $defaultBorder, $cellBorder);
-        $bottomBorder = $this->resolveBorderSide('bottom', $defaultBorder, $cellBorder);
-        $leftBorder = $this->resolveBorderSide('left', $defaultBorder, $cellBorder);
+        $topBorder = $this->resolveBorderSide('top', $defaultBorder, $rowBorder, $cellBorder);
+        $rightBorder = $this->resolveBorderSide('right', $defaultBorder, $rowBorder, $cellBorder);
+        $bottomBorder = $this->resolveBorderSide('bottom', $defaultBorder, $rowBorder, $cellBorder);
+        $leftBorder = $this->resolveBorderSide('left', $defaultBorder, $rowBorder, $cellBorder);
 
         if ($topBorder === null && $rightBorder === null && $bottomBorder === null && $leftBorder === null) {
             return;
@@ -601,29 +577,96 @@ final class Table
     /**
      * @return array{width: float, color: ?Color, opacity: ?Opacity}|null
      */
-    private function resolveBorderSide(string $side, ?TableBorder $defaultBorder, ?TableBorder $cellBorder): ?array
+    private function resolveBorderSide(
+        string $side,
+        ?TableBorder $defaultBorder,
+        ?TableBorder $rowBorder,
+        ?TableBorder $cellBorder,
+    ): ?array
     {
-        if ($cellBorder !== null && $cellBorder->isDefinedFor($side)) {
-            if (!$cellBorder->isEnabled($side)) {
-                return null;
-            }
+        $applicableBorders = [];
 
-            return [
-                'width' => $cellBorder->width ?? $defaultBorder->width ?? 1.0,
-                'color' => $cellBorder->color ?? $defaultBorder?->color,
-                'opacity' => $cellBorder->opacity ?? $defaultBorder?->opacity,
-            ];
+        foreach ([$cellBorder, $rowBorder, $defaultBorder] as $border) {
+            if ($border !== null && $border->isDefinedFor($side)) {
+                $applicableBorders[] = $border;
+            }
         }
 
-        if ($defaultBorder === null || !$defaultBorder->isEnabled($side)) {
+        if ($applicableBorders === []) {
+            return null;
+        }
+
+        $resolvedBorder = $applicableBorders[0];
+
+        if (!$resolvedBorder->isEnabled($side)) {
             return null;
         }
 
         return [
-            'width' => $defaultBorder->width ?? 1.0,
-            'color' => $defaultBorder->color,
-            'opacity' => $defaultBorder->opacity,
+            'width' => $this->firstDefinedBorderWidth($applicableBorders),
+            'color' => $this->firstDefinedBorderColor($applicableBorders),
+            'opacity' => $this->firstDefinedBorderOpacity($applicableBorders),
         ];
+    }
+
+    private function resolveRowStyle(bool $header): ?RowStyle
+    {
+        return $header ? $this->headerStyle : $this->rowStyle;
+    }
+
+    private function mergeRowStyle(?RowStyle $base, RowStyle $override): RowStyle
+    {
+        return new RowStyle(
+            horizontalAlign: $override->horizontalAlign ?? $base?->horizontalAlign,
+            verticalAlign: $override->verticalAlign ?? $base?->verticalAlign,
+            padding: $override->padding ?? $base?->padding,
+            fillColor: $override->fillColor ?? $base?->fillColor,
+            textColor: $override->textColor ?? $base?->textColor,
+            opacity: $override->opacity ?? $base?->opacity,
+            border: $override->border ?? $base?->border,
+        );
+    }
+
+    /**
+     * @param list<TableBorder> $borders
+     */
+    private function firstDefinedBorderWidth(array $borders): float
+    {
+        foreach ($borders as $border) {
+            if ($border->width !== null) {
+                return $border->width;
+            }
+        }
+
+        return 1.0;
+    }
+
+    /**
+     * @param list<TableBorder> $borders
+     */
+    private function firstDefinedBorderColor(array $borders): ?Color
+    {
+        foreach ($borders as $border) {
+            if ($border->color !== null) {
+                return $border->color;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<TableBorder> $borders
+     */
+    private function firstDefinedBorderOpacity(array $borders): ?Opacity
+    {
+        foreach ($borders as $border) {
+            if ($border->opacity !== null) {
+                return $border->opacity;
+            }
+        }
+
+        return null;
     }
 
     /**
