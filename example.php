@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\BulletType;
+use Kalle\Pdf\Document\CellStyle;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\TablePadding;
 use Kalle\Pdf\Document\HorizontalAlign;
 use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
@@ -338,7 +340,13 @@ $tablePage->addTable(
     ->addRow([
         '1',
         'Starter-Paket mit kurzer Beschreibung.',
-        new TableCell('Aktiv', HorizontalAlign::CENTER, Color::gray(0.94)),
+        new TableCell(
+            'Aktiv',
+            style: new CellStyle(
+                horizontalAlign: HorizontalAlign::CENTER,
+                fillColor: Color::gray(0.94),
+            ),
+        ),
         '19,99 EUR',
     ])
     ->addRow([
@@ -347,7 +355,13 @@ $tablePage->addTable(
             new TextSegment('Pro Plan', bold: true),
             new TextSegment(' mit zwei Zeilen Text, damit der automatische Zellumbruch sichtbar wird.'),
         ],
-        new TableCell('Beta', HorizontalAlign::CENTER, Color::gray(0.88)),
+        new TableCell(
+            'Beta',
+            style: new CellStyle(
+                horizontalAlign: HorizontalAlign::CENTER,
+                fillColor: Color::gray(0.88),
+            ),
+        ),
         '49,00 EUR',
     ])
     ->addRow([
@@ -355,7 +369,7 @@ $tablePage->addTable(
         'Enterprise mit Link zur Dokumentation.',
         new TableCell(
             [new TextSegment('Docs', color: Color::rgb(0, 0, 255), link: 'https://example.com/docs', underline: true)],
-            HorizontalAlign::CENTER,
+            style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER),
         ),
         'auf Anfrage',
     ]);
@@ -376,16 +390,73 @@ $tablePage->addTable(
     ->headerStyle(Color::gray(0.9), Color::rgb(180, 20, 20))
     ->addRow(['Standard', 'Nur unten', 'Nur links', 'Nur rechts'], header: true)
     ->addRow([
-        new TableCell('Standard', border: TableBorder::all(color: Color::rgb(0, 90, 200))),
-        new TableCell('Nur unten rot', border: TableBorder::only(['bottom'], color: Color::rgb(220, 30, 30))),
-        new TableCell('Nur links', border: TableBorder::only(['left'], color: Color::rgb(20, 140, 60))),
-        new TableCell('Nur rechts', border: TableBorder::only(['right'], color: Color::rgb(180, 90, 20))),
+        new TableCell('Standard', style: new CellStyle(border: TableBorder::all(color: Color::rgb(0, 90, 200)))),
+        new TableCell('Nur unten rot', style: new CellStyle(border: TableBorder::only(['bottom'], color: Color::rgb(220, 30, 30)))),
+        new TableCell('Nur links', style: new CellStyle(border: TableBorder::only(['left'], color: Color::rgb(20, 140, 60)))),
+        new TableCell('Nur rechts', style: new CellStyle(border: TableBorder::only(['right'], color: Color::rgb(180, 90, 20)))),
     ])
     ->addRow([
-        new TableCell('Oben/Unten', border: TableBorder::horizontal(color: Color::rgb(120, 40, 180))),
-        new TableCell('Links/Rechts', border: TableBorder::vertical(color: Color::rgb(40, 120, 180))),
-        new TableCell('Nur oben', border: TableBorder::only(['top'], color: Color::rgb(220, 30, 30))),
-        new TableCell('Rahmen', border: TableBorder::all(color: Color::rgb(20, 140, 60))),
+        new TableCell('Oben/Unten', style: new CellStyle(border: TableBorder::horizontal(color: Color::rgb(120, 40, 180)))),
+        new TableCell('Links/Rechts', style: new CellStyle(border: TableBorder::vertical(color: Color::rgb(40, 120, 180)))),
+        new TableCell('Nur oben', style: new CellStyle(border: TableBorder::only(['top'], color: Color::rgb(220, 30, 30)))),
+        new TableCell('Rahmen', style: new CellStyle(border: TableBorder::all(color: Color::rgb(20, 140, 60)))),
+    ]);
+
+$paddingPage = $document->addPage(PageSize::A4());
+$paddingPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Padding Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Die Tabelle zeigt den Unterschied zwischen Tabellen-Default-Padding und gezieltem Zell-Override.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$paddingPage->addTable(
+    Units::mm(20),
+    Units::mm(225),
+    Units::mm(170),
+    [
+        Units::mm(35),
+        Units::mm(65),
+        Units::mm(70),
+    ],
+    Units::mm(20),
+)
+    ->font('NotoSans-Regular', 11)
+    ->paddingStyle(TablePadding::symmetric(Units::mm(5), Units::mm(2)))
+    ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
+    ->addRow(['Typ', 'Padding', 'Kommentar'], header: true)
+    ->addRow([
+        'Default',
+        'Links/Rechts 5 mm, Oben/Unten 2 mm',
+        "Standard fuer alle Zellen\nmit etwas Luft seitlich.",
+    ])
+    ->addRow([
+        'Override',
+        new TableCell(
+            'Links 10 mm, Oben 1 mm, Unten 4 mm',
+            style: new CellStyle(
+                padding: TablePadding::only(
+                    top: Units::mm(1),
+                    right: Units::mm(3),
+                    bottom: Units::mm(4),
+                    left: Units::mm(10),
+                ),
+            ),
+        ),
+        new TableCell(
+            "Diese Zelle verwendet eigenes Padding\nund wirkt dadurch deutlich anders.",
+            style: new CellStyle(
+                fillColor: Color::gray(0.96),
+                padding: TablePadding::only(
+                    top: Units::mm(1),
+                    right: Units::mm(3),
+                    bottom: Units::mm(4),
+                    left: Units::mm(10),
+                ),
+            ),
+        ),
     ]);
 
 $longTablePage = $document->addPage(PageSize::A4());
@@ -417,7 +488,14 @@ $longTable = $longTablePage->addTable(
     ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
 
 $longTable->addRow([
-    new TableCell('Zwischenuebersicht', HorizontalAlign::CENTER, Color::gray(0.95), null, null, 4),
+    new TableCell(
+        'Zwischenuebersicht',
+        colspan: 4,
+        style: new CellStyle(
+            horizontalAlign: HorizontalAlign::CENTER,
+            fillColor: Color::gray(0.95),
+        ),
+    ),
 ]);
 
 for ($index = 1; $index <= 36; $index++) {
@@ -425,23 +503,34 @@ for ($index = 1; $index <= 36; $index++) {
         $longTable->addRow([
             new TableCell(
                 'Gruppe A',
-                HorizontalAlign::CENTER,
-                Color::gray(0.96),
-                null,
-                null,
-                1,
-                2,
-                null,
-                VerticalAlign::MIDDLE,
+                colspan: 1,
+                rowspan: 2,
+                style: new CellStyle(
+                    horizontalAlign: HorizontalAlign::CENTER,
+                    verticalAlign: VerticalAlign::MIDDLE,
+                    fillColor: Color::gray(0.96),
+                ),
             ),
             'Eintrag 12',
-            new TableCell('Aktiv', HorizontalAlign::CENTER, verticalAlign: VerticalAlign::TOP),
+            new TableCell(
+                'Aktiv',
+                style: new CellStyle(
+                    horizontalAlign: HorizontalAlign::CENTER,
+                    verticalAlign: VerticalAlign::TOP,
+                ),
+            ),
             "Kommentar 12\nMitte",
         ]);
 
         $longTable->addRow([
-            new TableCell('Eintrag 13', HorizontalAlign::RIGHT),
-            new TableCell('Offen', HorizontalAlign::CENTER, verticalAlign: VerticalAlign::BOTTOM),
+            new TableCell('Eintrag 13', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+            new TableCell(
+                'Offen',
+                style: new CellStyle(
+                    horizontalAlign: HorizontalAlign::CENTER,
+                    verticalAlign: VerticalAlign::BOTTOM,
+                ),
+            ),
             "Kommentar 13\nUnten",
         ]);
 
@@ -455,7 +544,10 @@ for ($index = 1; $index <= 36; $index++) {
     $longTable->addRow([
         (string) $index,
         'Eintrag ' . $index,
-        new TableCell($index % 2 === 0 ? 'Aktiv' : 'Offen', HorizontalAlign::CENTER),
+        new TableCell(
+            $index % 2 === 0 ? 'Aktiv' : 'Offen',
+            style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER),
+        ),
         'Kommentar ' . $index,
     ]);
 }

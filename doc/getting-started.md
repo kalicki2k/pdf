@@ -38,8 +38,10 @@ declare(strict_types=1);
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Document\BulletType;
+use Kalle\Pdf\Document\CellStyle;
 use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\TablePadding;
 use Kalle\Pdf\Document\HorizontalAlign;
 use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
@@ -208,7 +210,13 @@ $page->addTable(
     ->addRow([
         '1',
         'Starter-Paket mit kurzer Beschreibung.',
-        new TableCell('Aktiv', HorizontalAlign::CENTER, Color::gray(0.94)),
+        new TableCell(
+            'Aktiv',
+            style: new CellStyle(
+                horizontalAlign: HorizontalAlign::CENTER,
+                fillColor: Color::gray(0.94),
+            ),
+        ),
         '19,99 EUR',
     ]);
 
@@ -265,10 +273,12 @@ Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeu
 - wiederholte Header-Zeilen auf Folgeseiten
 - Zellpadding
 - `string`, `TextSegment[]` oder `TableCell` als Zelleninhalt
+- `CellStyle` als gebuendelter Stil fuer einzelne Zellen
 - `colspan`
 - `rowspan` innerhalb derselben Seite
 - steuerbare Borders ueber `TableBorder`
 - horizontale und vertikale Zell-Ausrichtung
+- Default- und Zell-Padding ueber `TablePadding`
 - automatische Zeilenhoehe durch Textumbruch
 - Seitenwechsel, wenn die naechste Zeile nicht mehr auf die aktuelle Seite passt
 
@@ -285,7 +295,13 @@ $table->addRow(['ID', 'Titel', 'Status', 'Preis'], header: true);
 $table->addRow([
     '1',
     'Starter-Paket mit kurzer Beschreibung.',
-    new TableCell('Aktiv', HorizontalAlign::CENTER, Color::gray(0.94)),
+    new TableCell(
+        'Aktiv',
+        style: new CellStyle(
+            horizontalAlign: HorizontalAlign::CENTER,
+            fillColor: Color::gray(0.94),
+        ),
+    ),
     '19,99 EUR',
 ]);
 $table->addRow([
@@ -294,7 +310,10 @@ $table->addRow([
         new TextSegment('Pro Plan', bold: true),
         new TextSegment(' mit Umbruch in der Tabellenzelle.'),
     ],
-    new TableCell('Beta', HorizontalAlign::CENTER),
+    new TableCell(
+        'Beta',
+        style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER),
+    ),
     '49,00 EUR',
 ]);
 ```
@@ -308,15 +327,34 @@ $table = $page->table(20, 240, 170, [20, 80, 30, 40])
     ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
 
 $table->addRow([
-    new TableCell('Gruppe A', HorizontalAlign::CENTER, rowspan: 2, verticalAlign: VerticalAlign::MIDDLE),
+    new TableCell(
+        'Gruppe A',
+        rowspan: 2,
+        style: new CellStyle(
+            horizontalAlign: HorizontalAlign::CENTER,
+            verticalAlign: VerticalAlign::MIDDLE,
+        ),
+    ),
     'Eintrag 12',
-    new TableCell('Aktiv', HorizontalAlign::CENTER, verticalAlign: VerticalAlign::TOP),
+    new TableCell(
+        'Aktiv',
+        style: new CellStyle(
+            horizontalAlign: HorizontalAlign::CENTER,
+            verticalAlign: VerticalAlign::TOP,
+        ),
+    ),
     "Kommentar 12\nMitte",
 ]);
 
 $table->addRow([
-    new TableCell('Eintrag 13', HorizontalAlign::RIGHT),
-    new TableCell('Offen', HorizontalAlign::CENTER, verticalAlign: VerticalAlign::BOTTOM),
+    new TableCell('Eintrag 13', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+    new TableCell(
+        'Offen',
+        style: new CellStyle(
+            horizontalAlign: HorizontalAlign::CENTER,
+            verticalAlign: VerticalAlign::BOTTOM,
+        ),
+    ),
     "Kommentar 13\nUnten",
 ]);
 ```
@@ -325,11 +363,19 @@ $table->addRow([
 
 ```php
 $table->addRow([
-    new TableCell('Zwischenuebersicht', HorizontalAlign::CENTER, colspan: 4),
+    new TableCell(
+        'Zwischenuebersicht',
+        colspan: 4,
+        style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER),
+    ),
 ]);
 
 $table->addRow([
-    new TableCell('Gruppe A', HorizontalAlign::CENTER, rowspan: 2),
+    new TableCell(
+        'Gruppe A',
+        rowspan: 2,
+        style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER),
+    ),
     'Eintrag 1',
     'Offen',
 ]);
@@ -348,6 +394,30 @@ Fuer die Ausrichtung gilt:
 - `VerticalAlign::TOP`, `MIDDLE`, `BOTTOM`
 - `Table::verticalAlign(...)` setzt den Tabellen-Default
 - `TableCell(..., verticalAlign: ...)` kann einzelne Zellen ueberschreiben
+- `CellStyle` kann beide Ausrichtungen gebuendelt tragen
+
+Fuer das Padding gilt:
+
+- `Table::padding(...)` bleibt als Shortcut fuer gleichmaessiges Padding erhalten
+- `Table::paddingStyle(...)` akzeptiert ein `TablePadding`
+- `TableCell(..., padding: ...)` kann einzelne Zellen ueberschreiben
+- `TablePadding::all(...)`, `symmetric(...)` und `only(...)` decken die gaengigen Faelle ab
+
+Beispiel:
+
+```php
+$table->paddingStyle(TablePadding::symmetric(10, 4));
+
+$table->addRow([
+    'Default',
+    new TableCell(
+        'Eigenes Padding',
+        style: new CellStyle(
+            padding: TablePadding::only(top: 2, right: 4, bottom: 8, left: 20),
+        ),
+    ),
+]);
+```
 
 Fuer feinere Linien kann die Tabelle oder die einzelne Zelle ein `TableBorder` tragen:
 
@@ -357,16 +427,22 @@ $table->borderStyle(TableBorder::all(color: Color::gray(0.75)));
 $table->addRow([
     new TableCell(
         'Nur links rot, Rest grau',
-        border: TableBorder::only(['left'], color: Color::rgb(180, 20, 20)),
+        style: new CellStyle(
+            border: TableBorder::only(['left'], color: Color::rgb(180, 20, 20)),
+        ),
     ),
     new TableCell(
         'Oben/Unten blau, Seiten grau',
-        border: TableBorder::horizontal(color: Color::rgb(40, 120, 180)),
+        style: new CellStyle(
+            border: TableBorder::horizontal(color: Color::rgb(40, 120, 180)),
+        ),
     ),
 ]);
 ```
 
 Wichtig: `TableCell::border` ersetzt den Tabellen-Border nicht komplett. Es werden nur die explizit gesetzten Seiten der Zelle ueberschrieben, alle anderen Seiten erben weiter vom `Table::borderStyle(...)`.
+
+`CellStyle` ist dabei der empfohlene Weg, um mehrere Zell-Styles zusammenzufassen, statt viele Einzelparameter an `TableCell` zu uebergeben.
 
 ## Listen
 

@@ -135,6 +135,8 @@ Verantwortlich fuer:
 - `colspan` und erste `rowspan`-Unterstuetzung
 - steuerbare Borders ueber `TableBorder`
 - horizontaler und vertikaler Tabellen-Default fuer Zellen
+- Tabellen-Default und Zell-Override fuer Padding ueber `TablePadding`
+- gebuendelte Zell-Stile ueber `CellStyle`
 - Wiederholung von Header-Zeilen bei Seitenwechsel
 - Berechnung der Zeilenhoehe ueber den vorhandenen Absatz-Umbruch
 - Seitenwechsel, wenn eine komplette Zeile nicht mehr passt
@@ -144,14 +146,27 @@ Verantwortlich fuer:
 - `text` als `string` oder `TextSegment[]`
 - `align`
 - optionales `verticalAlign`
+- optionales `padding`
 - optionaler `fillColor`
 - optionaler `textColor`
 - optionaler `opacity`
 - `colspan`
 - `rowspan`
 - optionales `border`
+- optionales `style`
 
 `TableBorder` kapselt den Linienstil fuer Tabellen und einzelne Zellen.
+
+`TablePadding` kapselt die Innenabstaende fuer Tabellen und einzelne Zellen.
+
+`CellStyle` kapselt gebuendelt:
+
+- horizontale Ausrichtung
+- vertikale Ausrichtung
+- Padding
+- Fill- und Textfarbe
+- Opacity
+- Border
 
 Aktuell unterstuetzt:
 
@@ -165,11 +180,15 @@ Im Renderpfad gilt:
 
 - Tabellen koennen einen Default-Border ueber `Table::borderStyle(...)` tragen
 - Tabellen koennen einen vertikalen Default ueber `Table::verticalAlign(...)` tragen
+- Tabellen koennen ein Default-Padding ueber `Table::paddingStyle(...)` tragen
 - einzelne `TableCell`-Instanzen koennen einzelne Border-Seiten gezielt ueberschreiben
 - einzelne `TableCell`-Instanzen koennen horizontale und vertikale Ausrichtung gezielt ueberschreiben
+- einzelne `TableCell`-Instanzen koennen das Zell-Padding gezielt ueberschreiben
+- `TableCell::style` liefert gebuendelte Zell-Defaults, die von expliziten Zellwerten uebersteuert werden koennen
 - nicht gesetzte Zell-Seiten erben weiter vom Tabellen-Default
 - partielle Borders werden intern als gezielte Linien statt als komplettes Rechteck gerendert
 - vertikale Zell-Ausrichtung wird aus der echten Content-Hoehe innerhalb der Zellbox berechnet
+- Zellbreite, Zellhoehe und Text-Startposition werden unter Beruecksichtigung des effektiven Paddings berechnet
 
 Die aktuelle `rowspan`-Stufe ist bewusst begrenzt:
 

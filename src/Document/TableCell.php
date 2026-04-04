@@ -22,6 +22,8 @@ final readonly class TableCell
         public int $rowspan = 1,
         public ?TableBorder $border = null,
         public ?VerticalAlign $verticalAlign = null,
+        public ?TablePadding $padding = null,
+        public ?CellStyle $style = null,
     ) {
     }
 }

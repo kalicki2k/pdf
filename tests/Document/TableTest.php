@@ -6,9 +6,11 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\CellStyle;
 use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\HorizontalAlign;
+use Kalle\Pdf\Document\TablePadding;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\VerticalAlign;
 use Kalle\Pdf\Graphics\Color;
@@ -155,6 +157,74 @@ final class TableTest extends TestCase
 
         self::assertStringContainsString("26 206 Td\n(Kurz) Tj", $contents);
         self::assertStringContainsString("111 242 Td\n(Erste) Tj", $contents);
+    }
+
+    #[Test]
+    public function it_supports_table_padding_styles(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [85, 85])
+            ->paddingStyle(TablePadding::symmetric(10, 4))
+            ->addRow([
+                'Links',
+                'Rechts',
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString("20 240 85 20 re\nS", $contents);
+        self::assertStringContainsString("30 244 Td\n(Links) Tj", $contents);
+        self::assertStringContainsString("115 244 Td\n(Rechts) Tj", $contents);
+    }
+
+    #[Test]
+    public function it_allows_cells_to_override_the_table_padding(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [170])
+            ->paddingStyle(TablePadding::all(6))
+            ->addRow([
+                new TableCell('Override', padding: TablePadding::only(top: 2, right: 4, bottom: 8, left: 20)),
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString("20 238 170 22 re\nS", $contents);
+        self::assertStringContainsString("40 246 Td\n(Override) Tj", $contents);
+    }
+
+    #[Test]
+    public function it_supports_cell_styles(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [170])
+            ->addRow([
+                new TableCell(
+                    'Styled',
+                    style: new CellStyle(
+                        horizontalAlign: HorizontalAlign::CENTER,
+                        verticalAlign: VerticalAlign::MIDDLE,
+                        padding: TablePadding::symmetric(10, 4),
+                        fillColor: Color::gray(0.9),
+                        border: TableBorder::all(color: Color::rgb(255, 0, 0)),
+                    ),
+                ),
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString("20 240 170 20 re\nf", $contents);
+        self::assertStringContainsString("1 0 0 RG\n1 w\n20 240 170 20 re\nS", $contents);
+        self::assertStringContainsString("83.4 244 Td\n(Styled) Tj", $contents);
     }
 
     #[Test]

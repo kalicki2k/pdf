@@ -27,7 +27,7 @@ final class Table
     private readonly float $topMargin;
     private Page $page;
     private float $cursorY;
-    private float $padding = 6.0;
+    private TablePadding $padding;
     private string $baseFont = 'Helvetica';
     private int $fontSize = 12;
     private float $lineHeightFactor = self::DEFAULT_LINE_HEIGHT_FACTOR;
@@ -77,6 +77,7 @@ final class Table
         $this->cursorY = $y;
         $this->topMargin = $page->getHeight() - $y;
         $this->activeRowspans = array_fill(0, count($columnWidths), 0);
+        $this->padding = TablePadding::all(6.0);
         $this->border = TableBorder::all(color: Color::gray(0.75));
         $this->headerFillColor = Color::gray(0.92);
     }
@@ -99,10 +100,13 @@ final class Table
 
     public function padding(float $padding): self
     {
-        if ($padding < 0) {
-            throw new InvalidArgumentException('Table cell padding must be zero or greater.');
-        }
+        $this->padding = TablePadding::all($padding);
 
+        return $this;
+    }
+
+    public function paddingStyle(TablePadding $padding): self
+    {
         $this->padding = $padding;
 
         return $this;
@@ -194,15 +198,22 @@ final class Table
             return;
         }
 
-        $rowHeights = $this->resolvePendingGroupRowHeights($this->pendingGroupRows);
+        /** @var list<array{
+         *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
+         *     header: bool
+         * }> $pendingGroupRows
+         */
+        $pendingGroupRows = $this->pendingGroupRows;
+
+        $rowHeights = $this->resolvePendingGroupRowHeights($pendingGroupRows);
         $groupHeight = array_sum($rowHeights);
         $isBodyGroup = array_any(
-            $this->pendingGroupRows,
+            $pendingGroupRows,
             static fn (array $row): bool => $row['header'] === false,
         );
 
         $this->ensureGroupFitsOnCurrentPage($groupHeight, $isBodyGroup);
-        $this->renderPendingGroup($this->pendingGroupRows, $rowHeights);
+        $this->renderPendingGroup($pendingGroupRows, $rowHeights);
         $this->pendingGroupRows = [];
     }
 
@@ -238,7 +249,7 @@ final class Table
     /**
      * @param list<string|list<TextSegment>|TableCell> $cells
      * @return array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
      *     nextRowspans: list<int>
      * }
      */
@@ -258,8 +269,9 @@ final class Table
             }
 
             $preparedCell = $this->normalizeCell($cell, $header);
+            $padding = $preparedCell->padding ?? $this->padding;
             $columnWidth = $this->resolveColumnSpanWidth($columnIndex, $preparedCell->colspan, $this->activeRowspans);
-            $contentWidth = $columnWidth - (2 * $this->padding);
+            $contentWidth = $columnWidth - $padding->horizontal();
 
             if ($contentWidth <= 0) {
                 throw new InvalidArgumentException('Table column width must be greater than the horizontal cell padding.');
@@ -273,13 +285,14 @@ final class Table
             );
 
             $contentHeight = $this->fontSize + (max(0, $lineCount - 1) * $lineHeight);
-            $cellHeight = $contentHeight + (2 * $this->padding);
+            $cellHeight = $contentHeight + $padding->vertical();
             $preparedCells[] = [
                 'cell' => $preparedCell,
                 'width' => $columnWidth,
                 'column' => $columnIndex,
                 'minHeight' => $cellHeight,
                 'contentHeight' => $contentHeight,
+                'padding' => $padding,
             ];
 
             if ($preparedCell->rowspan > 1) {
@@ -304,7 +317,7 @@ final class Table
 
     /**
      * @param list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
      *     header: bool
      * }> $preparedRows
      * @return list<float>
@@ -355,16 +368,20 @@ final class Table
                 throw new InvalidArgumentException('Table cell rowspan must be greater than zero.');
             }
 
+            $style = $cell->style;
+
             return new TableCell(
                 $this->normalizeText($cell->text, $header),
-                $cell->align,
-                $cell->fillColor,
-                $cell->textColor,
-                $cell->opacity,
+                $style !== null && $style->horizontalAlign !== null ? $style->horizontalAlign : $cell->align,
+                $cell->fillColor ?? $style?->fillColor,
+                $cell->textColor ?? $style?->textColor,
+                $cell->opacity ?? $style?->opacity,
                 $cell->colspan,
                 $cell->rowspan,
-                $cell->border,
-                $cell->verticalAlign,
+                $cell->border ?? $style?->border,
+                $cell->verticalAlign ?? $style?->verticalAlign,
+                $cell->padding ?? $style?->padding,
+                $style,
             );
         }
 
@@ -410,7 +427,7 @@ final class Table
     /**
      * @param list<list<string|list<TextSegment>|TableCell>> $rows
      * @return list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
      *     header: bool
      * }>
      */
@@ -440,7 +457,7 @@ final class Table
 
     /**
      * @param list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
      *     header: bool
      * }> $preparedRows
      * @param list<float> $rowHeights
@@ -459,6 +476,7 @@ final class Table
                 $fillColor = $preparedCell->fillColor ?? ($preparedRow['header'] ? $this->headerFillColor : $this->rowFillColor);
                 $textColor = $preparedCell->textColor ?? ($preparedRow['header'] ? $this->headerTextColor : $this->rowTextColor);
                 $verticalAlign = $preparedCell->verticalAlign ?? $this->verticalAlign;
+                $padding = $preparedEntry['padding'];
                 $this->renderCellBox(
                     $cellX,
                     $cellBottomY,
@@ -471,20 +489,21 @@ final class Table
 
                 $this->page = $this->page->addParagraph(
                     $preparedCell->text,
-                    $cellX + $this->padding,
+                    $cellX + $padding->left,
                     $this->resolveCellTextStartY(
                         $rowTopY,
                         $cellBottomY,
                         $spanHeight,
                         $preparedEntry['contentHeight'],
                         $verticalAlign,
+                        $padding,
                     ),
-                    $preparedEntry['width'] - (2 * $this->padding),
+                    $preparedEntry['width'] - $padding->horizontal(),
                     $this->baseFont,
                     $this->fontSize,
                     null,
                     $lineHeight,
-                    ($cellBottomY + $this->padding) - self::CELL_BOTTOM_EPSILON,
+                    ($cellBottomY + $padding->bottom) - self::CELL_BOTTOM_EPSILON,
                     $textColor,
                     $preparedCell->opacity,
                     $preparedCell->align,
@@ -503,18 +522,16 @@ final class Table
         float $cellHeight,
         float $contentHeight,
         VerticalAlign $verticalAlign,
+        TablePadding $padding,
     ): float {
-        $freeSpace = max(0.0, $cellHeight - (2 * $this->padding) - $contentHeight);
-        $offset = match ($verticalAlign) {
-            VerticalAlign::TOP => 0.0,
-            VerticalAlign::MIDDLE => $freeSpace / 2,
-            VerticalAlign::BOTTOM => $freeSpace,
-        };
+        $topStartY = $cellTopY - $padding->top - $this->fontSize;
+        $bottomStartY = $cellBottomY + $padding->bottom + $contentHeight - $this->fontSize;
 
-        return max(
-            $cellBottomY + $this->padding + $contentHeight - $this->fontSize,
-            $cellTopY - $this->padding - $this->fontSize - $offset,
-        );
+        return match ($verticalAlign) {
+            VerticalAlign::TOP => $topStartY,
+            VerticalAlign::MIDDLE => $bottomStartY + (($topStartY - $bottomStartY) / 2),
+            VerticalAlign::BOTTOM => $bottomStartY,
+        };
     }
 
     private function renderCellBox(
