@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Line;
+use Kalle\Pdf\Element\Rectangle;
 use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontRegistry;
@@ -217,6 +218,48 @@ final class Page extends IndirectObject
             $endY,
             $width,
             $colorOperator,
+            $graphicsStateName,
+        ));
+
+        return $this;
+    }
+
+    public function addRectangle(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Rectangle width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Rectangle height must be greater than zero.');
+        }
+
+        if ($strokeWidth !== null && $strokeWidth <= 0) {
+            throw new InvalidArgumentException('Rectangle stroke width must be greater than zero.');
+        }
+
+        if ($strokeWidth === null && $fillColor === null) {
+            throw new InvalidArgumentException('Rectangle requires either a stroke or a fill.');
+        }
+
+        $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
+
+        $this->contents->addElement(new Rectangle(
+            $x,
+            $y,
+            $width,
+            $height,
+            $strokeWidth,
+            $strokeColor?->renderStrokingOperator(),
+            $fillColor?->renderNonStrokingOperator(),
             $graphicsStateName,
         ));
 

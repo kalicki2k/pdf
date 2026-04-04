@@ -117,6 +117,53 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_stroked_rectangle_to_the_page_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addRectangle(10, 20, 100, 40);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 w\n10 20 100 40 re\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_a_filled_rectangle_without_stroking(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addRectangle(10, 20, 100, 40, null, null, Color::gray(0.5));
+
+        self::assertStringContainsString("0.5 g\n10 20 100 40 re\nf", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_a_filled_and_stroked_rectangle_with_opacity(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addRectangle(10, 20, 100, 40, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n10 20 100 40 re\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_rectangles_without_stroke_or_fill(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rectangle requires either a stroke or a fill.');
+
+        $page->addRectangle(10, 20, 100, 40, null, null, null);
+    }
+
+    #[Test]
     public function it_rejects_text_with_an_unregistered_font(): void
     {
         $document = new Document(version: 1.4);
