@@ -14,6 +14,22 @@ final class StringValue implements Value
 
     public function render(): string
     {
-        return '(' . PdfStringEscaper::escape($this->value) . ')';
+        if ($this->canBeEncodedAsWindows1252($this->value)) {
+            $encoded = mb_convert_encoding($this->value, 'Windows-1252', 'UTF-8');
+
+            return '(' . PdfStringEscaper::escape($encoded) . ')';
+        }
+
+        $utf16be = mb_convert_encoding($this->value, 'UTF-16BE', 'UTF-8');
+
+        return '<FEFF' . strtoupper(bin2hex($utf16be)) . '>';
+    }
+
+    private function canBeEncodedAsWindows1252(string $value): bool
+    {
+        $encoded = mb_convert_encoding($value, 'Windows-1252', 'UTF-8');
+        $roundTrip = mb_convert_encoding($encoded, 'UTF-8', 'Windows-1252');
+
+        return $roundTrip === $value;
     }
 }

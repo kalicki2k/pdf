@@ -9,7 +9,7 @@ use Kalle\Pdf\Types\Reference;
 
 final class Resources extends IndirectObject
 {
-    /** @var Font[]  */
+    /** @var FontDefinition[]  */
     private array $fonts = [];
 
     public function __construct(int $id)
@@ -17,10 +17,10 @@ final class Resources extends IndirectObject
         parent::__construct($id);
     }
 
-    public function addFont(Font $font): string
+    public function addFont(FontDefinition $font): string
     {
         foreach ($this->fonts as $index => $registeredFont) {
-            if ($registeredFont->id === $font->id) {
+            if ($registeredFont->getId() === $font->getId()) {
                 return 'F' . ($index + 1);
             }
         }

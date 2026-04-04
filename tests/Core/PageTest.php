@@ -60,4 +60,17 @@ final class PageTest extends TestCase
         self::assertStringContainsString('5 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [11 0 R] >>', $document->render());
         self::assertStringContainsString('11 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 5 0 R /Pg 8 0 R /K 0 >>', $document->render());
     }
+
+    #[Test]
+    public function it_rejects_text_that_is_not_supported_by_the_registered_font(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Font 'Helvetica' does not support the provided text.");
+
+        $page->addText('漢', 10, 20, 'Helvetica', 12, 'P');
+    }
 }

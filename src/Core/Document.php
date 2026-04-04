@@ -12,7 +12,7 @@ final class Document
     private int $objectId = 0;
     private int $structParentId = -1;
 
-    /** @var Font[] */
+    /** @var FontDefinition[] */
     public array $fonts = [];
 
     /** @var string[] */
@@ -81,6 +81,20 @@ final class Document
         $objects[] = $this->info;
 
         foreach ($this->fonts as $font) {
+            if ($font instanceof UnicodeFont) {
+                if ($font->descendantFont->fontDescriptor !== null) {
+                    $objects[] = $font->descendantFont->fontDescriptor->fontFile;
+                    $objects[] = $font->descendantFont->fontDescriptor;
+                }
+
+                if ($font->descendantFont->cidToGidMap !== null) {
+                    $objects[] = $font->descendantFont->cidToGidMap;
+                }
+
+                $objects[] = $font->descendantFont;
+                $objects[] = $font->toUnicode;
+            }
+
             $objects[] = $font;
         }
         foreach ($this->pages->pages as $page) {
@@ -97,9 +111,62 @@ final class Document
         return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, ++$this->structParentId, $width, $height);
     }
 
-    public function addFont(string $baseFont, string $subtype = 'Type1', string $encoding = 'WinAnsiEncoding'): self
-    {
-        $font = new Font(++$this->objectId, $baseFont, $subtype, $encoding, $this->version);
+    public function addFont(
+        string $baseFont,
+        string $subtype = 'Type1',
+        string $encoding = 'WinAnsiEncoding',
+        bool $unicode = false,
+        ?int $toUnicodeId = null,
+        ?string $fontFilePath = null,
+    ): self {
+        foreach (FontRegistry::all() as $preset) {
+            if ($preset->group !== $baseFont) {
+                continue;
+            }
+
+            $baseFont = $preset->baseFont;
+            $subtype = $preset->subtype;
+            $encoding = $preset->encoding;
+            $unicode = $preset->unicode;
+            $fontFilePath = $preset->path;
+            break;
+        }
+
+        if ($unicode) {
+            $fontDescriptor = null;
+            $glyphMap = new UnicodeGlyphMap();
+            $fontParser = null;
+            $defaultWidth = 1000;
+            $widths = [];
+
+            if ($fontFilePath !== null) {
+                $fontFile = FontFileStream::fromPath(++$this->objectId, $fontFilePath);
+                $fontDescriptor = new FontDescriptor(++$this->objectId, $baseFont, $fontFile);
+                $fontParser = new OpenTypeFontParser($fontFile->data);
+
+                if ($fontParser->hasCffOutlines()) {
+                    $subtype = 'CIDFontType0';
+                }
+            }
+
+            $cidToGidMap = $fontParser !== null
+                ? new CidToGidMap(++$this->objectId, $glyphMap, $fontParser)
+                : null;
+
+            $descendantFont = new CidFont(
+                ++$this->objectId,
+                $baseFont,
+                $subtype,
+                fontDescriptor: $fontDescriptor,
+                cidToGidMap: $cidToGidMap,
+                defaultWidth: $defaultWidth,
+                widths: $widths,
+            );
+            $toUnicode = new ToUnicodeCMap(++$this->objectId, $glyphMap);
+            $font = new UnicodeFont(++$this->objectId, $descendantFont, $toUnicode, $glyphMap);
+        } else {
+            $font = new StandardFont(++$this->objectId, $baseFont, $subtype, $encoding, $this->version);
+        }
 
         $this->fonts = [...$this->fonts, $font];
 

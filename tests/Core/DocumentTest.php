@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Core;
 
 use Kalle\Pdf\Core\Document;
+use Kalle\Pdf\Core\UnicodeFont;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -54,6 +55,48 @@ final class DocumentTest extends TestCase
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
+    }
+
+    #[Test]
+    public function it_registers_unicode_fonts_together_with_their_descendant_font_objects(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $returnedDocument = $document->addFont('NotoSansCJKsc-Regular', 'CIDFontType2', unicode: true);
+
+        self::assertSame($document, $returnedDocument);
+        self::assertCount(1, $document->fonts);
+        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
+        self::assertSame(9, $document->fonts[0]->id);
+        self::assertSame(7, $document->fonts[0]->descendantFont->id);
+        self::assertSame([1, 2, 3, 4, 5, 6, 7, 8, 9], array_map(
+            static fn (object $object): int => $object->id,
+            $document->getDocumentObjects(),
+        ));
+    }
+
+    #[Test]
+    public function it_registers_font_presets_via_the_registry_group_name(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $document
+            ->addFont('sans')
+            ->addFont('global');
+
+        self::assertCount(2, $document->fonts);
+        self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
+        self::assertSame('NotoSansCJKsc-Regular', $document->fonts[1]->getBaseFont());
+        self::assertInstanceOf(UnicodeFont::class, $document->fonts[1]);
+        self::assertNotNull($document->fonts[1]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->fonts[1]->descendantFont->cidToGidMap);
+        self::assertSame(
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+            array_map(
+                static fn (object $object): int => $object->id,
+                $document->getDocumentObjects(),
+            ),
+        );
     }
 
     #[Test]

@@ -39,7 +39,7 @@ final class Page extends IndirectObject
         $markedContentId = $this->markedContentId++;
 
         foreach ($this->document->fonts as $registeredFont) {
-            if ($registeredFont->baseFont === $baseFont) {
+            if ($registeredFont->getBaseFont() === $baseFont) {
                 $font = $registeredFont;
                 break;
             }
@@ -49,7 +49,38 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException("Font '$baseFont' is not registered.");
         }
 
-        $this->contents->addElement(new Text($markedContentId, $text, $x, $y, $this->resources->addFont($font), $size, $tag));
+        if (!$font->supportsText($text)) {
+            throw new InvalidArgumentException("Font '$baseFont' does not support the provided text.");
+        }
+
+        $encodedText = $font->encodeText($text);
+
+        if (
+            $font instanceof UnicodeFont
+            && $font->descendantFont->cidToGidMap !== null
+            && $font->descendantFont->fontDescriptor !== null
+        ) {
+            $fontParser = new OpenTypeFontParser($font->descendantFont->fontDescriptor->fontFile->data);
+            $widths = [];
+
+            foreach ($font->getCodePointMap() as $cid => $codePointHex) {
+                $character = mb_convert_encoding(hex2bin($codePointHex), 'UTF-8', 'UTF-16BE');
+                $glyphId = $fontParser->getGlyphIdForCharacter($character);
+                $widths[$cid] = $fontParser->getAdvanceWidthForGlyphId($glyphId);
+            }
+
+            $font->descendantFont->setWidths($widths);
+        }
+
+        $this->contents->addElement(new Text(
+            $markedContentId,
+            $encodedText,
+            $x,
+            $y,
+            $this->resources->addFont($font),
+            $size,
+            $tag,
+        ));
         $this->document->addStructElem($tag, $markedContentId, $this);
 
         return $this;
