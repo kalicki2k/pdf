@@ -17,6 +17,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - `bold`, `italic`, `underline` und `strikethrough` sind vorhanden
 - `TextAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
 - `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
+- Tabellen stehen in einer ersten Stufe ueber `table(...)`, `Table` und `TableCell` zur Verfuegung
 - Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
 - freie Pfade sind ueber `Page::path()` und `PathBuilder` verfuegbar
@@ -44,6 +45,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Textfluss-API ueber `addParagraph()` und `TextFrame`
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
+- erste Tabellen-API mit festen Spaltenbreiten und Zeilen
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
 - erste freie Form-API ueber `path()`
 - erste Kreis-API auf Basis von Bezier-Pfaden
@@ -95,7 +97,7 @@ Aktuell ist Text der belastbare End-to-End-Fall. Weitere Inhaltstypen sollten er
 Naechste Kandidaten:
 
 - weitere grafische Primitive auf Basis des vorhandenen Path-Builders, zum Beispiel Sprechblasen oder komplexere Diagrammformen
-- Tabellen oder strukturierte Layout-Helfer
+- Ausbau der Tabellen-API, zum Beispiel fuer Colspan, Rowspan, wiederholte Header und feinere Zellstile
 - Ausbau der Bild-API, vor allem fuer PNG mit Alpha-Kanal
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
 

@@ -210,6 +210,19 @@ final class Page extends IndirectObject
         return new TextFrame($this, $x, $y, $width, $bottomMargin);
     }
 
+    /**
+     * @param list<float|int> $columnWidths
+     */
+    public function table(
+        float $x,
+        float $y,
+        float $width,
+        array $columnWidths,
+        float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
+    ): Table {
+        return new Table($this, $x, $y, $width, $columnWidths, $bottomMargin);
+    }
+
     public function path(): PathBuilder
     {
         return new PathBuilder($this);

@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
@@ -191,6 +192,23 @@ $page->addText(
     link: 'https://example.com',
 );
 
+$page->table(
+    Units::mm(20),
+    Units::mm(135),
+    Units::mm(170),
+    [Units::mm(22), Units::mm(88), Units::mm(30), Units::mm(30)],
+)
+    ->font('NotoSans-Regular', 11)
+    ->padding(Units::mm(2.5))
+    ->headerStyle(Color::gray(0.92), Color::rgb(220, 20, 60))
+    ->addRow(['ID', 'Titel', 'Status', 'Preis'], header: true)
+    ->addRow([
+        '1',
+        'Starter-Paket mit kurzer Beschreibung.',
+        new TableCell('Aktiv', TextAlign::CENTER, Color::gray(0.94)),
+        '19,99 EUR',
+    ]);
+
 $pdfContent = $document->render();
 
 file_put_contents('hello.pdf', $pdfContent);
@@ -205,7 +223,46 @@ file_put_contents('hello.pdf', $pdfContent);
 5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
 6. `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
 7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
-8. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+8. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
+9. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+
+## Tabellen
+
+Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeufige Dokumentfaelle ab:
+
+- feste Spaltenbreiten
+- Header-Zeilen
+- Zellpadding
+- `string`, `TextSegment[]` oder `TableCell` als Zelleninhalt
+- automatische Zeilenhoehe durch Textumbruch
+- Seitenwechsel, wenn die naechste Zeile nicht mehr auf die aktuelle Seite passt
+
+Ein kompaktes Beispiel:
+
+```php
+$table = $page->table(20, 240, 170, [30, 80, 30, 30])
+    ->font('NotoSans-Regular', 11)
+    ->padding(6)
+    ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
+    ->rowStyle(null, Color::gray(0.15));
+
+$table->addRow(['ID', 'Titel', 'Status', 'Preis'], header: true);
+$table->addRow([
+    '1',
+    'Starter-Paket mit kurzer Beschreibung.',
+    new TableCell('Aktiv', TextAlign::CENTER, Color::gray(0.94)),
+    '19,99 EUR',
+]);
+$table->addRow([
+    '2',
+    [
+        new TextSegment('Pro Plan', bold: true),
+        new TextSegment(' mit Umbruch in der Tabellenzelle.'),
+    ],
+    new TableCell('Beta', TextAlign::CENTER),
+    '49,00 EUR',
+]);
+```
 
 ## Einheiten
 

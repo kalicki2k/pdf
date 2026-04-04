@@ -61,7 +61,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addImage(...)` und `addLink(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addImage(...)` und `addLink(...)`.
 
 Dabei passiert intern:
 
@@ -79,6 +79,15 @@ Beim Absatz-Rendering kommen zusaetzlich dazu:
 9. Optional werden Alignment, `maxLines` und `TextOverflow` auf die sichtbaren Zeilen angewendet.
 10. Stilwechsel innerhalb eines Absatzes werden ueber mehrere `Text`-Elemente gerendert.
 11. Segment-spezifische Links werden als einzelne `LinkAnnotation`-Objekte mitgefuehrt.
+
+Bei Tabellen kommt zusaetzlich dazu:
+
+7. `Page::table(...)` erzeugt ein `Table`-Objekt mit fester Breite und festen Spaltenbreiten.
+8. `Table::addRow(...)` normalisiert Zellinhalte zu `TableCell`-Instanzen.
+9. Die Zeilenhoehe wird ueber `countParagraphLines(...)` auf Basis des Zellinhalts berechnet.
+10. Zellhintergruende und Borders werden ueber `Rectangle` gerendert.
+11. Zelltext wird ueber den vorhandenen Absatzpfad in die jeweilige Zelle geschrieben.
+12. Wenn eine Zeile nicht mehr passt, erzeugt `Table` intern eine Folge-Seite und rendert dort weiter.
 
 Bei grafischen Inhalten kommt stattdessen dazu:
 
@@ -102,6 +111,26 @@ Verantwortlich fuer:
 - Ueberschriften ueber `heading(...)`
 - automatische Folge-Seiten bei Ueberlauf
 - Weitergabe von Alignment, `maxLines` und `TextOverflow`
+
+### Table und TableCell
+
+`Table` ist eine erste Layout-Hilfe fuer tabellarische Inhalte mit fester Spaltenstruktur.
+
+Verantwortlich fuer:
+
+- Startposition, Tabellenbreite und Spaltenbreiten
+- Cursor-Fuehrung zwischen den Tabellenzeilen
+- Header- und Row-Styles
+- Berechnung der Zeilenhoehe ueber den vorhandenen Absatz-Umbruch
+- Seitenwechsel, wenn eine komplette Zeile nicht mehr passt
+
+`TableCell` repraesentiert eine einzelne Zelle mit:
+
+- `text` als `string` oder `TextSegment[]`
+- `align`
+- optionaler `fillColor`
+- optionaler `textColor`
+- optionaler `opacity`
 
 ### Contents
 
