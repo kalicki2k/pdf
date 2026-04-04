@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Types;
 
 use Kalle\Pdf\Object\IndirectObject;
 
-final readonly class Reference implements Value
+final readonly class ReferenceType implements Type
 {
     public function __construct(private IndirectObject $value)
     {

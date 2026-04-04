@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Structure;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\RawValue;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\RawType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class StructTreeRoot extends IndirectObject
 {
@@ -30,16 +30,16 @@ final class StructTreeRoot extends IndirectObject
         $kidReferences = [];
 
         foreach ($this->kids as $id) {
-            $kidReferences[] = new RawValue($id . ' 0 R');
+            $kidReferences[] = new RawType($id . ' 0 R');
         }
 
-        $dictionary = new Dictionary([
-            'Type' => new Name('StructTreeRoot'),
-            'K' => new ArrayValue($kidReferences),
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('StructTreeRoot'),
+            'K' => new ArrayType($kidReferences),
         ]);
 
         if ($this->parentTree !== null) {
-            $dictionary->add('ParentTree', new Reference($this->parentTree));
+            $dictionary->add('ParentTree', new ReferenceType($this->parentTree));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

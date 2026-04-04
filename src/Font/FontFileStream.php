@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
 
 final class FontFileStream extends IndirectObject
 {
@@ -44,13 +44,13 @@ final class FontFileStream extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
+        $dictionary = new DictionaryType([
             'Length' => strlen($this->data),
             'Length1' => strlen($this->data),
         ]);
 
         if ($this->subtype !== null) {
-            $dictionary->add('Subtype', new Name($this->subtype));
+            $dictionary->add('Subtype', new NameType($this->subtype));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

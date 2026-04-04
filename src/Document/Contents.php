@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\DictionaryType;
 
 final class Contents extends IndirectObject
 {
@@ -27,7 +27,7 @@ final class Contents extends IndirectObject
             array_map(static fn (Element $element): string => $element->render(), $this->elements),
         );
 
-        $dictionary = new Dictionary([
+        $dictionary = new DictionaryType([
             'Length' => strlen($contents),
         ]);
 

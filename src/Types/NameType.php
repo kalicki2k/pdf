@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
-final readonly class RawValue implements Value
+final readonly class NameType implements Type
 {
     public function __construct(private string $value)
     {
@@ -12,6 +12,6 @@ final readonly class RawValue implements Value
 
     public function render(): string
     {
-        return $this->value;
+        return '/' . $this->value;
     }
 }

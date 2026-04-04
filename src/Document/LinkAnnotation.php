@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\Reference;
-use Kalle\Pdf\Types\StringValue;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
+use Kalle\Pdf\Types\StringType;
 
 final class LinkAnnotation extends IndirectObject
 {
@@ -27,21 +27,21 @@ final class LinkAnnotation extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Type' => new Name('Annot'),
-            'Subtype' => new Name('Link'),
-            'Rect' => new ArrayValue([
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Annot'),
+            'Subtype' => new NameType('Link'),
+            'Rect' => new ArrayType([
                 $this->x,
                 $this->y,
                 $this->x + $this->width,
                 $this->y + $this->height,
             ]),
-            'Border' => new ArrayValue([0, 0, 0]),
-            'A' => new Dictionary([
-                'S' => new Name('URI'),
-                'URI' => new StringValue($this->url),
+            'Border' => new ArrayType([0, 0, 0]),
+            'A' => new DictionaryType([
+                'S' => new NameType('URI'),
+                'URI' => new StringType($this->url),
             ]),
-            'P' => new Reference($this->page),
+            'P' => new ReferenceType($this->page),
         ]);
 
         return $this->id . ' 0 obj' . PHP_EOL

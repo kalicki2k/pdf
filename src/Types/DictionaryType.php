@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
-final class Dictionary implements Value
+final class DictionaryType implements Type
 {
     /**
-     * @param array<string, Value|string|int|float> $entries
+     * @param array<string, Type|string|int|float> $entries
      */
     public function __construct(private array $entries)
     {
     }
 
-    public function add(string $name, Value | string | int | float $entry): self
+    public function add(string $name, Type | string | int | float $entry): self
     {
         $this->entries[$name] = $entry;
 
@@ -31,8 +31,8 @@ final class Dictionary implements Value
         return '<< ' . implode(' ', $parts) . ' >>';
     }
 
-    private static function renderValue(Value | string | int | float $value): string
+    private static function renderValue(Type | string | int | float $value): string
     {
-        return $value instanceof Value ? $value->render() : (string) $value;
+        return $value instanceof Type ? $value->render() : (string) $value;
     }
 }

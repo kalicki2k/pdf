@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
-final readonly class BooleanValue implements Value
+final readonly class BooleanType implements Type
 {
     public function __construct(private bool $value)
     {

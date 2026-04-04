@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 final class StandardFont extends IndirectObject implements FontDefinition
@@ -79,11 +79,11 @@ final class StandardFont extends IndirectObject implements FontDefinition
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Type' => new Name('Font'),
-            'Subtype' => new Name($this->subtype),
-            'BaseFont' => new Name($this->baseFont),
-            'Encoding' => new Name($this->encoding),
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Font'),
+            'Subtype' => new NameType($this->subtype),
+            'BaseFont' => new NameType($this->baseFont),
+            'Encoding' => new NameType($this->encoding),
         ]);
 
         return $this->id . ' 0 obj' . PHP_EOL

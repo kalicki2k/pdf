@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Document;
 
 use DateTime;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\StringValue;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\StringType;
 
 final class Info extends IndirectObject
 {
@@ -24,24 +24,24 @@ final class Info extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Title' => new StringValue($this->document->title ?? ''),
-            'Author' => new StringValue($this->document->author ?? ''),
-            'Creator' => new StringValue($this->producer),
-            'Producer' => new StringValue($this->producer),
-            'CreationDate' => new StringValue('D:' . $this->creationDate),
+        $dictionary = new DictionaryType([
+            'Title' => new StringType($this->document->title ?? ''),
+            'Author' => new StringType($this->document->author ?? ''),
+            'Creator' => new StringType($this->producer),
+            'Producer' => new StringType($this->producer),
+            'CreationDate' => new StringType('D:' . $this->creationDate),
         ]);
 
         if (!empty($this->document->subject)) {
-            $dictionary->add('Subject', new StringValue($this->document->subject));
+            $dictionary->add('Subject', new StringType($this->document->subject));
         }
 
         if (!empty($this->document->keywords)) {
-            $dictionary->add('Keywords', new StringValue(implode(', ', $this->document->keywords)));
+            $dictionary->add('Keywords', new StringType(implode(', ', $this->document->keywords)));
         }
 
         if ($this->document->version >= 1.4) {
-            $dictionary->add('Lang', new StringValue($this->document->language ?? ''));
+            $dictionary->add('Lang', new StringType($this->document->language ?? ''));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Types;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\ReferenceType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-final class ReferenceTest extends TestCase
+final class ReferenceTypeTest extends TestCase
 {
     #[Test]
     public function it_renders_the_object_reference_syntax(): void
@@ -21,6 +21,6 @@ final class ReferenceTest extends TestCase
             }
         };
 
-        self::assertSame('15 0 R', new Reference($object)->render());
+        self::assertSame('15 0 R', new ReferenceType($object)->render());
     }
 }

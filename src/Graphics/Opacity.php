@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Graphics;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\DictionaryType;
 
 final readonly class Opacity
 {
@@ -38,7 +38,7 @@ final readonly class Opacity
 
     public function renderExtGStateDictionary(): string
     {
-        $dictionary = new Dictionary([]);
+        $dictionary = new DictionaryType([]);
 
         if ($this->fill !== null) {
             $dictionary->add('ca', self::formatValue($this->fill));

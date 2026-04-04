@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Types;
 
 use Kalle\Pdf\Utilities\PdfStringEscaper;
 
-final class StringValue implements Value
+final class StringType implements Type
 {
     public function __construct(private readonly string $value)
     {

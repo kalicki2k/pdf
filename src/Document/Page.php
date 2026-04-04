@@ -19,10 +19,10 @@ use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class Page extends IndirectObject
 {
@@ -652,12 +652,12 @@ final class Page extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Type' => new Name('Page'),
-            'Parent' => new Reference($this->document->pages),
-            'MediaBox' => new ArrayValue([0, 0, $this->width, $this->height]),
-            'Resources' => new Reference($this->resources),
-            'Contents' => new Reference($this->contents),
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Page'),
+            'Parent' => new ReferenceType($this->document->pages),
+            'MediaBox' => new ArrayType([0, 0, $this->width, $this->height]),
+            'Resources' => new ReferenceType($this->resources),
+            'Contents' => new ReferenceType($this->contents),
         ]);
 
         if ($this->markedContentId > 0 && $this->document->hasStructure()) {
@@ -667,8 +667,8 @@ final class Page extends IndirectObject
         if ($this->annotations !== []) {
             $dictionary->add(
                 'Annots',
-                new ArrayValue(array_map(
-                    static fn (LinkAnnotation $annotation): Reference => new Reference($annotation),
+                new ArrayType(array_map(
+                    static fn (LinkAnnotation $annotation): ReferenceType => new ReferenceType($annotation),
                     $this->annotations,
                 )),
             );

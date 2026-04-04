@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class Pages extends IndirectObject
 {
@@ -39,13 +39,13 @@ final class Pages extends IndirectObject
         $kidReferences = [];
 
         foreach ($this->pages as $page) {
-            $kidReferences[] = new Reference($page);
+            $kidReferences[] = new ReferenceType($page);
         }
 
-        $kids = new ArrayValue($kidReferences);
+        $kids = new ArrayType($kidReferences);
 
-        $dictionary = new Dictionary([
-            'Type' => new Name('Pages'),
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Pages'),
             'Kids' => $kids,
             'Count' => count($this->pages),
         ]);

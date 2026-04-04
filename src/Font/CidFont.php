@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class CidFont extends IndirectObject
 {
@@ -49,11 +49,11 @@ final class CidFont extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Type' => new Name('Font'),
-            'Subtype' => new Name($this->subtype),
-            'BaseFont' => new Name($this->baseFont),
-            'CIDSystemInfo' => new Dictionary([
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Font'),
+            'Subtype' => new NameType($this->subtype),
+            'BaseFont' => new NameType($this->baseFont),
+            'CIDSystemInfo' => new DictionaryType([
                 'Registry' => "($this->registry)",
                 'Ordering' => "($this->ordering)",
                 'Supplement' => $this->supplement,
@@ -61,11 +61,11 @@ final class CidFont extends IndirectObject
         ]);
 
         if ($this->fontDescriptor !== null) {
-            $dictionary->add('FontDescriptor', new Reference($this->fontDescriptor));
+            $dictionary->add('FontDescriptor', new ReferenceType($this->fontDescriptor));
         }
 
         if ($this->cidToGidMap !== null) {
-            $dictionary->add('CIDToGIDMap', new Reference($this->cidToGidMap));
+            $dictionary->add('CIDToGIDMap', new ReferenceType($this->cidToGidMap));
         }
 
         $dictionary->add('DW', $this->defaultWidth);
@@ -75,10 +75,10 @@ final class CidFont extends IndirectObject
 
             foreach ($this->widths as $cid => $width) {
                 $widthEntries[] = hexdec($cid);
-                $widthEntries[] = new ArrayValue([$width]);
+                $widthEntries[] = new ArrayType([$width]);
             }
 
-            $dictionary->add('W', new ArrayValue($widthEntries));
+            $dictionary->add('W', new ArrayType($widthEntries));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

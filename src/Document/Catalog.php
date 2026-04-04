@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\BooleanValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\Reference;
-use Kalle\Pdf\Types\StringValue;
+use Kalle\Pdf\Types\BooleanType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
+use Kalle\Pdf\Types\StringType;
 
 final class Catalog extends IndirectObject
 {
@@ -20,17 +20,17 @@ final class Catalog extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Type' => new Name('Catalog'),
-            'Pages' => new Reference($this->document->pages),
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Catalog'),
+            'Pages' => new ReferenceType($this->document->pages),
         ]);
 
         if ($this->document->version >= 1.4 && $this->document->structTreeRoot !== null) {
-            $dictionary->add('MarkInfo', new Dictionary([
-                'Marked' => new BooleanValue(true),
+            $dictionary->add('MarkInfo', new DictionaryType([
+                'Marked' => new BooleanType(true),
             ]));
-            $dictionary->add('Lang', new StringValue($this->document->language ?? ''));
-            $dictionary->add('StructTreeRoot', new Reference($this->document->structTreeRoot));
+            $dictionary->add('Lang', new StringType($this->document->language ?? ''));
+            $dictionary->add('StructTreeRoot', new ReferenceType($this->document->structTreeRoot));
         }
 
         return "$this->id 0 obj" . PHP_EOL

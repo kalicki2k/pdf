@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class FontDescriptor extends IndirectObject
 {
@@ -32,17 +32,17 @@ final class FontDescriptor extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Type' => new Name('FontDescriptor'),
-            'FontName' => new Name($this->fontName),
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('FontDescriptor'),
+            'FontName' => new NameType($this->fontName),
             'Flags' => $this->flags,
-            'FontBBox' => new ArrayValue($this->fontBBox),
+            'FontBBox' => new ArrayType($this->fontBBox),
             'ItalicAngle' => $this->italicAngle,
             'Ascent' => $this->ascent,
             'Descent' => $this->descent,
             'CapHeight' => $this->capHeight,
             'StemV' => $this->stemV,
-            $this->getFontFileKey() => new Reference($this->fontFile),
+            $this->getFontFileKey() => new ReferenceType($this->fontFile),
         ]);
 
         return $this->id . ' 0 obj' . PHP_EOL

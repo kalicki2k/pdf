@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\DictionaryType;
 
 final class ToUnicodeCMap extends IndirectObject
 {
@@ -19,7 +19,7 @@ final class ToUnicodeCMap extends IndirectObject
     public function render(): string
     {
         $cmap = $this->buildCMap();
-        $dictionary = new Dictionary([
+        $dictionary = new DictionaryType([
             'Length' => strlen($cmap),
         ]);
 

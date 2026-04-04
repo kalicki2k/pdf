@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Structure;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\RawValue;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\RawType;
 
 final class ParentTree extends IndirectObject
 {
@@ -29,14 +29,14 @@ final class ParentTree extends IndirectObject
 
         foreach ($this->structElems as $structParentId => $structElems) {
             $nums[] = $structParentId;
-            $nums[] = new ArrayValue(array_map(
-                static fn (StructElem $structElem): RawValue => new RawValue($structElem->id . ' 0 R'),
+            $nums[] = new ArrayType(array_map(
+                static fn (StructElem $structElem): RawType => new RawType($structElem->id . ' 0 R'),
                 $structElems,
             ));
         }
 
-        $dictionary = new Dictionary([
-            'Nums' => new ArrayValue($nums),
+        $dictionary = new DictionaryType([
+            'Nums' => new ArrayType($nums),
         ]);
 
         return $this->id . ' 0 obj' . PHP_EOL

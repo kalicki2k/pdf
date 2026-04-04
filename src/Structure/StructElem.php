@@ -7,11 +7,11 @@ namespace Kalle\Pdf\Structure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\RawValue;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\RawType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class StructElem extends IndirectObject
 {
@@ -63,17 +63,17 @@ final class StructElem extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Type' => new Name('StructElem'),
-            'S' => new Name($this->tag),
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('StructElem'),
+            'S' => new NameType($this->tag),
         ]);
 
         if ($this->parent !== null) {
-            $dictionary->add('P', new Reference($this->parent));
+            $dictionary->add('P', new ReferenceType($this->parent));
         }
 
         if ($this->page !== null) {
-            $dictionary->add('Pg', new Reference($this->page));
+            $dictionary->add('Pg', new ReferenceType($this->page));
         }
 
         if ($this->markedContentId !== null) {
@@ -82,10 +82,10 @@ final class StructElem extends IndirectObject
             $kidReferences = [];
 
             foreach ($this->kids as $kid) {
-                $kidReferences[] = new RawValue($kid->id . ' 0 R');
+                $kidReferences[] = new RawType($kid->id . ' 0 R');
             }
 
-            $dictionary->add('K', new ArrayValue($kidReferences));
+            $dictionary->add('K', new ArrayType($kidReferences));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

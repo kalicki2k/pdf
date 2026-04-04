@@ -7,8 +7,8 @@ namespace Kalle\Pdf\Document;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class Resources extends IndirectObject
 {
@@ -85,7 +85,7 @@ final class Resources extends IndirectObject
         $extGStateEntries = [];
 
         foreach ($this->fonts as $index => $registeredFont) {
-            $fontReferences['F' . ($index + 1)] = new Reference($registeredFont);
+            $fontReferences['F' . ($index + 1)] = new ReferenceType($registeredFont);
         }
 
         foreach ($this->extGStates as $index => $registeredExtGState) {
@@ -93,19 +93,19 @@ final class Resources extends IndirectObject
         }
 
         foreach ($this->images as $index => $registeredImage) {
-            $imageReferences['Im' . ($index + 1)] = new Reference($registeredImage);
+            $imageReferences['Im' . ($index + 1)] = new ReferenceType($registeredImage);
         }
 
-        $dictionary = new Dictionary([
-            'Font' => new Dictionary($fontReferences),
+        $dictionary = new DictionaryType([
+            'Font' => new DictionaryType($fontReferences),
         ]);
 
         if ($imageReferences !== []) {
-            $dictionary->add('XObject', new Dictionary($imageReferences));
+            $dictionary->add('XObject', new DictionaryType($imageReferences));
         }
 
         if ($extGStateEntries !== []) {
-            $dictionary->add('ExtGState', new Dictionary($extGStateEntries));
+            $dictionary->add('ExtGState', new DictionaryType($extGStateEntries));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

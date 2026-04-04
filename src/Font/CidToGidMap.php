@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\Dictionary;
+use Kalle\Pdf\Types\DictionaryType;
 
 final class CidToGidMap extends IndirectObject
 {
@@ -20,7 +20,7 @@ final class CidToGidMap extends IndirectObject
     public function render(): string
     {
         $data = $this->buildMapData();
-        $dictionary = new Dictionary([
+        $dictionary = new DictionaryType([
             'Length' => strlen($data),
         ]);
 

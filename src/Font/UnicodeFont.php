@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Types\ArrayValue;
-use Kalle\Pdf\Types\Dictionary;
-use Kalle\Pdf\Types\Name;
-use Kalle\Pdf\Types\Reference;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class UnicodeFont extends IndirectObject implements FontDefinition
 {
@@ -80,17 +80,17 @@ final class UnicodeFont extends IndirectObject implements FontDefinition
 
     public function render(): string
     {
-        $dictionary = new Dictionary([
-            'Type' => new Name('Font'),
-            'Subtype' => new Name('Type0'),
-            'BaseFont' => new Name($this->getBaseFont()),
-            'Encoding' => new Name('Identity-H'),
-            'DescendantFonts' => new ArrayValue([
-                new Reference($this->descendantFont),
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Font'),
+            'Subtype' => new NameType('Type0'),
+            'BaseFont' => new NameType($this->getBaseFont()),
+            'Encoding' => new NameType('Identity-H'),
+            'DescendantFonts' => new ArrayType([
+                new ReferenceType($this->descendantFont),
             ]),
         ]);
 
-        $dictionary->add('ToUnicode', new Reference($this->toUnicode));
+        $dictionary->add('ToUnicode', new ReferenceType($this->toUnicode));
 
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
