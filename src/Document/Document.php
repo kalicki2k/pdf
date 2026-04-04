@@ -28,6 +28,10 @@ final class Document
 {
     private int $objectId = 0;
     private int $structParentId = -1;
+    /** @var list<callable(Page, int): void> */
+    private array $headerRenderers = [];
+    /** @var list<callable(Page, int): void> */
+    private array $footerRenderers = [];
 
     /** @var array<int, FontDefinition&IndirectObject> */
     public array $fonts = [];
@@ -149,7 +153,30 @@ final class Document
 
         $height ??= 841.8897637795277;
 
-        return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, ++$this->structParentId, $width, $height);
+        $page = $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, ++$this->structParentId, $width, $height);
+        $this->applyPageDecorators($page);
+
+        return $page;
+    }
+
+    /**
+     * @param callable(Page, int): void $renderer
+     */
+    public function addHeader(callable $renderer): self
+    {
+        $this->headerRenderers[] = $renderer;
+
+        return $this;
+    }
+
+    /**
+     * @param callable(Page, int): void $renderer
+     */
+    public function addFooter(callable $renderer): self
+    {
+        $this->footerRenderers[] = $renderer;
+
+        return $this;
     }
 
     public function addFont(
@@ -259,6 +286,19 @@ final class Document
         }
 
         return $this;
+    }
+
+    private function applyPageDecorators(Page $page): void
+    {
+        $pageNumber = count($this->pages->pages);
+
+        foreach ($this->headerRenderers as $headerRenderer) {
+            $headerRenderer($page, $pageNumber);
+        }
+
+        foreach ($this->footerRenderers as $footerRenderer) {
+            $footerRenderer($page, $pageNumber);
+        }
     }
 
     public function ensureStructureEnabled(): void

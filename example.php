@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Element\Image;
@@ -94,6 +95,44 @@ $document->addKeyword('demo')
     ->addFont('NotoSerif-Regular')
     ->addFont('NotoSansMono-Regular')
     ->addFont('NotoSansCJKsc-Regular');
+
+$document
+    ->addHeader(static function (Page $page, int $pageNumber): void {
+        $page->addText(
+            "Kalle PDF Demo - Seite $pageNumber",
+            Units::mm(20),
+            $page->getHeight() - Units::mm(10),
+            'Helvetica',
+            9,
+            color: Color::gray(0.35),
+        );
+        $page->addLine(
+            Units::mm(20),
+            $page->getHeight() - Units::mm(12),
+            $page->getWidth() - Units::mm(20),
+            $page->getHeight() - Units::mm(12),
+            0.5,
+            Color::gray(0.75),
+        );
+    })
+    ->addFooter(static function (Page $page, int $pageNumber): void {
+        $page->addLine(
+            Units::mm(20),
+            Units::mm(12),
+            $page->getWidth() - Units::mm(20),
+            Units::mm(12),
+            0.5,
+            Color::gray(0.75),
+        );
+        $page->addText(
+            "Seite $pageNumber",
+            Units::mm(20),
+            Units::mm(7),
+            'Helvetica',
+            9,
+            color: Color::gray(0.35),
+        );
+    });
 
 $sansPage = $document->addPage(PageSize::A4());
 $sansPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))

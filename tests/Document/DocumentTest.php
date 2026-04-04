@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Layout\PageSize;
 use PHPUnit\Framework\Attributes\Test;
@@ -114,6 +115,54 @@ final class DocumentTest extends TestCase
 
         self::assertEqualsWithDelta(841.8897637795, $page->getWidth(), self::FLOAT_DELTA);
         self::assertEqualsWithDelta(595.2755905512, $page->getHeight(), self::FLOAT_DELTA);
+    }
+
+    #[Test]
+    public function it_applies_header_and_footer_callbacks_to_new_pages(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $document
+            ->addHeader(static function (Page $page, int $pageNumber): void {
+                $page->addText("Header $pageNumber", 10, 90, 'Helvetica', 10);
+            })
+            ->addFooter(static function (Page $page, int $pageNumber): void {
+                $page->addText("Footer $pageNumber", 10, 10, 'Helvetica', 10);
+            });
+
+        $firstPage = $document->addPage(100, 100);
+        $secondPage = $document->addPage(100, 100);
+
+        self::assertStringContainsString('(Header 1) Tj', $firstPage->contents->render());
+        self::assertStringContainsString('(Footer 1) Tj', $firstPage->contents->render());
+        self::assertStringContainsString('(Header 2) Tj', $secondPage->contents->render());
+        self::assertStringContainsString('(Footer 2) Tj', $secondPage->contents->render());
+    }
+
+    #[Test]
+    public function it_applies_header_and_footer_callbacks_to_overflow_pages(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $document
+            ->addHeader(static function (Page $page, int $pageNumber): void {
+                $page->addText("Header $pageNumber", 10, 50, 'Helvetica', 10);
+            })
+            ->addFooter(static function (Page $page, int $pageNumber): void {
+                $page->addText("Footer $pageNumber", 10, 5, 'Helvetica', 10);
+            });
+
+        $firstPage = $document->addPage(100, 60);
+        $frame = $firstPage->textFrame(10, 40, 80, 10);
+        $frame->paragraph(str_repeat('Wort ', 80), 'Helvetica', 12, 'P');
+        $lastPage = $document->pages->pages[array_key_last($document->pages->pages)];
+        $lastPageNumber = count($document->pages->pages);
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertStringContainsString('(Header 1) Tj', $firstPage->contents->render());
+        self::assertStringContainsString('(Footer 1) Tj', $firstPage->contents->render());
+        self::assertStringContainsString("(Header $lastPageNumber) Tj", $lastPage->contents->render());
+        self::assertStringContainsString("(Footer $lastPageNumber) Tj", $lastPage->contents->render());
     }
 
     #[Test]

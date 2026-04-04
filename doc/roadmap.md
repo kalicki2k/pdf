@@ -10,6 +10,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - `xref`, `trailer` und `startxref` werden erzeugt
 - Dokument-Metadaten sind vorhanden
 - Seiten, Ressourcen und Content-Streams sind getrennt modelliert
+- Header und Footer koennen ueber Dokument-Callbacks auf allen neuen Seiten registriert werden
 - Text wird ueber registrierte Fonts gerendert
 - `addParagraph()` und `TextFrame` decken ersten Absatz- und Flow-Layout-Bedarf ab
 - `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
@@ -21,10 +22,12 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Tabellen stehen in einer ersten Stufe ueber `table(...)`, `Table`, `TableCell`, `CellStyle`, `TableBorder` und `TablePadding` zur Verfuegung, inklusive wiederholter Header auf Folgeseiten, `colspan`, erster `rowspan`-Unterstuetzung, partiell ueberschreibbaren Zell-Borders sowie horizontaler und vertikaler Zell-Ausrichtung
 - Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
+- gerundete Rechtecke sind ueber `addRoundedRectangle(...)` verfuegbar
 - freie Pfade sind ueber `Page::path()` und `PathBuilder` verfuegbar
 - Kreise sind als Convenience-API ueber `addCircle(...)` verfuegbar
 - Ellipsen, Polygone, Pfeile und Sterne sind als weitere Convenience-Formen verfuegbar
 - Links und URI-Annotationen sind ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link` verfuegbar
+- Badges sind als kleines zusammengesetztes Label-Element ueber `addBadge(...)` verfuegbar
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
 - Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
@@ -49,6 +52,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Listen-API mit Bullet- und nummerierten Listen
 - erste Tabellen-API mit festen Spaltenbreiten, Zeilen, wiederholten Headern, `colspan`, erster `rowspan`-Stufe, `CellStyle`, mergebaren Zell-Borders, flexiblem Zell-Padding sowie horizontaler und vertikaler Zell-Ausrichtung
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
+- gerundete Rechtecke und Badges als erste zusammengesetzte Grafik-/Label-API
 - erste freie Form-API ueber `path()`
 - erste Kreis-API auf Basis von Bezier-Pfaden
 - weitere Form-APIs fuer Ellipsen, Polygone, Pfeile und Sterne

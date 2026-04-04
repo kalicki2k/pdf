@@ -26,6 +26,7 @@ Verantwortlich fuer:
 - globale Font-Registrierung
 - optionale dokumenteigene Font-Konfiguration
 - Verwaltung aller Seiten
+- optionale wiederkehrende Header- und Footer-Renderer fuer neue Seiten
 - Vergabe von Objekt-IDs
 - lazy Aufbau der Strukturdaten fuer Tagged-Inhalte
 - Start des Renderings
@@ -33,6 +34,7 @@ Verantwortlich fuer:
 Wichtige Methoden:
 
 - `addPage()` erzeugt eine neue Seite mit eigener `Contents`- und `Resources`-Instanz
+- `addHeader()` und `addFooter()` registrieren Seiten-Callbacks, die bei jeder neuen Seite ausgefuehrt werden
 - `addFont()` registriert Fonts im Dokument
 - `addKeyword()` pflegt die Dokument-Keywords
 - `render()` delegiert an `PdfRenderer`
@@ -61,7 +63,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addImage(...)` und `addLink(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addImage(...)` und `addLink(...)`.
 
 Dabei passiert intern:
 
@@ -97,9 +99,11 @@ Bei grafischen Inhalten kommt stattdessen dazu:
 8. `PathBuilder` erzeugt aus `moveTo(...)`, `lineTo(...)`, `curveTo(...)` und `close()` ein `Path`-Element fuer freie Formen.
 9. `addCircle(...)` baut darauf einen Kreis aus vier kubischen Bezier-Segmenten auf.
 10. `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)` und `addStar(...)` nutzen dieselbe Path-/Line-Infrastruktur fuer weitere Formen.
-11. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
-12. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
-13. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
+11. `addRoundedRectangle(...)` baut ein Rechteck mit Bezier-Ecken ueber denselben Path-Builder auf.
+12. `addBadge(...)` kombiniert Hintergrundform und Text zu einem kleinen Label-Element und nutzt optional den Rounded-Rectangle-Pfad.
+13. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
+14. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
+15. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
 
 ### TextFrame
 

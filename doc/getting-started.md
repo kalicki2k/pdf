@@ -72,6 +72,14 @@ $document
     ->addFont('NotoSans-Italic')
     ->addFont('NotoSans-BoldItalic');
 
+$document
+    ->addHeader(static function (\Kalle\Pdf\Document\Page $page, int $pageNumber): void {
+        $page->addText("Hello PDF - Seite $pageNumber", Units::mm(20), $page->getHeight() - Units::mm(10), 'Helvetica', 9);
+    })
+    ->addFooter(static function (\Kalle\Pdf\Document\Page $page, int $pageNumber): void {
+        $page->addText("Seite $pageNumber", Units::mm(20), Units::mm(7), 'Helvetica', 9);
+    });
+
 $page = $document->addPage(PageSize::A4());
 $frame = $page->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20));
 
@@ -200,6 +208,20 @@ $page->addText(
     link: 'https://example.com',
 );
 
+$page->addBadge(
+    'Beta',
+    Units::mm(20),
+    Units::mm(140),
+    'NotoSans-Regular',
+    11,
+    new \Kalle\Pdf\Styles\BadgeStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::gray(0.9),
+        borderWidth: 1.0,
+        borderColor: Color::rgb(220, 20, 60),
+    ),
+);
+
 $page->addTable(
     Units::mm(20),
     Units::mm(135),
@@ -262,15 +284,17 @@ file_put_contents('hello.pdf', $pdfContent);
 
 1. `Document` initialisiert das PDF mit Version und Metadaten.
 2. `addFont(...)` registriert eingebettete Schriften aus der Font-Konfiguration.
-3. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
-4. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
-5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
-6. `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
-7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
-8. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
-9. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
-10. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
-11. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+3. `addHeader(...)` und `addFooter(...)` registrieren wiederkehrende Seiteninhalte fuer alle neu erzeugten Seiten.
+4. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
+5. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
+6. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
+7. `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
+8. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
+9. `addBadge(...)` rendert kleine Labels mit Padding, Hintergrund, optionalem Border und optional gerundeten Ecken.
+10. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
+11. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
+12. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
+13. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Tabellen
 
