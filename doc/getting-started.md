@@ -224,6 +224,17 @@ $frame->bulletList(
     bulletColor: Color::rgb(220, 20, 60),
 );
 
+$frame->numberedList(
+    [
+        'Erster Schritt',
+        [new TextSegment('Zweiter', bold: true), new TextSegment(' Schritt')],
+    ],
+    'NotoSans-Regular',
+    12,
+    startAt: 3,
+    numberColor: Color::rgb(220, 20, 60),
+);
+
 $pdfContent = $document->render();
 
 file_put_contents('hello.pdf', $pdfContent);
@@ -240,7 +251,8 @@ file_put_contents('hello.pdf', $pdfContent);
 7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
 8. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
 9. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
-10. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+10. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
+11. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Tabellen
 
@@ -316,6 +328,29 @@ $frame->bulletList(
     bulletColor: Color::rgb(180, 20, 20),
 );
 ```
+
+Fuer nummerierte Listen gibt es `TextFrame::numberedList(...)`:
+
+```php
+$frame->numberedList(
+    [
+        'Erster Schritt',
+        [new TextSegment('Zweiter', bold: true), new TextSegment(' Schritt')],
+        'Dritter Schritt mit automatischem Umbruch in der Liste.',
+    ],
+    'NotoSans-Regular',
+    12,
+    startAt: 3,
+    numberColor: Color::rgb(180, 20, 20),
+);
+```
+
+Aktuell unterstuetzt die API dabei:
+
+- dezimale Nummerierung
+- `startAt`
+- eigene Nummernfarbe
+- denselben Hanging Indent und Seitenwechsel wie bei `bulletList(...)`
 
 ## Einheiten
 

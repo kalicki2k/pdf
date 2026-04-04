@@ -17,7 +17,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - `bold`, `italic`, `underline` und `strikethrough` sind vorhanden
 - `TextAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
 - `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
-- Listen stehen in einer ersten Stufe ueber `TextFrame::bulletList(...)` und `BulletType` zur Verfuegung
+- Listen stehen in einer ersten Stufe ueber `TextFrame::bulletList(...)`, `TextFrame::numberedList(...)` und `BulletType` zur Verfuegung
 - Tabellen stehen in einer ersten Stufe ueber `table(...)`, `Table` und `TableCell` zur Verfuegung
 - Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
@@ -46,7 +46,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Textfluss-API ueber `addParagraph()` und `TextFrame`
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
-- erste Listen-API mit vordefinierten Bullet-Typen
+- erste Listen-API mit Bullet- und nummerierten Listen
 - erste Tabellen-API mit festen Spaltenbreiten und Zeilen
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
 - erste freie Form-API ueber `path()`
@@ -106,7 +106,7 @@ Naechste Kandidaten:
 Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
 
 - segment-spezifische Fontgroessen oder Fontfamilien innerhalb eines Absatzes
-- Ausbau der Listen-API, zum Beispiel fuer nummerierte und verschachtelte Listen
+- Ausbau der Listen-API, zum Beispiel fuer verschachtelte Listen, weitere Nummernformate und Listenstile
 - Tabs oder einfache Spalten
 - explizite Absatz- und Zeilenabstaende als Style-Objekte statt weiterer Parameter
 

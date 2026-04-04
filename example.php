@@ -387,6 +387,34 @@ $bulletPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(
         bulletColor: Color::rgb(180, 20, 20),
     );
 
+$numberedPage = $document->addPage(PageSize::A4());
+$numberedPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Numbered List Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Nummerierte Listen verwenden denselben Flow wie Bullet-Listen, aber mit laufender Nummerierung.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    )
+    ->numberedList(
+        [
+            'Projekt initialisieren und Fonts registrieren.',
+            [
+                new TextSegment('Tabellen', bold: true),
+                new TextSegment(' und Listen in den Dokumentfluss integrieren.'),
+            ],
+            [
+                new TextSegment('Dokumentation', color: Color::rgb(0, 0, 255), link: 'https://example.com/docs', underline: true),
+                new TextSegment(' nach jedem Feature aktualisieren.'),
+            ],
+            'Zum Schluss Tests und statische Analyse laufen lassen, damit der Stand belastbar bleibt.',
+        ],
+        'NotoSans-Regular',
+        12,
+        numberColor: Color::rgb(180, 20, 20),
+        startAt: 3,
+    );
+
 //$coverPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);
 //$coverFrame

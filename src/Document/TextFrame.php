@@ -96,6 +96,94 @@ final class TextFrame
             throw new InvalidArgumentException('Bullet indent must be smaller than the text frame width.');
         }
 
+        return $this->renderList(
+            items: $items,
+            markerRenderer: static fn (int $index): string => $bulletType->value,
+            baseFont: $baseFont,
+            size: $size,
+            tag: $tag,
+            lineHeight: $lineHeight,
+            spacingAfter: $spacingAfter,
+            itemSpacing: $itemSpacing,
+            color: $color,
+            opacity: $opacity,
+            markerColor: $bulletColor ?? $color,
+            markerIndent: $bulletIndent,
+        );
+    }
+
+    /**
+     * @param list<string|list<TextSegment>> $items
+     */
+    public function numberedList(
+        array $items,
+        string $baseFont,
+        int $size,
+        ?string $tag = null,
+        ?float $lineHeight = null,
+        ?float $spacingAfter = null,
+        ?float $itemSpacing = null,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+        ?Color $numberColor = null,
+        ?float $numberIndent = null,
+        int $startAt = 1,
+    ): self {
+        $lineHeight ??= $size * 1.2;
+        $spacingAfter ??= $lineHeight;
+        $itemSpacing ??= $size * 0.4;
+        $numberIndent ??= self::DEFAULT_BULLET_INDENT;
+
+        if ($items === []) {
+            return $this;
+        }
+
+        if ($numberIndent <= 0) {
+            throw new InvalidArgumentException('Number indent must be greater than zero.');
+        }
+
+        if ($this->width <= $numberIndent) {
+            throw new InvalidArgumentException('Number indent must be smaller than the text frame width.');
+        }
+
+        if ($startAt <= 0) {
+            throw new InvalidArgumentException('Numbered lists must start at 1 or greater.');
+        }
+
+        return $this->renderList(
+            items: $items,
+            markerRenderer: static fn (int $index): string => ($startAt + $index) . '.',
+            baseFont: $baseFont,
+            size: $size,
+            tag: $tag,
+            lineHeight: $lineHeight,
+            spacingAfter: $spacingAfter,
+            itemSpacing: $itemSpacing,
+            color: $color,
+            opacity: $opacity,
+            markerColor: $numberColor ?? $color,
+            markerIndent: $numberIndent,
+        );
+    }
+
+    /**
+     * @param list<string|list<TextSegment>> $items
+     * @param \Closure(int): string $markerRenderer
+     */
+    private function renderList(
+        array $items,
+        \Closure $markerRenderer,
+        string $baseFont,
+        int $size,
+        ?string $tag,
+        float $lineHeight,
+        float $spacingAfter,
+        float $itemSpacing,
+        ?Color $color,
+        ?Opacity $opacity,
+        ?Color $markerColor,
+        float $markerIndent,
+    ): self {
         foreach ($items as $index => $item) {
             if ($this->cursorY < $this->bottomMargin + $lineHeight) {
                 $topMargin = $this->page->getHeight() - $this->cursorY;
@@ -104,20 +192,20 @@ final class TextFrame
             }
 
             $this->page->addText(
-                text: $bulletType->value,
+                text: $markerRenderer($index),
                 x: $this->x,
                 y: $this->cursorY,
                 baseFont: $baseFont,
                 size: $size,
                 tag: $tag,
-                color: $bulletColor ?? $color,
+                color: $markerColor,
                 opacity: $opacity,
             );
 
             $this->flowParagraph(
                 text: $item,
-                x: $this->x + $bulletIndent,
-                width: $this->width - $bulletIndent,
+                x: $this->x + $markerIndent,
+                width: $this->width - $markerIndent,
                 baseFont: $baseFont,
                 size: $size,
                 tag: $tag,

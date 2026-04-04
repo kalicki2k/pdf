@@ -240,4 +240,44 @@ final class TextFrameTest extends TestCase
         self::assertStringContainsString('(Second) Tj', $document->render());
         self::assertStringContainsString('(item) Tj', $frame->getPage()->contents->render());
     }
+
+    #[Test]
+    public function it_renders_a_numbered_list_with_custom_start_index(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame->numberedList(
+            [
+                'First item',
+                [new TextSegment('Second', bold: true), new TextSegment(' item')],
+            ],
+            'Helvetica',
+            10,
+            spacingAfter: 6,
+            startAt: 3,
+        );
+
+        self::assertStringContainsString("20 100 Td\n(3.) Tj", $page->contents->render());
+        self::assertStringContainsString("34 100 Td\n(First item) Tj", $page->contents->render());
+        self::assertStringContainsString("20 84 Td\n(4.) Tj", $page->contents->render());
+        self::assertStringContainsString('(Second) Tj', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_numbered_lists_that_start_before_one(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 120, 20);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Numbered lists must start at 1 or greater.');
+
+        $frame->numberedList(['One'], 'Helvetica', 10, startAt: 0);
+    }
 }
