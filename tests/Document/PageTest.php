@@ -13,6 +13,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Styles\BadgeStyle;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -161,6 +162,128 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Rectangle requires either a stroke or a fill.');
 
         $page->addRectangle(10, 20, 100, 40, null, null, null);
+    }
+
+    #[Test]
+    public function it_adds_a_stroked_rounded_rectangle_to_the_page_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addRoundedRectangle(10, 20, 100, 40, 8, 1.5, Color::rgb(255, 0, 0));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n18 60 m", $page->contents->render());
+        self::assertStringContainsString("110 52 c", $page->contents->render());
+        self::assertStringContainsString("\nh\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_fills_and_strokes_a_rounded_rectangle(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addRoundedRectangle(10, 20, 100, 40, 8, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n18 60 m", $page->contents->render());
+        self::assertStringContainsString("\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_invalid_rounded_rectangle_radii(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rounded rectangle radius must not exceed half the width or height.');
+
+        $page->addRoundedRectangle(10, 20, 100, 40, 25);
+    }
+
+    #[Test]
+    public function it_adds_a_badge_with_background_and_text(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addBadge('Beta', 10, 20);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("0.9 g", $page->contents->render());
+        self::assertStringContainsString("(Beta) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_a_badge_with_custom_style_and_link(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addBadge(
+            'Aktiv',
+            10,
+            20,
+            'Helvetica',
+            12,
+            new BadgeStyle(
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                fillColor: Color::gray(0.8),
+                textColor: Color::rgb(255, 0, 0),
+                borderWidth: 1.5,
+                borderColor: Color::rgb(0, 0, 255),
+                opacity: Opacity::both(0.4),
+            ),
+            'https://example.com',
+        );
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString("0 0 1 RG\n0.8 g\n/GS1 gs\n1.5 w", $page->contents->render());
+        self::assertStringContainsString("(Aktiv) Tj", $page->contents->render());
+        self::assertStringContainsString('/Annots [8 0 R]', $page->render());
+    }
+
+    #[Test]
+    public function it_adds_a_badge_with_rounded_corners(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addBadge(
+            'Rounded',
+            10,
+            20,
+            'Helvetica',
+            12,
+            new BadgeStyle(
+                cornerRadius: 4,
+                fillColor: Color::gray(0.8),
+                borderWidth: 1.0,
+                borderColor: Color::rgb(255, 0, 0),
+            ),
+        );
+
+        self::assertStringContainsString("1 0 0 RG\n0.8 g\n1 w\n14 38 m", $page->contents->render());
+        self::assertStringContainsString("(Rounded) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_empty_badge_text(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Badge text must not be empty.');
+
+        $page->addBadge('', 10, 20);
     }
 
     #[Test]

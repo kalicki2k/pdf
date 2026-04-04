@@ -14,6 +14,7 @@ use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Styles\BadgeStyle;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Styles\RowStyle;
@@ -631,6 +632,78 @@ $numberedPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::m
         numberColor: Color::rgb(180, 20, 20),
         startAt: 3,
     );
+
+$badgePage = $document->addPage(PageSize::A4());
+$badgePage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Badge Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Badges sind kleine Labels fuer Status, Tags oder kurze Hervorhebungen.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$badgePage->addBadge('Standard', Units::mm(20), Units::mm(220), 'NotoSans-Regular', 11);
+$badgePage->addBadge(
+    'Aktiv',
+    Units::mm(55),
+    Units::mm(220),
+    'NotoSans-Regular',
+    11,
+    new BadgeStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::rgb(225, 240, 225),
+        textColor: Color::rgb(20, 110, 50),
+        borderWidth: 1.0,
+        borderColor: Color::rgb(20, 110, 50),
+    ),
+);
+$badgePage->addBadge(
+    'Beta',
+    Units::mm(90),
+    Units::mm(220),
+    'NotoSans-Regular',
+    11,
+    new BadgeStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::rgb(230, 235, 250),
+        textColor: Color::rgb(40, 70, 140),
+        borderWidth: 1.0,
+        borderColor: Color::rgb(40, 70, 140),
+        opacity: Opacity::both(0.7),
+    ),
+);
+$badgePage->addBadge(
+    'Docs',
+    Units::mm(125),
+    Units::mm(220),
+    'NotoSans-Regular',
+    11,
+    new BadgeStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::rgb(245, 245, 245),
+        textColor: Color::rgb(0, 0, 255),
+        borderWidth: 1.0,
+        borderColor: Color::rgb(120, 120, 120),
+    ),
+    'https://example.com/docs',
+);
+$badgePage->addBadge(
+    'Entwurf',
+    Units::mm(20),
+    Units::mm(195),
+    'NotoSans-Regular',
+    14,
+    new BadgeStyle(
+        paddingHorizontal: Units::mm(4),
+        paddingVertical: Units::mm(2),
+        cornerRadius: Units::mm(3),
+        fillColor: Color::rgb(255, 240, 220),
+        textColor: Color::rgb(160, 90, 20),
+        borderWidth: 1.5,
+        borderColor: Color::rgb(160, 90, 20),
+    ),
+);
 
 //$coverPage = $document->addPage(\Kalle\Pdf\Layout\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);

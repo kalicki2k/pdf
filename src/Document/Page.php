@@ -21,6 +21,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Styles\BadgeStyle;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
@@ -107,6 +108,74 @@ final class Page extends IndirectObject
                 $link,
             );
         }
+
+        return $this;
+    }
+
+    public function addBadge(
+        string $text,
+        float $x,
+        float $y,
+        string $baseFont = 'Helvetica',
+        int $size = 11,
+        ?BadgeStyle $style = null,
+        ?string $link = null,
+    ): self {
+        if ($text === '') {
+            throw new InvalidArgumentException('Badge text must not be empty.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Badge font size must be greater than zero.');
+        }
+
+        $style ??= new BadgeStyle(
+            fillColor: Color::gray(0.9),
+        );
+
+        $font = $this->resolveFont($baseFont);
+        $textWidth = $font->measureTextWidth($text, $size);
+        $badgeWidth = $textWidth + ($style->paddingHorizontal * 2);
+        $badgeHeight = $size + ($style->paddingVertical * 2);
+
+        if ($style->cornerRadius > 0) {
+            $this->addRoundedRectangle(
+                $x,
+                $y,
+                $badgeWidth,
+                $badgeHeight,
+                $style->cornerRadius,
+                $style->borderWidth,
+                $style->borderColor,
+                $style->fillColor,
+                $style->opacity,
+            );
+        } else {
+            $this->addRectangle(
+                $x,
+                $y,
+                $badgeWidth,
+                $badgeHeight,
+                $style->borderWidth,
+                $style->borderColor,
+                $style->fillColor,
+                $style->opacity,
+            );
+        }
+
+        $this->addText(
+            $text,
+            $x + $style->paddingHorizontal,
+            $y + $style->paddingVertical + ($size * 0.2),
+            $baseFont,
+            $size,
+            null,
+            $style->textColor,
+            $style->opacity,
+            false,
+            false,
+            $link,
+        );
 
         return $this;
     }
@@ -299,6 +368,98 @@ final class Page extends IndirectObject
         ));
 
         return $this;
+    }
+
+    public function addRoundedRectangle(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        float $radius,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Rounded rectangle width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Rounded rectangle height must be greater than zero.');
+        }
+
+        if ($radius <= 0) {
+            throw new InvalidArgumentException('Rounded rectangle radius must be greater than zero.');
+        }
+
+        if ($radius > ($width / 2) || $radius > ($height / 2)) {
+            throw new InvalidArgumentException('Rounded rectangle radius must not exceed half the width or height.');
+        }
+
+        if ($strokeWidth !== null && $strokeWidth <= 0) {
+            throw new InvalidArgumentException('Rounded rectangle stroke width must be greater than zero.');
+        }
+
+        if ($strokeWidth === null && $fillColor === null) {
+            throw new InvalidArgumentException('Rounded rectangle requires either a stroke or a fill.');
+        }
+
+        $controlOffset = $radius * 0.5522847498307936;
+        $left = $x;
+        $right = $x + $width;
+        $bottom = $y;
+        $top = $y + $height;
+
+        $path = $this->addPath()
+            ->moveTo($left + $radius, $top)
+            ->lineTo($right - $radius, $top)
+            ->curveTo(
+                $right - $radius + $controlOffset,
+                $top,
+                $right,
+                $top - $radius + $controlOffset,
+                $right,
+                $top - $radius,
+            )
+            ->lineTo($right, $bottom + $radius)
+            ->curveTo(
+                $right,
+                $bottom + $radius - $controlOffset,
+                $right - $radius + $controlOffset,
+                $bottom,
+                $right - $radius,
+                $bottom,
+            )
+            ->lineTo($left + $radius, $bottom)
+            ->curveTo(
+                $left + $radius - $controlOffset,
+                $bottom,
+                $left,
+                $bottom + $radius - $controlOffset,
+                $left,
+                $bottom + $radius,
+            )
+            ->lineTo($left, $top - $radius)
+            ->curveTo(
+                $left,
+                $top - $radius + $controlOffset,
+                $left + $radius - $controlOffset,
+                $top,
+                $left + $radius,
+                $top,
+            )
+            ->close();
+
+        if ($strokeWidth !== null && $fillColor !== null) {
+            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
+        }
+
+        if ($fillColor !== null) {
+            return $path->fill($fillColor, $opacity);
+        }
+
+        return $path->stroke($strokeWidth, $strokeColor, $opacity);
     }
 
     public function addCircle(
