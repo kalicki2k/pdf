@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\Units;
 
 require 'vendor/autoload.php';
 
@@ -57,8 +58,8 @@ $page = $document->addPage(PageSize::A4());
 
 $page->addText(
     'Hallo PDF',
-    20,
-    265,
+    Units::mm(20),
+    Units::mm(265),
     'NotoSans-Regular',
     24,
     'H1',
@@ -73,9 +74,27 @@ file_put_contents('hello.pdf', $pdfContent);
 
 1. `Document` initialisiert das PDF mit Version und Metadaten.
 2. `addFont('NotoSans-Regular')` registriert eine eingebettete Schrift aus der Font-Konfiguration.
-3. `addPage()` erstellt eine neue Seite, standardmaessig im Format `210 x 297` oder explizit ueber `PageSize::A4()`.
-4. `addText()` positioniert Text mit `x`, `y`, Fontname, Schriftgroesse und optionalem Struktur-Tag.
+3. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
+4. `addText()` positioniert Text mit `x`, `y`, Fontname, Schriftgroesse und optionalem Struktur-Tag. Numerische Layoutwerte werden in PDF-Points erwartet; fuer andere Einheiten stehen Helper wie `Units::pt()`, `Units::mm()`, `Units::cm()` und `Units::inch()` bereit.
 5. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+
+## Einheiten
+
+Die API erwartet numerische Layoutwerte grundsaetzlich in PDF-Points.
+
+Wenn du lieber in physischen Einheiten arbeitest, kannst du die Helper aus `Units` verwenden:
+
+```php
+Units::pt(12);
+Units::mm(20);
+Units::cm(2.5);
+Units::inch(1);
+```
+
+Typisch ist dabei:
+
+- Schriftgroessen wie `12` oder `16` sind bereits Points
+- Seitenmasse, Positionen, Breiten und Margins koennen bei Bedarf explizit ueber `Units` umgerechnet werden
 
 ## Font-Konfiguration
 
@@ -99,7 +118,7 @@ Fuer breitere Zeichensaetze kann ein Unicode-Font direkt ueber seinen Fontnamen 
 ```php
 $document->addFont('NotoSansCJKsc-Regular');
 
-$page->addText('漢字とカタカナ', 20, 225, 'NotoSansCJKsc-Regular', 14, 'P');
+$page->addText('漢字とカタカナ', Units::mm(20), Units::mm(225), 'NotoSansCJKsc-Regular', 14, 'P');
 ```
 
 ## Dokumenteigene Font-Konfiguration

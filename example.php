@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Units;
 
 require 'vendor/autoload.php';
 
@@ -54,29 +55,54 @@ $document->addKeyword('demo')
     ->addFont('NotoSansCJKsc-Regular');
 
 $sansPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
-$sansPage->textFrame(20, 265, 170)
+$sansPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Noto Sans', 'NotoSans-Regular', 16, 'H1')
-    ->paragraph('Das ist ein Test fuer NotoSans-Regular.', 'NotoSans-Regular', 12, 'P');
+    ->paragraph(
+        'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
+        'NotoSans-Regular',
+        12,
+        'P'
+    );
 
 $serifPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
-$serifPage->textFrame(20, 265, 170)
+$serifPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Noto Serif', 'NotoSerif-Regular', 16, 'H1')
-    ->paragraph('Das ist ein Test fuer NotoSerif-Regular.', 'NotoSerif-Regular', 12, 'P');
+    ->paragraph(
+        'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
+        'NotoSerif-Regular',
+        12,
+        'P'
+    );
 
 $monoPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
-$monoPage->textFrame(20, 265, 170)
+$monoPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Noto Sans Mono', 'NotoSansMono-Regular', 16, 'H1')
-    ->paragraph('Das ist ein Test fuer NotoSansMono-Regular.', 'NotoSansMono-Regular', 12, 'P');
+    ->paragraph(
+        'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
+        'NotoSansMono-Regular',
+        12,
+        'P'
+    );
 
 $cjkPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
-$cjkPage->textFrame(20, 265, 170)
+$cjkPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Noto Sans CJK', 'NotoSansCJKsc-Regular', 16, 'H1')
-    ->paragraph('漢字とカタカナ', 'NotoSansCJKsc-Regular', 14, 'P');
+    ->paragraph(
+        '漢字とカタカナ',
+        'NotoSansCJKsc-Regular',
+        14,
+        'P'
+    );
 
 $standardPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
-$standardPage->textFrame(20, 265, 170)
+$standardPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Helvetica', 'Helvetica', 16, 'H1')
-    ->paragraph('Das ist ein Test fuer die PDF-Standardfont Helvetica.', 'Helvetica', 12, 'P');
+    ->paragraph(
+        'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
+        'Helvetica',
+        12,
+        'P'
+    );
 
 //$coverPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);

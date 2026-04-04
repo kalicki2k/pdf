@@ -2,11 +2,14 @@
 
 `PageSize` ist der Helper fuer vordefinierte und benutzerdefinierte Seitengroessen in `Document::addPage()`.
 
+Die Werte in `PageSize` sind immer PDF-Points. Wenn du lieber in physischen Einheiten arbeitest, kannst du mit `PageSize::fromMillimeters()` oder ueber `Units` umrechnen.
+
 ## Verwendung
 
 ```php
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\Units;
 
 $document = new Document();
 
@@ -14,14 +17,18 @@ $document->addPage();
 $document->addPage(PageSize::A4());
 $document->addPage(PageSize::A4()->landscape());
 $document->addPage(PageSize::custom(148.0, 210.0));
+$document->addPage(PageSize::fromMillimeters(148.0, 210.0));
+$document->addPage(PageSize::custom(Units::cm(14.8), Units::cm(21.0)));
 ```
 
 Wichtig:
 
-- `addPage()` ohne Argumente bleibt bei `210 x 297`
+- `addPage()` ohne Argumente verwendet A4 in PDF-Points
 - `PageSize`-Werte sind immutable
 - `landscape()` und `portrait()` liefern neue Instanzen
 - alle Masse sind in PDF-User-Units beziehungsweise Punkten notiert
+- fuer millimeterbasierte Eingaben steht `PageSize::fromMillimeters()` bereit
+- fuer andere Einheiten koennen `Units::pt()`, `Units::mm()`, `Units::cm()` und `Units::inch()` genutzt werden
 
 ## Verfuegbare Formate
 
@@ -81,4 +88,5 @@ Fuer Sonderfaelle ohne vordefiniertes Format:
 
 ```php
 $document->addPage(PageSize::custom(320.0, 180.0));
+$document->addPage(PageSize::fromMillimeters(320.0, 180.0));
 ```

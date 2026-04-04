@@ -129,7 +129,7 @@ final class Document
         return $objects;
     }
 
-    public function addPage(PageSize | float $width = 210.0, ?float $height = null): Page
+    public function addPage(PageSize | float $width = 595.2755905511812, ?float $height = null): Page
     {
         if ($width instanceof PageSize) {
             if ($height !== null) {
@@ -140,7 +140,7 @@ final class Document
             $width = $width->width();
         }
 
-        $height ??= 297.0;
+        $height ??= 841.8897637795277;
 
         return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, ++$this->structParentId, $width, $height);
     }

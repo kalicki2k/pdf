@@ -13,6 +13,8 @@ use PHPUnit\Framework\TestCase;
 
 final class DocumentTest extends TestCase
 {
+    private const FLOAT_DELTA = 0.0001;
+
     #[Test]
     public function it_initializes_base_objects_for_pdf_1_0(): void
     {
@@ -66,8 +68,8 @@ final class DocumentTest extends TestCase
 
         $page = $document->addPage(PageSize::A5());
 
-        self::assertSame(148.0, $page->getWidth());
-        self::assertSame(210.0, $page->getHeight());
+        self::assertEqualsWithDelta(419.5275590551, $page->getWidth(), self::FLOAT_DELTA);
+        self::assertEqualsWithDelta(595.2755905512, $page->getHeight(), self::FLOAT_DELTA);
     }
 
     #[Test]
@@ -77,8 +79,8 @@ final class DocumentTest extends TestCase
 
         $page = $document->addPage(PageSize::A00());
 
-        self::assertSame(1189.0, $page->getWidth());
-        self::assertSame(1682.0, $page->getHeight());
+        self::assertEqualsWithDelta(3370.3937007874, $page->getWidth(), self::FLOAT_DELTA);
+        self::assertEqualsWithDelta(4767.874015748, $page->getHeight(), self::FLOAT_DELTA);
     }
 
     #[Test]
@@ -88,8 +90,8 @@ final class DocumentTest extends TestCase
 
         $page = $document->addPage(PageSize::B4());
 
-        self::assertSame(250.0, $page->getWidth());
-        self::assertSame(353.0, $page->getHeight());
+        self::assertEqualsWithDelta(708.6614173228, $page->getWidth(), self::FLOAT_DELTA);
+        self::assertEqualsWithDelta(1000.6299212598, $page->getHeight(), self::FLOAT_DELTA);
     }
 
     #[Test]
@@ -99,8 +101,8 @@ final class DocumentTest extends TestCase
 
         $page = $document->addPage(PageSize::C5());
 
-        self::assertSame(162.0, $page->getWidth());
-        self::assertSame(229.0, $page->getHeight());
+        self::assertEqualsWithDelta(459.2125984252, $page->getWidth(), self::FLOAT_DELTA);
+        self::assertEqualsWithDelta(649.1338582677, $page->getHeight(), self::FLOAT_DELTA);
     }
 
     #[Test]
@@ -110,8 +112,8 @@ final class DocumentTest extends TestCase
 
         $page = $document->addPage(PageSize::A4()->landscape());
 
-        self::assertSame(297.0, $page->getWidth());
-        self::assertSame(210.0, $page->getHeight());
+        self::assertEqualsWithDelta(841.8897637795, $page->getWidth(), self::FLOAT_DELTA);
+        self::assertEqualsWithDelta(595.2755905512, $page->getHeight(), self::FLOAT_DELTA);
     }
 
     #[Test]
