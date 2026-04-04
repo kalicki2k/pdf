@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Layout\PageSize;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

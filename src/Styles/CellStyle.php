@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Styles;
 
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\VerticalAlign;
 
 final readonly class CellStyle
 {

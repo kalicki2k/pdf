@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Layout\BulletType;
-use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Styles\HeaderStyle;
-use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Styles\RowStyle;
-use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
-use Kalle\Pdf\Styles\TablePadding;
-use Kalle\Pdf\Styles\TableStyle;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
-use Kalle\Pdf\Layout\Units;
-use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Layout\BulletType;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Styles\HeaderStyle;
+use Kalle\Pdf\Styles\RowStyle;
+use Kalle\Pdf\Styles\TableBorder;
+use Kalle\Pdf\Styles\TablePadding;
+use Kalle\Pdf\Styles\TableStyle;
 
 require 'vendor/autoload.php';
 

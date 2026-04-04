@@ -11,9 +11,9 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Styles\HeaderStyle;
+use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Styles\TablePadding;
-use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableStyle;
 
 final class Table
@@ -25,12 +25,7 @@ final class Table
     private array $headerRows = [];
     /** @var list<int> */
     private array $activeRowspans = [];
-    /**
-     * @var list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
-     *     header: bool
-     * }>
-     */
+    /** @var list<PreparedTableRow> */
     private array $pendingGroupRows = [];
     private readonly float $topMargin;
     private Page $page;
@@ -142,10 +137,7 @@ final class Table
         }
 
         $preparedRow = $this->prepareRow($cells, $header);
-        $this->pendingGroupRows[] = [
-            'cells' => $preparedRow['cells'],
-            'header' => $header,
-        ];
+        $this->pendingGroupRows[] = new PreparedTableRow($preparedRow['cells'], $header);
         $this->activeRowspans = $preparedRow['nextRowspans'];
 
         if (!$this->hasActiveRowspans()) {
@@ -171,18 +163,13 @@ final class Table
             return;
         }
 
-        /** @var list<array{
-         *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
-         *     header: bool
-         * }> $pendingGroupRows
-         */
         $pendingGroupRows = $this->pendingGroupRows;
 
         $rowHeights = $this->resolvePendingGroupRowHeights($pendingGroupRows);
         $groupHeight = array_sum($rowHeights);
         $isBodyGroup = array_any(
             $pendingGroupRows,
-            static fn (array $row): bool => $row['header'] === false,
+            static fn (PreparedTableRow $row): bool => $row->header === false,
         );
 
         $this->ensureGroupFitsOnCurrentPage($groupHeight, $isBodyGroup);
@@ -221,10 +208,7 @@ final class Table
 
     /**
      * @param list<string|list<TextSegment>|TableCell> $cells
-     * @return array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
-     *     nextRowspans: list<int>
-     * }
+     * @return array{cells: list<PreparedTableCell>, nextRowspans: list<int>}
      */
     private function prepareRow(array $cells, bool $header): array
     {
@@ -242,10 +226,8 @@ final class Table
             }
 
             $preparedCell = $this->normalizeCell($cell, $header);
-            $rowStyle = $this->resolveRowStyle($header);
-            $cellStyle = $preparedCell->style ?? new CellStyle();
-            $rowPadding = $rowStyle instanceof RowStyle ? $rowStyle->padding : null;
-            $padding = $cellStyle->padding ?? $rowPadding ?? $this->style->padding ?? TablePadding::all(0.0);
+            $resolvedStyle = $this->resolveEffectiveCellStyle($preparedCell, $header);
+            $padding = $resolvedStyle->padding;
             $columnWidth = $this->resolveColumnSpanWidth($columnIndex, $preparedCell->colspan, $this->activeRowspans);
             $contentWidth = $columnWidth - $padding->horizontal();
 
@@ -262,14 +244,14 @@ final class Table
 
             $contentHeight = $this->fontSize + (max(0, $lineCount - 1) * $lineHeight);
             $cellHeight = $contentHeight + $padding->vertical();
-            $preparedCells[] = [
-                'cell' => $preparedCell,
-                'width' => $columnWidth,
-                'column' => $columnIndex,
-                'minHeight' => $cellHeight,
-                'contentHeight' => $contentHeight,
-                'padding' => $padding,
-            ];
+            $preparedCells[] = new PreparedTableCell(
+                $preparedCell,
+                $columnWidth,
+                $columnIndex,
+                $cellHeight,
+                $contentHeight,
+                $resolvedStyle->padding,
+            );
 
             if ($preparedCell->rowspan > 1) {
                 for ($offset = 0; $offset < $preparedCell->colspan; $offset++) {
@@ -292,10 +274,7 @@ final class Table
     }
 
     /**
-     * @param list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
-     *     header: bool
-     * }> $preparedRows
+     * @param list<PreparedTableRow> $preparedRows
      * @return list<float>
      */
     private function resolvePendingGroupRowHeights(array $preparedRows): array
@@ -303,16 +282,16 @@ final class Table
         $rowHeights = array_fill(0, count($preparedRows), 0.0);
 
         foreach ($preparedRows as $rowIndex => $preparedRow) {
-            foreach ($preparedRow['cells'] as $preparedEntry) {
-                if ($preparedEntry['cell']->rowspan === 1) {
-                    $rowHeights[$rowIndex] = max($rowHeights[$rowIndex], $preparedEntry['minHeight']);
+            foreach ($preparedRow->cells as $preparedCell) {
+                if ($preparedCell->cell->rowspan === 1) {
+                    $rowHeights[$rowIndex] = max($rowHeights[$rowIndex], $preparedCell->minHeight);
                 }
             }
         }
 
         foreach ($preparedRows as $rowIndex => $preparedRow) {
-            foreach ($preparedRow['cells'] as $preparedEntry) {
-                $rowspan = $preparedEntry['cell']->rowspan;
+            foreach ($preparedRow->cells as $preparedCell) {
+                $rowspan = $preparedCell->cell->rowspan;
 
                 if ($rowspan === 1) {
                     continue;
@@ -323,7 +302,7 @@ final class Table
                 }
 
                 $currentHeight = array_sum(array_slice($rowHeights, $rowIndex, $rowspan));
-                $missingHeight = $preparedEntry['minHeight'] - $currentHeight;
+                $missingHeight = $preparedCell->minHeight - $currentHeight;
 
                 if ($missingHeight > 0) {
                     $rowHeights[$rowIndex + $rowspan - 1] += $missingHeight;
@@ -395,10 +374,7 @@ final class Table
 
     /**
      * @param list<list<string|list<TextSegment>|TableCell>> $rows
-     * @return list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
-     *     header: bool
-     * }>
+     * @return list<PreparedTableRow>
      */
     private function prepareRowGroup(array $rows, bool $header): array
     {
@@ -408,10 +384,7 @@ final class Table
 
         foreach ($rows as $row) {
             $preparedRow = $this->prepareRow($row, $header);
-            $preparedRows[] = [
-                'cells' => $preparedRow['cells'],
-                'header' => $header,
-            ];
+            $preparedRows[] = new PreparedTableRow($preparedRow['cells'], $header);
             $this->activeRowspans = $preparedRow['nextRowspans'];
         }
 
@@ -425,10 +398,7 @@ final class Table
     }
 
     /**
-     * @param list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float, padding: TablePadding}>,
-     *     header: bool
-     * }> $preparedRows
+     * @param list<PreparedTableRow> $preparedRows
      * @param list<float> $rowHeights
      */
     private function renderPendingGroup(array $preparedRows, array $rowHeights): void
@@ -437,63 +407,89 @@ final class Table
         $rowTopY = $this->cursorY;
 
         foreach ($preparedRows as $rowIndex => $preparedRow) {
-            foreach ($preparedRow['cells'] as $preparedEntry) {
-                $preparedCell = $preparedEntry['cell'];
-                $rowStyle = $this->resolveRowStyle($preparedRow['header']);
-                $cellStyle = $preparedCell->style ?? new CellStyle();
-                $spanHeight = array_sum(array_slice($rowHeights, $rowIndex, $preparedCell->rowspan));
-                $cellX = $this->x + $this->calculateColumnOffset($preparedEntry['column']);
-                $cellBottomY = $rowTopY - $spanHeight;
-                $rowFillColor = $rowStyle instanceof RowStyle ? $rowStyle->fillColor : null;
-                $rowTextColor = $rowStyle instanceof RowStyle ? $rowStyle->textColor : null;
-                $rowVerticalAlign = $rowStyle instanceof RowStyle ? $rowStyle->verticalAlign : null;
-                $rowBorder = $rowStyle instanceof RowStyle ? $rowStyle->border : null;
-                $rowHorizontalAlign = $rowStyle instanceof RowStyle ? $rowStyle->horizontalAlign : null;
-                $rowOpacity = $rowStyle instanceof RowStyle ? $rowStyle->opacity : null;
-                $fillColor = $cellStyle->fillColor ?? $rowFillColor ?? $this->style->fillColor;
-                $textColor = $cellStyle->textColor ?? $rowTextColor ?? $this->style->textColor;
-                $verticalAlign = $cellStyle->verticalAlign ?? $rowVerticalAlign ?? $this->style->verticalAlign ?? VerticalAlign::TOP;
-                $padding = $preparedEntry['padding'];
-                $this->renderCellBox(
-                    $cellX,
-                    $cellBottomY,
-                    $preparedEntry['width'],
-                    $spanHeight,
-                    $fillColor,
-                    $this->style->border,
-                    $rowBorder,
-                    $cellStyle->border,
-                );
-
-                $horizontalAlign = $cellStyle->horizontalAlign ?? $rowHorizontalAlign ?? HorizontalAlign::LEFT;
-
-                $this->page = $this->page->addParagraph(
-                    $preparedCell->text,
-                    $cellX + $padding->left,
-                    $this->resolveCellTextStartY(
-                        $rowTopY,
-                        $cellBottomY,
-                        $spanHeight,
-                        $preparedEntry['contentHeight'],
-                        $verticalAlign,
-                        $padding,
-                    ),
-                    $preparedEntry['width'] - $padding->horizontal(),
-                    $this->baseFont,
-                    $this->fontSize,
-                    null,
-                    $lineHeight,
-                    ($cellBottomY + $padding->bottom) - self::CELL_BOTTOM_EPSILON,
-                    $textColor,
-                    $cellStyle->opacity ?? $rowOpacity,
-                    $horizontalAlign,
-                );
+            foreach ($preparedRow->cells as $preparedCell) {
+                $this->renderPreparedCell($preparedCell, $preparedRow->header, $rowIndex, $rowHeights, $rowTopY, $lineHeight);
             }
 
             $rowTopY -= $rowHeights[$rowIndex];
         }
 
         $this->cursorY = $rowTopY;
+    }
+
+    /**
+     * @param list<float> $rowHeights
+     */
+    private function renderPreparedCell(
+        PreparedTableCell $preparedCell,
+        bool $header,
+        int $rowIndex,
+        array $rowHeights,
+        float $rowTopY,
+        float $lineHeight,
+    ): void {
+        $resolvedStyle = $this->resolveEffectiveCellStyle($preparedCell->cell, $header);
+        $geometry = $this->resolvePreparedCellGeometry($preparedCell, $rowIndex, $rowHeights, $rowTopY, $resolvedStyle);
+
+        $this->renderCellBox(
+            $geometry->x,
+            $geometry->bottomY,
+            $geometry->width,
+            $geometry->height,
+            $resolvedStyle->fillColor,
+            $this->style->border,
+            $resolvedStyle->rowBorder,
+            $resolvedStyle->cellBorder,
+        );
+
+        $this->page = $this->page->addParagraph(
+            $preparedCell->cell->text,
+            $geometry->textX,
+            $geometry->textY,
+            $geometry->textWidth,
+            $this->baseFont,
+            $this->fontSize,
+            null,
+            $lineHeight,
+            $geometry->bottomLimitY,
+            $resolvedStyle->textColor,
+            $resolvedStyle->opacity,
+            $resolvedStyle->horizontalAlign,
+        );
+    }
+
+    /**
+     * @param list<float> $rowHeights
+     */
+    private function resolvePreparedCellGeometry(
+        PreparedTableCell $preparedCell,
+        int $rowIndex,
+        array $rowHeights,
+        float $rowTopY,
+        ResolvedTableCellStyle $resolvedStyle,
+    ): PreparedTableCellGeometry {
+        $height = array_sum(array_slice($rowHeights, $rowIndex, $preparedCell->cell->rowspan));
+        $x = $this->x + $this->calculateColumnOffset($preparedCell->column);
+        $bottomY = $rowTopY - $height;
+        $padding = $resolvedStyle->padding;
+
+        return new PreparedTableCellGeometry(
+            $x,
+            $bottomY,
+            $preparedCell->width,
+            $height,
+            $x + $padding->left,
+            $this->resolveCellTextStartY(
+                $rowTopY,
+                $bottomY,
+                $height,
+                $preparedCell->contentHeight,
+                $resolvedStyle->verticalAlign,
+                $padding,
+            ),
+            $preparedCell->width - $padding->horizontal(),
+            ($bottomY + $padding->bottom) - self::CELL_BOTTOM_EPSILON,
+        );
     }
 
     private function resolveCellTextStartY(
@@ -583,8 +579,7 @@ final class Table
         ?TableBorder $defaultBorder,
         ?TableBorder $rowBorder,
         ?TableBorder $cellBorder,
-    ): ?array
-    {
+    ): ?array {
         $applicableBorders = [];
 
         foreach ([$cellBorder, $rowBorder, $defaultBorder] as $border) {
@@ -615,22 +610,53 @@ final class Table
         return $header ? $this->headerStyle : $this->rowStyle;
     }
 
+    private function resolveEffectiveCellStyle(TableCell $cell, bool $header): ResolvedTableCellStyle
+    {
+        $rowStyle = $this->resolveRowStyle($header);
+        $cellStyle = $cell->style ?? new CellStyle();
+        $rowPadding = $rowStyle instanceof RowStyle ? $rowStyle->padding : null;
+        $rowFillColor = $rowStyle instanceof RowStyle ? $rowStyle->fillColor : null;
+        $rowTextColor = $rowStyle instanceof RowStyle ? $rowStyle->textColor : null;
+        $rowVerticalAlign = $rowStyle instanceof RowStyle ? $rowStyle->verticalAlign : null;
+        $rowHorizontalAlign = $rowStyle instanceof RowStyle ? $rowStyle->horizontalAlign : null;
+        $rowOpacity = $rowStyle instanceof RowStyle ? $rowStyle->opacity : null;
+        $rowBorder = $rowStyle instanceof RowStyle ? $rowStyle->border : null;
+
+        return new ResolvedTableCellStyle(
+            $cellStyle->padding ?? $rowPadding ?? $this->style->padding ?? TablePadding::all(0.0),
+            $cellStyle->fillColor ?? $rowFillColor ?? $this->style->fillColor,
+            $cellStyle->textColor ?? $rowTextColor ?? $this->style->textColor,
+            $cellStyle->verticalAlign ?? $rowVerticalAlign ?? $this->style->verticalAlign ?? VerticalAlign::TOP,
+            $cellStyle->horizontalAlign ?? $rowHorizontalAlign ?? HorizontalAlign::LEFT,
+            $cellStyle->opacity ?? $rowOpacity,
+            $rowBorder,
+            $cellStyle->border,
+        );
+    }
+
     private function mergeRowStyle(?RowStyle $base, RowStyle $override): RowStyle
     {
-        return new RowStyle(
-            horizontalAlign: $override->horizontalAlign ?? $base?->horizontalAlign,
-            verticalAlign: $override->verticalAlign ?? $base?->verticalAlign,
-            padding: $override->padding ?? $base?->padding,
-            fillColor: $override->fillColor ?? $base?->fillColor,
-            textColor: $override->textColor ?? $base?->textColor,
-            opacity: $override->opacity ?? $base?->opacity,
-            border: $override->border ?? $base?->border,
-        );
+        return $this->buildMergedRowStyle(RowStyle::class, $base, $override);
     }
 
     private function mergeHeaderStyle(?HeaderStyle $base, HeaderStyle $override): HeaderStyle
     {
-        return new HeaderStyle(
+        /** @var HeaderStyle $merged */
+        $merged = $this->buildMergedRowStyle(HeaderStyle::class, $base, $override);
+
+        return $merged;
+    }
+
+    /**
+     * @template T of RowStyle
+     * @param class-string<T> $styleClass
+     * @param ?T $base
+     * @param T $override
+     * @return T
+     */
+    private function buildMergedRowStyle(string $styleClass, ?RowStyle $base, RowStyle $override): RowStyle
+    {
+        return new $styleClass(
             horizontalAlign: $override->horizontalAlign ?? $base?->horizontalAlign,
             verticalAlign: $override->verticalAlign ?? $base?->verticalAlign,
             padding: $override->padding ?? $base?->padding,

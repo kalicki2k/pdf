@@ -6,17 +6,17 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
-use Kalle\Pdf\Document\TableCell;
-use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Styles\TablePadding;
 use Kalle\Pdf\Styles\TableStyle;
-use Kalle\Pdf\Document\TextSegment;
-use Kalle\Pdf\Layout\VerticalAlign;
-use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -296,8 +296,8 @@ final class TableTest extends TestCase
 
         self::assertStringContainsString("20 236 85 24 re\nf", $contents);
         self::assertStringContainsString("0 0 1 RG\n1 w\n20 260 m\n105 260 l\nS", $contents);
-        self::assertStringContainsString("44.5 242 Td", $contents);
-        self::assertStringContainsString("1 0 0 rg", $contents);
+        self::assertStringContainsString('44.5 242 Td', $contents);
+        self::assertStringContainsString('1 0 0 rg', $contents);
         self::assertStringContainsString("105 236 85 24 re\nf", $contents);
     }
 
