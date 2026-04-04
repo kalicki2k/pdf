@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\BulletType;
-use Kalle\Pdf\Document\CellStyle;
+use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
-use Kalle\Pdf\Document\TableBorder;
+use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
-use Kalle\Pdf\Document\TablePadding;
+use Kalle\Pdf\Styles\TablePadding;
 use Kalle\Pdf\Document\HorizontalAlign;
 use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;

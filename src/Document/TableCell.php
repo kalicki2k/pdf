@@ -6,6 +6,9 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Styles\TableBorder;
+use Kalle\Pdf\Styles\TablePadding;
 
 final readonly class TableCell
 {

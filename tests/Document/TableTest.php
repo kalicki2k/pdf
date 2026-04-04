@@ -6,11 +6,11 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\CellStyle;
-use Kalle\Pdf\Document\TableBorder;
+use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\HorizontalAlign;
-use Kalle\Pdf\Document\TablePadding;
+use Kalle\Pdf\Styles\TablePadding;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\VerticalAlign;
 use Kalle\Pdf\Graphics\Color;
