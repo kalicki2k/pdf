@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\BulletType;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\HorizontalAlign;
-use Kalle\Pdf\Document\TextOverflow;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;

@@ -18,6 +18,8 @@ use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
