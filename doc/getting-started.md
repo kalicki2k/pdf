@@ -1,6 +1,6 @@
 # Getting Started
 
-Diese Library erzeugt PDFs direkt aus PHP. Der aktuelle Fokus liegt auf einer kleinen, klaren API fuer Dokumente, Seiten, Text und Fonts.
+Diese Library erzeugt PDFs direkt aus PHP. Der aktuelle Fokus liegt auf einer kleinen, klaren API fuer Dokumente, Seiten, Text, Fonts und erste Layout-Helfer.
 
 ## Voraussetzungen
 
@@ -37,7 +37,12 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\TextAlign;
+use Kalle\Pdf\Document\TextOverflow;
+use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\Units;
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Graphics\Opacity;
 
 require 'vendor/autoload.php';
 
@@ -52,18 +57,35 @@ $document = new Document(
 
 $document
     ->addKeyword('example')
-    ->addFont('NotoSans-Regular');
+    ->addFont('NotoSans-Regular')
+    ->addFont('NotoSans-Bold')
+    ->addFont('NotoSans-Italic')
+    ->addFont('NotoSans-BoldItalic');
 
 $page = $document->addPage(PageSize::A4());
+$frame = $page->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20));
 
-$page->addText(
-    'Hallo PDF',
-    Units::mm(20),
-    Units::mm(265),
-    'NotoSans-Regular',
-    24,
-    'H1',
-);
+$frame
+    ->heading(
+        'Hallo PDF',
+        'NotoSans-Regular',
+        24,
+        'H1',
+        color: Color::rgb(220, 20, 60),
+    )
+    ->paragraph(
+        [
+            new TextSegment('Achtung: ', Color::rgb(220, 20, 60), bold: true, underline: true),
+            new TextSegment('dieser Absatz zeigt gemischte Textstile, Farben und Opacity. ', italic: true),
+            new TextSegment('Dieser Teil ist durchgestrichen.', opacity: Opacity::fill(0.5), strikethrough: true),
+        ],
+        'NotoSans-Regular',
+        12,
+        'P',
+        align: TextAlign::JUSTIFY,
+        maxLines: 3,
+        overflow: TextOverflow::ELLIPSIS,
+    );
 
 $pdfContent = $document->render();
 
@@ -73,10 +95,11 @@ file_put_contents('hello.pdf', $pdfContent);
 ## Was im Beispiel passiert
 
 1. `Document` initialisiert das PDF mit Version und Metadaten.
-2. `addFont('NotoSans-Regular')` registriert eine eingebettete Schrift aus der Font-Konfiguration.
+2. `addFont(...)` registriert eingebettete Schriften aus der Font-Konfiguration.
 3. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
-4. `addText()` positioniert Text mit `x`, `y`, Fontname, Schriftgroesse und optionalem Struktur-Tag. Numerische Layoutwerte werden in PDF-Points erwartet; fuer andere Einheiten stehen Helper wie `Units::pt()`, `Units::mm()`, `Units::cm()` und `Units::inch()` bereit.
-5. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+4. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
+5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
+6. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Einheiten
 
@@ -103,6 +126,9 @@ Die eingebetteten Fonts werden standardmaessig ueber `config/fonts.php` definier
 Aktuell sind dort unter anderem registriert:
 
 - `NotoSans-Regular`
+- `NotoSans-Bold`
+- `NotoSans-Italic`
+- `NotoSans-BoldItalic`
 - `NotoSerif-Regular`
 - `NotoSansMono-Regular`
 - `NotoSansCJKsc-Regular`
@@ -142,6 +168,37 @@ $document = new Document(
 $document->addFont('CustomSans-Regular');
 ```
 
+## Wichtige Text-Features
+
+Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Ausbaustufen fuer Text:
+
+- `Page::addParagraph(...)` fuer Umbruch innerhalb einer festen Breite
+- `Page::textFrame(...)` fuer Fliesstext mit Cursor-Fuehrung
+- `Color::rgb(...)`, `Color::gray(...)`, `Color::cmyk(...)` und `Color::hex(...)`
+- `Opacity::fill(...)`, `Opacity::stroke(...)`, `Opacity::both(...)`
+- `TextSegment` fuer gemischte Inline-Stile innerhalb eines Absatzes
+- `bold`, `italic`, `underline`, `strikethrough` pro `TextSegment`
+- `TextAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
+- `TextOverflow::CLIP` und `TextOverflow::ELLIPSIS` zusammen mit `maxLines`
+
+Ein kompakter Absatz mit gemischten Stilen sieht zum Beispiel so aus:
+
+```php
+$frame->paragraph(
+    [
+        new TextSegment('Achtung: ', Color::rgb(255, 0, 0), bold: true, underline: true),
+        new TextSegment('weiterer Text in Kursivschrift, ', italic: true),
+        new TextSegment('halbtransparent und durchgestrichen', opacity: Opacity::fill(0.5), strikethrough: true),
+    ],
+    'NotoSans-Regular',
+    12,
+    'P',
+    align: TextAlign::JUSTIFY,
+    maxLines: 2,
+    overflow: TextOverflow::ELLIPSIS,
+);
+```
+
 ## Aktueller Funktionsumfang
 
 Der derzeit belastbare Einstieg ist:
@@ -153,15 +210,22 @@ Der derzeit belastbare Einstieg ist:
 - eine oder mehrere Seiten anlegen
 - Text mit registrierten Fonts rendern
 - Unicode-Text mit eingebetteten Fonts rendern
+- Farben und Opacity fuer Text setzen
+- Paragraphen mit Umbruch und Ausrichtung rendern
+- TextFrames ueber mehrere Bloecke und Seiten verwenden
+- gemischte Inline-Stile mit `TextSegment` rendern
+- Absatzumfang mit `maxLines` und `TextOverflow` begrenzen
 
 ## Aktuelle Grenzen
 
 Der Codebestand enthaelt bereits weitere Bausteine, aber fuer den Einstieg solltest du aktuell von diesem Stand ausgehen:
 
 - Bilder sind noch nicht fertig nutzbar
-- die API ist noch klein und nah an der PDF-Struktur
+- grafische Primitive ausser Text sind noch kaum ausgebaut
+- `underline` und `strikethrough` sind aktuell heuristisch positioniert und noch nicht ueber Font-Metriken feinjustiert
+- `bold` und `italic` fuer Embedded Fonts haengen derzeit an benannten Font-Varianten wie `-Bold` oder `-Italic`
 - die Doku wird schrittweise parallel zum Code aufgebaut
 
 ## Naechste Datei
 
-Als sinnvolle Fortsetzung bietet sich [architecture.md](architecture.md) an. Dort sollte beschrieben werden, wie `Document`, `Page`, `Resources`, `Contents` und `PdfRenderer` zusammenspielen.
+Als sinnvolle Fortsetzung bietet sich [architecture.md](architecture.md) an. Dort wird beschrieben, wie `Document`, `Page`, `Resources`, `Contents` und das Text-Layout zusammenspielen.

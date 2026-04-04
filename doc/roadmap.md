@@ -12,6 +12,11 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Seiten, Ressourcen und Content-Streams sind getrennt modelliert
 - Text wird ueber registrierte Fonts gerendert
 - `addParagraph()` und `TextFrame` decken ersten Absatz- und Flow-Layout-Bedarf ab
+- `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
+- Textfarbe, Graustufen, CMYK und Opacity sind im Renderpfad angekommen
+- `bold`, `italic`, `underline` und `strikethrough` sind vorhanden
+- `TextAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
+- `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
 - Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
@@ -31,10 +36,12 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - zentrale Font-Konfiguration ueber `config/fonts.php`
 - optionale Trennung zwischen normalem Text und strukturiertem Text
 - erste Textfluss-API ueber `addParagraph()` und `TextFrame`
+- erster Rich-Text-Pfad ueber `TextSegment`
+- erste Textstil- und Alignment-API
 
 ## Prioritaeten
 
-### 1. Rendering robuster machen
+### 1. Layout und Rendering robuster machen
 
 Der Renderpfad ist funktional, aber noch relativ direkt.
 
@@ -45,6 +52,8 @@ Naechste sinnvolle Verbesserungen:
 - Objektabhaengigkeiten noch klarer modellieren
 - spaeter optionale Stream-Kompression vorbereiten
 - Layout-Bausteine ueber `TextFrame` hinaus systematisieren
+- Textdekorationen ueber Font-Metriken besser positionieren
+- Stilwechsel innerhalb eines Absatzes weiter optimieren, damit nicht unnoetig viele Text-Operatoren entstehen
 
 Warum das wichtig ist:
 
@@ -78,6 +87,13 @@ Naechste Kandidaten:
 - Linien und einfache grafische Primitive
 - Links oder Annotationen
 - Tabellen oder strukturierte Layout-Helfer
+
+Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
+
+- segment-spezifische Fontgroessen oder Fontfamilien innerhalb eines Absatzes
+- Listen und Bullets
+- Tabs oder einfache Spalten
+- explizite Absatz- und Zeilenabstaende als Style-Objekte statt weiterer Parameter
 
 Ziel:
 
@@ -184,6 +200,6 @@ Diese Fragen beeinflussen die Architektur direkt und sollten frueh beantwortet w
 Der naechste technisch saubere Schwerpunkt ist nicht sofort ein weiterer Standard, sondern eine noch belastbarere Basis:
 
 1. Rendering und Tests haerten
-2. das Layout-System schrittweise ueber Text hinaus erweitern
+2. das Layout-System im Textpfad weiter absichern und erst dann ueber Text hinaus erweitern
 3. den naechsten echten Inhaltstyp vollstaendig einfuehren
 4. Struktur- und Standardthemen danach gezielt validieren

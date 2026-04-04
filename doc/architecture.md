@@ -71,6 +71,13 @@ Dabei passiert intern:
 4. Ein `Text`-Element wird im `Contents`-Stream der Seite abgelegt.
 5. Nur wenn ein Struktur-Tag gesetzt ist, wird parallel ein `StructElem` fuer das Strukturmodell erzeugt.
 
+Beim Absatz-Rendering kommen zusaetzlich dazu:
+
+6. Eingaben werden zu `TextSegment`-Objekten normalisiert.
+7. Der Text wird in Tokens und Zeilen fuer den Umbruch zerlegt.
+8. Optional werden Alignment, `maxLines` und `TextOverflow` auf die sichtbaren Zeilen angewendet.
+9. Stilwechsel innerhalb eines Absatzes werden ueber mehrere `Text`-Elemente gerendert.
+
 ### TextFrame
 
 `TextFrame` ist eine kleine Layout-Hilfe ueber `Page`.
@@ -82,6 +89,7 @@ Verantwortlich fuer:
 - Absatzeinzug ueber `paragraph(...)`
 - Ueberschriften ueber `heading(...)`
 - automatische Folge-Seiten bei Ueberlauf
+- Weitergabe von Alignment, `maxLines` und `TextOverflow`
 
 ### Contents
 
@@ -102,8 +110,11 @@ Aktuell werden die Elemente direkt hintereinander in einen einzelnen Stream gere
 Verantwortlich fuer:
 
 - Zuordnung der auf der Seite verwendeten Fonts
+- Zuordnung von `ExtGState`-Eintraegen fuer Text-Opacity
 - Vergabe interner Ressourcen-Namen wie `F1`, `F2`, ...
+- Vergabe interner Graphics-State-Namen wie `GS1`, `GS2`, ...
 - Rendern des `/Font`-Dictionarys
+- Rendern des `/ExtGState`-Dictionarys
 
 Wichtig: Fonts werden global im `Document` registriert, aber erst beim Einsatz auf einer Seite in deren `Resources` aufgenommen.
 
@@ -136,13 +147,16 @@ Aktuell ist im produktiven Pfad vor allem `Text` relevant.
 Der aktuelle Output folgt bei strukturiertem Text grob diesem Muster:
 
 ```text
+q
 BT
 /F1 24 Tf
+1 0 0 rg
 20 265 Td
 /H1 << /MCID 0 >> BDC
 (Hallo PDF) Tj
 EMC
 ET
+Q
 ```
 
 Dabei kombiniert das Element:
@@ -151,8 +165,43 @@ Dabei kombiniert das Element:
 - Schriftgroesse
 - Position
 - encodierten Inhalt
+- optionale Textfarbe
+- optionalen Graphics State fuer Opacity
+- optionale Textdekorationen fuer `underline` und `strikethrough`
 - optional Struktur-Tag
 - optionale Marked-Content-ID
+
+Die Einfassung mit `q` und `Q` isoliert den Graphics State pro Text-Element, damit Farben und Opacity nicht in nachfolgende Texte leaken.
+
+### TextSegment
+
+`TextSegment` repraesentiert einen zusammenhaengenden Inline-Abschnitt mit einheitlichem Stil innerhalb eines Absatzes.
+
+Ein Segment traegt aktuell:
+
+- `text`
+- optionale `Color`
+- optionale `Opacity`
+- `bold`
+- `italic`
+- `underline`
+- `strikethrough`
+
+`Page::addParagraph(...)` und `TextFrame::paragraph(...)` akzeptieren entweder einen einfachen `string` oder eine Liste von `TextSegment`-Objekten.
+
+### TextAlign und TextOverflow
+
+Fuer Absatzlayout gibt es aktuell zwei kleine Steuerobjekte:
+
+- `TextAlign` mit `LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
+- `TextOverflow` mit `CLIP` und `ELLIPSIS`
+
+`JUSTIFY` verteilt zusaetzlichen Wortabstand nur auf automatisch umgebrochene Zeilen. Die letzte Absatzzeile und harte Zeilenumbrueche werden nicht gestreckt.
+
+`TextOverflow` greift nach dem Umbruch:
+
+- `CLIP` verwirft alle Zeilen hinter `maxLines`
+- `ELLIPSIS` kuerzt die letzte sichtbare Zeile so, dass `...` noch in die Breite passt
 
 ## Font-Modell
 
@@ -165,6 +214,9 @@ Das Font-System ist zweistufig aufgebaut.
 Sie arbeitet mit echten Fontnamen als Schluessel, zum Beispiel:
 
 - `NotoSans-Regular`
+- `NotoSans-Bold`
+- `NotoSans-Italic`
+- `NotoSans-BoldItalic`
 - `NotoSerif-Regular`
 - `NotoSansMono-Regular`
 - `NotoSansCJKsc-Regular`
@@ -193,6 +245,12 @@ Bei Unicode-Fonts kommen weitere Objekte dazu, zum Beispiel:
 - `ToUnicodeCMap`
 
 Das ist der Grund, warum `Document::getDocumentObjects()` bei Fonts mehrere abhaengige Objekte einsammelt.
+
+Fuer Stilvarianten bei Textsegmenten gilt aktuell:
+
+- Standardfonts wie `Helvetica` werden ueber bekannte PDF-Varianten wie `Helvetica-Bold` oder `Helvetica-Oblique` aufgeloest
+- eingebettete Fonts werden ueber Namenskonventionen wie `-Bold`, `-Italic` oder `-BoldItalic` gesucht
+- wenn keine Variante gefunden wird, bleibt der Basisfont aktiv
 
 ## Strukturmodell
 
@@ -291,14 +349,11 @@ Diese Klassen kapseln die PDF-Syntax auf niedriger Ebene und halten die `render(
 
 ## Aktuelle Einschraenkungen
 
-- Das Layout-System ist minimal; Positionen werden direkt gesetzt.
+- Das Layout-System ist trotz `TextFrame`, `TextSegment`, Alignment und Overflow noch textzentriert.
 - Bilder sind noch nicht als fertiger End-to-End-Pfad ausgearbeitet.
 - Content-Streams werden noch nicht komprimiert.
 - Die Objektliste wird explizit im Dokument zusammengestellt und nicht ueber ein generisches Graph-Modell aufgeloest.
 
 ## Empfohlene Anschlussdoku
 
-Nach dieser Datei sind zwei weitere Dokumente sinnvoll:
-
-- `doc/rendering-flow.md` fuer eine detaillierte Beschreibung des PDF-Aufbaus
-- [roadmap.md](roadmap.md) fuer geplante technische Erweiterungen und bekannte Luecken
+Nach dieser Datei ist [roadmap.md](roadmap.md) die sinnvollste Fortsetzung fuer geplante technische Erweiterungen und bekannte Luecken.
