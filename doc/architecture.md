@@ -24,9 +24,10 @@ Verantwortlich fuer:
 
 - PDF-Version und Metadaten
 - globale Font-Registrierung
+- optionale dokumenteigene Font-Konfiguration
 - Verwaltung aller Seiten
 - Vergabe von Objekt-IDs
-- Aufbau der Strukturdaten fuer PDF 1.4
+- lazy Aufbau der Strukturdaten fuer Tagged-Inhalte
 - Start des Renderings
 
 Wichtige Methoden:
@@ -58,9 +59,9 @@ Verantwortlich fuer:
 - Seitengroesse
 - Zuordnung zu `Contents` und `Resources`
 - Entgegennahme von Inhaltselementen
-- Vergabe lokaler Marked-Content-IDs pro Seite
+- Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigste API ist aktuell `addText(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)` und `textFrame(...)`.
 
 Dabei passiert intern:
 
@@ -68,7 +69,19 @@ Dabei passiert intern:
 2. Der Text wird gegen die Font-Unterstuetzung validiert.
 3. Der Text wird fontspezifisch encodiert.
 4. Ein `Text`-Element wird im `Contents`-Stream der Seite abgelegt.
-5. Parallel wird ein `StructElem` fuer das Strukturmodell erzeugt.
+5. Nur wenn ein Struktur-Tag gesetzt ist, wird parallel ein `StructElem` fuer das Strukturmodell erzeugt.
+
+### TextFrame
+
+`TextFrame` ist eine kleine Layout-Hilfe ueber `Page`.
+
+Verantwortlich fuer:
+
+- gemeinsamen Textbereich mit `x`, `y` und Breite
+- Cursor-Fuehrung zwischen mehreren Textbloecken
+- Absatzeinzug ueber `paragraph(...)`
+- Ueberschriften ueber `heading(...)`
+- automatische Folge-Seiten bei Ueberlauf
 
 ### Contents
 
@@ -120,7 +133,7 @@ Aktuell ist im produktiven Pfad vor allem `Text` relevant.
 
 `Text` rendert einen einzelnen Textblock in PDF-Operatoren.
 
-Der aktuelle Output folgt grob diesem Muster:
+Der aktuelle Output folgt bei strukturiertem Text grob diesem Muster:
 
 ```text
 BT
@@ -138,8 +151,8 @@ Dabei kombiniert das Element:
 - Schriftgroesse
 - Position
 - encodierten Inhalt
-- Struktur-Tag
-- Marked-Content-ID
+- optional Struktur-Tag
+- optionale Marked-Content-ID
 
 ## Font-Modell
 
@@ -147,14 +160,16 @@ Das Font-System ist zweistufig aufgebaut.
 
 ### FontRegistry
 
-`FontRegistry` liefert vordefinierte Font-Gruppen:
+`FontRegistry` liest die eingebetteten Fontdefinitionen aus `config/fonts.php`.
 
-- `sans`
-- `serif`
-- `mono`
-- `global`
+Sie arbeitet mit echten Fontnamen als Schluessel, zum Beispiel:
 
-Diese Gruppen werden in konkrete Fontdefinitionen uebersetzt, inklusive Dateipfad und Unicode-Flag.
+- `NotoSans-Regular`
+- `NotoSerif-Regular`
+- `NotoSansMono-Regular`
+- `NotoSansCJKsc-Regular`
+
+Optional kann ein `Document` statt der globalen Config auch eine dokumenteigene `fontConfig` erhalten.
 
 ### FontDefinition
 
@@ -164,6 +179,10 @@ Aktuell gibt es zwei Hauptarten:
 
 - `StandardFont`
 - `UnicodeFont`
+
+`StandardFont` ist fuer die PDF-Standard-14-Schriften gedacht, zum Beispiel `Helvetica`.
+
+`UnicodeFont` ist der Pfad fuer eingebettete Fonts aus der Registry.
 
 Bei Unicode-Fonts kommen weitere Objekte dazu, zum Beispiel:
 
@@ -177,7 +196,8 @@ Das ist der Grund, warum `Document::getDocumentObjects()` bei Fonts mehrere abha
 
 ## Strukturmodell
 
-Ab PDF-Version `1.4` erzeugt das Dokument zusaetzlich Strukturknoten fuer Tagged-PDF-nahe Ausgaben.
+Ab PDF-Version `1.4` kann das Dokument zusaetzlich Strukturknoten fuer Tagged-PDF-nahe Ausgaben erzeugen.
+Der Aufbau passiert aber nur noch dann, wenn Text oder andere Inhalte tatsaechlich mit Struktur-Tags angelegt werden.
 
 Aktuell beteiligte Klassen:
 
@@ -196,6 +216,8 @@ Bei PDF `>= 1.4` setzt er aktuell unter anderem:
 - `/MarkInfo`
 - `/Lang`
 - `/StructTreeRoot`
+
+Diese Eintraege werden nur gerendert, wenn strukturierte Inhalte vorhanden sind.
 
 ### StructTreeRoot
 
@@ -236,6 +258,8 @@ Die aktuelle Render-Reihenfolge ist im Wesentlichen:
 7. Fontobjekte inklusive Unterobjekten
 8. pro Seite:
    `Page`, `Resources`, `Contents`
+
+Wichtig: Die Struktur-Objekte tauchen nur auf, wenn strukturierte Inhalte wirklich verwendet wurden.
 
 Danach erzeugt `PdfRenderer`:
 

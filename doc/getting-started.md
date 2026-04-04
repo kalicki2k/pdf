@@ -46,11 +46,12 @@ $document = new Document(
     author: 'Example',
     subject: 'Getting Started',
     language: 'de-DE',
+    fontConfig: require __DIR__ . '/../config/fonts.php',
 );
 
 $document
     ->addKeyword('example')
-    ->addFont('sans');
+    ->addFont('NotoSans-Regular');
 
 $page = $document->addPage(PageSize::A4());
 
@@ -71,30 +72,55 @@ file_put_contents('hello.pdf', $pdfContent);
 ## Was im Beispiel passiert
 
 1. `Document` initialisiert das PDF mit Version und Metadaten.
-2. `addFont('sans')` registriert eine Schrift, die spaeter auf Seiten verwendet werden kann.
+2. `addFont('NotoSans-Regular')` registriert eine eingebettete Schrift aus der Font-Konfiguration.
 3. `addPage()` erstellt eine neue Seite, standardmaessig im Format `210 x 297` oder explizit ueber `PageSize::A4()`.
-4. `addText()` positioniert Text mit `x`, `y`, Fontname, Schriftgroesse und Struktur-Tag.
+4. `addText()` positioniert Text mit `x`, `y`, Fontname, Schriftgroesse und optionalem Struktur-Tag.
 5. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
-## Verfuegbare Font-Gruppen
+## Font-Konfiguration
 
-Aktuell sind diese Gruppen ueber `Document::addFont()` vorbelegt:
+Die eingebetteten Fonts werden standardmaessig ueber `config/fonts.php` definiert.
 
-- `sans` -> `NotoSans-Regular`
-- `serif` -> `NotoSerif-Regular`
-- `mono` -> `NotoSansMono-Regular`
-- `global` -> `NotoSansCJKsc-Regular`
+Aktuell sind dort unter anderem registriert:
 
-Wichtig: In `Page::addText()` wird nicht die Gruppe, sondern der konkrete Fontname verwendet, also zum Beispiel `NotoSans-Regular`.
+- `NotoSans-Regular`
+- `NotoSerif-Regular`
+- `NotoSansMono-Regular`
+- `NotoSansCJKsc-Regular`
+
+Standard-PDF-Fonts wie `Helvetica` benoetigen keinen Eintrag in der Config.
+
+Du kannst die globale Config verwenden oder pro Dokument eine eigene Liste ueber `fontConfig` setzen.
 
 ## Unicode-Beispiel
 
-Fuer breitere Zeichensaetze kann der globale Font registriert werden:
+Fuer breitere Zeichensaetze kann ein Unicode-Font direkt ueber seinen Fontnamen registriert werden:
 
 ```php
-$document->addFont('global');
+$document->addFont('NotoSansCJKsc-Regular');
 
 $page->addText('漢字とカタカナ', 20, 225, 'NotoSansCJKsc-Regular', 14, 'P');
+```
+
+## Dokumenteigene Font-Konfiguration
+
+Zusatzlich zur globalen `config/fonts.php` kann ein Dokument eine eigene Font-Konfiguration erhalten:
+
+```php
+$document = new Document(
+    version: 1.4,
+    fontConfig: [
+        [
+            'baseFont' => 'CustomSans-Regular',
+            'path' => 'assets/fonts/NotoSans-Regular.ttf',
+            'unicode' => true,
+            'subtype' => 'CIDFontType2',
+            'encoding' => 'Identity-H',
+        ],
+    ],
+);
+
+$document->addFont('CustomSans-Regular');
 ```
 
 ## Aktueller Funktionsumfang
@@ -104,9 +130,10 @@ Der derzeit belastbare Einstieg ist:
 - Dokument anlegen
 - Metadaten setzen
 - Keywords hinzufuegen
+- globale oder dokumenteigene Fonts konfigurieren
 - eine oder mehrere Seiten anlegen
 - Text mit registrierten Fonts rendern
-- Unicode-Text mit dem globalen Font rendern
+- Unicode-Text mit eingebetteten Fonts rendern
 
 ## Aktuelle Grenzen
 

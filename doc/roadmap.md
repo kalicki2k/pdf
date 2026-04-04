@@ -11,8 +11,10 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Dokument-Metadaten sind vorhanden
 - Seiten, Ressourcen und Content-Streams sind getrennt modelliert
 - Text wird ueber registrierte Fonts gerendert
+- `addParagraph()` und `TextFrame` decken ersten Absatz- und Flow-Layout-Bedarf ab
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
-- fuer PDF `>= 1.4` wird ein Strukturmodell mit `StructTreeRoot`, `StructElem` und `ParentTree` erzeugt
+- eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
+- Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
 
 Das bedeutet aber nicht, dass bereits alle hoeheren PDF-Ziele erreicht sind.
 
@@ -26,6 +28,9 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - `xref`- und Trailer-Erzeugung
 - grundlegende Dokument-Metadaten
 - erste Unicode-Unterstuetzung
+- zentrale Font-Konfiguration ueber `config/fonts.php`
+- optionale Trennung zwischen normalem Text und strukturiertem Text
+- erste Textfluss-API ueber `addParagraph()` und `TextFrame`
 
 ## Prioritaeten
 
@@ -39,6 +44,7 @@ Naechste sinnvolle Verbesserungen:
 - Byte-Laengen und Encodings konsequent pruefen
 - Objektabhaengigkeiten noch klarer modellieren
 - spaeter optionale Stream-Kompression vorbereiten
+- Layout-Bausteine ueber `TextFrame` hinaus systematisieren
 
 Warum das wichtig ist:
 
@@ -47,7 +53,7 @@ Warum das wichtig ist:
 
 ### 2. Strukturmodell fachlich absichern
 
-Das Projekt erzeugt bereits Tagged-PDF-nahe Strukturinformationen. Dieser Bereich ist technisch heikel und sollte nur kontrolliert erweitert werden.
+Das Projekt kann bereits Tagged-PDF-nahe Strukturinformationen erzeugen. Dieser Bereich ist technisch heikel und sollte nur kontrolliert erweitert werden.
 
 Offene Punkte:
 
@@ -55,6 +61,7 @@ Offene Punkte:
 - Verschachtelung und Eltern-Kind-Beziehungen genauer absichern
 - Verhalten fuer komplexere Inhalte festlegen
 - Struktur gegen echte Reader und Validatoren pruefen
+- klar dokumentieren, welche Inhalte bewusst unstrukturiert bleiben duerfen
 
 Wichtig:
 
@@ -78,13 +85,14 @@ Ziel:
 
 ### 4. Ressourcenmodell ausbauen
 
-Die Font-Nutzung pro Seite ist bereits sauber getrennt, aber das Ressourcenmodell wird mit mehr Features anspruchsvoller.
+Die Font-Nutzung pro Seite ist bereits sauber getrennt, und die Font-Definitionen sind jetzt als Konfiguration ausgelagert. Das Ressourcenmodell wird mit mehr Features trotzdem anspruchsvoller.
 
 Offene Erweiterungen:
 
 - XObjects fuer Bilder
 - gemeinsam genutzte Ressourcen sauber modellieren
 - Vererbung oder zentrale Verwaltung nur dann einfuehren, wenn sie echten Nutzen bringt
+- Konfigurationsmodell fuer groessere Font-Sets weiter ausbauen, ohne `addFont()` nach aussen zu verkomplizieren
 
 ### 5. Dokumentstandards klar abgrenzen
 
@@ -112,6 +120,7 @@ Fokus:
 - Rendering haerten
 - Tests erweitern
 - API fuer Text und Fonts stabil halten
+- TextFrame/Paragraph-Layout weiter schaerfen
 - Doku vervollstaendigen
 
 Ergebnis:
@@ -175,5 +184,6 @@ Diese Fragen beeinflussen die Architektur direkt und sollten frueh beantwortet w
 Der naechste technisch saubere Schwerpunkt ist nicht sofort ein weiterer Standard, sondern eine noch belastbarere Basis:
 
 1. Rendering und Tests haerten
-2. den naechsten echten Inhaltstyp vollstaendig einfuehren
-3. Struktur- und Standardthemen danach gezielt validieren
+2. das Layout-System schrittweise ueber Text hinaus erweitern
+3. den naechsten echten Inhaltstyp vollstaendig einfuehren
+4. Struktur- und Standardthemen danach gezielt validieren
