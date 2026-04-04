@@ -40,26 +40,27 @@ final class Document
     public Info $info;
     public ?ParentTree $parentTree = null;
     public Pages $pages;
-    public StructTreeRoot $structTreeRoot;
+    public ?StructTreeRoot $structTreeRoot = null;
 
+    /**
+     * @param list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>|null $fontConfig
+     */
     public function __construct(
         public readonly float   $version = 1.0,
         public readonly ?string $title = null,
         public readonly ?string $author = null,
         public readonly ?string $subject = null,
         public readonly ?string $language = null,
+        private readonly ?array $fontConfig = null,
     ) {
         $this->catalog = new Catalog(++$this->objectId, $this);
         $this->pages = new Pages(++$this->objectId, $this);
-
-        if ($this->version >= 1.4) {
-            $this->structTreeRoot = new StructTreeRoot(++$this->objectId);
-            $this->parentTree = new ParentTree(++$this->objectId);
-            $this->structTreeRoot->parentTree = $this->parentTree;
-            $structElem = new StructElem(++$this->objectId, 'Document');
-            $this->structTreeRoot->addKid($structElem->id);
-            $this->structElems['document'] = $structElem;
-        }
 
         $this->info = new Info(++$this->objectId, $this);
     }
@@ -83,16 +84,21 @@ final class Document
         $objects[] = $this->catalog;
         $objects[] = $this->pages;
 
-        if ($this->version >= 1.4) {
+        if ($this->structTreeRoot !== null) {
             $objects[] = $this->structTreeRoot;
+        }
 
-            if ($this->parentTree !== null) {
-                $objects[] = $this->parentTree;
-            }
+        if ($this->parentTree !== null) {
+            $objects[] = $this->parentTree;
+        }
 
-            foreach ($this->structElems as $structElem) {
+        foreach ($this->structElems as $key => $structElem) {
+            if ($key === 'document') {
                 $objects[] = $structElem;
+                continue;
             }
+
+            $objects[] = $structElem;
         }
 
         $objects[] = $this->info;
@@ -147,17 +153,13 @@ final class Document
         ?int $toUnicodeId = null,
         ?string $fontFilePath = null,
     ): self {
-        foreach (FontRegistry::all() as $preset) {
-            if ($preset->group !== $baseFont) {
-                continue;
-            }
-
+        if (FontRegistry::has($baseFont, $this->fontConfig)) {
+            $preset = FontRegistry::get($baseFont, $this->fontConfig);
             $baseFont = $preset->baseFont;
             $subtype = $preset->subtype;
             $encoding = $preset->encoding;
             $unicode = $preset->unicode;
             $fontFilePath = $preset->path;
-            break;
         }
 
         if ($unicode) {
@@ -214,6 +216,20 @@ final class Document
     }
 
     /**
+     * @return list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>|null
+     */
+    public function getFontConfig(): ?array
+    {
+        return $this->fontConfig;
+    }
+
+    /**
      * @param string $tag
      * @param int $markedContentId
      * @param Page|null $page
@@ -221,6 +237,8 @@ final class Document
      */
     public function addStructElem(string $tag, int $markedContentId, ?Page $page = null): self
     {
+        $this->ensureStructureEnabled();
+
         $structElem = new StructElem(++$this->objectId, $tag);
         $this->structElems['document']->addKid($structElem);
 
@@ -235,6 +253,29 @@ final class Document
         }
 
         return $this;
+    }
+
+    public function ensureStructureEnabled(): void
+    {
+        if ($this->version < 1.4) {
+            throw new InvalidArgumentException('Structured content requires PDF version 1.4 or higher.');
+        }
+
+        if ($this->structTreeRoot !== null) {
+            return;
+        }
+
+        $this->structTreeRoot = new StructTreeRoot(++$this->objectId);
+        $this->parentTree = new ParentTree(++$this->objectId);
+        $this->structTreeRoot->parentTree = $this->parentTree;
+        $structElem = new StructElem(++$this->objectId, 'Document');
+        $this->structTreeRoot->addKid($structElem->id);
+        $this->structElems['document'] = $structElem;
+    }
+
+    public function hasStructure(): bool
+    {
+        return $this->structTreeRoot !== null;
     }
 
     public function addKeyword(string $keyword): self

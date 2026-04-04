@@ -100,18 +100,19 @@ final class StandardFont extends IndirectObject implements FontDefinition
             'ZapfDingbatsEncoding',
         ];
 
-        $symbolFonts = ['Symbol'];
-        $zapfDingbatsFonts = ['ZapfDingbats'];
+        if (!$this->fontParser instanceof OpenTypeFontParser && !StandardFontName::isValid($this->baseFont)) {
+            throw new InvalidArgumentException("BaseFont '$this->baseFont' is not a valid PDF standard font.");
+        }
 
         if ($this->version === 1.0 && !in_array($this->encoding, $allowedEncodings10, true)) {
             throw new InvalidArgumentException("Encoding '$this->encoding' is not allowed in PDF 1.0.");
         }
 
-        if ($this->encoding === 'SymbolEncoding' && !in_array($this->baseFont, $symbolFonts, true)) {
+        if ($this->encoding === 'SymbolEncoding' && $this->baseFont !== StandardFontName::SYMBOL) {
             throw new InvalidArgumentException("BaseFont '$this->baseFont' is not compatible with 'SymbolEncoding'.");
         }
 
-        if ($this->encoding === 'ZapfDingbatsEncoding' && !in_array($this->baseFont, $zapfDingbatsFonts, true)) {
+        if ($this->encoding === 'ZapfDingbatsEncoding' && $this->baseFont !== StandardFontName::ZAPF_DINGBATS) {
             throw new InvalidArgumentException("BaseFont '$this->baseFont' is not compatible with 'ZapfDingbatsEncoding'.");
         }
     }

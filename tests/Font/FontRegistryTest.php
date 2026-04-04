@@ -12,12 +12,12 @@ use PHPUnit\Framework\TestCase;
 final class FontRegistryTest extends TestCase
 {
     #[Test]
-    public function it_returns_the_expected_presets_for_the_default_font_groups(): void
+    public function it_returns_the_expected_presets_for_the_registered_embedded_fonts(): void
     {
-        $sans = FontRegistry::get('sans');
-        $serif = FontRegistry::get('serif');
-        $mono = FontRegistry::get('mono');
-        $global = FontRegistry::get('global');
+        $sans = FontRegistry::get('NotoSans-Regular');
+        $serif = FontRegistry::get('NotoSerif-Regular');
+        $mono = FontRegistry::get('NotoSansMono-Regular');
+        $global = FontRegistry::get('NotoSansCJKsc-Regular');
 
         self::assertSame('NotoSans-Regular', $sans->baseFont);
         self::assertSame('assets/fonts/NotoSans-Regular.ttf', $sans->path);
@@ -27,11 +27,15 @@ final class FontRegistryTest extends TestCase
 
         self::assertSame('NotoSerif-Regular', $serif->baseFont);
         self::assertSame('assets/fonts/NotoSerif-Regular.ttf', $serif->path);
-        self::assertFalse($serif->unicode);
+        self::assertTrue($serif->unicode);
+        self::assertSame('CIDFontType2', $serif->subtype);
+        self::assertSame('Identity-H', $serif->encoding);
 
         self::assertSame('NotoSansMono-Regular', $mono->baseFont);
         self::assertSame('assets/fonts/NotoSansMono-Regular.ttf', $mono->path);
-        self::assertFalse($mono->unicode);
+        self::assertTrue($mono->unicode);
+        self::assertSame('CIDFontType2', $mono->subtype);
+        self::assertSame('Identity-H', $mono->encoding);
 
         self::assertSame('NotoSansCJKsc-Regular', $global->baseFont);
         self::assertSame('assets/fonts/NotoSansCJKsc-Regular.otf', $global->path);
@@ -41,19 +45,37 @@ final class FontRegistryTest extends TestCase
     }
 
     #[Test]
-    public function it_returns_all_default_font_groups(): void
+    public function it_returns_all_registered_embedded_fonts(): void
     {
         self::assertSame(
-            ['sans', 'serif', 'mono', 'global'],
-            array_map(static fn ($preset): string => $preset->group, FontRegistry::all()),
+            ['NotoSans-Regular', 'NotoSerif-Regular', 'NotoSansMono-Regular', 'NotoSansCJKsc-Regular'],
+            array_map(static fn ($preset): string => $preset->baseFont, FontRegistry::all()),
         );
     }
 
     #[Test]
-    public function it_rejects_unknown_font_groups(): void
+    public function it_resolves_embedded_fonts_by_their_base_font_name(): void
+    {
+        $font = FontRegistry::get('NotoSans-Regular');
+
+        self::assertSame('NotoSans-Regular', $font->baseFont);
+        self::assertTrue(FontRegistry::has('NotoSans-Regular'));
+    }
+
+    #[Test]
+    public function it_resolves_serif_and_mono_fonts_by_their_base_font_name(): void
+    {
+        self::assertSame('NotoSerif-Regular', FontRegistry::get('NotoSerif-Regular')->baseFont);
+        self::assertSame('NotoSansMono-Regular', FontRegistry::get('NotoSansMono-Regular')->baseFont);
+        self::assertTrue(FontRegistry::has('NotoSerif-Regular'));
+        self::assertTrue(FontRegistry::has('NotoSansMono-Regular'));
+    }
+
+    #[Test]
+    public function it_rejects_unknown_embedded_fonts(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Unknown font group 'display'.");
+        $this->expectExceptionMessage("Unknown embedded font 'display'.");
 
         FontRegistry::get('display');
     }

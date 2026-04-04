@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Font;
 final readonly class FontPreset
 {
     public function __construct(
-        public string $group,
         public string $baseFont,
         public string $path,
         public bool $unicode,

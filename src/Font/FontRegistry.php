@@ -8,51 +8,126 @@ use InvalidArgumentException;
 
 final class FontRegistry
 {
-    public static function get(string $group): FontPreset
+    /**
+     * @param list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>|null $definitions
+     */
+    public static function get(string $name, ?array $definitions = null): FontPreset
     {
-        return match ($group) {
-            'sans' => new FontPreset(
-                group: 'sans',
-                baseFont: 'NotoSans-Regular',
-                path: 'assets/fonts/NotoSans-Regular.ttf',
-                unicode: true,
-                subtype: 'CIDFontType2',
-                encoding: 'Identity-H',
-            ),
-            'serif' => new FontPreset(
-                group: 'serif',
-                baseFont: 'NotoSerif-Regular',
-                path: 'assets/fonts/NotoSerif-Regular.ttf',
-                unicode: false,
-            ),
-            'mono' => new FontPreset(
-                group: 'mono',
-                baseFont: 'NotoSansMono-Regular',
-                path: 'assets/fonts/NotoSansMono-Regular.ttf',
-                unicode: false,
-            ),
-            'global' => new FontPreset(
-                group: 'global',
-                baseFont: 'NotoSansCJKsc-Regular',
-                path: 'assets/fonts/NotoSansCJKsc-Regular.otf',
-                unicode: true,
-                subtype: 'CIDFontType0',
-                encoding: 'Identity-H',
-            ),
-            default => throw new InvalidArgumentException("Unknown font group '$group'."),
-        };
+        $preset = self::find($name, $definitions);
+
+        if ($preset !== null) {
+            return $preset;
+        }
+
+        throw new InvalidArgumentException("Unknown embedded font '$name'.");
+    }
+
+    /**
+     * @param list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>|null $definitions
+     */
+    public static function has(string $name, ?array $definitions = null): bool
+    {
+        return self::find($name, $definitions) !== null;
     }
 
     /**
      * @return list<FontPreset>
+     * @param list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>|null $definitions
      */
-    public static function all(): array
+    public static function all(?array $definitions = null): array
     {
-        return [
-            self::get('sans'),
-            self::get('serif'),
-            self::get('mono'),
-            self::get('global'),
-        ];
+        if ($definitions === null) {
+            $definitions = self::loadDefaultDefinitions();
+        }
+
+        $presets = [];
+
+        foreach ($definitions as $definition) {
+            $presets[] = self::fromDefinition($definition);
+        }
+
+        return $presets;
+    }
+
+    /**
+     * @param list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>|null $definitions
+     */
+    private static function find(string $name, ?array $definitions = null): ?FontPreset
+    {
+        foreach (self::all($definitions) as $preset) {
+            if ($preset->baseFont === $name) {
+                return $preset;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * } $definition
+     */
+    private static function fromDefinition(array $definition): FontPreset
+    {
+        return new FontPreset(
+            baseFont: $definition['baseFont'],
+            path: $definition['path'],
+            unicode: $definition['unicode'],
+            subtype: $definition['subtype'] ?? 'Type1',
+            encoding: $definition['encoding'] ?? 'WinAnsiEncoding',
+        );
+    }
+
+    /**
+     * @return list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>
+     */
+    private static function loadDefaultDefinitions(): array
+    {
+        /** @var list<array{
+         *     baseFont: string,
+         *     path: string,
+         *     unicode: bool,
+         *     subtype?: string,
+         *     encoding?: string
+         * }> $definitions
+         */
+        $definitions = require dirname(__DIR__, 2) . '/config/fonts.php';
+
+        return $definitions;
     }
 }

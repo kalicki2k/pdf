@@ -46,33 +46,24 @@ final class PdfRendererTest extends TestCase
         $output = $renderer->render($document);
         $catalogOffset = strpos($output, "1 0 obj\n");
         $pagesOffset = strpos($output, "2 0 obj\n");
-        $structTreeRootOffset = strpos($output, "3 0 obj\n");
-        $parentTreeOffset = strpos($output, "4 0 obj\n");
-        $structElemOffset = strpos($output, "5 0 obj\n");
-        $infoOffset = strpos($output, "6 0 obj\n");
-        $fontOffset = strpos($output, "8 0 obj\n");
+        $infoOffset = strpos($output, "3 0 obj\n");
+        $fontOffset = strpos($output, "5 0 obj\n");
 
-        self::assertStringContainsString("xref\n0 9\n", $output);
+        self::assertStringContainsString("xref\n0 6\n", $output);
         self::assertNotFalse($catalogOffset);
         self::assertNotFalse($pagesOffset);
-        self::assertNotFalse($structTreeRootOffset);
-        self::assertNotFalse($parentTreeOffset);
-        self::assertNotFalse($structElemOffset);
         self::assertNotFalse($infoOffset);
         self::assertNotFalse($fontOffset);
         self::assertMatchesRegularExpression(
-            '/xref\n0 9\n'
+            '/xref\n0 6\n'
             . '0000000000 65535 f \n'
             . sprintf('%010d', $catalogOffset) . ' 00000 n \n'
             . sprintf('%010d', $pagesOffset) . ' 00000 n \n'
-            . sprintf('%010d', $structTreeRootOffset) . ' 00000 n \n'
-            . sprintf('%010d', $parentTreeOffset) . ' 00000 n \n'
-            . sprintf('%010d', $structElemOffset) . ' 00000 n \n'
             . sprintf('%010d', $infoOffset) . ' 00000 n \n'
             . '0000000000 65535 f \n'
             . sprintf('%010d', $fontOffset) . ' 00000 n \n/',
             $output,
         );
-        self::assertStringContainsString("trailer\n<< /Size 9\n/Root 1 0 R\n/Info 6 0 R >>\n", $output);
+        self::assertStringContainsString("trailer\n<< /Size 6\n/Root 1 0 R\n/Info 3 0 R >>\n", $output);
     }
 }

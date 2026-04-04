@@ -34,7 +34,7 @@ final class PagesTest extends TestCase
         self::assertSame($page, $pages->pages[0]);
         self::assertSame(6, $page->id);
         self::assertSame(
-            "6 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 8 0 R /Contents 7 0 R /StructParents 0 >>\nendobj\n",
+            "6 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 8 0 R /Contents 7 0 R >>\nendobj\n",
             $page->render(),
         );
     }

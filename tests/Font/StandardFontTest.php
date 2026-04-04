@@ -66,6 +66,15 @@ final class StandardFontTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_unknown_non_embedded_base_fonts(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("BaseFont 'NotoSans-Regular' is not a valid PDF standard font.");
+
+        new StandardFont(6, 'NotoSans-Regular', 'Type1', 'WinAnsiEncoding', 1.4);
+    }
+
+    #[Test]
     public function it_estimates_text_width_without_embedded_font_metrics(): void
     {
         $font = new StandardFont(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);

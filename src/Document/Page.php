@@ -41,6 +41,10 @@ final class Page extends IndirectObject
 
     public function addText(string $text, float $x, float $y, string $baseFont, int $size, ?string $tag = null): self
     {
+        if ($tag !== null) {
+            $this->document->ensureStructureEnabled();
+        }
+
         $font = $this->resolveFont($baseFont);
         $markedContentId = $tag !== null ? $this->markedContentId++ : null;
         $encodedText = $this->encodeText($font, $baseFont, $text);
@@ -133,8 +137,11 @@ final class Page extends IndirectObject
             'MediaBox' => new ArrayValue([0, 0, $this->width, $this->height]),
             'Resources' => new Reference($this->resources),
             'Contents' => new Reference($this->contents),
-            'StructParents' => $this->structParentId,
         ]);
+
+        if ($this->markedContentId > 0 && $this->document->hasStructure()) {
+            $dictionary->add('StructParents', $this->structParentId);
+        }
 
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL

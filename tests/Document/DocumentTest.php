@@ -32,11 +32,11 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4, language: 'de-DE');
 
-        self::assertSame([1, 2, 3, 4, 5, 6], array_map(
+        self::assertSame([1, 2, 3], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
-        self::assertStringContainsString('/StructTreeRoot 3 0 R', $document->catalog->render());
+        self::assertStringNotContainsString('/StructTreeRoot', $document->catalog->render());
     }
 
     #[Test]
@@ -49,11 +49,11 @@ final class DocumentTest extends TestCase
 
         self::assertSame($document, $returnedDocument);
         self::assertCount(1, $document->fonts);
-        self::assertSame(7, $document->fonts[0]->id);
-        self::assertSame(8, $page->id);
-        self::assertSame(9, $page->contents->id);
-        self::assertSame(10, $page->resources->id);
-        self::assertSame([1, 2, 3, 4, 5, 6, 7, 8, 10, 9], array_map(
+        self::assertSame(4, $document->fonts[0]->id);
+        self::assertSame(5, $page->id);
+        self::assertSame(6, $page->contents->id);
+        self::assertSame(7, $page->resources->id);
+        self::assertSame([1, 2, 3, 4, 5, 7, 6], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -144,13 +144,13 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
-    public function it_registers_font_presets_via_the_registry_group_name(): void
+    public function it_registers_embedded_fonts_via_their_direct_font_names(): void
     {
         $document = new Document(version: 1.4);
 
         $document
-            ->addFont('sans')
-            ->addFont('global');
+            ->addFont('NotoSans-Regular')
+            ->addFont('NotoSansCJKsc-Regular');
 
         self::assertCount(2, $document->fonts);
         self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
@@ -162,7 +162,7 @@ final class DocumentTest extends TestCase
         self::assertNotNull($document->fonts[1]->descendantFont->fontDescriptor);
         self::assertNotNull($document->fonts[1]->descendantFont->cidToGidMap);
         self::assertSame(
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
             array_map(
                 static fn (object $object): int => $object->id,
                 $document->getDocumentObjects(),
@@ -171,17 +171,83 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
-    public function it_registers_the_sans_preset_as_an_embedded_font(): void
+    public function it_registers_the_noto_sans_font_as_an_embedded_font(): void
     {
         $document = new Document(version: 1.4);
 
-        $document->addFont('sans');
+        $document->addFont('NotoSans-Regular');
 
         self::assertCount(1, $document->fonts);
         self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
         self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
         self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
         self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
+    }
+
+    #[Test]
+    public function it_registers_an_embedded_font_by_its_direct_font_name(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $document->addFont('NotoSans-Regular');
+
+        self::assertCount(1, $document->fonts);
+        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
+        self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
+        self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
+    }
+
+    #[Test]
+    public function it_registers_serif_and_mono_fonts_as_embedded_fonts_by_their_direct_names(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $document
+            ->addFont('NotoSerif-Regular')
+            ->addFont('NotoSansMono-Regular');
+
+        self::assertCount(2, $document->fonts);
+        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
+        self::assertInstanceOf(UnicodeFont::class, $document->fonts[1]);
+        self::assertSame('NotoSerif-Regular', $document->fonts[0]->getBaseFont());
+        self::assertSame('NotoSansMono-Regular', $document->fonts[1]->getBaseFont());
+        self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->fonts[1]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
+        self::assertNotNull($document->fonts[1]->descendantFont->cidToGidMap);
+    }
+
+    #[Test]
+    public function it_can_use_a_document_specific_font_configuration(): void
+    {
+        $document = new Document(
+            version: 1.4,
+            fontConfig: [
+                [
+                    'baseFont' => 'CustomSans-Regular',
+                    'path' => 'assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+
+        $document->addFont('CustomSans-Regular');
+
+        self::assertCount(1, $document->fonts);
+        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
+        self::assertSame('CustomSans-Regular', $document->fonts[0]->getBaseFont());
+        self::assertSame($document->getFontConfig(), [
+            [
+                'baseFont' => 'CustomSans-Regular',
+                'path' => 'assets/fonts/NotoSans-Regular.ttf',
+                'unicode' => true,
+                'subtype' => 'CIDFontType2',
+                'encoding' => 'Identity-H',
+            ],
+        ]);
     }
 
     #[Test]
@@ -206,12 +272,12 @@ final class DocumentTest extends TestCase
         $result = $document->addStructElem('P', 42);
 
         self::assertSame($document, $result);
-        self::assertSame([1, 2, 3, 4, 5, 7, 6], array_map(
+        self::assertSame([1, 2, 4, 5, 6, 7, 3], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
-        self::assertStringContainsString('5 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [7 0 R] >>', $document->render());
-        self::assertStringContainsString('7 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 5 0 R /K [] >>', $document->render());
+        self::assertStringContainsString('6 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [7 0 R] >>', $document->render());
+        self::assertStringContainsString('7 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 6 0 R /K [] >>', $document->render());
     }
 
     #[Test]
@@ -237,10 +303,25 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/Subject (Tests)', $output);
         self::assertStringContainsString('/Keywords (pdf)', $output);
         self::assertStringContainsString('/Lang (de-DE)', $output);
-        self::assertStringContainsString('/StructTreeRoot 3 0 R', $output);
-        self::assertStringContainsString("xref\n0 11\n", $output);
-        self::assertStringContainsString("trailer\n<< /Size 11\n/Root 1 0 R\n/Info 6 0 R >>\n", $output);
+        self::assertStringNotContainsString('/MarkInfo', $output);
+        self::assertStringNotContainsString('/StructTreeRoot', $output);
+        self::assertStringContainsString("xref\n0 8\n", $output);
+        self::assertStringContainsString("trailer\n<< /Size 8\n/Root 1 0 R\n/Info 3 0 R >>\n", $output);
         self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}\)/', $output);
         self::assertStringEndsWith('%%EOF', $output);
+    }
+
+    #[Test]
+    public function it_enables_structure_metadata_only_after_tagged_content_is_added(): void
+    {
+        $document = new Document(version: 1.4, language: 'de-DE');
+        $document->addFont('Helvetica');
+        $document->addPage()->addText('Hello', 10, 20, 'Helvetica', 12, 'P');
+
+        $output = $document->render();
+
+        self::assertStringContainsString('/Lang (de-DE)', $output);
+        self::assertStringContainsString('/StructTreeRoot 8 0 R', $output);
+        self::assertStringContainsString('/StructParents 0', $output);
     }
 }

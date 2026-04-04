@@ -25,7 +25,7 @@ final class Catalog extends IndirectObject
             'Pages' => new Reference($this->document->pages),
         ]);
 
-        if ($this->document->version >= 1.4) {
+        if ($this->document->version >= 1.4 && $this->document->structTreeRoot !== null) {
             $dictionary->add('MarkInfo', new Dictionary([
                 'Marked' => new BooleanValue(true),
             ]));

@@ -19,7 +19,7 @@ final class PageTest extends TestCase
         $page = $document->addPage(100.0, 200.0);
 
         self::assertSame(
-            "7 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 9 0 R /Contents 8 0 R /StructParents 0 >>\nendobj\n",
+            "4 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 6 0 R /Contents 5 0 R >>\nendobj\n",
             $page->render(),
         );
     }
@@ -31,7 +31,7 @@ final class PageTest extends TestCase
         $page = $document->addPage(PageSize::custom(100.0, 200.0)->landscape());
 
         self::assertSame(
-            "7 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Resources 9 0 R /Contents 8 0 R /StructParents 0 >>\nendobj\n",
+            "4 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Resources 6 0 R /Contents 5 0 R >>\nendobj\n",
             $page->render(),
         );
     }
@@ -67,11 +67,11 @@ final class PageTest extends TestCase
         $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, 'P');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Font << /F1 7 0 R >>', $page->resources->render());
+        self::assertStringContainsString('/Font << /F1 4 0 R >>', $page->resources->render());
         self::assertStringContainsString('/P << /MCID 0 >> BDC', $page->contents->render());
         self::assertStringContainsString('(Hello) Tj', $page->contents->render());
-        self::assertStringContainsString('5 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [11 0 R] >>', $document->render());
-        self::assertStringContainsString('11 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 5 0 R /Pg 8 0 R /K 0 >>', $document->render());
+        self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [11 0 R] >>', $document->render());
+        self::assertStringContainsString('11 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 10 0 R /Pg 5 0 R /K 0 >>', $document->render());
     }
 
     #[Test]
