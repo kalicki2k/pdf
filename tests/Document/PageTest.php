@@ -81,6 +81,42 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_line_to_the_page_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addLine(10, 20, 100, 20);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 w\n10 20 m\n100 20 l\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_applies_stroke_color_and_opacity_when_adding_a_line(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addLine(10, 20, 100, 20, 2.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /CA 0.25 >> >>', $page->resources->render());
+        self::assertStringContainsString("1 0 0 RG\n/GS1 gs\n2.5 w\n10 20 m\n100 20 l\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_non_positive_line_widths(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Line width must be greater than zero.');
+
+        $page->addLine(10, 20, 100, 20, 0);
+    }
+
+    #[Test]
     public function it_rejects_text_with_an_unregistered_font(): void
     {
         $document = new Document(version: 1.4);

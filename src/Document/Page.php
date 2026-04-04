@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Element\Line;
 use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontRegistry;
@@ -191,6 +192,35 @@ final class Page extends IndirectObject
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): TextFrame {
         return new TextFrame($this, $x, $y, $width, $bottomMargin);
+    }
+
+    public function addLine(
+        float $startX,
+        float $startY,
+        float $endX,
+        float $endY,
+        float $width = 1.0,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Line width must be greater than zero.');
+        }
+
+        $colorOperator = $color?->renderStrokingOperator();
+        $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
+
+        $this->contents->addElement(new Line(
+            $startX,
+            $startY,
+            $endX,
+            $endY,
+            $width,
+            $colorOperator,
+            $graphicsStateName,
+        ));
+
+        return $this;
     }
 
     public function addImage(
