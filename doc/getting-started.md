@@ -120,6 +120,15 @@ $page->path()
         Color::gray(0.95),
     );
 
+$page->addCircle(
+    Units::mm(80),
+    Units::mm(210),
+    Units::mm(8),
+    1.0,
+    Color::rgb(220, 20, 60),
+    Color::gray(0.95),
+);
+
 $page->addImage(
     Image::fromFile('assets/images/demo.jpg'),
     Units::mm(100),
@@ -151,7 +160,7 @@ file_put_contents('hello.pdf', $pdfContent);
 3. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
 4. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
 5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
-6. `addLine(...)`, `addRectangle(...)`, `path()` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
+6. `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
 7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
 8. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
@@ -243,7 +252,8 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 
 - `Page::addLine(...)` fuer einfache Linien mit Farbe, Linienstaerke und optionaler Stroke-Opacity
 - `Page::addRectangle(...)` fuer Stroke, Fill oder Fill+Stroke
-- `Page::path()` fuer freie Pfade mit `moveTo(...)`, `lineTo(...)`, `close()` und den Paint-Modi `stroke()`, `fill()` und `fillAndStroke()`
+- `Page::path()` fuer freie Pfade mit `moveTo(...)`, `lineTo(...)`, `curveTo(...)`, `close()` und den Paint-Modi `stroke()`, `fill()` und `fillAndStroke()`
+- `Page::addCircle(...)` fuer Kreise auf Basis des Path-Builders
 - `Image::fromFile(...)` fuer automatische Erkennung von `jpg`, `jpeg` und unterstuetzten `png`
 - `Page::addImage(...)` fuer die Platzierung eines Bildes an einer festen Position
 - `Page::addLink(...)` fuer frei positionierbare klickbare Flaechen
@@ -279,6 +289,16 @@ $page->path()
         Color::rgb(0, 0, 0),
         Color::gray(0.92),
     );
+
+$page->addCircle(
+    190,
+    160,
+    18,
+    1.5,
+    Color::rgb(0, 0, 0),
+    Color::gray(0.92),
+    Opacity::both(0.5),
+);
 
 $image = Image::fromFile('assets/images/demo.jpg');
 $page->addImage($image, 110, 80, 70, 46.67);
@@ -346,6 +366,7 @@ Der derzeit belastbare Einstieg ist:
 - Linien rendern
 - Rechtecke rendern
 - freie Pfade und Formen wie Diamanten rendern
+- Kreise rendern
 - Bilder aus Dateien laden und platzieren
 - klickbare Links ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link`
 

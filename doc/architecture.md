@@ -61,7 +61,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)`, `path()`, `addImage(...)` und `addLink(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addImage(...)` und `addLink(...)`.
 
 Dabei passiert intern:
 
@@ -83,10 +83,11 @@ Beim Absatz-Rendering kommen zusaetzlich dazu:
 Bei grafischen Inhalten kommt stattdessen dazu:
 
 7. `Line`- und `Rectangle`-Elemente werden direkt in `Contents` abgelegt.
-8. `PathBuilder` erzeugt aus `moveTo(...)`, `lineTo(...)` und `close()` ein `Path`-Element fuer freie Formen.
-9. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
-10. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
-11. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
+8. `PathBuilder` erzeugt aus `moveTo(...)`, `lineTo(...)`, `curveTo(...)` und `close()` ein `Path`-Element fuer freie Formen.
+9. `addCircle(...)` baut darauf einen Kreis aus vier kubischen Bezier-Segmenten auf.
+10. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
+11. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
+12. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
 
 ### TextFrame
 
@@ -216,12 +217,19 @@ Aktuell wird das ueber `Page::path()` und `PathBuilder` aufgebaut:
 
 - `moveTo(...)`
 - `lineTo(...)`
+- `curveTo(...)`
 - `close()`
 - `stroke(...)`
 - `fill(...)`
 - `fillAndStroke(...)`
 
 Damit lassen sich Formen wie Diamanten, Polygone oder einfache Diagrammformen erzeugen, ohne fuer jede Form ein eigenes High-Level-Element anzulegen.
+
+### Circle
+
+`Page::addCircle(...)` ist ein Convenience-Pfad auf Basis des vorhandenen `PathBuilder`.
+
+Intern wird der Kreis nicht ueber einen speziellen PDF-Kreisoperator erzeugt, sondern ueber vier kubische Bezier-Segmente approximiert. Dadurch bleibt der Kreis fachlich ein normaler `Path` und nutzt dieselben Paint-Modi wie andere freie Formen.
 
 ### Image und DrawImage
 
