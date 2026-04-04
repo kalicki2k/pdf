@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document\BulletType;
+use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Styles\TablePadding;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
-use Kalle\Pdf\Document\Units;
+use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
@@ -608,7 +608,7 @@ $numberedPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::m
         startAt: 3,
     );
 
-//$coverPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
+//$coverPage = $document->addPage(\Kalle\Pdf\Layout\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);
 //$coverFrame
 //    ->heading('Kalle PDF Demo', 'NotoSans-Regular', 24, 'H1')
@@ -621,7 +621,7 @@ $numberedPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::m
 //    ->spacer(4)
 //    ->paragraph('Naechster Ausbauschritt waere z. B. Bilder, Linien oder Tabellen.', 'NotoSerif-Regular', 11);
 //
-//$comparisonPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
+//$comparisonPage = $document->addPage(\Kalle\Pdf\Layout\PageSize::A4());
 //$comparisonFrame = $comparisonPage->textFrame(20, 265, 110);
 //$comparisonFrame
 //    ->heading('Seite 2', 'NotoSans-Regular', 18, 'H1')
@@ -631,7 +631,7 @@ $numberedPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::m
 //    ->paragraph('Alle Inhalte werden aktuell als Text-Elemente auf die Seite gesetzt.', 'NotoSans-Regular', 9)
 //    ->paragraph('Damit eignet sich das Beispiel gut als Ausgangspunkt fuer weitere PDF-Features.', 'NotoSans-Regular', 9);
 //
-//$unicodePage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
+//$unicodePage = $document->addPage(\Kalle\Pdf\Layout\PageSize::A4());
 //$unicodePage
 //    ->addText('Unicode Font Demo', 20, 265, 'NotoSans-Regular', 18, 'H1')
 //    ->addText('Die naechste Zeile verwendet den registrierten UnicodeFont:', 20, 245, 'NotoSans-Regular', 10, 'P')
