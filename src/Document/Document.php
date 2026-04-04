@@ -122,6 +122,9 @@ final class Document
         }
         foreach ($this->pages->pages as $page) {
             $objects[] = $page;
+            foreach ($page->getAnnotations() as $annotation) {
+                $objects[] = $annotation;
+            }
             foreach ($page->resources->getImages() as $image) {
                 $objects[] = $image;
             }

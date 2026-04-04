@@ -6,6 +6,8 @@ namespace Kalle\Pdf\Element;
 
 class Text extends Element
 {
+    private const DECORATION_INSET_FACTOR = 0.08;
+
     private ?int $markedContentId;
     private string $content;
     private string $font;
@@ -90,13 +92,16 @@ class Text extends Element
 
         $decorations = [];
         $lineHeight = max(0.5, $this->size * 0.05);
+        $decorationInset = min($this->width / 2, $this->size * self::DECORATION_INSET_FACTOR);
+        $decorationX = $this->x + $decorationInset;
+        $decorationWidth = max(0.0, $this->width - ($decorationInset * 2));
 
         if ($this->underline) {
-            $decorations[] = $this->renderFilledLine($this->x, $this->y - ($this->size * 0.18), $this->width, $lineHeight);
+            $decorations[] = $this->renderFilledLine($decorationX, $this->y - ($this->size * 0.18), $decorationWidth, $lineHeight);
         }
 
         if ($this->strikethrough) {
-            $decorations[] = $this->renderFilledLine($this->x, $this->y + ($this->size * 0.3), $this->width, $lineHeight);
+            $decorations[] = $this->renderFilledLine($decorationX, $this->y + ($this->size * 0.3), $decorationWidth, $lineHeight);
         }
 
         return $decorations;

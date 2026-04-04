@@ -164,6 +164,141 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_diamond_path_to_the_page_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->path()
+            ->moveTo(60, 240)
+            ->lineTo(100, 200)
+            ->lineTo(60, 160)
+            ->lineTo(20, 200)
+            ->close()
+            ->stroke(1.5, Color::rgb(255, 0, 0));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_fills_and_strokes_a_path(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->path()
+            ->moveTo(60, 240)
+            ->lineTo(100, 200)
+            ->lineTo(60, 160)
+            ->lineTo(20, 200)
+            ->close()
+            ->fillAndStroke(2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_a_link_annotation_to_the_page(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addLink(10, 20, 80, 12, 'https://example.com');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Annots [7 0 R]', $page->render());
+        self::assertStringContainsString('/Subtype /Link', $document->render());
+        self::assertStringContainsString('/URI (https://example.com)', $document->render());
+    }
+
+    #[Test]
+    public function it_rejects_non_positive_link_dimensions(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Link width must be greater than zero.');
+
+        $page->addLink(10, 20, 0, 12, 'https://example.com');
+    }
+
+    #[Test]
+    public function it_rejects_empty_link_urls(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Link URL must not be empty.');
+
+        $page->addLink(10, 20, 80, 12, '');
+    }
+
+    #[Test]
+    public function it_adds_a_link_annotation_when_text_is_rendered_with_a_link(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addText('Hello', 10, 20, 'Helvetica', 12, link: 'https://example.com');
+
+        self::assertStringContainsString('(Hello) Tj', $page->contents->render());
+        self::assertStringContainsString('/Annots [8 0 R]', $page->render());
+        self::assertStringContainsString('/URI (https://example.com)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_link_annotations_for_linked_text_segments_in_a_paragraph(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            [
+                new TextSegment('Hello ', link: 'https://example.com'),
+                new TextSegment('world', link: 'https://example.com'),
+            ],
+            10,
+            20,
+            200,
+            'Helvetica',
+            12,
+        );
+
+        self::assertStringContainsString('/Annots [8 0 R]', $page->render());
+        self::assertSame(1, substr_count($document->render(), '/URI (https://example.com)'));
+    }
+
+    #[Test]
+    public function it_creates_separate_link_annotations_for_distinct_linked_text_segments(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            [
+                new TextSegment('One', link: 'https://one.example'),
+                new TextSegment(' Two', link: 'https://two.example'),
+            ],
+            10,
+            20,
+            200,
+            'Helvetica',
+            12,
+        );
+
+        self::assertStringContainsString('/Annots [8 0 R 9 0 R]', $page->render());
+        self::assertStringContainsString('/URI (https://one.example)', $document->render());
+        self::assertStringContainsString('/URI (https://two.example)', $document->render());
+    }
+
+    #[Test]
     public function it_rejects_text_with_an_unregistered_font(): void
     {
         $document = new Document(version: 1.4);

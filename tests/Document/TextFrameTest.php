@@ -168,4 +168,26 @@ final class TextFrameTest extends TestCase
         self::assertStringContainsString("20 88 Td\n(wor...) Tj", $page->contents->render());
         self::assertSame(68.0, $frame->getCursorY());
     }
+
+    #[Test]
+    public function it_forwards_linked_text_segments_in_text_frames(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame->paragraph(
+            [
+                new TextSegment('Docs', link: 'https://example.com/docs'),
+                new TextSegment(' Link', link: 'https://example.com/docs'),
+            ],
+            'Helvetica',
+            10,
+            spacingAfter: 8,
+        );
+
+        self::assertStringContainsString('/Annots [8 0 R]', $frame->getPage()->render());
+        self::assertStringContainsString('/URI (https://example.com/docs)', $document->render());
+    }
 }

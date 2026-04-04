@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Line;
+use Kalle\Pdf\Element\Path;
 use Kalle\Pdf\Element\Rectangle;
 use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
@@ -29,6 +30,8 @@ final class Page extends IndirectObject
     private const DEFAULT_BOTTOM_MARGIN = 20.0;
 
     private int $markedContentId = 0;
+    /** @var list<LinkAnnotation> */
+    private array $annotations = [];
     public Contents $contents;
     public Resources $resources;
 
@@ -58,6 +61,7 @@ final class Page extends IndirectObject
         ?Opacity $opacity = null,
         bool $underline = false,
         bool $strikethrough = false,
+        ?string $link = null,
     ): self {
         if ($tag !== null) {
             $this->document->ensureStructureEnabled();
@@ -90,6 +94,16 @@ final class Page extends IndirectObject
 
         if ($tag !== null && $markedContentId !== null) {
             $this->attachTextToStructure($tag, $markedContentId);
+        }
+
+        if ($link !== null && $textWidth > 0.0) {
+            $this->addLink(
+                $x,
+                $y - ($size * 0.2),
+                $textWidth,
+                $size,
+                $link,
+            );
         }
 
         return $this;
@@ -176,6 +190,7 @@ final class Page extends IndirectObject
                     $segment->opacity,
                     $segment->underline,
                     $segment->strikethrough,
+                    $segment->link,
                 );
                 $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
             }
@@ -193,6 +208,11 @@ final class Page extends IndirectObject
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): TextFrame {
         return new TextFrame($this, $x, $y, $width, $bottomMargin);
+    }
+
+    public function path(): PathBuilder
+    {
+        return new PathBuilder($this);
     }
 
     public function addLine(
@@ -266,6 +286,38 @@ final class Page extends IndirectObject
         return $this;
     }
 
+    public function addLink(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $url,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Link width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Link height must be greater than zero.');
+        }
+
+        if ($url === '') {
+            throw new InvalidArgumentException('Link URL must not be empty.');
+        }
+
+        $this->annotations[] = new LinkAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $url,
+        );
+
+        return $this;
+    }
+
     public function addImage(
         Image $image,
         float $x,
@@ -310,6 +362,16 @@ final class Page extends IndirectObject
             $dictionary->add('StructParents', $this->structParentId);
         }
 
+        if ($this->annotations !== []) {
+            $dictionary->add(
+                'Annots',
+                new ArrayValue(array_map(
+                    static fn (LinkAnnotation $annotation): Reference => new Reference($annotation),
+                    $this->annotations,
+                )),
+            );
+        }
+
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'endobj' . PHP_EOL;
@@ -328,6 +390,14 @@ final class Page extends IndirectObject
     public function getDocument(): Document
     {
         return $this->document;
+    }
+
+    /**
+     * @return list<LinkAnnotation>
+     */
+    public function getAnnotations(): array
+    {
+        return $this->annotations;
     }
 
     private function resolveFont(string $baseFont): FontDefinition
@@ -510,6 +580,7 @@ final class Page extends IndirectObject
                         $text,
                         $wordRun->color,
                         $wordRun->opacity,
+                        $wordRun->link,
                         $wordRun->bold,
                         $wordRun->italic,
                         $wordRun->underline,
@@ -536,6 +607,7 @@ final class Page extends IndirectObject
                             $chunk,
                             $wordRun->color,
                             $wordRun->opacity,
+                            $wordRun->link,
                             $wordRun->bold,
                             $wordRun->italic,
                             $wordRun->underline,
@@ -549,6 +621,7 @@ final class Page extends IndirectObject
                         $chunk,
                         $wordRun->color,
                         $wordRun->opacity,
+                        $wordRun->link,
                         $wordRun->bold,
                         $wordRun->italic,
                         $wordRun->underline,
@@ -711,6 +784,7 @@ final class Page extends IndirectObject
                 $segment->opacity,
                 $segment->underline,
                 $segment->strikethrough,
+                $segment->link,
             );
 
             $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
@@ -738,6 +812,7 @@ final class Page extends IndirectObject
                 substr($ellipsisSegment->text, 0, -1),
                 $ellipsisSegment->color,
                 $ellipsisSegment->opacity,
+                $ellipsisSegment->link,
                 $ellipsisSegment->bold,
                 $ellipsisSegment->italic,
                 $ellipsisSegment->underline,
@@ -778,6 +853,7 @@ final class Page extends IndirectObject
                 $trimmed,
                 $line[$lastIndex]->color,
                 $line[$lastIndex]->opacity,
+                $line[$lastIndex]->link,
                 $line[$lastIndex]->bold,
                 $line[$lastIndex]->italic,
                 $line[$lastIndex]->underline,
@@ -806,6 +882,7 @@ final class Page extends IndirectObject
             '...',
             $lastSegment->color,
             $lastSegment->opacity,
+            $lastSegment->link,
             $lastSegment->bold,
             $lastSegment->italic,
             $lastSegment->underline,
@@ -841,6 +918,7 @@ final class Page extends IndirectObject
                 $updatedText,
                 $line[$lastIndex]->color,
                 $line[$lastIndex]->opacity,
+                $line[$lastIndex]->link,
                 $line[$lastIndex]->bold,
                 $line[$lastIndex]->italic,
                 $line[$lastIndex]->underline,
@@ -899,6 +977,7 @@ final class Page extends IndirectObject
                         $part,
                         $segment->color,
                         $segment->opacity,
+                        $segment->link,
                         $segment->bold,
                         $segment->italic,
                         $segment->underline,
@@ -931,6 +1010,7 @@ final class Page extends IndirectObject
                         $buffer,
                         $run->color,
                         $run->opacity,
+                        $run->link,
                         $run->bold,
                         $run->italic,
                         $run->underline,
@@ -949,6 +1029,7 @@ final class Page extends IndirectObject
                         $buffer,
                         $run->color,
                         $run->opacity,
+                        $run->link,
                         $run->bold,
                         $run->italic,
                         $run->underline,
@@ -969,6 +1050,7 @@ final class Page extends IndirectObject
                 $buffer,
                 $run->color,
                 $run->opacity,
+                $run->link,
                 $run->bold,
                 $run->italic,
                 $run->underline,
@@ -996,6 +1078,7 @@ final class Page extends IndirectObject
         if (
             $lastRun->color === $run->color
             && $lastRun->opacity === $run->opacity
+            && $lastRun->link === $run->link
             && $lastRun->bold === $run->bold
             && $lastRun->italic === $run->italic
             && $lastRun->underline === $run->underline
@@ -1005,6 +1088,7 @@ final class Page extends IndirectObject
                 $lastRun->text . $run->text,
                 $lastRun->color,
                 $lastRun->opacity,
+                $lastRun->link,
                 $lastRun->bold,
                 $lastRun->italic,
                 $lastRun->underline,
