@@ -545,41 +545,38 @@ final class Table
                 $y,
                 $width,
                 $height,
-                $topBorder['width'],
-                $topBorder['color'],
+                $topBorder->width,
+                $topBorder->color,
                 null,
-                $topBorder['opacity'],
+                $topBorder->opacity,
             );
 
             return;
         }
 
         if ($topBorder !== null) {
-            $this->page->addLine($x, $y + $height, $x + $width, $y + $height, $topBorder['width'], $topBorder['color'], $topBorder['opacity']);
+            $this->page->addLine($x, $y + $height, $x + $width, $y + $height, $topBorder->width, $topBorder->color, $topBorder->opacity);
         }
 
         if ($rightBorder !== null) {
-            $this->page->addLine($x + $width, $y, $x + $width, $y + $height, $rightBorder['width'], $rightBorder['color'], $rightBorder['opacity']);
+            $this->page->addLine($x + $width, $y, $x + $width, $y + $height, $rightBorder->width, $rightBorder->color, $rightBorder->opacity);
         }
 
         if ($bottomBorder !== null) {
-            $this->page->addLine($x, $y, $x + $width, $y, $bottomBorder['width'], $bottomBorder['color'], $bottomBorder['opacity']);
+            $this->page->addLine($x, $y, $x + $width, $y, $bottomBorder->width, $bottomBorder->color, $bottomBorder->opacity);
         }
 
         if ($leftBorder !== null) {
-            $this->page->addLine($x, $y, $x, $y + $height, $leftBorder['width'], $leftBorder['color'], $leftBorder['opacity']);
+            $this->page->addLine($x, $y, $x, $y + $height, $leftBorder->width, $leftBorder->color, $leftBorder->opacity);
         }
     }
 
-    /**
-     * @return array{width: float, color: ?Color, opacity: ?Opacity}|null
-     */
     private function resolveBorderSide(
         string $side,
         ?TableBorder $defaultBorder,
         ?TableBorder $rowBorder,
         ?TableBorder $cellBorder,
-    ): ?array {
+    ): ?ResolvedBorderSide {
         $applicableBorders = [];
 
         foreach ([$cellBorder, $rowBorder, $defaultBorder] as $border) {
@@ -598,11 +595,11 @@ final class Table
             return null;
         }
 
-        return [
-            'width' => $this->firstDefinedBorderWidth($applicableBorders),
-            'color' => $this->firstDefinedBorderColor($applicableBorders),
-            'opacity' => $this->firstDefinedBorderOpacity($applicableBorders),
-        ];
+        return new ResolvedBorderSide(
+            $this->firstDefinedBorderWidth($applicableBorders),
+            $this->firstDefinedBorderColor($applicableBorders),
+            $this->firstDefinedBorderOpacity($applicableBorders),
+        );
     }
 
     private function resolveRowStyle(bool $header): ?RowStyle
@@ -709,15 +706,14 @@ final class Table
         return null;
     }
 
-    /**
-     * @param array{width: float, color: ?Color, opacity: ?Opacity} $top
-     * @param array{width: float, color: ?Color, opacity: ?Opacity} $right
-     * @param array{width: float, color: ?Color, opacity: ?Opacity} $bottom
-     * @param array{width: float, color: ?Color, opacity: ?Opacity} $left
-     */
-    private function bordersAreEquivalent(array $top, array $right, array $bottom, array $left): bool
+    private function bordersAreEquivalent(
+        ResolvedBorderSide $top,
+        ResolvedBorderSide $right,
+        ResolvedBorderSide $bottom,
+        ResolvedBorderSide $left,
+    ): bool
     {
-        return $top === $right && $right === $bottom && $bottom === $left;
+        return $top == $right && $right == $bottom && $bottom == $left;
     }
 
     private function calculateColumnOffset(int $columnIndex): float
