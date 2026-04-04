@@ -117,7 +117,7 @@ $document
             Color::gray(0.75),
         );
     })
-    ->addFooter(static function (Page $page, int $pageNumber): void {
+    ->addFooter(static function (Page $page): void {
         $page->addLine(
             Units::mm(20),
             Units::mm(12),
@@ -126,15 +126,14 @@ $document
             0.5,
             Color::gray(0.75),
         );
-        $page->addText(
-            "Seite $pageNumber",
-            Units::mm(20),
-            Units::mm(7),
-            'Helvetica',
-            9,
-            color: Color::gray(0.35),
-        );
-    });
+    })
+    ->addPageNumbers(
+        Units::mm(20),
+        Units::mm(7),
+        'Helvetica',
+        9,
+        'Seite {{page}} von {{pages}}',
+    );
 
 $sansPage = $document->addPage(PageSize::A4());
 $sansPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))

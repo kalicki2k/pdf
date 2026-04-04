@@ -11,6 +11,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Dokument-Metadaten sind vorhanden
 - Seiten, Ressourcen und Content-Streams sind getrennt modelliert
 - Header und Footer koennen ueber Dokument-Callbacks auf allen neuen Seiten registriert werden
+- Seitenzahlen mit Gesamtseitenzahl koennen ueber `addPageNumbers(...)` registriert werden
 - PDF-Outlines bzw. Bookmarks koennen ueber `addOutline(...)` registriert werden
 - benannte interne Ziele koennen ueber `addDestination(...)` registriert werden
 - Text wird ueber registrierte Fonts gerendert

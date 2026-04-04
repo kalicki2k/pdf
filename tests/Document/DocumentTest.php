@@ -166,6 +166,48 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_footer_page_numbers_with_total_page_count(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $document->addPage(100, 100);
+        $document->addPage(100, 100);
+
+        $document->addPageNumbers(10, 10);
+        $document->render();
+
+        self::assertStringContainsString('(Seite 1 von 2) Tj', $document->pages->pages[0]->contents->render());
+        self::assertStringContainsString('(Seite 2 von 2) Tj', $document->pages->pages[1]->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_header_page_numbers_with_a_custom_template(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $document->addPage(100, 100);
+        $document->addPage(100, 100);
+        $document->addPage(100, 100);
+
+        $document->addPageNumbers(10, 90, 'Helvetica', 10, 'Seite {{page}} / {{pages}}', false);
+        $document->render();
+
+        self::assertStringContainsString('(Seite 1 / 3) Tj', $document->pages->pages[0]->contents->render());
+        self::assertStringContainsString('(Seite 3 / 3) Tj', $document->pages->pages[2]->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_empty_page_number_templates(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Page number template must not be empty.');
+
+        $document->addPageNumbers(10, 10, template: '');
+    }
+
+    #[Test]
     public function it_registers_outline_objects_and_links_them_to_pages(): void
     {
         $document = new Document(version: 1.4);

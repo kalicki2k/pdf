@@ -37,6 +37,7 @@ Wichtige Methoden:
 
 - `addPage()` erzeugt eine neue Seite mit eigener `Contents`- und `Resources`-Instanz
 - `addHeader()` und `addFooter()` registrieren Seiten-Callbacks, die bei jeder neuen Seite ausgefuehrt werden
+- `addPageNumbers()` registriert einen spaet aufgeloesten Seitenzahl-Renderer mit Zugriff auf `{{page}}` und `{{pages}}`
 - `addOutline()` registriert einen Bookmark-Eintrag fuer eine Zielseite
 - `addDestination()` registriert ein benanntes Ziel fuer interne Spruenge
 - `addFont()` registriert Fonts im Dokument
@@ -47,6 +48,8 @@ Wichtige Methoden:
 Wenn Outlines vorhanden sind, erzeugt `Document` zusaetzlich ein `OutlineRoot`-Objekt und eine flache Liste von `OutlineItem`-Objekten. Der `Catalog` verweist dann ueber `/Outlines` auf diese Navigationsstruktur und setzt `/PageMode /UseOutlines`.
 
 Wenn benannte Ziele vorhanden sind, rendert der `Catalog` zusaetzlich ein `/Dests`-Dictionary mit Zielnamen und Zielseiten.
+
+`addPageNumbers()` wird erst kurz vor dem finalen Rendern aufgeloest, damit die Gesamtseitenzahl des Dokuments bekannt ist.
 
 ### Pages
 

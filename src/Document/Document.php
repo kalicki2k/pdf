@@ -32,6 +32,10 @@ final class Document
     private array $headerRenderers = [];
     /** @var list<callable(Page, int): void> */
     private array $footerRenderers = [];
+    /** @var list<callable(Page, int, int): void> */
+    private array $deferredHeaderRenderers = [];
+    /** @var list<callable(Page, int, int): void> */
+    private array $deferredFooterRenderers = [];
 
     /** @var array<int, FontDefinition&IndirectObject> */
     public array $fonts = [];
@@ -225,6 +229,45 @@ final class Document
         return $this;
     }
 
+    public function addPageNumbers(
+        float $x,
+        float $y,
+        string $baseFont = 'Helvetica',
+        int $size = 10,
+        string $template = 'Seite {{page}} von {{pages}}',
+        bool $footer = true,
+    ): self {
+        if ($template === '') {
+            throw new InvalidArgumentException('Page number template must not be empty.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Page number size must be greater than zero.');
+        }
+
+        $renderer = static function (Page $page, int $pageNumber, int $totalPages) use ($x, $y, $baseFont, $size, $template): void {
+            $page->addText(
+                str_replace(
+                    ['{{page}}', '{{pages}}'],
+                    [(string) $pageNumber, (string) $totalPages],
+                    $template,
+                ),
+                $x,
+                $y,
+                $baseFont,
+                $size,
+            );
+        };
+
+        if ($footer) {
+            $this->deferredFooterRenderers[] = $renderer;
+        } else {
+            $this->deferredHeaderRenderers[] = $renderer;
+        }
+
+        return $this;
+    }
+
     public function addFont(
         string $baseFont,
         string $subtype = 'Type1',
@@ -347,6 +390,30 @@ final class Document
         }
     }
 
+    private function applyDeferredPageDecorators(): void
+    {
+        if ($this->deferredHeaderRenderers === [] && $this->deferredFooterRenderers === []) {
+            return;
+        }
+
+        $totalPages = count($this->pages->pages);
+
+        foreach ($this->pages->pages as $index => $page) {
+            $pageNumber = $index + 1;
+
+            foreach ($this->deferredHeaderRenderers as $renderer) {
+                $renderer($page, $pageNumber, $totalPages);
+            }
+
+            foreach ($this->deferredFooterRenderers as $renderer) {
+                $renderer($page, $pageNumber, $totalPages);
+            }
+        }
+
+        $this->deferredHeaderRenderers = [];
+        $this->deferredFooterRenderers = [];
+    }
+
     public function ensureStructureEnabled(): void
     {
         if ($this->version < 1.4) {
@@ -379,6 +446,8 @@ final class Document
 
     public function render(): string
     {
+        $this->applyDeferredPageDecorators();
+
         $renderer = new PdfRenderer();
 
         return $renderer->render($this);

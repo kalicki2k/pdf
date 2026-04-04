@@ -76,9 +76,7 @@ $document
     ->addHeader(static function (\Kalle\Pdf\Document\Page $page, int $pageNumber): void {
         $page->addText("Hello PDF - Seite $pageNumber", Units::mm(20), $page->getHeight() - Units::mm(10), 'Helvetica', 9);
     })
-    ->addFooter(static function (\Kalle\Pdf\Document\Page $page, int $pageNumber): void {
-        $page->addText("Seite $pageNumber", Units::mm(20), Units::mm(7), 'Helvetica', 9);
-    });
+    ->addPageNumbers(Units::mm(20), Units::mm(7), 'Helvetica', 9);
 
 $page = $document->addPage(PageSize::A4());
 $frame = $page->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20));
@@ -310,7 +308,7 @@ file_put_contents('hello.pdf', $pdfContent);
 
 1. `Document` initialisiert das PDF mit Version und Metadaten.
 2. `addFont(...)` registriert eingebettete Schriften aus der Font-Konfiguration.
-3. `addHeader(...)` und `addFooter(...)` registrieren wiederkehrende Seiteninhalte fuer alle neu erzeugten Seiten.
+3. `addHeader(...)`, `addFooter(...)` und `addPageNumbers(...)` registrieren wiederkehrende Seiteninhalte fuer alle neu erzeugten Seiten.
 4. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
 5. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
 6. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
