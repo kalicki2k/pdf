@@ -40,10 +40,11 @@ use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Document\BulletType;
 use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
-use Kalle\Pdf\Document\TextAlign;
+use Kalle\Pdf\Document\HorizontalAlign;
 use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\Units;
+use Kalle\Pdf\Document\VerticalAlign;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -86,7 +87,7 @@ $frame
         'NotoSans-Regular',
         12,
         'P',
-        align: TextAlign::JUSTIFY,
+        align: HorizontalAlign::JUSTIFY,
         maxLines: 3,
         overflow: TextOverflow::ELLIPSIS,
     );
@@ -207,7 +208,7 @@ $page->addTable(
     ->addRow([
         '1',
         'Starter-Paket mit kurzer Beschreibung.',
-        new TableCell('Aktiv', TextAlign::CENTER, Color::gray(0.94)),
+        new TableCell('Aktiv', HorizontalAlign::CENTER, Color::gray(0.94)),
         '19,99 EUR',
     ]);
 
@@ -267,6 +268,7 @@ Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeu
 - `colspan`
 - `rowspan` innerhalb derselben Seite
 - steuerbare Borders ueber `TableBorder`
+- horizontale und vertikale Zell-Ausrichtung
 - automatische Zeilenhoehe durch Textumbruch
 - Seitenwechsel, wenn die naechste Zeile nicht mehr auf die aktuelle Seite passt
 
@@ -283,7 +285,7 @@ $table->addRow(['ID', 'Titel', 'Status', 'Preis'], header: true);
 $table->addRow([
     '1',
     'Starter-Paket mit kurzer Beschreibung.',
-    new TableCell('Aktiv', TextAlign::CENTER, Color::gray(0.94)),
+    new TableCell('Aktiv', HorizontalAlign::CENTER, Color::gray(0.94)),
     '19,99 EUR',
 ]);
 $table->addRow([
@@ -292,7 +294,7 @@ $table->addRow([
         new TextSegment('Pro Plan', bold: true),
         new TextSegment(' mit Umbruch in der Tabellenzelle.'),
     ],
-    new TableCell('Beta', TextAlign::CENTER),
+    new TableCell('Beta', HorizontalAlign::CENTER),
     '49,00 EUR',
 ]);
 ```
@@ -302,27 +304,32 @@ Fuer laengere Tabellen werden Header-Zeilen automatisch auf neuen Seiten wiederh
 ```php
 $table = $page->table(20, 240, 170, [20, 80, 30, 40])
     ->font('NotoSans-Regular', 10)
+    ->verticalAlign(VerticalAlign::MIDDLE)
     ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
 
-for ($index = 1; $index <= 30; $index++) {
-    $table->addRow([
-        (string) $index,
-        'Eintrag ' . $index,
-        'Offen',
-        'Kommentar ' . $index,
-    ]);
-}
+$table->addRow([
+    new TableCell('Gruppe A', HorizontalAlign::CENTER, rowspan: 2, verticalAlign: VerticalAlign::MIDDLE),
+    'Eintrag 12',
+    new TableCell('Aktiv', HorizontalAlign::CENTER, verticalAlign: VerticalAlign::TOP),
+    "Kommentar 12\nMitte",
+]);
+
+$table->addRow([
+    new TableCell('Eintrag 13', HorizontalAlign::RIGHT),
+    new TableCell('Offen', HorizontalAlign::CENTER, verticalAlign: VerticalAlign::BOTTOM),
+    "Kommentar 13\nUnten",
+]);
 ```
 
 `TableCell` kann dabei auch Spalten oder Zeilen zusammenfassen:
 
 ```php
 $table->addRow([
-    new TableCell('Zwischenuebersicht', TextAlign::CENTER, colspan: 4),
+    new TableCell('Zwischenuebersicht', HorizontalAlign::CENTER, colspan: 4),
 ]);
 
 $table->addRow([
-    new TableCell('Gruppe A', TextAlign::CENTER, rowspan: 2),
+    new TableCell('Gruppe A', HorizontalAlign::CENTER, rowspan: 2),
     'Eintrag 1',
     'Offen',
 ]);
@@ -334,6 +341,13 @@ $table->addRow([
 ```
 
 Wichtig: `rowspan` ist aktuell bewusst auf dieselbe Seite begrenzt. Ein `rowspan`-Block darf also noch nicht ueber einen Seitenumbruch hinweg laufen.
+
+Fuer die Ausrichtung gilt:
+
+- `HorizontalAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
+- `VerticalAlign::TOP`, `MIDDLE`, `BOTTOM`
+- `Table::verticalAlign(...)` setzt den Tabellen-Default
+- `TableCell(..., verticalAlign: ...)` kann einzelne Zellen ueberschreiben
 
 Fuer feinere Linien kann die Tabelle oder die einzelne Zelle ein `TableBorder` tragen:
 
@@ -493,7 +507,7 @@ Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Aus
 - `link` direkt in `Page::addText(...)`
 - `link` direkt pro `TextSegment`
 - `bold`, `italic`, `underline`, `strikethrough` pro `TextSegment`
-- `TextAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
+- `HorizontalAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `TextOverflow::CLIP` und `TextOverflow::ELLIPSIS` zusammen mit `maxLines`
 
 ## Grafische Elemente und Bilder
@@ -605,7 +619,7 @@ $frame->paragraph(
     'NotoSans-Regular',
     12,
     'P',
-    align: TextAlign::JUSTIFY,
+    align: HorizontalAlign::JUSTIFY,
     maxLines: 2,
     overflow: TextOverflow::ELLIPSIS,
 );

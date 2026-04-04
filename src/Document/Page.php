@@ -113,7 +113,7 @@ final class Page extends IndirectObject
      * @param string|list<TextSegment> $text
      */
     public function addParagraph(
-        string|array $text,
+        string | array $text,
         float $x,
         float $y,
         float $maxWidth,
@@ -124,7 +124,7 @@ final class Page extends IndirectObject
         ?float $bottomMargin = null,
         ?Color $color = null,
         ?Opacity $opacity = null,
-        TextAlign $align = TextAlign::LEFT,
+        HorizontalAlign $align = HorizontalAlign::LEFT,
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
@@ -169,7 +169,7 @@ final class Page extends IndirectObject
 
             $cursorX = $x + $this->calculateAlignedOffset($line['segments'], $baseFont, $size, $maxWidth, $align, $line['justify']);
 
-            if ($align === TextAlign::JUSTIFY && $line['justify']) {
+            if ($align === HorizontalAlign::JUSTIFY && $line['justify']) {
                 $this->renderJustifiedLine($page, $line['segments'], $cursorX, $currentY, $baseFont, $size, $tag, $maxWidth);
                 $currentY -= $lineHeight;
                 continue;
@@ -213,7 +213,7 @@ final class Page extends IndirectObject
     /**
      * @param list<float|int> $columnWidths
      */
-    public function table(
+    public function addTable(
         float $x,
         float $y,
         float $width,
@@ -627,8 +627,7 @@ final class Page extends IndirectObject
         float $y,
         ?float $width = null,
         ?float $height = null,
-    ): self
-    {
+    ): self {
         if ($width !== null && $width <= 0) {
             throw new InvalidArgumentException('Image width must be greater than zero.');
         }
@@ -768,14 +767,13 @@ final class Page extends IndirectObject
      * @param string|list<TextSegment> $text
      */
     public function countParagraphLines(
-        string|array $text,
+        string | array $text,
         string $baseFont,
         int $size,
         float $maxWidth,
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
-    ): int
-    {
+    ): int {
         if ($maxLines !== null && $maxLines <= 0) {
             throw new InvalidArgumentException('Max lines must be greater than zero.');
         }
@@ -825,7 +823,7 @@ final class Page extends IndirectObject
      * @param string|array<mixed> $text
      * @return list<TextSegment>
      */
-    private function normalizeTextRuns(string|array $text, ?Color $color, ?Opacity $opacity): array
+    private function normalizeTextRuns(string | array $text, ?Color $color, ?Opacity $opacity): array
     {
         if (is_string($text)) {
             return [new TextSegment($text, $color, $opacity)];
@@ -983,11 +981,10 @@ final class Page extends IndirectObject
         string $baseFont,
         int $size,
         float $maxWidth,
-        TextAlign $align,
+        HorizontalAlign $align,
         bool $canJustify,
-    ): float
-    {
-        if ($align === TextAlign::LEFT || $align === TextAlign::JUSTIFY) {
+    ): float {
+        if ($align === HorizontalAlign::LEFT || $align === HorizontalAlign::JUSTIFY) {
             return 0.0;
         }
 
@@ -1001,7 +998,7 @@ final class Page extends IndirectObject
 
         $remainingWidth = max(0.0, $maxWidth - $lineWidth);
 
-        if ($align === TextAlign::CENTER) {
+        if ($align === HorizontalAlign::CENTER) {
             return $remainingWidth / 2;
         }
 
@@ -1016,10 +1013,10 @@ final class Page extends IndirectObject
         string $baseFont,
         int $size,
         float $maxWidth,
-        TextAlign $align,
+        HorizontalAlign $align,
         bool $canJustify,
     ): float {
-        if ($align !== TextAlign::JUSTIFY || !$canJustify) {
+        if ($align !== HorizontalAlign::JUSTIFY || !$canJustify) {
             return 0.0;
         }
 
@@ -1062,7 +1059,7 @@ final class Page extends IndirectObject
         float $maxWidth,
     ): void {
         $pieces = $this->splitSegmentsIntoWordPieces($line);
-        $extraWordSpacing = $this->calculateJustifiedWordSpacing($line, $baseFont, $size, $maxWidth, TextAlign::JUSTIFY, true);
+        $extraWordSpacing = $this->calculateJustifiedWordSpacing($line, $baseFont, $size, $maxWidth, HorizontalAlign::JUSTIFY, true);
         $cursorX = $x;
         $isFirstWord = true;
 
@@ -1227,6 +1224,7 @@ final class Page extends IndirectObject
                 $line[$lastIndex]->underline,
                 $line[$lastIndex]->strikethrough,
             );
+
             return;
         }
     }
@@ -1326,7 +1324,7 @@ final class Page extends IndirectObject
                 continue;
             }
 
-                if (preg_match('/\s/u', $character) === 1) {
+            if (preg_match('/\s/u', $character) === 1) {
                 if ($buffer !== '') {
                     $tokens[] = ['type' => 'word', 'run' => new TextSegment(
                         $buffer,
@@ -1373,6 +1371,7 @@ final class Page extends IndirectObject
 
         if ($lastIndex === null) {
             $runs[] = $run;
+
             return;
         }
 
@@ -1397,6 +1396,7 @@ final class Page extends IndirectObject
                 $lastRun->underline,
                 $lastRun->strikethrough,
             );
+
             return;
         }
 

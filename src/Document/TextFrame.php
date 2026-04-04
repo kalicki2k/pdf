@@ -30,7 +30,7 @@ final class TextFrame
      * @param string|list<TextSegment> $text
      */
     public function paragraph(
-        string|array $text,
+        string | array $text,
         string $baseFont,
         int $size,
         ?string $tag = null,
@@ -38,7 +38,7 @@ final class TextFrame
         ?float $spacingAfter = null,
         ?Color $color = null,
         ?Opacity $opacity = null,
-        TextAlign $align = TextAlign::LEFT,
+        HorizontalAlign $align = HorizontalAlign::LEFT,
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
@@ -223,7 +223,7 @@ final class TextFrame
      * @param string|list<TextSegment> $text
      */
     private function flowParagraph(
-        string|array $text,
+        string | array $text,
         float $x,
         float $width,
         string $baseFont,
@@ -233,7 +233,7 @@ final class TextFrame
         ?float $spacingAfter = null,
         ?Color $color = null,
         ?Opacity $opacity = null,
-        TextAlign $align = TextAlign::LEFT,
+        HorizontalAlign $align = HorizontalAlign::LEFT,
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
@@ -282,14 +282,14 @@ final class TextFrame
      * @param string|list<TextSegment> $text
      */
     public function heading(
-        string|array $text,
+        string | array $text,
         string $baseFont,
         int $size,
         ?string $tag = null,
         ?float $spacingAfter = null,
         ?Color $color = null,
         ?Opacity $opacity = null,
-        TextAlign $align = TextAlign::LEFT,
+        HorizontalAlign $align = HorizontalAlign::LEFT,
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): self {

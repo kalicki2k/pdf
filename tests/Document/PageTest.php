@@ -7,9 +7,9 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
-use Kalle\Pdf\Document\TextAlign;
-use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\HorizontalAlign;
 use Kalle\Pdf\Document\TextOverflow;
+use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -209,7 +209,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 130 m", $page->contents->render());
-        self::assertStringContainsString("130 100 c", $page->contents->render());
+        self::assertStringContainsString('130 100 c', $page->contents->render());
         self::assertStringContainsString("\nh\nS", $page->contents->render());
     }
 
@@ -248,7 +248,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 120 m", $page->contents->render());
-        self::assertStringContainsString("140 100 c", $page->contents->render());
+        self::assertStringContainsString('140 100 c', $page->contents->render());
         self::assertStringContainsString("\nh\nS", $page->contents->render());
     }
 
@@ -635,8 +635,8 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("10 38 Td\n(world) Tj", $page->contents->render());
-        self::assertStringNotContainsString("(from) Tj", $page->contents->render());
-        self::assertStringNotContainsString("(PDF) Tj", $page->contents->render());
+        self::assertStringNotContainsString('(from) Tj', $page->contents->render());
+        self::assertStringNotContainsString('(PDF) Tj', $page->contents->render());
     }
 
     #[Test]
@@ -659,8 +659,8 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("10 38 Td\n(wor...) Tj", $page->contents->render());
-        self::assertStringNotContainsString("(from) Tj", $page->contents->render());
-        self::assertStringNotContainsString("(PDF) Tj", $page->contents->render());
+        self::assertStringNotContainsString('(from) Tj', $page->contents->render());
+        self::assertStringNotContainsString('(PDF) Tj', $page->contents->render());
     }
 
     #[Test]
@@ -686,7 +686,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
         self::assertStringContainsString("/F2 10 Tf\n10 38 Td\n(Hello...) Tj", $page->contents->render());
-        self::assertStringNotContainsString("(world) Tj", $page->contents->render());
+        self::assertStringNotContainsString('(world) Tj', $page->contents->render());
     }
 
     #[Test]
@@ -709,7 +709,7 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
-        self::assertStringContainsString("(abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ) Tj", $page->contents->render());
+        self::assertStringContainsString('(abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ) Tj', $page->contents->render());
         self::assertStringContainsString("(0123456789.:,;\\(\\)*!?'@#<>$%&^+-=~) Tj", $page->contents->render());
     }
 
@@ -822,7 +822,7 @@ final class PageTest extends TestCase
         $document->addFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, align: TextAlign::CENTER);
+        $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, align: HorizontalAlign::CENTER);
 
         self::assertStringContainsString("45 50 Td\n(Hello) Tj", $page->contents->render());
     }
@@ -834,7 +834,7 @@ final class PageTest extends TestCase
         $document->addFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, align: TextAlign::RIGHT);
+        $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, align: HorizontalAlign::RIGHT);
 
         self::assertStringContainsString("80 50 Td\n(Hello) Tj", $page->contents->render());
     }
@@ -846,7 +846,7 @@ final class PageTest extends TestCase
         $document->addFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello world from PDF', 10, 50, 70, 'Helvetica', 10, align: TextAlign::JUSTIFY);
+        $page->addParagraph('Hello world from PDF', 10, 50, 70, 'Helvetica', 10, align: HorizontalAlign::JUSTIFY);
 
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("50 50 Td\n(world) Tj", $page->contents->render());
@@ -859,7 +859,7 @@ final class PageTest extends TestCase
         $document->addFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph("Hello world\nfrom PDF", 10, 50, 100, 'Helvetica', 10, align: TextAlign::JUSTIFY);
+        $page->addParagraph("Hello world\nfrom PDF", 10, 50, 100, 'Helvetica', 10, align: HorizontalAlign::JUSTIFY);
 
         self::assertStringContainsString("10 50 Td\n(Hello world) Tj", $page->contents->render());
         self::assertStringContainsString("10 38 Td\n(from PDF) Tj", $page->contents->render());

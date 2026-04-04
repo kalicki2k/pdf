@@ -134,6 +134,7 @@ Verantwortlich fuer:
 - Header- und Row-Styles
 - `colspan` und erste `rowspan`-Unterstuetzung
 - steuerbare Borders ueber `TableBorder`
+- horizontaler und vertikaler Tabellen-Default fuer Zellen
 - Wiederholung von Header-Zeilen bei Seitenwechsel
 - Berechnung der Zeilenhoehe ueber den vorhandenen Absatz-Umbruch
 - Seitenwechsel, wenn eine komplette Zeile nicht mehr passt
@@ -142,6 +143,7 @@ Verantwortlich fuer:
 
 - `text` als `string` oder `TextSegment[]`
 - `align`
+- optionales `verticalAlign`
 - optionaler `fillColor`
 - optionaler `textColor`
 - optionaler `opacity`
@@ -162,9 +164,12 @@ Aktuell unterstuetzt:
 Im Renderpfad gilt:
 
 - Tabellen koennen einen Default-Border ueber `Table::borderStyle(...)` tragen
+- Tabellen koennen einen vertikalen Default ueber `Table::verticalAlign(...)` tragen
 - einzelne `TableCell`-Instanzen koennen einzelne Border-Seiten gezielt ueberschreiben
+- einzelne `TableCell`-Instanzen koennen horizontale und vertikale Ausrichtung gezielt ueberschreiben
 - nicht gesetzte Zell-Seiten erben weiter vom Tabellen-Default
 - partielle Borders werden intern als gezielte Linien statt als komplettes Rechteck gerendert
+- vertikale Zell-Ausrichtung wird aus der echten Content-Hoehe innerhalb der Zellbox berechnet
 
 Die aktuelle `rowspan`-Stufe ist bewusst begrenzt:
 
@@ -360,11 +365,11 @@ Ein Segment traegt aktuell:
 
 `Page::addParagraph(...)` und `TextFrame::paragraph(...)` akzeptieren entweder einen einfachen `string` oder eine Liste von `TextSegment`-Objekten.
 
-### TextAlign und TextOverflow
+### HorizontalAlign und TextOverflow
 
 Fuer Absatzlayout gibt es aktuell zwei kleine Steuerobjekte:
 
-- `TextAlign` mit `LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
+- `HorizontalAlign` mit `LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `TextOverflow` mit `CLIP` und `ELLIPSIS`
 
 `JUSTIFY` verteilt zusaetzlichen Wortabstand nur auf automatisch umgebrochene Zeilen. Die letzte Absatzzeile und harte Zeilenumbrueche werden nicht gestreckt.

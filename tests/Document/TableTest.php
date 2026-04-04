@@ -8,8 +8,9 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
-use Kalle\Pdf\Document\TextAlign;
+use Kalle\Pdf\Document\HorizontalAlign;
 use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\VerticalAlign;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -31,7 +32,7 @@ final class TableTest extends TestCase
             ->addRow(['ID', 'Titel', 'Preis'], header: true)
             ->addRow([
                 '1',
-                new TableCell('Produkt A', TextAlign::CENTER),
+                new TableCell('Produkt A', HorizontalAlign::CENTER),
                 [new TextSegment(text: '19,99 EUR', underline: true)],
             ]);
 
@@ -59,7 +60,7 @@ final class TableTest extends TestCase
             ->addRow(['#', 'Titel', 'Status', 'Preis'], header: true)
             ->addRow([
                 '1',
-                new TableCell('Zusammengefasste Beschreibung', TextAlign::LEFT, colspan: 2),
+                new TableCell('Zusammengefasste Beschreibung', HorizontalAlign::LEFT, colspan: 2),
                 '19,99 EUR',
             ]);
 
@@ -80,7 +81,7 @@ final class TableTest extends TestCase
         $page->addTable(20, 260, 170, [40, 60, 70])
             ->addRow(['Gruppe', 'Titel', 'Status'], header: true)
             ->addRow([
-                new TableCell('A', TextAlign::CENTER, rowspan: 2),
+                new TableCell('A', HorizontalAlign::CENTER, rowspan: 2),
                 'Eintrag 1',
                 'Offen',
             ])
@@ -134,6 +135,46 @@ final class TableTest extends TestCase
         self::assertStringContainsString("0.75 G\n1 w\n20 260 m\n105 260 l\nS", $contents);
         self::assertStringContainsString("0.75 G\n1 w\n20 236 m\n105 236 l\nS", $contents);
         self::assertStringContainsString("0.75 G\n1 w\n105 236 m\n105 260 l\nS", $contents);
+    }
+
+    #[Test]
+    public function it_supports_middle_vertical_alignment_as_table_default(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [85, 85])
+            ->verticalAlign(VerticalAlign::MIDDLE)
+            ->addRow([
+                new TableCell('Kurz'),
+                "Erste Zeile\nZweite Zeile\nDritte Zeile",
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString("26 206 Td\n(Kurz) Tj", $contents);
+        self::assertStringContainsString("111 242 Td\n(Erste) Tj", $contents);
+    }
+
+    #[Test]
+    public function it_allows_cells_to_override_the_table_vertical_alignment(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [85, 85])
+            ->verticalAlign(VerticalAlign::MIDDLE)
+            ->addRow([
+                new TableCell('Kurz', verticalAlign: VerticalAlign::BOTTOM),
+                "Erste Zeile\nZweite Zeile\nDritte Zeile",
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString("26 170 Td\n(Kurz) Tj", $contents);
+        self::assertStringContainsString("111 242 Td\n(Erste) Tj", $contents);
     }
 
     #[Test]

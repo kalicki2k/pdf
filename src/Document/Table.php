@@ -19,7 +19,7 @@ final class Table
     private array $activeRowspans = [];
     /**
      * @var list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
      *     header: bool
      * }>
      */
@@ -36,6 +36,7 @@ final class Table
     private ?Color $rowTextColor = null;
     private ?Color $headerFillColor = null;
     private ?Color $headerTextColor = null;
+    private VerticalAlign $verticalAlign = VerticalAlign::TOP;
 
     /**
      * @param list<float|int> $columnWidths
@@ -147,6 +148,13 @@ final class Table
         return $this;
     }
 
+    public function verticalAlign(VerticalAlign $verticalAlign): self
+    {
+        $this->verticalAlign = $verticalAlign;
+
+        return $this;
+    }
+
     /**
      * @param list<string|list<TextSegment>|TableCell> $cells
      */
@@ -230,7 +238,7 @@ final class Table
     /**
      * @param list<string|list<TextSegment>|TableCell> $cells
      * @return array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
      *     nextRowspans: list<int>
      * }
      */
@@ -264,12 +272,14 @@ final class Table
                 $contentWidth,
             );
 
-            $cellHeight = ($this->fontSize + (max(0, $lineCount - 1) * $lineHeight)) + (2 * $this->padding);
+            $contentHeight = $this->fontSize + (max(0, $lineCount - 1) * $lineHeight);
+            $cellHeight = $contentHeight + (2 * $this->padding);
             $preparedCells[] = [
                 'cell' => $preparedCell,
                 'width' => $columnWidth,
                 'column' => $columnIndex,
                 'minHeight' => $cellHeight,
+                'contentHeight' => $contentHeight,
             ];
 
             if ($preparedCell->rowspan > 1) {
@@ -294,7 +304,7 @@ final class Table
 
     /**
      * @param list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
      *     header: bool
      * }> $preparedRows
      * @return list<float>
@@ -354,6 +364,7 @@ final class Table
                 $cell->colspan,
                 $cell->rowspan,
                 $cell->border,
+                $cell->verticalAlign,
             );
         }
 
@@ -399,7 +410,7 @@ final class Table
     /**
      * @param list<list<string|list<TextSegment>|TableCell>> $rows
      * @return list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
      *     header: bool
      * }>
      */
@@ -429,7 +440,7 @@ final class Table
 
     /**
      * @param list<array{
-     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float}>,
+     *     cells: list<array{cell: TableCell, width: float, column: int, minHeight: float, contentHeight: float}>,
      *     header: bool
      * }> $preparedRows
      * @param list<float> $rowHeights
@@ -447,6 +458,7 @@ final class Table
                 $cellBottomY = $rowTopY - $spanHeight;
                 $fillColor = $preparedCell->fillColor ?? ($preparedRow['header'] ? $this->headerFillColor : $this->rowFillColor);
                 $textColor = $preparedCell->textColor ?? ($preparedRow['header'] ? $this->headerTextColor : $this->rowTextColor);
+                $verticalAlign = $preparedCell->verticalAlign ?? $this->verticalAlign;
                 $this->renderCellBox(
                     $cellX,
                     $cellBottomY,
@@ -460,7 +472,13 @@ final class Table
                 $this->page = $this->page->addParagraph(
                     $preparedCell->text,
                     $cellX + $this->padding,
-                    $rowTopY - $this->padding - $this->fontSize,
+                    $this->resolveCellTextStartY(
+                        $rowTopY,
+                        $cellBottomY,
+                        $spanHeight,
+                        $preparedEntry['contentHeight'],
+                        $verticalAlign,
+                    ),
                     $preparedEntry['width'] - (2 * $this->padding),
                     $this->baseFont,
                     $this->fontSize,
@@ -477,6 +495,26 @@ final class Table
         }
 
         $this->cursorY = $rowTopY;
+    }
+
+    private function resolveCellTextStartY(
+        float $cellTopY,
+        float $cellBottomY,
+        float $cellHeight,
+        float $contentHeight,
+        VerticalAlign $verticalAlign,
+    ): float {
+        $freeSpace = max(0.0, $cellHeight - (2 * $this->padding) - $contentHeight);
+        $offset = match ($verticalAlign) {
+            VerticalAlign::TOP => 0.0,
+            VerticalAlign::MIDDLE => $freeSpace / 2,
+            VerticalAlign::BOTTOM => $freeSpace,
+        };
+
+        return max(
+            $cellBottomY + $this->padding + $contentHeight - $this->fontSize,
+            $cellTopY - $this->padding - $this->fontSize - $offset,
+        );
     }
 
     private function renderCellBox(

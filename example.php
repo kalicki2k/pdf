@@ -7,10 +7,11 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
-use Kalle\Pdf\Document\TextAlign;
+use Kalle\Pdf\Document\HorizontalAlign;
 use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\Units;
+use Kalle\Pdf\Document\VerticalAlign;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -101,13 +102,13 @@ $sansPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20
         'NotoSans-Regular',
         12,
         'P',
-        align: TextAlign::CENTER,
+        align: HorizontalAlign::CENTER,
     )->paragraph(
         implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789.:,;()*!?\'@#<>$%&^+-=~']),
         'NotoSans-Regular',
         12,
         'P',
-        align: TextAlign::RIGHT,
+        align: HorizontalAlign::RIGHT,
     )->paragraph(
         implode(' ', [
             'abcde',
@@ -140,7 +141,7 @@ $sansPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20
         'NotoSans-Regular',
         12,
         'P',
-        align: TextAlign::JUSTIFY,
+        align: HorizontalAlign::JUSTIFY,
     )->paragraph(
         [
             new TextSegment('CLIP: ', Color::rgb(200, 30, 30), bold: true),
@@ -337,7 +338,7 @@ $tablePage->addTable(
     ->addRow([
         '1',
         'Starter-Paket mit kurzer Beschreibung.',
-        new TableCell('Aktiv', TextAlign::CENTER, Color::gray(0.94)),
+        new TableCell('Aktiv', HorizontalAlign::CENTER, Color::gray(0.94)),
         '19,99 EUR',
     ])
     ->addRow([
@@ -346,7 +347,7 @@ $tablePage->addTable(
             new TextSegment('Pro Plan', bold: true),
             new TextSegment(' mit zwei Zeilen Text, damit der automatische Zellumbruch sichtbar wird.'),
         ],
-        new TableCell('Beta', TextAlign::CENTER, Color::gray(0.88)),
+        new TableCell('Beta', HorizontalAlign::CENTER, Color::gray(0.88)),
         '49,00 EUR',
     ])
     ->addRow([
@@ -354,7 +355,7 @@ $tablePage->addTable(
         'Enterprise mit Link zur Dokumentation.',
         new TableCell(
             [new TextSegment('Docs', color: Color::rgb(0, 0, 255), link: 'https://example.com/docs', underline: true)],
-            TextAlign::CENTER,
+            HorizontalAlign::CENTER,
         ),
         'auf Anfrage',
     ]);
@@ -411,26 +412,37 @@ $longTable = $longTablePage->addTable(
 )
     ->font('NotoSans-Regular', 10)
     ->padding(Units::mm(2))
+    ->verticalAlign(VerticalAlign::MIDDLE)
     ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
     ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
 
 $longTable->addRow([
-    new TableCell('Zwischenuebersicht', TextAlign::CENTER, Color::gray(0.95), null, null, 4),
+    new TableCell('Zwischenuebersicht', HorizontalAlign::CENTER, Color::gray(0.95), null, null, 4),
 ]);
 
 for ($index = 1; $index <= 36; $index++) {
     if ($index === 12) {
         $longTable->addRow([
-            new TableCell('Gruppe A', TextAlign::CENTER, Color::gray(0.96), null, null, 1, 2),
+            new TableCell(
+                'Gruppe A',
+                HorizontalAlign::CENTER,
+                Color::gray(0.96),
+                null,
+                null,
+                1,
+                2,
+                null,
+                VerticalAlign::MIDDLE,
+            ),
             'Eintrag 12',
-            new TableCell('Aktiv', TextAlign::CENTER),
-            'Kommentar 12',
+            new TableCell('Aktiv', HorizontalAlign::CENTER, verticalAlign: VerticalAlign::TOP),
+            "Kommentar 12\nMitte",
         ]);
 
         $longTable->addRow([
-            'Eintrag 13',
-            new TableCell('Offen', TextAlign::CENTER),
-            'Kommentar 13',
+            new TableCell('Eintrag 13', HorizontalAlign::RIGHT),
+            new TableCell('Offen', HorizontalAlign::CENTER, verticalAlign: VerticalAlign::BOTTOM),
+            "Kommentar 13\nUnten",
         ]);
 
         continue;
@@ -443,7 +455,7 @@ for ($index = 1; $index <= 36; $index++) {
     $longTable->addRow([
         (string) $index,
         'Eintrag ' . $index,
-        new TableCell($index % 2 === 0 ? 'Aktiv' : 'Offen', TextAlign::CENTER),
+        new TableCell($index % 2 === 0 ? 'Aktiv' : 'Offen', HorizontalAlign::CENTER),
         'Kommentar ' . $index,
     ]);
 }

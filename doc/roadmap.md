@@ -15,10 +15,10 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
 - Textfarbe, Graustufen, CMYK und Opacity sind im Renderpfad angekommen
 - `bold`, `italic`, `underline` und `strikethrough` sind vorhanden
-- `TextAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
+- `HorizontalAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
 - `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
 - Listen stehen in einer ersten Stufe ueber `TextFrame::bulletList(...)`, `TextFrame::numberedList(...)` und `BulletType` zur Verfuegung
-- Tabellen stehen in einer ersten Stufe ueber `table(...)`, `Table`, `TableCell` und `TableBorder` zur Verfuegung, inklusive wiederholter Header auf Folgeseiten, `colspan`, erster `rowspan`-Unterstuetzung und partiell ueberschreibbaren Zell-Borders
+- Tabellen stehen in einer ersten Stufe ueber `table(...)`, `Table`, `TableCell` und `TableBorder` zur Verfuegung, inklusive wiederholter Header auf Folgeseiten, `colspan`, erster `rowspan`-Unterstuetzung, partiell ueberschreibbaren Zell-Borders sowie horizontaler und vertikaler Zell-Ausrichtung
 - Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
 - freie Pfade sind ueber `Page::path()` und `PathBuilder` verfuegbar
@@ -47,7 +47,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
 - erste Listen-API mit Bullet- und nummerierten Listen
-- erste Tabellen-API mit festen Spaltenbreiten, Zeilen, wiederholten Headern, `colspan`, erster `rowspan`-Stufe und mergebaren Zell-Borders
+- erste Tabellen-API mit festen Spaltenbreiten, Zeilen, wiederholten Headern, `colspan`, erster `rowspan`-Stufe, mergebaren Zell-Borders sowie horizontaler und vertikaler Zell-Ausrichtung
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
 - erste freie Form-API ueber `path()`
 - erste Kreis-API auf Basis von Bezier-Pfaden

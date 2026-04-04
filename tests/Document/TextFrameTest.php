@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\BulletType;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\TextAlign;
-use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\HorizontalAlign;
 use Kalle\Pdf\Document\TextOverflow;
+use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
@@ -117,8 +117,8 @@ final class TextFrameTest extends TestCase
         );
 
         self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
-        self::assertStringContainsString("( Hello world) Tj", $page->contents->render());
-        self::assertStringContainsString("(from PDF) Tj", $page->contents->render());
+        self::assertStringContainsString('( Hello world) Tj', $page->contents->render());
+        self::assertStringContainsString('(from PDF) Tj', $page->contents->render());
     }
 
     #[Test]
@@ -129,7 +129,7 @@ final class TextFrameTest extends TestCase
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 100, 20);
-        $frame->paragraph('Hello', 'Helvetica', 10, spacingAfter: 8, align: TextAlign::CENTER);
+        $frame->paragraph('Hello', 'Helvetica', 10, spacingAfter: 8, align: HorizontalAlign::CENTER);
 
         self::assertStringContainsString("55 100 Td\n(Hello) Tj", $page->contents->render());
     }
@@ -142,7 +142,7 @@ final class TextFrameTest extends TestCase
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 70, 20);
-        $frame->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8, align: TextAlign::JUSTIFY);
+        $frame->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8, align: HorizontalAlign::JUSTIFY);
 
         self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("60 100 Td\n(world) Tj", $page->contents->render());
@@ -214,7 +214,7 @@ final class TextFrameTest extends TestCase
         self::assertStringContainsString("20 100 Td\n(-) Tj", $page->contents->render());
         self::assertStringContainsString("34 100 Td\n(First bullet item) Tj", $page->contents->render());
         self::assertStringContainsString("20 84 Td\n(-) Tj", $page->contents->render());
-        self::assertStringContainsString("(Second) Tj", $page->contents->render());
+        self::assertStringContainsString('(Second) Tj', $page->contents->render());
         self::assertSame(54.0, $frame->getCursorY());
     }
 
