@@ -84,11 +84,12 @@ Bei Tabellen kommt zusaetzlich dazu:
 
 7. `Page::table(...)` erzeugt ein `Table`-Objekt mit fester Breite und festen Spaltenbreiten.
 8. `Table::addRow(...)` normalisiert Zellinhalte zu `TableCell`-Instanzen.
-9. Die Zeilenhoehe wird ueber `countParagraphLines(...)` auf Basis des Zellinhalts berechnet.
-10. Zellhintergruende und Borders werden ueber `Rectangle` gerendert.
-11. Zelltext wird ueber den vorhandenen Absatzpfad in die jeweilige Zelle geschrieben.
-12. Wenn eine Zeile nicht mehr passt, erzeugt `Table` intern eine Folge-Seite und rendert dort weiter.
-13. Vor gemerkten Body-Zeilen werden vorhandene Header-Zeilen auf der neuen Seite erneut gerendert.
+9. `colspan` und `rowspan` werden ueber vorbereitete Zeilengruppen und aktive Spaltenbelegung aufgeloest.
+10. Die Zeilenhoehe wird ueber `countParagraphLines(...)` und die zusammengefassten Zellgruppen berechnet.
+11. Zellhintergruende und Borders werden ueber `Rectangle` gerendert.
+12. Zelltext wird ueber den vorhandenen Absatzpfad in die jeweilige Zelle geschrieben.
+13. Wenn eine Zeile nicht mehr passt, erzeugt `Table` intern eine Folge-Seite und rendert dort weiter.
+14. Vor gemerkten Body-Zeilen werden vorhandene Header-Zeilen auf der neuen Seite erneut gerendert.
 
 Bei grafischen Inhalten kommt stattdessen dazu:
 
@@ -131,6 +132,7 @@ Verantwortlich fuer:
 - Startposition, Tabellenbreite und Spaltenbreiten
 - Cursor-Fuehrung zwischen den Tabellenzeilen
 - Header- und Row-Styles
+- `colspan` und erste `rowspan`-Unterstuetzung
 - Wiederholung von Header-Zeilen bei Seitenwechsel
 - Berechnung der Zeilenhoehe ueber den vorhandenen Absatz-Umbruch
 - Seitenwechsel, wenn eine komplette Zeile nicht mehr passt
@@ -142,6 +144,14 @@ Verantwortlich fuer:
 - optionaler `fillColor`
 - optionaler `textColor`
 - optionaler `opacity`
+- `colspan`
+- `rowspan`
+
+Die aktuelle `rowspan`-Stufe ist bewusst begrenzt:
+
+- `rowspan` funktioniert innerhalb einer zusammenhaengenden Zeilengruppe
+- `rowspan` ueber einen Seitenumbruch wird noch nicht unterstuetzt
+- wenn eine `rowspan`-Gruppe nicht auf eine Seite passt, wirft `Table` aktuell eine Exception
 
 ### Contents
 

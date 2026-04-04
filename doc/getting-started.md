@@ -263,6 +263,8 @@ Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeu
 - wiederholte Header-Zeilen auf Folgeseiten
 - Zellpadding
 - `string`, `TextSegment[]` oder `TableCell` als Zelleninhalt
+- `colspan`
+- `rowspan` innerhalb derselben Seite
 - automatische Zeilenhoehe durch Textumbruch
 - Seitenwechsel, wenn die naechste Zeile nicht mehr auf die aktuelle Seite passt
 
@@ -309,6 +311,27 @@ for ($index = 1; $index <= 30; $index++) {
     ]);
 }
 ```
+
+`TableCell` kann dabei auch Spalten oder Zeilen zusammenfassen:
+
+```php
+$table->addRow([
+    new TableCell('Zwischenuebersicht', TextAlign::CENTER, colspan: 4),
+]);
+
+$table->addRow([
+    new TableCell('Gruppe A', TextAlign::CENTER, rowspan: 2),
+    'Eintrag 1',
+    'Offen',
+]);
+
+$table->addRow([
+    'Eintrag 2',
+    'Aktiv',
+]);
+```
+
+Wichtig: `rowspan` ist aktuell bewusst auf dieselbe Seite begrenzt. Ein `rowspan`-Block darf also noch nicht ueber einen Seitenumbruch hinweg laufen.
 
 ## Listen
 

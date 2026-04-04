@@ -386,7 +386,32 @@ $longTable = $longTablePage->table(
     ->headerStyle(Color::gray(0.92), Color::rgb(180, 20, 20))
     ->addRow(['#', 'Eintrag', 'Status', 'Kommentar'], header: true);
 
-for ($index = 1; $index <= 38; $index++) {
+$longTable->addRow([
+    new TableCell('Zwischenuebersicht', TextAlign::CENTER, Color::gray(0.95), null, null, 4),
+]);
+
+for ($index = 1; $index <= 36; $index++) {
+    if ($index === 12) {
+        $longTable->addRow([
+            new TableCell('Gruppe A', TextAlign::CENTER, Color::gray(0.96), null, null, 1, 2),
+            'Eintrag 12',
+            new TableCell('Aktiv', TextAlign::CENTER),
+            'Kommentar 12',
+        ]);
+
+        $longTable->addRow([
+            'Eintrag 13',
+            new TableCell('Offen', TextAlign::CENTER),
+            'Kommentar 13',
+        ]);
+
+        continue;
+    }
+
+    if ($index === 13) {
+        continue;
+    }
+
     $longTable->addRow([
         (string) $index,
         'Eintrag ' . $index,

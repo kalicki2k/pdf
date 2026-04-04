@@ -18,6 +18,8 @@ final readonly class TableCell
         public ?Color $fillColor = null,
         public ?Color $textColor = null,
         public ?Opacity $opacity = null,
+        public int $colspan = 1,
+        public int $rowspan = 1,
     ) {
     }
 }
