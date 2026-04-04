@@ -20,6 +20,7 @@
   "scripts": {
     "cs": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --sequential",
     "cs:check": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --sequential",
+    "docs:build": "php bin/generate-docs.php",
     "phpstan": "phpstan analyse --debug",
     "test": "phpunit --configuration phpunit.xml.dist",
     "test:coverage": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-text",
