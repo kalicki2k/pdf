@@ -19,6 +19,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
 - Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
+- freie Pfade sind ueber `Page::path()` und `PathBuilder` verfuegbar
 - Links und URI-Annotationen sind ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link` verfuegbar
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
@@ -42,6 +43,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
+- erste freie Form-API ueber `path()`
 - erste Link-API ueber Annotationen und klickbaren Text
 
 ## Prioritaeten
@@ -88,7 +90,7 @@ Aktuell ist Text der belastbare End-to-End-Fall. Weitere Inhaltstypen sollten er
 
 Naechste Kandidaten:
 
-- weitere grafische Primitive oder ein allgemeinerer Path-Builder
+- weitere grafische Primitive auf Basis des vorhandenen Path-Builders
 - Tabellen oder strukturierte Layout-Helfer
 - Ausbau der Bild-API, vor allem fuer PNG mit Alpha-Kanal
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`

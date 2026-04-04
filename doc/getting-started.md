@@ -108,6 +108,18 @@ $page->addRectangle(
     Color::gray(0.92),
 );
 
+$page->path()
+    ->moveTo(Units::mm(50), Units::mm(200))
+    ->lineTo(Units::mm(60), Units::mm(210))
+    ->lineTo(Units::mm(50), Units::mm(220))
+    ->lineTo(Units::mm(40), Units::mm(210))
+    ->close()
+    ->fillAndStroke(
+        1.0,
+        Color::rgb(220, 20, 60),
+        Color::gray(0.95),
+    );
+
 $page->addImage(
     Image::fromFile('assets/images/demo.jpg'),
     Units::mm(100),
@@ -139,7 +151,7 @@ file_put_contents('hello.pdf', $pdfContent);
 3. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
 4. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
 5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
-6. `addLine(...)`, `addRectangle(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
+6. `addLine(...)`, `addRectangle(...)`, `path()` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
 7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
 8. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
@@ -231,6 +243,7 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 
 - `Page::addLine(...)` fuer einfache Linien mit Farbe, Linienstaerke und optionaler Stroke-Opacity
 - `Page::addRectangle(...)` fuer Stroke, Fill oder Fill+Stroke
+- `Page::path()` fuer freie Pfade mit `moveTo(...)`, `lineTo(...)`, `close()` und den Paint-Modi `stroke()`, `fill()` und `fillAndStroke()`
 - `Image::fromFile(...)` fuer automatische Erkennung von `jpg`, `jpeg` und unterstuetzten `png`
 - `Page::addImage(...)` fuer die Platzierung eines Bildes an einer festen Position
 - `Page::addLink(...)` fuer frei positionierbare klickbare Flaechen
@@ -254,6 +267,18 @@ $page->addRectangle(
     Color::rgb(240, 240, 240),
     Opacity::both(0.5),
 );
+
+$page->path()
+    ->moveTo(140, 140)
+    ->lineTo(160, 160)
+    ->lineTo(140, 180)
+    ->lineTo(120, 160)
+    ->close()
+    ->fillAndStroke(
+        1.5,
+        Color::rgb(0, 0, 0),
+        Color::gray(0.92),
+    );
 
 $image = Image::fromFile('assets/images/demo.jpg');
 $page->addImage($image, 110, 80, 70, 46.67);
@@ -320,6 +345,7 @@ Der derzeit belastbare Einstieg ist:
 - Absatzumfang mit `maxLines` und `TextOverflow` begrenzen
 - Linien rendern
 - Rechtecke rendern
+- freie Pfade und Formen wie Diamanten rendern
 - Bilder aus Dateien laden und platzieren
 - klickbare Links ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link`
 

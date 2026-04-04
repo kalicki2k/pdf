@@ -61,7 +61,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)`, `addImage(...)` und `addLink(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)`, `path()`, `addImage(...)` und `addLink(...)`.
 
 Dabei passiert intern:
 
@@ -83,9 +83,10 @@ Beim Absatz-Rendering kommen zusaetzlich dazu:
 Bei grafischen Inhalten kommt stattdessen dazu:
 
 7. `Line`- und `Rectangle`-Elemente werden direkt in `Contents` abgelegt.
-8. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
-9. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
-10. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
+8. `PathBuilder` erzeugt aus `moveTo(...)`, `lineTo(...)` und `close()` ein `Path`-Element fuer freie Formen.
+9. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
+10. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
+11. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
 
 ### TextFrame
 
@@ -150,7 +151,7 @@ Die Reihenfolge der Objekte kommt aus `Document::getDocumentObjects()`.
 
 `Element` ist die abstrakte Basisklasse fuer renderbare Seiteninhalte.
 
-Aktuell sind `Text`, `Line`, `Rectangle`, `Image` und `DrawImage` relevant.
+Aktuell sind `Text`, `Line`, `Rectangle`, `Path`, `Image` und `DrawImage` relevant.
 
 ### Text
 
@@ -206,6 +207,21 @@ Je nach Parametern entstehen drei Modi:
 - `B` fuer Fill + Stroke
 
 Damit eignet sich das Element fuer Rahmen, Panels, Hintergruende und einfache Layout-Boxen.
+
+### Path
+
+`Path` rendert freie Zeichenpfade aus einzelnen PDF-Pfadoperatoren.
+
+Aktuell wird das ueber `Page::path()` und `PathBuilder` aufgebaut:
+
+- `moveTo(...)`
+- `lineTo(...)`
+- `close()`
+- `stroke(...)`
+- `fill(...)`
+- `fillAndStroke(...)`
+
+Damit lassen sich Formen wie Diamanten, Polygone oder einfache Diagrammformen erzeugen, ohne fuer jede Form ein eigenes High-Level-Element anzulegen.
 
 ### Image und DrawImage
 
