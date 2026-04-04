@@ -533,6 +533,49 @@ final class Page extends IndirectObject
         return $this;
     }
 
+    public function addStar(
+        float $centerX,
+        float $centerY,
+        int $points,
+        float $outerRadius,
+        float $innerRadius,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        if ($points < 3) {
+            throw new InvalidArgumentException('Star requires at least three points.');
+        }
+
+        if ($outerRadius <= 0) {
+            throw new InvalidArgumentException('Star outer radius must be greater than zero.');
+        }
+
+        if ($innerRadius <= 0) {
+            throw new InvalidArgumentException('Star inner radius must be greater than zero.');
+        }
+
+        if ($innerRadius >= $outerRadius) {
+            throw new InvalidArgumentException('Star inner radius must be smaller than the outer radius.');
+        }
+
+        $starPoints = [];
+        $step = M_PI / $points;
+        $startAngle = -M_PI / 2;
+
+        for ($index = 0; $index < $points * 2; $index++) {
+            $radius = $index % 2 === 0 ? $outerRadius : $innerRadius;
+            $angle = $startAngle + ($index * $step);
+            $starPoints[] = [
+                $centerX + (cos($angle) * $radius),
+                $centerY + (sin($angle) * $radius),
+            ];
+        }
+
+        return $this->addPolygon($starPoints, $strokeWidth, $strokeColor, $fillColor, $opacity);
+    }
+
     public function addLink(
         float $x,
         float $y,

@@ -21,7 +21,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
 - freie Pfade sind ueber `Page::path()` und `PathBuilder` verfuegbar
 - Kreise sind als Convenience-API ueber `addCircle(...)` verfuegbar
-- Ellipsen, Polygone und Pfeile sind als weitere Convenience-Formen verfuegbar
+- Ellipsen, Polygone, Pfeile und Sterne sind als weitere Convenience-Formen verfuegbar
 - Links und URI-Annotationen sind ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link` verfuegbar
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
@@ -47,7 +47,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
 - erste freie Form-API ueber `path()`
 - erste Kreis-API auf Basis von Bezier-Pfaden
-- weitere Form-APIs fuer Ellipsen, Polygone und Pfeile
+- weitere Form-APIs fuer Ellipsen, Polygone, Pfeile und Sterne
 - erste Link-API ueber Annotationen und klickbaren Text
 
 ## Prioritaeten
@@ -94,7 +94,7 @@ Aktuell ist Text der belastbare End-to-End-Fall. Weitere Inhaltstypen sollten er
 
 Naechste Kandidaten:
 
-- weitere grafische Primitive auf Basis des vorhandenen Path-Builders, zum Beispiel Sterne, Sprechblasen oder komplexere Diagrammformen
+- weitere grafische Primitive auf Basis des vorhandenen Path-Builders, zum Beispiel Sprechblasen oder komplexere Diagrammformen
 - Tabellen oder strukturierte Layout-Helfer
 - Ausbau der Bild-API, vor allem fuer PNG mit Alpha-Kanal
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`

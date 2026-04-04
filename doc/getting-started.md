@@ -161,6 +161,17 @@ $page->addArrow(
     Opacity::both(0.4),
 );
 
+$page->addStar(
+    Units::mm(180),
+    Units::mm(210),
+    5,
+    Units::mm(8),
+    Units::mm(4),
+    1.0,
+    Color::rgb(220, 20, 60),
+    Color::gray(0.95),
+);
+
 $page->addImage(
     Image::fromFile('assets/images/demo.jpg'),
     Units::mm(100),
@@ -192,7 +203,7 @@ file_put_contents('hello.pdf', $pdfContent);
 3. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
 4. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
 5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
-6. `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
+6. `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
 7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
 8. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 

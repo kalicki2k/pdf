@@ -328,6 +328,44 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_stroked_star_to_the_page_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addStar(100, 100, 5, 30, 15, 1.5, Color::rgb(255, 0, 0));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 70 m", $page->contents->render());
+        self::assertStringContainsString("\nh\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_fills_and_strokes_a_star(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addStar(100, 100, 5, 30, 15, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 70 m", $page->contents->render());
+        self::assertStringContainsString("\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_stars_with_invalid_radii(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Star inner radius must be smaller than the outer radius.');
+
+        $page->addStar(100, 100, 5, 30, 30);
+    }
+
+    #[Test]
     public function it_adds_a_link_annotation_to_the_page(): void
     {
         $document = new Document(version: 1.4);
