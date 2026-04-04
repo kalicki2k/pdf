@@ -10,6 +10,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Styles\TablePadding;
 use Kalle\Pdf\Styles\RowStyle;
@@ -39,7 +40,7 @@ final class Table
     private float $lineHeightFactor = self::DEFAULT_LINE_HEIGHT_FACTOR;
     private TableStyle $style;
     private ?RowStyle $rowStyle = null;
-    private ?RowStyle $headerStyle = null;
+    private ?HeaderStyle $headerStyle = null;
 
     /**
      * @param list<float|int> $columnWidths
@@ -85,7 +86,7 @@ final class Table
             border: TableBorder::all(color: Color::gray(0.75)),
             verticalAlign: VerticalAlign::TOP,
         );
-        $this->headerStyle = new RowStyle(fillColor: Color::gray(0.92));
+        $this->headerStyle = new HeaderStyle(fillColor: Color::gray(0.92));
     }
 
     public function font(string $baseFont, int $size): self
@@ -124,9 +125,9 @@ final class Table
         return $this;
     }
 
-    public function headerStyle(RowStyle $style): self
+    public function headerStyle(HeaderStyle $style): self
     {
-        $this->headerStyle = $this->mergeRowStyle($this->headerStyle, $style);
+        $this->headerStyle = $this->mergeHeaderStyle($this->headerStyle, $style);
 
         return $this;
     }
@@ -617,6 +618,19 @@ final class Table
     private function mergeRowStyle(?RowStyle $base, RowStyle $override): RowStyle
     {
         return new RowStyle(
+            horizontalAlign: $override->horizontalAlign ?? $base?->horizontalAlign,
+            verticalAlign: $override->verticalAlign ?? $base?->verticalAlign,
+            padding: $override->padding ?? $base?->padding,
+            fillColor: $override->fillColor ?? $base?->fillColor,
+            textColor: $override->textColor ?? $base?->textColor,
+            opacity: $override->opacity ?? $base?->opacity,
+            border: $override->border ?? $base?->border,
+        );
+    }
+
+    private function mergeHeaderStyle(?HeaderStyle $base, HeaderStyle $override): HeaderStyle
+    {
+        return new HeaderStyle(
             horizontalAlign: $override->horizontalAlign ?? $base?->horizontalAlign,
             verticalAlign: $override->verticalAlign ?? $base?->verticalAlign,
             padding: $override->padding ?? $base?->padding,

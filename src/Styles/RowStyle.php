@@ -9,7 +9,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 
-final readonly class RowStyle
+readonly class RowStyle
 {
     public function __construct(
         public ?HorizontalAlign $horizontalAlign = null,

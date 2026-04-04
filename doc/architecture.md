@@ -137,7 +137,8 @@ Verantwortlich fuer:
 - horizontaler und vertikaler Tabellen-Default fuer Zellen
 - Tabellen-Default und Zell-Override fuer Padding ueber `TablePadding`
 - Tabellen-Defaults ueber `TableStyle`
-- Zeilen-Defaults ueber `RowStyle`
+- Header-Defaults ueber `HeaderStyle`
+- Body-Zeilen-Defaults ueber `RowStyle`
 - gebuendelte Zell-Stile ueber `CellStyle`
 - Wiederholung von Header-Zeilen bei Seitenwechsel
 - Berechnung der Zeilenhoehe ueber den vorhandenen Absatz-Umbruch
@@ -170,6 +171,8 @@ Verantwortlich fuer:
 - Opacity
 - Border
 
+`HeaderStyle` ist die entsprechende Spezialisierung fuer Header-Zeilen und nutzt denselben Stilumfang.
+
 `CellStyle` kapselt gebuendelt:
 
 - horizontale Ausrichtung
@@ -190,7 +193,8 @@ Aktuell unterstuetzt:
 Im Renderpfad gilt:
 
 - `TableStyle` liefert die Defaults fuer die gesamte Tabelle
-- `RowStyle` liefert Defaults fuer Header- oder Body-Zeilen
+- `HeaderStyle` liefert Defaults fuer Header-Zeilen
+- `RowStyle` liefert Defaults fuer Body-Zeilen
 - `CellStyle` liefert die feinsten Overrides pro Zelle
 - einzelne `TableCell`-Instanzen koennen einzelne Border-Seiten gezielt ueberschreiben
 - einzelne `TableCell`-Instanzen koennen horizontale und vertikale Ausrichtung gezielt ueberschreiben

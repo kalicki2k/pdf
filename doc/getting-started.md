@@ -39,6 +39,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
@@ -209,7 +210,7 @@ $page->addTable(
     ->style(new TableStyle(
         padding: TablePadding::all(Units::mm(2.5)),
     ))
-    ->headerStyle(new RowStyle(
+    ->headerStyle(new HeaderStyle(
         fillColor: Color::gray(0.92),
         textColor: Color::rgb(220, 20, 60),
     ))
@@ -297,7 +298,7 @@ $table = $page->table(20, 240, 170, [30, 80, 30, 30])
     ->style(new TableStyle(
         padding: TablePadding::all(6),
     ))
-    ->headerStyle(new RowStyle(
+    ->headerStyle(new HeaderStyle(
         fillColor: Color::gray(0.92),
         textColor: Color::rgb(180, 20, 20),
     ))
@@ -409,7 +410,8 @@ Fuer die Ausrichtung gilt:
 - `HorizontalAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `VerticalAlign::TOP`, `MIDDLE`, `BOTTOM`
 - `TableStyle` setzt den Tabellen-Default
-- `RowStyle` setzt Defaults fuer komplette Header- oder Body-Zeilen
+- `HeaderStyle` setzt Defaults fuer Header-Zeilen
+- `RowStyle` setzt Defaults fuer Body-Zeilen
 - `CellStyle` kann beide Ausrichtungen pro Zelle gebuendelt ueberschreiben
 
 Fuer das Padding gilt:

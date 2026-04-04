@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Document\TableCell;
@@ -31,7 +32,7 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $table = $page->addTable(20, 260, 170, [50, 70, 50])
-            ->headerStyle(new RowStyle(
+            ->headerStyle(new HeaderStyle(
                 fillColor: Color::gray(0.9),
                 textColor: Color::rgb(255, 0, 0),
             ))

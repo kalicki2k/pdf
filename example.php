@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
@@ -338,7 +339,7 @@ $tablePage->addTable(
     ->style(new TableStyle(
         padding: TablePadding::all(Units::mm(2.5)),
     ))
-    ->headerStyle(new RowStyle(
+    ->headerStyle(new HeaderStyle(
         fillColor: Color::gray(0.92),
         textColor: Color::rgb(180, 20, 20),
     ))
@@ -398,7 +399,7 @@ $tablePage->addTable(
     ->style(new TableStyle(
         padding: TablePadding::all(Units::mm(2.5)),
     ))
-    ->headerStyle(new RowStyle(
+    ->headerStyle(new HeaderStyle(
         fillColor: Color::gray(0.9),
         textColor: Color::rgb(180, 20, 20),
     ))
@@ -441,7 +442,7 @@ $paddingPage->addTable(
     ->style(new TableStyle(
         padding: TablePadding::symmetric(Units::mm(5), Units::mm(2)),
     ))
-    ->headerStyle(new RowStyle(
+    ->headerStyle(new HeaderStyle(
         fillColor: Color::gray(0.92),
         textColor: Color::rgb(180, 20, 20),
     ))
@@ -505,7 +506,7 @@ $longTable = $longTablePage->addTable(
         padding: TablePadding::all(Units::mm(2)),
         verticalAlign: VerticalAlign::MIDDLE,
     ))
-    ->headerStyle(new RowStyle(
+    ->headerStyle(new HeaderStyle(
         fillColor: Color::gray(0.92),
         textColor: Color::rgb(180, 20, 20),
     ))
