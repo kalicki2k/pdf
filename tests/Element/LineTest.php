@@ -21,7 +21,7 @@ final class LineTest extends TestCase
             . "10 20 m\n"
             . "100 20 l\n"
             . "S\n"
-            . "Q",
+            . 'Q',
             $line->render(),
         );
     }
@@ -39,7 +39,7 @@ final class LineTest extends TestCase
             . "10 20 m\n"
             . "100 20 l\n"
             . "S\n"
-            . "Q",
+            . 'Q',
             $line->render(),
         );
     }

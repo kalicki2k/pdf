@@ -25,7 +25,7 @@ final class PathTest extends TestCase
             . "60 160 l\n"
             . "h\n"
             . "S\n"
-            . "Q",
+            . 'Q',
             $path->render(),
         );
     }
@@ -44,7 +44,7 @@ final class PathTest extends TestCase
             . "60 160 l\n"
             . "h\n"
             . "f\n"
-            . "Q",
+            . 'Q',
             $path->render(),
         );
     }
@@ -61,7 +61,7 @@ final class PathTest extends TestCase
             . "100 130 m\n"
             . "116.568542 130 130 116.568542 130 100 c\n"
             . "S\n"
-            . "Q",
+            . 'Q',
             $path->render(),
         );
     }

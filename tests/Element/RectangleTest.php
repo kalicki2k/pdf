@@ -19,7 +19,7 @@ final class RectangleTest extends TestCase
             "q\n"
             . "10 20 100 40 re\n"
             . "S\n"
-            . "Q",
+            . 'Q',
             $rectangle->render(),
         );
     }
@@ -34,7 +34,7 @@ final class RectangleTest extends TestCase
             . "0.5 g\n"
             . "10 20 100 40 re\n"
             . "f\n"
-            . "Q",
+            . 'Q',
             $rectangle->render(),
         );
     }
@@ -52,7 +52,7 @@ final class RectangleTest extends TestCase
             . "2.5 w\n"
             . "10 20 100 40 re\n"
             . "B\n"
-            . "Q",
+            . 'Q',
             $rectangle->render(),
         );
     }
