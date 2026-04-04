@@ -111,6 +111,14 @@ Verantwortlich fuer:
 - Ueberschriften ueber `heading(...)`
 - automatische Folge-Seiten bei Ueberlauf
 - Weitergabe von Alignment, `maxLines` und `TextOverflow`
+- Listen ueber `bulletList(...)`
+
+`bulletList(...)` baut bewusst auf dem vorhandenen Absatzpfad auf:
+
+- das Bullet selbst wird als eigenes `Text`-Element gerendert
+- der Listeninhalt wird als Absatz mit reduziertem Textbereich gerendert
+- dadurch bleiben Umbruch, Links und Folge-Seiten konsistent
+- `BulletType` kapselt die aktuell unterstuetzten Standard-Symbole fuer Listen
 
 ### Table und TableCell
 

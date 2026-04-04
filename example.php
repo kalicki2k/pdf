@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\BulletType;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextOverflow;
@@ -357,6 +358,34 @@ $tablePage->table(
         ),
         'auf Anfrage',
     ]);
+
+$bulletPage = $document->addPage(PageSize::A4());
+$bulletPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Bullet List Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Die Liste verwendet Hanging Indent, automatischen Umbruch und gemischte Textsegmente.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    )
+    ->bulletList(
+        [
+            'Feste Einzuege fuer Bullet und Textblock.',
+            [
+                new TextSegment('Rich Text', bold: true),
+                new TextSegment(' mit Farben, Underline und weiteren Inline-Stilen innerhalb eines Listenpunkts.'),
+            ],
+            [
+                new TextSegment('Dokumentation', color: Color::rgb(0, 0, 255), link: 'https://example.com/docs', underline: true),
+                new TextSegment(' direkt aus einem Listeneintrag verlinken.'),
+            ],
+            'Auch laengere Listenpunkte umbrechen automatisch auf die naechste Zeile und bleiben dabei sauber unter dem Textblock eingerueckt.',
+        ],
+        'NotoSans-Regular',
+        12,
+        bulletType: BulletType::DISC,
+        bulletColor: Color::rgb(180, 20, 20),
+    );
 
 //$coverPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);

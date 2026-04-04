@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 
 final class TextFrame
 {
+    private const DEFAULT_BULLET_INDENT = 14.0;
+
     private Page $page;
     private float $cursorY;
 
@@ -42,11 +45,118 @@ final class TextFrame
         $lineHeight ??= $size * 1.2;
         $spacingAfter ??= $lineHeight;
 
-        $this->page = $this->page->addParagraph(
+        return $this->flowParagraph(
             text: $text,
             x: $this->x,
+            width: $this->width,
+            baseFont: $baseFont,
+            size: $size,
+            tag: $tag,
+            lineHeight: $lineHeight,
+            spacingAfter: $spacingAfter,
+            color: $color,
+            opacity: $opacity,
+            align: $align,
+            maxLines: $maxLines,
+            overflow: $overflow,
+        );
+    }
+
+    /**
+     * @param list<string|list<TextSegment>> $items
+     */
+    public function bulletList(
+        array $items,
+        string $baseFont,
+        int $size,
+        ?string $tag = null,
+        ?float $lineHeight = null,
+        ?float $spacingAfter = null,
+        ?float $itemSpacing = null,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+        BulletType $bulletType = BulletType::DISC,
+        ?Color $bulletColor = null,
+        ?float $bulletIndent = null,
+    ): self {
+        $lineHeight ??= $size * 1.2;
+        $spacingAfter ??= $lineHeight;
+        $itemSpacing ??= $size * 0.4;
+        $bulletIndent ??= self::DEFAULT_BULLET_INDENT;
+
+        if ($items === []) {
+            return $this;
+        }
+
+        if ($bulletIndent <= 0) {
+            throw new InvalidArgumentException('Bullet indent must be greater than zero.');
+        }
+
+        if ($this->width <= $bulletIndent) {
+            throw new InvalidArgumentException('Bullet indent must be smaller than the text frame width.');
+        }
+
+        foreach ($items as $index => $item) {
+            if ($this->cursorY < $this->bottomMargin + $lineHeight) {
+                $topMargin = $this->page->getHeight() - $this->cursorY;
+                $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
+                $this->cursorY = $this->page->getHeight() - $topMargin;
+            }
+
+            $this->page->addText(
+                text: $bulletType->value,
+                x: $this->x,
+                y: $this->cursorY,
+                baseFont: $baseFont,
+                size: $size,
+                tag: $tag,
+                color: $bulletColor ?? $color,
+                opacity: $opacity,
+            );
+
+            $this->flowParagraph(
+                text: $item,
+                x: $this->x + $bulletIndent,
+                width: $this->width - $bulletIndent,
+                baseFont: $baseFont,
+                size: $size,
+                tag: $tag,
+                lineHeight: $lineHeight,
+                spacingAfter: $index === array_key_last($items) ? $spacingAfter : $itemSpacing,
+                color: $color,
+                opacity: $opacity,
+            );
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string|list<TextSegment> $text
+     */
+    private function flowParagraph(
+        string|array $text,
+        float $x,
+        float $width,
+        string $baseFont,
+        int $size,
+        ?string $tag = null,
+        ?float $lineHeight = null,
+        ?float $spacingAfter = null,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+        TextAlign $align = TextAlign::LEFT,
+        ?int $maxLines = null,
+        TextOverflow $overflow = TextOverflow::CLIP,
+    ): self {
+        $lineHeight ??= $size * 1.2;
+        $spacingAfter ??= $lineHeight;
+
+        $this->page = $this->page->addParagraph(
+            text: $text,
+            x: $x,
             y: $this->cursorY,
-            maxWidth: $this->width,
+            maxWidth: $width,
             baseFont: $baseFont,
             size: $size,
             tag: $tag,
@@ -59,7 +169,7 @@ final class TextFrame
             overflow: $overflow,
         );
 
-        $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $this->width, $maxLines, $overflow);
+        $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $width, $maxLines, $overflow);
         $consumedHeight = ($lineCount * $lineHeight) + $spacingAfter;
         $topMargin = $this->page->getHeight() - $this->cursorY;
         $availableHeight = $this->page->getHeight() - $topMargin - $this->bottomMargin;

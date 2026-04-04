@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\BulletType;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextSegment;
@@ -189,5 +190,54 @@ final class TextFrameTest extends TestCase
 
         self::assertStringContainsString('/Annots [8 0 R]', $frame->getPage()->render());
         self::assertStringContainsString('/URI (https://example.com/docs)', $document->render());
+    }
+
+    #[Test]
+    public function it_renders_a_bullet_list_with_hanging_indent(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame->bulletList(
+            [
+                'First bullet item',
+                [new TextSegment('Second', bold: true), new TextSegment(' bullet item')],
+            ],
+            'Helvetica',
+            10,
+            bulletType: BulletType::DASH,
+            spacingAfter: 6,
+        );
+
+        self::assertStringContainsString("20 100 Td\n(-) Tj", $page->contents->render());
+        self::assertStringContainsString("34 100 Td\n(First bullet item) Tj", $page->contents->render());
+        self::assertStringContainsString("20 84 Td\n(-) Tj", $page->contents->render());
+        self::assertStringContainsString("(Second) Tj", $page->contents->render());
+        self::assertSame(54.0, $frame->getCursorY());
+    }
+
+    #[Test]
+    public function it_moves_bullet_list_items_to_a_new_page_when_needed(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage(100, 60);
+
+        $frame = $page->textFrame(10, 25, 60, 15);
+        $frame->bulletList(
+            ['First item', 'Second item'],
+            'Helvetica',
+            10,
+            bulletType: BulletType::DASH,
+            spacingAfter: 4,
+            itemSpacing: 4,
+        );
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertStringContainsString("10 25 Td\n(-) Tj", $document->pages->pages[1]->contents->render());
+        self::assertStringContainsString('(Second) Tj', $document->render());
+        self::assertStringContainsString('(item) Tj', $frame->getPage()->contents->render());
     }
 }

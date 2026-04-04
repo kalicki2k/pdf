@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\BulletType;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextOverflow;
@@ -209,6 +210,20 @@ $page->table(
         '19,99 EUR',
     ]);
 
+$frame->bulletList(
+    [
+        'Feste Einzuege fuer Bullet und Textblock.',
+        [
+            new TextSegment('Rich Text', bold: true),
+            new TextSegment(' innerhalb eines Listenpunkts.'),
+        ],
+    ],
+    'NotoSans-Regular',
+    12,
+    bulletType: BulletType::DISC,
+    bulletColor: Color::rgb(220, 20, 60),
+);
+
 $pdfContent = $document->render();
 
 file_put_contents('hello.pdf', $pdfContent);
@@ -224,7 +239,8 @@ file_put_contents('hello.pdf', $pdfContent);
 6. `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
 7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
 8. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
-9. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+9. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
+10. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Tabellen
 
@@ -262,6 +278,43 @@ $table->addRow([
     new TableCell('Beta', TextAlign::CENTER),
     '49,00 EUR',
 ]);
+```
+
+## Listen
+
+Fuer einfache Aufzaehlungen steht `TextFrame::bulletList(...)` zur Verfuegung.
+
+Unterstuetzt werden aktuell:
+
+- Listen aus `string` oder `TextSegment[]`
+- Hanging Indent
+- eigene Bullet-Farbe
+- automatische Zeilenumbrueche
+- Seitenwechsel ueber den vorhandenen Text-Flow
+- vordefinierte `BulletType`-Varianten
+
+Verfuegbare Bullet-Typen:
+
+- `BulletType::DISC`
+- `BulletType::DASH`
+- `BulletType::CIRCLE`
+- `BulletType::SQUARE`
+- `BulletType::ARROW`
+
+Beispiel:
+
+```php
+$frame->bulletList(
+    [
+        'Erster Punkt',
+        [new TextSegment('Zweiter', bold: true), new TextSegment(' Punkt')],
+        'Dritter Punkt mit automatischem Umbruch in der Liste.',
+    ],
+    'NotoSans-Regular',
+    12,
+    bulletType: BulletType::DISC,
+    bulletColor: Color::rgb(180, 20, 20),
+);
 ```
 
 ## Einheiten
