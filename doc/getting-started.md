@@ -129,6 +129,38 @@ $page->addCircle(
     Color::gray(0.95),
 );
 
+$page->addEllipse(
+    Units::mm(105),
+    Units::mm(210),
+    Units::mm(12),
+    Units::mm(8),
+    1.0,
+    Color::rgb(220, 20, 60),
+    Color::gray(0.95),
+);
+
+$page->addPolygon(
+    [
+        [Units::mm(125), Units::mm(200)],
+        [Units::mm(135), Units::mm(210)],
+        [Units::mm(125), Units::mm(220)],
+        [Units::mm(115), Units::mm(210)],
+    ],
+    1.0,
+    Color::rgb(220, 20, 60),
+    Color::gray(0.95),
+);
+
+$page->addArrow(
+    Units::mm(145),
+    Units::mm(210),
+    Units::mm(170),
+    Units::mm(210),
+    1.5,
+    Color::rgb(220, 20, 60),
+    Opacity::both(0.4),
+);
+
 $page->addImage(
     Image::fromFile('assets/images/demo.jpg'),
     Units::mm(100),
@@ -160,7 +192,7 @@ file_put_contents('hello.pdf', $pdfContent);
 3. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
 4. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
 5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
-6. `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
+6. `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
 7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
 8. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
@@ -254,6 +286,9 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 - `Page::addRectangle(...)` fuer Stroke, Fill oder Fill+Stroke
 - `Page::path()` fuer freie Pfade mit `moveTo(...)`, `lineTo(...)`, `curveTo(...)`, `close()` und den Paint-Modi `stroke()`, `fill()` und `fillAndStroke()`
 - `Page::addCircle(...)` fuer Kreise auf Basis des Path-Builders
+- `Page::addEllipse(...)` fuer Ellipsen mit getrennten X- und Y-Radien
+- `Page::addPolygon(...)` fuer geschlossene Formen aus einer Punktliste
+- `Page::addArrow(...)` fuer Linien mit gefuellter Pfeilspitze
 - `Image::fromFile(...)` fuer automatische Erkennung von `jpg`, `jpeg` und unterstuetzten `png`
 - `Page::addImage(...)` fuer die Platzierung eines Bildes an einer festen Position
 - `Page::addLink(...)` fuer frei positionierbare klickbare Flaechen
@@ -299,6 +334,17 @@ $page->addCircle(
     Color::gray(0.92),
     Opacity::both(0.5),
 );
+
+$page->addEllipse(240, 160, 26, 14, 1.5, Color::rgb(0, 0, 0), Color::gray(0.92));
+
+$page->addPolygon(
+    [[280, 140], [300, 160], [280, 180], [260, 160]],
+    1.5,
+    Color::rgb(0, 0, 0),
+    Color::gray(0.92),
+);
+
+$page->addArrow(320, 160, 380, 160, 2.0, Color::rgb(200, 30, 30), Opacity::both(0.5));
 
 $image = Image::fromFile('assets/images/demo.jpg');
 $page->addImage($image, 110, 80, 70, 46.67);
@@ -367,6 +413,9 @@ Der derzeit belastbare Einstieg ist:
 - Rechtecke rendern
 - freie Pfade und Formen wie Diamanten rendern
 - Kreise rendern
+- Ellipsen rendern
+- Polygone rendern
+- Pfeile rendern
 - Bilder aus Dateien laden und platzieren
 - klickbare Links ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link`
 

@@ -239,6 +239,95 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_stroked_ellipse_to_the_page_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addEllipse(100, 100, 40, 20, 1.5, Color::rgb(255, 0, 0));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 120 m", $page->contents->render());
+        self::assertStringContainsString("140 100 c", $page->contents->render());
+        self::assertStringContainsString("\nh\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_fills_and_strokes_an_ellipse(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addEllipse(100, 100, 40, 20, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 120 m", $page->contents->render());
+        self::assertStringContainsString("\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_ellipses_without_stroke_or_fill(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Ellipse requires either a stroke or a fill.');
+
+        $page->addEllipse(100, 100, 40, 20, null, null, null);
+    }
+
+    #[Test]
+    public function it_adds_a_stroked_polygon_to_the_page_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addPolygon([[60, 240], [100, 200], [60, 160], [20, 200]], 1.5, Color::rgb(255, 0, 0));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_polygons_with_too_few_points(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Polygon requires at least three points.');
+
+        $page->addPolygon([[10, 10], [20, 20]]);
+    }
+
+    #[Test]
+    public function it_adds_an_arrow_with_a_filled_head(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addArrow(20, 200, 100, 200, 2.0, Color::rgb(255, 0, 0), Opacity::both(0.4), 12, 10);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString("1 0 0 RG\n/GS1 gs\n2 w\n20 200 m\n88 200 l\nS", $page->contents->render());
+        self::assertStringContainsString("1 0 0 rg\n/GS1 gs\n100 200 m\n88 205 l\n88 195 l\nh\nf", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_zero_length_arrows(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Arrow requires distinct start and end points.');
+
+        $page->addArrow(10, 10, 10, 10);
+    }
+
+    #[Test]
     public function it_adds_a_link_annotation_to_the_page(): void
     {
         $document = new Document(version: 1.4);

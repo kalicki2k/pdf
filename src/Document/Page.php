@@ -356,6 +356,183 @@ final class Page extends IndirectObject
         return $path->stroke($strokeWidth, $strokeColor, $opacity);
     }
 
+    public function addEllipse(
+        float $centerX,
+        float $centerY,
+        float $radiusX,
+        float $radiusY,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        if ($radiusX <= 0) {
+            throw new InvalidArgumentException('Ellipse radiusX must be greater than zero.');
+        }
+
+        if ($radiusY <= 0) {
+            throw new InvalidArgumentException('Ellipse radiusY must be greater than zero.');
+        }
+
+        if ($strokeWidth !== null && $strokeWidth <= 0) {
+            throw new InvalidArgumentException('Ellipse stroke width must be greater than zero.');
+        }
+
+        if ($strokeWidth === null && $fillColor === null) {
+            throw new InvalidArgumentException('Ellipse requires either a stroke or a fill.');
+        }
+
+        $controlOffsetX = $radiusX * 0.5522847498307936;
+        $controlOffsetY = $radiusY * 0.5522847498307936;
+
+        $path = $this->path()
+            ->moveTo($centerX, $centerY + $radiusY)
+            ->curveTo(
+                $centerX + $controlOffsetX,
+                $centerY + $radiusY,
+                $centerX + $radiusX,
+                $centerY + $controlOffsetY,
+                $centerX + $radiusX,
+                $centerY,
+            )
+            ->curveTo(
+                $centerX + $radiusX,
+                $centerY - $controlOffsetY,
+                $centerX + $controlOffsetX,
+                $centerY - $radiusY,
+                $centerX,
+                $centerY - $radiusY,
+            )
+            ->curveTo(
+                $centerX - $controlOffsetX,
+                $centerY - $radiusY,
+                $centerX - $radiusX,
+                $centerY - $controlOffsetY,
+                $centerX - $radiusX,
+                $centerY,
+            )
+            ->curveTo(
+                $centerX - $radiusX,
+                $centerY + $controlOffsetY,
+                $centerX - $controlOffsetX,
+                $centerY + $radiusY,
+                $centerX,
+                $centerY + $radiusY,
+            )
+            ->close();
+
+        if ($strokeWidth !== null && $fillColor !== null) {
+            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
+        }
+
+        if ($fillColor !== null) {
+            return $path->fill($fillColor, $opacity);
+        }
+
+        return $path->stroke($strokeWidth, $strokeColor, $opacity);
+    }
+
+    /**
+     * @param list<array{0: float|int, 1: float|int}> $points
+     */
+    public function addPolygon(
+        array $points,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        if (count($points) < 3) {
+            throw new InvalidArgumentException('Polygon requires at least three points.');
+        }
+
+        if ($strokeWidth !== null && $strokeWidth <= 0) {
+            throw new InvalidArgumentException('Polygon stroke width must be greater than zero.');
+        }
+
+        if ($strokeWidth === null && $fillColor === null) {
+            throw new InvalidArgumentException('Polygon requires either a stroke or a fill.');
+        }
+
+        $path = $this->path()->moveTo((float) $points[0][0], (float) $points[0][1]);
+
+        foreach (array_slice($points, 1) as $point) {
+            $path->lineTo((float) $point[0], (float) $point[1]);
+        }
+
+        $path->close();
+
+        if ($strokeWidth !== null && $fillColor !== null) {
+            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
+        }
+
+        if ($fillColor !== null) {
+            return $path->fill($fillColor, $opacity);
+        }
+
+        return $path->stroke($strokeWidth, $strokeColor, $opacity);
+    }
+
+    public function addArrow(
+        float $startX,
+        float $startY,
+        float $endX,
+        float $endY,
+        float $strokeWidth = 1.0,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+        float $headLength = 10.0,
+        float $headWidth = 8.0,
+    ): self {
+        if ($strokeWidth <= 0) {
+            throw new InvalidArgumentException('Arrow stroke width must be greater than zero.');
+        }
+
+        if ($headLength <= 0) {
+            throw new InvalidArgumentException('Arrow head length must be greater than zero.');
+        }
+
+        if ($headWidth <= 0) {
+            throw new InvalidArgumentException('Arrow head width must be greater than zero.');
+        }
+
+        $dx = $endX - $startX;
+        $dy = $endY - $startY;
+        $length = hypot($dx, $dy);
+
+        if ($length <= 0.0) {
+            throw new InvalidArgumentException('Arrow requires distinct start and end points.');
+        }
+
+        $usableHeadLength = min($headLength, $length);
+        $ux = $dx / $length;
+        $uy = $dy / $length;
+        $baseX = $endX - ($ux * $usableHeadLength);
+        $baseY = $endY - ($uy * $usableHeadLength);
+        $perpX = -$uy;
+        $perpY = $ux;
+        $halfHeadWidth = $headWidth / 2;
+        $leftX = $baseX + ($perpX * $halfHeadWidth);
+        $leftY = $baseY + ($perpY * $halfHeadWidth);
+        $rightX = $baseX - ($perpX * $halfHeadWidth);
+        $rightY = $baseY - ($perpY * $halfHeadWidth);
+
+        $this->addLine($startX, $startY, $baseX, $baseY, $strokeWidth, $color, $opacity);
+        $this->addPolygon(
+            [
+                [$endX, $endY],
+                [$leftX, $leftY],
+                [$rightX, $rightY],
+            ],
+            null,
+            null,
+            $color,
+            $opacity,
+        );
+
+        return $this;
+    }
+
     public function addLink(
         float $x,
         float $y,

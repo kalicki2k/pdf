@@ -61,7 +61,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addImage(...)` und `addLink(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addImage(...)` und `addLink(...)`.
 
 Dabei passiert intern:
 
@@ -85,9 +85,10 @@ Bei grafischen Inhalten kommt stattdessen dazu:
 7. `Line`- und `Rectangle`-Elemente werden direkt in `Contents` abgelegt.
 8. `PathBuilder` erzeugt aus `moveTo(...)`, `lineTo(...)`, `curveTo(...)` und `close()` ein `Path`-Element fuer freie Formen.
 9. `addCircle(...)` baut darauf einen Kreis aus vier kubischen Bezier-Segmenten auf.
-10. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
-11. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
-12. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
+10. `addEllipse(...)`, `addPolygon(...)` und `addArrow(...)` nutzen dieselbe Path-/Line-Infrastruktur fuer weitere Formen.
+11. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
+12. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
+13. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
 
 ### TextFrame
 
@@ -230,6 +231,16 @@ Damit lassen sich Formen wie Diamanten, Polygone oder einfache Diagrammformen er
 `Page::addCircle(...)` ist ein Convenience-Pfad auf Basis des vorhandenen `PathBuilder`.
 
 Intern wird der Kreis nicht ueber einen speziellen PDF-Kreisoperator erzeugt, sondern ueber vier kubische Bezier-Segmente approximiert. Dadurch bleibt der Kreis fachlich ein normaler `Path` und nutzt dieselben Paint-Modi wie andere freie Formen.
+
+### Ellipse, Polygon und Arrow
+
+Weitere grafische Convenience-Methoden bauen auf denselben Grundbausteinen auf:
+
+- `Page::addEllipse(...)` approximiert eine Ellipse ueber vier kubische Bezier-Segmente mit getrennten X- und Y-Radien
+- `Page::addPolygon(...)` erzeugt einen geschlossenen Pfad aus einer Liste von Punkten
+- `Page::addArrow(...)` kombiniert eine Linie mit einer gefuellten polygonalen Pfeilspitze
+
+Damit bleibt auch dieser Teil der API konsistent: Neue Formen sind fachlich keine Sonderobjekte, sondern nur bequeme High-Level-Zugaenge auf bestehende Pfad- und Linien-Operationen.
 
 ### Image und DrawImage
 
