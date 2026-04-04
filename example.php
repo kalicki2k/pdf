@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Document\TextAlign;
+use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\Units;
 use Kalle\Pdf\Graphics\Color;
@@ -136,6 +137,25 @@ $sansPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20
         12,
         'P',
         align: TextAlign::JUSTIFY,
+    )->paragraph(
+        [
+            new TextSegment('CLIP: ', Color::rgb(200, 30, 30), bold: true),
+            new TextSegment('abcde fghij klmno pqrst uvwxyz ABCDE FGHIJ KLMNO PQRST UVWXYZ 01234 56789 .:,;() *!?"@# <>$%& ^+-=~ abcde fghij klmno pqrst uvwxyz ABCDE FGHIJ KLMNO PQRST UVWXYZ 01234 56789 .:,;() *!?"@# <>$%& ^+-=~ abcde fghij klmno pqrst uvwxyz'),
+        ],
+        'NotoSans-Regular',
+        12,
+        'P',
+        maxLines: 2,
+    )->paragraph(
+        [
+            new TextSegment('ELLIPSIS: ', Color::rgb(200, 30, 30), bold: true),
+            new TextSegment('abcde fghij klmno pqrst uvwxyz ABCDE FGHIJ KLMNO PQRST UVWXYZ 01234 56789 .:,;() *!?"@# <>$%& ^+-=~ abcde fghij klmno pqrst uvwxyz ABCDE FGHIJ KLMNO PQRST UVWXYZ 01234 56789 .:,;() *!?"@# <>$%& ^+-=~ abcde fghij klmno pqrst uvwxyz'),
+        ],
+        'NotoSans-Regular',
+        12,
+        'P',
+        maxLines: 2,
+        overflow: TextOverflow::ELLIPSIS,
     )->paragraph(
         implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789.:,;()*!?\'@#<>$%&^+-=~']),
         'NotoSans-Regular',

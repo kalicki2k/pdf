@@ -9,6 +9,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
@@ -199,6 +200,79 @@ final class PageTest extends TestCase
         $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, null, 12.0, 0.0, Color::gray(0.5));
 
         self::assertSame(4, substr_count($page->contents->render(), '0.5 g'));
+    }
+
+    #[Test]
+    public function it_clips_a_paragraph_to_the_configured_max_lines(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            'Hello world from PDF',
+            10,
+            50,
+            40,
+            'Helvetica',
+            10,
+            maxLines: 2,
+        );
+
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("10 38 Td\n(world) Tj", $page->contents->render());
+        self::assertStringNotContainsString("(from) Tj", $page->contents->render());
+        self::assertStringNotContainsString("(PDF) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_appends_an_ellipsis_when_a_paragraph_is_truncated(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            'Hello world from PDF',
+            10,
+            50,
+            40,
+            'Helvetica',
+            10,
+            maxLines: 2,
+            overflow: TextOverflow::ELLIPSIS,
+        );
+
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("10 38 Td\n(wor...) Tj", $page->contents->render());
+        self::assertStringNotContainsString("(from) Tj", $page->contents->render());
+        self::assertStringNotContainsString("(PDF) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_appends_an_ellipsis_to_the_last_visible_segment_style(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            [
+                new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
+                new TextSegment(' Hello world from PDF', bold: true),
+            ],
+            10,
+            50,
+            55,
+            'Helvetica',
+            10,
+            maxLines: 2,
+            overflow: TextOverflow::ELLIPSIS,
+        );
+
+        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
+        self::assertStringContainsString("/F2 10 Tf\n10 38 Td\n(Hello...) Tj", $page->contents->render());
+        self::assertStringNotContainsString("(world) Tj", $page->contents->render());
     }
 
     #[Test]

@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\TextOverflow;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
@@ -144,5 +145,27 @@ final class TextFrameTest extends TestCase
 
         self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("60 100 Td\n(world) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_limits_text_frame_paragraphs_to_max_lines_when_requested(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 40, 20);
+        $frame->paragraph(
+            'Hello world from PDF',
+            'Helvetica',
+            10,
+            spacingAfter: 8,
+            maxLines: 2,
+            overflow: TextOverflow::ELLIPSIS,
+        );
+
+        self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("20 88 Td\n(wor...) Tj", $page->contents->render());
+        self::assertSame(68.0, $frame->getCursorY());
     }
 }

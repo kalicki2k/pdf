@@ -36,6 +36,8 @@ final class TextFrame
         ?Color $color = null,
         ?Opacity $opacity = null,
         TextAlign $align = TextAlign::LEFT,
+        ?int $maxLines = null,
+        TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
         $lineHeight ??= $size * 1.2;
         $spacingAfter ??= $lineHeight;
@@ -53,9 +55,11 @@ final class TextFrame
             color: $color,
             opacity: $opacity,
             align: $align,
+            maxLines: $maxLines,
+            overflow: $overflow,
         );
 
-        $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $this->width);
+        $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $this->width, $maxLines, $overflow);
         $consumedHeight = ($lineCount * $lineHeight) + $spacingAfter;
         $topMargin = $this->page->getHeight() - $this->cursorY;
         $availableHeight = $this->page->getHeight() - $topMargin - $this->bottomMargin;
@@ -88,6 +92,8 @@ final class TextFrame
         ?Color $color = null,
         ?Opacity $opacity = null,
         TextAlign $align = TextAlign::LEFT,
+        ?int $maxLines = null,
+        TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
         return $this->paragraph(
             text: $text,
@@ -99,6 +105,8 @@ final class TextFrame
             color: $color,
             opacity: $opacity,
             align: $align,
+            maxLines: $maxLines,
+            overflow: $overflow,
         );
     }
 

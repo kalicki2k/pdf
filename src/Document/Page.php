@@ -107,6 +107,8 @@ final class Page extends IndirectObject
         ?Color $color = null,
         ?Opacity $opacity = null,
         TextAlign $align = TextAlign::LEFT,
+        ?int $maxLines = null,
+        TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
         $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
         $bottomMargin ??= self::DEFAULT_BOTTOM_MARGIN;
@@ -119,8 +121,19 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Line height must be greater than zero.');
         }
 
+        if ($maxLines !== null && $maxLines <= 0) {
+            throw new InvalidArgumentException('Max lines must be greater than zero.');
+        }
+
         $runs = $this->normalizeTextRuns($text, $color, $opacity);
-        $lines = $this->wrapRunsIntoLines($runs, $baseFont, $size, $maxWidth);
+        $lines = $this->applyOverflowToLines(
+            $this->wrapRunsIntoLines($runs, $baseFont, $size, $maxWidth),
+            $baseFont,
+            $size,
+            $maxWidth,
+            $maxLines,
+            $overflow,
+        );
         $page = $this;
         $currentY = $y;
         $topMargin = $this->height - $y;
@@ -281,9 +294,27 @@ final class Page extends IndirectObject
     /**
      * @param string|list<TextSegment> $text
      */
-    public function countParagraphLines(string|array $text, string $baseFont, int $size, float $maxWidth): int
+    public function countParagraphLines(
+        string|array $text,
+        string $baseFont,
+        int $size,
+        float $maxWidth,
+        ?int $maxLines = null,
+        TextOverflow $overflow = TextOverflow::CLIP,
+    ): int
     {
-        return count($this->wrapRunsIntoLines($this->normalizeTextRuns($text, null, null), $baseFont, $size, $maxWidth));
+        if ($maxLines !== null && $maxLines <= 0) {
+            throw new InvalidArgumentException('Max lines must be greater than zero.');
+        }
+
+        return count($this->applyOverflowToLines(
+            $this->wrapRunsIntoLines($this->normalizeTextRuns($text, null, null), $baseFont, $size, $maxWidth),
+            $baseFont,
+            $size,
+            $maxWidth,
+            $maxLines,
+            $overflow,
+        ));
     }
 
     /**
@@ -435,6 +466,40 @@ final class Page extends IndirectObject
     }
 
     /**
+     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $lines
+     * @return list<array{segments: array<int, TextSegment>, justify: bool}>
+     */
+    private function applyOverflowToLines(
+        array $lines,
+        string $baseFont,
+        int $size,
+        float $maxWidth,
+        ?int $maxLines,
+        TextOverflow $overflow,
+    ): array {
+        if ($maxLines === null || count($lines) <= $maxLines) {
+            return $lines;
+        }
+
+        $visibleLines = array_slice($lines, 0, $maxLines);
+
+        if ($overflow === TextOverflow::CLIP || $visibleLines === []) {
+            return array_map(
+                static fn (array $line): array => ['segments' => $line['segments'], 'justify' => false],
+                $visibleLines,
+            );
+        }
+
+        $lastIndex = array_key_last($visibleLines);
+        $visibleLines[$lastIndex] = [
+            'segments' => $this->appendEllipsisToLine($visibleLines[$lastIndex]['segments'], $baseFont, $size, $maxWidth),
+            'justify' => false,
+        ];
+
+        return $visibleLines;
+    }
+
+    /**
      * @param array<int, TextSegment> $line
      */
     private function calculateAlignedOffset(
@@ -554,6 +619,165 @@ final class Page extends IndirectObject
     }
 
     /**
+     * @param array<int, TextSegment> $line
+     * @return array<int, TextSegment>
+     */
+    private function appendEllipsisToLine(array $line, string $baseFont, int $size, float $maxWidth): array
+    {
+        $line = $this->trimTrailingWhitespaceFromLine($line);
+        $ellipsisSegment = $this->buildEllipsisSegment($line);
+
+        while ($line !== [] && $this->measureLineWidthWithSegment($line, $ellipsisSegment, $baseFont, $size) > $maxWidth) {
+            $this->removeLastCharacterFromLine($line);
+            $line = $this->trimTrailingWhitespaceFromLine($line);
+            $ellipsisSegment = $this->buildEllipsisSegment($line);
+        }
+
+        while ($ellipsisSegment->text !== '' && $this->measureSegmentsWidth([$ellipsisSegment], $baseFont, $size) > $maxWidth) {
+            $ellipsisSegment = new TextSegment(
+                substr($ellipsisSegment->text, 0, -1),
+                $ellipsisSegment->color,
+                $ellipsisSegment->opacity,
+                $ellipsisSegment->bold,
+                $ellipsisSegment->italic,
+                $ellipsisSegment->underline,
+                $ellipsisSegment->strikethrough,
+            );
+        }
+
+        if ($ellipsisSegment->text === '') {
+            return $line;
+        }
+
+        $this->appendRun($line, $ellipsisSegment);
+
+        return $line;
+    }
+
+    /**
+     * @param array<int, TextSegment> $line
+     * @return array<int, TextSegment>
+     */
+    private function trimTrailingWhitespaceFromLine(array $line): array
+    {
+        while ($line !== []) {
+            $lastIndex = array_key_last($line);
+            $trimmed = rtrim($line[$lastIndex]->text, ' ');
+
+            if ($trimmed === $line[$lastIndex]->text) {
+                break;
+            }
+
+            if ($trimmed === '') {
+                unset($line[$lastIndex]);
+                $line = array_values($line);
+                continue;
+            }
+
+            $line[$lastIndex] = new TextSegment(
+                $trimmed,
+                $line[$lastIndex]->color,
+                $line[$lastIndex]->opacity,
+                $line[$lastIndex]->bold,
+                $line[$lastIndex]->italic,
+                $line[$lastIndex]->underline,
+                $line[$lastIndex]->strikethrough,
+            );
+            break;
+        }
+
+        return array_values($line);
+    }
+
+    /**
+     * @param array<int, TextSegment> $line
+     */
+    private function buildEllipsisSegment(array $line): TextSegment
+    {
+        $lastIndex = array_key_last($line);
+
+        if ($lastIndex === null) {
+            return new TextSegment('...');
+        }
+
+        $lastSegment = $line[$lastIndex];
+
+        return new TextSegment(
+            '...',
+            $lastSegment->color,
+            $lastSegment->opacity,
+            $lastSegment->bold,
+            $lastSegment->italic,
+            $lastSegment->underline,
+            $lastSegment->strikethrough,
+        );
+    }
+
+    /**
+     * @param array<int, TextSegment> $line
+     */
+    private function removeLastCharacterFromLine(array &$line): void
+    {
+        while ($line !== []) {
+            $lastIndex = array_key_last($line);
+            $characters = preg_split('//u', $line[$lastIndex]->text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+            if ($characters === []) {
+                unset($line[$lastIndex]);
+                $line = array_values($line);
+                continue;
+            }
+
+            array_pop($characters);
+            $updatedText = implode('', $characters);
+
+            if ($updatedText === '') {
+                unset($line[$lastIndex]);
+                $line = array_values($line);
+                continue;
+            }
+
+            $line[$lastIndex] = new TextSegment(
+                $updatedText,
+                $line[$lastIndex]->color,
+                $line[$lastIndex]->opacity,
+                $line[$lastIndex]->bold,
+                $line[$lastIndex]->italic,
+                $line[$lastIndex]->underline,
+                $line[$lastIndex]->strikethrough,
+            );
+            return;
+        }
+    }
+
+    /**
+     * @param array<int, TextSegment> $line
+     */
+    private function measureLineWidthWithSegment(array $line, TextSegment $segment, string $baseFont, int $size): float
+    {
+        $segments = $line;
+        $this->appendRun($segments, $segment);
+
+        return $this->measureSegmentsWidth($segments, $baseFont, $size);
+    }
+
+    /**
+     * @param array<int, TextSegment> $segments
+     */
+    private function measureSegmentsWidth(array $segments, string $baseFont, int $size): float
+    {
+        $width = 0.0;
+
+        foreach ($segments as $segment) {
+            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
+            $segmentFont = $this->resolveFont($segmentFontName);
+            $width += $segmentFont->measureTextWidth($segment->text, $size);
+        }
+
+        return $width;
+    }
+
+    /**
      * @param array<int, TextSegment> $segments
      * @return list<array{segment: TextSegment, leadingSpaces: int}>
      */
@@ -562,12 +786,17 @@ final class Page extends IndirectObject
         $pieces = [];
 
         foreach ($segments as $segment) {
-            preg_match_all('/( +)?([^ ]+)/', $segment->text, $matches, PREG_SET_ORDER);
+            $leadingSpaces = 0;
 
-            foreach ($matches as $match) {
+            foreach (preg_split('/( +)/', $segment->text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [] as $part) {
+                if (trim($part) === '') {
+                    $leadingSpaces += strlen($part);
+                    continue;
+                }
+
                 $pieces[] = [
                     'segment' => new TextSegment(
-                        $match[2],
+                        $part,
                         $segment->color,
                         $segment->opacity,
                         $segment->bold,
@@ -575,8 +804,10 @@ final class Page extends IndirectObject
                         $segment->underline,
                         $segment->strikethrough,
                     ),
-                    'leadingSpaces' => strlen($match[1]),
+                    'leadingSpaces' => $leadingSpaces,
                 ];
+
+                $leadingSpaces = 0;
             }
         }
 
