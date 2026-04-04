@@ -874,6 +874,10 @@ final class Page extends IndirectObject
         float $height,
         string $url,
     ): self {
+        if (str_starts_with($url, '#')) {
+            return $this->addInternalLink($x, $y, $width, $height, substr($url, 1));
+        }
+
         if ($width <= 0) {
             throw new InvalidArgumentException('Link width must be greater than zero.');
         }
@@ -894,6 +898,39 @@ final class Page extends IndirectObject
             $width,
             $height,
             $url,
+        );
+
+        return $this;
+    }
+
+    public function addInternalLink(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $destination,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Link width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Link height must be greater than zero.');
+        }
+
+        if ($destination === '') {
+            throw new InvalidArgumentException('Link destination must not be empty.');
+        }
+
+        $this->annotations[] = new LinkAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $destination,
+            true,
         );
 
         return $this;

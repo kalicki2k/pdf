@@ -28,6 +28,7 @@ Verantwortlich fuer:
 - Verwaltung aller Seiten
 - optionale wiederkehrende Header- und Footer-Renderer fuer neue Seiten
 - optionale Outline-/Bookmark-Navigation fuer PDF-Viewer
+- optionale benannte Ziele fuer interne PDF-Spruenge
 - Vergabe von Objekt-IDs
 - lazy Aufbau der Strukturdaten fuer Tagged-Inhalte
 - Start des Renderings
@@ -37,12 +38,15 @@ Wichtige Methoden:
 - `addPage()` erzeugt eine neue Seite mit eigener `Contents`- und `Resources`-Instanz
 - `addHeader()` und `addFooter()` registrieren Seiten-Callbacks, die bei jeder neuen Seite ausgefuehrt werden
 - `addOutline()` registriert einen Bookmark-Eintrag fuer eine Zielseite
+- `addDestination()` registriert ein benanntes Ziel fuer interne Spruenge
 - `addFont()` registriert Fonts im Dokument
 - `addKeyword()` pflegt die Dokument-Keywords
 - `render()` delegiert an `PdfRenderer`
 - `getDocumentObjects()` liefert die Menge aller zu rendernden indirekten Objekte
 
 Wenn Outlines vorhanden sind, erzeugt `Document` zusaetzlich ein `OutlineRoot`-Objekt und eine flache Liste von `OutlineItem`-Objekten. Der `Catalog` verweist dann ueber `/Outlines` auf diese Navigationsstruktur und setzt `/PageMode /UseOutlines`.
+
+Wenn benannte Ziele vorhanden sind, rendert der `Catalog` zusaetzlich ein `/Dests`-Dictionary mit Zielnamen und Zielseiten.
 
 ### Pages
 
@@ -67,7 +71,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addImage(...)` und `addLink(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addImage(...)`, `addLink(...)` und `addInternalLink(...)`.
 
 Dabei passiert intern:
 
@@ -417,7 +421,9 @@ Links werden aktuell nicht als sichtbares Content-Element gerendert, sondern als
 Damit gibt es zwei API-Ebenen:
 
 - `Page::addLink(...)` fuer beliebige klickbare Flaechen
+- `Page::addInternalLink(...)` fuer frei positionierte interne Link-Flaechen
 - `Page::addText(..., link: ...)` und `TextSegment::link` fuer aus Textbreite abgeleitete Link-Rechtecke
+- `#ziel` als kompakter Shortcut fuer interne Links ueber die bestehende Link-API
 
 ### TextSegment
 

@@ -30,6 +30,19 @@ final class Catalog extends IndirectObject
             $dictionary->add('PageMode', new NameType('UseOutlines'));
         }
 
+        if ($this->document->getDestinations() !== []) {
+            $destinations = new DictionaryType([]);
+
+            foreach ($this->document->getDestinations() as $name => $page) {
+                $destinations->add($name, new \Kalle\Pdf\Types\ArrayType([
+                    new ReferenceType($page),
+                    new NameType('Fit'),
+                ]));
+            }
+
+            $dictionary->add('Dests', $destinations);
+        }
+
         if ($this->document->version >= 1.4 && $this->document->structTreeRoot !== null) {
             $dictionary->add('MarkInfo', new DictionaryType([
                 'Marked' => new BooleanType(true),

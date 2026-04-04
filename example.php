@@ -755,6 +755,17 @@ $panelPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(2
         'P',
     );
 
+$panelPage->addText(
+    text: 'Zur Table Demo springen',
+    x: Units::mm(20),
+    y: Units::mm(240),
+    baseFont: 'NotoSans-Regular',
+    size: 11,
+    color: Color::rgb(0, 0, 255),
+    underline: true,
+    link: '#table-demo',
+);
+
 $panelPage->addPanel(
     'Dieses Panel zeigt die Standardwerte mit dezenter Hinterlegung und einer einfachen Titelzeile.',
     Units::mm(20),
@@ -806,6 +817,7 @@ $panelPage->addPanel(
 );
 
 $document
+    ->addDestination('table-demo', $tablePage)
     ->addOutline('Noto Sans', $sansPage)
     ->addOutline('Noto Serif', $serifPage)
     ->addOutline('Noto Sans Mono', $monoPage)

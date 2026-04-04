@@ -186,6 +186,29 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_registers_named_destinations_on_the_catalog(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage(100.0, 200.0);
+
+        $document->addDestination('table-demo', $page);
+
+        self::assertStringContainsString('/Dests << /table-demo [4 0 R /Fit] >>', $document->render());
+    }
+
+    #[Test]
+    public function it_rejects_invalid_destination_names(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage(100.0, 200.0);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Destination name may contain only letters, numbers, dots, underscores and hyphens.');
+
+        $document->addDestination('table demo', $page);
+    }
+
+    #[Test]
     public function it_rejects_combining_page_size_and_explicit_height(): void
     {
         $document = new Document(version: 1.4);

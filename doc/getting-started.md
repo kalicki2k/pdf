@@ -285,7 +285,9 @@ $frame->numberedList(
     numberColor: Color::rgb(220, 20, 60),
 );
 
-$document->addOutline('Hallo PDF', $page);
+$document
+    ->addOutline('Hallo PDF', $page)
+    ->addDestination('hello-pdf', $page);
 
 $pdfContent = $document->render();
 
@@ -308,7 +310,8 @@ file_put_contents('hello.pdf', $pdfContent);
 12. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
 13. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
 14. `addOutline(...)` registriert Bookmarks fuer die Viewer-Navigation im PDF.
-15. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+15. `addDestination(...)` registriert benannte interne Sprungziele.
+16. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Tabellen
 
@@ -741,6 +744,19 @@ $frame->paragraph(
     'Helvetica',
     12,
 );
+
+$document->addDestination('docs', $page);
+$page->addInternalLink(20, 30, 60, 12, 'docs');
+$page->addText(
+    text: 'Zu Docs springen',
+    x: 20,
+    y: 15,
+    baseFont: 'Helvetica',
+    size: 12,
+    color: Color::rgb(0, 0, 255),
+    underline: true,
+    link: '#docs',
+);
 ```
 
 Ein kompakter Absatz mit gemischten Stilen sieht zum Beispiel so aus:
@@ -786,6 +802,7 @@ Der derzeit belastbare Einstieg ist:
 - Pfeile rendern
 - Bilder aus Dateien laden und platzieren
 - klickbare Links ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link`
+- interne Spruenge ueber `addDestination(...)`, `addInternalLink(...)` und `#ziel`
 
 ## Aktuelle Grenzen
 

@@ -12,6 +12,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Seiten, Ressourcen und Content-Streams sind getrennt modelliert
 - Header und Footer koennen ueber Dokument-Callbacks auf allen neuen Seiten registriert werden
 - PDF-Outlines bzw. Bookmarks koennen ueber `addOutline(...)` registriert werden
+- benannte interne Ziele koennen ueber `addDestination(...)` registriert werden
 - Text wird ueber registrierte Fonts gerendert
 - `addParagraph()` und `TextFrame` decken ersten Absatz- und Flow-Layout-Bedarf ab
 - `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
@@ -28,6 +29,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Kreise sind als Convenience-API ueber `addCircle(...)` verfuegbar
 - Ellipsen, Polygone, Pfeile und Sterne sind als weitere Convenience-Formen verfuegbar
 - Links und URI-Annotationen sind ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link` verfuegbar
+- interne Spruenge sind ueber `addDestination(...)`, `addInternalLink(...)` und `#ziel`-Links verfuegbar
 - Badges sind als kleines zusammengesetztes Label-Element ueber `addBadge(...)` verfuegbar
 - Panels sind als einfache Hinweis- und Infoboxen ueber `addPanel(...)` verfuegbar
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
@@ -60,6 +62,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - weitere Form-APIs fuer Ellipsen, Polygone, Pfeile und Sterne
 - erste Link-API ueber Annotationen und klickbaren Text
 - erste Outline-/Bookmark-API fuer Viewer-Navigation
+- erste interne Dokument-Navigation ueber benannte Ziele
 
 ## Prioritaeten
 

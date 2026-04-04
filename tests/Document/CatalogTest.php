@@ -64,4 +64,18 @@ final class CatalogTest extends TestCase
             $catalog->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_named_destinations_when_document_destinations_exist(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $document->addDestination('table-demo', $page);
+        $catalog = new Catalog(1, $document);
+
+        self::assertSame(
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Dests << /table-demo [4 0 R /Fit] >> >>\nendobj\n",
+            $catalog->render(),
+        );
+    }
 }

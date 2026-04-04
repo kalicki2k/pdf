@@ -355,6 +355,30 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_an_internal_link_annotation(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addInternalLink(10, 20, 80, 12, 'table-demo');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Annots [7 0 R]', $page->render());
+        self::assertStringContainsString('/Dest /table-demo', $document->render());
+    }
+
+    #[Test]
+    public function it_routes_hash_links_to_internal_destinations(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addLink(10, 20, 80, 12, '#table-demo');
+
+        self::assertStringContainsString('/Dest /table-demo', $document->render());
+    }
+
+    #[Test]
     public function it_adds_a_diamond_path_to_the_page_contents(): void
     {
         $document = new Document(version: 1.4);

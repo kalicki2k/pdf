@@ -20,7 +20,8 @@ final class LinkAnnotation extends IndirectObject
         private readonly float $y,
         private readonly float $width,
         private readonly float $height,
-        private readonly string $url,
+        private readonly string $target,
+        private readonly bool $internal = false,
     ) {
         parent::__construct($id);
     }
@@ -37,12 +38,17 @@ final class LinkAnnotation extends IndirectObject
                 $this->y + $this->height,
             ]),
             'Border' => new ArrayType([0, 0, 0]),
-            'A' => new DictionaryType([
-                'S' => new NameType('URI'),
-                'URI' => new StringType($this->url),
-            ]),
             'P' => new ReferenceType($this->page),
         ]);
+
+        if ($this->internal) {
+            $dictionary->add('Dest', new NameType($this->target));
+        } else {
+            $dictionary->add('A', new DictionaryType([
+                'S' => new NameType('URI'),
+                'URI' => new StringType($this->target),
+            ]));
+        }
 
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL

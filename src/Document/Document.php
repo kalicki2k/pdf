@@ -38,6 +38,8 @@ final class Document
 
     /** @var string[] */
     public array $keywords = [];
+    /** @var array<string, Page> */
+    private array $destinations = [];
 
     /** @var StructElem[]  */
     private array $structElems = [];
@@ -178,6 +180,29 @@ final class Document
         $this->outlineRoot->addItem(new OutlineItem(++$this->objectId, $this->outlineRoot, $title, $page));
 
         return $this;
+    }
+
+    public function addDestination(string $name, Page $page): self
+    {
+        if ($name === '') {
+            throw new InvalidArgumentException('Destination name must not be empty.');
+        }
+
+        if (!preg_match('/^[A-Za-z0-9._-]+$/', $name)) {
+            throw new InvalidArgumentException('Destination name may contain only letters, numbers, dots, underscores and hyphens.');
+        }
+
+        $this->destinations[$name] = $page;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, Page>
+     */
+    public function getDestinations(): array
+    {
+        return $this->destinations;
     }
 
     /**
