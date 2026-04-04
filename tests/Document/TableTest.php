@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextSegment;
@@ -24,7 +25,7 @@ final class TableTest extends TestCase
             ->addFont('Helvetica-Bold');
         $page = $document->addPage();
 
-        $table = $page->table(20, 260, 170, [50, 70, 50])
+        $table = $page->addTable(20, 260, 170, [50, 70, 50])
             ->headerStyle(Color::gray(0.9), Color::rgb(255, 0, 0))
             ->rowStyle(null, Color::gray(0.2))
             ->addRow(['ID', 'Titel', 'Preis'], header: true)
@@ -35,7 +36,8 @@ final class TableTest extends TestCase
             ]);
 
         self::assertSame($page, $table->getPage());
-        self::assertStringContainsString("20 236 50 24 re\nB", $page->contents->render());
+        self::assertStringContainsString("20 236 50 24 re\nf", $page->contents->render());
+        self::assertStringContainsString("20 236 50 24 re\nS", $page->contents->render());
         self::assertStringContainsString('/BaseFont /Helvetica', $document->render());
         self::assertStringContainsString('/BaseFont /Helvetica-Bold', $document->render());
         self::assertStringContainsString('(Produkt) Tj', $page->contents->render());
@@ -53,7 +55,7 @@ final class TableTest extends TestCase
             ->addFont('Helvetica-Bold');
         $page = $document->addPage();
 
-        $page->table(20, 260, 170, [30, 50, 40, 50])
+        $page->addTable(20, 260, 170, [30, 50, 40, 50])
             ->addRow(['#', 'Titel', 'Status', 'Preis'], header: true)
             ->addRow([
                 '1',
@@ -75,7 +77,7 @@ final class TableTest extends TestCase
             ->addFont('Helvetica-Bold');
         $page = $document->addPage();
 
-        $page->table(20, 260, 170, [40, 60, 70])
+        $page->addTable(20, 260, 170, [40, 60, 70])
             ->addRow(['Gruppe', 'Titel', 'Status'], header: true)
             ->addRow([
                 new TableCell('A', TextAlign::CENTER, rowspan: 2),
@@ -95,6 +97,46 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_supports_partial_cell_borders(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [85, 85])
+            ->borderStyle(TableBorder::none())
+            ->addRow([
+                new TableCell('Links', border: TableBorder::only(['left', 'bottom'], color: Color::rgb(255, 0, 0))),
+                new TableCell('Rechts', border: TableBorder::horizontal(color: Color::gray(0.5))),
+            ]);
+
+        self::assertStringContainsString("1 0 0 RG\n1 w\n20 236 m\n20 260 l\nS", $page->contents->render());
+        self::assertStringContainsString("1 0 0 RG\n1 w\n20 236 m\n105 236 l\nS", $page->contents->render());
+        self::assertStringContainsString("0.5 G\n1 w\n105 260 m\n190 260 l\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_merges_cell_borders_with_the_table_default_border(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTable(20, 260, 170, [85, 85])
+            ->addRow([
+                new TableCell('Links', border: TableBorder::only(['left'], color: Color::rgb(0, 255, 0))),
+                'Rechts',
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString("0 1 0 RG\n1 w\n20 236 m\n20 260 l\nS", $contents);
+        self::assertStringContainsString("0.75 G\n1 w\n20 260 m\n105 260 l\nS", $contents);
+        self::assertStringContainsString("0.75 G\n1 w\n20 236 m\n105 236 l\nS", $contents);
+        self::assertStringContainsString("0.75 G\n1 w\n105 236 m\n105 260 l\nS", $contents);
+    }
+
+    #[Test]
     public function it_moves_the_table_to_a_new_page_when_the_next_row_does_not_fit(): void
     {
         $document = new Document(version: 1.4);
@@ -103,7 +145,7 @@ final class TableTest extends TestCase
             ->addFont('Helvetica-Bold');
         $page = $document->addPage(200, 200);
 
-        $table = $page->table(20, 120, 160, [80, 80], 20)
+        $table = $page->addTable(20, 120, 160, [80, 80], 20)
             ->addRow(['Kopf', 'Wert'], header: true)
             ->addRow(['A', '1'])
             ->addRow(['B', '2'])
@@ -123,7 +165,7 @@ final class TableTest extends TestCase
         $document = new Document(version: 1.4);
         $document->addFont('Helvetica');
         $page = $document->addPage();
-        $table = $page->table(20, 260, 170, [85, 85]);
+        $table = $page->addTable(20, 260, 170, [85, 85]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Table row spans must match the number of columns.');
@@ -137,7 +179,7 @@ final class TableTest extends TestCase
         $document = new Document(version: 1.4);
         $document->addFont('Helvetica');
         $page = $document->addPage();
-        $table = $page->table(20, 260, 170, [85, 85]);
+        $table = $page->addTable(20, 260, 170, [85, 85]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Table cell colspan must be greater than zero.');
@@ -154,7 +196,7 @@ final class TableTest extends TestCase
         $document = new Document(version: 1.4);
         $document->addFont('Helvetica');
         $page = $document->addPage();
-        $table = $page->table(20, 260, 170, [85, 85]);
+        $table = $page->addTable(20, 260, 170, [85, 85]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Table cell rowspan must be greater than zero.');

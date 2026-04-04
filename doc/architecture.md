@@ -133,6 +133,7 @@ Verantwortlich fuer:
 - Cursor-Fuehrung zwischen den Tabellenzeilen
 - Header- und Row-Styles
 - `colspan` und erste `rowspan`-Unterstuetzung
+- steuerbare Borders ueber `TableBorder`
 - Wiederholung von Header-Zeilen bei Seitenwechsel
 - Berechnung der Zeilenhoehe ueber den vorhandenen Absatz-Umbruch
 - Seitenwechsel, wenn eine komplette Zeile nicht mehr passt
@@ -146,6 +147,24 @@ Verantwortlich fuer:
 - optionaler `opacity`
 - `colspan`
 - `rowspan`
+- optionales `border`
+
+`TableBorder` kapselt den Linienstil fuer Tabellen und einzelne Zellen.
+
+Aktuell unterstuetzt:
+
+- `TableBorder::all(...)`
+- `TableBorder::none()`
+- `TableBorder::horizontal(...)`
+- `TableBorder::vertical(...)`
+- `TableBorder::only([...])`
+
+Im Renderpfad gilt:
+
+- Tabellen koennen einen Default-Border ueber `Table::borderStyle(...)` tragen
+- einzelne `TableCell`-Instanzen koennen einzelne Border-Seiten gezielt ueberschreiben
+- nicht gesetzte Zell-Seiten erben weiter vom Tabellen-Default
+- partielle Borders werden intern als gezielte Linien statt als komplettes Rechteck gerendert
 
 Die aktuelle `rowspan`-Stufe ist bewusst begrenzt:
 

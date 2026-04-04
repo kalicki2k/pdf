@@ -31,9 +31,7 @@ final class Table
     private string $baseFont = 'Helvetica';
     private int $fontSize = 12;
     private float $lineHeightFactor = self::DEFAULT_LINE_HEIGHT_FACTOR;
-    private ?Color $borderColor = null;
-    private float $borderWidth = 1.0;
-    private ?Opacity $borderOpacity = null;
+    private ?TableBorder $border = null;
     private ?Color $rowFillColor = null;
     private ?Color $rowTextColor = null;
     private ?Color $headerFillColor = null;
@@ -64,7 +62,7 @@ final class Table
             }
         }
 
-        $totalColumnWidth = array_sum(array_map(static fn (float|int $value): float => (float) $value, $columnWidths));
+        $totalColumnWidth = array_sum(array_map(static fn (float | int $value): float => (float) $value, $columnWidths));
 
         if (abs($totalColumnWidth - $width) > 0.001) {
             throw new InvalidArgumentException('Table column widths must add up to the table width.');
@@ -78,7 +76,7 @@ final class Table
         $this->cursorY = $y;
         $this->topMargin = $page->getHeight() - $y;
         $this->activeRowspans = array_fill(0, count($columnWidths), 0);
-        $this->borderColor = Color::gray(0.75);
+        $this->border = TableBorder::all(color: Color::gray(0.75));
         $this->headerFillColor = Color::gray(0.92);
     }
 
@@ -115,9 +113,20 @@ final class Table
             throw new InvalidArgumentException('Table border width must be greater than zero.');
         }
 
-        $this->borderColor = $color;
-        $this->borderWidth = $width ?? $this->borderWidth;
-        $this->borderOpacity = $opacity;
+        $resolvedWidth = $width ?? $this->border->width ?? 1.0;
+
+        $this->border = TableBorder::all(
+            $resolvedWidth,
+            $color,
+            $opacity,
+        );
+
+        return $this;
+    }
+
+    public function borderStyle(?TableBorder $border): self
+    {
+        $this->border = $border;
 
         return $this;
     }
@@ -329,7 +338,7 @@ final class Table
     /**
      * @param string|list<TextSegment>|TableCell $cell
      */
-    private function normalizeCell(string|array|TableCell $cell, bool $header): TableCell
+    private function normalizeCell(string | array | TableCell $cell, bool $header): TableCell
     {
         if ($cell instanceof TableCell) {
             if ($cell->rowspan <= 0) {
@@ -344,6 +353,7 @@ final class Table
                 $cell->opacity,
                 $cell->colspan,
                 $cell->rowspan,
+                $cell->border,
             );
         }
 
@@ -383,7 +393,7 @@ final class Table
             }
         }
 
-        return array_sum(array_map(static fn (float|int $value): float => (float) $value, $columnSlice));
+        return array_sum(array_map(static fn (float | int $value): float => (float) $value, $columnSlice));
     }
 
     /**
@@ -437,16 +447,14 @@ final class Table
                 $cellBottomY = $rowTopY - $spanHeight;
                 $fillColor = $preparedCell->fillColor ?? ($preparedRow['header'] ? $this->headerFillColor : $this->rowFillColor);
                 $textColor = $preparedCell->textColor ?? ($preparedRow['header'] ? $this->headerTextColor : $this->rowTextColor);
-
-                $this->page->addRectangle(
+                $this->renderCellBox(
                     $cellX,
                     $cellBottomY,
                     $preparedEntry['width'],
                     $spanHeight,
-                    $this->borderWidth,
-                    $this->borderColor,
                     $fillColor,
-                    $this->borderOpacity,
+                    $this->border,
+                    $preparedCell->border,
                 );
 
                 $this->page = $this->page->addParagraph(
@@ -471,10 +479,109 @@ final class Table
         $this->cursorY = $rowTopY;
     }
 
+    private function renderCellBox(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $fillColor,
+        ?TableBorder $defaultBorder,
+        ?TableBorder $cellBorder,
+    ): void {
+        if ($fillColor !== null) {
+            $this->page->addRectangle($x, $y, $width, $height, null, null, $fillColor);
+        }
+
+        $topBorder = $this->resolveBorderSide('top', $defaultBorder, $cellBorder);
+        $rightBorder = $this->resolveBorderSide('right', $defaultBorder, $cellBorder);
+        $bottomBorder = $this->resolveBorderSide('bottom', $defaultBorder, $cellBorder);
+        $leftBorder = $this->resolveBorderSide('left', $defaultBorder, $cellBorder);
+
+        if ($topBorder === null && $rightBorder === null && $bottomBorder === null && $leftBorder === null) {
+            return;
+        }
+
+        if (
+            $topBorder !== null
+            && $rightBorder !== null
+            && $bottomBorder !== null
+            && $leftBorder !== null
+            && $this->bordersAreEquivalent($topBorder, $rightBorder, $bottomBorder, $leftBorder)
+        ) {
+            $this->page->addRectangle(
+                $x,
+                $y,
+                $width,
+                $height,
+                $topBorder['width'],
+                $topBorder['color'],
+                null,
+                $topBorder['opacity'],
+            );
+
+            return;
+        }
+
+        if ($topBorder !== null) {
+            $this->page->addLine($x, $y + $height, $x + $width, $y + $height, $topBorder['width'], $topBorder['color'], $topBorder['opacity']);
+        }
+
+        if ($rightBorder !== null) {
+            $this->page->addLine($x + $width, $y, $x + $width, $y + $height, $rightBorder['width'], $rightBorder['color'], $rightBorder['opacity']);
+        }
+
+        if ($bottomBorder !== null) {
+            $this->page->addLine($x, $y, $x + $width, $y, $bottomBorder['width'], $bottomBorder['color'], $bottomBorder['opacity']);
+        }
+
+        if ($leftBorder !== null) {
+            $this->page->addLine($x, $y, $x, $y + $height, $leftBorder['width'], $leftBorder['color'], $leftBorder['opacity']);
+        }
+    }
+
+    /**
+     * @return array{width: float, color: ?Color, opacity: ?Opacity}|null
+     */
+    private function resolveBorderSide(string $side, ?TableBorder $defaultBorder, ?TableBorder $cellBorder): ?array
+    {
+        if ($cellBorder !== null && $cellBorder->isDefinedFor($side)) {
+            if (!$cellBorder->isEnabled($side)) {
+                return null;
+            }
+
+            return [
+                'width' => $cellBorder->width ?? $defaultBorder->width ?? 1.0,
+                'color' => $cellBorder->color ?? $defaultBorder?->color,
+                'opacity' => $cellBorder->opacity ?? $defaultBorder?->opacity,
+            ];
+        }
+
+        if ($defaultBorder === null || !$defaultBorder->isEnabled($side)) {
+            return null;
+        }
+
+        return [
+            'width' => $defaultBorder->width ?? 1.0,
+            'color' => $defaultBorder->color,
+            'opacity' => $defaultBorder->opacity,
+        ];
+    }
+
+    /**
+     * @param array{width: float, color: ?Color, opacity: ?Opacity} $top
+     * @param array{width: float, color: ?Color, opacity: ?Opacity} $right
+     * @param array{width: float, color: ?Color, opacity: ?Opacity} $bottom
+     * @param array{width: float, color: ?Color, opacity: ?Opacity} $left
+     */
+    private function bordersAreEquivalent(array $top, array $right, array $bottom, array $left): bool
+    {
+        return $top === $right && $right === $bottom && $bottom === $left;
+    }
+
     private function calculateColumnOffset(int $columnIndex): float
     {
         return array_sum(array_map(
-            static fn (float|int $value): float => (float) $value,
+            static fn (float | int $value): float => (float) $value,
             array_slice($this->columnWidths, 0, $columnIndex),
         ));
     }
@@ -483,7 +590,7 @@ final class Table
      * @param string|list<TextSegment> $text
      * @return string|list<TextSegment>
      */
-    private function normalizeText(string|array $text, bool $header): string|array
+    private function normalizeText(string | array $text, bool $header): string | array
     {
         if (!$header) {
             return $text;

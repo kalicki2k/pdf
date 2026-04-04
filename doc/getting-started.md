@@ -38,6 +38,7 @@ declare(strict_types=1);
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Document\BulletType;
+use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextOverflow;
@@ -193,7 +194,7 @@ $page->addText(
     link: 'https://example.com',
 );
 
-$page->table(
+$page->addTable(
     Units::mm(20),
     Units::mm(135),
     Units::mm(170),
@@ -265,6 +266,7 @@ Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeu
 - `string`, `TextSegment[]` oder `TableCell` als Zelleninhalt
 - `colspan`
 - `rowspan` innerhalb derselben Seite
+- steuerbare Borders ueber `TableBorder`
 - automatische Zeilenhoehe durch Textumbruch
 - Seitenwechsel, wenn die naechste Zeile nicht mehr auf die aktuelle Seite passt
 
@@ -332,6 +334,25 @@ $table->addRow([
 ```
 
 Wichtig: `rowspan` ist aktuell bewusst auf dieselbe Seite begrenzt. Ein `rowspan`-Block darf also noch nicht ueber einen Seitenumbruch hinweg laufen.
+
+Fuer feinere Linien kann die Tabelle oder die einzelne Zelle ein `TableBorder` tragen:
+
+```php
+$table->borderStyle(TableBorder::all(color: Color::gray(0.75)));
+
+$table->addRow([
+    new TableCell(
+        'Nur links rot, Rest grau',
+        border: TableBorder::only(['left'], color: Color::rgb(180, 20, 20)),
+    ),
+    new TableCell(
+        'Oben/Unten blau, Seiten grau',
+        border: TableBorder::horizontal(color: Color::rgb(40, 120, 180)),
+    ),
+]);
+```
+
+Wichtig: `TableCell::border` ersetzt den Tabellen-Border nicht komplett. Es werden nur die explizit gesetzten Seiten der Zelle ueberschrieben, alle anderen Seiten erben weiter vom `Table::borderStyle(...)`.
 
 ## Listen
 

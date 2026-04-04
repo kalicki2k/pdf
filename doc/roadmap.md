@@ -18,7 +18,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - `TextAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
 - `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
 - Listen stehen in einer ersten Stufe ueber `TextFrame::bulletList(...)`, `TextFrame::numberedList(...)` und `BulletType` zur Verfuegung
-- Tabellen stehen in einer ersten Stufe ueber `table(...)`, `Table` und `TableCell` zur Verfuegung, inklusive wiederholter Header auf Folgeseiten sowie `colspan` und erster `rowspan`-Unterstuetzung
+- Tabellen stehen in einer ersten Stufe ueber `table(...)`, `Table`, `TableCell` und `TableBorder` zur Verfuegung, inklusive wiederholter Header auf Folgeseiten, `colspan`, erster `rowspan`-Unterstuetzung und partiell ueberschreibbaren Zell-Borders
 - Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
 - freie Pfade sind ueber `Page::path()` und `PathBuilder` verfuegbar
@@ -47,7 +47,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
 - erste Listen-API mit Bullet- und nummerierten Listen
-- erste Tabellen-API mit festen Spaltenbreiten, Zeilen, wiederholten Headern, `colspan` und erster `rowspan`-Stufe
+- erste Tabellen-API mit festen Spaltenbreiten, Zeilen, wiederholten Headern, `colspan`, erster `rowspan`-Stufe und mergebaren Zell-Borders
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
 - erste freie Form-API ueber `path()`
 - erste Kreis-API auf Basis von Bezier-Pfaden
@@ -99,7 +99,7 @@ Aktuell ist Text der belastbare End-to-End-Fall. Weitere Inhaltstypen sollten er
 Naechste Kandidaten:
 
 - weitere grafische Primitive auf Basis des vorhandenen Path-Builders, zum Beispiel Sprechblasen oder komplexere Diagrammformen
-- Ausbau der Tabellen-API, zum Beispiel fuer `rowspan` ueber Seitenumbrueche und feinere Zellstile
+- Ausbau der Tabellen-API, zum Beispiel fuer `rowspan` ueber Seitenumbrueche und noch feinere Zellstile
 - Ausbau der Bild-API, vor allem fuer PNG mit Alpha-Kanal
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
 

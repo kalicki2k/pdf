@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
+use Kalle\Pdf\Document\BulletType;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
-use Kalle\Pdf\Document\BulletType;
+use Kalle\Pdf\Document\TableBorder;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextOverflow;
@@ -181,7 +182,7 @@ $sansPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20
             new TextSegment('Achtung:', Color::rgb(255, 0, 0), bold: true, underline: true),
             new TextSegment(
                 implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ']),
-                italic: true
+                italic: true,
             ),
             new TextSegment(PHP_EOL . '0123456789.:,;()*!?\'@#<>$%&^+-=~', strikethrough: true),
         ],
@@ -243,7 +244,6 @@ $serifPage->addText(
     underline: true,
     link: 'https://google.com',
 );
-
 
 $serifPage->addImage(
     Image::fromFile('assets/images/demo.jpg'),
@@ -317,7 +317,7 @@ $tablePage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(2
         'P',
     );
 
-$tablePage->table(
+$tablePage->addTable(
     Units::mm(20),
     Units::mm(225),
     Units::mm(170),
@@ -359,6 +359,34 @@ $tablePage->table(
         'auf Anfrage',
     ]);
 
+$tablePage->addTable(
+    Units::mm(20),
+    Units::mm(95),
+    Units::mm(170),
+    [
+        Units::mm(42.5),
+        Units::mm(42.5),
+        Units::mm(42.5),
+        Units::mm(42.5),
+    ],
+)
+    ->font('NotoSans-Regular', 11)
+    ->padding(Units::mm(2.5))
+    ->headerStyle(Color::gray(0.9), Color::rgb(180, 20, 20))
+    ->addRow(['Standard', 'Nur unten', 'Nur links', 'Nur rechts'], header: true)
+    ->addRow([
+        new TableCell('Standard', border: TableBorder::all(color: Color::rgb(0, 90, 200))),
+        new TableCell('Nur unten rot', border: TableBorder::only(['bottom'], color: Color::rgb(220, 30, 30))),
+        new TableCell('Nur links', border: TableBorder::only(['left'], color: Color::rgb(20, 140, 60))),
+        new TableCell('Nur rechts', border: TableBorder::only(['right'], color: Color::rgb(180, 90, 20))),
+    ])
+    ->addRow([
+        new TableCell('Oben/Unten', border: TableBorder::horizontal(color: Color::rgb(120, 40, 180))),
+        new TableCell('Links/Rechts', border: TableBorder::vertical(color: Color::rgb(40, 120, 180))),
+        new TableCell('Nur oben', border: TableBorder::only(['top'], color: Color::rgb(220, 30, 30))),
+        new TableCell('Rahmen', border: TableBorder::all(color: Color::rgb(20, 140, 60))),
+    ]);
+
 $longTablePage = $document->addPage(PageSize::A4());
 $longTablePage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Long Table Demo', 'NotoSans-Regular', 16, 'H1')
@@ -369,7 +397,7 @@ $longTablePage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::
         'P',
     );
 
-$longTable = $longTablePage->table(
+$longTable = $longTablePage->addTable(
     Units::mm(20),
     Units::mm(225),
     Units::mm(170),
