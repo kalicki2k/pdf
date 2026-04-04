@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\PageSize;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -19,6 +20,18 @@ final class PageTest extends TestCase
 
         self::assertSame(
             "7 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 9 0 R /Contents 8 0 R /StructParents 0 >>\nendobj\n",
+            $page->render(),
+        );
+    }
+
+    #[Test]
+    public function it_renders_a_custom_page_size_helper_in_landscape(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage(PageSize::custom(100.0, 200.0)->landscape());
+
+        self::assertSame(
+            "7 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Resources 9 0 R /Contents 8 0 R /StructParents 0 >>\nendobj\n",
             $page->render(),
         );
     }

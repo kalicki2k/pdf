@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Font\CidFont;
 use Kalle\Pdf\Font\CidToGidMap;
 use Kalle\Pdf\Font\FontDefinition;
@@ -121,8 +122,19 @@ final class Document
         return $objects;
     }
 
-    public function addPage(float $width = 210.0, float $height = 297.0): Page
+    public function addPage(PageSize | float $width = 210.0, ?float $height = null): Page
     {
+        if ($width instanceof PageSize) {
+            if ($height !== null) {
+                throw new InvalidArgumentException('Height must not be provided when using a PageSize.');
+            }
+
+            $height = $width->height();
+            $width = $width->width();
+        }
+
+        $height ??= 297.0;
+
         return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, ++$this->structParentId, $width, $height);
     }
 

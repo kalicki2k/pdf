@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\PageSize;
 use Kalle\Pdf\Font\UnicodeFont;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -55,6 +57,72 @@ final class DocumentTest extends TestCase
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
+    }
+
+    #[Test]
+    public function it_adds_a_page_from_a_named_page_size(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $page = $document->addPage(PageSize::A5());
+
+        self::assertSame(148.0, $page->getWidth());
+        self::assertSame(210.0, $page->getHeight());
+    }
+
+    #[Test]
+    public function it_adds_a_page_from_the_a00_special_case(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $page = $document->addPage(PageSize::A00());
+
+        self::assertSame(1189.0, $page->getWidth());
+        self::assertSame(1682.0, $page->getHeight());
+    }
+
+    #[Test]
+    public function it_adds_a_page_from_the_b_series(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $page = $document->addPage(PageSize::B4());
+
+        self::assertSame(250.0, $page->getWidth());
+        self::assertSame(353.0, $page->getHeight());
+    }
+
+    #[Test]
+    public function it_adds_a_page_from_the_c_series(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $page = $document->addPage(PageSize::C5());
+
+        self::assertSame(162.0, $page->getWidth());
+        self::assertSame(229.0, $page->getHeight());
+    }
+
+    #[Test]
+    public function it_adds_a_landscape_page_from_a_named_page_size(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $page = $document->addPage(PageSize::A4()->landscape());
+
+        self::assertSame(297.0, $page->getWidth());
+        self::assertSame(210.0, $page->getHeight());
+    }
+
+    #[Test]
+    public function it_rejects_combining_page_size_and_explicit_height(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Height must not be provided when using a PageSize.');
+
+        $document->addPage(PageSize::A4(), 100.0);
     }
 
     #[Test]

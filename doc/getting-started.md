@@ -36,6 +36,7 @@ Dabei wird eine PDF-Datei im Projektverzeichnis erzeugt.
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\PageSize;
 
 require 'vendor/autoload.php';
 
@@ -51,7 +52,7 @@ $document
     ->addKeyword('example')
     ->addFont('sans');
 
-$page = $document->addPage();
+$page = $document->addPage(PageSize::A4());
 
 $page->addText(
     'Hallo PDF',
@@ -71,7 +72,7 @@ file_put_contents('hello.pdf', $pdfContent);
 
 1. `Document` initialisiert das PDF mit Version und Metadaten.
 2. `addFont('sans')` registriert eine Schrift, die spaeter auf Seiten verwendet werden kann.
-3. `addPage()` erstellt eine neue Seite im Format `210 x 297`.
+3. `addPage()` erstellt eine neue Seite, standardmaessig im Format `210 x 297` oder explizit ueber `PageSize::A4()`.
 4. `addText()` positioniert Text mit `x`, `y`, Fontname, Schriftgroesse und Struktur-Tag.
 5. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
