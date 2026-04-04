@@ -9,6 +9,8 @@ use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayValue;
 use Kalle\Pdf\Types\Dictionary;
@@ -39,8 +41,16 @@ final class Page extends IndirectObject
         $this->resources = new Resources($resourcesId);
     }
 
-    public function addText(string $text, float $x, float $y, string $baseFont, int $size, ?string $tag = null): self
-    {
+    public function addText(
+        string $text,
+        float $x,
+        float $y,
+        string $baseFont,
+        int $size,
+        ?string $tag = null,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+    ): self {
         if ($tag !== null) {
             $this->document->ensureStructureEnabled();
         }
@@ -49,6 +59,8 @@ final class Page extends IndirectObject
         $markedContentId = $tag !== null ? $this->markedContentId++ : null;
         $encodedText = $this->encodeText($font, $baseFont, $text);
         $resourceFontName = $this->registerFontResource($font);
+        $colorOperator = $color?->renderNonStrokingOperator();
+        $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
 
         $this->updateUnicodeFontWidths($font);
 
@@ -59,6 +71,8 @@ final class Page extends IndirectObject
             $y,
             $resourceFontName,
             $size,
+            $colorOperator,
+            $graphicsStateName,
             $tag,
         ));
 
@@ -79,6 +93,8 @@ final class Page extends IndirectObject
         ?string $tag = null,
         ?float $lineHeight = null,
         ?float $bottomMargin = null,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
     ): self {
         $font = $this->resolveFont($baseFont);
         $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
@@ -108,7 +124,7 @@ final class Page extends IndirectObject
                 continue;
             }
 
-            $page->addText($line, $x, $currentY, $baseFont, $size, $tag);
+            $page->addText($line, $x, $currentY, $baseFont, $size, $tag, $color, $opacity);
             $currentY -= $lineHeight;
         }
 

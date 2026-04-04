@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -58,5 +60,37 @@ final class TextFrameTest extends TestCase
 
         self::assertStringContainsString('(Headline) Tj', $page->contents->render());
         self::assertStringNotContainsString('BDC', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_forwards_opacity_for_heading_and_paragraph_content(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame
+            ->heading('Headline', 'Helvetica', 20, opacity: Opacity::fill(0.5))
+            ->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8, opacity: Opacity::fill(0.5));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
+        self::assertSame(2, substr_count($page->contents->render(), '/GS1 gs'));
+    }
+
+    #[Test]
+    public function it_forwards_color_for_heading_and_paragraph_content(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame
+            ->heading('Headline', 'Helvetica', 20, color: Color::rgb(255, 0, 0))
+            ->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8, color: Color::cmyk(0.1, 0.2, 0.3, 0.4));
+
+        self::assertStringContainsString("1 0 0 rg\n(Headline) Tj", $page->contents->render());
+        self::assertStringContainsString("0.1 0.2 0.3 0.4 k\n(Hello world from PDF) Tj", $page->contents->render());
     }
 }

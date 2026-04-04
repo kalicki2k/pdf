@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Graphics\Opacity;
+
 final class TextFrame
 {
     private Page $page;
@@ -27,6 +30,8 @@ final class TextFrame
         ?string $tag = null,
         ?float $lineHeight = null,
         ?float $spacingAfter = null,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
     ): self {
         $lineHeight ??= $size * 1.2;
         $spacingAfter ??= $lineHeight;
@@ -41,6 +46,8 @@ final class TextFrame
             tag: $tag,
             lineHeight: $lineHeight,
             bottomMargin: $this->bottomMargin,
+            color: $color,
+            opacity: $opacity,
         );
 
         $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $this->width);
@@ -70,6 +77,8 @@ final class TextFrame
         int $size,
         ?string $tag = null,
         ?float $spacingAfter = null,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
     ): self {
         return $this->paragraph(
             text: $text,
@@ -78,6 +87,8 @@ final class TextFrame
             tag: $tag,
             lineHeight: $size * 1.2,
             spacingAfter: $spacingAfter ?? $size * 0.8,
+            color: $color,
+            opacity: $opacity,
         );
     }
 

@@ -7,6 +7,8 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -90,6 +92,46 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_registers_an_extgstate_and_applies_it_when_adding_text_with_opacity(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, null, null, Opacity::fill(0.5));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
+        self::assertStringContainsString("/GS1 gs\n(Hello) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_applies_text_color_when_adding_text(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, color: Color::rgb(255, 0, 0));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 0 0 rg\n(Hello) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_does_not_leak_text_color_to_following_text_without_an_explicit_color(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addText('Red', 10, 40, 'Helvetica', 12, color: Color::rgb(255, 0, 0));
+        $page->addText('Default', 10, 20, 'Helvetica', 12);
+
+        self::assertStringContainsString("1 0 0 rg\n(Red) Tj\nET\nQ\nq\nBT\n/F1 12 Tf\n10 20 Td\n(Default) Tj", $page->contents->render());
+    }
+
+    #[Test]
     public function it_rejects_text_that_is_not_supported_by_the_registered_font(): void
     {
         $document = new Document(version: 1.4);
@@ -130,6 +172,31 @@ final class PageTest extends TestCase
         self::assertStringContainsString('(Hello) Tj', $page->contents->render());
         self::assertStringNotContainsString('BDC', $page->contents->render());
         self::assertStringNotContainsString('/Type /StructElem /S /P', $document->render());
+    }
+
+    #[Test]
+    public function it_applies_opacity_to_each_line_of_a_wrapped_paragraph(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, null, 12.0, 0.0, null, Opacity::fill(0.5));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
+        self::assertSame(4, substr_count($page->contents->render(), '/GS1 gs'));
+    }
+
+    #[Test]
+    public function it_applies_color_to_each_line_of_a_wrapped_paragraph(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, null, 12.0, 0.0, Color::gray(0.5));
+
+        self::assertSame(4, substr_count($page->contents->render(), '0.5 g'));
     }
 
     #[Test]
