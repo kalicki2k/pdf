@@ -22,6 +22,7 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Styles\BadgeStyle;
+use Kalle\Pdf\Styles\PanelStyle;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
@@ -176,6 +177,120 @@ final class Page extends IndirectObject
             false,
             $link,
         );
+
+        return $this;
+    }
+
+    /**
+     * @param string|list<TextSegment> $body
+     */
+    public function addPanel(
+        string | array $body,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $title = null,
+        string $bodyFont = 'Helvetica',
+        ?PanelStyle $style = null,
+        ?string $titleFont = null,
+        ?string $link = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Panel width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Panel height must be greater than zero.');
+        }
+
+        if ($title === null && $body === '') {
+            throw new InvalidArgumentException('Panel requires a title or body.');
+        }
+
+        $style ??= new PanelStyle(
+            fillColor: Color::gray(0.96),
+            borderColor: Color::gray(0.75),
+        );
+        $titleFont ??= $bodyFont;
+
+        if ($style->cornerRadius > 0) {
+            $this->addRoundedRectangle(
+                $x,
+                $y,
+                $width,
+                $height,
+                $style->cornerRadius,
+                $style->borderWidth,
+                $style->borderColor,
+                $style->fillColor,
+                $style->opacity,
+            );
+        } else {
+            $this->addRectangle(
+                $x,
+                $y,
+                $width,
+                $height,
+                $style->borderWidth,
+                $style->borderColor,
+                $style->fillColor,
+                $style->opacity,
+            );
+        }
+
+        $contentWidth = $width - ($style->paddingHorizontal * 2);
+
+        if ($contentWidth <= 0) {
+            throw new InvalidArgumentException('Panel content width must be greater than zero.');
+        }
+
+        $bodyTopOffset = $style->paddingVertical;
+
+        if ($title !== null && $title !== '') {
+            $this->addText(
+                $title,
+                $x + $style->paddingHorizontal,
+                $y + $height - $style->paddingVertical - $style->titleSize,
+                $titleFont,
+                $style->titleSize,
+                null,
+                $style->titleColor,
+                $style->opacity,
+            );
+            $bodyTopOffset += $style->titleSize + $style->titleSpacing;
+        }
+
+        if ($body !== '' && $body !== []) {
+            $bodyLineHeight = $style->bodySize * self::DEFAULT_LINE_HEIGHT_FACTOR;
+            $availableBodyHeight = $height - $bodyTopOffset - $style->paddingVertical;
+            $maxLines = (int) floor($availableBodyHeight / $bodyLineHeight);
+
+            if ($maxLines < 1) {
+                throw new InvalidArgumentException('Panel height is too small for its content.');
+            }
+
+            $this->addParagraph(
+                $body,
+                $x + $style->paddingHorizontal,
+                $y + $height - $bodyTopOffset - $style->bodySize,
+                $contentWidth,
+                $bodyFont,
+                $style->bodySize,
+                null,
+                $bodyLineHeight,
+                $y + $style->paddingVertical,
+                $style->bodyColor,
+                $style->opacity,
+                $style->bodyAlign,
+                $maxLines,
+                TextOverflow::ELLIPSIS,
+            );
+        }
+
+        if ($link !== null) {
+            $this->addLink($x, $y, $width, $height, $link);
+        }
 
         return $this;
     }

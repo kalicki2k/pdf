@@ -18,6 +18,7 @@ use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Styles\BadgeStyle;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Styles\HeaderStyle;
+use Kalle\Pdf\Styles\PanelStyle;
 use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
 use Kalle\Pdf\Styles\TablePadding;
@@ -744,6 +745,66 @@ $badgePage->addBadge(
     ),
 );
 
+$panelPage = $document->addPage(PageSize::A4());
+$panelPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Panel Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Panels kombinieren Rahmen, Hintergrund, Titel und Text zu einer kompakten Hinweis- oder Infobox.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$panelPage->addPanel(
+    'Dieses Panel zeigt die Standardwerte mit dezenter Hinterlegung und einer einfachen Titelzeile.',
+    Units::mm(20),
+    Units::mm(180),
+    Units::mm(80),
+    Units::mm(55),
+    'Hinweis',
+    'NotoSans-Regular',
+);
+
+$panelPage->addPanel(
+    [
+        new TextSegment('Mehrzeiliger Inhalt mit '),
+        new TextSegment('Rich Text', bold: true),
+        new TextSegment(' und staerkerer visueller Betonung.'),
+    ],
+    Units::mm(110),
+    Units::mm(180),
+    Units::mm(80),
+    Units::mm(55),
+    'Status',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(3),
+        fillColor: Color::gray(0.92),
+        titleColor: Color::rgb(180, 20, 20),
+        bodyColor: Color::gray(0.2),
+        borderWidth: 1.2,
+        borderColor: Color::rgb(180, 20, 20),
+    ),
+);
+
+$panelPage->addPanel(
+    'Dieses Panel ist als komplette Box verlinkt und eignet sich fuer kompakte Navigation oder Callouts.',
+    Units::mm(20),
+    Units::mm(110),
+    Units::mm(170),
+    Units::mm(45),
+    'Docs',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::gray(0.95),
+        borderWidth: 1.0,
+        borderColor: Color::rgb(0, 0, 255),
+        titleColor: Color::rgb(0, 0, 255),
+    ),
+    link: 'https://example.com',
+);
+
 $document
     ->addOutline('Noto Sans', $sansPage)
     ->addOutline('Noto Serif', $serifPage)
@@ -755,7 +816,8 @@ $document
     ->addOutline('Long Table Demo', $longTablePage)
     ->addOutline('Bullet List Demo', $bulletPage)
     ->addOutline('Numbered List Demo', $numberedPage)
-    ->addOutline('Badge Demo', $badgePage);
+    ->addOutline('Badge Demo', $badgePage)
+    ->addOutline('Panel Demo', $panelPage);
 
 //$coverPage = $document->addPage(\Kalle\Pdf\Layout\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);

@@ -14,6 +14,7 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Styles\BadgeStyle;
+use Kalle\Pdf\Styles\PanelStyle;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -284,6 +285,73 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Badge text must not be empty.');
 
         $page->addBadge('', 10, 20);
+    }
+
+    #[Test]
+    public function it_adds_a_panel_with_title_and_body(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPanel(
+            'Kurzinfo zum Stand.',
+            10,
+            20,
+            160,
+            70,
+            'Hinweis',
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('0.96 g', $page->contents->render());
+        self::assertStringContainsString('(Hinweis) Tj', $page->contents->render());
+        self::assertStringContainsString('(Kurzinfo zum Stand.) Tj', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_a_rounded_panel_with_link(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addPanel(
+            [new TextSegment('Mehr Infos unter '), new TextSegment('example.com', underline: true)],
+            10,
+            20,
+            120,
+            70,
+            'Details',
+            'Helvetica',
+            new PanelStyle(
+                cornerRadius: 8,
+                fillColor: Color::gray(0.9),
+                titleColor: Color::rgb(255, 0, 0),
+                bodyColor: Color::gray(0.2),
+                borderWidth: 1.5,
+                borderColor: Color::rgb(0, 0, 1),
+                opacity: Opacity::both(0.4),
+            ),
+            link: 'https://example.com',
+        );
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString('(Details) Tj', $page->contents->render());
+        self::assertStringContainsString('/Annots [8 0 R]', $page->render());
+    }
+
+    #[Test]
+    public function it_rejects_panels_without_title_or_body(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Panel requires a title or body.');
+
+        $page->addPanel('', 10, 20, 100, 40);
     }
 
     #[Test]
