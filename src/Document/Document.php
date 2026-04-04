@@ -150,7 +150,6 @@ final class Document
         string $subtype = 'Type1',
         string $encoding = 'WinAnsiEncoding',
         bool $unicode = false,
-        ?int $toUnicodeId = null,
         ?string $fontFilePath = null,
     ): self {
         if (FontRegistry::has($baseFont, $this->fontConfig)) {
