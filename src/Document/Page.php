@@ -22,6 +22,7 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Styles\BadgeStyle;
+use Kalle\Pdf\Styles\CalloutStyle;
 use Kalle\Pdf\Styles\PanelStyle;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
@@ -291,6 +292,98 @@ final class Page extends IndirectObject
         if ($link !== null) {
             $this->addLink($x, $y, $width, $height, $link);
         }
+
+        return $this;
+    }
+
+    /**
+     * @param string|list<TextSegment> $body
+     */
+    public function addCallout(
+        string | array $body,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        float $pointerX,
+        float $pointerY,
+        ?string $title = null,
+        string $bodyFont = 'Helvetica',
+        ?CalloutStyle $style = null,
+        ?string $titleFont = null,
+        ?string $link = null,
+    ): self {
+        $style ??= new CalloutStyle(
+            panelStyle: new PanelStyle(
+                fillColor: Color::gray(0.96),
+                borderColor: Color::gray(0.75),
+            ),
+        );
+        $panelStyle = $style->panelStyle ?? new PanelStyle(
+            fillColor: Color::gray(0.96),
+            borderColor: Color::gray(0.75),
+        );
+
+        $this->addPanel(
+            $body,
+            $x,
+            $y,
+            $width,
+            $height,
+            $title,
+            $bodyFont,
+            $panelStyle,
+            $titleFont,
+            $link,
+        );
+
+        $pointerStrokeWidth = $style->pointerStrokeWidth ?? $panelStyle->borderWidth;
+        $pointerStrokeColor = $style->pointerStrokeColor ?? $panelStyle->borderColor;
+        $pointerFillColor = $style->pointerFillColor ?? $panelStyle->fillColor;
+        $pointerOpacity = $style->pointerOpacity ?? $panelStyle->opacity;
+        $halfBaseWidth = $style->pointerBaseWidth / 2;
+
+        if ($pointerY <= $y) {
+            $baseCenterX = max($x + $halfBaseWidth, min($x + $width - $halfBaseWidth, $pointerX));
+            $baseY = $y;
+            $points = [
+                [$baseCenterX - $halfBaseWidth, $baseY],
+                [$baseCenterX + $halfBaseWidth, $baseY],
+                [$pointerX, $pointerY],
+            ];
+        } elseif ($pointerY >= $y + $height) {
+            $baseCenterX = max($x + $halfBaseWidth, min($x + $width - $halfBaseWidth, $pointerX));
+            $baseY = $y + $height;
+            $points = [
+                [$baseCenterX - $halfBaseWidth, $baseY],
+                [$pointerX, $pointerY],
+                [$baseCenterX + $halfBaseWidth, $baseY],
+            ];
+        } elseif ($pointerX <= $x) {
+            $baseCenterY = max($y + $halfBaseWidth, min($y + $height - $halfBaseWidth, $pointerY));
+            $baseX = $x;
+            $points = [
+                [$baseX, $baseCenterY - $halfBaseWidth],
+                [$baseX, $baseCenterY + $halfBaseWidth],
+                [$pointerX, $pointerY],
+            ];
+        } else {
+            $baseCenterY = max($y + $halfBaseWidth, min($y + $height - $halfBaseWidth, $pointerY));
+            $baseX = $x + $width;
+            $points = [
+                [$baseX, $baseCenterY - $halfBaseWidth],
+                [$pointerX, $pointerY],
+                [$baseX, $baseCenterY + $halfBaseWidth],
+            ];
+        }
+
+        $this->addPolygon(
+            $points,
+            $pointerStrokeWidth,
+            $pointerStrokeColor,
+            $pointerFillColor,
+            $pointerOpacity,
+        );
 
         return $this;
     }

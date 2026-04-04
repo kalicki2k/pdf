@@ -16,6 +16,7 @@ use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Styles\BadgeStyle;
+use Kalle\Pdf\Styles\CalloutStyle;
 use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Styles\PanelStyle;
@@ -816,6 +817,78 @@ $panelPage->addPanel(
     link: 'https://example.com',
 );
 
+$calloutPage = $document->addPage(PageSize::A4());
+$calloutPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Callout Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Callouts erweitern Panels um eine kleine Pointer-Spitze und eignen sich fuer Hinweise, Annotationen oder Diagramm-Beschriftungen.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$calloutPage->addCallout(
+    'Dieses Callout zeigt die Standardwerte mit Pointer nach unten.',
+    Units::mm(20),
+    Units::mm(180),
+    Units::mm(80),
+    Units::mm(45),
+    Units::mm(55),
+    Units::mm(165),
+    'Hinweis',
+    'NotoSans-Regular',
+);
+
+$calloutPage->addCallout(
+    [
+        new TextSegment('Ein Callout mit '),
+        new TextSegment('Rich Text', bold: true),
+        new TextSegment(' und Pointer nach rechts.'),
+    ],
+    Units::mm(25),
+    Units::mm(105),
+    Units::mm(80),
+    Units::mm(45),
+    Units::mm(115),
+    Units::mm(125),
+    'Kommentar',
+    'NotoSans-Regular',
+    new CalloutStyle(
+        panelStyle: new PanelStyle(
+            cornerRadius: Units::mm(3),
+            fillColor: Color::gray(0.92),
+            titleColor: Color::rgb(180, 20, 20),
+            bodyColor: Color::gray(0.2),
+            borderWidth: 1.2,
+            borderColor: Color::rgb(180, 20, 20),
+        ),
+        pointerBaseWidth: Units::mm(8),
+    ),
+);
+
+$calloutPage->addCallout(
+    'Auch komplette Callouts koennen verlinkt werden.',
+    Units::mm(110),
+    Units::mm(105),
+    Units::mm(80),
+    Units::mm(45),
+    Units::mm(150),
+    Units::mm(90),
+    'Docs',
+    'NotoSans-Regular',
+    new CalloutStyle(
+        panelStyle: new PanelStyle(
+            cornerRadius: Units::mm(2),
+            fillColor: Color::gray(0.95),
+            borderWidth: 1.0,
+            borderColor: Color::rgb(0, 0, 255),
+            titleColor: Color::rgb(0, 0, 255),
+        ),
+        pointerBaseWidth: Units::mm(7),
+    ),
+    link: 'https://example.com',
+);
+
 $document
     ->addDestination('table-demo', $tablePage)
     ->addOutline('Noto Sans', $sansPage)
@@ -829,7 +902,8 @@ $document
     ->addOutline('Bullet List Demo', $bulletPage)
     ->addOutline('Numbered List Demo', $numberedPage)
     ->addOutline('Badge Demo', $badgePage)
-    ->addOutline('Panel Demo', $panelPage);
+    ->addOutline('Panel Demo', $panelPage)
+    ->addOutline('Callout Demo', $calloutPage);
 
 //$coverPage = $document->addPage(\Kalle\Pdf\Layout\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);

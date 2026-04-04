@@ -14,6 +14,7 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Styles\BadgeStyle;
+use Kalle\Pdf\Styles\CalloutStyle;
 use Kalle\Pdf\Styles\PanelStyle;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -376,6 +377,66 @@ final class PageTest extends TestCase
         $page->addLink(10, 20, 80, 12, '#table-demo');
 
         self::assertStringContainsString('/Dest /table-demo', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_callout_with_a_pointer(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addCallout(
+            'Hinweis.',
+            20,
+            40,
+            120,
+            50,
+            80,
+            20,
+            'Achtung',
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('(Achtung) Tj', $page->contents->render());
+        self::assertStringContainsString('(Hinweis.) Tj', $page->contents->render());
+        self::assertStringContainsString("72 40 m\n88 40 l\n80 20 l\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_a_styled_callout_with_link(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addCallout(
+            'Interner Hinweis.',
+            20,
+            40,
+            120,
+            50,
+            150,
+            65,
+            'Info',
+            'Helvetica',
+            new CalloutStyle(
+                panelStyle: new PanelStyle(
+                    cornerRadius: 6,
+                    fillColor: Color::gray(0.9),
+                    titleColor: Color::rgb(255, 0, 0),
+                    borderWidth: 1.5,
+                    borderColor: Color::rgb(0, 0, 1),
+                    opacity: Opacity::both(0.4),
+                ),
+                pointerBaseWidth: 18,
+            ),
+            link: 'https://example.com',
+        );
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString('(Info) Tj', $page->contents->render());
+        self::assertStringContainsString('/Annots [8 0 R]', $page->render());
     }
 
     #[Test]

@@ -232,6 +232,18 @@ $page->addPanel(
     'NotoSans-Regular',
 );
 
+$page->addCallout(
+    'Dieses Callout erweitert ein Panel um eine Pointer-Spitze.',
+    Units::mm(20),
+    Units::mm(40),
+    Units::mm(120),
+    Units::mm(30),
+    Units::mm(60),
+    Units::mm(25),
+    'Achtung',
+    'NotoSans-Regular',
+);
+
 $page->addTable(
     Units::mm(20),
     Units::mm(135),
@@ -306,12 +318,13 @@ file_put_contents('hello.pdf', $pdfContent);
 8. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
 9. `addBadge(...)` rendert kleine Labels mit Padding, Hintergrund, optionalem Border und optional gerundeten Ecken.
 10. `addPanel(...)` rendert einfache Hinweis- und Infoboxen mit Titel, Body, Padding und optional gerundeter Box.
-11. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
-12. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
-13. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
-14. `addOutline(...)` registriert Bookmarks fuer die Viewer-Navigation im PDF.
-15. `addDestination(...)` registriert benannte interne Sprungziele.
-16. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+11. `addCallout(...)` rendert Hinweisboxen mit Pointer-Spitze auf Basis von Panel und Pfad-Geometrie.
+12. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
+13. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
+14. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
+15. `addOutline(...)` registriert Bookmarks fuer die Viewer-Navigation im PDF.
+16. `addDestination(...)` registriert benannte interne Sprungziele.
+17. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Tabellen
 

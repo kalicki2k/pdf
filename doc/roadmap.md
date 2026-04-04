@@ -32,6 +32,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - interne Spruenge sind ueber `addDestination(...)`, `addInternalLink(...)` und `#ziel`-Links verfuegbar
 - Badges sind als kleines zusammengesetztes Label-Element ueber `addBadge(...)` verfuegbar
 - Panels sind als einfache Hinweis- und Infoboxen ueber `addPanel(...)` verfuegbar
+- Callouts sind als Hinweisboxen mit Pointer ueber `addCallout(...)` verfuegbar
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
 - Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
@@ -56,7 +57,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Listen-API mit Bullet- und nummerierten Listen
 - erste Tabellen-API mit festen Spaltenbreiten, Zeilen, wiederholten Headern, `colspan`, erster `rowspan`-Stufe, `CellStyle`, mergebaren Zell-Borders, flexiblem Zell-Padding sowie horizontaler und vertikaler Zell-Ausrichtung
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
-- gerundete Rechtecke, Badges und Panels als erste zusammengesetzte Grafik-/Layout-API
+- gerundete Rechtecke, Badges, Panels und Callouts als erste zusammengesetzte Grafik-/Layout-API
 - erste freie Form-API ueber `path()`
 - erste Kreis-API auf Basis von Bezier-Pfaden
 - weitere Form-APIs fuer Ellipsen, Polygone, Pfeile und Sterne

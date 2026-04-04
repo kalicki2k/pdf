@@ -71,7 +71,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addImage(...)`, `addLink(...)` und `addInternalLink(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)` und `addInternalLink(...)`.
 
 Dabei passiert intern:
 
@@ -110,9 +110,10 @@ Bei grafischen Inhalten kommt stattdessen dazu:
 11. `addRoundedRectangle(...)` baut ein Rechteck mit Bezier-Ecken ueber denselben Path-Builder auf.
 12. `addBadge(...)` kombiniert Hintergrundform und Text zu einem kleinen Label-Element und nutzt optional den Rounded-Rectangle-Pfad.
 13. `addPanel(...)` kombiniert Box, Titel und Body zu einer einfachen Hinweis- oder Infobox und nutzt dafuer den vorhandenen Rechteck-/Rounded-Rectangle- sowie Absatzpfad.
-14. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
-15. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
-16. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
+14. `addCallout(...)` erweitert ein `Panel` um eine Pointer-Spitze und zeichnet diese ueber ein zusaetzliches Polygon.
+15. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
+16. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
+17. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
 
 ### TextFrame
 
@@ -224,9 +225,9 @@ Die aktuelle `rowspan`-Stufe ist bewusst begrenzt:
 - `rowspan` ueber einen Seitenumbruch wird noch nicht unterstuetzt
 - wenn eine `rowspan`-Gruppe nicht auf eine Seite passt, wirft `Table` aktuell eine Exception
 
-### Badge und Panel
+### Badge, Panel und Callout
 
-`Badge` und `Panel` sind erste zusammengesetzte Dokumentelemente ueber den Basis-Primitiven.
+`Badge`, `Panel` und `Callout` sind erste zusammengesetzte Dokumentelemente ueber den Basis-Primitiven.
 
 `Badge` nutzt:
 
@@ -242,6 +243,12 @@ Die aktuelle `rowspan`-Stufe ist bewusst begrenzt:
 - den bestehenden Absatzpfad fuer den Body ueber `addParagraph(...)`
 - optional eine Link-Annotation ueber die gesamte Box
 
+`Callout` nutzt:
+
+- die komplette `Panel`-Infrastruktur fuer Box, Titel und Body
+- zusaetzlich ein Pointer-Polygon ueber `addPolygon(...)`
+- dieselben Link- und Style-Faehigkeiten wie `Panel`
+
 `PanelStyle` kapselt aktuell:
 
 - horizontales und vertikales Padding
@@ -251,6 +258,12 @@ Die aktuelle `rowspan`-Stufe ist bewusst begrenzt:
 - horizontale Ausrichtung fuer Titel und Body
 - Fill-, Title- und Body-Farbe
 - Border und Opacity
+
+`CalloutStyle` kapselt aktuell:
+
+- optionales `PanelStyle` fuer die Box selbst
+- Breite der Pointer-Basis
+- optionalen eigenen Stroke, Fill und Opacity fuer die Pointer-Spitze
 
 ### Contents
 
