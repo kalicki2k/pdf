@@ -424,7 +424,7 @@ Die Bildintegration ist bewusst in zwei Teile getrennt:
 2. Die Seite registriert das Bild in `Resources` unter `/XObject`.
 3. Ein `DrawImage`-Element wird im Content-Stream abgelegt.
 
-`Image::fromFile(...)` erkennt aktuell `JPEG` direkt und unterstuetzte `PNG`-Dateien ohne Alpha-Kanal automatisch.
+`Image::fromFile(...)` erkennt aktuell `JPEG` direkt sowie unterstuetzte `PNG`-Dateien, inklusive Alpha-PNG ueber eine separate Soft-Mask (`SMask`).
 
 ### LinkAnnotation
 

@@ -1051,7 +1051,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Image dimensions must be greater than zero.');
         }
 
-        $imageObject = new ImageObject($this->document->getUniqObjectId(), $image);
+        $imageObject = $this->createImageObject($image);
         $resourceName = $this->resources->addImage($imageObject);
         $this->contents->addElement(new DrawImage($resourceName, $x, $y, $width, $height));
 
@@ -1903,5 +1903,16 @@ final class Page extends IndirectObject
         }
 
         $this->document->addFont($baseFont);
+    }
+
+    private function createImageObject(Image $image): ImageObject
+    {
+        $softMask = $image->getSoftMask();
+
+        return new ImageObject(
+            $this->document->getUniqObjectId(),
+            $image,
+            $softMask !== null ? $this->createImageObject($softMask) : null,
+        );
     }
 }

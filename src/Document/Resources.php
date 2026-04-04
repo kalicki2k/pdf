@@ -75,7 +75,15 @@ final class Resources extends IndirectObject
      */
     public function getImages(): array
     {
-        return array_values($this->images);
+        $images = [];
+
+        foreach ($this->images as $image) {
+            foreach ($image->getRelatedObjects() as $relatedImage) {
+                $images[] = $relatedImage;
+            }
+        }
+
+        return $images;
     }
 
     public function render(): string

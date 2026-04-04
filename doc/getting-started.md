@@ -682,7 +682,7 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 - `Page::addEllipse(...)` fuer Ellipsen mit getrennten X- und Y-Radien
 - `Page::addPolygon(...)` fuer geschlossene Formen aus einer Punktliste
 - `Page::addArrow(...)` fuer Linien mit gefuellter Pfeilspitze
-- `Image::fromFile(...)` fuer automatische Erkennung von `jpg`, `jpeg` und unterstuetzten `png`
+- `Image::fromFile(...)` fuer automatische Erkennung von `jpg`, `jpeg` und `png`, inklusive Alpha-PNG ueber Soft-Mask
 - `Page::addImage(...)` fuer die Platzierung eines Bildes an einer festen Position
 - `Page::addLink(...)` fuer frei positionierbare klickbare Flaechen
 - `Page::addText(..., link: ...)` fuer klickbaren Text ohne manuelles Link-Rechteck
@@ -830,7 +830,8 @@ Der derzeit belastbare Einstieg ist:
 
 Der Codebestand enthaelt bereits weitere Bausteine, aber fuer den Einstieg solltest du aktuell von diesem Stand ausgehen:
 
-- PNG mit Alpha-Kanal, interlaced PNG und indexed PNG werden aktuell bewusst nicht ueber `Image::fromFile(...)` unterstuetzt
+- interlaced PNG und indexed PNG werden aktuell bewusst nicht ueber `Image::fromFile(...)` unterstuetzt
+- PNG mit Alpha-Kanal wird aktuell ueber eine PDF-Soft-Mask (`SMask`) eingebettet, was bei grossen Dateien deutlich teurer sein kann als JPEG oder PNG ohne Alpha
 - grafische Primitive sind aktuell auf Linien und Rechtecke fokussiert
 - `underline` und `strikethrough` sind aktuell heuristisch positioniert und noch nicht ueber Font-Metriken feinjustiert
 - `bold` und `italic` fuer Embedded Fonts haengen derzeit an benannten Font-Varianten wie `-Bold` oder `-Italic`

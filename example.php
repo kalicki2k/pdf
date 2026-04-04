@@ -889,6 +889,54 @@ $calloutPage->addCallout(
     link: 'https://example.com',
 );
 
+$backgroundPage = $document->addPage(PageSize::A4());
+$backgroundPage->addImage(
+    Image::fromFile('assets/images/geometric-background.png'),
+    0,
+    0,
+    $backgroundPage->getWidth(),
+    $backgroundPage->getHeight(),
+);
+$backgroundPage->addPanel(
+    [
+        new TextSegment('Diese Seite zeigt ein vollflaechig eingebettetes Hintergrundbild. '),
+        new TextSegment('Darueber liegt normaler PDF-Text', bold: true),
+        new TextSegment(' in einer halbtransparenten Box, damit Titel und Fliesstext lesbar bleiben.'),
+    ],
+    Units::mm(20),
+    Units::mm(175),
+    Units::mm(120),
+    Units::mm(55),
+    'Background Demo',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(3),
+        fillColor: Color::gray(1.0),
+        titleColor: Color::rgb(30, 30, 30),
+        bodyColor: Color::gray(0.15),
+        borderWidth: 1.0,
+        borderColor: Color::gray(0.8),
+        opacity: Opacity::both(0.82),
+    ),
+);
+$backgroundPage->addBadge(
+    'Full Page Image',
+    Units::mm(20),
+    Units::mm(240),
+    'NotoSans-Regular',
+    11,
+    new BadgeStyle(
+        paddingHorizontal: Units::mm(3),
+        paddingVertical: Units::mm(1.5),
+        cornerRadius: Units::mm(2),
+        fillColor: Color::rgb(245, 245, 245),
+        textColor: Color::rgb(50, 50, 50),
+        borderWidth: 1.0,
+        borderColor: Color::gray(0.75),
+        opacity: Opacity::both(0.9),
+    ),
+);
+
 $document
     ->addDestination('table-demo', $tablePage)
     ->addOutline('Noto Sans', $sansPage)
@@ -903,7 +951,8 @@ $document
     ->addOutline('Numbered List Demo', $numberedPage)
     ->addOutline('Badge Demo', $badgePage)
     ->addOutline('Panel Demo', $panelPage)
-    ->addOutline('Callout Demo', $calloutPage);
+    ->addOutline('Callout Demo', $calloutPage)
+    ->addOutline('Background Demo', $backgroundPage);
 
 $document->addTableOfContents(
     PageSize::A4(),

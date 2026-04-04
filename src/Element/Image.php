@@ -15,6 +15,7 @@ class Image extends Element
     private string $data;
     private int $bitsPerComponent;
     private ?string $decodeParameters;
+    private ?self $softMask;
 
     public function __construct(
         int $width,
@@ -24,6 +25,7 @@ class Image extends Element
         string $data,
         int $bitsPerComponent = 8,
         ?string $decodeParameters = null,
+        ?self $softMask = null,
     ) {
         $this->width = $width;
         $this->height = $height;
@@ -32,6 +34,7 @@ class Image extends Element
         $this->data = $data;
         $this->bitsPerComponent = $bitsPerComponent;
         $this->decodeParameters = $decodeParameters;
+        $this->softMask = $softMask;
     }
 
     public static function fromFile(string $path): self
@@ -68,7 +71,12 @@ class Image extends Element
         return $this->height;
     }
 
-    public function render(): string
+    public function getSoftMask(): ?self
+    {
+        return $this->softMask;
+    }
+
+    public function render(?int $softMaskObjectId = null): string
     {
         $output = '<< /Type /XObject' . PHP_EOL;
         $output .= '/Subtype /Image' . PHP_EOL;
@@ -80,6 +88,10 @@ class Image extends Element
 
         if ($this->decodeParameters !== null) {
             $output .= "/DecodeParms {$this->decodeParameters}" . PHP_EOL;
+        }
+
+        if ($softMaskObjectId !== null) {
+            $output .= "/SMask {$softMaskObjectId} 0 R" . PHP_EOL;
         }
 
         $output .= '/Length ' . strlen($this->data) . ' >>' . PHP_EOL;
@@ -174,12 +186,49 @@ class Image extends Element
             0 => ['DeviceGray', 1],
             2 => ['DeviceRGB', 3],
             3 => throw new InvalidArgumentException("Indexed PNG images are not supported for '$path'."),
-            4, 6 => throw new InvalidArgumentException("PNG images with alpha channels are not supported for '$path'."),
+            4 => ['DeviceGray', 1],
+            6 => ['DeviceRGB', 3],
             default => throw new InvalidArgumentException("Unsupported PNG color type '$colorType' in '$path'."),
         };
 
         if ($imageData === '') {
             throw new InvalidArgumentException("PNG file '$path' does not contain image data.");
+        }
+
+        if (in_array($colorType, [4, 6], true)) {
+            if ($bitDepth !== 8) {
+                throw new InvalidArgumentException("PNG images with alpha channels currently require 8 bits per component for '$path'.");
+            }
+
+            [$colorData, $alphaData] = self::splitPngAlphaChannels($path, $imageData, $width, $height, $colors);
+
+            return new self(
+                width: $width,
+                height: $height,
+                colorSpace: $colorSpace,
+                filter: 'FlateDecode',
+                data: $colorData,
+                bitsPerComponent: $bitDepth,
+                decodeParameters: sprintf(
+                    '<< /Predictor 15 /Colors %d /BitsPerComponent %d /Columns %d >>',
+                    $colors,
+                    $bitDepth,
+                    $width,
+                ),
+                softMask: new self(
+                    width: $width,
+                    height: $height,
+                    colorSpace: 'DeviceGray',
+                    filter: 'FlateDecode',
+                    data: $alphaData,
+                    bitsPerComponent: $bitDepth,
+                    decodeParameters: sprintf(
+                        '<< /Predictor 15 /Colors 1 /BitsPerComponent %d /Columns %d >>',
+                        $bitDepth,
+                        $width,
+                    ),
+                ),
+            );
         }
 
         return new self(
@@ -207,5 +256,104 @@ class Image extends Element
         }
 
         return $value[1];
+    }
+
+    /**
+     * @return array{0:string,1:string}
+     */
+    private static function splitPngAlphaChannels(string $path, string $compressedData, int $width, int $height, int $colors): array
+    {
+        $decompressedData = gzuncompress($compressedData);
+
+        if ($decompressedData === false) {
+            throw new InvalidArgumentException("Unable to decompress PNG image data for '$path'.");
+        }
+
+        $channels = $colors + 1;
+        $bytesPerPixel = $channels;
+        $scanlineLength = 1 + ($width * $channels);
+        $expectedLength = $scanlineLength * $height;
+
+        if (strlen($decompressedData) !== $expectedLength) {
+            throw new InvalidArgumentException("Unexpected PNG alpha image data length for '$path'.");
+        }
+
+        $colorOutput = '';
+        $alphaOutput = '';
+        $previousRow = array_fill(0, $width * $channels, 0);
+
+        for ($rowIndex = 0; $rowIndex < $height; $rowIndex++) {
+            $rowOffset = $rowIndex * $scanlineLength;
+            $filterType = ord($decompressedData[$rowOffset]);
+            $filteredRow = substr($decompressedData, $rowOffset + 1, $width * $channels);
+            $rowBytes = array_map('ord', str_split($filteredRow));
+            $unfilteredRow = self::unfilterPngScanline($rowBytes, $previousRow, $filterType, $bytesPerPixel, $path);
+            $previousRow = $unfilteredRow;
+
+            $colorOutput .= chr(0);
+            $alphaOutput .= chr(0);
+
+            for ($pixelOffset = 0, $count = count($unfilteredRow); $pixelOffset < $count; $pixelOffset += $channels) {
+                for ($channelIndex = 0; $channelIndex < $colors; $channelIndex++) {
+                    $colorOutput .= chr($unfilteredRow[$pixelOffset + $channelIndex]);
+                }
+
+                $alphaOutput .= chr($unfilteredRow[$pixelOffset + $colors]);
+            }
+        }
+
+        $compressedColorOutput = gzcompress($colorOutput);
+        $compressedAlphaOutput = gzcompress($alphaOutput);
+
+        if ($compressedColorOutput === false || $compressedAlphaOutput === false) {
+            throw new InvalidArgumentException("Unable to compress PNG alpha image data for '$path'.");
+        }
+
+        return [$compressedColorOutput, $compressedAlphaOutput];
+    }
+
+    /**
+     * @param list<int> $rowBytes
+     * @param list<int> $previousRow
+     * @return list<int>
+     */
+    private static function unfilterPngScanline(array $rowBytes, array $previousRow, int $filterType, int $bytesPerPixel, string $path): array
+    {
+        $result = [];
+
+        foreach ($rowBytes as $index => $value) {
+            $left = $index >= $bytesPerPixel ? $result[$index - $bytesPerPixel] : 0;
+            $up = $previousRow[$index] ?? 0;
+            $upperLeft = $index >= $bytesPerPixel ? ($previousRow[$index - $bytesPerPixel] ?? 0) : 0;
+
+            $result[] = match ($filterType) {
+                0 => $value,
+                1 => ($value + $left) & 0xFF,
+                2 => ($value + $up) & 0xFF,
+                3 => ($value + intdiv($left + $up, 2)) & 0xFF,
+                4 => ($value + self::paethPredictor($left, $up, $upperLeft)) & 0xFF,
+                default => throw new InvalidArgumentException("Unsupported PNG filter type '$filterType' in '$path'."),
+            };
+        }
+
+        return $result;
+    }
+
+    private static function paethPredictor(int $left, int $up, int $upperLeft): int
+    {
+        $prediction = $left + $up - $upperLeft;
+        $distanceLeft = abs($prediction - $left);
+        $distanceUp = abs($prediction - $up);
+        $distanceUpperLeft = abs($prediction - $upperLeft);
+
+        if ($distanceLeft <= $distanceUp && $distanceLeft <= $distanceUpperLeft) {
+            return $left;
+        }
+
+        if ($distanceUp <= $distanceUpperLeft) {
+            return $up;
+        }
+
+        return $upperLeft;
     }
 }

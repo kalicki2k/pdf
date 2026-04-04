@@ -113,7 +113,7 @@ Naechste Kandidaten:
 
 - weitere grafische Primitive auf Basis des vorhandenen Path-Builders, zum Beispiel Sprechblasen oder komplexere Diagrammformen
 - Ausbau der Tabellen-API, zum Beispiel fuer `rowspan` ueber Seitenumbrueche und noch feinere Zellstile
-- Ausbau der Bild-API, vor allem fuer PNG mit Alpha-Kanal
+- Ausbau der Bild-API, vor allem fuer Performance bei grossen PNG-Dateien mit Alpha-Kanal
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
 
 Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:

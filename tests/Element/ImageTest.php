@@ -88,6 +88,32 @@ final class ImageTest extends TestCase
         }
     }
 
+    #[Test]
+    public function it_creates_an_image_from_an_rgba_png_file_with_a_soft_mask(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf-image-alpha-');
+
+        if ($path === false) {
+            self::fail('Unable to create temporary file.');
+        }
+
+        file_put_contents($path, $this->createRgbaPng(width: 1, height: 1, red: 255, green: 0, blue: 0, alpha: 127));
+
+        try {
+            $image = Image::fromFile($path);
+            $softMask = $image->getSoftMask();
+
+            self::assertSame(1, $image->getWidth());
+            self::assertSame(1, $image->getHeight());
+            self::assertNotNull($softMask);
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $image->render(9));
+            self::assertStringContainsString('/SMask 9 0 R', $image->render(9));
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $softMask->render());
+        } finally {
+            @unlink($path);
+        }
+    }
+
     private function createPng(int $width, int $height, int $grayscaleValue): string
     {
         $scanline = chr(0) . str_repeat(chr($grayscaleValue), $width);
@@ -112,5 +138,21 @@ final class ImageTest extends TestCase
             . $type
             . $data
             . pack('N', (int) sprintf('%u', $crc));
+    }
+
+    private function createRgbaPng(int $width, int $height, int $red, int $green, int $blue, int $alpha): string
+    {
+        $scanline = chr(0) . str_repeat(chr($red) . chr($green) . chr($blue) . chr($alpha), $width);
+        $pixelData = str_repeat($scanline, $height);
+        $compressed = gzcompress($pixelData);
+
+        if ($compressed === false) {
+            self::fail('Unable to compress PNG alpha test data.');
+        }
+
+        return "\x89PNG\x0D\x0A\x1A\x0A"
+            . $this->createPngChunk('IHDR', pack('NNC5', $width, $height, 8, 6, 0, 0, 0))
+            . $this->createPngChunk('IDAT', $compressed)
+            . $this->createPngChunk('IEND', '');
     }
 }
