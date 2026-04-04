@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Core\Document;
+use Kalle\Pdf\Document\Document;
 
 require 'vendor/autoload.php';
 

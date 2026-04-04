@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
-use Kalle\Pdf\Core\IndirectObject;
+use Kalle\Pdf\Object\IndirectObject;
 
 final readonly class Reference implements Value
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Types;
 
-use Kalle\Pdf\Core\IndirectObject;
+use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\Reference;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
