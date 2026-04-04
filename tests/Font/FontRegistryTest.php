@@ -48,7 +48,15 @@ final class FontRegistryTest extends TestCase
     public function it_returns_all_registered_embedded_fonts(): void
     {
         self::assertSame(
-            ['NotoSans-Regular', 'NotoSerif-Regular', 'NotoSansMono-Regular', 'NotoSansCJKsc-Regular'],
+            [
+                'NotoSans-Regular',
+                'NotoSans-Bold',
+                'NotoSans-Italic',
+                'NotoSans-BoldItalic',
+                'NotoSerif-Regular',
+                'NotoSansMono-Regular',
+                'NotoSansCJKsc-Regular',
+            ],
             array_map(static fn ($preset): string => $preset->baseFont, FontRegistry::all()),
         );
     }
