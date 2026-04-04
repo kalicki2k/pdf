@@ -35,6 +35,7 @@ final class TextFrame
         ?float $spacingAfter = null,
         ?Color $color = null,
         ?Opacity $opacity = null,
+        TextAlign $align = TextAlign::LEFT,
     ): self {
         $lineHeight ??= $size * 1.2;
         $spacingAfter ??= $lineHeight;
@@ -51,6 +52,7 @@ final class TextFrame
             bottomMargin: $this->bottomMargin,
             color: $color,
             opacity: $opacity,
+            align: $align,
         );
 
         $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $this->width);
@@ -85,6 +87,7 @@ final class TextFrame
         ?float $spacingAfter = null,
         ?Color $color = null,
         ?Opacity $opacity = null,
+        TextAlign $align = TextAlign::LEFT,
     ): self {
         return $this->paragraph(
             text: $text,
@@ -95,6 +98,7 @@ final class TextFrame
             spacingAfter: $spacingAfter ?? $size * 0.8,
             color: $color,
             opacity: $opacity,
+            align: $align,
         );
     }
 

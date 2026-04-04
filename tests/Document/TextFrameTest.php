@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -116,5 +117,32 @@ final class TextFrameTest extends TestCase
         self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
         self::assertStringContainsString("( Hello world) Tj", $page->contents->render());
         self::assertStringContainsString("(from PDF) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_forwards_center_alignment_from_text_frames(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 100, 20);
+        $frame->paragraph('Hello', 'Helvetica', 10, spacingAfter: 8, align: TextAlign::CENTER);
+
+        self::assertStringContainsString("55 100 Td\n(Hello) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_forwards_justify_alignment_from_text_frames(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 70, 20);
+        $frame->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8, align: TextAlign::JUSTIFY);
+
+        self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("60 100 Td\n(world) Tj", $page->contents->render());
     }
 }

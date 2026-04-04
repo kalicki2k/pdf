@@ -106,6 +106,7 @@ final class Page extends IndirectObject
         ?float $bottomMargin = null,
         ?Color $color = null,
         ?Opacity $opacity = null,
+        TextAlign $align = TextAlign::LEFT,
     ): self {
         $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
         $bottomMargin ??= self::DEFAULT_BOTTOM_MARGIN;
@@ -130,14 +131,20 @@ final class Page extends IndirectObject
                 $currentY = $this->height - $topMargin;
             }
 
-            if ($line === []) {
+            if ($line['segments'] === []) {
                 $currentY -= $lineHeight;
                 continue;
             }
 
-            $cursorX = $x;
+            $cursorX = $x + $this->calculateAlignedOffset($line['segments'], $baseFont, $size, $maxWidth, $align, $line['justify']);
 
-            foreach ($line as $segment) {
+            if ($align === TextAlign::JUSTIFY && $line['justify']) {
+                $this->renderJustifiedLine($page, $line['segments'], $cursorX, $currentY, $baseFont, $size, $tag, $maxWidth);
+                $currentY -= $lineHeight;
+                continue;
+            }
+
+            foreach ($line['segments'] as $segment) {
                 $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
                 $segmentFont = $this->resolveFont($segmentFontName);
 
@@ -335,11 +342,11 @@ final class Page extends IndirectObject
 
     /**
      * @param list<TextSegment> $runs
-     * @return array<int, array<int, TextSegment>>
+     * @return list<array{segments: array<int, TextSegment>, justify: bool}>
      */
     private function wrapRunsIntoLines(array $runs, string $baseFont, int $size, float $maxWidth): array
     {
-        /** @var array<int, array<int, TextSegment>> $lines */
+        /** @var list<array{segments: array<int, TextSegment>, justify: bool}> $lines */
         $lines = [];
         /** @var list<TextSegment> $currentLine */
         $currentLine = [];
@@ -349,7 +356,7 @@ final class Page extends IndirectObject
         foreach ($runs as $run) {
             foreach ($this->tokenizeRun($run) as $token) {
                 if ($token['type'] === 'newline') {
-                    $lines[] = $currentLine;
+                    $lines[] = ['segments' => $currentLine, 'justify' => false];
                     $currentLine = [];
                     $currentLineWidth = 0.0;
                     $pendingSpace = false;
@@ -383,7 +390,7 @@ final class Page extends IndirectObject
                 }
 
                 if ($currentLine !== []) {
-                    $lines[] = $currentLine;
+                    $lines[] = ['segments' => $currentLine, 'justify' => true];
                     $currentLine = [];
                     $currentLineWidth = 0.0;
                     $pendingSpace = false;
@@ -407,7 +414,7 @@ final class Page extends IndirectObject
                         continue;
                     }
 
-                    $lines[] = [new TextSegment(
+                    $lines[] = ['segments' => [new TextSegment(
                         $chunk,
                         $wordRun->color,
                         $wordRun->opacity,
@@ -415,16 +422,165 @@ final class Page extends IndirectObject
                         $wordRun->italic,
                         $wordRun->underline,
                         $wordRun->strikethrough,
-                    )];
+                    )], 'justify' => true];
                 }
             }
         }
 
         if ($currentLine !== []) {
-            $lines[] = $currentLine;
+            $lines[] = ['segments' => $currentLine, 'justify' => false];
         }
 
-        return $lines === [] ? [[]] : $lines;
+        return $lines === [] ? [['segments' => [], 'justify' => false]] : $lines;
+    }
+
+    /**
+     * @param array<int, TextSegment> $line
+     */
+    private function calculateAlignedOffset(
+        array $line,
+        string $baseFont,
+        int $size,
+        float $maxWidth,
+        TextAlign $align,
+        bool $canJustify,
+    ): float
+    {
+        if ($align === TextAlign::LEFT || $align === TextAlign::JUSTIFY) {
+            return 0.0;
+        }
+
+        $lineWidth = 0.0;
+
+        foreach ($line as $segment) {
+            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
+            $segmentFont = $this->resolveFont($segmentFontName);
+            $lineWidth += $segmentFont->measureTextWidth($segment->text, $size);
+        }
+
+        $remainingWidth = max(0.0, $maxWidth - $lineWidth);
+
+        if ($align === TextAlign::CENTER) {
+            return $remainingWidth / 2;
+        }
+
+        return $remainingWidth;
+    }
+
+    /**
+     * @param array<int, TextSegment> $line
+     */
+    private function calculateJustifiedWordSpacing(
+        array $line,
+        string $baseFont,
+        int $size,
+        float $maxWidth,
+        TextAlign $align,
+        bool $canJustify,
+    ): float {
+        if ($align !== TextAlign::JUSTIFY || !$canJustify) {
+            return 0.0;
+        }
+
+        $lineWidth = 0.0;
+        $spaceCount = 0;
+        $pieces = $this->splitSegmentsIntoWordPieces($line);
+
+        foreach ($line as $segment) {
+            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
+            $segmentFont = $this->resolveFont($segmentFontName);
+            $lineWidth += $segmentFont->measureTextWidth($segment->text, $size);
+        }
+
+        foreach ($pieces as $index => $piece) {
+            if ($index === 0) {
+                continue;
+            }
+
+            $spaceCount += $piece['leadingSpaces'];
+        }
+
+        if ($spaceCount <= 0) {
+            return 0.0;
+        }
+
+        return max(0.0, $maxWidth - $lineWidth) / $spaceCount;
+    }
+
+    /**
+     * @param array<int, TextSegment> $line
+     */
+    private function renderJustifiedLine(
+        self $page,
+        array $line,
+        float $x,
+        float $y,
+        string $baseFont,
+        int $size,
+        ?string $tag,
+        float $maxWidth,
+    ): void {
+        $pieces = $this->splitSegmentsIntoWordPieces($line);
+        $extraWordSpacing = $this->calculateJustifiedWordSpacing($line, $baseFont, $size, $maxWidth, TextAlign::JUSTIFY, true);
+        $cursorX = $x;
+        $isFirstWord = true;
+
+        foreach ($pieces as $piece) {
+            $segment = $piece['segment'];
+            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
+            $segmentFont = $this->resolveFont($segmentFontName);
+
+            if (!$isFirstWord) {
+                $spaceWidth = $segmentFont->measureTextWidth(str_repeat(' ', $piece['leadingSpaces']), $size);
+                $cursorX += $spaceWidth + ($extraWordSpacing * $piece['leadingSpaces']);
+            }
+
+            $page->addText(
+                $segment->text,
+                $cursorX,
+                $y,
+                $segmentFontName,
+                $size,
+                $tag,
+                $segment->color,
+                $segment->opacity,
+                $segment->underline,
+                $segment->strikethrough,
+            );
+
+            $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
+            $isFirstWord = false;
+        }
+    }
+
+    /**
+     * @param array<int, TextSegment> $segments
+     * @return list<array{segment: TextSegment, leadingSpaces: int}>
+     */
+    private function splitSegmentsIntoWordPieces(array $segments): array
+    {
+        $pieces = [];
+
+        foreach ($segments as $segment) {
+            preg_match_all('/( +)?([^ ]+)/', $segment->text, $matches, PREG_SET_ORDER);
+
+            foreach ($matches as $match) {
+                $pieces[] = [
+                    'segment' => new TextSegment(
+                        $match[2],
+                        $segment->color,
+                        $segment->opacity,
+                        $segment->bold,
+                        $segment->italic,
+                        $segment->underline,
+                        $segment->strikethrough,
+                    ),
+                    'leadingSpaces' => strlen($match[1]),
+                ];
+            }
+        }
+
+        return $pieces;
     }
 
     /**

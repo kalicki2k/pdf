@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\TextAlign;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -324,6 +325,56 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString('re f', $page->contents->render());
         self::assertSame(2, substr_count($page->contents->render(), 're f'));
+    }
+
+    #[Test]
+    public function it_centers_a_paragraph_within_the_available_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, align: TextAlign::CENTER);
+
+        self::assertStringContainsString("45 50 Td\n(Hello) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_right_aligns_a_paragraph_within_the_available_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, align: TextAlign::RIGHT);
+
+        self::assertStringContainsString("80 50 Td\n(Hello) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_justifies_automatically_wrapped_lines(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph('Hello world from PDF', 10, 50, 70, 'Helvetica', 10, align: TextAlign::JUSTIFY);
+
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("50 50 Td\n(world) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_does_not_justify_lines_created_by_hard_line_breaks(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph("Hello world\nfrom PDF", 10, 50, 100, 'Helvetica', 10, align: TextAlign::JUSTIFY);
+
+        self::assertStringContainsString("10 50 Td\n(Hello world) Tj", $page->contents->render());
+        self::assertStringContainsString("10 38 Td\n(from PDF) Tj", $page->contents->render());
     }
 
     #[Test]
