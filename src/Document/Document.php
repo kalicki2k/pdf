@@ -17,6 +17,7 @@ use Kalle\Pdf\Font\ToUnicodeCMap;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeGlyphMap;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsPosition;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Structure\ParentTree;
@@ -437,6 +438,121 @@ final class Document
         return $this->structTreeRoot !== null;
     }
 
+    public function addTableOfContents(
+        PageSize | float $width = 595.2755905511812,
+        ?float $height = null,
+        string $title = 'Inhaltsverzeichnis',
+        string $baseFont = 'Helvetica',
+        int $titleSize = 18,
+        int $entrySize = 12,
+        float $margin = 20.0,
+        TableOfContentsPosition $position = TableOfContentsPosition::END,
+    ): Page {
+        if ($titleSize <= 0) {
+            throw new InvalidArgumentException('Table of contents title size must be greater than zero.');
+        }
+
+        if ($entrySize <= 0) {
+            throw new InvalidArgumentException('Table of contents entry size must be greater than zero.');
+        }
+
+        if ($margin < 0) {
+            throw new InvalidArgumentException('Table of contents margin must be zero or greater.');
+        }
+
+        $firstTocPageIndex = count($this->pages->pages);
+        $page = $this->addPage($width, $height);
+        $contentWidth = $page->getWidth() - ($margin * 2);
+
+        if ($contentWidth <= 0) {
+            throw new InvalidArgumentException('Table of contents content width must be greater than zero.');
+        }
+
+        $frame = $page->textFrame($margin, $page->getHeight() - $margin, $contentWidth, $margin);
+        $frame->heading($title, $baseFont, $titleSize, 'H1');
+
+        if ($this->outlineRoot === null || $this->outlineRoot->getItems() === []) {
+            $frame->paragraph('Keine Eintraege vorhanden.', $baseFont, $entrySize, 'P');
+
+            return $page;
+        }
+
+        $entryLineHeight = $entrySize * 1.35;
+        $currentPage = $page;
+        $currentY = $frame->getCursorY();
+        $pageNumbersByObjectId = [];
+
+        foreach ($this->pages->pages as $index => $documentPage) {
+            if ($documentPage === $page) {
+                continue;
+            }
+
+            $pageNumbersByObjectId[$documentPage->id] = $index + 1;
+        }
+
+        foreach ($this->outlineRoot->getItems() as $outlineItem) {
+            if ($currentY < $margin + $entryLineHeight) {
+                $currentPage = $this->addPage($page->getWidth(), $page->getHeight());
+                $currentY = $currentPage->getHeight() - $margin;
+            }
+
+            $targetPage = $outlineItem->getPage();
+            $pageNumber = $pageNumbersByObjectId[$targetPage->id] ?? null;
+
+            if ($pageNumber === null) {
+                continue;
+            }
+
+            $destinationName = 'toc-page-' . $targetPage->id;
+            $this->addDestination($destinationName, $targetPage);
+
+            $pageNumberText = (string) $pageNumber;
+            $pageNumberWidth = $currentPage->measureTextWidth($pageNumberText, $baseFont, $entrySize);
+            $entryWidth = $contentWidth - $pageNumberWidth - 8.0;
+            $entryTitle = $this->fitTextToWidth($currentPage, $outlineItem->getTitle(), $baseFont, $entrySize, $entryWidth);
+            $entryTitleWidth = $currentPage->measureTextWidth($entryTitle, $baseFont, $entrySize);
+            $leaderWidth = max(0.0, $contentWidth - $entryTitleWidth - $pageNumberWidth - 8.0);
+            $dotWidth = max(0.0001, $currentPage->measureTextWidth('.', $baseFont, $entrySize));
+            $dotCount = max(3, (int) floor($leaderWidth / $dotWidth));
+            $leaders = str_repeat('.', $dotCount);
+
+            $currentPage->addText(
+                $entryTitle,
+                $margin,
+                $currentY,
+                $baseFont,
+                $entrySize,
+                null,
+                link: '#' . $destinationName,
+            );
+            $currentPage->addText(
+                $leaders,
+                $margin + $entryTitleWidth + 4.0,
+                $currentY,
+                $baseFont,
+                $entrySize,
+            );
+            $currentPage->addText(
+                $pageNumberText,
+                $page->getWidth() - $margin - $pageNumberWidth,
+                $currentY,
+                $baseFont,
+                $entrySize,
+                null,
+                link: '#' . $destinationName,
+            );
+
+            $currentY -= $entryLineHeight;
+        }
+
+        if ($position === TableOfContentsPosition::START) {
+            $tocPages = array_values(array_slice($this->pages->pages, $firstTocPageIndex));
+            $this->pages->prependPages($tocPages);
+        }
+
+        return $page;
+    }
+
     public function addKeyword(string $keyword): self
     {
         $this->keywords = StringListNormalizer::unique([...$this->keywords, $keyword]);
@@ -451,5 +567,34 @@ final class Document
         $renderer = new PdfRenderer();
 
         return $renderer->render($this);
+    }
+
+    private function fitTextToWidth(Page $page, string $text, string $baseFont, int $size, float $maxWidth): string
+    {
+        if ($page->measureTextWidth($text, $baseFont, $size) <= $maxWidth) {
+            return $text;
+        }
+
+        $ellipsis = '...';
+        $ellipsisWidth = $page->measureTextWidth($ellipsis, $baseFont, $size);
+
+        if ($ellipsisWidth > $maxWidth) {
+            return $ellipsis;
+        }
+
+        $characters = preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $current = '';
+
+        foreach ($characters as $character) {
+            $candidate = $current . $character;
+
+            if ($page->measureTextWidth($candidate . $ellipsis, $baseFont, $size) > $maxWidth) {
+                break;
+            }
+
+            $current = $candidate;
+        }
+
+        return rtrim($current) . $ellipsis;
     }
 }

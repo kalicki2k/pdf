@@ -299,6 +299,16 @@ $document
     ->addOutline('Hallo PDF', $page)
     ->addDestination('hello-pdf', $page);
 
+$document->addTableOfContents(
+    PageSize::A4(),
+    title: 'Inhaltsverzeichnis',
+    baseFont: 'NotoSans-Regular',
+    titleSize: 18,
+    entrySize: 11,
+    margin: Units::mm(20),
+    position: \Kalle\Pdf\Layout\TableOfContentsPosition::START,
+);
+
 $pdfContent = $document->render();
 
 file_put_contents('hello.pdf', $pdfContent);
@@ -322,7 +332,8 @@ file_put_contents('hello.pdf', $pdfContent);
 14. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
 15. `addOutline(...)` registriert Bookmarks fuer die Viewer-Navigation im PDF.
 16. `addDestination(...)` registriert benannte interne Sprungziele.
-17. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+17. `addTableOfContents(...)` erzeugt ein klickbares Inhaltsverzeichnis aus vorhandenen Outlines.
+18. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Tabellen
 

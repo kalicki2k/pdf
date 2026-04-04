@@ -40,6 +40,7 @@ Wichtige Methoden:
 - `addPageNumbers()` registriert einen spaet aufgeloesten Seitenzahl-Renderer mit Zugriff auf `{{page}}` und `{{pages}}`
 - `addOutline()` registriert einen Bookmark-Eintrag fuer eine Zielseite
 - `addDestination()` registriert ein benanntes Ziel fuer interne Spruenge
+- `addTableOfContents()` erzeugt Inhaltsverzeichnis-Seiten aus vorhandenen Outlines
 - `addFont()` registriert Fonts im Dokument
 - `addKeyword()` pflegt die Dokument-Keywords
 - `render()` delegiert an `PdfRenderer`
@@ -50,6 +51,8 @@ Wenn Outlines vorhanden sind, erzeugt `Document` zusaetzlich ein `OutlineRoot`-O
 Wenn benannte Ziele vorhanden sind, rendert der `Catalog` zusaetzlich ein `/Dests`-Dictionary mit Zielnamen und Zielseiten.
 
 `addPageNumbers()` wird erst kurz vor dem finalen Rendern aufgeloest, damit die Gesamtseitenzahl des Dokuments bekannt ist.
+
+`addTableOfContents()` kann die erzeugten TOC-Seiten am Anfang oder Ende der Seitenreihenfolge platzieren. Die Position wird ueber `TableOfContentsPosition::START` oder `::END` gesteuert.
 
 ### Pages
 

@@ -35,6 +35,16 @@ final class OutlineItem extends IndirectObject
         $this->next = $next;
     }
 
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getPage(): Page
+    {
+        return $this->page;
+    }
+
     public function render(): string
     {
         $dictionary = new DictionaryType([

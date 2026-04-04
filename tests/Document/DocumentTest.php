@@ -9,6 +9,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsPosition;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -205,6 +206,48 @@ final class DocumentTest extends TestCase
         $this->expectExceptionMessage('Page number template must not be empty.');
 
         $document->addPageNumbers(10, 10, template: '');
+    }
+
+    #[Test]
+    public function it_adds_a_table_of_contents_from_existing_outlines(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $firstPage = $document->addPage(100, 100);
+        $secondPage = $document->addPage(100, 100);
+
+        $document
+            ->addOutline('Erste Seite', $firstPage)
+            ->addOutline('Zweite Seite', $secondPage);
+
+        $tocPage = $document->addTableOfContents(140, 100, 'Inhalt', 'Helvetica', 16, 10, 10);
+
+        self::assertSame($document->pages->pages[array_key_last($document->pages->pages)], $tocPage);
+        self::assertStringContainsString('(Inhalt) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(Erste Seite) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(1) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(Zweite Seite) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(2) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] /toc-page-8 [8 0 R /Fit] >>', $document->render());
+    }
+
+    #[Test]
+    public function it_can_move_the_table_of_contents_to_the_start(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $firstPage = $document->addPage(100, 100);
+        $secondPage = $document->addPage(100, 100);
+
+        $document
+            ->addOutline('Erste Seite', $firstPage)
+            ->addOutline('Zweite Seite', $secondPage);
+
+        $tocPage = $document->addTableOfContents(140, 100, 'Inhalt', 'Helvetica', 16, 10, 10, TableOfContentsPosition::START);
+
+        self::assertSame($tocPage, $document->pages->pages[0]);
+        self::assertSame($firstPage, $document->pages->pages[1]);
+        self::assertSame($secondPage, $document->pages->pages[2]);
     }
 
     #[Test]

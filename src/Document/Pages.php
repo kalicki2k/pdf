@@ -34,6 +34,19 @@ final class Pages extends IndirectObject
         return $page;
     }
 
+    /**
+     * @param list<Page> $pages
+     */
+    public function prependPages(array $pages): void
+    {
+        $remainingPages = array_values(array_filter(
+            $this->pages,
+            static fn (Page $page): bool => !in_array($page, $pages, true),
+        ));
+
+        $this->pages = [...$pages, ...$remainingPages];
+    }
+
     public function render(): string
     {
         $kidReferences = [];

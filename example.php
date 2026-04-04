@@ -12,6 +12,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsPosition;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
@@ -903,6 +904,16 @@ $document
     ->addOutline('Badge Demo', $badgePage)
     ->addOutline('Panel Demo', $panelPage)
     ->addOutline('Callout Demo', $calloutPage);
+
+$document->addTableOfContents(
+    PageSize::A4(),
+    title: 'Inhaltsverzeichnis',
+    baseFont: 'NotoSans-Regular',
+    titleSize: 18,
+    entrySize: 11,
+    margin: Units::mm(20),
+    position: TableOfContentsPosition::START,
+);
 
 //$coverPage = $document->addPage(\Kalle\Pdf\Layout\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);

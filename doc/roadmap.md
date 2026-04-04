@@ -14,6 +14,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Seitenzahlen mit Gesamtseitenzahl koennen ueber `addPageNumbers(...)` registriert werden
 - PDF-Outlines bzw. Bookmarks koennen ueber `addOutline(...)` registriert werden
 - benannte interne Ziele koennen ueber `addDestination(...)` registriert werden
+- Inhaltsverzeichnisse koennen ueber `addTableOfContents(...)` aus vorhandenen Outlines erzeugt werden
 - Text wird ueber registrierte Fonts gerendert
 - `addParagraph()` und `TextFrame` decken ersten Absatz- und Flow-Layout-Bedarf ab
 - `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes

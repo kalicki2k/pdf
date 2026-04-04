@@ -1196,6 +1196,15 @@ final class Page extends IndirectObject
         ));
     }
 
+    public function measureTextWidth(string $text, string $baseFont, int $size): float
+    {
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Text size must be greater than zero.');
+        }
+
+        return $this->resolveFont($baseFont)->measureTextWidth($text, $size);
+    }
+
     /**
      * @return list<string>
      */
