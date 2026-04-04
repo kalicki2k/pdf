@@ -11,6 +11,27 @@ return [
         'encoding' => 'Identity-H',
     ],
     [
+        'baseFont' => 'NotoSans-Bold',
+        'path' => 'assets/fonts/NotoSans-Bold.ttf',
+        'unicode' => true,
+        'subtype' => 'CIDFontType2',
+        'encoding' => 'Identity-H',
+    ],
+    [
+        'baseFont' => 'NotoSans-Italic',
+        'path' => 'assets/fonts/NotoSans-Italic.ttf',
+        'unicode' => true,
+        'subtype' => 'CIDFontType2',
+        'encoding' => 'Identity-H',
+    ],
+    [
+        'baseFont' => 'NotoSans-BoldItalic',
+        'path' => 'assets/fonts/NotoSans-BoldItalic.ttf',
+        'unicode' => true,
+        'subtype' => 'CIDFontType2',
+        'encoding' => 'Identity-H',
+    ],
+    [
         'baseFont' => 'NotoSerif-Regular',
         'path' => 'assets/fonts/NotoSerif-Regular.ttf',
         'unicode' => true,

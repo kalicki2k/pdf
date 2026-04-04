@@ -7,7 +7,9 @@ namespace Kalle\Pdf\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Font\FontRegistry;
 use Kalle\Pdf\Font\OpenTypeFontParser;
+use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -50,6 +52,8 @@ final class Page extends IndirectObject
         ?string $tag = null,
         ?Color $color = null,
         ?Opacity $opacity = null,
+        bool $underline = false,
+        bool $strikethrough = false,
     ): self {
         if ($tag !== null) {
             $this->document->ensureStructureEnabled();
@@ -59,6 +63,7 @@ final class Page extends IndirectObject
         $markedContentId = $tag !== null ? $this->markedContentId++ : null;
         $encodedText = $this->encodeText($font, $baseFont, $text);
         $resourceFontName = $this->registerFontResource($font);
+        $textWidth = $font->measureTextWidth($text, $size);
         $colorOperator = $color?->renderNonStrokingOperator();
         $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
 
@@ -71,8 +76,11 @@ final class Page extends IndirectObject
             $y,
             $resourceFontName,
             $size,
+            $textWidth,
             $colorOperator,
             $graphicsStateName,
+            $underline,
+            $strikethrough,
             $tag,
         ));
 
@@ -83,8 +91,11 @@ final class Page extends IndirectObject
         return $this;
     }
 
+    /**
+     * @param string|list<TextSegment> $text
+     */
     public function addParagraph(
-        string $text,
+        string|array $text,
         float $x,
         float $y,
         float $maxWidth,
@@ -96,7 +107,6 @@ final class Page extends IndirectObject
         ?Color $color = null,
         ?Opacity $opacity = null,
     ): self {
-        $font = $this->resolveFont($baseFont);
         $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
         $bottomMargin ??= self::DEFAULT_BOTTOM_MARGIN;
 
@@ -108,7 +118,8 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Line height must be greater than zero.');
         }
 
-        $lines = $this->wrapTextIntoLines($text, $font, $size, $maxWidth);
+        $runs = $this->normalizeTextRuns($text, $color, $opacity);
+        $lines = $this->wrapRunsIntoLines($runs, $baseFont, $size, $maxWidth);
         $page = $this;
         $currentY = $y;
         $topMargin = $this->height - $y;
@@ -119,12 +130,32 @@ final class Page extends IndirectObject
                 $currentY = $this->height - $topMargin;
             }
 
-            if ($line === '') {
+            if ($line === []) {
                 $currentY -= $lineHeight;
                 continue;
             }
 
-            $page->addText($line, $x, $currentY, $baseFont, $size, $tag, $color, $opacity);
+            $cursorX = $x;
+
+            foreach ($line as $segment) {
+                $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
+                $segmentFont = $this->resolveFont($segmentFontName);
+
+                $page->addText(
+                    $segment->text,
+                    $cursorX,
+                    $currentY,
+                    $segmentFontName,
+                    $size,
+                    $tag,
+                    $segment->color,
+                    $segment->opacity,
+                    $segment->underline,
+                    $segment->strikethrough,
+                );
+                $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
+            }
+
             $currentY -= $lineHeight;
         }
 
@@ -240,65 +271,12 @@ final class Page extends IndirectObject
     /**
      * @return list<string>
      */
-    private function wrapTextIntoLines(string $text, FontDefinition $font, int $size, float $maxWidth): array
+    /**
+     * @param string|list<TextSegment> $text
+     */
+    public function countParagraphLines(string|array $text, string $baseFont, int $size, float $maxWidth): int
     {
-        $text = str_replace(["\r\n", "\r"], "\n", trim($text));
-
-        if ($text === '') {
-            return [''];
-        }
-
-        $lines = [];
-
-        foreach (explode("\n", $text) as $paragraph) {
-            if ($paragraph === '') {
-                $lines[] = '';
-                continue;
-            }
-
-            $currentLine = '';
-
-            foreach (preg_split('/\s+/u', trim($paragraph)) ?: [] as $word) {
-                if ($word === '') {
-                    continue;
-                }
-
-                $candidate = $currentLine === '' ? $word : $currentLine . ' ' . $word;
-
-                if ($font->measureTextWidth($candidate, $size) <= $maxWidth) {
-                    $currentLine = $candidate;
-                    continue;
-                }
-
-                if ($currentLine !== '') {
-                    $lines[] = $currentLine;
-                }
-
-                $chunks = $this->breakWordToFit($word, $font, $size, $maxWidth);
-
-                foreach ($chunks as $index => $chunk) {
-                    if ($index === count($chunks) - 1) {
-                        $currentLine = $chunk;
-                        continue;
-                    }
-
-                    $lines[] = $chunk;
-                }
-            }
-
-            if ($currentLine !== '') {
-                $lines[] = $currentLine;
-            }
-        }
-
-        return $lines === [] ? [''] : $lines;
-    }
-
-    public function countParagraphLines(string $text, string $baseFont, int $size, float $maxWidth): int
-    {
-        $font = $this->resolveFont($baseFont);
-
-        return count($this->wrapTextIntoLines($text, $font, $size, $maxWidth));
+        return count($this->wrapRunsIntoLines($this->normalizeTextRuns($text, null, null), $baseFont, $size, $maxWidth));
     }
 
     /**
@@ -330,5 +308,309 @@ final class Page extends IndirectObject
         }
 
         return $chunks;
+    }
+
+    /**
+     * @param string|array<mixed> $text
+     * @return list<TextSegment>
+     */
+    private function normalizeTextRuns(string|array $text, ?Color $color, ?Opacity $opacity): array
+    {
+        if (is_string($text)) {
+            return [new TextSegment($text, $color, $opacity)];
+        }
+
+        $runs = [];
+
+        foreach ($text as $segment) {
+            if (!$segment instanceof TextSegment) {
+                throw new InvalidArgumentException('Paragraph text arrays must contain only TextSegment instances.');
+            }
+
+            $runs[] = $segment->withDefaults($color, $opacity);
+        }
+
+        return $runs === [] ? [new TextSegment('', $color, $opacity)] : $runs;
+    }
+
+    /**
+     * @param list<TextSegment> $runs
+     * @return array<int, array<int, TextSegment>>
+     */
+    private function wrapRunsIntoLines(array $runs, string $baseFont, int $size, float $maxWidth): array
+    {
+        /** @var array<int, array<int, TextSegment>> $lines */
+        $lines = [];
+        /** @var list<TextSegment> $currentLine */
+        $currentLine = [];
+        $currentLineWidth = 0.0;
+        $pendingSpace = false;
+
+        foreach ($runs as $run) {
+            foreach ($this->tokenizeRun($run) as $token) {
+                if ($token['type'] === 'newline') {
+                    $lines[] = $currentLine;
+                    $currentLine = [];
+                    $currentLineWidth = 0.0;
+                    $pendingSpace = false;
+                    continue;
+                }
+
+                if ($token['type'] === 'space') {
+                    $pendingSpace = $currentLine !== [];
+                    continue;
+                }
+
+                /** @var TextSegment $wordRun */
+                $wordRun = $token['run'];
+                $wordFont = $this->resolveFont($this->resolveStyledBaseFont($baseFont, $wordRun));
+                $text = ($pendingSpace && $currentLine !== [] ? ' ' : '') . $wordRun->text;
+                $textWidth = $wordFont->measureTextWidth($text, $size);
+
+                if ($currentLineWidth + $textWidth <= $maxWidth) {
+                    $this->appendRun($currentLine, new TextSegment(
+                        $text,
+                        $wordRun->color,
+                        $wordRun->opacity,
+                        $wordRun->bold,
+                        $wordRun->italic,
+                        $wordRun->underline,
+                        $wordRun->strikethrough,
+                    ));
+                    $currentLineWidth += $textWidth;
+                    $pendingSpace = false;
+                    continue;
+                }
+
+                if ($currentLine !== []) {
+                    $lines[] = $currentLine;
+                    $currentLine = [];
+                    $currentLineWidth = 0.0;
+                    $pendingSpace = false;
+                    $text = $wordRun->text;
+                }
+
+                $chunks = $this->breakWordToFit($text, $wordFont, $size, $maxWidth);
+
+                foreach ($chunks as $index => $chunk) {
+                    if ($index === count($chunks) - 1) {
+                        $currentLine = [new TextSegment(
+                            $chunk,
+                            $wordRun->color,
+                            $wordRun->opacity,
+                            $wordRun->bold,
+                            $wordRun->italic,
+                            $wordRun->underline,
+                            $wordRun->strikethrough,
+                        )];
+                        $currentLineWidth = $wordFont->measureTextWidth($chunk, $size);
+                        continue;
+                    }
+
+                    $lines[] = [new TextSegment(
+                        $chunk,
+                        $wordRun->color,
+                        $wordRun->opacity,
+                        $wordRun->bold,
+                        $wordRun->italic,
+                        $wordRun->underline,
+                        $wordRun->strikethrough,
+                    )];
+                }
+            }
+        }
+
+        if ($currentLine !== []) {
+            $lines[] = $currentLine;
+        }
+
+        return $lines === [] ? [[]] : $lines;
+    }
+
+    /**
+     * @return list<array{type: 'word', run: TextSegment}|array{type: 'space'}|array{type: 'newline'}>
+     */
+    private function tokenizeRun(TextSegment $run): array
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", $run->text);
+        /** @var list<array{type: 'word', run: TextSegment}|array{type: 'space'}|array{type: 'newline'}> $tokens */
+        $tokens = [];
+        $buffer = '';
+
+        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
+            if ($character === "\n") {
+                if ($buffer !== '') {
+                    $tokens[] = ['type' => 'word', 'run' => new TextSegment(
+                        $buffer,
+                        $run->color,
+                        $run->opacity,
+                        $run->bold,
+                        $run->italic,
+                        $run->underline,
+                        $run->strikethrough,
+                    )];
+                    $buffer = '';
+                }
+
+                $tokens[] = ['type' => 'newline'];
+                continue;
+            }
+
+                if (preg_match('/\s/u', $character) === 1) {
+                if ($buffer !== '') {
+                    $tokens[] = ['type' => 'word', 'run' => new TextSegment(
+                        $buffer,
+                        $run->color,
+                        $run->opacity,
+                        $run->bold,
+                        $run->italic,
+                        $run->underline,
+                        $run->strikethrough,
+                    )];
+                    $buffer = '';
+                }
+
+                $tokens[] = ['type' => 'space'];
+                continue;
+            }
+
+            $buffer .= $character;
+        }
+
+        if ($buffer !== '') {
+            $tokens[] = ['type' => 'word', 'run' => new TextSegment(
+                $buffer,
+                $run->color,
+                $run->opacity,
+                $run->bold,
+                $run->italic,
+                $run->underline,
+                $run->strikethrough,
+            )];
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param array<int, TextSegment> $runs
+     */
+    private function appendRun(array &$runs, TextSegment $run): void
+    {
+        $lastIndex = array_key_last($runs);
+
+        if ($lastIndex === null) {
+            $runs[] = $run;
+            return;
+        }
+
+        $lastRun = $runs[$lastIndex];
+
+        if (
+            $lastRun->color === $run->color
+            && $lastRun->opacity === $run->opacity
+            && $lastRun->bold === $run->bold
+            && $lastRun->italic === $run->italic
+            && $lastRun->underline === $run->underline
+            && $lastRun->strikethrough === $run->strikethrough
+        ) {
+            $runs[$lastIndex] = new TextSegment(
+                $lastRun->text . $run->text,
+                $lastRun->color,
+                $lastRun->opacity,
+                $lastRun->bold,
+                $lastRun->italic,
+                $lastRun->underline,
+                $lastRun->strikethrough,
+            );
+            return;
+        }
+
+        $runs[] = $run;
+    }
+
+    private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string
+    {
+        if (!$segment->bold && !$segment->italic) {
+            return $baseFont;
+        }
+
+        $standardVariant = StandardFontName::resolveVariant($baseFont, $segment->bold, $segment->italic);
+
+        if ($standardVariant !== null) {
+            $this->registerFontIfNeeded($standardVariant);
+
+            return $standardVariant;
+        }
+
+        foreach ($this->buildVariantCandidates($baseFont, $segment->bold, $segment->italic) as $candidate) {
+            if ($candidate === $baseFont) {
+                continue;
+            }
+
+            if ($this->hasRegisteredFont($candidate) || FontRegistry::has($candidate, $this->document->getFontConfig())) {
+                $this->registerFontIfNeeded($candidate);
+
+                return $candidate;
+            }
+        }
+
+        return $baseFont;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildVariantCandidates(string $baseFont, bool $bold, bool $italic): array
+    {
+        if (!$bold && !$italic) {
+            return [$baseFont];
+        }
+
+        if ($bold && $italic) {
+            $suffix = ['BoldItalic', 'BoldOblique'];
+        } elseif ($bold) {
+            $suffix = ['Bold'];
+        } else {
+            $suffix = ['Italic', 'Oblique'];
+        }
+
+        $candidates = [];
+
+        foreach ($suffix as $variantSuffix) {
+            if (str_ends_with($baseFont, '-Regular')) {
+                $candidates[] = substr($baseFont, 0, -strlen('-Regular')) . '-' . $variantSuffix;
+                continue;
+            }
+
+            if (str_ends_with($baseFont, '-Roman')) {
+                $candidates[] = substr($baseFont, 0, -strlen('-Roman')) . '-' . $variantSuffix;
+                continue;
+            }
+
+            $candidates[] = $baseFont . '-' . $variantSuffix;
+        }
+
+        return array_values(array_unique($candidates));
+    }
+
+    private function hasRegisteredFont(string $baseFont): bool
+    {
+        foreach ($this->document->fonts as $registeredFont) {
+            if ($registeredFont->getBaseFont() === $baseFont) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function registerFontIfNeeded(string $baseFont): void
+    {
+        if ($this->hasRegisteredFont($baseFont)) {
+            return;
+        }
+
+        $this->document->addFont($baseFont);
     }
 }

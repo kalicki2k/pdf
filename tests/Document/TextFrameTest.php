@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
@@ -19,7 +20,7 @@ final class TextFrameTest extends TestCase
         $document->addFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame = $page->textFrame(20, 100, 220, 20);
 
         $frame
             ->heading('Headline', 'Helvetica', 20, 'H1')
@@ -92,5 +93,28 @@ final class TextFrameTest extends TestCase
 
         self::assertStringContainsString("1 0 0 rg\n(Headline) Tj", $page->contents->render());
         self::assertStringContainsString("0.1 0.2 0.3 0.4 k\n(Hello world from PDF) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_accepts_text_runs_in_text_frames(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame->paragraph(
+            [
+                new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
+                new TextSegment(' Hello world from PDF'),
+            ],
+            'Helvetica',
+            10,
+            spacingAfter: 8,
+        );
+
+        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
+        self::assertStringContainsString("( Hello world) Tj", $page->contents->render());
+        self::assertStringContainsString("(from PDF) Tj", $page->contents->render());
     }
 }

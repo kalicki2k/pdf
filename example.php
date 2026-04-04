@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\Units;
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Graphics\Opacity;
 
 require 'vendor/autoload.php';
 
@@ -11,12 +15,33 @@ $document = new Document(
     version: 1.4,
     title: 'Kalle PDF Demo',
     author: 'Kalle',
-    subject: 'Beispiel fuer Text, Metadaten und mehrere Seiten',
+    subject: 'Beispiel für Text, Metadaten und mehrere Seiten',
     language: 'de-DE',
     fontConfig: [
         [
             'baseFont' => 'NotoSans-Regular',
             'path' => 'assets/fonts/NotoSans-Regular.ttf',
+            'unicode' => true,
+            'subtype' => 'CIDFontType2',
+            'encoding' => 'Identity-H',
+        ],
+        [
+            'baseFont' => 'NotoSans-Bold',
+            'path' => 'assets/fonts/NotoSans-Bold.ttf',
+            'unicode' => true,
+            'subtype' => 'CIDFontType2',
+            'encoding' => 'Identity-H',
+        ],
+        [
+            'baseFont' => 'NotoSans-Italic',
+            'path' => 'assets/fonts/NotoSans-Italic.ttf',
+            'unicode' => true,
+            'subtype' => 'CIDFontType2',
+            'encoding' => 'Identity-H',
+        ],
+        [
+            'baseFont' => 'NotoSans-BoldItalic',
+            'path' => 'assets/fonts/NotoSans-BoldItalic.ttf',
             'unicode' => true,
             'subtype' => 'CIDFontType2',
             'encoding' => 'Identity-H',
@@ -50,58 +75,90 @@ $document->addKeyword('demo')
     ->addKeyword('tagged')
     ->addFont('Helvetica')
     ->addFont('NotoSans-Regular')
+    ->addFont('NotoSans-Bold')
+    ->addFont('NotoSans-Italic')
+    ->addFont('NotoSans-BoldItalic')
     ->addFont('NotoSerif-Regular')
     ->addFont('NotoSansMono-Regular')
     ->addFont('NotoSansCJKsc-Regular');
 
-$sansPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
+$sansPage = $document->addPage(PageSize::A4());
 $sansPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Noto Sans', 'NotoSans-Regular', 16, 'H1')
     ->paragraph(
-        'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
+        implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789.:,;()*!?\'@#<>$%&^+-=~']),
         'NotoSans-Regular',
         12,
-        'P'
+        'P',
+    )->paragraph(
+        implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789.:,;()*!?\'@#<>$%&^+-=~']),
+        'NotoSans-Regular',
+        12,
+        'P',
+        color: Color::rgb(0, 0, 255),
+    )->paragraph(
+        implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789.:,;()*!?\'@#<>$%&^+-=~']),
+        'NotoSans-Regular',
+        12,
+        'P',
+        opacity: Opacity::fill(0.5),
+    )->paragraph(
+        implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789.:,;()*!?\'@#<>$%&^+-=~']),
+        'NotoSans-Regular',
+        12,
+        'P',
+    )->paragraph(
+        [
+            new TextSegment('Achtung:', Color::rgb(255, 0, 0), bold: true, underline: true),
+            new TextSegment(
+                implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ']),
+                italic: true
+            ),
+            new TextSegment(PHP_EOL . '0123456789.:,;()*!?\'@#<>$%&^+-=~', strikethrough: true),
+        ],
+        'NotoSans-Regular',
+        12,
+        'P',
     );
 
-$serifPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
+$serifPage = $document->addPage(PageSize::A4());
 $serifPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Noto Serif', 'NotoSerif-Regular', 16, 'H1')
     ->paragraph(
         'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
         'NotoSerif-Regular',
         12,
-        'P'
+        'P',
     );
 
-$monoPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
+$monoPage = $document->addPage(PageSize::A4());
 $monoPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Noto Sans Mono', 'NotoSansMono-Regular', 16, 'H1')
     ->paragraph(
         'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
         'NotoSansMono-Regular',
         12,
-        'P'
+        'P',
     );
 
-$cjkPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
+$cjkPage = $document->addPage(PageSize::A4());
 $cjkPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Noto Sans CJK', 'NotoSansCJKsc-Regular', 16, 'H1')
     ->paragraph(
         '漢字とカタカナ',
         'NotoSansCJKsc-Regular',
         14,
-        'P'
+        'P',
     );
 
-$standardPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());
+$standardPage = $document->addPage(PageSize::A4());
 $standardPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Helvetica', 'Helvetica', 16, 'H1')
     ->paragraph(
         'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
         'Helvetica',
         12,
-        'P'
+        'P',
     );
 
 //$coverPage = $document->addPage(\Kalle\Pdf\Document\PageSize::A4());

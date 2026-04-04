@@ -48,4 +48,69 @@ final class StandardFontName
     {
         return in_array($fontName, self::all(), true);
     }
+
+    public static function resolveVariant(string $fontName, bool $bold, bool $italic): ?string
+    {
+        if (!$bold && !$italic) {
+            return $fontName;
+        }
+
+        return match ($fontName) {
+            self::COURIER, self::COURIER_BOLD, self::COURIER_OBLIQUE, self::COURIER_BOLD_OBLIQUE => self::resolveCourierVariant($bold, $italic),
+            self::HELVETICA, self::HELVETICA_BOLD, self::HELVETICA_OBLIQUE, self::HELVETICA_BOLD_OBLIQUE => self::resolveHelveticaVariant($bold, $italic),
+            self::TIMES_ROMAN, self::TIMES_BOLD, self::TIMES_ITALIC, self::TIMES_BOLD_ITALIC => self::resolveTimesVariant($bold, $italic),
+            default => null,
+        };
+    }
+
+    private static function resolveCourierVariant(bool $bold, bool $italic): string
+    {
+        if ($bold && $italic) {
+            return self::COURIER_BOLD_OBLIQUE;
+        }
+
+        if ($bold) {
+            return self::COURIER_BOLD;
+        }
+
+        if ($italic) {
+            return self::COURIER_OBLIQUE;
+        }
+
+        return self::COURIER;
+    }
+
+    private static function resolveHelveticaVariant(bool $bold, bool $italic): string
+    {
+        if ($bold && $italic) {
+            return self::HELVETICA_BOLD_OBLIQUE;
+        }
+
+        if ($bold) {
+            return self::HELVETICA_BOLD;
+        }
+
+        if ($italic) {
+            return self::HELVETICA_OBLIQUE;
+        }
+
+        return self::HELVETICA;
+    }
+
+    private static function resolveTimesVariant(bool $bold, bool $italic): string
+    {
+        if ($bold && $italic) {
+            return self::TIMES_BOLD_ITALIC;
+        }
+
+        if ($bold) {
+            return self::TIMES_BOLD;
+        }
+
+        if ($italic) {
+            return self::TIMES_ITALIC;
+        }
+
+        return self::TIMES_ROMAN;
+    }
 }

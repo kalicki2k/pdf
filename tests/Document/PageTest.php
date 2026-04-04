@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageSize;
+use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;
@@ -197,6 +198,132 @@ final class PageTest extends TestCase
         $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, null, 12.0, 0.0, Color::gray(0.5));
 
         self::assertSame(4, substr_count($page->contents->render(), '0.5 g'));
+    }
+
+    #[Test]
+    public function it_can_render_mixed_style_runs_within_a_single_paragraph(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            [
+                new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
+                new TextSegment('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~'),
+            ],
+            10,
+            50,
+            500,
+            'Helvetica',
+            10,
+        );
+
+        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
+        self::assertStringContainsString("(abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ) Tj", $page->contents->render());
+        self::assertStringContainsString("(0123456789.:,;\\(\\)*!?'@#<>$%&^+-=~) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_wraps_paragraph_runs_across_line_breaks(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            [
+                new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
+                new TextSegment(' Hello world from PDF'),
+            ],
+            10,
+            50,
+            50,
+            'Helvetica',
+            10,
+        );
+
+        self::assertStringContainsString("10 50 Td\n1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
+        self::assertStringContainsString("10 38 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("10 26 Td\n(world) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_invalid_paragraph_run_arrays(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Paragraph text arrays must contain only TextSegment instances.');
+
+        /** @var mixed $invalidRuns */
+        $invalidRuns = ['invalid'];
+
+        $method = new \ReflectionMethod($page, 'addParagraph');
+        $method->invoke($page, $invalidRuns, 10, 50, 50, 'Helvetica', 10);
+    }
+
+    #[Test]
+    public function it_uses_a_bold_standard_font_variant_for_bold_segments(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            [new TextSegment('Achtung', bold: true)],
+            10,
+            50,
+            100,
+            'Helvetica',
+            10,
+        );
+
+        self::assertStringContainsString('/BaseFont /Helvetica-Bold', $document->render());
+    }
+
+    #[Test]
+    public function it_uses_an_italic_standard_font_variant_for_italic_segments(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Times-Roman');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            [new TextSegment('Hinweis', italic: true)],
+            10,
+            50,
+            100,
+            'Times-Roman',
+            10,
+        );
+
+        self::assertStringContainsString('/BaseFont /Times-Italic', $document->render());
+    }
+
+    #[Test]
+    public function it_renders_underlines_and_strikethroughs_for_text_segments(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addParagraph(
+            [
+                new TextSegment('Underline', underline: true),
+                new TextSegment(' Strike', strikethrough: true),
+            ],
+            10,
+            50,
+            200,
+            'Helvetica',
+            10,
+        );
+
+        self::assertStringContainsString('re f', $page->contents->render());
+        self::assertSame(2, substr_count($page->contents->render(), 're f'));
     }
 
     #[Test]

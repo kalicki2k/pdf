@@ -23,8 +23,11 @@ final class TextFrame
         $this->cursorY = $y;
     }
 
+    /**
+     * @param string|list<TextSegment> $text
+     */
     public function paragraph(
-        string $text,
+        string|array $text,
         string $baseFont,
         int $size,
         ?string $tag = null,
@@ -71,8 +74,11 @@ final class TextFrame
         return $this;
     }
 
+    /**
+     * @param string|list<TextSegment> $text
+     */
     public function heading(
-        string $text,
+        string|array $text,
         string $baseFont,
         int $size,
         ?string $tag = null,
