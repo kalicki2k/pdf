@@ -116,6 +116,17 @@ $page->addImage(
     Units::mm(46.67),
 );
 
+$page->addText(
+    text: 'Projektseite',
+    x: Units::mm(20),
+    y: Units::mm(150),
+    baseFont: 'NotoSans-Regular',
+    size: 12,
+    color: Color::rgb(0, 0, 255),
+    underline: true,
+    link: 'https://example.com',
+);
+
 $pdfContent = $document->render();
 
 file_put_contents('hello.pdf', $pdfContent);
@@ -129,7 +140,8 @@ file_put_contents('hello.pdf', $pdfContent);
 4. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
 5. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
 6. `addLine(...)`, `addRectangle(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
-7. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+7. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
+8. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Einheiten
 
@@ -207,6 +219,8 @@ Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Aus
 - `Color::rgb(...)`, `Color::gray(...)`, `Color::cmyk(...)` und `Color::hex(...)`
 - `Opacity::fill(...)`, `Opacity::stroke(...)`, `Opacity::both(...)`
 - `TextSegment` fuer gemischte Inline-Stile innerhalb eines Absatzes
+- `link` direkt in `Page::addText(...)`
+- `link` direkt pro `TextSegment`
 - `bold`, `italic`, `underline`, `strikethrough` pro `TextSegment`
 - `TextAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `TextOverflow::CLIP` und `TextOverflow::ELLIPSIS` zusammen mit `maxLines`
@@ -219,6 +233,9 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 - `Page::addRectangle(...)` fuer Stroke, Fill oder Fill+Stroke
 - `Image::fromFile(...)` fuer automatische Erkennung von `jpg`, `jpeg` und unterstuetzten `png`
 - `Page::addImage(...)` fuer die Platzierung eines Bildes an einer festen Position
+- `Page::addLink(...)` fuer frei positionierbare klickbare Flaechen
+- `Page::addText(..., link: ...)` fuer klickbaren Text ohne manuelles Link-Rechteck
+- `TextSegment::link` fuer Links innerhalb von `addParagraph(...)` und `textFrame(...)`
 
 Beispiele:
 
@@ -240,6 +257,31 @@ $page->addRectangle(
 
 $image = Image::fromFile('assets/images/demo.jpg');
 $page->addImage($image, 110, 80, 70, 46.67);
+
+$page->addText(
+    text: 'OpenAI',
+    x: 20,
+    y: 50,
+    baseFont: 'Helvetica',
+    size: 12,
+    color: Color::rgb(0, 0, 255),
+    underline: true,
+    link: 'https://openai.com',
+);
+
+$frame->paragraph(
+    [
+        new TextSegment('Mehr Infos: '),
+        new TextSegment(
+            text: 'Docs',
+            color: Color::rgb(0, 0, 255),
+            link: 'https://platform.openai.com/docs',
+            underline: true,
+        ),
+    ],
+    'Helvetica',
+    12,
+);
 ```
 
 Ein kompakter Absatz mit gemischten Stilen sieht zum Beispiel so aus:
@@ -279,6 +321,7 @@ Der derzeit belastbare Einstieg ist:
 - Linien rendern
 - Rechtecke rendern
 - Bilder aus Dateien laden und platzieren
+- klickbare Links ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link`
 
 ## Aktuelle Grenzen
 

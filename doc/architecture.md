@@ -61,7 +61,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)` und `addImage(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `addLine(...)`, `addRectangle(...)`, `addImage(...)` und `addLink(...)`.
 
 Dabei passiert intern:
 
@@ -70,19 +70,22 @@ Dabei passiert intern:
 3. Der Text wird fontspezifisch encodiert.
 4. Ein `Text`-Element wird im `Contents`-Stream der Seite abgelegt.
 5. Nur wenn ein Struktur-Tag gesetzt ist, wird parallel ein `StructElem` fuer das Strukturmodell erzeugt.
+6. Falls `link` gesetzt ist, wird zusaetzlich eine `LinkAnnotation` mit passendem Rechteck an die Seite gehaengt.
 
 Beim Absatz-Rendering kommen zusaetzlich dazu:
 
-6. Eingaben werden zu `TextSegment`-Objekten normalisiert.
-7. Der Text wird in Tokens und Zeilen fuer den Umbruch zerlegt.
-8. Optional werden Alignment, `maxLines` und `TextOverflow` auf die sichtbaren Zeilen angewendet.
-9. Stilwechsel innerhalb eines Absatzes werden ueber mehrere `Text`-Elemente gerendert.
+7. Eingaben werden zu `TextSegment`-Objekten normalisiert.
+8. Der Text wird in Tokens und Zeilen fuer den Umbruch zerlegt.
+9. Optional werden Alignment, `maxLines` und `TextOverflow` auf die sichtbaren Zeilen angewendet.
+10. Stilwechsel innerhalb eines Absatzes werden ueber mehrere `Text`-Elemente gerendert.
+11. Segment-spezifische Links werden als einzelne `LinkAnnotation`-Objekte mitgefuehrt.
 
 Bei grafischen Inhalten kommt stattdessen dazu:
 
-6. `Line`- und `Rectangle`-Elemente werden direkt in `Contents` abgelegt.
-7. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
-8. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
+7. `Line`- und `Rectangle`-Elemente werden direkt in `Contents` abgelegt.
+8. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
+9. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
+10. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
 
 ### TextFrame
 
@@ -219,6 +222,22 @@ Die Bildintegration ist bewusst in zwei Teile getrennt:
 
 `Image::fromFile(...)` erkennt aktuell `JPEG` direkt und unterstuetzte `PNG`-Dateien ohne Alpha-Kanal automatisch.
 
+### LinkAnnotation
+
+Links werden aktuell nicht als sichtbares Content-Element gerendert, sondern als Annotation.
+
+`LinkAnnotation` rendert ein eigenes indirektes `/Annot`-Objekt mit:
+
+- `/Subtype /Link`
+- einem Rechteck in `/Rect`
+- einer URI-Action ueber `/A << /S /URI /URI (...) >>`
+- einer Rueckreferenz auf die Seite ueber `/P`
+
+Damit gibt es zwei API-Ebenen:
+
+- `Page::addLink(...)` fuer beliebige klickbare Flaechen
+- `Page::addText(..., link: ...)` und `TextSegment::link` fuer aus Textbreite abgeleitete Link-Rechtecke
+
 ### TextSegment
 
 `TextSegment` repraesentiert einen zusammenhaengenden Inline-Abschnitt mit einheitlichem Stil innerhalb eines Absatzes.
@@ -228,6 +247,7 @@ Ein Segment traegt aktuell:
 - `text`
 - optionale `Color`
 - optionale `Opacity`
+- optionalen `link`
 - `bold`
 - `italic`
 - `underline`

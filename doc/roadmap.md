@@ -19,6 +19,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
 - Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
+- Links und URI-Annotationen sind ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link` verfuegbar
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
 - Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
@@ -41,6 +42,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
+- erste Link-API ueber Annotationen und klickbaren Text
 
 ## Prioritaeten
 
@@ -86,10 +88,10 @@ Aktuell ist Text der belastbare End-to-End-Fall. Weitere Inhaltstypen sollten er
 
 Naechste Kandidaten:
 
-- Links oder Annotationen
 - weitere grafische Primitive oder ein allgemeinerer Path-Builder
 - Tabellen oder strukturierte Layout-Helfer
 - Ausbau der Bild-API, vor allem fuer PNG mit Alpha-Kanal
+- feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
 
 Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
 
