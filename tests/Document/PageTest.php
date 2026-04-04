@@ -200,6 +200,45 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_stroked_circle_to_the_page_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addCircle(100, 100, 30, 1.5, Color::rgb(255, 0, 0));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 130 m", $page->contents->render());
+        self::assertStringContainsString("130 100 c", $page->contents->render());
+        self::assertStringContainsString("\nh\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_fills_and_strokes_a_circle(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addCircle(100, 100, 30, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
+
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 130 m", $page->contents->render());
+        self::assertStringContainsString("\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_circles_without_stroke_or_fill(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Circle requires either a stroke or a fill.');
+
+        $page->addCircle(100, 100, 30, null, null, null);
+    }
+
+    #[Test]
     public function it_adds_a_link_annotation_to_the_page(): void
     {
         $document = new Document(version: 1.4);

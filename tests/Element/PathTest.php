@@ -48,4 +48,21 @@ final class PathTest extends TestCase
             $path->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_a_path_with_curves(): void
+    {
+        $path = new Path(['100 130 m', '116.568542 130 130 116.568542 130 100 c'], 1.0, '1 0 0 RG');
+
+        self::assertSame(
+            "q\n"
+            . "1 0 0 RG\n"
+            . "1 w\n"
+            . "100 130 m\n"
+            . "116.568542 130 130 116.568542 130 100 c\n"
+            . "S\n"
+            . "Q",
+            $path->render(),
+        );
+    }
 }

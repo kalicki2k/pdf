@@ -286,6 +286,76 @@ final class Page extends IndirectObject
         return $this;
     }
 
+    public function addCircle(
+        float $centerX,
+        float $centerY,
+        float $radius,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        if ($radius <= 0) {
+            throw new InvalidArgumentException('Circle radius must be greater than zero.');
+        }
+
+        if ($strokeWidth !== null && $strokeWidth <= 0) {
+            throw new InvalidArgumentException('Circle stroke width must be greater than zero.');
+        }
+
+        if ($strokeWidth === null && $fillColor === null) {
+            throw new InvalidArgumentException('Circle requires either a stroke or a fill.');
+        }
+
+        $controlOffset = $radius * 0.5522847498307936;
+
+        $path = $this->path()
+            ->moveTo($centerX, $centerY + $radius)
+            ->curveTo(
+                $centerX + $controlOffset,
+                $centerY + $radius,
+                $centerX + $radius,
+                $centerY + $controlOffset,
+                $centerX + $radius,
+                $centerY,
+            )
+            ->curveTo(
+                $centerX + $radius,
+                $centerY - $controlOffset,
+                $centerX + $controlOffset,
+                $centerY - $radius,
+                $centerX,
+                $centerY - $radius,
+            )
+            ->curveTo(
+                $centerX - $controlOffset,
+                $centerY - $radius,
+                $centerX - $radius,
+                $centerY - $controlOffset,
+                $centerX - $radius,
+                $centerY,
+            )
+            ->curveTo(
+                $centerX - $radius,
+                $centerY + $controlOffset,
+                $centerX - $controlOffset,
+                $centerY + $radius,
+                $centerX,
+                $centerY + $radius,
+            )
+            ->close();
+
+        if ($strokeWidth !== null && $fillColor !== null) {
+            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
+        }
+
+        if ($fillColor !== null) {
+            return $path->fill($fillColor, $opacity);
+        }
+
+        return $path->stroke($strokeWidth, $strokeColor, $opacity);
+    }
+
     public function addLink(
         float $x,
         float $y,

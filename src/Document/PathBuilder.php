@@ -32,6 +32,24 @@ final class PathBuilder
         return $this;
     }
 
+    public function curveTo(
+        float $x1,
+        float $y1,
+        float $x2,
+        float $y2,
+        float $x3,
+        float $y3,
+    ): self {
+        $this->commands[] = Path::formatNumber($x1) . ' '
+            . Path::formatNumber($y1) . ' '
+            . Path::formatNumber($x2) . ' '
+            . Path::formatNumber($y2) . ' '
+            . Path::formatNumber($x3) . ' '
+            . Path::formatNumber($y3) . ' c';
+
+        return $this;
+    }
+
     public function close(): self
     {
         $this->commands[] = 'h';
