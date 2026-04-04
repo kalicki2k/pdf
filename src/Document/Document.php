@@ -43,6 +43,7 @@ final class Document
     private array $structElems = [];
     public Catalog $catalog;
     public Info $info;
+    public ?OutlineRoot $outlineRoot = null;
     public ?ParentTree $parentTree = null;
     public Pages $pages;
     public ?StructTreeRoot $structTreeRoot = null;
@@ -88,6 +89,14 @@ final class Document
 
         $objects[] = $this->catalog;
         $objects[] = $this->pages;
+
+        if ($this->outlineRoot !== null) {
+            $objects[] = $this->outlineRoot;
+
+            foreach ($this->outlineRoot->getItems() as $outlineItem) {
+                $objects[] = $outlineItem;
+            }
+        }
 
         if ($this->structTreeRoot !== null) {
             $objects[] = $this->structTreeRoot;
@@ -157,6 +166,18 @@ final class Document
         $this->applyPageDecorators($page);
 
         return $page;
+    }
+
+    public function addOutline(string $title, Page $page): self
+    {
+        if ($title === '') {
+            throw new InvalidArgumentException('Outline title must not be empty.');
+        }
+
+        $this->outlineRoot ??= new OutlineRoot(++$this->objectId);
+        $this->outlineRoot->addItem(new OutlineItem(++$this->objectId, $this->outlineRoot, $title, $page));
+
+        return $this;
     }
 
     /**

@@ -275,6 +275,8 @@ $frame->numberedList(
     numberColor: Color::rgb(220, 20, 60),
 );
 
+$document->addOutline('Hallo PDF', $page);
+
 $pdfContent = $document->render();
 
 file_put_contents('hello.pdf', $pdfContent);
@@ -294,7 +296,8 @@ file_put_contents('hello.pdf', $pdfContent);
 10. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
 11. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
 12. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
-13. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+13. `addOutline(...)` registriert Bookmarks fuer die Viewer-Navigation im PDF.
+14. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Tabellen
 

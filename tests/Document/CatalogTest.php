@@ -50,4 +50,18 @@ final class CatalogTest extends TestCase
             $catalog->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_outline_references_when_document_outlines_exist(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $document->addOutline('Intro', $page);
+        $catalog = new Catalog(1, $document);
+
+        self::assertSame(
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Outlines 7 0 R /PageMode /UseOutlines >>\nendobj\n",
+            $catalog->render(),
+        );
+    }
 }

@@ -744,6 +744,19 @@ $badgePage->addBadge(
     ),
 );
 
+$document
+    ->addOutline('Noto Sans', $sansPage)
+    ->addOutline('Noto Serif', $serifPage)
+    ->addOutline('Noto Sans Mono', $monoPage)
+    ->addOutline('Noto Sans CJK', $cjkPage)
+    ->addOutline('Helvetica', $standardPage)
+    ->addOutline('Table Demo', $tablePage)
+    ->addOutline('Padding Demo', $paddingPage)
+    ->addOutline('Long Table Demo', $longTablePage)
+    ->addOutline('Bullet List Demo', $bulletPage)
+    ->addOutline('Numbered List Demo', $numberedPage)
+    ->addOutline('Badge Demo', $badgePage);
+
 //$coverPage = $document->addPage(\Kalle\Pdf\Layout\PageSize::A4());
 //$coverFrame = $coverPage->textFrame(20, 265, 170);
 //$coverFrame

@@ -27,6 +27,7 @@ Verantwortlich fuer:
 - optionale dokumenteigene Font-Konfiguration
 - Verwaltung aller Seiten
 - optionale wiederkehrende Header- und Footer-Renderer fuer neue Seiten
+- optionale Outline-/Bookmark-Navigation fuer PDF-Viewer
 - Vergabe von Objekt-IDs
 - lazy Aufbau der Strukturdaten fuer Tagged-Inhalte
 - Start des Renderings
@@ -35,10 +36,13 @@ Wichtige Methoden:
 
 - `addPage()` erzeugt eine neue Seite mit eigener `Contents`- und `Resources`-Instanz
 - `addHeader()` und `addFooter()` registrieren Seiten-Callbacks, die bei jeder neuen Seite ausgefuehrt werden
+- `addOutline()` registriert einen Bookmark-Eintrag fuer eine Zielseite
 - `addFont()` registriert Fonts im Dokument
 - `addKeyword()` pflegt die Dokument-Keywords
 - `render()` delegiert an `PdfRenderer`
 - `getDocumentObjects()` liefert die Menge aller zu rendernden indirekten Objekte
+
+Wenn Outlines vorhanden sind, erzeugt `Document` zusaetzlich ein `OutlineRoot`-Objekt und eine flache Liste von `OutlineItem`-Objekten. Der `Catalog` verweist dann ueber `/Outlines` auf diese Navigationsstruktur und setzt `/PageMode /UseOutlines`.
 
 ### Pages
 

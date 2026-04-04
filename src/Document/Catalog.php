@@ -25,6 +25,11 @@ final class Catalog extends IndirectObject
             'Pages' => new ReferenceType($this->document->pages),
         ]);
 
+        if ($this->document->outlineRoot !== null) {
+            $dictionary->add('Outlines', new ReferenceType($this->document->outlineRoot));
+            $dictionary->add('PageMode', new NameType('UseOutlines'));
+        }
+
         if ($this->document->version >= 1.4 && $this->document->structTreeRoot !== null) {
             $dictionary->add('MarkInfo', new DictionaryType([
                 'Marked' => new BooleanType(true),

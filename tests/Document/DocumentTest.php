@@ -166,6 +166,26 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_registers_outline_objects_and_links_them_to_pages(): void
+    {
+        $document = new Document(version: 1.4);
+        $firstPage = $document->addPage(100.0, 200.0);
+        $secondPage = $document->addPage(100.0, 200.0);
+
+        $document
+            ->addOutline('Erste Seite', $firstPage)
+            ->addOutline('Zweite Seite', $secondPage);
+
+        self::assertSame([1, 2, 10, 11, 12, 3, 4, 6, 5, 7, 9, 8], array_map(
+            static fn (object $object): int => $object->id,
+            $document->getDocumentObjects(),
+        ));
+        self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /Outlines /Count 2 /First 11 0 R /Last 12 0 R >>', $document->render());
+        self::assertStringContainsString('11 0 obj' . "\n" . '<< /Title (Erste Seite) /Parent 10 0 R /Dest [4 0 R /Fit] /Next 12 0 R >>', $document->render());
+        self::assertStringContainsString('12 0 obj' . "\n" . '<< /Title (Zweite Seite) /Parent 10 0 R /Dest [7 0 R /Fit] /Prev 11 0 R >>', $document->render());
+    }
+
+    #[Test]
     public function it_rejects_combining_page_size_and_explicit_height(): void
     {
         $document = new Document(version: 1.4);

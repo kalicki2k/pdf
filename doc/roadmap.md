@@ -11,6 +11,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Dokument-Metadaten sind vorhanden
 - Seiten, Ressourcen und Content-Streams sind getrennt modelliert
 - Header und Footer koennen ueber Dokument-Callbacks auf allen neuen Seiten registriert werden
+- PDF-Outlines bzw. Bookmarks koennen ueber `addOutline(...)` registriert werden
 - Text wird ueber registrierte Fonts gerendert
 - `addParagraph()` und `TextFrame` decken ersten Absatz- und Flow-Layout-Bedarf ab
 - `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
@@ -57,6 +58,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Kreis-API auf Basis von Bezier-Pfaden
 - weitere Form-APIs fuer Ellipsen, Polygone, Pfeile und Sterne
 - erste Link-API ueber Annotationen und klickbaren Text
+- erste Outline-/Bookmark-API fuer Viewer-Navigation
 
 ## Prioritaeten
 
