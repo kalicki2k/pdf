@@ -168,7 +168,7 @@ final class TextFrameTest extends TestCase
         );
 
         self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("20 88 Td\n(world...) Tj", $page->contents->render());
+        self::assertStringContainsString("20 88 Td\n(world\x85) Tj", $page->contents->render());
         self::assertSame(68.0, $frame->getCursorY());
     }
 

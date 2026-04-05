@@ -1933,7 +1933,7 @@ final class PageTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString("15 32 Td\n(Hello...) Tj", $page->contents->render());
+        self::assertStringContainsString("15 32 Td\n(Hello\x85) Tj", $page->contents->render());
     }
 
     #[Test]
@@ -2000,7 +2000,7 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n(world...) Tj", $page->contents->render());
+        self::assertStringContainsString("10 38 Td\n(world\x85) Tj", $page->contents->render());
         self::assertStringNotContainsString('(from) Tj', $page->contents->render());
         self::assertStringNotContainsString('(PDF) Tj', $page->contents->render());
     }
@@ -2025,7 +2025,7 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
-        self::assertStringContainsString("/F2 10 Tf\n10 38 Td\n(Hello wor...) Tj", $page->contents->render());
+        self::assertStringContainsString("/F2 10 Tf\n10 38 Td\n(Hello worl\x85) Tj", $page->contents->render());
         self::assertStringNotContainsString('(world) Tj', $page->contents->render());
     }
 

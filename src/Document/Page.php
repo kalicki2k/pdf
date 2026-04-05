@@ -2599,12 +2599,12 @@ final class Page extends IndirectObject
     private function appendEllipsisToLine(array $line, string $baseFont, int $size, float $maxWidth): array
     {
         $line = $this->trimTrailingWhitespaceFromLine($line);
-        $ellipsisSegment = $this->buildEllipsisSegment($line);
+        $ellipsisSegment = $this->buildEllipsisSegment($line, $baseFont);
 
         while ($line !== [] && $this->measureLineWidthWithSegment($line, $ellipsisSegment, $baseFont, $size) > $maxWidth) {
             $this->removeLastCharacterFromLine($line);
             $line = $this->trimTrailingWhitespaceFromLine($line);
-            $ellipsisSegment = $this->buildEllipsisSegment($line);
+            $ellipsisSegment = $this->buildEllipsisSegment($line, $baseFont);
         }
 
         while ($ellipsisSegment->text !== '' && $this->measureSegmentsWidth([$ellipsisSegment], $baseFont, $size) > $maxWidth) {
@@ -2668,18 +2668,18 @@ final class Page extends IndirectObject
     /**
      * @param array<int, TextSegment> $line
      */
-    private function buildEllipsisSegment(array $line): TextSegment
+    private function buildEllipsisSegment(array $line, string $baseFont): TextSegment
     {
         $lastIndex = array_key_last($line);
 
         if ($lastIndex === null) {
-            return new TextSegment('...');
+            return new TextSegment($this->resolveEllipsisText($baseFont, null));
         }
 
         $lastSegment = $line[$lastIndex];
 
         return new TextSegment(
-            '...',
+            $this->resolveEllipsisText($baseFont, $lastSegment),
             $lastSegment->color,
             $lastSegment->opacity,
             $lastSegment->link,
@@ -2688,6 +2688,17 @@ final class Page extends IndirectObject
             $lastSegment->underline,
             $lastSegment->strikethrough,
         );
+    }
+
+    private function resolveEllipsisText(string $baseFont, ?TextSegment $segment): string
+    {
+        $fontName = $segment === null
+            ? $baseFont
+            : $this->resolveStyledBaseFont($baseFont, $segment);
+
+        $font = $this->resolveFont($fontName);
+
+        return $font->supportsText('…') ? '…' : '...';
     }
 
     /**
