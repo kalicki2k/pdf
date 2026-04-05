@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Catalog;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Position;
 use Kalle\Pdf\Document\StructureTag;
 use Kalle\Pdf\Document\TextOptions;
 use PHPUnit\Framework\Attributes\Test;
@@ -30,7 +31,7 @@ final class CatalogTest extends TestCase
     {
         $document = new Document(version: 1.4, language: 'de-DE');
         $document->registerFont('Helvetica');
-        $document->addPage()->addText('Hello', 10, 20, 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
         $catalog = new Catalog(1, $document);
 
         self::assertSame(

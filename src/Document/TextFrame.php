@@ -47,8 +47,7 @@ final class TextFrame
 
         $this->page->addText(
             text: $text,
-            x: $this->x,
-            y: $this->cursorY,
+            position: new Position($this->x, $this->cursorY),
             fontName: $fontName,
             size: $size,
             options: $options,
@@ -228,8 +227,7 @@ final class TextFrame
 
             $this->page->addText(
                 text: $markerRenderer($index),
-                x: $this->x,
-                y: $this->cursorY,
+                position: new Position($this->x, $this->cursorY),
                 fontName: $baseFont,
                 size: $size,
                 options: new TextOptions(

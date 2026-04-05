@@ -16,6 +16,7 @@ use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\ParagraphOptions;
+use Kalle\Pdf\Document\Position;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\StructureTag;
@@ -132,8 +133,7 @@ $document
     ->addHeader(static function (Page $page, int $pageNumber): void {
         $page->addText(
             "Kalle PDF Demo - Seite $pageNumber",
-            Units::mm(20),
-            $page->getHeight() - Units::mm(10),
+            new Position(Units::mm(20), $page->getHeight() - Units::mm(10)),
             'Helvetica',
             9,
             new \Kalle\Pdf\Document\TextOptions(color: Color::gray(0.35)),
@@ -304,8 +304,7 @@ $serifPage->addRectangle(
 
 $serifPage->addText(
     text: 'Google Website',
-    x: 20,
-    y: 235,
+    position: new Position(20, 235),
     fontName: 'NotoSans-Regular',
     size: 12,
     options: new \Kalle\Pdf\Document\TextOptions(
@@ -802,8 +801,7 @@ $panelPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units
 
 $panelPage->addText(
     text: 'Zur Table Demo springen',
-    x: Units::mm(20),
-    y: Units::mm(240),
+    position: new Position(Units::mm(20), Units::mm(240)),
     fontName: 'NotoSans-Regular',
     size: 11,
     options: new \Kalle\Pdf\Document\TextOptions(
@@ -1028,8 +1026,7 @@ $attachmentPage->addPanel(
 
 $attachmentPage->addText(
     text: 'Zur Action Demo springen',
-    x: Units::mm(20),
-    y: Units::mm(165),
+    position: new Position(Units::mm(20), Units::mm(165)),
     fontName: 'NotoSans-Regular',
     size: 11,
     options: new \Kalle\Pdf\Document\TextOptions(
@@ -1052,7 +1049,7 @@ if ($readmeAttachment !== null) {
         'Graph',
         'README.md als eingebettete Datei',
     );
-    $attachmentPage->addText('README.md', Units::mm(38), Units::mm(152), 'Helvetica', 11);
+    $attachmentPage->addText('README.md', new Position(Units::mm(38), Units::mm(152)), 'Helvetica', 11);
 }
 
 if ($noteAttachment !== null) {
@@ -1065,7 +1062,7 @@ if ($noteAttachment !== null) {
         'Paperclip',
         'demo-note.txt als eingebettete Datei',
     );
-    $attachmentPage->addText('demo-note.txt', Units::mm(38), Units::mm(140), 'Helvetica', 11);
+    $attachmentPage->addText('demo-note.txt', new Position(Units::mm(38), Units::mm(140)), 'Helvetica', 11);
 }
 
 $notesLayer = $document->addLayer('Notes');
@@ -1245,7 +1242,7 @@ $annotationPage->addPanel(
     ),
 );
 
-$annotationPage->addText('Kommentar und FreeText:', Units::mm(20), Units::mm(192), 'Helvetica', 11);
+$annotationPage->addText('Kommentar und FreeText:', new Position(Units::mm(20), Units::mm(192)), 'Helvetica', 11);
 $annotationPage->addTextAnnotation(
     Units::mm(20),
     Units::mm(175),
@@ -1270,8 +1267,8 @@ $annotationPage->addFreeTextAnnotation(
     'QA',
 );
 
-$annotationPage->addText('Markup-Annotationen:', Units::mm(20), Units::mm(150), 'Helvetica', 11);
-$annotationPage->addText('Markierter Beispielsatz fuer Highlight, Underline, StrikeOut und Squiggly.', Units::mm(20), Units::mm(136), 'Helvetica', 11);
+$annotationPage->addText('Markup-Annotationen:', new Position(Units::mm(20), Units::mm(150)), 'Helvetica', 11);
+$annotationPage->addText('Markierter Beispielsatz fuer Highlight, Underline, StrikeOut und Squiggly.', new Position(Units::mm(20), Units::mm(136)), 'Helvetica', 11);
 $annotationPage->addHighlightAnnotation(
     Units::mm(20),
     Units::mm(132),
@@ -1309,7 +1306,7 @@ $annotationPage->addSquigglyAnnotation(
     'QA',
 );
 
-$annotationPage->addText('Stamp und FileAttachment:', Units::mm(20), Units::mm(110), 'Helvetica', 11);
+$annotationPage->addText('Stamp und FileAttachment:', new Position(Units::mm(20), Units::mm(110)), 'Helvetica', 11);
 $annotationPage->addStampAnnotation(
     Units::mm(20),
     Units::mm(92),
@@ -1332,10 +1329,10 @@ if ($annotationAttachment !== null) {
         'PushPin',
         'demo-note.txt als sichtbarer Dateianhang',
     );
-    $annotationPage->addText('demo-note.txt', Units::mm(78), Units::mm(94), 'Helvetica', 11);
+    $annotationPage->addText('demo-note.txt', new Position(Units::mm(78), Units::mm(94)), 'Helvetica', 11);
 }
 
-$annotationPage->addText('Square, Circle und Ink:', Units::mm(20), Units::mm(72), 'Helvetica', 11);
+$annotationPage->addText('Square, Circle und Ink:', new Position(Units::mm(20), Units::mm(72)), 'Helvetica', 11);
 $annotationPage->addSquareAnnotation(
     Units::mm(20),
     Units::mm(48),
@@ -1376,7 +1373,7 @@ $annotationPage->addInkAnnotation(
     'Ink',
     'QA',
 );
-$annotationPage->addText('Line, PolyLine und Polygon:', Units::mm(20), Units::mm(40), 'Helvetica', 11);
+$annotationPage->addText('Line, PolyLine und Polygon:', new Position(Units::mm(20), Units::mm(40)), 'Helvetica', 11);
 $annotationPage->addLineAnnotation(
     Units::mm(20),
     Units::mm(28),
@@ -1436,8 +1433,7 @@ $annotationPage->addCaretAnnotation(
 );
 $annotationPage->addText(
     text: 'Die Geometrie-Annotationen unten tragen Betreff und Popup.',
-    x: Units::mm(20),
-    y: Units::mm(8),
+    position: new Position(Units::mm(20), Units::mm(8)),
     fontName: 'Helvetica',
     size: 9,
     options: new \Kalle\Pdf\Document\TextOptions(color: Color::gray(0.35)),
@@ -1445,8 +1441,7 @@ $annotationPage->addText(
 
 $annotationPage->addText(
     text: 'Zur Layer Demo springen',
-    x: Units::mm(20),
-    y: Units::mm(12),
+    position: new Position(Units::mm(20), Units::mm(12)),
     fontName: 'NotoSans-Regular',
     size: 11,
     options: new \Kalle\Pdf\Document\TextOptions(
@@ -1560,8 +1555,7 @@ $layerPage->addPushButton(
 
 $layerPage->addText(
     text: 'Zur Form Demo springen',
-    x: Units::mm(20),
-    y: Units::mm(130),
+    position: new Position(Units::mm(20), Units::mm(130)),
     fontName: 'NotoSans-Regular',
     size: 11,
     options: new \Kalle\Pdf\Document\TextOptions(
@@ -1581,7 +1575,7 @@ $formPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units:
         new ParagraphOptions(structureTag: StructureTag::Paragraph),
     );
 
-$formPage->addText('Name', Units::mm(20), Units::mm(225), 'Helvetica', 11);
+$formPage->addText('Name', new Position(Units::mm(20), Units::mm(225)), 'Helvetica', 11);
 $formPage->addTextField(
     'customer_name',
     Units::mm(20),
@@ -1594,7 +1588,7 @@ $formPage->addTextField(
     defaultValue: 'Grace Hopper',
 );
 
-$formPage->addText('E-Mail', Units::mm(20), Units::mm(190), 'Helvetica', 11);
+$formPage->addText('E-Mail', new Position(Units::mm(20), Units::mm(190)), 'Helvetica', 11);
 $formPage->addTextField(
     'customer_email',
     Units::mm(20),
@@ -1618,13 +1612,12 @@ $formPage->addCheckbox(
 );
 $formPage->addText(
     'Ich bestaetige die Testdaten fuer dieses Formular.',
-    Units::mm(30),
-    Units::mm(151),
+    new Position(Units::mm(30), Units::mm(151)),
     'Helvetica',
     11,
 );
 
-$formPage->addText('Versand', Units::mm(20), Units::mm(132), 'Helvetica', 11);
+$formPage->addText('Versand', new Position(Units::mm(20), Units::mm(132)), 'Helvetica', 11);
 $formPage->addRadioButton(
     'delivery',
     'standard',
@@ -1635,8 +1628,7 @@ $formPage->addRadioButton(
 );
 $formPage->addText(
     'Standard',
-    Units::mm(30),
-    Units::mm(119),
+    new Position(Units::mm(30), Units::mm(119)),
     'Helvetica',
     11,
 );
@@ -1650,13 +1642,12 @@ $formPage->addRadioButton(
 );
 $formPage->addText(
     'Express',
-    Units::mm(80),
-    Units::mm(119),
+    new Position(Units::mm(80), Units::mm(119)),
     'Helvetica',
     11,
 );
 
-$formPage->addText('Land', Units::mm(20), Units::mm(100), 'Helvetica', 11);
+$formPage->addText('Land', new Position(Units::mm(20), Units::mm(100)), 'Helvetica', 11);
 $formPage->addComboBox(
     'country',
     Units::mm(20),
@@ -1674,7 +1665,7 @@ $formPage->addComboBox(
     defaultValue: 'at',
 );
 
-$formPage->addText('Freitext Land', Units::mm(115), Units::mm(100), 'Helvetica', 11);
+$formPage->addText('Freitext Land', new Position(Units::mm(115), Units::mm(100)), 'Helvetica', 11);
 $formPage->addComboBox(
     'custom_country',
     Units::mm(115),
@@ -1693,7 +1684,7 @@ $formPage->addComboBox(
     defaultValue: 'at',
 );
 
-$formPage->addText('Notizen', Units::mm(20), Units::mm(68), 'Helvetica', 11);
+$formPage->addText('Notizen', new Position(Units::mm(20), Units::mm(68)), 'Helvetica', 11);
 $formPage->addTextField(
     'notes',
     Units::mm(20),
@@ -1706,7 +1697,7 @@ $formPage->addTextField(
     true,
 );
 
-$formPage->addText('Unterschrift', Units::mm(20), Units::mm(34), 'Helvetica', 11);
+$formPage->addText('Unterschrift', new Position(Units::mm(20), Units::mm(34)), 'Helvetica', 11);
 $formPage->addSignatureField(
     'approval_signature',
     Units::mm(20),
@@ -1765,7 +1756,7 @@ $formPage->addPushButton(
     action: new GoToAction('table-demo'),
 );
 
-$formPage->addText('PIN', Units::mm(155), Units::mm(106), 'Helvetica', 11);
+$formPage->addText('PIN', new Position(Units::mm(155), Units::mm(106)), 'Helvetica', 11);
 $formPage->addTextField(
     'pin',
     Units::mm(155),
@@ -1780,7 +1771,7 @@ $formPage->addTextField(
     new FormFieldFlags(password: true),
 );
 
-$formPage->addText('Themen', Units::mm(115), Units::mm(88), 'Helvetica', 11);
+$formPage->addText('Themen', new Position(Units::mm(115), Units::mm(88)), 'Helvetica', 11);
 $formPage->addListBox(
     'topics',
     Units::mm(115),
@@ -1798,7 +1789,7 @@ $formPage->addListBox(
     defaultValue: 'pdf',
 );
 
-$formPage->addText('Mehrfachwahl', Units::mm(155), Units::mm(88), 'Helvetica', 11);
+$formPage->addText('Mehrfachwahl', new Position(Units::mm(155), Units::mm(88)), 'Helvetica', 11);
 $formPage->addListBox(
     'topic_selection',
     Units::mm(155),

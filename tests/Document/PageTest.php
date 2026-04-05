@@ -12,12 +12,14 @@ use Kalle\Pdf\Document\GoToAction;
 use Kalle\Pdf\Document\GoToRemoteAction;
 use Kalle\Pdf\Document\HideAction;
 use Kalle\Pdf\Document\ImportDataAction;
+use Kalle\Pdf\Document\Insets;
 use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\LaunchAction;
 use Kalle\Pdf\Document\LineEndingStyle;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\ParagraphOptions;
+use Kalle\Pdf\Document\Position;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\StructureTag;
@@ -433,7 +435,7 @@ final class PageTest extends TestCase
         $page = $document->addPage();
 
         $result = $page->layer('Notes', static function (\Kalle\Pdf\Document\Page $page): void {
-            $page->addText('Layered', 10, 20, 'Helvetica', 12);
+            $page->addText('Layered', new Position(10, 20), 'Helvetica', 12);
         });
 
         self::assertSame($page, $result);
@@ -451,7 +453,7 @@ final class PageTest extends TestCase
         $page = $document->addPage();
 
         $page->layer($layer, static function (\Kalle\Pdf\Document\Page $page): void {
-            $page->addText('Layered', 10, 20, 'Helvetica', 12);
+            $page->addText('Layered', new Position(10, 20), 'Helvetica', 12);
         });
 
         self::assertStringContainsString('/Properties << /OC1 5 0 R >>', $page->resources->render());
@@ -1642,7 +1644,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addText('Hello', 10, 20, 'Helvetica', 12, new TextOptions(link: LinkTarget::externalUrl('https://example.com')));
+        $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(link: LinkTarget::externalUrl('https://example.com')));
 
         self::assertStringContainsString('(Hello) Tj', $page->contents->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
@@ -1705,7 +1707,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Font 'Helvetica' is not registered.");
 
-        $page->addText('Hello', 10, 20, 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
     }
 
     #[Test]
@@ -1715,7 +1717,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $result = $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Font << /F1 4 0 R >>', $page->resources->render());
@@ -1732,7 +1734,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addText('Hello', 10, 20, 'Helvetica', 12);
+        $result = $page->addText('Hello', new Position(10, 20), 'Helvetica', 12);
 
         self::assertSame($page, $result);
         self::assertStringContainsString('(Hello) Tj', $page->contents->render());
@@ -1749,8 +1751,7 @@ final class PageTest extends TestCase
 
         $result = $page->addText(
             'Hello',
-            10,
-            20,
+            new Position(10, 20),
             options: new TextOptions(
                 color: Color::rgb(255, 0, 0),
                 opacity: Opacity::fill(0.5),
@@ -1775,7 +1776,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addText('Hello', 10, 20, options: new TextOptions(structureTag: StructureTag::Paragraph));
+        $page->addText('Hello', new Position(10, 20), options: new TextOptions(structureTag: StructureTag::Paragraph));
 
         self::assertStringContainsString('/P << /MCID 0 >> BDC', $page->contents->render());
         self::assertStringContainsString('/Type /StructElem /S /P', $document->render());
@@ -1788,7 +1789,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, new TextOptions(opacity: Opacity::fill(0.5)));
+        $result = $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(opacity: Opacity::fill(0.5)));
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
@@ -1802,7 +1803,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, new TextOptions(color: Color::rgb(255, 0, 0)));
+        $result = $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(color: Color::rgb(255, 0, 0)));
 
         self::assertSame($page, $result);
         self::assertStringContainsString("1 0 0 rg\n(Hello) Tj", $page->contents->render());
@@ -1815,8 +1816,8 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addText('Red', 10, 40, 'Helvetica', 12, new TextOptions(color: Color::rgb(255, 0, 0)));
-        $page->addText('Default', 10, 20, 'Helvetica', 12);
+        $page->addText('Red', new Position(10, 40), 'Helvetica', 12, new TextOptions(color: Color::rgb(255, 0, 0)));
+        $page->addText('Default', new Position(10, 20), 'Helvetica', 12);
 
         self::assertStringContainsString("1 0 0 rg\n(Red) Tj\nET\nQ\nq\nBT\n/F1 12 Tf\n10 20 Td\n(Default) Tj", $page->contents->render());
     }
@@ -1831,7 +1832,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Font 'Helvetica' does not support the provided text.");
 
-        $page->addText('漢', 10, 20, 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $page->addText('漢', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
     }
 
     #[Test]
@@ -1841,7 +1842,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addText('Straße', 10, 20, 'Helvetica', 12);
+        $page->addText('Straße', new Position(10, 20), 'Helvetica', 12);
 
         self::assertStringContainsString("(Stra\xA7e) Tj", $page->contents->render());
         self::assertStringContainsString('/BaseEncoding /StandardEncoding', $document->render());
@@ -1854,7 +1855,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addText('ÄäÖöÜüßàáçèé', 10, 20, 'Helvetica', 12);
+        $page->addText('ÄäÖöÜüßàáçèé', new Position(10, 20), 'Helvetica', 12);
 
         self::assertStringContainsString("(\x80\x8A\x85\x9A\x86\x9F\xA7\x88\x87\x8D\x8F\x8E) Tj", $page->contents->render());
         self::assertStringContainsString('/Adieresis', $document->render());
@@ -1872,7 +1873,7 @@ final class PageTest extends TestCase
         $page = $document->addPage();
 
         $text = 'ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨ÆØ±¥µªºæø';
-        $page->addText($text, 10, 20, 'Helvetica', 12);
+        $page->addText($text, new Position(10, 20), 'Helvetica', 12);
 
         self::assertStringContainsString(
             "(\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F\xA0\xA1\xA2\xA3\xA4\xA5\xA6\xA7\xA8\xA9\xAA\xAB\xAC\xAE\xAF\xB1\xB4\xB5\xBB\xBC\xBE\xBF) Tj",
@@ -1888,7 +1889,7 @@ final class PageTest extends TestCase
         $page = $document->addPage();
 
         $text = 'ÄÖÜäöüßàáâãåçèéêëíìîïñóòôõúùûü€ŒœŠšŽžŸ„“”‘’…–—•™';
-        $page->addText($text, 10, 20, 'Helvetica', 12);
+        $page->addText($text, new Position(10, 20), 'Helvetica', 12);
 
         self::assertStringContainsString(
             "(\xC4\xD6\xDC\xE4\xF6\xFC\xDF\xE0\xE1\xE2\xE3\xE5\xE7\xE8\xE9\xEA\xEB\xED\xEC\xEE\xEF\xF1\xF3\xF2\xF4\xF5\xFA\xF9\xFB\xFC\x80\x8C\x9C\x8A\x9A\x8E\x9E\x9F\x84\x93\x94\x91\x92\x85\x96\x97\x95\x99) Tj",
@@ -1907,7 +1908,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Font 'Helvetica' does not support the provided text.");
 
-        $page->addText('Ł', 10, 20, 'Helvetica', 12);
+        $page->addText('Ł', new Position(10, 20), 'Helvetica', 12);
     }
 
     #[Test]
@@ -1947,7 +1948,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addTextBox('Hello world from PDF', 10, 20, 40, 40, 'Helvetica', 10);
+        $result = $page->addTextBox('Hello world from PDF', new Position(10, 20), 40, 40, 'Helvetica', 10);
 
         self::assertSame($page, $result);
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
@@ -1961,8 +1962,8 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTextBox('Hello', 10, 20, 80, 30, 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::MIDDLE));
-        $page->addTextBox('World', 10, 60, 80, 30, 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::BOTTOM));
+        $page->addTextBox('Hello', new Position(10, 20), 80, 30, 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::MIDDLE));
+        $page->addTextBox('World', new Position(10, 60), 80, 30, 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::BOTTOM));
 
         self::assertStringContainsString("10 30 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("10 60 Td\n(World) Tj", $page->contents->render());
@@ -1977,8 +1978,7 @@ final class PageTest extends TestCase
 
         $page->addTextBox(
             'Hello world from PDF',
-            10,
-            20,
+            new Position(10, 20),
             50,
             24,
             'Helvetica',
@@ -1986,10 +1986,7 @@ final class PageTest extends TestCase
             new TextBoxOptions(
                 lineHeight: 12,
                 overflow: TextOverflow::ELLIPSIS,
-                paddingTop: 2,
-                paddingRight: 5,
-                paddingBottom: 2,
-                paddingLeft: 5,
+                padding: new Insets(2, 5, 2, 5),
             ),
         );
 

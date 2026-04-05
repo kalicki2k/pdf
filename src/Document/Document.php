@@ -429,8 +429,7 @@ final class Document
                     [(string) $pageNumber, (string) $totalPages],
                     $template,
                 ),
-                $x,
-                $y,
+                new Position($x, $y),
                 $baseFont,
                 $size,
             );
@@ -672,23 +671,20 @@ final class Document
 
             $currentPage->addText(
                 $entryTitle,
-                $margin,
-                $currentY,
+                new Position($margin, $currentY),
                 $baseFont,
                 $entrySize,
                 new TextOptions(link: LinkTarget::namedDestination($destinationName)),
             );
             $currentPage->addText(
                 $leaders,
-                $margin + $entryTitleWidth + 4.0,
-                $currentY,
+                new Position($margin + $entryTitleWidth + 4.0, $currentY),
                 $baseFont,
                 $entrySize,
             );
             $currentPage->addText(
                 $pageNumberText,
-                $page->getWidth() - $margin - $pageNumberWidth,
-                $currentY,
+                new Position($page->getWidth() - $margin - $pageNumberWidth, $currentY),
                 $baseFont,
                 $entrySize,
                 new TextOptions(link: LinkTarget::namedDestination($destinationName)),

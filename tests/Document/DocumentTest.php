@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\ParagraphOptions;
+use Kalle\Pdf\Document\Position;
 use Kalle\Pdf\Document\StructureTag;
 use Kalle\Pdf\Document\TextOptions;
 use Kalle\Pdf\Font\UnicodeFont;
@@ -185,10 +186,10 @@ final class DocumentTest extends TestCase
         $document->registerFont('Helvetica');
         $document
             ->addHeader(static function (Page $page, int $pageNumber): void {
-                $page->addText("Header $pageNumber", 10, 90, 'Helvetica', 10);
+                $page->addText("Header $pageNumber", new Position(10, 90), 'Helvetica', 10);
             })
             ->addFooter(static function (Page $page, int $pageNumber): void {
-                $page->addText("Footer $pageNumber", 10, 10, 'Helvetica', 10);
+                $page->addText("Footer $pageNumber", new Position(10, 10), 'Helvetica', 10);
             });
 
         $firstPage = $document->addPage(100, 100);
@@ -207,10 +208,10 @@ final class DocumentTest extends TestCase
         $document->registerFont('Helvetica');
         $document
             ->addHeader(static function (Page $page, int $pageNumber): void {
-                $page->addText("Header $pageNumber", 10, 50, 'Helvetica', 10);
+                $page->addText("Header $pageNumber", new Position(10, 50), 'Helvetica', 10);
             })
             ->addFooter(static function (Page $page, int $pageNumber): void {
-                $page->addText("Footer $pageNumber", 10, 5, 'Helvetica', 10);
+                $page->addText("Footer $pageNumber", new Position(10, 5), 'Helvetica', 10);
             });
 
         $firstPage = $document->addPage(100, 60);
@@ -586,7 +587,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4, language: 'de-DE');
         $document->registerFont('Helvetica');
-        $document->addPage()->addText('Hello', 10, 20, 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
 
         $output = $document->render();
 

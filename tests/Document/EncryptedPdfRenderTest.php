@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Position;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use PHPUnit\Framework\Attributes\Test;
@@ -28,7 +29,7 @@ final class EncryptedPdfRenderTest extends TestCase
         $document->registerFont('Helvetica');
 
         $page = $document->addPage();
-        $page->addText('Visible Secret', 20, 20, 'Helvetica', 12);
+        $page->addText('Visible Secret', new Position(20, 20), 'Helvetica', 12);
 
         $pdf = $document->render();
 
@@ -54,7 +55,7 @@ final class EncryptedPdfRenderTest extends TestCase
         $document->registerFont('Helvetica');
 
         $page = $document->addPage();
-        $page->addText('Visible AES Secret', 20, 20, 'Helvetica', 12);
+        $page->addText('Visible AES Secret', new Position(20, 20), 'Helvetica', 12);
 
         $encryptedPdf = $document->render();
 
@@ -107,7 +108,7 @@ final class EncryptedPdfRenderTest extends TestCase
         $document->registerFont('Helvetica');
 
         $page = $document->addPage();
-        $page->addText('Visible AES256 Secret', 20, 20, 'Helvetica', 12);
+        $page->addText('Visible AES256 Secret', new Position(20, 20), 'Helvetica', 12);
 
         $encryptedPdf = $document->render();
 

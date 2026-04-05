@@ -59,8 +59,7 @@ final class Page extends IndirectObject
 
     public function addText(
         string $text,
-        float $x,
-        float $y,
+        Position $position,
         string $fontName = 'Helvetica',
         int $size = 12,
         TextOptions $options = new TextOptions(),
@@ -82,8 +81,8 @@ final class Page extends IndirectObject
         $this->contents->addElement(new Text(
             $markedContentId,
             $encodedText,
-            $x,
-            $y,
+            $position->x,
+            $position->y,
             $resourceFontName,
             $size,
             $textWidth,
@@ -100,8 +99,8 @@ final class Page extends IndirectObject
 
         if ($options->link !== null && $textWidth > 0.0) {
             $this->addLinkTarget(
-                $x,
-                $y - ($size * 0.2),
+                $position->x,
+                $position->y - ($size * 0.2),
                 $textWidth,
                 $size,
                 $options->link,
@@ -185,8 +184,10 @@ final class Page extends IndirectObject
 
         $this->addText(
             $text,
-            $x + $style->paddingHorizontal,
-            $y + $style->paddingVertical + ($size * 0.2),
+            new Position(
+                $x + $style->paddingHorizontal,
+                $y + $style->paddingVertical + ($size * 0.2),
+            ),
             $baseFont,
             $size,
             new TextOptions(
@@ -268,8 +269,10 @@ final class Page extends IndirectObject
         if ($title !== null && $title !== '') {
             $this->addText(
                 $title,
-                $x + $style->paddingHorizontal,
-                $y + $height - $style->paddingVertical - $style->titleSize,
+                new Position(
+                    $x + $style->paddingHorizontal,
+                    $y + $height - $style->paddingVertical - $style->titleSize,
+                ),
                 $titleFont,
                 $style->titleSize,
                 new TextOptions(
@@ -464,8 +467,7 @@ final class Page extends IndirectObject
      */
     public function addTextBox(
         string | array $text,
-        float $x,
-        float $y,
+        Position $position,
         float $width,
         float $height,
         string $fontName = 'Helvetica',
@@ -473,8 +475,8 @@ final class Page extends IndirectObject
         TextBoxOptions $options = new TextBoxOptions(),
     ): self {
         $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-        $contentWidth = $width - $options->paddingLeft - $options->paddingRight;
-        $contentHeight = $height - $options->paddingTop - $options->paddingBottom;
+        $contentWidth = $width - $options->padding->left - $options->padding->right;
+        $contentHeight = $height - $options->padding->top - $options->padding->bottom;
 
         if ($width <= 0) {
             throw new InvalidArgumentException('Text box width must be greater than zero.');
@@ -489,10 +491,10 @@ final class Page extends IndirectObject
         }
 
         if (
-            $options->paddingTop < 0
-            || $options->paddingRight < 0
-            || $options->paddingBottom < 0
-            || $options->paddingLeft < 0
+            $options->padding->top < 0
+            || $options->padding->right < 0
+            || $options->padding->bottom < 0
+            || $options->padding->left < 0
         ) {
             throw new InvalidArgumentException('Text box padding must not be negative.');
         }
@@ -530,19 +532,19 @@ final class Page extends IndirectObject
         }
 
         $startY = $this->resolveTextBoxStartY(
-            $y,
+            $position->y,
             $height,
             $size,
             $lineHeight,
             count($lines),
             $options->verticalAlign,
-            $options->paddingTop,
-            $options->paddingBottom,
+            $options->padding->top,
+            $options->padding->bottom,
         );
 
         return $this->renderTextLines(
             $lines,
-            $x + $options->paddingLeft,
+            $position->x + $options->padding->left,
             $startY,
             $contentWidth,
             $fontName,
@@ -642,8 +644,7 @@ final class Page extends IndirectObject
 
                 $page->addText(
                     $segment->text,
-                    $cursorX,
-                    $currentY,
+                    new Position($cursorX, $currentY),
                     $segmentFontName,
                     $size,
                     new TextOptions(
@@ -700,8 +701,7 @@ final class Page extends IndirectObject
 
                 $this->addText(
                     $segment->text,
-                    $cursorX,
-                    $currentY,
+                    new Position($cursorX, $currentY),
                     $segmentFontName,
                     $size,
                     new TextOptions(
@@ -2707,8 +2707,7 @@ final class Page extends IndirectObject
 
             $page->addText(
                 $segment->text,
-                $cursorX,
-                $y,
+                new Position($cursorX, $y),
                 $segmentFontName,
                 $size,
                 new TextOptions(

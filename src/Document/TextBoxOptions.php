@@ -27,10 +27,7 @@ final readonly class TextBoxOptions
      * @param VerticalAlign $verticalAlign Vertical alignment of the full text block inside the box height.
      * @param int|null $maxLines Maximum number of visible lines. If `null`, the box height decides the limit.
      * @param TextOverflow $overflow Defines if extra text is cut or shortened with an ellipsis.
-     * @param float $paddingTop Inner space between the top box edge and the text area.
-     * @param float $paddingRight Inner space between the right box edge and the text area.
-     * @param float $paddingBottom Inner space between the bottom box edge and the text area.
-     * @param float $paddingLeft Inner space between the left box edge and the text area.
+     * @param Insets $padding Inner space between the box edges and the text area.
      */
     public function __construct(
         public ?StructureTag $structureTag = null,
@@ -41,10 +38,7 @@ final readonly class TextBoxOptions
         public VerticalAlign $verticalAlign = VerticalAlign::TOP,
         public ?int $maxLines = null,
         public TextOverflow $overflow = TextOverflow::CLIP,
-        public float $paddingTop = 0.0,
-        public float $paddingRight = 0.0,
-        public float $paddingBottom = 0.0,
-        public float $paddingLeft = 0.0,
+        public Insets $padding = new Insets(),
     ) {
     }
 }

@@ -109,7 +109,7 @@ $document
 
 $document
     ->addHeader(static function (\Kalle\Pdf\Document\Page $page, int $pageNumber): void {
-        $page->addText("Hello PDF - Seite $pageNumber", Units::mm(20), $page->getHeight() - Units::mm(10), 'Helvetica', 9);
+        $page->addText("Hello PDF - Seite $pageNumber", new \Kalle\Pdf\Document\Position(Units::mm(20), $page->getHeight() - Units::mm(10)), 'Helvetica', 9);
     })
     ->addPageNumbers(Units::mm(20), Units::mm(7), 'Helvetica', 9);
 
@@ -236,8 +236,7 @@ $page->addImage(
 
 $page->addText(
     text: 'Projektseite',
-    x: Units::mm(20),
-    y: Units::mm(150),
+    position: new Position(Units::mm(20), Units::mm(150)),
     fontName: 'NotoSans-Regular',
     size: 12,
     options: new TextOptions(
@@ -283,7 +282,7 @@ $page->addCallout(
     'NotoSans-Regular',
 );
 
-$page->addText('Name', Units::mm(20), Units::mm(25), 'Helvetica', 11);
+$page->addText('Name', new Position(Units::mm(20), Units::mm(25)), 'Helvetica', 11);
 $page->addTextField(
     'customer_name',
     Units::mm(20),
@@ -296,7 +295,7 @@ $page->addTextField(
     defaultValue: 'Grace Hopper',
 );
 
-$page->addText('Land', Units::mm(100), Units::mm(25), 'Helvetica', 11);
+$page->addText('Land', new Position(Units::mm(100), Units::mm(25)), 'Helvetica', 11);
 $page->addComboBox(
     'country',
     Units::mm(100),
@@ -322,7 +321,7 @@ $page->addCheckbox(
     true,
 );
 
-$page->addText('Akzeptiert', Units::mm(168), Units::mm(14), 'Helvetica', 11);
+$page->addText('Akzeptiert', new Position(Units::mm(168), Units::mm(14)), 'Helvetica', 11);
 $page->addRadioButton('delivery', 'standard', Units::mm(20), Units::mm(2), Units::mm(5), true);
 $page->addRadioButton('delivery', 'express', Units::mm(55), Units::mm(2), Units::mm(5), false);
 
@@ -726,8 +725,7 @@ $document->registerFont('NotoSansCJKsc-Regular');
 
 $page->addText(
     '漢字とカタカナ',
-    Units::mm(20),
-    Units::mm(225),
+    new Position(Units::mm(20), Units::mm(225)),
     'NotoSansCJKsc-Regular',
     14,
     new TextOptions(structureTag: \Kalle\Pdf\Document\StructureTag::Paragraph),
@@ -770,6 +768,22 @@ Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Aus
 - `bold`, `italic`, `underline`, `strikethrough` pro `TextSegment`
 - `HorizontalAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `TextOverflow::CLIP` und `TextOverflow::ELLIPSIS` zusammen mit `maxLines`
+
+Ein einfaches `addTextBox(...)`-Beispiel:
+
+```php
+$page->addTextBox(
+    text: "DEIN FIRMENNAME\nStrasse 1\n12345 Berlin",
+    position: new Position(Units::mm(20), Units::mm(250)),
+    width: Units::mm(60),
+    height: Units::mm(18),
+    fontName: 'Helvetica',
+    size: 10,
+    options: new TextBoxOptions(
+        lineHeight: Units::mm(4),
+    ),
+);
+```
 
 ## Grafische Elemente und Bilder
 
@@ -844,8 +858,7 @@ $page->addImage($image, 110, 80, 70, 46.67);
 
 $page->addText(
     text: 'OpenAI',
-    x: 20,
-    y: 50,
+    position: new Position(20, 50),
     fontName: 'Helvetica',
     size: 12,
     options: new TextOptions(
@@ -873,8 +886,7 @@ $document->addDestination('docs', $page);
 $page->addInternalLink(20, 30, 60, 12, 'docs');
 $page->addText(
     text: 'Zu Docs springen',
-    x: 20,
-    y: 15,
+    position: new Position(20, 15),
     fontName: 'Helvetica',
     size: 12,
     options: new TextOptions(
@@ -1243,7 +1255,7 @@ $notesLayer = $document->addLayer('Notes');
 $gridLayer = $document->addLayer('Grid', false);
 
 $page->layer($notesLayer, static function (\Kalle\Pdf\Document\Page $page): void {
-    $page->addText('Interne Hinweise', Units::mm(20), Units::mm(220), 'NotoSans-Regular', 12);
+    $page->addText('Interne Hinweise', new \Kalle\Pdf\Document\Position(Units::mm(20), Units::mm(220)), 'NotoSans-Regular', 12);
 });
 
 $page->layer($gridLayer, static function (\Kalle\Pdf\Document\Page $page): void {
@@ -1424,7 +1436,7 @@ $document->encrypt(new EncryptionOptions(
 ));
 
 $page = $document->addPage(PageSize::A4());
-$page->addText('Geschuetzter Inhalt', Units::mm(20), Units::mm(260), 'Helvetica', 14);
+$page->addText('Geschuetzter Inhalt', new \Kalle\Pdf\Document\Position(Units::mm(20), Units::mm(260)), 'Helvetica', 14);
 
 file_put_contents('encrypted.pdf', $document->render());
 ```
