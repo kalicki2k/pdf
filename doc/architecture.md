@@ -49,7 +49,7 @@ Wichtige Methoden:
 - `render()` delegiert an `PdfRenderer`
 - `getDocumentObjects()` liefert die Menge aller zu rendernden indirekten Objekte
 
-Wenn Outlines vorhanden sind, erzeugt `Document` zusaetzlich ein `OutlineRoot`-Objekt und eine flache Liste von `OutlineItem`-Objekten. Der `Catalog` verweist dann ueber `/Outlines` auf diese Navigationsstruktur und setzt `/PageMode /UseOutlines`.
+Wenn Outlines vorhanden sind, erzeugt `Document` zusaetzlich ein `OutlineRoot`-Objekt und eine flache Liste von `OutlineItem`-Objekten aus `src/Document/Outline`. Der `Catalog` verweist dann ueber `/Outlines` auf diese Navigationsstruktur und setzt `/PageMode /UseOutlines`.
 
 Wenn benannte Ziele vorhanden sind, rendert der `Catalog` zusaetzlich ein `/Dests`-Dictionary mit Zielnamen und Zielseiten.
 
@@ -114,7 +114,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addFlowText(...)`, `addTextBox(...)`, `createTextFrame(...)`, `createTable(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `addPath()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addFlowText(...)`, `addTextBox(...)`, `createTextFrame(...)`, `createTable(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `addPath()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)`, `addListBox(...)`, `addSignatureField(...)` und `addPushButton(...)`.
 
 Dabei passiert intern:
 
@@ -146,7 +146,7 @@ Bei Tabellen kommt zusaetzlich dazu:
 
 Bei grafischen Inhalten kommt stattdessen dazu:
 
-7. `Line`- und `Rectangle`-Elemente werden direkt in `Contents` abgelegt.
+7. Linien, Boxen und punktbasierte Geometrie werden ueber `Position` und `Rect` an die `Page`-API uebergeben.
 8. `PathBuilder` erzeugt aus `moveTo(...)`, `lineTo(...)`, `curveTo(...)` und `close()` ein `Path`-Element fuer freie Formen.
 9. `addCircle(...)` baut darauf einen Kreis aus vier kubischen Bezier-Segmenten auf.
 10. `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)` und `addStar(...)` nutzen dieselbe Path-/Line-Infrastruktur fuer weitere Formen.
@@ -161,7 +161,7 @@ Bei grafischen Inhalten kommt stattdessen dazu:
 Bei Formularen kommt stattdessen oder zusaetzlich dazu:
 
 7. `Document::ensureAcroForm()` baut bei Bedarf einmalig ein `AcroForm` auf.
-8. `Page::addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)` erzeugen Widget-Annotationen fuer die jeweilige Feldart.
+8. `Page::addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)`, `addListBox(...)`, `addSignatureField(...)` und `addPushButton(...)` erzeugen Widget-Annotationen fuer die jeweilige Feldart.
 9. Die Widget-Annotation wird in `/Annots` der Seite eingetragen.
 10. Das Feld wird zusaetzlich im `AcroForm` unter `/Fields` registriert.
 11. Text- und Choice-Felder registrieren ihre verwendete Font-Resource im `AcroForm`-`DR`-Dictionary.
@@ -414,21 +414,21 @@ Die aktuelle Stufe ist bewusst pragmatisch:
 
 Verantwortlich fuer:
 
-- gemeinsamen Textbereich mit `x`, `y` und Breite
+- gemeinsamen Textbereich mit `Position` und Breite
 - Cursor-Fuehrung zwischen mehreren Textbloecken
 - Absatzeinzug ueber `addFlowText(...)`
 - Ueberschriften ueber `addHeading(...)`
 - automatische Folge-Seiten bei Ueberlauf
 - Weitergabe von Alignment, `maxLines` und `TextOverflow`
-- Listen ueber `bulletList(...)` und `numberedList(...)`
+- Listen ueber `addBulletList(...)` und `addNumberedList(...)`
 
-`bulletList(...)` und `numberedList(...)` bauen bewusst auf dem vorhandenen Absatzpfad auf:
+`addBulletList(...)` und `addNumberedList(...)` bauen bewusst auf dem vorhandenen Absatzpfad auf:
 
 - Marker oder Nummer werden als eigenes `Text`-Element gerendert
 - der Listeninhalt wird als Absatz mit reduziertem Textbereich gerendert
 - dadurch bleiben Umbruch, Links und Folge-Seiten konsistent
 - `BulletType` kapselt die aktuell unterstuetzten Standard-Symbole fuer Bullet-Listen
-- `numberedList(...)` nutzt denselben Listenpfad mit laufenden Dezimalzahlen und optionalem `startAt`
+- `addNumberedList(...)` nutzt denselben Listenpfad mit laufenden Dezimalzahlen und optionalem `startAt`
 
 ### Table und TableCell
 
