@@ -2461,6 +2461,8 @@ final class Page extends IndirectObject
             return 0.0;
         }
 
+        $line = $this->trimTrailingWhitespaceFromLine($line);
+
         $lineWidth = 0.0;
 
         foreach ($line as $segment) {

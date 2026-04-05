@@ -83,16 +83,12 @@ final class StandardFont extends IndirectObject implements FontDefinition
         }
 
         if ($this->fontParser === null) {
-            if ($this->byteMap !== []) {
-                return strlen($this->encodeWithByteMap($text)) * ($size * 0.6);
-            }
+            $encoded = $this->byteMap !== []
+                ? $this->encodeWithByteMap($text)
+                : $this->encodeTextForMeasurement($text);
 
-            $phpEncoding = $this->resolvePhpEncoding();
-            $encoded = $phpEncoding === null
-                ? $text
-                : mb_convert_encoding($text, $phpEncoding, 'UTF-8');
-
-            return strlen($encoded) * ($size * 0.6);
+            return StandardFontMetrics::measureTextWidth($this->baseFont, $encoded, $size)
+                ?? strlen($encoded) * ($size * 0.6);
         }
 
         $unitsPerEm = $this->fontParser->getUnitsPerEm();
@@ -155,6 +151,15 @@ final class StandardFont extends IndirectObject implements FontDefinition
             'WinAnsiEncoding' => 'Windows-1252',
             default => null,
         };
+    }
+
+    private function encodeTextForMeasurement(string $text): string
+    {
+        $phpEncoding = $this->resolvePhpEncoding();
+
+        return $phpEncoding === null
+            ? $text
+            : mb_convert_encoding($text, $phpEncoding, 'UTF-8');
     }
 
     private function supportsAsciiOnlyText(string $text): bool

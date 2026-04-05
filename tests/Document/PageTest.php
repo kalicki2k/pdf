@@ -1897,6 +1897,24 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_ignores_trailing_spaces_when_right_aligning_text_boxes(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addTextBox(
+            'Hello  ',
+            new Rect(10, 20, 40, 40),
+            'Helvetica',
+            10,
+            new TextBoxOptions(align: HorizontalAlign::RIGHT),
+        );
+
+        self::assertStringContainsString("27.22 50 Td\n(Hello) Tj", $page->contents->render());
+    }
+
+    #[Test]
     public function it_respects_padding_and_overflow_in_text_boxes(): void
     {
         $document = new Document(version: 1.4);
@@ -1915,7 +1933,7 @@ final class PageTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString("15 32 Td\n(Hel...) Tj", $page->contents->render());
+        self::assertStringContainsString("15 32 Td\n(Hello...) Tj", $page->contents->render());
     }
 
     #[Test]
@@ -1982,7 +2000,7 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n(wor...) Tj", $page->contents->render());
+        self::assertStringContainsString("10 38 Td\n(world...) Tj", $page->contents->render());
         self::assertStringNotContainsString('(from) Tj', $page->contents->render());
         self::assertStringNotContainsString('(PDF) Tj', $page->contents->render());
     }
@@ -2007,7 +2025,7 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
-        self::assertStringContainsString("/F2 10 Tf\n10 38 Td\n(Hello...) Tj", $page->contents->render());
+        self::assertStringContainsString("/F2 10 Tf\n10 38 Td\n(Hello wor...) Tj", $page->contents->render());
         self::assertStringNotContainsString('(world) Tj', $page->contents->render());
     }
 
@@ -2053,8 +2071,8 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString("10 50 Td\n1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("10 26 Td\n(world) Tj", $page->contents->render());
+        self::assertStringContainsString("10 38 Td\n(Hello world) Tj", $page->contents->render());
+        self::assertStringContainsString("10 26 Td\n(from PDF) Tj", $page->contents->render());
     }
 
     #[Test]
@@ -2141,7 +2159,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText('Hello', new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::CENTER));
 
-        self::assertStringContainsString("45 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("48.61 50 Td\n(Hello) Tj", $page->contents->render());
     }
 
     #[Test]
@@ -2153,7 +2171,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText('Hello', new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::RIGHT));
 
-        self::assertStringContainsString("80 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("87.22 50 Td\n(Hello) Tj", $page->contents->render());
     }
 
     #[Test]
@@ -2166,7 +2184,7 @@ final class PageTest extends TestCase
         $page->addFlowText('Hello world from PDF', new Position(10, 50), 70, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::JUSTIFY));
 
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("50 50 Td\n(world) Tj", $page->contents->render());
+        self::assertStringContainsString("56.11 50 Td\n(world) Tj", $page->contents->render());
     }
 
     #[Test]

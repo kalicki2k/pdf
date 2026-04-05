@@ -1,0 +1,274 @@
+<?php
+
+declare(strict_types=1);
+
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Geometry\Insets;
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\LinkTarget;
+use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\Text\TextBoxOptions;
+use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Layout\VerticalAlign;
+
+require 'vendor/autoload.php';
+
+$outputDir = __DIR__ . '/var/examples';
+
+if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)) {
+    throw new RuntimeException(sprintf('Unable to create output directory "%s".', $outputDir));
+}
+
+$document = new Document(
+    version: 1.4,
+    title: 'TextBox test',
+    fontConfig: [
+        [
+            'baseFont' => 'NotoSans-Regular',
+            'path' => 'assets/fonts/NotoSans-Regular.ttf',
+            'unicode' => true,
+            'subtype' => 'CIDFontType2',
+            'encoding' => 'Identity-H',
+        ],
+    ],
+)
+    ->registerFont('Helvetica')
+    ->registerFont('Helvetica-Bold')
+    ->registerFont('Helvetica-Oblique')
+    ->registerFont('Helvetica-BoldOblique')
+    ->registerFont('Times-Roman')
+    ->registerFont('Times-Bold')
+    ->registerFont('Times-Italic')
+    ->registerFont('Times-BoldItalic')
+    ->registerFont('Courier')
+    ->registerFont('Courier-Bold')
+    ->registerFont('Courier-Oblique')
+    ->registerFont('Courier-BoldOblique')
+    ->registerFont('Symbol', encoding: 'SymbolEncoding')
+    ->registerFont('ZapfDingbats', encoding: 'ZapfDingbatsEncoding')
+    ->registerFont('NotoSans-Regular')
+    ->addKeyword('textbox')
+    ->addKeyword('layout')
+    ->addKeyword('manual-test');
+
+$boxes = [
+    [
+        'title' => 'Top align',
+        'box' => new Rect(Units::mm(20), Units::mm(225), Units::mm(50), Units::mm(40)),
+        'text' => "Line 1\nLine 2\nLine 3",
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            verticalAlign: VerticalAlign::TOP,
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
+    [
+        'title' => 'Middle align',
+        'box' => new Rect(Units::mm(80), Units::mm(225), Units::mm(50), Units::mm(40)),
+        'text' => "Line 1\nLine 2",
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            verticalAlign: VerticalAlign::MIDDLE,
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
+    [
+        'title' => 'Bottom align',
+        'box' => new Rect(Units::mm(140), Units::mm(225), Units::mm(50), Units::mm(40)),
+        'text' => "Line 1\nLine 2",
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            verticalAlign: VerticalAlign::BOTTOM,
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
+    [
+        'title' => 'Center text',
+        'box' => new Rect(Units::mm(20), Units::mm(175), Units::mm(50), Units::mm(35)),
+        'text' => "Centered\nparagraph",
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            align: HorizontalAlign::CENTER,
+            verticalAlign: VerticalAlign::MIDDLE,
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
+    [
+        'title' => 'Right text',
+        'box' => new Rect(Units::mm(80), Units::mm(175), Units::mm(50), Units::mm(35)),
+        'text' => "Right aligned\ntext block",
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            align: HorizontalAlign::RIGHT,
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
+    [
+        'title' => 'Ellipsis',
+        'box' => new Rect(Units::mm(140), Units::mm(175), Units::mm(50), Units::mm(35)),
+        'text' => 'This text is intentionally too long for this small box and should end with an ellipsis.',
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            maxLines: 2,
+            overflow: TextOverflow::ELLIPSIS,
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
+    [
+        'title' => 'Rich text',
+        'box' => new Rect(Units::mm(20), Units::mm(120), Units::mm(80), Units::mm(40)),
+        'text' => [
+            TextSegment::plain('Status: '),
+            TextSegment::colored('paid', Color::rgb(0, 140, 60)),
+            TextSegment::plain("\nLink: "),
+            TextSegment::link('example.com', LinkTarget::externalUrl('https://example.com')),
+            TextSegment::plain("\n"),
+            TextSegment::bold('Bold'),
+            TextSegment::plain(' / '),
+            TextSegment::italic('Italic'),
+            TextSegment::plain(' / '),
+            TextSegment::underlined('Underlined'),
+        ],
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
+    [
+        'title' => 'Tight box',
+        'box' => new Rect(Units::mm(110), Units::mm(120), Units::mm(80), Units::mm(18)),
+        'text' => 'One very small box with too much text to inspect clipping behaviour.',
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(4),
+            verticalAlign: VerticalAlign::MIDDLE,
+            maxLines: 1,
+            overflow: TextOverflow::ELLIPSIS,
+            padding: Insets::all(Units::mm(2)),
+        ),
+    ],
+];
+
+$renderPage = static function (
+    Page $page,
+    string $contentFontName,
+    string $headline,
+    string $subline,
+) use ($boxes): void {
+    $page->addText(
+        $headline,
+        new Position(Units::mm(20), Units::mm(285)),
+        'Helvetica',
+        16,
+        new TextOptions(color: Color::rgb(20, 20, 20)),
+    );
+
+    $page->addText(
+        $subline,
+        new Position(Units::mm(20), Units::mm(278)),
+        'Helvetica',
+        10,
+        new TextOptions(color: Color::gray(0.35)),
+    );
+
+    foreach ($boxes as $definition) {
+        $box = $definition['box'];
+        $options = $definition['options'];
+        $contentLeft = $box->x + $options->padding->left;
+        $contentRight = $box->x + $box->width - $options->padding->right;
+        $contentBottom = $box->y + $options->padding->bottom;
+        $contentTop = $box->y + $box->height - $options->padding->top;
+
+        $page->addRectangle(
+            $box,
+            0.8,
+            Color::gray(0.55),
+            Color::gray(0.97),
+        );
+
+        $page->addLine(
+            new Position($contentLeft, $contentBottom),
+            new Position($contentLeft, $contentTop),
+            0.35,
+            Color::rgb(0, 120, 255),
+        );
+
+        $page->addLine(
+            new Position($contentRight, $contentBottom),
+            new Position($contentRight, $contentTop),
+            0.35,
+            Color::rgb(220, 60, 60),
+        );
+
+        $page->addText(
+            $definition['title'],
+            new Position($box->x, $box->y + $box->height + Units::mm(3)),
+            'Helvetica',
+            9,
+            new TextOptions(color: Color::gray(0.25)),
+        );
+
+        $page->addTextBox(
+            text: $definition['text'],
+            box: $box,
+            fontName: $contentFontName,
+            size: 10,
+            options: $options,
+        );
+    }
+};
+
+$standardFontPage = $document->addPage(PageSize::A4());
+$renderPage(
+    $standardFontPage,
+    'Helvetica',
+    'TextBox manual layout test - Helvetica',
+    'Blue line = content left, red line = content right.',
+);
+
+$standardFonts = [
+    'Helvetica',
+    'Helvetica-Bold',
+    'Helvetica-Oblique',
+    'Helvetica-BoldOblique',
+    'Times-Roman',
+    'Times-Bold',
+    'Times-Italic',
+    'Times-BoldItalic',
+    'Courier',
+    'Courier-Bold',
+    'Courier-Oblique',
+    'Courier-BoldOblique',
+    'Symbol',
+    'ZapfDingbats',
+];
+
+foreach ($standardFonts as $standardFont) {
+    $page = $document->addPage(PageSize::A4());
+
+    $renderPage(
+        $page,
+        $standardFont,
+        'TextBox manual layout test - ' . $standardFont,
+        'Same boxes with PDF standard font metrics.',
+    );
+}
+
+$embeddedFontPage = $document->addPage(PageSize::A4());
+$renderPage(
+    $embeddedFontPage,
+    'NotoSans-Regular',
+    'TextBox manual layout test - NotoSans-Regular',
+    'Same boxes with embedded font metrics for direct comparison.',
+);
+
+$outputPath = $outputDir . '/test-textbox.pdf';
+file_put_contents($outputPath, $document->render());
+
+printf("Generated %s%s", $outputPath, PHP_EOL);
