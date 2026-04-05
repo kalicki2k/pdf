@@ -624,7 +624,7 @@ final class Document
             throw new InvalidArgumentException('Table of contents content width must be greater than zero.');
         }
 
-        $frame = $page->createTextFrame($margin, $page->getHeight() - $margin, $contentWidth, $margin);
+        $frame = $page->createTextFrame(new Position($margin, $page->getHeight() - $margin), $contentWidth, $margin);
         $frame->addHeading($title, $baseFont, $titleSize, new ParagraphOptions(structureTag: StructureTag::Heading1));
 
         if ($this->outlineRoot === null || $this->outlineRoot->getItems() === []) {

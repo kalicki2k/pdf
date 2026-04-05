@@ -27,7 +27,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 220, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 220, 20);
 
         $frame
             ->addHeading('Headline', 'Helvetica', 20, new ParagraphOptions(structureTag: StructureTag::Heading1))
@@ -46,7 +46,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
-        $frame = $page->createTextFrame(10, 30, 40, 15);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(10, 30), 40, 15);
         $frame->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(spacingAfter: 6));
 
         self::assertCount(2, $document->pages->pages);
@@ -61,7 +61,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
         $frame
             ->addHeading('Headline', 'Helvetica', 20)
             ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(spacingAfter: 8));
@@ -77,7 +77,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
         $frame
             ->addHeading('Headline', 'Helvetica', 20, new ParagraphOptions(opacity: Opacity::fill(0.5)))
             ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(opacity: Opacity::fill(0.5), spacingAfter: 8));
@@ -93,7 +93,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
         $frame
             ->addHeading('Headline', 'Helvetica', 20, new ParagraphOptions(color: Color::rgb(255, 0, 0)))
             ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(color: Color::cmyk(0.1, 0.2, 0.3, 0.4), spacingAfter: 8));
@@ -109,7 +109,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
         $frame->addParagraph(
             [
                 new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
@@ -132,7 +132,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 100, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 100, 20);
         $frame->addParagraph('Hello', 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::CENTER, spacingAfter: 8));
 
         self::assertStringContainsString("55 100 Td\n(Hello) Tj", $page->contents->render());
@@ -145,7 +145,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 70, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 70, 20);
         $frame->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::JUSTIFY, spacingAfter: 8));
 
         self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
@@ -159,7 +159,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 40, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 40, 20);
         $frame->addParagraph(
             'Hello world from PDF',
             'Helvetica',
@@ -179,7 +179,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
         $frame->addParagraph(
             [
                 new TextSegment('Docs', link: LinkTarget::externalUrl('https://example.com/docs')),
@@ -201,7 +201,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
         $frame->addBulletList(
             [
                 'First bullet item',
@@ -229,7 +229,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
-        $frame = $page->createTextFrame(10, 25, 60, 15);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(10, 25), 60, 15);
         $frame->addBulletList(
             ['First item', 'Second item'],
             'Helvetica',
@@ -254,7 +254,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
         $frame->addNumberedList(
             [
                 'First item',
@@ -281,7 +281,7 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Numbered lists must start at 1 or greater.');

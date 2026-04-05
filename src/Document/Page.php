@@ -451,8 +451,7 @@ final class Page extends IndirectObject
      */
     public function addFlowText(
         string | array $text,
-        float $x,
-        float $y,
+        Position $position,
         float $maxWidth,
         string $fontName = 'Helvetica',
         int $size = 12,
@@ -486,8 +485,8 @@ final class Page extends IndirectObject
 
         return $this->renderParagraphLines(
             $lines,
-            $x,
-            $y,
+            $position->x,
+            $position->y,
             $maxWidth,
             $fontName,
             $size,
@@ -759,25 +758,23 @@ final class Page extends IndirectObject
     }
 
     public function createTextFrame(
-        float $x,
-        float $y,
+        Position $position,
         float $width,
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): TextFrame {
-        return new TextFrame($this, $x, $y, $width, $bottomMargin);
+        return new TextFrame($this, $position->x, $position->y, $width, $bottomMargin);
     }
 
     /**
      * @param list<float|int> $columnWidths
      */
     public function createTable(
-        float $x,
-        float $y,
+        Position $position,
         float $width,
         array $columnWidths,
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): Table {
-        return new Table($this, $x, $y, $width, $columnWidths, $bottomMargin);
+        return new Table($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin);
     }
 
     public function addPath(): PathBuilder

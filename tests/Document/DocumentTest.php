@@ -215,7 +215,7 @@ final class DocumentTest extends TestCase
             });
 
         $firstPage = $document->addPage(100, 60);
-        $frame = $firstPage->createTextFrame(10, 40, 80, 10);
+        $frame = $firstPage->createTextFrame(new Position(10, 40), 80, 10);
         $frame->addParagraph(str_repeat('Wort ', 80), 'Helvetica', 12, new ParagraphOptions(structureTag: StructureTag::Paragraph));
         $lastPage = $document->pages->pages[array_key_last($document->pages->pages)];
         $lastPageNumber = count($document->pages->pages);

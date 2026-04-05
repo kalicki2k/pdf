@@ -166,7 +166,7 @@ $document
     );
 
 $sansPage = $document->addPage(PageSize::A4());
-$sansPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$sansPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Noto Sans', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         implode(PHP_EOL, ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789.:,;()*!?\'@#<>$%&^+-=~']),
@@ -270,7 +270,7 @@ $sansPage->addLine(
 );
 
 $serifPage = $document->addPage(PageSize::A4());
-$serifPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$serifPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Noto Serif', 'NotoSerif-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
@@ -324,7 +324,7 @@ $serifPage->addImage(
 );
 
 $monoPage = $document->addPage(PageSize::A4());
-$monoPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$monoPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Noto Sans Mono', 'NotoSansMono-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
@@ -348,7 +348,7 @@ $monoPage
     );
 
 $cjkPage = $document->addPage(PageSize::A4());
-$cjkPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$cjkPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Noto Sans CJK', 'NotoSansCJKsc-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         '漢字とカタカナ',
@@ -368,7 +368,7 @@ $cjkPage->addCircle(
 );
 
 $standardPage = $document->addPage(PageSize::A4());
-$standardPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$standardPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Helvetica', 'Helvetica', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~',
@@ -378,7 +378,7 @@ $standardPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Un
     );
 
 $tablePage = $document->addPage(PageSize::A4());
-$tablePage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$tablePage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Table Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Erste Tabellenstufe mit festen Spaltenbreiten, Header-Zeile und automatischem Umbruch in den Zellen.',
@@ -388,8 +388,7 @@ $tablePage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units
     );
 
 $tablePage->createTable(
-    Units::mm(20),
-    Units::mm(225),
+    new Position(Units::mm(20), Units::mm(225)),
     Units::mm(170),
     [
         Units::mm(22),
@@ -449,8 +448,7 @@ $tablePage->createTable(
     ]);
 
 $tablePage->createTable(
-    Units::mm(20),
-    Units::mm(95),
+    new Position(Units::mm(20), Units::mm(95)),
     Units::mm(170),
     [
         Units::mm(42.5),
@@ -482,7 +480,7 @@ $tablePage->createTable(
     ]);
 
 $paddingPage = $document->addPage(PageSize::A4());
-$paddingPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$paddingPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Padding Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Die Tabelle zeigt den Unterschied zwischen Tabellen-Default-Padding und gezieltem Zell-Override.',
@@ -492,8 +490,7 @@ $paddingPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Uni
     );
 
 $paddingPage->createTable(
-    Units::mm(20),
-    Units::mm(225),
+    new Position(Units::mm(20), Units::mm(225)),
     Units::mm(170),
     [
         Units::mm(35),
@@ -544,7 +541,7 @@ $paddingPage->createTable(
     ]);
 
 $longTablePage = $document->addPage(PageSize::A4());
-$longTablePage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$longTablePage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Long Table Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Ein Beispiel fuer eine lange Tabelle mit wiederholtem Header und einem gezielten Rowspan-Split ab Eintrag 24.',
@@ -554,8 +551,7 @@ $longTablePage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), U
     );
 
 $longTable = $longTablePage->createTable(
-    Units::mm(20),
-    Units::mm(225),
+    new Position(Units::mm(20), Units::mm(225)),
     Units::mm(170),
     [
         Units::mm(18),
@@ -662,7 +658,7 @@ for ($index = 1; $index <= 36; $index++) {
 }
 
 $bulletPage = $document->addPage(PageSize::A4());
-$bulletPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$bulletPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Bullet List Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Die Liste verwendet Hanging Indent, automatischen Umbruch und gemischte Textsegmente.',
@@ -692,7 +688,7 @@ $bulletPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Unit
     );
 
 $numberedPage = $document->addPage(PageSize::A4());
-$numberedPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$numberedPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Numbered List Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Nummerierte Listen verwenden denselben Flow wie Bullet-Listen, aber mit laufender Nummerierung.',
@@ -722,7 +718,7 @@ $numberedPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Un
     );
 
 $badgePage = $document->addPage(PageSize::A4());
-$badgePage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$badgePage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Badge Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Badges sind kleine Labels fuer Status, Tags oder kurze Hervorhebungen.',
@@ -794,7 +790,7 @@ $badgePage->addBadge(
 );
 
 $panelPage = $document->addPage(PageSize::A4());
-$panelPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$panelPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Panel Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Panels kombinieren Rahmen, Hintergrund, Titel und Text zu einer kompakten Hinweis- oder Infobox.',
@@ -866,7 +862,7 @@ $panelPage->addPanel(
 );
 
 $calloutPage = $document->addPage(PageSize::A4());
-$calloutPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$calloutPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Callout Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Callouts erweitern Panels um eine kleine Pointer-Spitze und eignen sich fuer Hinweise, Annotationen oder Diagramm-Beschriftungen.',
@@ -986,7 +982,7 @@ $backgroundPage->addBadge(
 );
 
 $attachmentPage = $document->addPage(PageSize::A4());
-$attachmentPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$attachmentPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Attachment Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Dieses Dokument enthaelt eingebettete Dateien ueber den EmbeddedFiles-Name-Tree im Catalog.',
@@ -1073,7 +1069,7 @@ $notesLayer = $document->addLayer('Notes');
 $gridLayer = $document->addLayer('Grid', false);
 
 $actionPage = $document->addPage(PageSize::A4());
-$actionPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$actionPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Action Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Diese Seite sammelt alle aktuellen Push-Button-Actions auf einen Blick.',
@@ -1221,7 +1217,7 @@ $actionPage->addPushButton(
 );
 
 $annotationPage = $document->addPage(PageSize::A4());
-$annotationPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$annotationPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Annotation Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Diese Seite zeigt die aktuellen nicht-formularbasierten Viewer-Annotationen.',
@@ -1456,7 +1452,7 @@ $annotationPage->addText(
 );
 
 $layerPage = $document->addPage(PageSize::A4());
-$layerPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$layerPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Layer Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Diese Seite zeigt echte OCG-Layer. Hinweise und Raster liegen auf eigenen Ebenen und koennen ueber Buttons geschaltet werden.',
@@ -1570,7 +1566,7 @@ $layerPage->addText(
 );
 
 $formPage = $document->addPage(PageSize::A4());
-$formPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+$formPage->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20))
     ->addHeading('Form Demo', 'NotoSans-Regular', 16, new ParagraphOptions(structureTag: StructureTag::Heading1))
     ->addParagraph(
         'Diese Seite zeigt die erste Formularstufe mit einfachen Textfeldern ueber ein AcroForm.',

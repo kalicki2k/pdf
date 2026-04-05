@@ -54,6 +54,7 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\GoToAction;
 use Kalle\Pdf\Document\GoToRemoteAction;
 use Kalle\Pdf\Document\HideAction;
@@ -114,7 +115,7 @@ $document
     ->addPageNumbers(Units::mm(20), Units::mm(7), 'Helvetica', 9);
 
 $page = $document->addPage(PageSize::A4());
-$frame = $page->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20));
+$frame = $page->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20));
 
 $frame
     ->addHeading(
@@ -329,8 +330,7 @@ $page->addRadioButton('delivery', 'standard', Units::mm(20), Units::mm(2), Units
 $page->addRadioButton('delivery', 'express', Units::mm(55), Units::mm(2), Units::mm(5), false);
 
 $page->createTable(
-    Units::mm(20),
-    Units::mm(135),
+    new Position(Units::mm(20), Units::mm(135)),
     Units::mm(170),
     [Units::mm(22), Units::mm(88), Units::mm(30), Units::mm(30)],
 )
@@ -447,7 +447,7 @@ Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeu
 Ein kompaktes Beispiel:
 
 ```php
-$table = $page->createTable(20, 240, 170, [30, 80, 30, 30])
+$table = $page->createTable(new Position(20, 240), 170, [30, 80, 30, 30])
     ->font('NotoSans-Regular', 11)
     ->style(new TableStyle(
         padding: TablePadding::all(6),
@@ -490,7 +490,7 @@ $table->addRow([
 Fuer laengere Tabellen werden Header-Zeilen automatisch auf neuen Seiten wiederholt:
 
 ```php
-$table = $page->createTable(20, 240, 170, [20, 80, 30, 40])
+$table = $page->createTable(new Position(20, 240), 170, [20, 80, 30, 40])
     ->font('NotoSans-Regular', 10)
     ->style(new TableStyle(
         verticalAlign: VerticalAlign::MIDDLE,

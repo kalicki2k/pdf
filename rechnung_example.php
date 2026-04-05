@@ -1,6 +1,7 @@
 <?php
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
@@ -29,8 +30,7 @@ $document = new Document(
 $page = $document->addPage(PageSize::A4());
 
 $page->createTextFrame(
-    Units::mm(140),
-    Units::mm(257) + Units::mm(20) - 9,
+    new Position(Units::mm(140), Units::mm(257) + Units::mm(20) - 9),
     Units::mm(70),
     Units::mm(228),
 )
@@ -106,8 +106,7 @@ $page
     )
     ->addFlowText(
         text: "Sehr geehrte Frau Müller,\nhiermit berechne ich Ihnen folgende Leistungen:",
-        x: Units::mm(20),
-        y: Units::mm(160),
+        position: new Position(Units::mm(20), Units::mm(160)),
         maxWidth: Units::mm(170),
     );
 

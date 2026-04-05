@@ -264,8 +264,7 @@ final class TextFrame
 
         $this->page = $this->page->addFlowText(
             text: $text,
-            x: $x,
-            y: $this->cursorY,
+            position: new Position($x, $this->cursorY),
             maxWidth: $width,
             fontName: $fontName,
             size: $size,

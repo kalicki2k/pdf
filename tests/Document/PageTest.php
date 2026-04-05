@@ -1665,8 +1665,7 @@ final class PageTest extends TestCase
                 new TextSegment('Hello ', link: LinkTarget::externalUrl('https://example.com')),
                 new TextSegment('world', link: LinkTarget::externalUrl('https://example.com')),
             ],
-            10,
-            20,
+            new Position(10, 20),
             200,
             'Helvetica',
             12,
@@ -1688,8 +1687,7 @@ final class PageTest extends TestCase
                 new TextSegment('One', link: LinkTarget::externalUrl('https://one.example')),
                 new TextSegment(' Two', link: LinkTarget::externalUrl('https://two.example')),
             ],
-            10,
-            20,
+            new Position(10, 20),
             200,
             'Helvetica',
             12,
@@ -1920,7 +1918,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addFlowText('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new FlowTextOptions(structureTag: StructureTag::Paragraph, lineHeight: 12.0, bottomMargin: 0.0));
+        $result = $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(structureTag: StructureTag::Paragraph, lineHeight: 12.0, bottomMargin: 0.0));
 
         self::assertSame($page, $result);
         self::assertStringContainsString("10 50 Td\n/P << /MCID 0 >> BDC\n(Hello) Tj", $page->contents->render());
@@ -1936,7 +1934,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addFlowText('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0));
+        $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0));
 
         self::assertStringContainsString('(Hello) Tj', $page->contents->render());
         self::assertStringNotContainsString('BDC', $page->contents->render());
@@ -2000,7 +1998,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addFlowText('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0, opacity: Opacity::fill(0.5)));
+        $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0, opacity: Opacity::fill(0.5)));
 
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
         self::assertSame(4, substr_count($page->contents->render(), '/GS1 gs'));
@@ -2013,7 +2011,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addFlowText('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0, color: Color::gray(0.5)));
+        $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0, color: Color::gray(0.5)));
 
         self::assertSame(4, substr_count($page->contents->render(), '0.5 g'));
     }
@@ -2027,8 +2025,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText(
             'Hello world from PDF',
-            10,
-            50,
+            new Position(10, 50),
             40,
             'Helvetica',
             10,
@@ -2050,8 +2047,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText(
             'Hello world from PDF',
-            10,
-            50,
+            new Position(10, 50),
             40,
             'Helvetica',
             10,
@@ -2076,8 +2072,7 @@ final class PageTest extends TestCase
                 new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
                 new TextSegment(' Hello world from PDF', bold: true),
             ],
-            10,
-            50,
+            new Position(10, 50),
             55,
             'Helvetica',
             10,
@@ -2101,8 +2096,7 @@ final class PageTest extends TestCase
                 new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
                 new TextSegment('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~'),
             ],
-            10,
-            50,
+            new Position(10, 50),
             500,
             'Helvetica',
             10,
@@ -2125,8 +2119,7 @@ final class PageTest extends TestCase
                 new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
                 new TextSegment(' Hello world from PDF'),
             ],
-            10,
-            50,
+            new Position(10, 50),
             50,
             'Helvetica',
             10,
@@ -2151,7 +2144,7 @@ final class PageTest extends TestCase
         $invalidRuns = ['invalid'];
 
         $method = new \ReflectionMethod($page, 'addFlowText');
-        $method->invoke($page, $invalidRuns, 10, 50, 50, 'Helvetica', 10);
+        $method->invoke($page, $invalidRuns, new Position(10, 50), 50, 'Helvetica', 10);
     }
 
     #[Test]
@@ -2163,8 +2156,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText(
             [new TextSegment('Achtung', bold: true)],
-            10,
-            50,
+            new Position(10, 50),
             100,
             'Helvetica',
             10,
@@ -2182,8 +2174,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText(
             [new TextSegment('Hinweis', italic: true)],
-            10,
-            50,
+            new Position(10, 50),
             100,
             'Times-Roman',
             10,
@@ -2204,8 +2195,7 @@ final class PageTest extends TestCase
                 new TextSegment('Underline', underline: true),
                 new TextSegment(' Strike', strikethrough: true),
             ],
-            10,
-            50,
+            new Position(10, 50),
             200,
             'Helvetica',
             10,
@@ -2222,7 +2212,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addFlowText('Hello', 10, 50, 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::CENTER));
+        $page->addFlowText('Hello', new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::CENTER));
 
         self::assertStringContainsString("45 50 Td\n(Hello) Tj", $page->contents->render());
     }
@@ -2234,7 +2224,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addFlowText('Hello', 10, 50, 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::RIGHT));
+        $page->addFlowText('Hello', new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::RIGHT));
 
         self::assertStringContainsString("80 50 Td\n(Hello) Tj", $page->contents->render());
     }
@@ -2246,7 +2236,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addFlowText('Hello world from PDF', 10, 50, 70, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::JUSTIFY));
+        $page->addFlowText('Hello world from PDF', new Position(10, 50), 70, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::JUSTIFY));
 
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("50 50 Td\n(world) Tj", $page->contents->render());
@@ -2259,7 +2249,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addFlowText("Hello world\nfrom PDF", 10, 50, 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::JUSTIFY));
+        $page->addFlowText("Hello world\nfrom PDF", new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::JUSTIFY));
 
         self::assertStringContainsString("10 50 Td\n(Hello world) Tj", $page->contents->render());
         self::assertStringContainsString("10 38 Td\n(from PDF) Tj", $page->contents->render());
@@ -2274,8 +2264,7 @@ final class PageTest extends TestCase
 
         $lastPage = $firstPage->addFlowText(
             'Hello world from PDF',
-            10,
-            30,
+            new Position(10, 30),
             40,
             'Helvetica',
             10,
