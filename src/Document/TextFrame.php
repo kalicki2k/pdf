@@ -14,6 +14,7 @@ use Kalle\Pdf\Layout\TextOverflow;
 final class TextFrame
 {
     private const DEFAULT_BULLET_INDENT = 14.0;
+    private const DEFAULT_TEXT_SPACING_FACTOR = 1.2;
 
     private Page $page;
     private float $cursorY;
@@ -29,23 +30,52 @@ final class TextFrame
         $this->cursorY = $y;
     }
 
+    public function addText(
+        string $text,
+        string $fontName,
+        int $size,
+        TextOptions $options = new TextOptions(),
+        ?float $spacingAfter = null,
+    ): self {
+        $spacingAfter ??= $size * self::DEFAULT_TEXT_SPACING_FACTOR;
+
+        if ($this->cursorY < $this->bottomMargin + $size) {
+            $topMargin = $this->page->getHeight() - $this->cursorY;
+            $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
+            $this->cursorY = $this->page->getHeight() - $topMargin;
+        }
+
+        $this->page->addText(
+            text: $text,
+            x: $this->x,
+            y: $this->cursorY,
+            fontName: $fontName,
+            size: $size,
+            options: $options,
+        );
+
+        $this->cursorY -= $spacingAfter;
+
+        if ($this->cursorY < $this->bottomMargin) {
+            $topMargin = $this->page->getHeight() - ($this->cursorY + $spacingAfter);
+            $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
+            $this->cursorY = $this->page->getHeight() - $topMargin;
+        }
+
+        return $this;
+    }
+
     /**
      * @param string|list<TextSegment> $text
      */
-    public function paragraph(
+    public function addParagraph(
         string | array $text,
         string $baseFont,
         int $size,
-        ?string $tag = null,
-        ?float $lineHeight = null,
+        ParagraphOptions $options = new ParagraphOptions(),
         ?float $spacingAfter = null,
-        ?Color $color = null,
-        ?Opacity $opacity = null,
-        HorizontalAlign $align = HorizontalAlign::LEFT,
-        ?int $maxLines = null,
-        TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
-        $lineHeight ??= $size * 1.2;
+        $lineHeight = $options->lineHeight ?? $size * 1.2;
         $spacingAfter ??= $lineHeight;
 
         return $this->flowParagraph(
@@ -54,25 +84,27 @@ final class TextFrame
             width: $this->width,
             baseFont: $baseFont,
             size: $size,
-            tag: $tag,
-            lineHeight: $lineHeight,
+            options: new ParagraphOptions(
+                structureTag: $options->structureTag,
+                lineHeight: $lineHeight,
+                color: $options->color,
+                opacity: $options->opacity,
+                align: $options->align,
+                maxLines: $options->maxLines,
+                overflow: $options->overflow,
+            ),
             spacingAfter: $spacingAfter,
-            color: $color,
-            opacity: $opacity,
-            align: $align,
-            maxLines: $maxLines,
-            overflow: $overflow,
         );
     }
 
     /**
      * @param list<string|list<TextSegment>> $items
      */
-    public function bulletList(
+    public function addBulletList(
         array $items,
         string $baseFont,
         int $size,
-        ?string $tag = null,
+        ?StructureTag $tag = null,
         ?float $lineHeight = null,
         ?float $spacingAfter = null,
         ?float $itemSpacing = null,
@@ -118,11 +150,11 @@ final class TextFrame
     /**
      * @param list<string|list<TextSegment>> $items
      */
-    public function numberedList(
+    public function addNumberedList(
         array $items,
         string $baseFont,
         int $size,
-        ?string $tag = null,
+        ?StructureTag $tag = null,
         ?float $lineHeight = null,
         ?float $spacingAfter = null,
         ?float $itemSpacing = null,
@@ -178,7 +210,7 @@ final class TextFrame
         \Closure $markerRenderer,
         string $baseFont,
         int $size,
-        ?string $tag,
+        ?StructureTag $tag,
         float $lineHeight,
         float $spacingAfter,
         float $itemSpacing,
@@ -198,11 +230,13 @@ final class TextFrame
                 text: $markerRenderer($index),
                 x: $this->x,
                 y: $this->cursorY,
-                baseFont: $baseFont,
+                fontName: $baseFont,
                 size: $size,
-                tag: $tag,
-                color: $markerColor,
-                opacity: $opacity,
+                options: new TextOptions(
+                    structureTag: $tag,
+                    color: $markerColor,
+                    opacity: $opacity,
+                ),
             );
 
             $this->flowParagraph(
@@ -211,11 +245,13 @@ final class TextFrame
                 width: $this->width - $markerIndent,
                 baseFont: $baseFont,
                 size: $size,
-                tag: $tag,
-                lineHeight: $lineHeight,
+                options: new ParagraphOptions(
+                    structureTag: $tag,
+                    lineHeight: $lineHeight,
+                    color: $color,
+                    opacity: $opacity,
+                ),
                 spacingAfter: $index === array_key_last($items) ? $spacingAfter : $itemSpacing,
-                color: $color,
-                opacity: $opacity,
             );
         }
 
@@ -231,16 +267,11 @@ final class TextFrame
         float $width,
         string $baseFont,
         int $size,
-        ?string $tag = null,
-        ?float $lineHeight = null,
+        ?ParagraphOptions $options = null,
         ?float $spacingAfter = null,
-        ?Color $color = null,
-        ?Opacity $opacity = null,
-        HorizontalAlign $align = HorizontalAlign::LEFT,
-        ?int $maxLines = null,
-        TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
-        $lineHeight ??= $size * 1.2;
+        $options ??= new ParagraphOptions();
+        $lineHeight = $options->lineHeight ?? $size * 1.2;
         $spacingAfter ??= $lineHeight;
 
         $this->page = $this->page->addParagraph(
@@ -248,19 +279,21 @@ final class TextFrame
             x: $x,
             y: $this->cursorY,
             maxWidth: $width,
-            baseFont: $baseFont,
+            fontName: $baseFont,
             size: $size,
-            tag: $tag,
-            lineHeight: $lineHeight,
-            bottomMargin: $this->bottomMargin,
-            color: $color,
-            opacity: $opacity,
-            align: $align,
-            maxLines: $maxLines,
-            overflow: $overflow,
+            options: new ParagraphOptions(
+                structureTag: $options->structureTag,
+                lineHeight: $lineHeight,
+                bottomMargin: $this->bottomMargin,
+                color: $options->color,
+                opacity: $options->opacity,
+                align: $options->align,
+                maxLines: $options->maxLines,
+                overflow: $options->overflow,
+            ),
         );
 
-        $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $width, $maxLines, $overflow);
+        $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $width, $options->maxLines, $options->overflow);
         $consumedHeight = ($lineCount * $lineHeight) + $spacingAfter;
         $topMargin = $this->page->getHeight() - $this->cursorY;
         $availableHeight = $this->page->getHeight() - $topMargin - $this->bottomMargin;
@@ -284,34 +317,31 @@ final class TextFrame
     /**
      * @param string|list<TextSegment> $text
      */
-    public function heading(
+    public function addHeading(
         string | array $text,
         string $baseFont,
         int $size,
-        ?string $tag = null,
+        ParagraphOptions $options = new ParagraphOptions(),
         ?float $spacingAfter = null,
-        ?Color $color = null,
-        ?Opacity $opacity = null,
-        HorizontalAlign $align = HorizontalAlign::LEFT,
-        ?int $maxLines = null,
-        TextOverflow $overflow = TextOverflow::CLIP,
     ): self {
-        return $this->paragraph(
+        return $this->addParagraph(
             text: $text,
             baseFont: $baseFont,
             size: $size,
-            tag: $tag,
-            lineHeight: $size * 1.2,
+            options: new ParagraphOptions(
+                structureTag: $options->structureTag,
+                lineHeight: $size * 1.2,
+                color: $options->color,
+                opacity: $options->opacity,
+                align: $options->align,
+                maxLines: $options->maxLines,
+                overflow: $options->overflow,
+            ),
             spacingAfter: $spacingAfter ?? $size * 0.8,
-            color: $color,
-            opacity: $opacity,
-            align: $align,
-            maxLines: $maxLines,
-            overflow: $overflow,
         );
     }
 
-    public function spacer(float $height): self
+    public function addSpacer(float $height): self
     {
         $this->cursorY -= $height;
 

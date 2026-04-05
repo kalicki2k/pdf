@@ -17,22 +17,22 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Inhaltsverzeichnisse koennen ueber `addTableOfContents(...)` aus vorhandenen Outlines erzeugt werden
 - Dokumente koennen ueber den Standard-Security-Handler verschluesselt werden
 - Text wird ueber registrierte Fonts gerendert
-- `addParagraph()` und `TextFrame` decken ersten Absatz- und Flow-Layout-Bedarf ab
+- `addParagraph()`, `addTextBox()` und `TextFrame` decken ersten Absatz-, Block- und Flow-Layout-Bedarf ab
 - `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
 - Textfarbe, Graustufen, CMYK und Opacity sind im Renderpfad angekommen
 - `bold`, `italic`, `underline` und `strikethrough` sind vorhanden
 - `HorizontalAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
 - `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
-- Listen stehen in einer ersten Stufe ueber `TextFrame::bulletList(...)`, `TextFrame::numberedList(...)` und `BulletType` zur Verfuegung
-- Tabellen stehen ueber `table(...)`, `Table`, `TableCell`, `CellStyle`, `TableBorder` und `TablePadding` zur Verfuegung, inklusive wiederholter Header auf Folgeseiten, `colspan`, `rowspan` auch ueber Seitenumbrueche, partiell ueberschreibbaren Zell-Borders sowie horizontaler und vertikaler Zell-Ausrichtung
+- Listen stehen in einer ersten Stufe ueber `TextFrame::addBulletList(...)`, `TextFrame::addNumberedList(...)` und `BulletType` zur Verfuegung
+- Tabellen stehen ueber `createTable(...)`, `Table`, `TableCell`, `CellStyle`, `TableBorder` und `TablePadding` zur Verfuegung, inklusive wiederholter Header auf Folgeseiten, `colspan`, `rowspan` auch ueber Seitenumbrueche, partiell ueberschreibbaren Zell-Borders sowie horizontaler und vertikaler Zell-Ausrichtung
 - Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
 - Linien und Rechtecke sind als erste grafische Primitive vorhanden
 - gerundete Rechtecke sind ueber `addRoundedRectangle(...)` verfuegbar
-- freie Pfade sind ueber `Page::path()` und `PathBuilder` verfuegbar
+- freie Pfade sind ueber `Page::addPath()` und `PathBuilder` verfuegbar
 - Kreise sind als Convenience-API ueber `addCircle(...)` verfuegbar
 - Ellipsen, Polygone, Pfeile und Sterne sind als weitere Convenience-Formen verfuegbar
-- Links und URI-Annotationen sind ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link` verfuegbar
-- interne Spruenge sind ueber `addDestination(...)`, `addInternalLink(...)` und `#ziel`-Links verfuegbar
+- Links und URI-Annotationen sind ueber `addLink(...)`, `TextOptions(link: LinkTarget::...)` und `TextSegment::link` verfuegbar
+- interne Spruenge sind ueber `addDestination(...)`, `addInternalLink(...)` und `LinkTarget::namedDestination(...)` verfuegbar
 - Badges sind als kleines zusammengesetztes Label-Element ueber `addBadge(...)` verfuegbar
 - Panels sind als einfache Hinweis- und Infoboxen ueber `addPanel(...)` verfuegbar
 - Callouts sind als Hinweisboxen mit Pointer ueber `addCallout(...)` verfuegbar
@@ -71,14 +71,14 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Unicode-Unterstuetzung
 - zentrale Font-Konfiguration ueber `config/fonts.php`
 - optionale Trennung zwischen normalem Text und strukturiertem Text
-- erste Textfluss-API ueber `addParagraph()` und `TextFrame`
+- erste Textfluss-API ueber `addParagraph()`, `addTextBox()` und `TextFrame`
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
 - erste Listen-API mit Bullet- und nummerierten Listen
 - Tabellen-API mit festen Spaltenbreiten, Zeilen, wiederholten Headern, `colspan`, `rowspan` auch ueber Seitenumbrueche, `CellStyle`, mergebaren Zell-Borders, flexiblem Zell-Padding sowie horizontaler und vertikaler Zell-Ausrichtung
 - erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
 - gerundete Rechtecke, Badges, Panels und Callouts als erste zusammengesetzte Grafik-/Layout-API
-- erste freie Form-API ueber `path()`
+- erste freie Form-API ueber `addPath()`
 - erste Kreis-API auf Basis von Bezier-Pfaden
 - weitere Form-APIs fuer Ellipsen, Polygone, Pfeile und Sterne
 - erste Link-API ueber Annotationen und klickbaren Text

@@ -114,7 +114,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `addTextBox(...)`, `createTextFrame(...)`, `createTable(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `addPath()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)`.
 
 Dabei passiert intern:
 
@@ -135,7 +135,7 @@ Beim Absatz-Rendering kommen zusaetzlich dazu:
 
 Bei Tabellen kommt zusaetzlich dazu:
 
-7. `Page::table(...)` erzeugt ein `Table`-Objekt mit fester Breite und festen Spaltenbreiten.
+7. `Page::createTable(...)` erzeugt ein `Table`-Objekt mit fester Breite und festen Spaltenbreiten.
 8. `Table::addRow(...)` normalisiert Zellinhalte zu `TableCell`-Instanzen.
 9. `colspan` und `rowspan` werden ueber vorbereitete Zeilengruppen und aktive Spaltenbelegung aufgeloest.
 10. Die Zeilenhoehe wird ueber `countParagraphLines(...)` und die zusammengefassten Zellgruppen berechnet.
@@ -416,8 +416,8 @@ Verantwortlich fuer:
 
 - gemeinsamen Textbereich mit `x`, `y` und Breite
 - Cursor-Fuehrung zwischen mehreren Textbloecken
-- Absatzeinzug ueber `paragraph(...)`
-- Ueberschriften ueber `heading(...)`
+- Absatzeinzug ueber `addParagraph(...)`
+- Ueberschriften ueber `addHeading(...)`
 - automatische Folge-Seiten bei Ueberlauf
 - Weitergabe von Alignment, `maxLines` und `TextOverflow`
 - Listen ueber `bulletList(...)` und `numberedList(...)`
@@ -675,7 +675,7 @@ Damit eignet sich das Element fuer Rahmen, Panels, Hintergruende und einfache La
 
 `Path` rendert freie Zeichenpfade aus einzelnen PDF-Pfadoperatoren.
 
-Aktuell wird das ueber `Page::path()` und `PathBuilder` aufgebaut:
+Aktuell wird das ueber `Page::addPath()` und `PathBuilder` aufgebaut:
 
 - `moveTo(...)`
 - `lineTo(...)`
@@ -734,8 +734,8 @@ Damit gibt es zwei API-Ebenen:
 
 - `Page::addLink(...)` fuer beliebige klickbare Flaechen
 - `Page::addInternalLink(...)` fuer frei positionierte interne Link-Flaechen
-- `Page::addText(..., link: ...)` und `TextSegment::link` fuer aus Textbreite abgeleitete Link-Rechtecke
-- `#ziel` als kompakter Shortcut fuer interne Links ueber die bestehende Link-API
+- `TextOptions(link: LinkTarget::...)` und `TextSegment::link` fuer aus Textbreite abgeleitete Link-Rechtecke
+- `LinkTarget::namedDestination(...)` fuer interne Ziele ohne String-Shortcut
 
 ### TextSegment
 
@@ -752,7 +752,7 @@ Ein Segment traegt aktuell:
 - `underline`
 - `strikethrough`
 
-`Page::addParagraph(...)` und `TextFrame::paragraph(...)` akzeptieren entweder einen einfachen `string` oder eine Liste von `TextSegment`-Objekten.
+`Page::addParagraph(...)` und `TextFrame::addParagraph(...)` akzeptieren entweder einen einfachen `string` oder eine Liste von `TextSegment`-Objekten.
 
 ### HorizontalAlign und TextOverflow
 

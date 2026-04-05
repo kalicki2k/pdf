@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Document;
+
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\TextOverflow;
+
+final readonly class ParagraphOptions
+{
+    public function __construct(
+        public ?StructureTag $structureTag = null,
+        public ?float $lineHeight = null,
+        public ?float $bottomMargin = null,
+        public ?Color $color = null,
+        public ?Opacity $opacity = null,
+        public HorizontalAlign $align = HorizontalAlign::LEFT,
+        public ?int $maxLines = null,
+        public TextOverflow $overflow = TextOverflow::CLIP,
+    ) {
+    }
+}

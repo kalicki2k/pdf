@@ -42,7 +42,7 @@ final class TableTest extends TestCase
             ->registerFont('Helvetica-Bold');
         $page = $document->addPage();
 
-        $table = $page->addTable(20, 260, 170, [50, 70, 50])
+        $table = $page->createTable(20, 260, 170, [50, 70, 50])
             ->headerStyle(new HeaderStyle(
                 fillColor: Color::gray(0.9),
                 textColor: Color::rgb(255, 0, 0),
@@ -75,7 +75,7 @@ final class TableTest extends TestCase
             ->registerFont('Helvetica-Bold');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [30, 50, 40, 50])
+        $page->createTable(20, 260, 170, [30, 50, 40, 50])
             ->addRow(['#', 'Titel', 'Status', 'Preis'], header: true)
             ->addRow([
                 '1',
@@ -101,7 +101,7 @@ final class TableTest extends TestCase
             ->registerFont('Helvetica-Bold');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [40, 60, 70])
+        $page->createTable(20, 260, 170, [40, 60, 70])
             ->addRow(['Gruppe', 'Titel', 'Status'], header: true)
             ->addRow([
                 new TableCell('A', rowspan: 2, style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
@@ -127,7 +127,7 @@ final class TableTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [85, 85])
+        $page->createTable(20, 260, 170, [85, 85])
             ->style(new TableStyle(border: TableBorder::none()))
             ->addRow([
                 new TableCell('Links', style: new CellStyle(border: TableBorder::only(['left', 'bottom'], color: Color::rgb(255, 0, 0)))),
@@ -146,7 +146,7 @@ final class TableTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [85, 85])
+        $page->createTable(20, 260, 170, [85, 85])
             ->addRow([
                 new TableCell('Links', style: new CellStyle(border: TableBorder::only(['left'], color: Color::rgb(0, 255, 0)))),
                 'Rechts',
@@ -167,7 +167,7 @@ final class TableTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [85, 85])
+        $page->createTable(20, 260, 170, [85, 85])
             ->style(new TableStyle(verticalAlign: VerticalAlign::MIDDLE))
             ->addRow([
                 new TableCell('Kurz'),
@@ -187,7 +187,7 @@ final class TableTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [85, 85])
+        $page->createTable(20, 260, 170, [85, 85])
             ->style(new TableStyle(padding: TablePadding::symmetric(10, 4)))
             ->addRow([
                 'Links',
@@ -208,7 +208,7 @@ final class TableTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [170])
+        $page->createTable(20, 260, 170, [170])
             ->style(new TableStyle(padding: TablePadding::all(6)))
             ->addRow([
                 new TableCell('Override', style: new CellStyle(padding: TablePadding::only(top: 2, right: 4, bottom: 8, left: 20))),
@@ -227,7 +227,7 @@ final class TableTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [170])
+        $page->createTable(20, 260, 170, [170])
             ->addRow([
                 new TableCell(
                     'Styled',
@@ -255,7 +255,7 @@ final class TableTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [170])
+        $page->createTable(20, 260, 170, [170])
             ->style(new TableStyle(
                 padding: TablePadding::symmetric(10, 4),
                 border: TableBorder::all(color: Color::rgb(255, 0, 0)),
@@ -283,7 +283,7 @@ final class TableTest extends TestCase
             ->registerFont('Helvetica-Bold');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [85, 85])
+        $page->createTable(20, 260, 170, [85, 85])
             ->style(new TableStyle(
                 padding: TablePadding::all(6),
                 border: TableBorder::all(color: Color::gray(0.75)),
@@ -317,7 +317,7 @@ final class TableTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTable(20, 260, 170, [85, 85])
+        $page->createTable(20, 260, 170, [85, 85])
             ->style(new TableStyle(verticalAlign: VerticalAlign::MIDDLE))
             ->addRow([
                 new TableCell('Kurz', style: new CellStyle(verticalAlign: VerticalAlign::BOTTOM)),
@@ -339,7 +339,7 @@ final class TableTest extends TestCase
             ->registerFont('Helvetica-Bold');
         $page = $document->addPage(200, 200);
 
-        $table = $page->addTable(20, 120, 160, [80, 80], 20)
+        $table = $page->createTable(20, 120, 160, [80, 80], 20)
             ->addRow(['Kopf', 'Wert'], header: true)
             ->addRow(['A', '1'])
             ->addRow(['B', '2'])
@@ -359,7 +359,7 @@ final class TableTest extends TestCase
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $page = $document->addPage();
-        $table = $page->addTable(20, 260, 170, [85, 85]);
+        $table = $page->createTable(20, 260, 170, [85, 85]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Table row spans must match the number of columns.');
@@ -373,7 +373,7 @@ final class TableTest extends TestCase
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $page = $document->addPage();
-        $table = $page->addTable(20, 260, 170, [85, 85]);
+        $table = $page->createTable(20, 260, 170, [85, 85]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Table cell colspan must be greater than zero.');
@@ -390,7 +390,7 @@ final class TableTest extends TestCase
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $page = $document->addPage();
-        $table = $page->addTable(20, 260, 170, [85, 85]);
+        $table = $page->createTable(20, 260, 170, [85, 85]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Table cell rowspan must be greater than zero.');
@@ -410,7 +410,7 @@ final class TableTest extends TestCase
             ->registerFont('Helvetica-Bold');
         $page = $document->addPage(200, 120);
 
-        $table = $page->addTable(20, 90, 160, [80, 80], 20)
+        $table = $page->createTable(20, 90, 160, [80, 80], 20)
             ->font('Helvetica', 12)
             ->addRow(['Gruppe', 'Wert'], header: true)
             ->addRow([
@@ -440,7 +440,7 @@ final class TableTest extends TestCase
             ->registerFont('Helvetica-Bold');
         $page = $document->addPage(200, 140);
 
-        $page->addTable(20, 118, 160, [70, 90], 20)
+        $page->createTable(20, 118, 160, [70, 90], 20)
             ->font('Helvetica', 12)
             ->addRow(['Beschreibung', 'Wert'], header: true)
             ->addRow([

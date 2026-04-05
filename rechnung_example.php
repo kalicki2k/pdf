@@ -1,11 +1,11 @@
 <?php
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\TextBoxOptions;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 
 require 'vendor/autoload.php';
-
 
 $outputDir = __DIR__ . '/var/examples';
 
@@ -24,17 +24,55 @@ $document = new Document(
 
 $page = $document->addPage(PageSize::A4());
 
+$page->addTextBox(
+    text: "DEIN FIRMENNAME\nStraße Hausnummer\nPLZ Ort\nDeutschland",
+    x: Units::mm(140),
+    y: Units::mm(257),
+    width: Units::mm(70),
+    height: Units::mm(20),
+    fontName: 'Helvetica',
+    size: 9,
+    options: new TextBoxOptions(
+        lineHeight: Units::mm(4.5),
+    ),
+);
+
+$page->addTextBox(
+    text: "Telefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de",
+    x: Units::mm(70),
+    y: Units::mm(257),
+    width: Units::mm(70),
+    height: Units::mm(15),
+    fontName: 'Helvetica',
+    size: 9,
+    options: new TextBoxOptions(
+        lineHeight: Units::mm(4.5),
+    ),
+);
+
+$page->addTextBox(
+    text: "Steuernummer: 12/345/67890\nUSt-IdNr.: DE123456789",
+    x: Units::mm(140),
+    y: Units::mm(202),
+    width: Units::mm(70),
+    height: Units::mm(10),
+    fontName: 'Helvetica',
+    size: 9,
+    options: new TextBoxOptions(
+        lineHeight: Units::mm(4.5),
+    ),
+);
+
 $page->addText(
     text: 'Rechnung',
     x: Units::mm(20),
-    y: Units::mm(20),
-    baseFont: 'Helvetica',
-    size: 20
+    y: Units::mm(200),
+    fontName: 'Helvetica',
+    size: 20,
 );
 
 $targetPath = $outputDir . '/' . 'rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
 file_put_contents($targetPath, $document->render());
-
 
 printf(
     'Erstellt in %.3f Sekunden.%s',

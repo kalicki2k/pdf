@@ -8,8 +8,8 @@ use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\RawType;
 use Kalle\Pdf\Types\ReferenceType;
-use Kalle\Pdf\Types\StringType;
 
 final class LinkAnnotation extends IndirectObject implements PageAnnotation
 {
@@ -20,8 +20,7 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
         private readonly float $y,
         private readonly float $width,
         private readonly float $height,
-        private readonly string $target,
-        private readonly bool $internal = false,
+        private readonly LinkTarget $target,
     ) {
         parent::__construct($id);
     }
@@ -41,13 +40,23 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
             'P' => new ReferenceType($this->page),
         ]);
 
-        if ($this->internal) {
-            $dictionary->add('Dest', new NameType($this->target));
-        } else {
-            $dictionary->add('A', new DictionaryType([
-                'S' => new NameType('URI'),
-                'URI' => new StringType($this->target),
+        if ($this->target->isNamedDestination()) {
+            $dictionary->add('Dest', new NameType($this->target->namedDestinationValue()));
+        } elseif ($this->target->isPage()) {
+            $dictionary->add('Dest', new ArrayType([
+                new ReferenceType($this->target->pageValue()),
+                new NameType('Fit'),
             ]));
+        } elseif ($this->target->isPosition()) {
+            $dictionary->add('Dest', new ArrayType([
+                new ReferenceType($this->target->pageValue()),
+                new NameType('XYZ'),
+                $this->target->xValue(),
+                $this->target->yValue(),
+                new RawType('null'),
+            ]));
+        } else {
+            $dictionary->add('A', new UriAction($this->target->externalUrlValue())->toPdfDictionary());
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

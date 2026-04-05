@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Structure;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\StructureTag;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
@@ -20,22 +21,6 @@ final class StructElem extends IndirectObject
     private ?int $markedContentId = null;
     private ?StructElem $parent = null;
     private ?Page $page = null;
-
-    /** @var string[]  */
-    private array $allowedTags = [
-        // Text-Tags
-        'Document',
-        'H1', 'H2', 'H3',
-        'P',
-        'L', 'LI', 'LBody',
-        'Span', 'Quote', 'Note',
-
-        // Struktur-Tags
-        'Part', 'Sect', 'Art', 'Div',
-
-        // Tabellen-Tags
-        // ...
-    ];
 
     public function __construct(
         int                     $id,
@@ -95,7 +80,9 @@ final class StructElem extends IndirectObject
 
     private function validate(): void
     {
-        if (!in_array($this->tag, $this->allowedTags)) {
+        $allowedTags = array_map(static fn (StructureTag $tag): string => $tag->value, StructureTag::cases());
+
+        if (!in_array($this->tag, $allowedTags, true)) {
             throw new InvalidArgumentException("Tag '$this->tag' is not allowed.");
         }
     }

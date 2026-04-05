@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\LinkTarget;
+use Kalle\Pdf\Document\ParagraphOptions;
+use Kalle\Pdf\Document\StructureTag;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -23,11 +26,11 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 220, 20);
+        $frame = $page->createTextFrame(20, 100, 220, 20);
 
         $frame
-            ->heading('Headline', 'Helvetica', 20, 'H1')
-            ->paragraph('Hello world from PDF', 'Helvetica', 10, 'P', spacingAfter: 8);
+            ->addHeading('Headline', 'Helvetica', 20, new ParagraphOptions(structureTag: StructureTag::Heading1))
+            ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(structureTag: StructureTag::Paragraph), spacingAfter: 8);
 
         self::assertSame($page, $frame->getPage());
         self::assertStringContainsString("20 100 Td\n/H1 << /MCID 0 >> BDC\n(Headline) Tj", $page->contents->render());
@@ -42,8 +45,8 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
-        $frame = $page->textFrame(10, 30, 40, 15);
-        $frame->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 6);
+        $frame = $page->createTextFrame(10, 30, 40, 15);
+        $frame->addParagraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 6);
 
         self::assertCount(2, $document->pages->pages);
         self::assertSame($document->pages->pages[1], $frame->getPage());
@@ -57,10 +60,10 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(20, 100, 120, 20);
         $frame
-            ->heading('Headline', 'Helvetica', 20)
-            ->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8);
+            ->addHeading('Headline', 'Helvetica', 20)
+            ->addParagraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8);
 
         self::assertStringContainsString('(Headline) Tj', $page->contents->render());
         self::assertStringNotContainsString('BDC', $page->contents->render());
@@ -73,10 +76,10 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(20, 100, 120, 20);
         $frame
-            ->heading('Headline', 'Helvetica', 20, opacity: Opacity::fill(0.5))
-            ->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8, opacity: Opacity::fill(0.5));
+            ->addHeading('Headline', 'Helvetica', 20, new ParagraphOptions(opacity: Opacity::fill(0.5)))
+            ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(opacity: Opacity::fill(0.5)), spacingAfter: 8);
 
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
         self::assertSame(2, substr_count($page->contents->render(), '/GS1 gs'));
@@ -89,10 +92,10 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(20, 100, 120, 20);
         $frame
-            ->heading('Headline', 'Helvetica', 20, color: Color::rgb(255, 0, 0))
-            ->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8, color: Color::cmyk(0.1, 0.2, 0.3, 0.4));
+            ->addHeading('Headline', 'Helvetica', 20, new ParagraphOptions(color: Color::rgb(255, 0, 0)))
+            ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(color: Color::cmyk(0.1, 0.2, 0.3, 0.4)), spacingAfter: 8);
 
         self::assertStringContainsString("1 0 0 rg\n(Headline) Tj", $page->contents->render());
         self::assertStringContainsString("0.1 0.2 0.3 0.4 k\n(Hello world from PDF) Tj", $page->contents->render());
@@ -105,8 +108,8 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
-        $frame->paragraph(
+        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame->addParagraph(
             [
                 new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
                 new TextSegment(' Hello world from PDF'),
@@ -128,8 +131,8 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 100, 20);
-        $frame->paragraph('Hello', 'Helvetica', 10, spacingAfter: 8, align: HorizontalAlign::CENTER);
+        $frame = $page->createTextFrame(20, 100, 100, 20);
+        $frame->addParagraph('Hello', 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::CENTER), spacingAfter: 8);
 
         self::assertStringContainsString("55 100 Td\n(Hello) Tj", $page->contents->render());
     }
@@ -141,8 +144,8 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 70, 20);
-        $frame->paragraph('Hello world from PDF', 'Helvetica', 10, spacingAfter: 8, align: HorizontalAlign::JUSTIFY);
+        $frame = $page->createTextFrame(20, 100, 70, 20);
+        $frame->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::JUSTIFY), spacingAfter: 8);
 
         self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("60 100 Td\n(world) Tj", $page->contents->render());
@@ -155,14 +158,13 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 40, 20);
-        $frame->paragraph(
+        $frame = $page->createTextFrame(20, 100, 40, 20);
+        $frame->addParagraph(
             'Hello world from PDF',
             'Helvetica',
             10,
+            options: new ParagraphOptions(maxLines: 2, overflow: TextOverflow::ELLIPSIS),
             spacingAfter: 8,
-            maxLines: 2,
-            overflow: TextOverflow::ELLIPSIS,
         );
 
         self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
@@ -177,11 +179,11 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
-        $frame->paragraph(
+        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame->addParagraph(
             [
-                new TextSegment('Docs', link: 'https://example.com/docs'),
-                new TextSegment(' Link', link: 'https://example.com/docs'),
+                new TextSegment('Docs', link: LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' Link', link: LinkTarget::externalUrl('https://example.com/docs')),
             ],
             'Helvetica',
             10,
@@ -199,8 +201,8 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
-        $frame->bulletList(
+        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame->addBulletList(
             [
                 'First bullet item',
                 [new TextSegment('Second', bold: true), new TextSegment(' bullet item')],
@@ -225,8 +227,8 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
-        $frame = $page->textFrame(10, 25, 60, 15);
-        $frame->bulletList(
+        $frame = $page->createTextFrame(10, 25, 60, 15);
+        $frame->addBulletList(
             ['First item', 'Second item'],
             'Helvetica',
             10,
@@ -248,8 +250,8 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
-        $frame->numberedList(
+        $frame = $page->createTextFrame(20, 100, 120, 20);
+        $frame->addNumberedList(
             [
                 'First item',
                 [new TextSegment('Second', bold: true), new TextSegment(' item')],
@@ -273,11 +275,11 @@ final class TextFrameTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $frame = $page->textFrame(20, 100, 120, 20);
+        $frame = $page->createTextFrame(20, 100, 120, 20);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Numbered lists must start at 1 or greater.');
 
-        $frame->numberedList(['One'], 'Helvetica', 10, startAt: 0);
+        $frame->addNumberedList(['One'], 'Helvetica', 10, startAt: 0);
     }
 }

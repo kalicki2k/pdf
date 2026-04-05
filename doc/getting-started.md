@@ -61,9 +61,12 @@ use Kalle\Pdf\Document\ImportDataAction;
 use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\LaunchAction;
 use Kalle\Pdf\Document\NamedAction;
+use Kalle\Pdf\Document\ParagraphOptions;
+use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\SubmitFormAction;
+use Kalle\Pdf\Document\TextOptions;
 use Kalle\Pdf\Document\ThreadAction;
 use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Layout\PageSize;
@@ -111,17 +114,19 @@ $document
     ->addPageNumbers(Units::mm(20), Units::mm(7), 'Helvetica', 9);
 
 $page = $document->addPage(PageSize::A4());
-$frame = $page->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20));
+$frame = $page->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20));
 
 $frame
-    ->heading(
+    ->addHeading(
         'Hallo PDF',
         'NotoSans-Regular',
         24,
-        'H1',
-        color: Color::rgb(220, 20, 60),
+        new ParagraphOptions(
+            structureTag: \Kalle\Pdf\Document\StructureTag::Heading1,
+            color: Color::rgb(220, 20, 60),
+        ),
     )
-    ->paragraph(
+    ->addParagraph(
         [
             new TextSegment('Achtung: ', Color::rgb(220, 20, 60), bold: true, underline: true),
             new TextSegment('dieser Absatz zeigt gemischte Textstile, Farben und Opacity. ', italic: true),
@@ -129,10 +134,12 @@ $frame
         ],
         'NotoSans-Regular',
         12,
-        'P',
-        align: HorizontalAlign::JUSTIFY,
-        maxLines: 3,
-        overflow: TextOverflow::ELLIPSIS,
+        new ParagraphOptions(
+            structureTag: \Kalle\Pdf\Document\StructureTag::Paragraph,
+            align: HorizontalAlign::JUSTIFY,
+            maxLines: 3,
+            overflow: TextOverflow::ELLIPSIS,
+        ),
     );
 
 $page->addLine(
@@ -231,11 +238,13 @@ $page->addText(
     text: 'Projektseite',
     x: Units::mm(20),
     y: Units::mm(150),
-    baseFont: 'NotoSans-Regular',
+    fontName: 'NotoSans-Regular',
     size: 12,
-    color: Color::rgb(0, 0, 255),
-    underline: true,
-    link: 'https://example.com',
+    options: new TextOptions(
+        color: Color::rgb(0, 0, 255),
+        underline: true,
+        link: LinkTarget::externalUrl('https://example.com'),
+    ),
 );
 
 $page->addBadge(
@@ -317,7 +326,7 @@ $page->addText('Akzeptiert', Units::mm(168), Units::mm(14), 'Helvetica', 11);
 $page->addRadioButton('delivery', 'standard', Units::mm(20), Units::mm(2), Units::mm(5), true);
 $page->addRadioButton('delivery', 'express', Units::mm(55), Units::mm(2), Units::mm(5), false);
 
-$page->addTable(
+$page->createTable(
     Units::mm(20),
     Units::mm(135),
     Units::mm(170),
@@ -377,7 +386,7 @@ $document
 $document->addTableOfContents(
     PageSize::A4(),
     title: 'Inhaltsverzeichnis',
-    baseFont: 'NotoSans-Regular',
+    fontName: 'NotoSans-Regular',
     titleSize: 18,
     entrySize: 11,
     margin: Units::mm(20),
@@ -395,14 +404,14 @@ file_put_contents('hello.pdf', $pdfContent);
 2. `registerFont(...)` registriert eingebettete Schriften aus der Font-Konfiguration.
 3. `addHeader(...)`, `addFooter(...)` und `addPageNumbers(...)` registrieren wiederkehrende Seiteninhalte fuer alle neu erzeugten Seiten.
 4. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
-5. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
-6. `heading()` und `paragraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
-7. `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
-8. `addText(..., link: ...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
+5. `createTextFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
+6. `addHeading()` und `addParagraph()` rendern Text innerhalb dieses Bereichs, inklusive Umbruch und optionalem Seitenwechsel.
+7. `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `addPath()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)` und `addImage(...)` platzieren einfache grafische Inhalte direkt auf der Seite.
+8. `TextOptions(link: LinkTarget::...)` kann Text direkt mit einer klickbaren Link-Annotation verbinden.
 9. `addBadge(...)` rendert kleine Labels mit Padding, Hintergrund, optionalem Border und optional gerundeten Ecken.
 10. `addPanel(...)` rendert einfache Hinweis- und Infoboxen mit Titel, Body, Padding und optional gerundeter Box.
 11. `addCallout(...)` rendert Hinweisboxen mit Pointer-Spitze auf Basis von Panel und Pfad-Geometrie.
-12. `table(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
+12. `createTable(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
 13. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
 14. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
 15. `addOutline(...)` registriert Bookmarks fuer die Viewer-Navigation im PDF.
@@ -432,7 +441,7 @@ Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeu
 Ein kompaktes Beispiel:
 
 ```php
-$table = $page->table(20, 240, 170, [30, 80, 30, 30])
+$table = $page->createTable(20, 240, 170, [30, 80, 30, 30])
     ->font('NotoSans-Regular', 11)
     ->style(new TableStyle(
         padding: TablePadding::all(6),
@@ -475,7 +484,7 @@ $table->addRow([
 Fuer laengere Tabellen werden Header-Zeilen automatisch auf neuen Seiten wiederholt:
 
 ```php
-$table = $page->table(20, 240, 170, [20, 80, 30, 40])
+$table = $page->createTable(20, 240, 170, [20, 80, 30, 40])
     ->font('NotoSans-Regular', 10)
     ->style(new TableStyle(
         verticalAlign: VerticalAlign::MIDDLE,
@@ -614,7 +623,7 @@ Wichtig: Ein Border im `CellStyle` ersetzt den Tabellen-Border nicht komplett. E
 
 ## Listen
 
-Fuer einfache Aufzaehlungen steht `TextFrame::bulletList(...)` zur Verfuegung.
+Fuer einfache Aufzaehlungen steht `TextFrame::addBulletList(...)` zur Verfuegung.
 
 Unterstuetzt werden aktuell:
 
@@ -649,7 +658,7 @@ $frame->bulletList(
 );
 ```
 
-Fuer nummerierte Listen gibt es `TextFrame::numberedList(...)`:
+Fuer nummerierte Listen gibt es `TextFrame::addNumberedList(...)`:
 
 ```php
 $frame->numberedList(
@@ -715,7 +724,14 @@ Fuer breitere Zeichensaetze kann ein Unicode-Font direkt ueber seinen Fontnamen 
 ```php
 $document->registerFont('NotoSansCJKsc-Regular');
 
-$page->addText('漢字とカタカナ', Units::mm(20), Units::mm(225), 'NotoSansCJKsc-Regular', 14, 'P');
+$page->addText(
+    '漢字とカタカナ',
+    Units::mm(20),
+    Units::mm(225),
+    'NotoSansCJKsc-Regular',
+    14,
+    new TextOptions(structureTag: \Kalle\Pdf\Document\StructureTag::Paragraph),
+);
 ```
 
 ## Dokumenteigene Font-Konfiguration
@@ -744,11 +760,12 @@ $document->registerFont('CustomSans-Regular');
 Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Ausbaustufen fuer Text:
 
 - `Page::addParagraph(...)` fuer Umbruch innerhalb einer festen Breite
-- `Page::textFrame(...)` fuer Fliesstext mit Cursor-Fuehrung
+- `Page::createTextFrame(...)` fuer Fliesstext mit Cursor-Fuehrung
+- `Page::addTextBox(...)` fuer Text in einem festen Rechteck
 - `Color::rgb(...)`, `Color::gray(...)`, `Color::cmyk(...)` und `Color::hex(...)`
 - `Opacity::fill(...)`, `Opacity::stroke(...)`, `Opacity::both(...)`
 - `TextSegment` fuer gemischte Inline-Stile innerhalb eines Absatzes
-- `link` direkt in `Page::addText(...)`
+- `TextOptions` fuer optionale Text-Features wie Farbe, Opacity, Dekorationen und Links
 - `link` direkt pro `TextSegment`
 - `bold`, `italic`, `underline`, `strikethrough` pro `TextSegment`
 - `HorizontalAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
@@ -760,7 +777,7 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 
 - `Page::addLine(...)` fuer einfache Linien mit Farbe, Linienstaerke und optionaler Stroke-Opacity
 - `Page::addRectangle(...)` fuer Stroke, Fill oder Fill+Stroke
-- `Page::path()` fuer freie Pfade mit `moveTo(...)`, `lineTo(...)`, `curveTo(...)`, `close()` und den Paint-Modi `stroke()`, `fill()` und `fillAndStroke()`
+- `Page::addPath()` fuer freie Pfade mit `moveTo(...)`, `lineTo(...)`, `curveTo(...)`, `close()` und den Paint-Modi `stroke()`, `fill()` und `fillAndStroke()`
 - `Page::addCircle(...)` fuer Kreise auf Basis des Path-Builders
 - `Page::addEllipse(...)` fuer Ellipsen mit getrennten X- und Y-Radien
 - `Page::addPolygon(...)` fuer geschlossene Formen aus einer Punktliste
@@ -768,8 +785,8 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 - `Image::fromFile(...)` fuer automatische Erkennung von `jpg`, `jpeg` und `png`, inklusive Alpha-PNG ueber Soft-Mask
 - `Page::addImage(...)` fuer die Platzierung eines Bildes an einer festen Position
 - `Page::addLink(...)` fuer frei positionierbare klickbare Flaechen
-- `Page::addText(..., link: ...)` fuer klickbaren Text ohne manuelles Link-Rechteck
-- `TextSegment::link` fuer Links innerhalb von `addParagraph(...)` und `textFrame(...)`
+- `TextOptions(link: LinkTarget::...)` fuer klickbaren Text ohne manuelles Link-Rechteck
+- `TextSegment::link` fuer Links innerhalb von `addParagraph(...)` und `createTextFrame(...)`
 
 Beispiele:
 
@@ -789,7 +806,7 @@ $page->addRectangle(
     Opacity::both(0.5),
 );
 
-$page->path()
+$page->addPath()
     ->moveTo(140, 140)
     ->lineTo(160, 160)
     ->lineTo(140, 180)
@@ -829,20 +846,22 @@ $page->addText(
     text: 'OpenAI',
     x: 20,
     y: 50,
-    baseFont: 'Helvetica',
+    fontName: 'Helvetica',
     size: 12,
-    color: Color::rgb(0, 0, 255),
-    underline: true,
-    link: 'https://openai.com',
+    options: new TextOptions(
+        color: Color::rgb(0, 0, 255),
+        underline: true,
+        link: LinkTarget::externalUrl('https://openai.com'),
+    ),
 );
 
-$frame->paragraph(
+$frame->addParagraph(
     [
         new TextSegment('Mehr Infos: '),
         new TextSegment(
             text: 'Docs',
             color: Color::rgb(0, 0, 255),
-            link: 'https://platform.openai.com/docs',
+            link: LinkTarget::externalUrl('https://platform.openai.com/docs'),
             underline: true,
         ),
     ],
@@ -856,18 +875,20 @@ $page->addText(
     text: 'Zu Docs springen',
     x: 20,
     y: 15,
-    baseFont: 'Helvetica',
+    fontName: 'Helvetica',
     size: 12,
-    color: Color::rgb(0, 0, 255),
-    underline: true,
-    link: '#docs',
+    options: new TextOptions(
+        color: Color::rgb(0, 0, 255),
+        underline: true,
+        link: LinkTarget::namedDestination('docs'),
+    ),
 );
 ```
 
 Ein kompakter Absatz mit gemischten Stilen sieht zum Beispiel so aus:
 
 ```php
-$frame->paragraph(
+$frame->addParagraph(
     [
         new TextSegment('Achtung: ', Color::rgb(255, 0, 0), bold: true, underline: true),
         new TextSegment('weiterer Text in Kursivschrift, ', italic: true),
@@ -1441,8 +1462,8 @@ Der derzeit belastbare Einstieg ist:
 - Polygone rendern
 - Pfeile rendern
 - Bilder aus Dateien laden und platzieren
-- klickbare Links ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link`
-- interne Spruenge ueber `addDestination(...)`, `addInternalLink(...)` und `#ziel`
+- klickbare Links ueber `addLink(...)`, `TextOptions(link: LinkTarget::...)` und `TextSegment::link`
+- interne Spruenge ueber `addDestination(...)`, `addInternalLink(...)` und `LinkTarget::namedDestination(...)`
 - Passwortverschluesselung ueber `encrypt(...)` fuer `RC4_40`, `RC4_128`, `AES_128` und `AES_256`
 - Formularfelder ueber `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)`
 

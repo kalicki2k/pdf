@@ -21,6 +21,7 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Styles\BadgeStyle;
 use Kalle\Pdf\Styles\CalloutStyle;
@@ -60,26 +61,21 @@ final class Page extends IndirectObject
         string $text,
         float $x,
         float $y,
-        string $baseFont,
-        int $size,
-        ?string $tag = null,
-        ?Color $color = null,
-        ?Opacity $opacity = null,
-        bool $underline = false,
-        bool $strikethrough = false,
-        ?string $link = null,
+        string $fontName = 'Helvetica',
+        int $size = 12,
+        TextOptions $options = new TextOptions(),
     ): self {
-        if ($tag !== null) {
+        if ($options->structureTag !== null) {
             $this->document->ensureStructureEnabled();
         }
 
-        $font = $this->resolveFont($baseFont);
-        $markedContentId = $tag !== null ? $this->markedContentId++ : null;
-        $encodedText = $this->encodeText($font, $baseFont, $text);
+        $font = $this->resolveFont($fontName);
+        $markedContentId = $options->structureTag !== null ? $this->markedContentId++ : null;
+        $encodedText = $this->encodeText($font, $fontName, $text);
         $resourceFontName = $this->registerFontResource($font);
         $textWidth = $font->measureTextWidth($text, $size);
-        $colorOperator = $color?->renderNonStrokingOperator();
-        $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
+        $colorOperator = $options->color?->renderNonStrokingOperator();
+        $graphicsStateName = $options->opacity !== null ? $this->resources->addOpacity($options->opacity) : null;
 
         $this->updateUnicodeFontWidths($font);
 
@@ -93,22 +89,22 @@ final class Page extends IndirectObject
             $textWidth,
             $colorOperator,
             $graphicsStateName,
-            $underline,
-            $strikethrough,
-            $tag,
+            $options->underline,
+            $options->strikethrough,
+            $options->structureTag?->value,
         ));
 
-        if ($tag !== null && $markedContentId !== null) {
-            $this->attachTextToStructure($tag, $markedContentId);
+        if ($options->structureTag !== null && $markedContentId !== null) {
+            $this->attachTextToStructure($options->structureTag, $markedContentId);
         }
 
-        if ($link !== null && $textWidth > 0.0) {
-            $this->addLink(
+        if ($options->link !== null && $textWidth > 0.0) {
+            $this->addLinkTarget(
                 $x,
                 $y - ($size * 0.2),
                 $textWidth,
                 $size,
-                $link,
+                $options->link,
             );
         }
 
@@ -143,7 +139,7 @@ final class Page extends IndirectObject
         string $baseFont = 'Helvetica',
         int $size = 11,
         ?BadgeStyle $style = null,
-        ?string $link = null,
+        ?LinkTarget $link = null,
     ): self {
         if ($text === '') {
             throw new InvalidArgumentException('Badge text must not be empty.');
@@ -193,12 +189,11 @@ final class Page extends IndirectObject
             $y + $style->paddingVertical + ($size * 0.2),
             $baseFont,
             $size,
-            null,
-            $style->textColor,
-            $style->opacity,
-            false,
-            false,
-            $link,
+            new TextOptions(
+                color: $style->textColor,
+                opacity: $style->opacity,
+                link: $link,
+            ),
         );
 
         return $this;
@@ -217,7 +212,7 @@ final class Page extends IndirectObject
         string $bodyFont = 'Helvetica',
         ?PanelStyle $style = null,
         ?string $titleFont = null,
-        ?string $link = null,
+        ?LinkTarget $link = null,
     ): self {
         if ($width <= 0) {
             throw new InvalidArgumentException('Panel width must be greater than zero.');
@@ -277,9 +272,10 @@ final class Page extends IndirectObject
                 $y + $height - $style->paddingVertical - $style->titleSize,
                 $titleFont,
                 $style->titleSize,
-                null,
-                $style->titleColor,
-                $style->opacity,
+                new TextOptions(
+                    color: $style->titleColor,
+                    opacity: $style->opacity,
+                ),
             );
             $bodyTopOffset += $style->titleSize + $style->titleSpacing;
         }
@@ -300,19 +296,20 @@ final class Page extends IndirectObject
                 $contentWidth,
                 $bodyFont,
                 $style->bodySize,
-                null,
-                $bodyLineHeight,
-                $y + $style->paddingVertical,
-                $style->bodyColor,
-                $style->opacity,
-                $style->bodyAlign,
-                $maxLines,
-                TextOverflow::ELLIPSIS,
+                new ParagraphOptions(
+                    lineHeight: $bodyLineHeight,
+                    bottomMargin: $y + $style->paddingVertical,
+                    color: $style->bodyColor,
+                    opacity: $style->opacity,
+                    align: $style->bodyAlign,
+                    maxLines: $maxLines,
+                    overflow: TextOverflow::ELLIPSIS,
+                ),
             );
         }
 
         if ($link !== null) {
-            $this->addLink($x, $y, $width, $height, $link);
+            $this->addLinkTarget($x, $y, $width, $height, $link);
         }
 
         return $this;
@@ -333,7 +330,7 @@ final class Page extends IndirectObject
         string $bodyFont = 'Helvetica',
         ?CalloutStyle $style = null,
         ?string $titleFont = null,
-        ?string $link = null,
+        ?LinkTarget $link = null,
     ): self {
         $style ??= new CalloutStyle(
             panelStyle: new PanelStyle(
@@ -418,19 +415,12 @@ final class Page extends IndirectObject
         float $x,
         float $y,
         float $maxWidth,
-        string $baseFont,
-        int $size,
-        ?string $tag = null,
-        ?float $lineHeight = null,
-        ?float $bottomMargin = null,
-        ?Color $color = null,
-        ?Opacity $opacity = null,
-        HorizontalAlign $align = HorizontalAlign::LEFT,
-        ?int $maxLines = null,
-        TextOverflow $overflow = TextOverflow::CLIP,
+        string $fontName = 'Helvetica',
+        int $size = 12,
+        ParagraphOptions $options = new ParagraphOptions(),
     ): self {
-        $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-        $bottomMargin ??= self::DEFAULT_BOTTOM_MARGIN;
+        $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
+        $bottomMargin = $options->bottomMargin ?? self::DEFAULT_BOTTOM_MARGIN;
 
         if ($maxWidth <= 0) {
             throw new InvalidArgumentException('Paragraph width must be greater than zero.');
@@ -440,23 +430,126 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Line height must be greater than zero.');
         }
 
-        if ($maxLines !== null && $maxLines <= 0) {
+        if ($options->maxLines !== null && $options->maxLines <= 0) {
             throw new InvalidArgumentException('Max lines must be greater than zero.');
         }
 
-        $lines = $this->layoutParagraphLines($text, $baseFont, $size, $maxWidth, $color, $opacity, $maxLines, $overflow);
+        $lines = $this->layoutParagraphLines(
+            $text,
+            $fontName,
+            $size,
+            $maxWidth,
+            $options->color,
+            $options->opacity,
+            $options->maxLines,
+            $options->overflow,
+        );
 
         return $this->renderParagraphLines(
             $lines,
             $x,
             $y,
             $maxWidth,
-            $baseFont,
+            $fontName,
             $size,
-            $tag,
+            $options->structureTag,
             $lineHeight,
             $bottomMargin,
-            $align,
+            $options->align,
+        );
+    }
+
+    /**
+     * @param string|list<TextSegment> $text
+     */
+    public function addTextBox(
+        string | array $text,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $fontName = 'Helvetica',
+        int $size = 12,
+        TextBoxOptions $options = new TextBoxOptions(),
+    ): self {
+        $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
+        $contentWidth = $width - $options->paddingLeft - $options->paddingRight;
+        $contentHeight = $height - $options->paddingTop - $options->paddingBottom;
+
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Text box width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Text box height must be greater than zero.');
+        }
+
+        if ($lineHeight <= 0) {
+            throw new InvalidArgumentException('Line height must be greater than zero.');
+        }
+
+        if (
+            $options->paddingTop < 0
+            || $options->paddingRight < 0
+            || $options->paddingBottom < 0
+            || $options->paddingLeft < 0
+        ) {
+            throw new InvalidArgumentException('Text box padding must not be negative.');
+        }
+
+        if ($contentWidth <= 0) {
+            throw new InvalidArgumentException('Text box content width must be greater than zero.');
+        }
+
+        if ($contentHeight < $size) {
+            throw new InvalidArgumentException('Text box content height must be at least the font size.');
+        }
+
+        $visibleLineCapacity = max(1, (int) floor($contentHeight / $lineHeight));
+        $maxLines = $options->maxLines === null
+            ? $visibleLineCapacity
+            : min($options->maxLines, $visibleLineCapacity);
+
+        if ($maxLines <= 0) {
+            throw new InvalidArgumentException('Max lines must be greater than zero.');
+        }
+
+        $lines = $this->layoutParagraphLines(
+            $text,
+            $fontName,
+            $size,
+            $contentWidth,
+            $options->color,
+            $options->opacity,
+            $maxLines,
+            $options->overflow,
+        );
+
+        if ($lines === []) {
+            return $this;
+        }
+
+        $startY = $this->resolveTextBoxStartY(
+            $y,
+            $height,
+            $size,
+            $lineHeight,
+            count($lines),
+            $options->verticalAlign,
+            $options->paddingTop,
+            $options->paddingBottom,
+        );
+
+        return $this->renderTextLines(
+            $lines,
+            $x + $options->paddingLeft,
+            $startY,
+            $contentWidth,
+            $fontName,
+            $size,
+            $options->structureTag,
+            $lineHeight,
+            $options->align,
         );
     }
 
@@ -504,7 +597,7 @@ final class Page extends IndirectObject
         float $maxWidth,
         string $baseFont,
         int $size,
-        ?string $tag = null,
+        ?StructureTag $tag = null,
         ?float $lineHeight = null,
         ?float $bottomMargin = null,
         HorizontalAlign $align = HorizontalAlign::LEFT,
@@ -553,12 +646,14 @@ final class Page extends IndirectObject
                     $currentY,
                     $segmentFontName,
                     $size,
-                    $tag,
-                    $segment->color,
-                    $segment->opacity,
-                    $segment->underline,
-                    $segment->strikethrough,
-                    $segment->link,
+                    new TextOptions(
+                        structureTag: $tag,
+                        color: $segment->color,
+                        opacity: $segment->opacity,
+                        underline: $segment->underline,
+                        strikethrough: $segment->strikethrough,
+                        link: $segment->link,
+                    ),
                 );
                 $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
             }
@@ -569,7 +664,65 @@ final class Page extends IndirectObject
         return $page;
     }
 
-    public function textFrame(
+    /**
+     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $lines
+     */
+    private function renderTextLines(
+        array $lines,
+        float $x,
+        float $y,
+        float $maxWidth,
+        string $baseFont,
+        int $size,
+        ?StructureTag $tag,
+        float $lineHeight,
+        HorizontalAlign $align,
+    ): self {
+        $currentY = $y;
+
+        foreach ($lines as $line) {
+            if ($line['segments'] === []) {
+                $currentY -= $lineHeight;
+                continue;
+            }
+
+            $cursorX = $x + $this->calculateAlignedOffset($line['segments'], $baseFont, $size, $maxWidth, $align, $line['justify']);
+
+            if ($align === HorizontalAlign::JUSTIFY && $line['justify']) {
+                $this->renderJustifiedLine($this, $line['segments'], $cursorX, $currentY, $baseFont, $size, $tag, $maxWidth);
+                $currentY -= $lineHeight;
+                continue;
+            }
+
+            foreach ($line['segments'] as $segment) {
+                $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
+                $segmentFont = $this->resolveFont($segmentFontName);
+
+                $this->addText(
+                    $segment->text,
+                    $cursorX,
+                    $currentY,
+                    $segmentFontName,
+                    $size,
+                    new TextOptions(
+                        structureTag: $tag,
+                        color: $segment->color,
+                        opacity: $segment->opacity,
+                        underline: $segment->underline,
+                        strikethrough: $segment->strikethrough,
+                        link: $segment->link,
+                    ),
+                );
+                $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
+            }
+
+            $currentY -= $lineHeight;
+        }
+
+        return $this;
+    }
+
+    public function createTextFrame(
         float $x,
         float $y,
         float $width,
@@ -581,7 +734,7 @@ final class Page extends IndirectObject
     /**
      * @param list<float|int> $columnWidths
      */
-    public function addTable(
+    public function createTable(
         float $x,
         float $y,
         float $width,
@@ -1072,17 +1225,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Link URL must not be empty.');
         }
 
-        $this->annotations[] = new LinkAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $x,
-            $y,
-            $width,
-            $height,
-            $url,
-        );
-
-        return $this;
+        return $this->addLinkTarget($x, $y, $width, $height, LinkTarget::externalUrl($url));
     }
 
     public function addInternalLink(
@@ -1104,6 +1247,24 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Link destination must not be empty.');
         }
 
+        return $this->addLinkTarget($x, $y, $width, $height, LinkTarget::namedDestination($destination));
+    }
+
+    private function addLinkTarget(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        LinkTarget $target,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Link width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Link height must be greater than zero.');
+        }
+
         $this->annotations[] = new LinkAnnotation(
             $this->document->getUniqObjectId(),
             $this,
@@ -1111,8 +1272,7 @@ final class Page extends IndirectObject
             $y,
             $width,
             $height,
-            $destination,
-            true,
+            $target,
         );
 
         return $this;
@@ -2185,7 +2345,7 @@ final class Page extends IndirectObject
         return $font->encodeText($text);
     }
 
-    private function attachTextToStructure(string $tag, int $markedContentId): void
+    private function attachTextToStructure(StructureTag $tag, int $markedContentId): void
     {
         $this->document->addStructElem($tag, $markedContentId, $this);
     }
@@ -2527,7 +2687,7 @@ final class Page extends IndirectObject
         float $y,
         string $baseFont,
         int $size,
-        ?string $tag,
+        ?StructureTag $tag,
         float $maxWidth,
     ): void {
         $pieces = $this->splitSegmentsIntoWordPieces($line);
@@ -2551,17 +2711,40 @@ final class Page extends IndirectObject
                 $y,
                 $segmentFontName,
                 $size,
-                $tag,
-                $segment->color,
-                $segment->opacity,
-                $segment->underline,
-                $segment->strikethrough,
-                $segment->link,
+                new TextOptions(
+                    structureTag: $tag,
+                    color: $segment->color,
+                    opacity: $segment->opacity,
+                    underline: $segment->underline,
+                    strikethrough: $segment->strikethrough,
+                    link: $segment->link,
+                ),
             );
 
             $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
             $isFirstWord = false;
         }
+    }
+
+    private function resolveTextBoxStartY(
+        float $y,
+        float $height,
+        int $size,
+        float $lineHeight,
+        int $lineCount,
+        VerticalAlign $verticalAlign,
+        float $paddingTop,
+        float $paddingBottom,
+    ): float {
+        $availableHeight = $height - $paddingTop - $paddingBottom;
+        $lineOffset = max(0, $lineCount - 1) * $lineHeight;
+        $blockHeight = $size + $lineOffset;
+
+        return match ($verticalAlign) {
+            VerticalAlign::TOP => $y + $paddingBottom + $availableHeight - $size,
+            VerticalAlign::MIDDLE => $y + $paddingBottom + (($availableHeight - $blockHeight) / 2) + $lineOffset,
+            VerticalAlign::BOTTOM => $y + $paddingBottom + $lineOffset,
+        };
     }
 
     /**
@@ -2852,7 +3035,7 @@ final class Page extends IndirectObject
         if (
             $lastRun->color === $run->color
             && $lastRun->opacity === $run->opacity
-            && $lastRun->link === $run->link
+            && $this->linkTargetsEqual($lastRun->link, $run->link)
             && $lastRun->bold === $run->bold
             && $lastRun->italic === $run->italic
             && $lastRun->underline === $run->underline
@@ -2873,6 +3056,15 @@ final class Page extends IndirectObject
         }
 
         $runs[] = $run;
+    }
+
+    private function linkTargetsEqual(?LinkTarget $left, ?LinkTarget $right): bool
+    {
+        if ($left === null || $right === null) {
+            return $left === $right;
+        }
+
+        return $left->equals($right);
     }
 
     private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string

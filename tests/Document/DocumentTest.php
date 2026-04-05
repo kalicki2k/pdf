@@ -7,6 +7,9 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\ParagraphOptions;
+use Kalle\Pdf\Document\StructureTag;
+use Kalle\Pdf\Document\TextOptions;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsPosition;
@@ -210,8 +213,8 @@ final class DocumentTest extends TestCase
             });
 
         $firstPage = $document->addPage(100, 60);
-        $frame = $firstPage->textFrame(10, 40, 80, 10);
-        $frame->paragraph(str_repeat('Wort ', 80), 'Helvetica', 12, 'P');
+        $frame = $firstPage->createTextFrame(10, 40, 80, 10);
+        $frame->addParagraph(str_repeat('Wort ', 80), 'Helvetica', 12, new ParagraphOptions(structureTag: StructureTag::Paragraph));
         $lastPage = $document->pages->pages[array_key_last($document->pages->pages)];
         $lastPageNumber = count($document->pages->pages);
 
@@ -535,7 +538,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4);
 
-        $result = $document->addStructElem('P', 42);
+        $result = $document->addStructElem(StructureTag::Paragraph, 42);
 
         self::assertSame($document, $result);
         self::assertSame([1, 2, 4, 5, 6, 7, 3], array_map(
@@ -582,7 +585,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4, language: 'de-DE');
         $document->registerFont('Helvetica');
-        $document->addPage()->addText('Hello', 10, 20, 'Helvetica', 12, 'P');
+        $document->addPage()->addText('Hello', 10, 20, 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
 
         $output = $document->render();
 

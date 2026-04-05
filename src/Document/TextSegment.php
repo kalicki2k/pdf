@@ -13,7 +13,7 @@ final readonly class TextSegment
         public string $text,
         public ?Color $color = null,
         public ?Opacity $opacity = null,
-        public ?string $link = null,
+        public ?LinkTarget $link = null,
         public bool $bold = false,
         public bool $italic = false,
         public bool $underline = false,

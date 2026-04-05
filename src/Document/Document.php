@@ -493,16 +493,15 @@ final class Document
     }
 
     /**
-     * @param string $tag
      * @param int $markedContentId
      * @param Page|null $page
      * @return $this
      */
-    public function addStructElem(string $tag, int $markedContentId, ?Page $page = null): self
+    public function addStructElem(StructureTag $tag, int $markedContentId, ?Page $page = null): self
     {
         $this->ensureStructureEnabled();
 
-        $structElem = new StructElem(++$this->objectId, $tag);
+        $structElem = new StructElem(++$this->objectId, $tag->value);
         $this->structElems['document']->addKid($structElem);
 
         $this->structElems[] = $structElem;
@@ -576,7 +575,7 @@ final class Document
         $this->structTreeRoot = new StructTreeRoot(++$this->objectId);
         $this->parentTree = new ParentTree(++$this->objectId);
         $this->structTreeRoot->parentTree = $this->parentTree;
-        $structElem = new StructElem(++$this->objectId, 'Document');
+        $structElem = new StructElem(++$this->objectId, StructureTag::Document->value);
         $this->structTreeRoot->addKid($structElem->id);
         $this->structElems['document'] = $structElem;
     }
@@ -616,11 +615,11 @@ final class Document
             throw new InvalidArgumentException('Table of contents content width must be greater than zero.');
         }
 
-        $frame = $page->textFrame($margin, $page->getHeight() - $margin, $contentWidth, $margin);
-        $frame->heading($title, $baseFont, $titleSize, 'H1');
+        $frame = $page->createTextFrame($margin, $page->getHeight() - $margin, $contentWidth, $margin);
+        $frame->addHeading($title, $baseFont, $titleSize, new ParagraphOptions(structureTag: StructureTag::Heading1));
 
         if ($this->outlineRoot === null || $this->outlineRoot->getItems() === []) {
-            $frame->paragraph('Keine Eintraege vorhanden.', $baseFont, $entrySize, 'P');
+            $frame->addParagraph('Keine Eintraege vorhanden.', $baseFont, $entrySize, new ParagraphOptions(structureTag: StructureTag::Paragraph));
 
             return $page;
         }
@@ -672,8 +671,7 @@ final class Document
                 $currentY,
                 $baseFont,
                 $entrySize,
-                null,
-                link: '#' . $destinationName,
+                new TextOptions(link: LinkTarget::namedDestination($destinationName)),
             );
             $currentPage->addText(
                 $leaders,
@@ -688,8 +686,7 @@ final class Document
                 $currentY,
                 $baseFont,
                 $entrySize,
-                null,
-                link: '#' . $destinationName,
+                new TextOptions(link: LinkTarget::namedDestination($destinationName)),
             );
 
             $currentY -= $entryLineHeight;
