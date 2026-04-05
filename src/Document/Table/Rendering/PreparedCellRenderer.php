@@ -12,7 +12,7 @@ use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
-use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\Text\TextSegment;
 
 final readonly class PreparedCellRenderer
 {

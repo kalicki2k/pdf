@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Document\Geometry;
 
-final readonly class Rect
+final readonly class Position
 {
     public function __construct(
         public float $x,
         public float $y,
-        public float $width,
-        public float $height,
     ) {
     }
 }

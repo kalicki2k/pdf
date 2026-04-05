@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Document\Text;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\BulletType;

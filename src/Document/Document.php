@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Text\ParagraphOptions;
+use Kalle\Pdf\Document\Text\StructureTag;
+use Kalle\Pdf\Document\Text\TextFrame;
+use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;

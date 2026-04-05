@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\ParagraphOptions;
-use Kalle\Pdf\Document\StructureTag;
-use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\Text\ParagraphOptions;
+use Kalle\Pdf\Document\Text\StructureTag;
+use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\BulletType;

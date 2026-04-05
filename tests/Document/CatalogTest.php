@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Catalog;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Position;
-use Kalle\Pdf\Document\StructureTag;
-use Kalle\Pdf\Document\TextOptions;
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Text\StructureTag;
+use Kalle\Pdf\Document\Text\TextOptions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

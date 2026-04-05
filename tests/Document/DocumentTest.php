@@ -6,11 +6,11 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\ParagraphOptions;
-use Kalle\Pdf\Document\Position;
-use Kalle\Pdf\Document\StructureTag;
-use Kalle\Pdf\Document\TextOptions;
+use Kalle\Pdf\Document\Text\ParagraphOptions;
+use Kalle\Pdf\Document\Text\StructureTag;
+use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsPosition;

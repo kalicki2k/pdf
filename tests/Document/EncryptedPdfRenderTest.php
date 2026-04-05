@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Position;
+use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use PHPUnit\Framework\Attributes\Test;

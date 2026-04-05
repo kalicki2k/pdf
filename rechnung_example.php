@@ -1,9 +1,9 @@
 <?php
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Rect;
-use Kalle\Pdf\Document\TextSegment;
-use Kalle\Pdf\Document\TextBoxOptions;
+use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;

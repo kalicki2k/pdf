@@ -13,7 +13,7 @@ use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
@@ -25,12 +25,12 @@ final class TableTest extends TestCase
     #[Test]
     public function it_keeps_legacy_table_style_aliases_available(): void
     {
-        self::assertInstanceOf(TableStyle::class, new \Kalle\Pdf\Styles\TableStyle());
-        self::assertInstanceOf(TableBorder::class, \Kalle\Pdf\Styles\TableBorder::all());
-        self::assertInstanceOf(TablePadding::class, \Kalle\Pdf\Styles\TablePadding::all(4));
-        self::assertInstanceOf(RowStyle::class, new \Kalle\Pdf\Styles\RowStyle());
-        self::assertInstanceOf(HeaderStyle::class, new \Kalle\Pdf\Styles\HeaderStyle());
-        self::assertInstanceOf(CellStyle::class, new \Kalle\Pdf\Styles\CellStyle());
+        self::assertInstanceOf(TableStyle::class, new \Kalle\Pdf\Document\Style\TableStyle());
+        self::assertInstanceOf(TableBorder::class, \Kalle\Pdf\Document\Style\TableBorder::all());
+        self::assertInstanceOf(TablePadding::class, \Kalle\Pdf\Document\Style\TablePadding::all(4));
+        self::assertInstanceOf(RowStyle::class, new \Kalle\Pdf\Document\Style\RowStyle());
+        self::assertInstanceOf(HeaderStyle::class, new \Kalle\Pdf\Document\Style\HeaderStyle());
+        self::assertInstanceOf(CellStyle::class, new \Kalle\Pdf\Document\Style\CellStyle());
     }
 
     #[Test]

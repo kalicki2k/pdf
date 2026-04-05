@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Kalle\Pdf\Document\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\GoToAction;
 use Kalle\Pdf\Document\GoToRemoteAction;
 use Kalle\Pdf\Document\HideAction;
@@ -15,11 +16,11 @@ use Kalle\Pdf\Document\LineEndingStyle;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\ParagraphOptions;
-use Kalle\Pdf\Document\Position;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
-use Kalle\Pdf\Document\StructureTag;
+use Kalle\Pdf\Document\Style\BadgeStyle;
+use Kalle\Pdf\Document\Style\CalloutStyle;
+use Kalle\Pdf\Document\Style\PanelStyle;
 use Kalle\Pdf\Document\SubmitFormAction;
 use Kalle\Pdf\Document\Table\Style\CellStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
@@ -28,7 +29,9 @@ use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\Text\ParagraphOptions;
+use Kalle\Pdf\Document\Text\StructureTag;
+use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Document\ThreadAction;
 use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Element\Image;
@@ -41,9 +44,6 @@ use Kalle\Pdf\Layout\TableOfContentsPosition;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
-use Kalle\Pdf\Styles\BadgeStyle;
-use Kalle\Pdf\Styles\CalloutStyle;
-use Kalle\Pdf\Styles\PanelStyle;
 
 require 'vendor/autoload.php';
 
@@ -136,7 +136,7 @@ $document
             new Position(Units::mm(20), $page->getHeight() - Units::mm(10)),
             'Helvetica',
             9,
-            new \Kalle\Pdf\Document\TextOptions(color: Color::gray(0.35)),
+            new \Kalle\Pdf\Document\Text\TextOptions(color: Color::gray(0.35)),
         );
         $page->addLine(
             Units::mm(20),
@@ -307,7 +307,7 @@ $serifPage->addText(
     position: new Position(20, 235),
     fontName: 'NotoSans-Regular',
     size: 12,
-    options: new \Kalle\Pdf\Document\TextOptions(
+    options: new \Kalle\Pdf\Document\Text\TextOptions(
         structureTag: StructureTag::Paragraph,
         color: Color::rgb(0, 0, 255),
         underline: true,
@@ -804,7 +804,7 @@ $panelPage->addText(
     position: new Position(Units::mm(20), Units::mm(240)),
     fontName: 'NotoSans-Regular',
     size: 11,
-    options: new \Kalle\Pdf\Document\TextOptions(
+    options: new \Kalle\Pdf\Document\Text\TextOptions(
         color: Color::rgb(0, 0, 255),
         underline: true,
         link: LinkTarget::namedDestination('table-demo'),
@@ -1029,7 +1029,7 @@ $attachmentPage->addText(
     position: new Position(Units::mm(20), Units::mm(165)),
     fontName: 'NotoSans-Regular',
     size: 11,
-    options: new \Kalle\Pdf\Document\TextOptions(
+    options: new \Kalle\Pdf\Document\Text\TextOptions(
         color: Color::rgb(0, 0, 255),
         underline: true,
         link: LinkTarget::namedDestination('action-demo'),
@@ -1436,7 +1436,7 @@ $annotationPage->addText(
     position: new Position(Units::mm(20), Units::mm(8)),
     fontName: 'Helvetica',
     size: 9,
-    options: new \Kalle\Pdf\Document\TextOptions(color: Color::gray(0.35)),
+    options: new \Kalle\Pdf\Document\Text\TextOptions(color: Color::gray(0.35)),
 );
 
 $annotationPage->addText(
@@ -1444,7 +1444,7 @@ $annotationPage->addText(
     position: new Position(Units::mm(20), Units::mm(12)),
     fontName: 'NotoSans-Regular',
     size: 11,
-    options: new \Kalle\Pdf\Document\TextOptions(
+    options: new \Kalle\Pdf\Document\Text\TextOptions(
         color: Color::rgb(0, 0, 255),
         underline: true,
         link: LinkTarget::namedDestination('layer-demo'),
@@ -1558,7 +1558,7 @@ $layerPage->addText(
     position: new Position(Units::mm(20), Units::mm(130)),
     fontName: 'NotoSans-Regular',
     size: 11,
-    options: new \Kalle\Pdf\Document\TextOptions(
+    options: new \Kalle\Pdf\Document\Text\TextOptions(
         color: Color::rgb(0, 0, 255),
         underline: true,
         link: LinkTarget::namedDestination('form-demo'),

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Table;
 
 use Kalle\Pdf\Document\Table\Style\CellStyle;
-use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\Text\TextSegment;
 
 final readonly class TableCell
 {

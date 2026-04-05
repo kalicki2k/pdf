@@ -61,26 +61,26 @@ use Kalle\Pdf\Document\ImportDataAction;
 use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\LaunchAction;
 use Kalle\Pdf\Document\NamedAction;
-use Kalle\Pdf\Document\ParagraphOptions;
+use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\SubmitFormAction;
-use Kalle\Pdf\Document\TextOptions;
+use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\ThreadAction;
 use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\BulletType;
-use Kalle\Pdf\Styles\CellStyle;
-use Kalle\Pdf\Styles\HeaderStyle;
-use Kalle\Pdf\Styles\RowStyle;
-use Kalle\Pdf\Styles\TableBorder;
+use Kalle\Pdf\Document\Style\CellStyle;
+use Kalle\Pdf\Document\Style\HeaderStyle;
+use Kalle\Pdf\Document\Style\RowStyle;
+use Kalle\Pdf\Document\Style\TableBorder;
 use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Styles\TablePadding;
-use Kalle\Pdf\Styles\TableStyle;
+use Kalle\Pdf\Document\Style\TablePadding;
+use Kalle\Pdf\Document\Style\TableStyle;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
-use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Element\Image;
@@ -109,7 +109,7 @@ $document
 
 $document
     ->addHeader(static function (\Kalle\Pdf\Document\Page $page, int $pageNumber): void {
-        $page->addText("Hello PDF - Seite $pageNumber", new \Kalle\Pdf\Document\Position(Units::mm(20), $page->getHeight() - Units::mm(10)), 'Helvetica', 9);
+        $page->addText("Hello PDF - Seite $pageNumber", new \Kalle\Pdf\Document\Geometry\Position(Units::mm(20), $page->getHeight() - Units::mm(10)), 'Helvetica', 9);
     })
     ->addPageNumbers(Units::mm(20), Units::mm(7), 'Helvetica', 9);
 
@@ -122,7 +122,7 @@ $frame
         'NotoSans-Regular',
         24,
         new ParagraphOptions(
-            structureTag: \Kalle\Pdf\Document\StructureTag::Heading1,
+            structureTag: \Kalle\Pdf\Document\Text\StructureTag::Heading1,
             color: Color::rgb(220, 20, 60),
         ),
     )
@@ -138,7 +138,7 @@ $frame
         'NotoSans-Regular',
         12,
         new ParagraphOptions(
-            structureTag: \Kalle\Pdf\Document\StructureTag::Paragraph,
+            structureTag: \Kalle\Pdf\Document\Text\StructureTag::Paragraph,
             align: HorizontalAlign::JUSTIFY,
             maxLines: 3,
             overflow: TextOverflow::ELLIPSIS,
@@ -255,7 +255,7 @@ $page->addBadge(
     Units::mm(140),
     'NotoSans-Regular',
     11,
-    new \Kalle\Pdf\Styles\BadgeStyle(
+    new \Kalle\Pdf\Document\Style\BadgeStyle(
         cornerRadius: Units::mm(2),
         fillColor: Color::gray(0.9),
         borderWidth: 1.0,
@@ -731,7 +731,7 @@ $page->addText(
     new Position(Units::mm(20), Units::mm(225)),
     'NotoSansCJKsc-Regular',
     14,
-    new TextOptions(structureTag: \Kalle\Pdf\Document\StructureTag::Paragraph),
+    new TextOptions(structureTag: \Kalle\Pdf\Document\Text\StructureTag::Paragraph),
 );
 ```
 
@@ -1291,7 +1291,7 @@ $notesLayer = $document->addLayer('Notes');
 $gridLayer = $document->addLayer('Grid', false);
 
 $page->layer($notesLayer, static function (\Kalle\Pdf\Document\Page $page): void {
-    $page->addText('Interne Hinweise', new \Kalle\Pdf\Document\Position(Units::mm(20), Units::mm(220)), 'NotoSans-Regular', 12);
+    $page->addText('Interne Hinweise', new \Kalle\Pdf\Document\Geometry\Position(Units::mm(20), Units::mm(220)), 'NotoSans-Regular', 12);
 });
 
 $page->layer($gridLayer, static function (\Kalle\Pdf\Document\Page $page): void {
@@ -1472,7 +1472,7 @@ $document->encrypt(new EncryptionOptions(
 ));
 
 $page = $document->addPage(PageSize::A4());
-$page->addText('Geschuetzter Inhalt', new \Kalle\Pdf\Document\Position(Units::mm(20), Units::mm(260)), 'Helvetica', 14);
+$page->addText('Geschuetzter Inhalt', new \Kalle\Pdf\Document\Geometry\Position(Units::mm(20), Units::mm(260)), 'Helvetica', 14);
 
 file_put_contents('encrypted.pdf', $document->render());
 ```

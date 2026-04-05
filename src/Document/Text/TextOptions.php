@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Document\Text;
 
+use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 
