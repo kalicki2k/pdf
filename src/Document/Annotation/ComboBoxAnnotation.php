@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Annotation;
 
-use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;

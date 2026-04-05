@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\RadioButtonAppearanceStream;
-use Kalle\Pdf\Document\RadioButtonField;
+use Kalle\Pdf\Document\Form\RadioButtonAppearanceStream;
+use Kalle\Pdf\Document\Form\RadioButtonField;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

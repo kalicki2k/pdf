@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
@@ -412,8 +413,7 @@ final class Document
     }
 
     public function addPageNumbers(
-        float $x,
-        float $y,
+        Position $position,
         string $baseFont = 'Helvetica',
         int $size = 10,
         string $template = 'Seite {{page}} von {{pages}}',
@@ -427,14 +427,14 @@ final class Document
             throw new InvalidArgumentException('Page number size must be greater than zero.');
         }
 
-        $renderer = static function (Page $page, int $pageNumber, int $totalPages) use ($x, $y, $baseFont, $size, $template): void {
+        $renderer = static function (Page $page, int $pageNumber, int $totalPages) use ($position, $baseFont, $size, $template): void {
             $page->addText(
                 str_replace(
                     ['{{page}}', '{{pages}}'],
                     [(string) $pageNumber, (string) $totalPages],
                     $template,
                 ),
-                new Position($x, $y),
+                $position,
                 $baseFont,
                 $size,
             );

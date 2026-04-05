@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Annotation\ListBoxAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\Form\FormFieldFlags;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

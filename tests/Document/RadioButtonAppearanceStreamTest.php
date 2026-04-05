@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\RadioButtonAppearanceStream;
+use Kalle\Pdf\Document\Form\RadioButtonAppearanceStream;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

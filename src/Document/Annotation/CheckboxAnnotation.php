@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Annotation;
 
-use Kalle\Pdf\Document\CheckboxAppearanceStream;
+use Kalle\Pdf\Document\Form\CheckboxAppearanceStream;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;

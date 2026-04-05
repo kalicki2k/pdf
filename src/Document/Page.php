@@ -33,6 +33,9 @@ use Kalle\Pdf\Document\Annotation\StrikeOutAnnotation;
 use Kalle\Pdf\Document\Annotation\TextAnnotation;
 use Kalle\Pdf\Document\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Document\Annotation\UnderlineAnnotation;
+use Kalle\Pdf\Document\Form\CheckboxAppearanceStream;
+use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Document\Form\RadioButtonAppearanceStream;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Style\BadgeStyle;
@@ -168,8 +171,7 @@ final class Page extends IndirectObject
 
     public function addBadge(
         string $text,
-        float $x,
-        float $y,
+        Position $position,
         string $baseFont = 'Helvetica',
         int $size = 11,
         ?BadgeStyle $style = null,
@@ -194,8 +196,8 @@ final class Page extends IndirectObject
 
         if ($style->cornerRadius > 0) {
             $this->addRoundedRectangle(
-                $x,
-                $y,
+                $position->x,
+                $position->y,
                 $badgeWidth,
                 $badgeHeight,
                 $style->cornerRadius,
@@ -206,8 +208,8 @@ final class Page extends IndirectObject
             );
         } else {
             $this->addRectangle(
-                $x,
-                $y,
+                $position->x,
+                $position->y,
                 $badgeWidth,
                 $badgeHeight,
                 $style->borderWidth,
@@ -220,8 +222,8 @@ final class Page extends IndirectObject
         $this->addText(
             $text,
             new Position(
-                $x + $style->paddingHorizontal,
-                $y + $style->paddingVertical + ($size * 0.2),
+                $position->x + $style->paddingHorizontal,
+                $position->y + $style->paddingVertical + ($size * 0.2),
             ),
             $baseFont,
             $size,
@@ -784,10 +786,8 @@ final class Page extends IndirectObject
     }
 
     public function addLine(
-        float $startX,
-        float $startY,
-        float $endX,
-        float $endY,
+        Position $from,
+        Position $to,
         float $width = 1.0,
         ?Color $color = null,
         ?Opacity $opacity = null,
@@ -800,10 +800,10 @@ final class Page extends IndirectObject
         $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
 
         $this->contents->addElement(new Line(
-            $startX,
-            $startY,
-            $endX,
-            $endY,
+            $from->x,
+            $from->y,
+            $to->x,
+            $to->y,
             $width,
             $colorOperator,
             $graphicsStateName,
@@ -1177,7 +1177,7 @@ final class Page extends IndirectObject
         $rightX = $baseX - ($perpX * $halfHeadWidth);
         $rightY = $baseY - ($perpY * $halfHeadWidth);
 
-        $this->addLine($startX, $startY, $baseX, $baseY, $strokeWidth, $color, $opacity);
+        $this->addLine(new Position($startX, $startY), new Position($baseX, $baseY), $strokeWidth, $color, $opacity);
         $this->addPolygon(
             [
                 [$endX, $endY],
@@ -1872,8 +1872,7 @@ final class Page extends IndirectObject
 
     public function addImage(
         Image $image,
-        float $x,
-        float $y,
+        Position $position,
         ?float $width = null,
         ?float $height = null,
     ): self {
@@ -1894,7 +1893,7 @@ final class Page extends IndirectObject
 
         $imageObject = $this->createImageObject($image);
         $resourceName = $this->resources->addImage($imageObject);
-        $this->contents->addElement(new DrawImage($resourceName, $x, $y, $width, $height));
+        $this->contents->addElement(new DrawImage($resourceName, $position->x, $position->y, $width, $height));
 
         return $this;
     }
