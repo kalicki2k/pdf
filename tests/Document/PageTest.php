@@ -20,6 +20,7 @@ use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\ParagraphOptions;
 use Kalle\Pdf\Document\Position;
+use Kalle\Pdf\Document\Rect;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\StructureTag;
@@ -1948,7 +1949,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addTextBox('Hello world from PDF', new Position(10, 20), 40, 40, 'Helvetica', 10);
+        $result = $page->addTextBox('Hello world from PDF', new Rect(10, 20, 40, 40), 'Helvetica', 10);
 
         self::assertSame($page, $result);
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
@@ -1962,8 +1963,8 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addTextBox('Hello', new Position(10, 20), 80, 30, 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::MIDDLE));
-        $page->addTextBox('World', new Position(10, 60), 80, 30, 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::BOTTOM));
+        $page->addTextBox('Hello', new Rect(10, 20, 80, 30), 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::MIDDLE));
+        $page->addTextBox('World', new Rect(10, 60, 80, 30), 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::BOTTOM));
 
         self::assertStringContainsString("10 30 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("10 60 Td\n(World) Tj", $page->contents->render());
@@ -1978,9 +1979,7 @@ final class PageTest extends TestCase
 
         $page->addTextBox(
             'Hello world from PDF',
-            new Position(10, 20),
-            50,
-            24,
+            new Rect(10, 20, 50, 24),
             'Helvetica',
             10,
             new TextBoxOptions(

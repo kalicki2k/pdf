@@ -1,7 +1,7 @@
 <?php
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Position;
+use Kalle\Pdf\Document\Rect;
 use Kalle\Pdf\Document\TextBoxOptions;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
@@ -27,9 +27,7 @@ $page = $document->addPage(PageSize::A4());
 
 $page->addTextBox(
     text: "DEIN FIRMENNAME\nStraße Hausnummer\nPLZ Ort\nDeutschland",
-    position: new Position(Units::mm(140), Units::mm(257)),
-    width: Units::mm(70),
-    height: Units::mm(20),
+    box: new Rect(Units::mm(140), Units::mm(257), Units::mm(70), Units::mm(20)),
     fontName: 'Helvetica',
     size: 9,
     options: new TextBoxOptions(
@@ -37,48 +35,49 @@ $page->addTextBox(
     ),
 );
 
-$page->addTextBox(
-    text: "Telefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de",
-    position: new Position(Units::mm(140), Units::mm(240)),
-    width: Units::mm(70),
-    height: Units::mm(15),
-    fontName: 'Helvetica',
-    size: 9,
-    options: new TextBoxOptions(
-        lineHeight: Units::mm(4),
-    ),
-);
-
-$page->addTextBox(
-    text: "Steuernummer: 12/345/67890\nUSt-IdNr.: DE123456789",
-    position: new Position(Units::mm(140), Units::mm(228)),
-    width: Units::mm(70),
-    height: Units::mm(10),
-    fontName: 'Helvetica',
-    size: 9,
-    options: new TextBoxOptions(
-        lineHeight: Units::mm(4),
-    ),
-);
-
-$page->addText(
-    text: 'Rechnung',
-    position: new Position(Units::mm(20), Units::mm(200)),
-    fontName: 'Helvetica',
-    size: 20,
-);
-
-$page->addTextBox(
-    text: "Rechnungsnummer: 2026-0015\nRechnungsdatum: 05.04.2026\nLeistungsdatum: 31.03.2026",
-    position: new Position(Units::mm(20), Units::mm(188)),
-    width: Units::mm(70),
-    height: Units::mm(10),
-    fontName: 'Helvetica',
-    size: 9,
-    options: new TextBoxOptions(
-        lineHeight: Units::mm(4),
-    ),
-);
+$page
+    ->addTextBox(
+        text: "Telefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de",
+        box: new Rect(Units::mm(140), Units::mm(240), Units::mm(70), Units::mm(15)),
+        fontName: 'Helvetica',
+        size: 9,
+        options: new TextBoxOptions(
+            lineHeight: Units::mm(4),
+        ),
+    )
+    ->addTextBox(
+        text: "Steuernummer: 12/345/67890\nUSt-IdNr.: DE123456789",
+        box: new Rect(Units::mm(140), Units::mm(228), Units::mm(70), Units::mm(10)),
+        fontName: 'Helvetica',
+        size: 9,
+        options: new TextBoxOptions(
+            lineHeight: Units::mm(4),
+        ),
+    )
+    ->addTextBox(
+        text: "Telefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de",
+        box: new Rect(Units::mm(20), Units::mm(240), Units::mm(70), Units::mm(15)),
+        fontName: 'Helvetica',
+        size: 9,
+        options: new TextBoxOptions(
+            lineHeight: Units::mm(4),
+        ),
+    )
+    ->addTextBox(
+        text: 'Rechnung',
+        box: new Rect(Units::mm(20), Units::mm(210), Units::mm(170), Units::mm(10)),
+        fontName: 'Helvetica',
+        size: 20,
+    )
+    ->addTextBox(
+        text: "Rechnungsnummer: 2026-0015\nRechnungsdatum: 05.04.2026\nLeistungsdatum: 31.03.2026",
+        box: new Rect(Units::mm(20), Units::mm(198), Units::mm(70), Units::mm(10)),
+        fontName: 'Helvetica',
+        size: 9,
+        options: new TextBoxOptions(
+            lineHeight: Units::mm(4),
+        ),
+    );
 
 $targetPath = $outputDir . '/' . 'rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
 file_put_contents($targetPath, $document->render());

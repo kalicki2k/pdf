@@ -774,9 +774,7 @@ Ein einfaches `addTextBox(...)`-Beispiel:
 ```php
 $page->addTextBox(
     text: "DEIN FIRMENNAME\nStrasse 1\n12345 Berlin",
-    position: new Position(Units::mm(20), Units::mm(250)),
-    width: Units::mm(60),
-    height: Units::mm(18),
+    box: new Rect(Units::mm(20), Units::mm(250), Units::mm(60), Units::mm(18)),
     fontName: 'Helvetica',
     size: 10,
     options: new TextBoxOptions(
@@ -784,6 +782,12 @@ $page->addTextBox(
     ),
 );
 ```
+
+Kleine Geometrie-Value-Objects:
+
+- `Position` gruppiert `x` und `y` fuer punktgenaue Platzierung, zum Beispiel bei `addText(...)`
+- `Rect` gruppiert `x`, `y`, `width` und `height` fuer feste Boxen, zum Beispiel bei `addTextBox(...)`
+- `Insets` gruppiert innere Abstaende fuer `top`, `right`, `bottom` und `left`, zum Beispiel in `TextBoxOptions`
 
 ## Grafische Elemente und Bilder
 

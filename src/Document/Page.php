@@ -467,22 +467,20 @@ final class Page extends IndirectObject
      */
     public function addTextBox(
         string | array $text,
-        Position $position,
-        float $width,
-        float $height,
+        Rect $box,
         string $fontName = 'Helvetica',
         int $size = 12,
         TextBoxOptions $options = new TextBoxOptions(),
     ): self {
         $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-        $contentWidth = $width - $options->padding->left - $options->padding->right;
-        $contentHeight = $height - $options->padding->top - $options->padding->bottom;
+        $contentWidth = $box->width - $options->padding->left - $options->padding->right;
+        $contentHeight = $box->height - $options->padding->top - $options->padding->bottom;
 
-        if ($width <= 0) {
+        if ($box->width <= 0) {
             throw new InvalidArgumentException('Text box width must be greater than zero.');
         }
 
-        if ($height <= 0) {
+        if ($box->height <= 0) {
             throw new InvalidArgumentException('Text box height must be greater than zero.');
         }
 
@@ -532,8 +530,8 @@ final class Page extends IndirectObject
         }
 
         $startY = $this->resolveTextBoxStartY(
-            $position->y,
-            $height,
+            $box->y,
+            $box->height,
             $size,
             $lineHeight,
             count($lines),
@@ -544,7 +542,7 @@ final class Page extends IndirectObject
 
         return $this->renderTextLines(
             $lines,
-            $position->x + $options->padding->left,
+            $box->x + $options->padding->left,
             $startY,
             $contentWidth,
             $fontName,
