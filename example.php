@@ -28,6 +28,8 @@ use Kalle\Pdf\Styles\TableStyle;
 
 require 'vendor/autoload.php';
 
+$scriptStart = microtime(true);
+
 $document = new Document(
     version: 1.4,
     title: 'Kalle PDF Demo',
@@ -525,7 +527,7 @@ $longTablePage = $document->addPage(PageSize::A4());
 $longTablePage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Long Table Demo', 'NotoSans-Regular', 16, 'H1')
     ->paragraph(
-        'Ein einfaches Beispiel fuer eine lange Tabelle mit wiederholtem Header.',
+        'Ein Beispiel fuer eine lange Tabelle mit wiederholtem Header und einem gezielten Rowspan-Split ab Eintrag 24.',
         'NotoSans-Regular',
         11,
         'P',
@@ -566,44 +568,65 @@ $longTable->addRow([
 ]);
 
 for ($index = 1; $index <= 36; $index++) {
-    if ($index === 12) {
+    if ($index === 24) {
         $longTable->addRow([
+            '24',
             new TableCell(
-                'Gruppe A',
-                rowspan: 2,
+                "Rowspan ab 24 mit bewusst langem Text.\n"
+                . "Der Inhalt soll ueber den Seitenwechsel sichtbar weiterlaufen,\n"
+                . "damit Border, Textfluss und Vertikalverhalten leichter pruefbar sind.",
+                rowspan: 4,
                 style: new CellStyle(
-                    horizontalAlign: HorizontalAlign::CENTER,
-                    verticalAlign: VerticalAlign::MIDDLE,
+                    verticalAlign: VerticalAlign::TOP,
                     fillColor: Color::gray(0.96),
                 ),
             ),
-            'Eintrag 12',
             new TableCell(
                 'Aktiv',
                 style: new CellStyle(
                     horizontalAlign: HorizontalAlign::CENTER,
-                    verticalAlign: VerticalAlign::TOP,
                 ),
             ),
-            "Kommentar 12\nMitte",
+            'Kommentar 24',
         ]);
 
         $longTable->addRow([
-            new TableCell('Eintrag 13', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+            '25',
             new TableCell(
                 'Offen',
                 style: new CellStyle(
                     horizontalAlign: HorizontalAlign::CENTER,
-                    verticalAlign: VerticalAlign::BOTTOM,
                 ),
             ),
-            "Kommentar 13\nUnten",
+            'Kommentar 25',
+        ]);
+
+        $longTable->addRow([
+            '26',
+            new TableCell(
+                'Aktiv',
+                style: new CellStyle(
+                    horizontalAlign: HorizontalAlign::CENTER,
+                ),
+            ),
+            'Kommentar 26',
+        ]);
+
+        $longTable->addRow([
+            '27',
+            new TableCell(
+                'Offen',
+                style: new CellStyle(
+                    horizontalAlign: HorizontalAlign::CENTER,
+                ),
+            ),
+            'Kommentar 27',
         ]);
 
         continue;
     }
 
-    if ($index === 13) {
+    if ($index >= 25 && $index <= 27) {
         continue;
     }
 
@@ -995,7 +1018,15 @@ $document->addTableOfContents(
 //    ->addText('Noch ein Beispiel: Привет мир', 20, 205, 'NotoSansCJKsc-Regular', 12, 'P')
 //    ->addText('Und gemischt: PDF 1.4 - 你好 - مرحبا', 20, 185, 'NotoSansCJKsc-Regular', 12, 'P');
 
+$renderStart = microtime(true);
 $pdfContent = $document->render();
+$renderDuration = microtime(true) - $renderStart;
 $outputPath = 'output_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
 
 file_put_contents($outputPath, $pdfContent);
+
+$totalDuration = microtime(true) - $scriptStart;
+
+printf("PDF geschrieben: %s\n", $outputPath);
+printf("Renderzeit: %.3f s\n", $renderDuration);
+printf("Gesamtzeit: %.3f s\n", $totalDuration);

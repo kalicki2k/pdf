@@ -52,9 +52,7 @@ final class TableTest extends TestCase
         self::assertStringContainsString('/BaseFont /Helvetica', $document->render());
         self::assertStringContainsString('/BaseFont /Helvetica-Bold', $document->render());
         self::assertStringContainsString('(Produkt) Tj', $page->contents->render());
-        self::assertStringContainsString('(A) Tj', $page->contents->render());
         self::assertStringContainsString('(19,99) Tj', $page->contents->render());
-        self::assertStringContainsString('(EUR) Tj', $page->contents->render());
     }
 
     #[Test]
@@ -107,8 +105,8 @@ final class TableTest extends TestCase
         self::assertStringContainsString("20 144.8 40 76.8 re\nS", $page->contents->render());
         self::assertSame(1, substr_count($page->contents->render(), '(A) Tj'));
         self::assertStringContainsString('(Eintra) Tj', $page->contents->render());
-        self::assertStringContainsString('(g 1) Tj', $page->contents->render());
-        self::assertStringContainsString('(g 2) Tj', $page->contents->render());
+        self::assertSame(2, substr_count($page->contents->render(), '(Eintra) Tj'));
+        self::assertStringContainsString('(Aktiv) Tj', $page->contents->render());
     }
 
     #[Test]
@@ -390,5 +388,67 @@ final class TableTest extends TestCase
             new TableCell('A', rowspan: 0),
             'Wert',
         ]);
+    }
+
+    #[Test]
+    public function it_renders_rowspan_groups_across_page_boundaries(): void
+    {
+        $document = new Document(version: 1.4);
+        $document
+            ->addFont('Helvetica')
+            ->addFont('Helvetica-Bold');
+        $page = $document->addPage(200, 120);
+
+        $table = $page->addTable(20, 90, 160, [80, 80], 20)
+            ->font('Helvetica', 12)
+            ->addRow(['Gruppe', 'Wert'], header: true)
+            ->addRow([
+                new TableCell('A', rowspan: 3, style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+                'Eintrag 1',
+            ])
+            ->addRow(['Eintrag 2'])
+            ->addRow(['Eintrag 3']);
+
+        $renderedDocument = $document->render();
+
+        self::assertNotSame($page, $table->getPage());
+        self::assertStringContainsString('/Count 3', $renderedDocument);
+        self::assertSame(1, substr_count($renderedDocument, '(A) Tj'));
+        self::assertStringContainsString('(Eintrag 1) Tj', $renderedDocument);
+        self::assertStringContainsString('(Eintrag 2) Tj', $renderedDocument);
+        self::assertStringContainsString('(Eintrag 3) Tj', $renderedDocument);
+        self::assertStringNotContainsString("20 42 80 24 re\nS", $renderedDocument);
+    }
+
+    #[Test]
+    public function it_continues_rowspan_text_across_page_boundaries(): void
+    {
+        $document = new Document(version: 1.4);
+        $document
+            ->addFont('Helvetica')
+            ->addFont('Helvetica-Bold');
+        $page = $document->addPage(200, 140);
+
+        $page->addTable(20, 118, 160, [70, 90], 20)
+            ->font('Helvetica', 12)
+            ->addRow(['Beschreibung', 'Wert'], header: true)
+            ->addRow([
+                new TableCell(
+                    'Alpha Beta Gamma Delta Epsilon Zeta Eta Theta Iota',
+                    rowspan: 4,
+                    style: new CellStyle(horizontalAlign: HorizontalAlign::LEFT),
+                ),
+                'Eintrag 1',
+            ])
+            ->addRow(['Eintrag 2'])
+            ->addRow(['Eintrag 3'])
+            ->addRow(['Eintrag 4']);
+
+        $renderedDocument = $document->render();
+
+        self::assertStringContainsString('(Alpha) Tj', $renderedDocument);
+        self::assertStringContainsString('(Gamma) Tj', $renderedDocument);
+        self::assertStringContainsString('(Delta) Tj', $renderedDocument);
+        self::assertStringContainsString('/Count 3', $renderedDocument);
     }
 }

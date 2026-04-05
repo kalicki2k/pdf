@@ -422,8 +422,47 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Max lines must be greater than zero.');
         }
 
+        $lines = $this->layoutParagraphLines($text, $baseFont, $size, $maxWidth, $color, $opacity, $maxLines, $overflow);
+
+        return $this->renderParagraphLines(
+            $lines,
+            $x,
+            $y,
+            $maxWidth,
+            $baseFont,
+            $size,
+            $tag,
+            $lineHeight,
+            $bottomMargin,
+            $align,
+        );
+    }
+
+    /**
+     * @param string|list<TextSegment> $text
+     * @return list<array{segments: array<int, TextSegment>, justify: bool}>
+     */
+    public function layoutParagraphLines(
+        string | array $text,
+        string $baseFont,
+        int $size,
+        float $maxWidth,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+        ?int $maxLines = null,
+        TextOverflow $overflow = TextOverflow::CLIP,
+    ): array {
+        if ($maxWidth <= 0) {
+            throw new InvalidArgumentException('Paragraph width must be greater than zero.');
+        }
+
+        if ($maxLines !== null && $maxLines <= 0) {
+            throw new InvalidArgumentException('Max lines must be greater than zero.');
+        }
+
         $runs = $this->normalizeTextRuns($text, $color, $opacity);
-        $lines = $this->applyOverflowToLines(
+
+        return $this->applyOverflowToLines(
             $this->wrapRunsIntoLines($runs, $baseFont, $size, $maxWidth),
             $baseFont,
             $size,
@@ -431,6 +470,34 @@ final class Page extends IndirectObject
             $maxLines,
             $overflow,
         );
+    }
+
+    /**
+     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $lines
+     */
+    public function renderParagraphLines(
+        array $lines,
+        float $x,
+        float $y,
+        float $maxWidth,
+        string $baseFont,
+        int $size,
+        ?string $tag = null,
+        ?float $lineHeight = null,
+        ?float $bottomMargin = null,
+        HorizontalAlign $align = HorizontalAlign::LEFT,
+    ): self {
+        $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
+        $bottomMargin ??= self::DEFAULT_BOTTOM_MARGIN;
+
+        if ($maxWidth <= 0) {
+            throw new InvalidArgumentException('Paragraph width must be greater than zero.');
+        }
+
+        if ($lineHeight <= 0) {
+            throw new InvalidArgumentException('Line height must be greater than zero.');
+        }
+
         $page = $this;
         $currentY = $y;
         $topMargin = $this->height - $y;

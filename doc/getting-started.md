@@ -346,7 +346,7 @@ Die erste Tabellenstufe ist bewusst pragmatisch gehalten. Sie deckt bereits haeu
 - `string`, `TextSegment[]` oder `TableCell` als Zelleninhalt
 - `CellStyle` als gebuendelter Stil fuer einzelne Zellen
 - `colspan`
-- `rowspan` innerhalb derselben Seite
+- `rowspan` innerhalb derselben Seite und ueber Seitenumbrueche mit Split-Fortsetzung
 - steuerbare Borders ueber `TableBorder`
 - horizontale und vertikale Zell-Ausrichtung
 - Default- und Zell-Padding ueber `TablePadding`
@@ -466,7 +466,14 @@ $table->addRow([
 ]);
 ```
 
-Wichtig: `rowspan` ist aktuell bewusst auf dieselbe Seite begrenzt. Ein `rowspan`-Block darf also noch nicht ueber einen Seitenumbruch hinweg laufen.
+Wichtig: `rowspan` kann jetzt auch ueber einen Seitenumbruch hinweg laufen. Dabei wird der Block segmentweise auf Folge-Seiten fortgesetzt und der Zelltext ueber den Split weitergerendert.
+
+Der aktuelle Stand ist dabei bewusst pragmatisch:
+
+- `rowspan`-Bloecke koennen ueber Folge-Seiten weiterlaufen
+- Header-Zeilen werden auf Folge-Seiten erneut gerendert
+- Border und Textfluss ueber die Segmentgrenze funktionieren
+- der optische Feinschliff fuer perfekt balancierte Zeilenverteilung an der Split-Grenze ist noch in Arbeit
 
 Fuer die Ausrichtung gilt:
 

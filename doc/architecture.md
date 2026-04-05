@@ -152,7 +152,7 @@ Verantwortlich fuer:
 - Startposition, Tabellenbreite und Spaltenbreiten
 - Cursor-Fuehrung zwischen den Tabellenzeilen
 - Header- und Row-Styles
-- `colspan` und erste `rowspan`-Unterstuetzung
+- `colspan` und `rowspan`, auch ueber Seitenumbrueche mit Fortsetzungszustand
 - steuerbare Borders ueber `TableBorder`
 - horizontaler und vertikaler Tabellen-Default fuer Zellen
 - Tabellen-Default und Zell-Override fuer Padding ueber `TablePadding`
@@ -225,11 +225,17 @@ Im Renderpfad gilt:
 - vertikale Zell-Ausrichtung wird aus der echten Content-Hoehe innerhalb der Zellbox berechnet
 - Zellbreite, Zellhoehe und Text-Startposition werden unter Beruecksichtigung des effektiven Paddings berechnet
 
-Die aktuelle `rowspan`-Stufe ist bewusst begrenzt:
+Die aktuelle `rowspan`-Stufe arbeitet intern mit vorbereiteten Zeilengruppen und einem Fortsetzungszustand fuer offene Zellen:
 
 - `rowspan` funktioniert innerhalb einer zusammenhaengenden Zeilengruppe
-- `rowspan` ueber einen Seitenumbruch wird noch nicht unterstuetzt
-- wenn eine `rowspan`-Gruppe nicht auf eine Seite passt, wirft `Table` aktuell eine Exception
+- offene `rowspan`-Zellen koennen an Seitengrenzen auf Folge-Seiten fortgesetzt werden
+- Text in gesplitteten `rowspan`-Zellen wird segmentweise weitergerendert
+- Header-Zeilen werden auf Folge-Seiten erneut gerendert
+
+Noch offen ist vor allem der optische Feinschliff:
+
+- die Verteilung der Textzeilen ueber mehrere Split-Segmente ist noch bewusst pragmatisch
+- an der Segmentgrenze kann weiterer Tuning-Bedarf fuer Hoehenbalance und sehr saubere Umbruchentscheidungen bestehen
 
 ### Badge, Panel und Callout
 

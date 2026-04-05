@@ -20,6 +20,7 @@ final class Table
 {
     private const DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
     private const CELL_BOTTOM_EPSILON = 0.01;
+    private const DEFAULT_CONTINUATION_TOP_MARGIN = 40.0;
 
     /** @var list<list<string|list<TextSegment>|TableCell>> */
     private array $headerRows = [];
@@ -27,7 +28,10 @@ final class Table
     private array $activeRowspans = [];
     /** @var list<PreparedTableRow> */
     private array $pendingGroupRows = [];
+    /** @var list<PendingRowspanCell> */
+    private array $pendingRowspanCells = [];
     private readonly float $topMargin;
+    private readonly float $continuationTopMargin;
     private Page $page;
     private float $cursorY;
     private string $baseFont = 'Helvetica';
@@ -75,6 +79,7 @@ final class Table
         $this->page = $page;
         $this->cursorY = $y;
         $this->topMargin = $page->getHeight() - $y;
+        $this->continuationTopMargin = min($this->topMargin, self::DEFAULT_CONTINUATION_TOP_MARGIN);
         $this->activeRowspans = array_fill(0, count($columnWidths), 0);
         $this->style = new TableStyle(
             padding: TablePadding::all(6.0),
@@ -164,46 +169,273 @@ final class Table
         }
 
         $pendingGroupRows = $this->pendingGroupRows;
-
         $rowHeights = $this->resolvePendingGroupRowHeights($pendingGroupRows);
-        $groupHeight = array_sum($rowHeights);
         $isBodyGroup = array_any(
             $pendingGroupRows,
             static fn (PreparedTableRow $row): bool => $row->header === false,
         );
+        $remainingRows = $pendingGroupRows;
+        $remainingRowHeights = $rowHeights;
+        $deferredLeadingSplit = false;
 
-        $this->ensureGroupFitsOnCurrentPage($groupHeight, $isBodyGroup);
-        $this->renderPendingGroup($pendingGroupRows, $rowHeights);
+        while ($remainingRows !== []) {
+            $pageFit = $this->resolvePendingGroupPageFit($remainingRows, $remainingRowHeights, $isBodyGroup);
+            $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
+
+            if ($fittingRowCount === 0) {
+                $this->moveToNextPageForPendingGroup($pageFit);
+                $pageFit = $this->resolvePendingGroupPageFit($remainingRows, $remainingRowHeights, false);
+                $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
+
+                if ($fittingRowCount === 0) {
+                    throw new InvalidArgumentException('Table rows must fit on a fresh page.');
+                }
+            }
+
+            if (
+                !$deferredLeadingSplit
+                && $this->shouldDeferLeadingSplitToNextPage($remainingRows, $remainingRowHeights, $fittingRowCount)
+            ) {
+                $this->moveToNextPageForPendingGroup(new TableGroupPageFit(false, true, $isBodyGroup && $this->headerRows !== [], 0, 0));
+                $deferredLeadingSplit = true;
+                continue;
+            }
+
+            if ($fittingRowCount >= count($remainingRows) && $this->pendingRowspanCells === []) {
+                $this->renderPendingGroup($remainingRows, $remainingRowHeights);
+                break;
+            }
+
+            $this->renderPendingGroupSegment($remainingRows, $remainingRowHeights, $fittingRowCount);
+
+            if ($fittingRowCount >= count($remainingRows)) {
+                break;
+            }
+
+            $remainingRows = array_slice($remainingRows, $fittingRowCount);
+            $remainingRowHeights = array_slice($remainingRowHeights, $fittingRowCount);
+            $this->moveToNextPageForPendingGroup(new TableGroupPageFit(false, true, $isBodyGroup && $this->headerRows !== [], 0, 0));
+        }
+
         $this->pendingGroupRows = [];
+        $this->pendingRowspanCells = [];
     }
 
-    private function ensureGroupFitsOnCurrentPage(float $groupHeight, bool $repeatHeaders): void
+    /**
+     * @param list<PreparedTableRow> $preparedRows
+     * @param list<float> $rowHeights
+     */
+    private function resolvePendingGroupPageFit(array $preparedRows, array $rowHeights, bool $repeatHeaders): TableGroupPageFit
     {
-        if ($this->cursorY - $groupHeight >= $this->bottomMargin) {
-            return;
-        }
-
+        $groupHeight = array_sum($rowHeights);
+        $remainingCurrentPageHeight = $this->cursorY - $this->bottomMargin;
         $fullPageAvailableHeight = $this->page->getHeight() - $this->topMargin - $this->bottomMargin;
-        if ($groupHeight > $fullPageAvailableHeight) {
-            throw new InvalidArgumentException('Rowspan groups cannot cross page boundaries.');
+        $headerRepeatHeight = 0.0;
+
+        if ($repeatHeaders && $this->headerRows !== []) {
+            $preparedHeaderRows = $this->prepareRowGroup($this->headerRows, true);
+            $headerRepeatHeight = array_sum($this->resolvePendingGroupRowHeights($preparedHeaderRows));
         }
 
-        $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
-        $this->cursorY = $this->page->getHeight() - $this->topMargin;
+        $availableFreshPageHeight = $fullPageAvailableHeight - $headerRepeatHeight;
 
-        if (!$repeatHeaders || $this->headerRows === []) {
+        return new TableGroupPageFit(
+            fitsOnCurrentPage: $remainingCurrentPageHeight >= $groupHeight,
+            fitsOnFreshPage: $availableFreshPageHeight >= $groupHeight,
+            repeatHeaders: $repeatHeaders && $this->headerRows !== [],
+            fittingRowCountOnCurrentPage: $this->countFittingRows($rowHeights, $remainingCurrentPageHeight),
+            fittingRowCountOnFreshPage: $this->countFittingRows($rowHeights, $availableFreshPageHeight),
+        );
+    }
+
+    private function moveToNextPageForPendingGroup(TableGroupPageFit $pageFit): void
+    {
+        $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
+        $this->cursorY = $this->page->getHeight() - $this->continuationTopMargin;
+
+        if (!$pageFit->repeatHeaders) {
             return;
         }
 
         $preparedHeaderRows = $this->prepareRowGroup($this->headerRows, true);
         $headerHeights = $this->resolvePendingGroupRowHeights($preparedHeaderRows);
-        $headerHeight = array_sum($headerHeights);
+        $this->renderPendingGroup($preparedHeaderRows, $headerHeights);
+    }
 
-        if (($headerHeight + $groupHeight) > $fullPageAvailableHeight) {
-            throw new InvalidArgumentException('Rowspan groups cannot cross page boundaries.');
+    /**
+     * @param list<PreparedTableRow> $preparedRows
+     * @param list<float> $rowHeights
+     */
+    private function renderPendingGroupSegment(array $preparedRows, array $rowHeights, int $rowCount): void
+    {
+        $lineHeight = $this->fontSize * $this->lineHeightFactor;
+        $rowTopY = $this->cursorY;
+        $segmentRowHeights = array_slice($rowHeights, 0, $rowCount);
+        /** @var list<list<array{segments: array<int, TextSegment>, justify: bool}>> $continuationLines */
+        $continuationLines = [];
+
+        foreach ($this->pendingRowspanCells as $pendingRowspanCell) {
+            $visibleRowspan = min($pendingRowspanCell->remainingRows, $rowCount);
+            $continuationLines[] = $this->renderPreparedCellSegment(
+                $pendingRowspanCell->cell,
+                $pendingRowspanCell->style,
+                0,
+                $segmentRowHeights,
+                $rowTopY,
+                $lineHeight,
+                $visibleRowspan,
+                $pendingRowspanCell->remainingLines !== [],
+                false,
+                $pendingRowspanCell->remainingRows <= $rowCount,
+                $pendingRowspanCell->remainingLines,
+            );
         }
 
-        $this->renderPendingGroup($preparedHeaderRows, $headerHeights);
+        for ($rowIndex = 0; $rowIndex < $rowCount; $rowIndex++) {
+            $preparedRow = $preparedRows[$rowIndex];
+
+            foreach ($preparedRow->cells as $preparedCell) {
+                $resolvedStyle = $this->resolveEffectiveCellStyle($preparedCell->cell, $preparedRow->header);
+                $visibleRowspan = min($preparedCell->cell->rowspan, $rowCount - $rowIndex);
+                $continuationLines[] = $this->renderPreparedCellSegment(
+                    $preparedCell,
+                    $resolvedStyle,
+                    $rowIndex,
+                    $segmentRowHeights,
+                    $rowTopY,
+                    $lineHeight,
+                    $visibleRowspan,
+                    true,
+                    true,
+                    $visibleRowspan === $preparedCell->cell->rowspan,
+                );
+
+            }
+
+            $rowTopY -= $segmentRowHeights[$rowIndex];
+        }
+
+        $this->cursorY = $rowTopY;
+        $this->pendingRowspanCells = $this->buildPendingRowspanContinuations($preparedRows, $rowCount, $continuationLines);
+    }
+
+    /**
+     * @param list<PreparedTableRow> $preparedRows
+     * @param list<list<array{segments: array<int, TextSegment>, justify: bool}>> $continuationLines
+     * @return list<PendingRowspanCell>
+     */
+    private function buildPendingRowspanContinuations(array $preparedRows, int $renderedRowCount, array $continuationLines): array
+    {
+        $continuations = [];
+        $continuationIndex = 0;
+
+        foreach ($this->pendingRowspanCells as $pendingRowspanCell) {
+            $remainingRows = $pendingRowspanCell->remainingRows - $renderedRowCount;
+            $remainingLines = $continuationLines[$continuationIndex] ?? [];
+            $continuationIndex++;
+
+            if ($remainingRows > 0 && $remainingLines !== []) {
+                $continuations[] = new PendingRowspanCell(
+                    $pendingRowspanCell->cell,
+                    $pendingRowspanCell->style,
+                    0,
+                    $remainingRows,
+                    true,
+                    $remainingLines,
+                );
+            }
+        }
+
+        foreach ($preparedRows as $rowIndex => $preparedRow) {
+            if ($rowIndex >= $renderedRowCount) {
+                break;
+            }
+
+            foreach ($preparedRow->cells as $preparedCell) {
+                $visibleRowspan = min($preparedCell->cell->rowspan, $renderedRowCount - $rowIndex);
+                $remainingRows = $preparedCell->cell->rowspan - $visibleRowspan;
+                $remainingLines = $continuationLines[$continuationIndex] ?? [];
+                $continuationIndex++;
+
+                if ($remainingRows <= 0 || $remainingLines === []) {
+                    continue;
+                }
+
+                $continuations[] = new PendingRowspanCell(
+                    $preparedCell,
+                    $this->resolveEffectiveCellStyle($preparedCell->cell, $preparedRow->header),
+                    0,
+                    $remainingRows,
+                    true,
+                    $remainingLines,
+                );
+            }
+        }
+
+        return $continuations;
+    }
+
+    /**
+     * @param list<float> $rowHeights
+     */
+    private function countFittingRows(array $rowHeights, float $availableHeight): int
+    {
+        $usedHeight = 0.0;
+        $fittingRows = 0;
+
+        foreach ($rowHeights as $rowHeight) {
+            if (($usedHeight + $rowHeight) > $availableHeight) {
+                break;
+            }
+
+            $usedHeight += $rowHeight;
+            $fittingRows++;
+        }
+
+        return $fittingRows;
+    }
+
+    /**
+     * @param list<PreparedTableRow> $preparedRows
+     * @param list<float> $rowHeights
+     */
+    private function shouldDeferLeadingSplitToNextPage(array $preparedRows, array $rowHeights, int $fittingRowCount): bool
+    {
+        if ($this->pendingRowspanCells !== [] || $fittingRowCount !== 1 || $preparedRows === []) {
+            return false;
+        }
+
+        $lineHeight = $this->fontSize * $this->lineHeightFactor;
+        $firstRow = $preparedRows[0];
+
+        foreach ($firstRow->cells as $preparedCell) {
+            if ($preparedCell->cell->rowspan <= 1) {
+                continue;
+            }
+
+            $resolvedStyle = $this->resolveEffectiveCellStyle($preparedCell->cell, $firstRow->header);
+            $availableTextHeight = $rowHeights[0] - $resolvedStyle->padding->vertical();
+
+            if ($availableTextHeight <= 0) {
+                return true;
+            }
+
+            $maxLines = (int) floor($availableTextHeight / $lineHeight);
+            $lineCount = count($this->page->layoutParagraphLines(
+                $preparedCell->cell->text,
+                $this->baseFont,
+                $this->fontSize,
+                $preparedCell->width - $resolvedStyle->padding->horizontal(),
+                $resolvedStyle->textColor,
+                $resolvedStyle->opacity,
+            ));
+
+            if ($lineCount > 1 && $maxLines < 2) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -429,7 +661,39 @@ final class Table
         float $lineHeight,
     ): void {
         $resolvedStyle = $this->resolveEffectiveCellStyle($preparedCell->cell, $header);
-        $geometry = $this->resolvePreparedCellGeometry($preparedCell, $rowIndex, $rowHeights, $rowTopY, $resolvedStyle);
+        $this->renderPreparedCellSegment(
+            $preparedCell,
+            $resolvedStyle,
+            $rowIndex,
+            $rowHeights,
+            $rowTopY,
+            $lineHeight,
+            $preparedCell->cell->rowspan,
+            true,
+            true,
+            true,
+        );
+    }
+
+    /**
+     * @param list<float> $rowHeights
+     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $remainingLines
+     * @return list<array{segments: array<int, TextSegment>, justify: bool}>
+     */
+    private function renderPreparedCellSegment(
+        PreparedTableCell $preparedCell,
+        ResolvedTableCellStyle $resolvedStyle,
+        int $rowIndex,
+        array $rowHeights,
+        float $rowTopY,
+        float $lineHeight,
+        int $visibleRowspan,
+        bool $renderText,
+        bool $renderTopBorder,
+        bool $renderBottomBorder,
+        array $remainingLines = [],
+    ): array {
+        $geometry = $this->resolvePreparedCellGeometryForHeight($preparedCell, $rowIndex, $rowHeights, $rowTopY, $resolvedStyle, $visibleRowspan);
 
         $this->renderCellBox(
             $geometry->x,
@@ -440,35 +704,89 @@ final class Table
             $this->style->border,
             $resolvedStyle->rowBorder,
             $resolvedStyle->cellBorder,
+            $renderTopBorder,
+            true,
+            $renderBottomBorder,
+            true,
         );
 
-        $this->page = $this->page->addParagraph(
-            $preparedCell->cell->text,
+        if (!$renderText) {
+            return $remainingLines;
+        }
+
+        $availableTextHeight = $geometry->height - $resolvedStyle->padding->vertical();
+
+        if ($availableTextHeight <= 0) {
+            return $remainingLines;
+        }
+
+        $maxLines = max(1, (int) floor($availableTextHeight / $lineHeight));
+        $allLines = $remainingLines !== []
+            ? $remainingLines
+            : $this->page->layoutParagraphLines(
+                $preparedCell->cell->text,
+                $this->baseFont,
+                $this->fontSize,
+                $geometry->textWidth,
+                $resolvedStyle->textColor,
+                $resolvedStyle->opacity,
+            );
+
+        if ($allLines === []) {
+            return [];
+        }
+
+        if ($remainingLines === [] && $visibleRowspan < $preparedCell->cell->rowspan && count($allLines) > 1 && $maxLines < 2) {
+            return $allLines;
+        }
+
+        if ($visibleRowspan === $preparedCell->cell->rowspan && count($allLines) <= $maxLines) {
+            $this->page = $this->page->renderParagraphLines(
+                $allLines,
+                $geometry->textX,
+                $geometry->textY,
+                $geometry->textWidth,
+                $this->baseFont,
+                $this->fontSize,
+                null,
+                $lineHeight,
+                $geometry->bottomLimitY,
+                $resolvedStyle->horizontalAlign,
+            );
+
+            return [];
+        }
+
+        $visibleLines = array_slice($allLines, 0, $maxLines);
+        $remainingLines = array_slice($allLines, $maxLines);
+        $this->page = $this->page->renderParagraphLines(
+            $visibleLines,
             $geometry->textX,
-            $geometry->textY,
+            $rowTopY - $resolvedStyle->padding->top - $this->fontSize,
             $geometry->textWidth,
             $this->baseFont,
             $this->fontSize,
             null,
             $lineHeight,
             $geometry->bottomLimitY,
-            $resolvedStyle->textColor,
-            $resolvedStyle->opacity,
             $resolvedStyle->horizontalAlign,
         );
+
+        return $remainingLines;
     }
 
     /**
      * @param list<float> $rowHeights
      */
-    private function resolvePreparedCellGeometry(
+    private function resolvePreparedCellGeometryForHeight(
         PreparedTableCell $preparedCell,
         int $rowIndex,
         array $rowHeights,
         float $rowTopY,
         ResolvedTableCellStyle $resolvedStyle,
+        int $visibleRowspan,
     ): PreparedTableCellGeometry {
-        $height = array_sum(array_slice($rowHeights, $rowIndex, $preparedCell->cell->rowspan));
+        $height = array_sum(array_slice($rowHeights, $rowIndex, $visibleRowspan));
         $x = $this->x + $this->calculateColumnOffset($preparedCell->column);
         $bottomY = $rowTopY - $height;
         $padding = $resolvedStyle->padding;
@@ -519,15 +837,19 @@ final class Table
         ?TableBorder $defaultBorder,
         ?TableBorder $rowBorder,
         ?TableBorder $cellBorder,
+        bool $renderTopBorder = true,
+        bool $renderRightBorder = true,
+        bool $renderBottomBorder = true,
+        bool $renderLeftBorder = true,
     ): void {
         if ($fillColor !== null) {
             $this->page->addRectangle($x, $y, $width, $height, null, null, $fillColor);
         }
 
-        $topBorder = $this->resolveBorderSide('top', $defaultBorder, $rowBorder, $cellBorder);
-        $rightBorder = $this->resolveBorderSide('right', $defaultBorder, $rowBorder, $cellBorder);
-        $bottomBorder = $this->resolveBorderSide('bottom', $defaultBorder, $rowBorder, $cellBorder);
-        $leftBorder = $this->resolveBorderSide('left', $defaultBorder, $rowBorder, $cellBorder);
+        $topBorder = $renderTopBorder ? $this->resolveBorderSide('top', $defaultBorder, $rowBorder, $cellBorder) : null;
+        $rightBorder = $renderRightBorder ? $this->resolveBorderSide('right', $defaultBorder, $rowBorder, $cellBorder) : null;
+        $bottomBorder = $renderBottomBorder ? $this->resolveBorderSide('bottom', $defaultBorder, $rowBorder, $cellBorder) : null;
+        $leftBorder = $renderLeftBorder ? $this->resolveBorderSide('left', $defaultBorder, $rowBorder, $cellBorder) : null;
 
         if ($topBorder === null && $rightBorder === null && $bottomBorder === null && $leftBorder === null) {
             return;
