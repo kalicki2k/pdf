@@ -25,17 +25,16 @@ $document = new Document(
 
 $page = $document->addPage(PageSize::A4());
 
-$page->addTextBox(
-    text: "DEIN FIRMENNAME\nStraße Hausnummer\nPLZ Ort\nDeutschland",
-    box: new Rect(Units::mm(140), Units::mm(257), Units::mm(70), Units::mm(20)),
-    fontName: 'Helvetica',
-    size: 9,
-    options: new TextBoxOptions(
-        lineHeight: Units::mm(4),
-    ),
-);
-
 $page
+    ->addTextBox(
+        text: "DEIN FIRMENNAME\nStraße Hausnummer\nPLZ Ort\nDeutschland",
+        box: new Rect(Units::mm(140), Units::mm(257), Units::mm(70), Units::mm(20)),
+        fontName: 'Helvetica',
+        size: 9,
+        options: new TextBoxOptions(
+            lineHeight: Units::mm(4),
+        ),
+    )
     ->addTextBox(
         text: "Telefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de",
         box: new Rect(Units::mm(140), Units::mm(240), Units::mm(70), Units::mm(15)),

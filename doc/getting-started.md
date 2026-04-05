@@ -919,6 +919,30 @@ $frame->addParagraph(
 );
 ```
 
+Fuer haeufige Inline-Faelle gibt es kleine Helfer auf `TextSegment`:
+
+```php
+$frame->addParagraph(
+    [
+        TextSegment::plain('Mehr Infos: '),
+        TextSegment::link(
+            'Docs',
+            LinkTarget::externalUrl('https://example.com/docs'),
+            Color::rgb(0, 0, 255),
+        ),
+        TextSegment::plain(' und '),
+        TextSegment::bold('wichtige Hinweise'),
+        TextSegment::plain(' mit '),
+        TextSegment::underlined('Unterstreichung'),
+        TextSegment::plain(' sowie '),
+        TextSegment::strikethrough('alten Hinweisen'),
+        TextSegment::plain('.'),
+    ],
+    'NotoSans-Regular',
+    12,
+);
+```
+
 ## Formulare
 
 Die Library unterstuetzt aktuell eine erste AcroForm-Stufe ueber Widget-Annotationen.
