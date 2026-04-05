@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
-use Kalle\Pdf\Document\TextFieldAnnotation;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\GoToAction;
 use Kalle\Pdf\Document\GoToRemoteAction;
@@ -12,7 +13,6 @@ use Kalle\Pdf\Document\ImportDataAction;
 use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\LaunchAction;
 use Kalle\Pdf\Document\NamedAction;
-use Kalle\Pdf\Document\PushButtonAnnotation;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\SubmitFormAction;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\LineAnnotation;
+use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\LineAnnotation;
-use Kalle\Pdf\Document\LineEndingStyle;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -54,7 +54,7 @@ final class LineAnnotationTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, subject: 'Messlinie');
-        $popup = new \Kalle\Pdf\Document\PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
+        $popup = new \Kalle\Pdf\Document\Annotation\PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
 
         $annotation->withPopup($popup);
 

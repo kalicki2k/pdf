@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\ComboBoxAnnotation;
+use Kalle\Pdf\Document\Annotation\ComboBoxAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
 use PHPUnit\Framework\Attributes\Test;

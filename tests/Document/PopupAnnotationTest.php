@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\PopupAnnotation;
-use Kalle\Pdf\Document\TextAnnotation;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

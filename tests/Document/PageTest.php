@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Insets;
@@ -17,7 +18,6 @@ use Kalle\Pdf\Document\HideAction;
 use Kalle\Pdf\Document\ImportDataAction;
 use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\LaunchAction;
-use Kalle\Pdf\Document\LineEndingStyle;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\ResetFormAction;

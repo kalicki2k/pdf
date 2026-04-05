@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\CheckboxAnnotation;
+use Kalle\Pdf\Document\Annotation\CheckboxAnnotation;
 use Kalle\Pdf\Document\CheckboxAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use PHPUnit\Framework\Attributes\Test;

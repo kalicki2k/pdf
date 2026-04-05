@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\CaretAnnotation;
+use Kalle\Pdf\Document\Annotation\CaretAnnotation;
 use Kalle\Pdf\Document\Document;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

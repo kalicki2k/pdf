@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\Annotation\SquigglyAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\SquigglyAnnotation;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

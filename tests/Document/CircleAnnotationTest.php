@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\AnnotationBorderStyle;
-use Kalle\Pdf\Document\CircleAnnotation;
+use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\CircleAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;

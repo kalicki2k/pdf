@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\PolygonAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\PolygonAnnotation;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -34,7 +34,7 @@ final class PolygonAnnotationTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], subject: 'Flaechenhinweis');
-        $popup = new \Kalle\Pdf\Document\PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
+        $popup = new \Kalle\Pdf\Document\Annotation\PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
 
         $annotation->withPopup($popup);
 

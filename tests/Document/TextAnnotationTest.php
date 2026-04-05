@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\TextAnnotation;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -32,7 +33,7 @@ final class TextAnnotationTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
         $annotation = new TextAnnotation(7, $page, 10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
-        $popup = new \Kalle\Pdf\Document\PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, false);
+        $popup = new PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, false);
         $annotation->withPopup($popup);
 
         self::assertStringContainsString('/Popup 8 0 R', $annotation->render());

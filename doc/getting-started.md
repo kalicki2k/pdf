@@ -85,8 +85,8 @@ use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Document\AnnotationBorderStyle;
-use Kalle\Pdf\Document\LineEndingStyle;
+use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Graphics\Opacity;
 
 require 'vendor/autoload.php';
