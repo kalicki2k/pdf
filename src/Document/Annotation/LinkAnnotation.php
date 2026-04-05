@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Annotation;
 
+use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;

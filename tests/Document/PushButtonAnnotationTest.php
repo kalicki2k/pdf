@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\Action\GoToAction;
+use Kalle\Pdf\Document\Action\GoToRemoteAction;
+use Kalle\Pdf\Document\Action\HideAction;
+use Kalle\Pdf\Document\Action\ImportDataAction;
+use Kalle\Pdf\Document\Action\JavaScriptAction;
+use Kalle\Pdf\Document\Action\LaunchAction;
+use Kalle\Pdf\Document\Action\NamedAction;
+use Kalle\Pdf\Document\Action\ResetFormAction;
+use Kalle\Pdf\Document\Action\SetOcgStateAction;
+use Kalle\Pdf\Document\Action\SubmitFormAction;
+use Kalle\Pdf\Document\Action\ThreadAction;
+use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\GoToAction;
-use Kalle\Pdf\Document\GoToRemoteAction;
-use Kalle\Pdf\Document\HideAction;
-use Kalle\Pdf\Document\ImportDataAction;
-use Kalle\Pdf\Document\JavaScriptAction;
-use Kalle\Pdf\Document\LaunchAction;
-use Kalle\Pdf\Document\NamedAction;
-use Kalle\Pdf\Document\ResetFormAction;
-use Kalle\Pdf\Document\SetOcgStateAction;
-use Kalle\Pdf\Document\SubmitFormAction;
-use Kalle\Pdf\Document\ThreadAction;
-use Kalle\Pdf\Document\UriAction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

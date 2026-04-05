@@ -52,24 +52,24 @@ Alle Dateien verwenden im Beispiel das Passwort `secret`.
 
 declare(strict_types=1);
 
+use Kalle\Pdf\Document\Action\GoToAction;
+use Kalle\Pdf\Document\Action\GoToRemoteAction;
+use Kalle\Pdf\Document\Action\HideAction;
+use Kalle\Pdf\Document\Action\ImportDataAction;
+use Kalle\Pdf\Document\Action\JavaScriptAction;
+use Kalle\Pdf\Document\Action\LaunchAction;
+use Kalle\Pdf\Document\Action\NamedAction;
+use Kalle\Pdf\Document\Action\ResetFormAction;
+use Kalle\Pdf\Document\Action\SetOcgStateAction;
+use Kalle\Pdf\Document\Action\SubmitFormAction;
+use Kalle\Pdf\Document\Action\ThreadAction;
+use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\GoToAction;
-use Kalle\Pdf\Document\GoToRemoteAction;
-use Kalle\Pdf\Document\HideAction;
-use Kalle\Pdf\Document\ImportDataAction;
-use Kalle\Pdf\Document\JavaScriptAction;
-use Kalle\Pdf\Document\LaunchAction;
-use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\ResetFormAction;
-use Kalle\Pdf\Document\SetOcgStateAction;
-use Kalle\Pdf\Document\SubmitFormAction;
 use Kalle\Pdf\Document\Text\TextOptions;
-use Kalle\Pdf\Document\ThreadAction;
-use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Document\Table\Style\CellStyle;
