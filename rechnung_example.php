@@ -1,12 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Geometry\Insets;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\Table\TableCell;
+use Kalle\Pdf\Document\Table\Style\CellStyle;
+use Kalle\Pdf\Document\Table\Style\HeaderStyle;
+use Kalle\Pdf\Document\Table\Style\TableBorder;
+use Kalle\Pdf\Document\Table\Style\TablePadding;
+use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
+use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 
@@ -20,93 +31,164 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 
 $startedAt = microtime(true);
 
+$left = Units::mm(20);
+$right = Units::mm(190);
+$contentWidth = $right - $left;
+
+$companyBox = new Rect(Units::mm(120), Units::mm(220), Units::mm(70), Units::mm(45));
+$senderLineBox = new Rect($left, Units::mm(246), Units::mm(95), Units::mm(8));
+$recipientBox = new Rect($left, Units::mm(224), Units::mm(75), Units::mm(22));
+$titlePosition = new Position($left, Units::mm(205));
+$metaBox = new Rect($left, Units::mm(188), Units::mm(80), Units::mm(14));
+$introPosition = new Position($left, Units::mm(182));
+$tablePosition = new Position($left, Units::mm(165));
+$totalsPosition = new Position(Units::mm(120), Units::mm(78));
+
 $document = new Document(
-    version: 1.0,
+    version: 1.4,
     title: 'Rechnung',
 )
     ->addKeyword('Rechnung')
-    ->registerFont('Helvetica');
+    ->registerFont('Helvetica')
+    ->registerFont('Helvetica-Bold')
+    ->registerFont('Helvetica-Oblique');
 
 $page = $document->addPage(PageSize::A4());
 
-$page->createTextFrame(
-    new Position(Units::mm(140), Units::mm(257) + Units::mm(20) - 9),
-    Units::mm(70),
-    Units::mm(228),
-)
-    ->addParagraph(
-        text: "DEIN FIRMENNAME\nStraße Hausnummer\nPLZ Ort\nDeutschland",
-        fontName: 'Helvetica',
-        size: 9,
-        options: new ParagraphOptions(
-            lineHeight: Units::mm(4),
-            spacingAfter: Units::mm(6),
-        ),
-    )
-    ->addParagraph(
-        text: "Telefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de",
-        fontName: 'Helvetica',
-        size: 9,
-        options: new ParagraphOptions(
-            lineHeight: Units::mm(4),
-            spacingAfter: Units::mm(5),
-        ),
-    )
-    ->addParagraph(
-        text: "Steuernummer: 12/345/67890\nUSt-IdNr.: DE123456789",
-        fontName: 'Helvetica',
-        size: 9,
-        options: new ParagraphOptions(
-            lineHeight: Units::mm(4),
-        ),
-    );
+$page->addTextBox(
+    text: "DEIN FIRMENNAME\nStraße Hausnummer\nPLZ Ort\nDeutschland\n\nTelefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de\n\nSteuernummer: 12/345/67890\nUSt-IdNr.: DE123456789",
+    box: $companyBox,
+    fontName: 'Helvetica',
+    size: 9,
+    options: new TextBoxOptions(
+        lineHeight: Units::mm(4),
+    ),
+);
 
-$page
-    ->addTextBox(
-        text: "DEIN FIRMENNAME - Straße Hausnummer - PLZ Ort - Deutschland",
-        box: new Rect(Units::mm(20), Units::mm(239), Units::mm(100), Units::mm(20)),
-        fontName: 'Helvetica',
-        size: 6,
-        options: new TextBoxOptions(
-            lineHeight: Units::mm(4),
-        ),
-    )
-    ->addTextBox(
-        text: "Kundenfirma Müller GmbH\nz. Hd. Anna Müller\nBeispielweg 8\n80331 München\nDeutschland",
-        box: new Rect(Units::mm(20), Units::mm(240), Units::mm(70), Units::mm(15)),
-        fontName: 'Helvetica',
-        size: 9,
-        options: new TextBoxOptions(
-            lineHeight: Units::mm(4),
-        ),
-    )
-    ->addTextBox(
-        text: [TextSegment::colored('Rechnung', Color::rgb(220, 20, 60))],
-        box: new Rect(Units::mm(20), Units::mm(210), Units::mm(170), Units::mm(10)),
-        fontName: 'Helvetica',
-        size: 20,
-    )
-    ->addTextBox(
-        text: "Rechnungsnummer: 2026-0015\nRechnungsdatum: 05.04.2026\nLeistungsdatum: 31.03.2026",
-        box: new Rect(Units::mm(20), Units::mm(198), Units::mm(70), Units::mm(10)),
-        fontName: 'Helvetica',
-        size: 9,
-        options: new TextBoxOptions(
-            lineHeight: Units::mm(4),
-        ),
-    )
-    ->addFlowText(
+$page->addTextBox(
+    text: 'DEIN FIRMENNAME - Straße Hausnummer - PLZ Ort - Deutschland',
+    box: $senderLineBox,
+    fontName: 'Helvetica',
+    size: 6,
+    options: new TextBoxOptions(
+        lineHeight: Units::mm(4),
+    ),
+);
+
+$page->addTextBox(
+    text: "Kundenfirma Müller GmbH\nz. Hd. Anna Müller\nBeispielweg 8\n80331 München\nDeutschland",
+    box: $recipientBox,
+    fontName: 'Helvetica',
+    size: 9,
+    options: new TextBoxOptions(
+        lineHeight: Units::mm(4),
+    ),
+);
+
+$page->addText(
+    'Rechnung',
+    $titlePosition,
+    'Helvetica-Bold',
+    20,
+    new TextOptions(color: Color::rgb(220, 20, 60)),
+);
+
+$page->addTextBox(
+    text: [
+        TextSegment::plain('Rechnungsnummer: '),
+        TextSegment::bold('2026-0015'),
+        TextSegment::plain("\nRechnungsdatum: 05.04.2026"),
+        TextSegment::plain("\nLeistungsdatum: 31.03.2026"),
+    ],
+    box: $metaBox,
+    fontName: 'Helvetica',
+    size: 9,
+    options: new TextBoxOptions(
+        lineHeight: Units::mm(4),
+    ),
+);
+
+$page->createTextFrame($introPosition, $contentWidth, Units::mm(24))
+    ->addParagraph(
         text: "Sehr geehrte Frau Müller,\nhiermit berechne ich Ihnen folgende Leistungen:",
-        position: new Position(Units::mm(20), Units::mm(190)),
-        maxWidth: Units::mm(170),
+        fontName: 'Helvetica',
         size: 9,
+        options: new ParagraphOptions(
+            lineHeight: Units::mm(4.5),
+            spacingAfter: Units::mm(4),
+        ),
     );
 
-$targetPath = $outputDir . '/' . 'rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
+$page->createTable(
+    $tablePosition,
+    $contentWidth,
+    [
+        Units::mm(15),
+        Units::mm(75),
+        Units::mm(20),
+        Units::mm(30),
+        Units::mm(30),
+    ],
+)
+    ->font('Helvetica', 9)
+    ->style(new TableStyle(
+        padding: TablePadding::symmetric(Units::mm(1.5), Units::mm(1.2)),
+        border: TableBorder::all(color: Color::gray(0.7)),
+    ))
+    ->headerStyle(new HeaderStyle(
+        fillColor: Color::gray(0.94),
+        textColor: Color::gray(0.15),
+    ))
+    ->addRow(['Pos.', 'Beschreibung', 'Menge', 'Einzelpreis netto', 'Gesamt netto'], header: true)
+    ->addRow([
+        new TableCell('1', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        'Erstellung einer Unternehmenswebseite',
+        new TableCell('1', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        new TableCell('1.200,00 EUR', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+        new TableCell('1.200,00 EUR', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+    ])
+    ->addRow([
+        new TableCell('2', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        'Pflege und Aktualisierung bestehender Inhalte',
+        new TableCell('5 Std.', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        new TableCell('80,00 EUR', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+        new TableCell('400,00 EUR', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+    ])
+    ->addRow([
+        new TableCell('3', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        'Bildbearbeitung und Optimierung für Web',
+        new TableCell('2 Std.', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        new TableCell('65,00 EUR', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+        new TableCell('130,00 EUR', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+    ]);
+
+$page->createTextFrame($totalsPosition, Units::mm(70), Units::mm(35))
+    ->addParagraph(
+        text: [
+            TextSegment::plain("Zwischensumme: 1.730,00 EUR\n"),
+            TextSegment::plain("USt. 19 %: 328,70 EUR\n"),
+            TextSegment::bold('Gesamtbetrag: 2.058,70 EUR'),
+        ],
+        fontName: 'Helvetica',
+        size: 10,
+        options: new ParagraphOptions(
+            lineHeight: Units::mm(5),
+            spacingAfter: Units::mm(4),
+        ),
+    )
+    ->addParagraph(
+        text: "Bitte überweisen Sie den Gesamtbetrag innerhalb von 14 Tagen ohne Abzug.\nVielen Dank für Ihren Auftrag.",
+        fontName: 'Helvetica',
+        size: 9,
+        options: new ParagraphOptions(
+            lineHeight: Units::mm(4.5),
+        ),
+    );
+
+$targetPath = $outputDir . '/rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
 file_put_contents($targetPath, $document->render());
 
 printf(
-    'Erstellt in %.3f Sekunden.%s',
+    "Erstellt in %.3f Sekunden.\n",
     microtime(true) - $startedAt,
-    PHP_EOL,
 );
