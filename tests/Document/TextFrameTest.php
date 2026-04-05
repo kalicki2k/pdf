@@ -122,7 +122,7 @@ final class TextFrameTest extends TestCase
 
         self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
         self::assertStringContainsString('( Hello world from) Tj', $page->contents->render());
-        self::assertStringContainsString("(PDF) Tj", $page->contents->render());
+        self::assertStringContainsString('(PDF) Tj', $page->contents->render());
     }
 
     #[Test]

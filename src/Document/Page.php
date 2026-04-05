@@ -111,6 +111,7 @@ final class Page extends IndirectObject
         $encodedText = $this->encodeText($font, $fontName, $text);
         $resourceFontName = $this->registerFontResource($font);
         $textWidth = $font->measureTextWidth($text, $size);
+        [$leadingDecorationInset, $trailingDecorationInset] = $this->resolveDecorationInsets($font, $text, $size);
         $colorOperator = $options->color?->renderNonStrokingOperator();
         $graphicsStateName = $options->opacity !== null ? $this->resources->addOpacity($options->opacity) : null;
 
@@ -129,6 +130,8 @@ final class Page extends IndirectObject
             $options->underline,
             $options->strikethrough,
             $options->structureTag?->value,
+            $leadingDecorationInset,
+            $trailingDecorationInset,
         ));
 
         if ($options->structureTag !== null && $markedContentId !== null) {
@@ -2907,6 +2910,29 @@ final class Page extends IndirectObject
         }
 
         return $left->equals($right);
+    }
+
+    /**
+     * @return array{0: float, 1: float}
+     */
+    private function resolveDecorationInsets(FontDefinition $font, string $text, int $size): array
+    {
+        if ($text === '') {
+            return [0.0, 0.0];
+        }
+
+        $leadingSpaces = strspn($text, ' ');
+        $trailingSpaces = strlen($text) - strlen(rtrim($text, ' '));
+
+        $leadingInset = $leadingSpaces > 0
+            ? $font->measureTextWidth(str_repeat(' ', $leadingSpaces), $size)
+            : 0.0;
+
+        $trailingInset = $trailingSpaces > 0
+            ? $font->measureTextWidth(str_repeat(' ', $trailingSpaces), $size)
+            : 0.0;
+
+        return [$leadingInset, $trailingInset];
     }
 
     private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string

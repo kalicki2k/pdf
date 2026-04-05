@@ -2151,6 +2151,29 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_does_not_underline_leading_spaces_before_a_decorated_segment(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addFlowText(
+            [
+                new TextSegment('Link:'),
+                new TextSegment(' example', underline: true),
+            ],
+            new Position(10, 50),
+            200,
+            'Helvetica',
+            10,
+        );
+
+        self::assertStringContainsString('(Link:) Tj', $page->contents->render());
+        self::assertStringContainsString('( example) Tj', $page->contents->render());
+        self::assertStringContainsString('33.9 48.2 37.79 0.5 re f', $page->contents->render());
+    }
+
+    #[Test]
     public function it_centers_a_paragraph_within_the_available_width(): void
     {
         $document = new Document(version: 1.4);

@@ -6,8 +6,6 @@ namespace Kalle\Pdf\Element;
 
 class Text extends Element
 {
-    private const DECORATION_INSET_FACTOR = 0.08;
-
     private ?int $markedContentId;
     private string $content;
     private string $font;
@@ -18,6 +16,8 @@ class Text extends Element
     private bool $underline;
     private bool $strikethrough;
     private ?string $tag;
+    private float $leadingDecorationInset;
+    private float $trailingDecorationInset;
 
     public function __construct(
         ?int $markedContentId,
@@ -32,6 +32,8 @@ class Text extends Element
         bool $underline = false,
         bool $strikethrough = false,
         ?string $tag = null,
+        float $leadingDecorationInset = 0.0,
+        float $trailingDecorationInset = 0.0,
     ) {
         $this->markedContentId = $markedContentId;
         $this->content = $content;
@@ -45,6 +47,8 @@ class Text extends Element
         $this->underline = $underline;
         $this->strikethrough = $strikethrough;
         $this->tag = $tag;
+        $this->leadingDecorationInset = $leadingDecorationInset;
+        $this->trailingDecorationInset = $trailingDecorationInset;
     }
 
     public function render(): string
@@ -92,9 +96,8 @@ class Text extends Element
 
         $decorations = [];
         $lineHeight = max(0.5, $this->size * 0.05);
-        $decorationInset = min($this->width / 2, $this->size * self::DECORATION_INSET_FACTOR);
-        $decorationX = $this->x + $decorationInset;
-        $decorationWidth = max(0.0, $this->width - ($decorationInset * 2));
+        $decorationX = $this->x + $this->leadingDecorationInset;
+        $decorationWidth = max(0.0, $this->width - $this->leadingDecorationInset - $this->trailingDecorationInset);
 
         if ($this->underline) {
             $decorations[] = $this->renderFilledLine($decorationX, $this->y - ($this->size * 0.18), $decorationWidth, $lineHeight);

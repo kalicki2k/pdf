@@ -114,8 +114,8 @@ final class TextTest extends TestCase
             . "1 0 0 rg\n"
             . "(Hello) Tj\n"
             . "ET\n"
-            . "10.96 17.84 28.08 0.6 re f\n"
-            . "10.96 23.6 28.08 0.6 re f\n"
+            . "10 17.84 30 0.6 re f\n"
+            . "10 23.6 30 0.6 re f\n"
             . 'Q',
             $text->render(),
         );
