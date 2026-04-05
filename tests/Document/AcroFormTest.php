@@ -14,7 +14,7 @@ final class AcroFormTest extends TestCase
     public function it_renders_an_acro_form_with_registered_fields_and_fonts(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
         $page->addTextField('customer_name', 10, 20, 100, 20, 'Ada', 'Helvetica', 12);
 

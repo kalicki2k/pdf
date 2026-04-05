@@ -99,10 +99,10 @@ $document = new Document(
 
 $document
     ->addKeyword('example')
-    ->addFont('NotoSans-Regular')
-    ->addFont('NotoSans-Bold')
-    ->addFont('NotoSans-Italic')
-    ->addFont('NotoSans-BoldItalic');
+    ->registerFont('NotoSans-Regular')
+    ->registerFont('NotoSans-Bold')
+    ->registerFont('NotoSans-Italic')
+    ->registerFont('NotoSans-BoldItalic');
 
 $document
     ->addHeader(static function (\Kalle\Pdf\Document\Page $page, int $pageNumber): void {
@@ -392,7 +392,7 @@ file_put_contents('hello.pdf', $pdfContent);
 ## Was im Beispiel passiert
 
 1. `Document` initialisiert das PDF mit Version und Metadaten.
-2. `addFont(...)` registriert eingebettete Schriften aus der Font-Konfiguration.
+2. `registerFont(...)` registriert eingebettete Schriften aus der Font-Konfiguration.
 3. `addHeader(...)`, `addFooter(...)` und `addPageNumbers(...)` registrieren wiederkehrende Seiteninhalte fuer alle neu erzeugten Seiten.
 4. `addPage()` erstellt eine neue Seite, standardmaessig im Format A4 in PDF-Points oder explizit ueber `PageSize::A4()`.
 5. `textFrame()` erzeugt einen Textbereich mit eigener Cursor-Fuehrung.
@@ -713,7 +713,7 @@ Du kannst die globale Config verwenden oder pro Dokument eine eigene Liste ueber
 Fuer breitere Zeichensaetze kann ein Unicode-Font direkt ueber seinen Fontnamen registriert werden:
 
 ```php
-$document->addFont('NotoSansCJKsc-Regular');
+$document->registerFont('NotoSansCJKsc-Regular');
 
 $page->addText('漢字とカタカナ', Units::mm(20), Units::mm(225), 'NotoSansCJKsc-Regular', 14, 'P');
 ```
@@ -736,7 +736,7 @@ $document = new Document(
     ],
 );
 
-$document->addFont('CustomSans-Regular');
+$document->registerFont('CustomSans-Regular');
 ```
 
 ## Wichtige Text-Features
@@ -1394,7 +1394,7 @@ use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 
 $document = new Document(version: 1.6);
-$document->addFont('Helvetica');
+$document->registerFont('Helvetica');
 
 $document->encrypt(new EncryptionOptions(
     userPassword: 'secret',

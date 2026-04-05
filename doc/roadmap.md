@@ -159,7 +159,7 @@ Offene Erweiterungen:
 - Wiederverwendung und Caching von XObjects fuer Bilder
 - gemeinsam genutzte Ressourcen sauber modellieren
 - Vererbung oder zentrale Verwaltung nur dann einfuehren, wenn sie echten Nutzen bringt
-- Konfigurationsmodell fuer groessere Font-Sets weiter ausbauen, ohne `addFont()` nach aussen zu verkomplizieren
+- Konfigurationsmodell fuer groessere Font-Sets weiter ausbauen, ohne `registerFont()` nach aussen zu verkomplizieren
 
 ### 5. Dokumentstandards klar abgrenzen
 

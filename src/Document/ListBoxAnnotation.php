@@ -28,12 +28,12 @@ final class ListBoxAnnotation extends IndirectObject implements PageAnnotation
         private readonly float $height,
         private readonly string $name,
         private readonly array $options,
-        private readonly string|array|null $value,
+        private readonly string | array | null $value,
         private readonly string $fontResourceName,
         private readonly int $fontSize,
         private readonly ?FormFieldFlags $flags = null,
         private readonly ?Color $textColor = null,
-        private readonly string|array|null $defaultValue = null,
+        private readonly string | array | null $defaultValue = null,
     ) {
         parent::__construct($id);
     }
@@ -98,7 +98,7 @@ final class ListBoxAnnotation extends IndirectObject implements PageAnnotation
     /**
      * @param list<string>|string $value
      */
-    private function renderChoiceValue(string|array $value): StringType|ArrayType
+    private function renderChoiceValue(string | array $value): StringType | ArrayType
     {
         if (is_string($value)) {
             return new StringType($value);

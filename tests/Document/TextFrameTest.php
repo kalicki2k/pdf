@@ -20,7 +20,7 @@ final class TextFrameTest extends TestCase
     public function it_flows_headings_and_paragraphs_using_a_shared_cursor(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 220, 20);
@@ -39,7 +39,7 @@ final class TextFrameTest extends TestCase
     public function it_tracks_the_new_page_after_an_automatic_page_break(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
         $frame = $page->textFrame(10, 30, 40, 15);
@@ -54,7 +54,7 @@ final class TextFrameTest extends TestCase
     public function it_can_flow_text_without_structure_tags(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 120, 20);
@@ -70,7 +70,7 @@ final class TextFrameTest extends TestCase
     public function it_forwards_opacity_for_heading_and_paragraph_content(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 120, 20);
@@ -86,7 +86,7 @@ final class TextFrameTest extends TestCase
     public function it_forwards_color_for_heading_and_paragraph_content(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 120, 20);
@@ -102,7 +102,7 @@ final class TextFrameTest extends TestCase
     public function it_accepts_text_runs_in_text_frames(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 120, 20);
@@ -125,7 +125,7 @@ final class TextFrameTest extends TestCase
     public function it_forwards_center_alignment_from_text_frames(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 100, 20);
@@ -138,7 +138,7 @@ final class TextFrameTest extends TestCase
     public function it_forwards_justify_alignment_from_text_frames(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 70, 20);
@@ -152,7 +152,7 @@ final class TextFrameTest extends TestCase
     public function it_limits_text_frame_paragraphs_to_max_lines_when_requested(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 40, 20);
@@ -174,7 +174,7 @@ final class TextFrameTest extends TestCase
     public function it_forwards_linked_text_segments_in_text_frames(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 120, 20);
@@ -196,7 +196,7 @@ final class TextFrameTest extends TestCase
     public function it_renders_a_bullet_list_with_hanging_indent(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 120, 20);
@@ -222,7 +222,7 @@ final class TextFrameTest extends TestCase
     public function it_moves_bullet_list_items_to_a_new_page_when_needed(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
         $frame = $page->textFrame(10, 25, 60, 15);
@@ -245,7 +245,7 @@ final class TextFrameTest extends TestCase
     public function it_renders_a_numbered_list_with_custom_start_index(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 120, 20);
@@ -270,7 +270,7 @@ final class TextFrameTest extends TestCase
     public function it_rejects_numbered_lists_that_start_before_one(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $frame = $page->textFrame(20, 100, 120, 20);

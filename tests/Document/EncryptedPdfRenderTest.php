@@ -25,7 +25,7 @@ final class EncryptedPdfRenderTest extends TestCase
             ownerPassword: 'owner',
             algorithm: EncryptionAlgorithm::RC4_128,
         ));
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
 
         $page = $document->addPage();
         $page->addText('Visible Secret', 20, 20, 'Helvetica', 12);
@@ -51,7 +51,7 @@ final class EncryptedPdfRenderTest extends TestCase
             ownerPassword: 'owner',
             algorithm: EncryptionAlgorithm::AES_128,
         ));
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
 
         $page = $document->addPage();
         $page->addText('Visible AES Secret', 20, 20, 'Helvetica', 12);
@@ -104,7 +104,7 @@ final class EncryptedPdfRenderTest extends TestCase
             ownerPassword: 'owner',
             algorithm: EncryptionAlgorithm::AES_256,
         ));
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
 
         $page = $document->addPage();
         $page->addText('Visible AES256 Secret', 20, 20, 'Helvetica', 12);

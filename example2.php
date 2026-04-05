@@ -55,7 +55,7 @@ foreach ($examples as $example) {
         language: 'de-DE',
     );
 
-    $document->addFont('Helvetica');
+    $document->registerFont('Helvetica');
     $document->encrypt(new EncryptionOptions(
         userPassword: $password,
         ownerPassword: $password,

@@ -118,7 +118,7 @@ final class Page extends IndirectObject
     /**
      * @param callable(self): void $renderer
      */
-    public function layer(string|OptionalContentGroup $layer, callable $renderer, bool $visibleByDefault = true): self
+    public function layer(string | OptionalContentGroup $layer, callable $renderer, bool $visibleByDefault = true): self
     {
         $group = is_string($layer)
             ? $this->document->ensureOptionalContentGroup($layer, $visibleByDefault)
@@ -1197,7 +1197,7 @@ final class Page extends IndirectObject
     }
 
     public function addPopupAnnotation(
-        PageAnnotation&IndirectObject $parent,
+        PageAnnotation & IndirectObject $parent,
         float $x,
         float $y,
         float $width,
@@ -1930,12 +1930,12 @@ final class Page extends IndirectObject
         float $width,
         float $height,
         array $options,
-        string|array|null $value = null,
+        string | array | null $value = null,
         string $baseFont = 'Helvetica',
         int $size = 12,
         ?Color $textColor = null,
         ?FormFieldFlags $flags = null,
-        string|array|null $defaultValue = null,
+        string | array | null $defaultValue = null,
     ): self {
         if ($name === '') {
             throw new InvalidArgumentException('List box name must not be empty.');
@@ -2092,7 +2092,7 @@ final class Page extends IndirectObject
      * @param array<string, string> $options
      * @param list<string>|string|null $value
      */
-    private function assertListBoxSelectionExists(string|array|null $value, array $options, string $message): void
+    private function assertListBoxSelectionExists(string | array | null $value, array $options, string $message): void
     {
         if ($value === null) {
             return;
@@ -2957,7 +2957,7 @@ final class Page extends IndirectObject
             return;
         }
 
-        $this->document->addFont($baseFont);
+        $this->document->registerFont($baseFont);
     }
 
     private function createImageObject(Image $image): ImageObject

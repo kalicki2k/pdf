@@ -48,7 +48,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4);
 
-        $returnedDocument = $document->addFont('Helvetica');
+        $returnedDocument = $document->registerFont('Helvetica');
         $page = $document->addPage(100.0, 200.0);
 
         self::assertSame($document, $returnedDocument);
@@ -61,6 +61,49 @@ final class DocumentTest extends TestCase
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
+    }
+
+    #[Test]
+    public function it_registers_standard_fonts_via_the_explicit_register_font_api(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $returnedDocument = $document->registerFont('Helvetica');
+
+        self::assertSame($document, $returnedDocument);
+        self::assertCount(1, $document->fonts);
+        self::assertSame('Helvetica', $document->fonts[0]->getBaseFont());
+    }
+
+    #[Test]
+    public function it_uses_a_pdf_1_0_compatible_default_encoding_for_standard_fonts(): void
+    {
+        $document = new Document(version: 1.0);
+
+        $document->registerFont('Helvetica');
+
+        self::assertStringContainsString('/Encoding /StandardEncoding', $document->fonts[0]->render());
+    }
+
+    #[Test]
+    public function it_keeps_the_win_ansi_default_for_newer_pdf_versions(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $document->registerFont('Helvetica');
+
+        self::assertStringContainsString('/Encoding /WinAnsiEncoding', $document->fonts[0]->render());
+    }
+
+    #[Test]
+    public function it_still_validates_explicitly_provided_encodings_against_the_pdf_version(): void
+    {
+        $document = new Document(version: 1.0);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Encoding 'WinAnsiEncoding' is not allowed in PDF 1.0.");
+
+        $document->registerFont('Helvetica', encoding: 'WinAnsiEncoding');
     }
 
     #[Test]
@@ -135,7 +178,7 @@ final class DocumentTest extends TestCase
     public function it_applies_header_and_footer_callbacks_to_new_pages(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $document
             ->addHeader(static function (Page $page, int $pageNumber): void {
                 $page->addText("Header $pageNumber", 10, 90, 'Helvetica', 10);
@@ -157,7 +200,7 @@ final class DocumentTest extends TestCase
     public function it_applies_header_and_footer_callbacks_to_overflow_pages(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $document
             ->addHeader(static function (Page $page, int $pageNumber): void {
                 $page->addText("Header $pageNumber", 10, 50, 'Helvetica', 10);
@@ -183,7 +226,7 @@ final class DocumentTest extends TestCase
     public function it_adds_footer_page_numbers_with_total_page_count(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $document->addPage(100, 100);
         $document->addPage(100, 100);
 
@@ -198,7 +241,7 @@ final class DocumentTest extends TestCase
     public function it_adds_header_page_numbers_with_a_custom_template(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $document->addPage(100, 100);
         $document->addPage(100, 100);
         $document->addPage(100, 100);
@@ -225,7 +268,7 @@ final class DocumentTest extends TestCase
     public function it_adds_a_table_of_contents_from_existing_outlines(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $firstPage = $document->addPage(100, 100);
         $secondPage = $document->addPage(100, 100);
 
@@ -248,7 +291,7 @@ final class DocumentTest extends TestCase
     public function it_can_move_the_table_of_contents_to_the_start(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $firstPage = $document->addPage(100, 100);
         $secondPage = $document->addPage(100, 100);
 
@@ -261,6 +304,37 @@ final class DocumentTest extends TestCase
         self::assertSame($tocPage, $document->pages->pages[0]);
         self::assertSame($firstPage, $document->pages->pages[1]);
         self::assertSame($secondPage, $document->pages->pages[2]);
+    }
+
+    #[Test]
+    public function it_numbers_entries_correctly_when_a_multi_page_table_of_contents_moves_to_the_start(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $firstContentPage = null;
+
+        foreach (range('A', 'I') as $label) {
+            $page = $document->addPage(100, 100);
+            $firstContentPage ??= $page;
+            $document->addOutline("Eintrag $label", $page);
+        }
+
+        $document->addTableOfContents(140, 100, 'Inhalt', 'Helvetica', 16, 10, 10, TableOfContentsPosition::START);
+
+        $firstContentPageIndex = array_search($firstContentPage, $document->pages->pages, true);
+        self::assertIsInt($firstContentPageIndex);
+        self::assertGreaterThan(1, $firstContentPageIndex);
+
+        $tocPages = array_slice($document->pages->pages, 0, $firstContentPageIndex);
+        $tocContents = implode('', array_map(
+            static fn (Page $page): string => $page->contents->render(),
+            $tocPages,
+        ));
+
+        self::assertStringContainsString('(' . ($firstContentPageIndex + 1) . ') Tj', $tocContents);
+        self::assertStringContainsString('(' . ($firstContentPageIndex + 9) . ') Tj', $tocContents);
+        self::assertStringNotContainsString('(1) Tj', $tocContents);
+        self::assertStringNotContainsString('(2) Tj', $tocContents);
     }
 
     #[Test]
@@ -322,7 +396,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4);
 
-        $returnedDocument = $document->addFont('NotoSansCJKsc-Regular', 'CIDFontType2', unicode: true);
+        $returnedDocument = $document->registerFont('NotoSansCJKsc-Regular', 'CIDFontType2', unicode: true);
 
         self::assertSame($document, $returnedDocument);
         self::assertCount(1, $document->fonts);
@@ -341,8 +415,8 @@ final class DocumentTest extends TestCase
         $document = new Document(version: 1.4);
 
         $document
-            ->addFont('NotoSans-Regular')
-            ->addFont('NotoSansCJKsc-Regular');
+            ->registerFont('NotoSans-Regular')
+            ->registerFont('NotoSansCJKsc-Regular');
 
         self::assertCount(2, $document->fonts);
         self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
@@ -367,7 +441,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4);
 
-        $document->addFont('NotoSans-Regular');
+        $document->registerFont('NotoSans-Regular');
 
         self::assertCount(1, $document->fonts);
         self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
@@ -381,7 +455,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4);
 
-        $document->addFont('NotoSans-Regular');
+        $document->registerFont('NotoSans-Regular');
 
         self::assertCount(1, $document->fonts);
         self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
@@ -396,8 +470,8 @@ final class DocumentTest extends TestCase
         $document = new Document(version: 1.4);
 
         $document
-            ->addFont('NotoSerif-Regular')
-            ->addFont('NotoSansMono-Regular');
+            ->registerFont('NotoSerif-Regular')
+            ->registerFont('NotoSansMono-Regular');
 
         self::assertCount(2, $document->fonts);
         self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
@@ -426,7 +500,7 @@ final class DocumentTest extends TestCase
             ],
         );
 
-        $document->addFont('CustomSans-Regular');
+        $document->registerFont('CustomSans-Regular');
 
         self::assertCount(1, $document->fonts);
         self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
@@ -484,7 +558,7 @@ final class DocumentTest extends TestCase
         );
 
         $document->addKeyword('pdf');
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $document->addPage();
 
         $output = $document->render();
@@ -507,7 +581,7 @@ final class DocumentTest extends TestCase
     public function it_enables_structure_metadata_only_after_tagged_content_is_added(): void
     {
         $document = new Document(version: 1.4, language: 'de-DE');
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $document->addPage()->addText('Hello', 10, 20, 'Helvetica', 12, 'P');
 
         $output = $document->render();

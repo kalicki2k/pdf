@@ -110,6 +110,6 @@ class PdfRenderer
 
         $trailer .= PHP_EOL . "/ID [<{$documentId[0]}> <{$documentId[1]}>]";
 
-        return $trailer . " >>" . PHP_EOL;
+        return $trailer . ' >>' . PHP_EOL;
     }
 }

@@ -41,7 +41,7 @@ final readonly class SetOcgStateAction implements ButtonAction
         $dictionary = new DictionaryType([
             'S' => new NameType('SetOCGState'),
             'State' => new ArrayType(array_map(
-                static fn (string|OptionalContentGroup $entry): NameType|ReferenceType => $entry instanceof OptionalContentGroup
+                static fn (string | OptionalContentGroup $entry): NameType | ReferenceType => $entry instanceof OptionalContentGroup
                     ? new ReferenceType($entry)
                     : new NameType($entry),
                 $this->state,

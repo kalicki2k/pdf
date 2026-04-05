@@ -44,7 +44,7 @@ Wichtige Methoden:
 - `addDestination()` registriert ein benanntes Ziel fuer interne Spruenge
 - `addTableOfContents()` erzeugt Inhaltsverzeichnis-Seiten aus vorhandenen Outlines
 - `encrypt()` aktiviert den Standard-Security-Handler mit Passwort, Permissions und passendem Verschluesselungsprofil
-- `addFont()` registriert Fonts im Dokument
+- `registerFont()` registriert Fonts im Dokument
 - `addKeyword()` pflegt die Dokument-Keywords
 - `render()` delegiert an `PdfRenderer`
 - `getDocumentObjects()` liefert die Menge aller zu rendernden indirekten Objekte

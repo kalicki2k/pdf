@@ -52,7 +52,7 @@ final readonly class StandardObjectEncryptor
         $material = $this->securityHandlerData->encryptionKey . $objectBytes . $generationBytes;
 
         if ($addAesSalt) {
-            $material .= "sAlT";
+            $material .= 'sAlT';
         }
 
         $hash = md5($material, true);

@@ -33,8 +33,8 @@ final class ResourcesTest extends TestCase
         $fontOne = new StandardFont(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);
         $fontTwo = new StandardFont(7, 'Times-Roman', 'Type1', 'WinAnsiEncoding', 1.4);
 
-        self::assertSame('F1', $resources->addFont($fontOne));
-        self::assertSame('F2', $resources->addFont($fontTwo));
+        self::assertSame('F1', $resources->registerFont($fontOne));
+        self::assertSame('F2', $resources->registerFont($fontTwo));
         self::assertSame(
             "8 0 obj\n<< /Font << /F1 6 0 R /F2 7 0 R >> >>\nendobj\n",
             $resources->render(),
@@ -47,8 +47,8 @@ final class ResourcesTest extends TestCase
         $resources = new Resources(8);
         $font = new StandardFont(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);
 
-        self::assertSame('F1', $resources->addFont($font));
-        self::assertSame('F1', $resources->addFont($font));
+        self::assertSame('F1', $resources->registerFont($font));
+        self::assertSame('F1', $resources->registerFont($font));
         self::assertSame(
             "8 0 obj\n<< /Font << /F1 6 0 R >> >>\nendobj\n",
             $resources->render(),

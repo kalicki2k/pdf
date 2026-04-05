@@ -44,6 +44,11 @@ final class Resources extends IndirectObject
         return 'F' . count($this->fonts);
     }
 
+    public function registerFont(FontDefinition $font): string
+    {
+        return $this->addFont($font);
+    }
+
     public function addOpacity(Opacity $opacity): string
     {
         $renderedOpacity = $opacity->renderExtGStateDictionary();

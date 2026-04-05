@@ -8,9 +8,9 @@ use InvalidArgumentException;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\EncryptionVersionResolver;
 use Kalle\Pdf\Encryption\StandardSecurityHandler;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
-use Kalle\Pdf\Encryption\EncryptionVersionResolver;
 use Kalle\Pdf\Font\CidFont;
 use Kalle\Pdf\Font\CidToGidMap;
 use Kalle\Pdf\Font\FontDefinition;
@@ -140,12 +140,7 @@ final class Document
             $objects[] = $this->parentTree;
         }
 
-        foreach ($this->structElems as $key => $structElem) {
-            if ($key === 'document') {
-                $objects[] = $structElem;
-                continue;
-            }
-
+        foreach ($this->structElems as $structElem) {
             $objects[] = $structElem;
         }
 
@@ -242,14 +237,6 @@ final class Document
         }
 
         $this->destinations[$name] = $page;
-
-        return $this;
-    }
-
-    public function useEncryptionAlgorithm(EncryptionAlgorithm $algorithm = EncryptionAlgorithm::AUTO): self
-    {
-        $resolver = new EncryptionVersionResolver();
-        $this->encryptionProfile = $resolver->resolve($this->version, $algorithm);
 
         return $this;
     }
@@ -453,71 +440,20 @@ final class Document
         return $this;
     }
 
-    public function addFont(
-        string $baseFont,
+    public function registerFont(
+        string $fontName,
         string $subtype = 'Type1',
-        string $encoding = 'WinAnsiEncoding',
+        ?string $encoding = null,
         bool $unicode = false,
         ?string $fontFilePath = null,
     ): self {
-        if (FontRegistry::has($baseFont, $this->fontConfig)) {
-            $preset = FontRegistry::get($baseFont, $this->fontConfig);
-            $baseFont = $preset->baseFont;
-            $subtype = $preset->subtype;
-            $encoding = $preset->encoding;
-            $unicode = $preset->unicode;
-            $fontFilePath = $preset->path;
-        }
-
-        if ($unicode) {
-            $fontDescriptor = null;
-            $glyphMap = new UnicodeGlyphMap();
-            $fontParser = null;
-            $defaultWidth = 1000;
-            $widths = [];
-
-            if ($fontFilePath !== null) {
-                $fontFile = FontFileStream::fromPath(++$this->objectId, $fontFilePath);
-                $fontDescriptor = new FontDescriptor(++$this->objectId, $baseFont, $fontFile);
-                $fontParser = new OpenTypeFontParser($fontFile->data);
-
-                if ($fontParser->hasCffOutlines()) {
-                    $subtype = 'CIDFontType0';
-                }
-            }
-
-            $cidToGidMap = $fontParser !== null
-                ? new CidToGidMap(++$this->objectId, $glyphMap, $fontParser)
-                : null;
-
-            $descendantFont = new CidFont(
-                ++$this->objectId,
-                $baseFont,
-                $subtype,
-                fontDescriptor: $fontDescriptor,
-                cidToGidMap: $cidToGidMap,
-                defaultWidth: $defaultWidth,
-                widths: $widths,
-            );
-            $toUnicode = new ToUnicodeCMap(++$this->objectId, $glyphMap);
-            $font = new UnicodeFont(++$this->objectId, $descendantFont, $toUnicode, $glyphMap);
-        } else {
-            $fontParser = null;
-
-            if ($fontFilePath !== null) {
-                $fontData = file_get_contents($fontFilePath);
-
-                if ($fontData === false) {
-                    throw new \InvalidArgumentException("Unable to read font file '$fontFilePath'.");
-                }
-
-                $fontParser = new OpenTypeFontParser($fontData);
-            }
-
-            $font = new StandardFont(++$this->objectId, $baseFont, $subtype, $encoding, $this->version, $fontParser);
-        }
-
-        $this->fonts = [...$this->fonts, $font];
+        $options = $this->resolveFontRegistrationOptions($fontName, $subtype, $encoding, $unicode, $fontFilePath);
+        $this->fonts = [
+            ...$this->fonts,
+            $options['unicode']
+                ? $this->createUnicodeFont($options['baseFont'], $options['subtype'], $options['fontFilePath'])
+                : $this->createStandardFont($options['baseFont'], $options['subtype'], $options['encoding'], $options['fontFilePath']),
+        ];
 
         return $this;
     }
@@ -585,14 +521,8 @@ final class Document
     private function applyPageDecorators(Page $page): void
     {
         $pageNumber = count($this->pages->pages);
-
-        foreach ($this->headerRenderers as $headerRenderer) {
-            $headerRenderer($page, $pageNumber);
-        }
-
-        foreach ($this->footerRenderers as $footerRenderer) {
-            $footerRenderer($page, $pageNumber);
-        }
+        $this->runPageDecorators($this->headerRenderers, $page, $pageNumber);
+        $this->runPageDecorators($this->footerRenderers, $page, $pageNumber);
     }
 
     private function applyDeferredPageDecorators(): void
@@ -605,18 +535,32 @@ final class Document
 
         foreach ($this->pages->pages as $index => $page) {
             $pageNumber = $index + 1;
-
-            foreach ($this->deferredHeaderRenderers as $renderer) {
-                $renderer($page, $pageNumber, $totalPages);
-            }
-
-            foreach ($this->deferredFooterRenderers as $renderer) {
-                $renderer($page, $pageNumber, $totalPages);
-            }
+            $this->runDeferredPageDecorators($this->deferredHeaderRenderers, $page, $pageNumber, $totalPages);
+            $this->runDeferredPageDecorators($this->deferredFooterRenderers, $page, $pageNumber, $totalPages);
         }
 
         $this->deferredHeaderRenderers = [];
         $this->deferredFooterRenderers = [];
+    }
+
+    /**
+     * @param list<callable(Page, int): void> $renderers
+     */
+    private function runPageDecorators(array $renderers, Page $page, int $pageNumber): void
+    {
+        foreach ($renderers as $renderer) {
+            $renderer($page, $pageNumber);
+        }
+    }
+
+    /**
+     * @param list<callable(Page, int, int): void> $renderers
+     */
+    private function runDeferredPageDecorators(array $renderers, Page $page, int $pageNumber, int $totalPages): void
+    {
+        foreach ($renderers as $renderer) {
+            $renderer($page, $pageNumber, $totalPages);
+        }
     }
 
     public function ensureStructureEnabled(): void
@@ -684,15 +628,17 @@ final class Document
         $entryLineHeight = $entrySize * 1.35;
         $currentPage = $page;
         $currentY = $frame->getCursorY();
-        $pageNumbersByObjectId = [];
-
-        foreach ($this->pages->pages as $index => $documentPage) {
-            if ($documentPage === $page) {
-                continue;
-            }
-
-            $pageNumbersByObjectId[$documentPage->id] = $index + 1;
-        }
+        $pageNumbersByObjectId = $this->buildTableOfContentsPageNumbers(
+            $firstTocPageIndex,
+            $this->estimateTableOfContentsPageCount(
+                count($this->outlineRoot->getItems()),
+                $currentY,
+                $page->getHeight(),
+                $margin,
+                $entryLineHeight,
+            ),
+            $position,
+        );
 
         foreach ($this->outlineRoot->getItems() as $outlineItem) {
             if ($currentY < $margin + $entryLineHeight) {
@@ -771,6 +717,160 @@ final class Document
         $renderer = new PdfRenderer();
 
         return $renderer->render($this);
+    }
+
+    /**
+     * @return array{
+     *     baseFont: string,
+     *     subtype: string,
+     *     encoding: string,
+     *     unicode: bool,
+     *     fontFilePath: ?string
+     * }
+     */
+    private function resolveFontRegistrationOptions(
+        string $fontName,
+        string $subtype,
+        ?string $encoding,
+        bool $unicode,
+        ?string $fontFilePath,
+    ): array {
+        if (!FontRegistry::has($fontName, $this->fontConfig)) {
+            return [
+                'baseFont' => $fontName,
+                'subtype' => $subtype,
+                'encoding' => $encoding ?? $this->resolveDefaultStandardFontEncoding(),
+                'unicode' => $unicode,
+                'fontFilePath' => $fontFilePath,
+            ];
+        }
+
+        $preset = FontRegistry::get($fontName, $this->fontConfig);
+
+        return [
+            'baseFont' => $preset->baseFont,
+            'subtype' => $preset->subtype,
+            'encoding' => $encoding ?? $preset->encoding,
+            'unicode' => $preset->unicode,
+            'fontFilePath' => $preset->path,
+        ];
+    }
+
+    private function resolveDefaultStandardFontEncoding(): string
+    {
+        if ($this->version <= 1.0) {
+            return 'StandardEncoding';
+        }
+
+        return 'WinAnsiEncoding';
+    }
+
+    private function createUnicodeFont(string $baseFont, string $subtype, ?string $fontFilePath): UnicodeFont
+    {
+        $glyphMap = new UnicodeGlyphMap();
+        $fontDescriptor = null;
+        $fontParser = null;
+
+        if ($fontFilePath !== null) {
+            $fontFile = FontFileStream::fromPath(++$this->objectId, $fontFilePath);
+            $fontDescriptor = new FontDescriptor(++$this->objectId, $baseFont, $fontFile);
+            $fontParser = new OpenTypeFontParser($fontFile->data);
+
+            if ($fontParser->hasCffOutlines()) {
+                $subtype = 'CIDFontType0';
+            }
+        }
+
+        $cidToGidMap = $fontParser !== null ? new CidToGidMap(++$this->objectId, $glyphMap, $fontParser) : null;
+        $descendantFont = new CidFont(
+            ++$this->objectId,
+            $baseFont,
+            $subtype,
+            fontDescriptor: $fontDescriptor,
+            cidToGidMap: $cidToGidMap,
+            defaultWidth: 1000,
+            widths: [],
+        );
+        $toUnicode = new ToUnicodeCMap(++$this->objectId, $glyphMap);
+
+        return new UnicodeFont(
+            ++$this->objectId,
+            $descendantFont,
+            $toUnicode,
+            $glyphMap,
+        );
+    }
+
+    private function createStandardFont(
+        string $baseFont,
+        string $subtype,
+        string $encoding,
+        ?string $fontFilePath,
+    ): StandardFont {
+        return new StandardFont(
+            ++$this->objectId,
+            $baseFont,
+            $subtype,
+            $encoding,
+            $this->version,
+            $this->createOptionalFontParser($fontFilePath),
+        );
+    }
+
+    private function createOptionalFontParser(?string $fontFilePath): ?OpenTypeFontParser
+    {
+        if ($fontFilePath === null) {
+            return null;
+        }
+
+        /** @var string|false $fontData */
+        $fontData = file_get_contents($fontFilePath);
+
+        if ($fontData === false) {
+            throw new InvalidArgumentException("Unable to read font file '$fontFilePath'.");
+        }
+
+        return new OpenTypeFontParser($fontData);
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function buildTableOfContentsPageNumbers(
+        int $firstTocPageIndex,
+        int $tocPageCount,
+        TableOfContentsPosition $position,
+    ): array {
+        $pageNumbersByObjectId = [];
+        $pageNumberOffset = $position === TableOfContentsPosition::START ? $tocPageCount : 0;
+
+        foreach (array_slice($this->pages->pages, 0, $firstTocPageIndex) as $index => $documentPage) {
+            $pageNumbersByObjectId[$documentPage->id] = $index + 1 + $pageNumberOffset;
+        }
+
+        return $pageNumbersByObjectId;
+    }
+
+    private function estimateTableOfContentsPageCount(
+        int $entryCount,
+        float $initialY,
+        float $pageHeight,
+        float $margin,
+        float $entryLineHeight,
+    ): int {
+        $pageCount = 1;
+        $currentY = $initialY;
+
+        for ($index = 0; $index < $entryCount; $index++) {
+            if ($currentY < $margin + $entryLineHeight) {
+                $pageCount++;
+                $currentY = $pageHeight - $margin;
+            }
+
+            $currentY -= $entryLineHeight;
+        }
+
+        return $pageCount;
     }
 
     private function fitTextToWidth(Page $page, string $text, string $baseFont, int $size, float $maxWidth): string

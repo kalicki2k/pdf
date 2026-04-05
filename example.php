@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Document\GoToAction;
 use Kalle\Pdf\Document\GoToRemoteAction;
@@ -107,14 +107,14 @@ $document = new Document(
 $document->addKeyword('demo')
     ->addKeyword('pdf')
     ->addKeyword('tagged')
-    ->addFont('Helvetica')
-    ->addFont('NotoSans-Regular')
-    ->addFont('NotoSans-Bold')
-    ->addFont('NotoSans-Italic')
-    ->addFont('NotoSans-BoldItalic')
-    ->addFont('NotoSerif-Regular')
-    ->addFont('NotoSansMono-Regular')
-    ->addFont('NotoSansCJKsc-Regular');
+    ->registerFont('Helvetica')
+    ->registerFont('NotoSans-Regular')
+    ->registerFont('NotoSans-Bold')
+    ->registerFont('NotoSans-Italic')
+    ->registerFont('NotoSans-BoldItalic')
+    ->registerFont('NotoSerif-Regular')
+    ->registerFont('NotoSansMono-Regular')
+    ->registerFont('NotoSansCJKsc-Regular');
 
 $document
     ->addAttachmentFromFile('README.md', description: 'Projekt-README als eingebettete Datei', mimeType: 'text/markdown')
@@ -598,7 +598,7 @@ for ($index = 1; $index <= 36; $index++) {
             new TableCell(
                 "Rowspan ab 24 mit bewusst langem Text.\n"
                 . "Der Inhalt soll ueber den Seitenwechsel sichtbar weiterlaufen,\n"
-                . "damit Border, Textfluss und Vertikalverhalten leichter pruefbar sind.",
+                . 'damit Border, Textfluss und Vertikalverhalten leichter pruefbar sind.',
                 rowspan: 4,
                 style: new CellStyle(
                     verticalAlign: VerticalAlign::TOP,

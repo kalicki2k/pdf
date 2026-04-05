@@ -40,7 +40,7 @@ final class PdfRendererTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document->getUniqObjectId();
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
 
         $renderer = new PdfRenderer();
         $output = $renderer->render($document);
@@ -64,6 +64,7 @@ final class PdfRendererTest extends TestCase
             . sprintf('%010d', $fontOffset) . ' 00000 n \n/',
             $output,
         );
-        self::assertStringContainsString("trailer\n<< /Size 6\n/Root 1 0 R\n/Info 3 0 R >>\n", $output);
+        self::assertStringContainsString("trailer\n<< /Size 6\n/Root 1 0 R\n/Info 3 0 R\n", $output);
+        self::assertMatchesRegularExpression('/\/ID \[<[^>]+> <[^>]+>]/', $output);
     }
 }

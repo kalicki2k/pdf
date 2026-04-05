@@ -16,7 +16,7 @@ final class ComboBoxAnnotationTest extends TestCase
     public function it_renders_a_combo_box_widget_annotation(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ComboBoxAnnotation(
@@ -45,7 +45,7 @@ final class ComboBoxAnnotationTest extends TestCase
     public function it_renders_read_only_and_required_flags_for_combo_boxes(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ComboBoxAnnotation(
@@ -70,7 +70,7 @@ final class ComboBoxAnnotationTest extends TestCase
     public function it_renders_editable_combo_boxes(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ComboBoxAnnotation(
@@ -95,7 +95,7 @@ final class ComboBoxAnnotationTest extends TestCase
     public function it_renders_a_default_value_for_combo_boxes(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ComboBoxAnnotation(

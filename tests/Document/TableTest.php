@@ -38,8 +38,8 @@ final class TableTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document
-            ->addFont('Helvetica')
-            ->addFont('Helvetica-Bold');
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
         $page = $document->addPage();
 
         $table = $page->addTable(20, 260, 170, [50, 70, 50])
@@ -71,8 +71,8 @@ final class TableTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document
-            ->addFont('Helvetica')
-            ->addFont('Helvetica-Bold');
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [30, 50, 40, 50])
@@ -97,8 +97,8 @@ final class TableTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document
-            ->addFont('Helvetica')
-            ->addFont('Helvetica-Bold');
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [40, 60, 70])
@@ -124,7 +124,7 @@ final class TableTest extends TestCase
     public function it_supports_partial_cell_borders(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
@@ -143,7 +143,7 @@ final class TableTest extends TestCase
     public function it_merges_cell_borders_with_the_table_default_border(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
@@ -164,7 +164,7 @@ final class TableTest extends TestCase
     public function it_supports_middle_vertical_alignment_as_table_default(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
@@ -184,7 +184,7 @@ final class TableTest extends TestCase
     public function it_supports_table_padding_styles(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
@@ -205,7 +205,7 @@ final class TableTest extends TestCase
     public function it_allows_cells_to_override_the_table_padding(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [170])
@@ -224,7 +224,7 @@ final class TableTest extends TestCase
     public function it_supports_cell_styles(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [170])
@@ -252,7 +252,7 @@ final class TableTest extends TestCase
     public function it_supports_table_styles_as_defaults(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [170])
@@ -279,8 +279,8 @@ final class TableTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document
-            ->addFont('Helvetica')
-            ->addFont('Helvetica-Bold');
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
@@ -314,7 +314,7 @@ final class TableTest extends TestCase
     public function it_allows_cells_to_override_the_table_vertical_alignment(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addTable(20, 260, 170, [85, 85])
@@ -335,8 +335,8 @@ final class TableTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document
-            ->addFont('Helvetica')
-            ->addFont('Helvetica-Bold');
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
         $page = $document->addPage(200, 200);
 
         $table = $page->addTable(20, 120, 160, [80, 80], 20)
@@ -357,7 +357,7 @@ final class TableTest extends TestCase
     public function it_rejects_rows_with_the_wrong_number_of_cells(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->addTable(20, 260, 170, [85, 85]);
 
@@ -371,7 +371,7 @@ final class TableTest extends TestCase
     public function it_rejects_cells_with_invalid_colspan(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->addTable(20, 260, 170, [85, 85]);
 
@@ -388,7 +388,7 @@ final class TableTest extends TestCase
     public function it_rejects_cells_with_invalid_rowspan(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->addTable(20, 260, 170, [85, 85]);
 
@@ -406,8 +406,8 @@ final class TableTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document
-            ->addFont('Helvetica')
-            ->addFont('Helvetica-Bold');
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
         $page = $document->addPage(200, 120);
 
         $table = $page->addTable(20, 90, 160, [80, 80], 20)
@@ -436,8 +436,8 @@ final class TableTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document
-            ->addFont('Helvetica')
-            ->addFont('Helvetica-Bold');
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
         $page = $document->addPage(200, 140);
 
         $page->addTable(20, 118, 160, [70, 90], 20)

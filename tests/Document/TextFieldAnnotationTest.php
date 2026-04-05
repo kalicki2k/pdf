@@ -16,7 +16,7 @@ final class TextFieldAnnotationTest extends TestCase
     public function it_renders_a_text_field_widget_annotation(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new TextFieldAnnotation(7, $page, 10, 20, 80, 12, 'customer_name', 'Ada', 'F1', 12);
@@ -33,7 +33,7 @@ final class TextFieldAnnotationTest extends TestCase
     public function it_renders_a_multiline_text_field_widget_annotation(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new TextFieldAnnotation(7, $page, 10, 20, 80, 30, 'notes', "Line 1\nLine 2", 'F1', 12, true);
@@ -50,7 +50,7 @@ final class TextFieldAnnotationTest extends TestCase
     public function it_renders_read_only_required_password_flags_for_text_fields(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new TextFieldAnnotation(
@@ -75,7 +75,7 @@ final class TextFieldAnnotationTest extends TestCase
     public function it_renders_a_default_value_for_text_fields(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new TextFieldAnnotation(7, $page, 10, 20, 80, 12, 'customer_name', 'Ada', 'F1', 12, defaultValue: 'Grace');

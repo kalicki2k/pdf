@@ -9,8 +9,8 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
-use Kalle\Pdf\Encryption\PermissionBitsResolver;
 use Kalle\Pdf\Encryption\EncryptionVersionResolver;
+use Kalle\Pdf\Encryption\PermissionBitsResolver;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -87,10 +87,13 @@ final class EncryptionVersionResolverTest extends TestCase
     }
 
     #[Test]
-    public function it_allows_documents_to_resolve_and_store_an_encryption_profile(): void
+    public function it_resolves_and_stores_the_encryption_profile_via_encrypt_options(): void
     {
         $document = new Document(version: 1.6);
-        $document->useEncryptionAlgorithm();
+        $document->encrypt(new EncryptionOptions(
+            userPassword: 'user-secret',
+            ownerPassword: 'owner-secret',
+        ));
 
         self::assertNotNull($document->getEncryptionProfile());
         self::assertSame(EncryptionAlgorithm::AES_128, $document->getEncryptionProfile()?->algorithm);

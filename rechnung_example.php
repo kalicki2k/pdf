@@ -20,7 +20,7 @@ $document = new Document(
     title: 'Rechnung',
 )
     ->addKeyword('Rechnung')
-    ->addFont('Helvetica');
+    ->registerFont('Helvetica');
 
 $page = $document->addPage(PageSize::A4());
 

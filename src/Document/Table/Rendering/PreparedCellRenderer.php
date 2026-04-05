@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Table\Rendering;
 
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
@@ -13,6 +12,7 @@ use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
+use Kalle\Pdf\Document\TextSegment;
 
 final readonly class PreparedCellRenderer
 {
@@ -56,7 +56,6 @@ final readonly class PreparedCellRenderer
 
     /**
      * @param list<float> $rowHeights
-     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $remainingLines
      */
     public function renderSegment(
         Page $page,
@@ -90,7 +89,6 @@ final readonly class PreparedCellRenderer
 
     /**
      * @param list<float> $rowHeights
-     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $remainingLines
      */
     private function renderResolved(
         Page $page,

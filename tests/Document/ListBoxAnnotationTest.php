@@ -16,7 +16,7 @@ final class ListBoxAnnotationTest extends TestCase
     public function it_renders_a_list_box_widget_annotation(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ListBoxAnnotation(
@@ -45,7 +45,7 @@ final class ListBoxAnnotationTest extends TestCase
     public function it_renders_read_only_and_required_flags_for_list_boxes(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ListBoxAnnotation(
@@ -70,7 +70,7 @@ final class ListBoxAnnotationTest extends TestCase
     public function it_renders_a_multi_select_list_box_widget_annotation(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ListBoxAnnotation(
@@ -96,7 +96,7 @@ final class ListBoxAnnotationTest extends TestCase
     public function it_renders_a_default_value_for_list_boxes(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ListBoxAnnotation(
@@ -122,7 +122,7 @@ final class ListBoxAnnotationTest extends TestCase
     public function it_renders_a_multi_select_default_value_for_list_boxes(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $annotation = new ListBoxAnnotation(

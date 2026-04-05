@@ -6,21 +6,21 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\AnnotationBorderStyle;
-use Kalle\Pdf\Document\ResetFormAction;
-use Kalle\Pdf\Document\NamedAction;
-use Kalle\Pdf\Document\LineEndingStyle;
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Document\GoToAction;
 use Kalle\Pdf\Document\GoToRemoteAction;
 use Kalle\Pdf\Document\HideAction;
 use Kalle\Pdf\Document\ImportDataAction;
+use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\LaunchAction;
+use Kalle\Pdf\Document\LineEndingStyle;
+use Kalle\Pdf\Document\NamedAction;
+use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\SubmitFormAction;
-use Kalle\Pdf\Document\ThreadAction;
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\FormFieldFlags;
-use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\ThreadAction;
 use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
@@ -128,7 +128,7 @@ final class PageTest extends TestCase
     public function it_adds_a_free_text_annotation_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addFreeTextAnnotation(
@@ -423,7 +423,7 @@ final class PageTest extends TestCase
     public function it_wraps_layered_page_content_with_optional_content_markers(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->layer('Notes', static function (\Kalle\Pdf\Document\Page $page): void {
@@ -433,14 +433,14 @@ final class PageTest extends TestCase
         self::assertSame($page, $result);
         self::assertStringContainsString('/Properties << /OC1 8 0 R >>', $page->resources->render());
         self::assertStringContainsString("/OC /OC1 BDC\nq\nBT", $page->contents->render());
-        self::assertStringContainsString("EMC", $page->contents->render());
+        self::assertStringContainsString('EMC', $page->contents->render());
     }
 
     #[Test]
     public function it_accepts_an_existing_layer_object_for_page_layer_content(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $layer = $document->addLayer('Notes');
         $page = $document->addPage();
 
@@ -565,7 +565,7 @@ final class PageTest extends TestCase
     public function it_adds_a_badge_with_background_and_text(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addBadge('Beta', 10, 20);
@@ -579,7 +579,7 @@ final class PageTest extends TestCase
     public function it_adds_a_badge_with_custom_style_and_link(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addBadge(
@@ -610,7 +610,7 @@ final class PageTest extends TestCase
     public function it_adds_a_badge_with_rounded_corners(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addBadge(
@@ -635,7 +635,7 @@ final class PageTest extends TestCase
     public function it_rejects_empty_badge_text(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
@@ -648,7 +648,7 @@ final class PageTest extends TestCase
     public function it_adds_a_panel_with_title_and_body(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPanel(
@@ -670,7 +670,7 @@ final class PageTest extends TestCase
     public function it_adds_a_rounded_panel_with_link(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addPanel(
@@ -702,7 +702,7 @@ final class PageTest extends TestCase
     public function it_rejects_panels_without_title_or_body(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
@@ -739,7 +739,7 @@ final class PageTest extends TestCase
     public function it_adds_a_callout_with_a_pointer(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addCallout(
@@ -763,7 +763,7 @@ final class PageTest extends TestCase
     public function it_adds_a_styled_callout_with_link(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addCallout(
@@ -1015,7 +1015,7 @@ final class PageTest extends TestCase
     public function it_adds_a_text_field_annotation_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addTextField('customer_name', 10, 20, 80, 12, 'Ada', 'Helvetica', 12);
@@ -1032,7 +1032,7 @@ final class PageTest extends TestCase
     public function it_adds_a_multiline_text_field_annotation_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addTextField('notes', 10, 20, 80, 30, "Line 1\nLine 2", 'Helvetica', 12, true);
@@ -1048,7 +1048,7 @@ final class PageTest extends TestCase
     public function it_adds_text_field_flags_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addTextField(
@@ -1073,7 +1073,7 @@ final class PageTest extends TestCase
     public function it_adds_a_default_value_to_the_text_field_annotation(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addTextField('customer_name', 10, 20, 80, 12, 'Ada', 'Helvetica', 12, defaultValue: 'Grace');
@@ -1122,7 +1122,7 @@ final class PageTest extends TestCase
     public function it_adds_a_combo_box_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addComboBox(
@@ -1149,7 +1149,7 @@ final class PageTest extends TestCase
     public function it_adds_a_default_value_to_the_combo_box_annotation(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addComboBox(
@@ -1174,7 +1174,7 @@ final class PageTest extends TestCase
     public function it_adds_an_editable_combo_box_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addComboBox(
@@ -1198,7 +1198,7 @@ final class PageTest extends TestCase
     public function it_rejects_invalid_combo_box_default_values(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
@@ -1222,7 +1222,7 @@ final class PageTest extends TestCase
     public function it_adds_a_list_box_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addListBox(
@@ -1248,7 +1248,7 @@ final class PageTest extends TestCase
     public function it_adds_a_default_value_to_the_list_box_annotation(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addListBox(
@@ -1273,7 +1273,7 @@ final class PageTest extends TestCase
     public function it_adds_a_multi_select_list_box_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addListBox(
@@ -1300,7 +1300,7 @@ final class PageTest extends TestCase
     public function it_rejects_invalid_list_box_default_values(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
@@ -1339,7 +1339,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton('save_form', 'Speichern', 10, 20, 80, 16);
@@ -1356,7 +1356,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_submit_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1377,7 +1377,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_reset_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1398,7 +1398,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_javascript_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1419,7 +1419,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_named_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1440,7 +1440,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_goto_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1461,7 +1461,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_goto_remote_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1482,7 +1482,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_launch_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1503,7 +1503,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_uri_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1524,7 +1524,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_hide_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1545,7 +1545,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_an_import_data_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1566,7 +1566,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_set_ocg_state_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $layer = $document->addLayer('LayerA');
         $page = $document->addPage();
 
@@ -1588,7 +1588,7 @@ final class PageTest extends TestCase
     public function it_adds_a_push_button_with_a_thread_action_to_the_page_and_document(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1633,7 +1633,7 @@ final class PageTest extends TestCase
     public function it_adds_a_link_annotation_when_text_is_rendered_with_a_link(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addText('Hello', 10, 20, 'Helvetica', 12, link: 'https://example.com');
@@ -1647,7 +1647,7 @@ final class PageTest extends TestCase
     public function it_adds_link_annotations_for_linked_text_segments_in_a_paragraph(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -1670,7 +1670,7 @@ final class PageTest extends TestCase
     public function it_creates_separate_link_annotations_for_distinct_linked_text_segments(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -1706,7 +1706,7 @@ final class PageTest extends TestCase
     public function it_adds_text_to_contents_and_registers_the_font_resource(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, 'P');
@@ -1723,7 +1723,7 @@ final class PageTest extends TestCase
     public function it_can_add_text_without_creating_structure_metadata(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addText('Hello', 10, 20, 'Helvetica', 12);
@@ -1738,7 +1738,7 @@ final class PageTest extends TestCase
     public function it_registers_an_extgstate_and_applies_it_when_adding_text_with_opacity(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, null, null, Opacity::fill(0.5));
@@ -1752,7 +1752,7 @@ final class PageTest extends TestCase
     public function it_applies_text_color_when_adding_text(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addText('Hello', 10, 20, 'Helvetica', 12, color: Color::rgb(255, 0, 0));
@@ -1765,7 +1765,7 @@ final class PageTest extends TestCase
     public function it_does_not_leak_text_color_to_following_text_without_an_explicit_color(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addText('Red', 10, 40, 'Helvetica', 12, color: Color::rgb(255, 0, 0));
@@ -1778,7 +1778,7 @@ final class PageTest extends TestCase
     public function it_rejects_text_that_is_not_supported_by_the_registered_font(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
@@ -1791,7 +1791,7 @@ final class PageTest extends TestCase
     public function it_wraps_a_paragraph_into_multiple_text_lines(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $result = $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, 'P', 12.0, 0.0);
@@ -1807,7 +1807,7 @@ final class PageTest extends TestCase
     public function it_wraps_a_paragraph_without_creating_structure_when_no_tag_is_given(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, null, 12.0, 0.0);
@@ -1821,7 +1821,7 @@ final class PageTest extends TestCase
     public function it_applies_opacity_to_each_line_of_a_wrapped_paragraph(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, null, 12.0, 0.0, null, Opacity::fill(0.5));
@@ -1834,7 +1834,7 @@ final class PageTest extends TestCase
     public function it_applies_color_to_each_line_of_a_wrapped_paragraph(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, null, 12.0, 0.0, Color::gray(0.5));
@@ -1846,7 +1846,7 @@ final class PageTest extends TestCase
     public function it_clips_a_paragraph_to_the_configured_max_lines(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -1869,7 +1869,7 @@ final class PageTest extends TestCase
     public function it_appends_an_ellipsis_when_a_paragraph_is_truncated(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -1893,7 +1893,7 @@ final class PageTest extends TestCase
     public function it_appends_an_ellipsis_to_the_last_visible_segment_style(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -1919,7 +1919,7 @@ final class PageTest extends TestCase
     public function it_can_render_mixed_style_runs_within_a_single_paragraph(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -1943,7 +1943,7 @@ final class PageTest extends TestCase
     public function it_wraps_paragraph_runs_across_line_breaks(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -1967,7 +1967,7 @@ final class PageTest extends TestCase
     public function it_rejects_invalid_paragraph_run_arrays(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
@@ -1984,7 +1984,7 @@ final class PageTest extends TestCase
     public function it_uses_a_bold_standard_font_variant_for_bold_segments(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -2003,7 +2003,7 @@ final class PageTest extends TestCase
     public function it_uses_an_italic_standard_font_variant_for_italic_segments(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Times-Roman');
+        $document->registerFont('Times-Roman');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -2022,7 +2022,7 @@ final class PageTest extends TestCase
     public function it_renders_underlines_and_strikethroughs_for_text_segments(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph(
@@ -2045,7 +2045,7 @@ final class PageTest extends TestCase
     public function it_centers_a_paragraph_within_the_available_width(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, align: HorizontalAlign::CENTER);
@@ -2057,7 +2057,7 @@ final class PageTest extends TestCase
     public function it_right_aligns_a_paragraph_within_the_available_width(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, align: HorizontalAlign::RIGHT);
@@ -2069,7 +2069,7 @@ final class PageTest extends TestCase
     public function it_justifies_automatically_wrapped_lines(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph('Hello world from PDF', 10, 50, 70, 'Helvetica', 10, align: HorizontalAlign::JUSTIFY);
@@ -2082,7 +2082,7 @@ final class PageTest extends TestCase
     public function it_does_not_justify_lines_created_by_hard_line_breaks(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $page = $document->addPage();
 
         $page->addParagraph("Hello world\nfrom PDF", 10, 50, 100, 'Helvetica', 10, align: HorizontalAlign::JUSTIFY);
@@ -2095,7 +2095,7 @@ final class PageTest extends TestCase
     public function it_creates_a_follow_up_page_when_a_paragraph_reaches_the_bottom_margin(): void
     {
         $document = new Document(version: 1.4);
-        $document->addFont('Helvetica');
+        $document->registerFont('Helvetica');
         $firstPage = $document->addPage(100.0, 60.0);
 
         $lastPage = $firstPage->addParagraph(
