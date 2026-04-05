@@ -9,6 +9,7 @@ use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Line;
 use Kalle\Pdf\Element\Path;
+use Kalle\Pdf\Element\Raw;
 use Kalle\Pdf\Element\Rectangle;
 use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
@@ -109,6 +110,27 @@ final class Page extends IndirectObject
                 $size,
                 $link,
             );
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param callable(self): void $renderer
+     */
+    public function layer(string|OptionalContentGroup $layer, callable $renderer, bool $visibleByDefault = true): self
+    {
+        $group = is_string($layer)
+            ? $this->document->ensureOptionalContentGroup($layer, $visibleByDefault)
+            : $layer;
+        $resourceName = $this->resources->addProperty($group);
+
+        $this->contents->addElement(new Raw("/OC /$resourceName BDC"));
+
+        try {
+            $renderer($this);
+        } finally {
+            $this->contents->addElement(new Raw('EMC'));
         }
 
         return $this;

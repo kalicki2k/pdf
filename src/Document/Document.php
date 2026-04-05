@@ -55,6 +55,8 @@ final class Document
     public array $keywords = [];
     /** @var array<string, Page> */
     private array $destinations = [];
+    /** @var array<string, OptionalContentGroup> */
+    private array $optionalContentGroups = [];
     /** @var array{string, string} */
     private array $documentId;
 
@@ -147,6 +149,10 @@ final class Document
 
         if ($this->encryptDictionary !== null) {
             $objects[] = $this->encryptDictionary;
+        }
+
+        foreach ($this->optionalContentGroups as $optionalContentGroup) {
+            $objects[] = $optionalContentGroup;
         }
 
         $objects[] = $this->info;
@@ -293,6 +299,35 @@ final class Document
     public function getDestinations(): array
     {
         return $this->destinations;
+    }
+
+    public function ensureOptionalContentGroup(string $name, bool $visibleByDefault = true): OptionalContentGroup
+    {
+        if ($name === '') {
+            throw new InvalidArgumentException('Optional content group name must not be empty.');
+        }
+
+        if (isset($this->optionalContentGroups[$name])) {
+            return $this->optionalContentGroups[$name];
+        }
+
+        $group = new OptionalContentGroup($this->getUniqObjectId(), $name, $visibleByDefault);
+        $this->optionalContentGroups[$name] = $group;
+
+        return $group;
+    }
+
+    public function addLayer(string $name, bool $visibleByDefault = true): OptionalContentGroup
+    {
+        return $this->ensureOptionalContentGroup($name, $visibleByDefault);
+    }
+
+    /**
+     * @return list<OptionalContentGroup>
+     */
+    public function getOptionalContentGroups(): array
+    {
+        return array_values($this->optionalContentGroups);
     }
 
     /**

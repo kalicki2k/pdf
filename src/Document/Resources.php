@@ -18,6 +18,8 @@ final class Resources extends IndirectObject
     private array $images = [];
     /** @var list<string> */
     private array $extGStates = [];
+    /** @var OptionalContentGroup[] */
+    private array $properties = [];
 
     public function __construct(int $id)
     {
@@ -70,6 +72,19 @@ final class Resources extends IndirectObject
         return 'Im' . count($this->images);
     }
 
+    public function addProperty(OptionalContentGroup $group): string
+    {
+        foreach ($this->properties as $index => $registeredGroup) {
+            if ($registeredGroup->id === $group->id) {
+                return 'OC' . ($index + 1);
+            }
+        }
+
+        $this->properties[] = $group;
+
+        return 'OC' . count($this->properties);
+    }
+
     /**
      * @return list<ImageObject>
      */
@@ -91,6 +106,7 @@ final class Resources extends IndirectObject
         $fontReferences = [];
         $imageReferences = [];
         $extGStateEntries = [];
+        $propertyReferences = [];
 
         foreach ($this->fonts as $index => $registeredFont) {
             $fontReferences['F' . ($index + 1)] = new ReferenceType($registeredFont);
@@ -104,6 +120,10 @@ final class Resources extends IndirectObject
             $imageReferences['Im' . ($index + 1)] = new ReferenceType($registeredImage);
         }
 
+        foreach ($this->properties as $index => $registeredProperty) {
+            $propertyReferences['OC' . ($index + 1)] = new ReferenceType($registeredProperty);
+        }
+
         $dictionary = new DictionaryType([
             'Font' => new DictionaryType($fontReferences),
         ]);
@@ -114,6 +134,10 @@ final class Resources extends IndirectObject
 
         if ($extGStateEntries !== []) {
             $dictionary->add('ExtGState', new DictionaryType($extGStateEntries));
+        }
+
+        if ($propertyReferences !== []) {
+            $dictionary->add('Properties', new DictionaryType($propertyReferences));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

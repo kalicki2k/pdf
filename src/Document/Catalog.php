@@ -47,6 +47,44 @@ final class Catalog extends IndirectObject
             $dictionary->add('AcroForm', new ReferenceType($this->document->acroForm));
         }
 
+        if ($this->document->getOptionalContentGroups() !== []) {
+            $groups = $this->document->getOptionalContentGroups();
+            $onGroups = [];
+            $offGroups = [];
+
+            foreach ($groups as $group) {
+                if ($group->isVisibleByDefault()) {
+                    $onGroups[] = new ReferenceType($group);
+                    continue;
+                }
+
+                $offGroups[] = new ReferenceType($group);
+            }
+
+            $defaultConfiguration = new DictionaryType([
+                'Order' => new \Kalle\Pdf\Types\ArrayType(array_map(
+                    static fn (OptionalContentGroup $group): ReferenceType => new ReferenceType($group),
+                    $groups,
+                )),
+            ]);
+
+            if ($onGroups !== []) {
+                $defaultConfiguration->add('ON', new \Kalle\Pdf\Types\ArrayType($onGroups));
+            }
+
+            if ($offGroups !== []) {
+                $defaultConfiguration->add('OFF', new \Kalle\Pdf\Types\ArrayType($offGroups));
+            }
+
+            $dictionary->add('OCProperties', new DictionaryType([
+                'OCGs' => new \Kalle\Pdf\Types\ArrayType(array_map(
+                    static fn (OptionalContentGroup $group): ReferenceType => new ReferenceType($group),
+                    $groups,
+                )),
+                'D' => $defaultConfiguration,
+            ]));
+        }
+
         if ($this->document->version >= 1.4 && $this->document->structTreeRoot !== null) {
             $dictionary->add('MarkInfo', new DictionaryType([
                 'Marked' => new BooleanType(true),

@@ -43,6 +43,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Push-Buttons unterstuetzen ausserdem `NamedAction` und `GoToAction` fuer Viewer- und Dokumentnavigation
 - Push-Buttons unterstuetzen zusaetzlich `GoToRemoteAction`, `LaunchAction` und `UriAction`
 - Push-Buttons unterstuetzen ausserdem `HideAction`, `ImportDataAction`, `SetOcgStateAction` und `ThreadAction`
+- OCG-/Layer-Grundlagen sind ueber `OptionalContentGroup`, `addLayer(...)` und `Page::layer(...)` vorhanden
 - TextField unterstuetzt `multiline`, `defaultValue` und gemeinsame Feld-Flags ueber `FormFieldFlags`
 - ComboBox unterstuetzt `defaultValue` und editierbare Varianten
 - ListBox unterstuetzt `defaultValue` und Mehrfachauswahl

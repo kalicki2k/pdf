@@ -286,6 +286,7 @@ final class PushButtonAnnotationTest extends TestCase
         $document = new Document(version: 1.4);
         $document->addFont('Helvetica');
         $page = $document->addPage();
+        $layer = $document->addLayer('LayerA');
 
         $annotation = new PushButtonAnnotation(
             7,
@@ -298,10 +299,10 @@ final class PushButtonAnnotationTest extends TestCase
             'Layer',
             'F1',
             12,
-            action: new SetOcgStateAction(['Toggle', 'LayerA'], false),
+            action: new SetOcgStateAction(['Toggle', $layer], false),
         );
 
-        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle /LayerA] /PreserveRB false >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle 8 0 R] /PreserveRB false >>', $annotation->render());
     }
 
     #[Test]

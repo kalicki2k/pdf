@@ -1187,7 +1187,7 @@ $page->addPushButton(
     Units::mm(34),
     Units::mm(35),
     Units::mm(10),
-    action: new SetOcgStateAction(['Toggle', 'LayerA'], preserveRb: false),
+    action: new SetOcgStateAction(['Toggle', $notesLayer], preserveRb: false),
 );
 
 $page->addPushButton(
@@ -1209,10 +1209,41 @@ Wichtig:
 - `multiSelect` erlaubt bei ListBoxen mehrere gleichzeitig gesetzte Werte
 - `addSignatureField(...)` erzeugt aktuell ein sichtbares Signaturfeld als Formular-Widget, aber noch keine echte kryptografische Signatur
 - `addPushButton(...)` unterstuetzt aktuell `SubmitFormAction`, `ResetFormAction`, `JavaScriptAction`, `NamedAction`, `GoToAction`, `GoToRemoteAction`, `LaunchAction`, `UriAction`, `HideAction`, `ImportDataAction`, `SetOcgStateAction` und `ThreadAction`
-- `SetOcgStateAction` bildet aktuell bewusst nur den low-level Action-Pfad ab; ein vollstaendiges OCG-/Layer-Modell gibt es noch nicht
 - `AcroForm` wird automatisch aufgebaut, sobald das erste Feld erzeugt wird
 - Text- und Choice-Felder verlassen sich aktuell noch auf `NeedAppearances`
 - Checkboxen und Radio-Buttons haben bereits eigene Appearance-Streams
+
+### Layer und OCG
+
+```php
+$notesLayer = $document->addLayer('Notes');
+$gridLayer = $document->addLayer('Grid', false);
+
+$page->layer($notesLayer, static function (\Kalle\Pdf\Document\Page $page): void {
+    $page->addText('Interne Hinweise', Units::mm(20), Units::mm(220), 'NotoSans-Regular', 12);
+});
+
+$page->layer($gridLayer, static function (\Kalle\Pdf\Document\Page $page): void {
+    $page->addLine(Units::mm(20), Units::mm(200), Units::mm(190), Units::mm(200), 0.5, Color::gray(0.7));
+});
+
+$page->addPushButton(
+    'toggle_notes',
+    'Notes',
+    Units::mm(20),
+    Units::mm(20),
+    Units::mm(30),
+    Units::mm(8),
+    action: new SetOcgStateAction(['Toggle', $notesLayer], preserveRb: false),
+);
+```
+
+Wichtig:
+
+- `Document::addLayer(...)` erzeugt oder liefert ein `OptionalContentGroup`-Objekt
+- `Page::layer(...)` kapselt Inhalt in `BDC`/`EMC` mit einer echten OCG-Referenz
+- `SetOcgStateAction` arbeitet jetzt mit echten Layer-Referenzen statt nur mit Layer-Namen
+- `example.php` enthaelt dafuer jetzt eine eigene `Layer Demo`- und eine eigene `Action Demo`-Seite
 
 ## Verschluesselung
 

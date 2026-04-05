@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\ImageObject;
+use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Document\Resources;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Font\StandardFont;
@@ -89,6 +90,19 @@ final class ResourcesTest extends TestCase
         self::assertSame('Im1', $resources->addImage($image));
         self::assertSame(
             "8 0 obj\n<< /Font <<  >> /XObject << /Im1 9 0 R >> >>\nendobj\n",
+            $resources->render(),
+        );
+    }
+
+    #[Test]
+    public function it_registers_optional_content_groups_as_properties_resources(): void
+    {
+        $resources = new Resources(8);
+        $group = new OptionalContentGroup(9, 'Notes');
+
+        self::assertSame('OC1', $resources->addProperty($group));
+        self::assertSame(
+            "8 0 obj\n<< /Font <<  >> /Properties << /OC1 9 0 R >> >>\nendobj\n",
             $resources->render(),
         );
     }

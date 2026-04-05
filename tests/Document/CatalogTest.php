@@ -78,4 +78,22 @@ final class CatalogTest extends TestCase
             $catalog->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_optional_content_properties_when_document_layers_exist(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $page->layer('Notes', static function (\Kalle\Pdf\Document\Page $page): void {
+            $page->addRectangle(10, 20, 30, 40);
+        });
+        $catalog = new Catalog(1, $document);
+
+        self::assertSame(
+            "1 0 obj\n"
+            . "<< /Type /Catalog /Pages 2 0 R /OCProperties << /OCGs [7 0 R] /D << /Order [7 0 R] /ON [7 0 R] >> >> >>\n"
+            . "endobj\n",
+            $catalog->render(),
+        );
+    }
 }

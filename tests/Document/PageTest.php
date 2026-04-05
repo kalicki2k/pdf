@@ -109,6 +109,38 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_wraps_layered_page_content_with_optional_content_markers(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->layer('Notes', static function (\Kalle\Pdf\Document\Page $page): void {
+            $page->addText('Layered', 10, 20, 'Helvetica', 12);
+        });
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Properties << /OC1 8 0 R >>', $page->resources->render());
+        self::assertStringContainsString("/OC /OC1 BDC\nq\nBT", $page->contents->render());
+        self::assertStringContainsString("EMC", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_accepts_an_existing_layer_object_for_page_layer_content(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $layer = $document->addLayer('Notes');
+        $page = $document->addPage();
+
+        $page->layer($layer, static function (\Kalle\Pdf\Document\Page $page): void {
+            $page->addText('Layered', 10, 20, 'Helvetica', 12);
+        });
+
+        self::assertStringContainsString('/Properties << /OC1 5 0 R >>', $page->resources->render());
+    }
+
+    #[Test]
     public function it_applies_stroke_color_and_opacity_when_adding_a_line(): void
     {
         $document = new Document(version: 1.4);
@@ -1224,6 +1256,7 @@ final class PageTest extends TestCase
     {
         $document = new Document(version: 1.4);
         $document->addFont('Helvetica');
+        $layer = $document->addLayer('LayerA');
         $page = $document->addPage();
 
         $result = $page->addPushButton(
@@ -1233,11 +1266,11 @@ final class PageTest extends TestCase
             20,
             80,
             16,
-            action: new SetOcgStateAction(['Toggle', 'LayerA'], false),
+            action: new SetOcgStateAction(['Toggle', $layer], false),
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle /LayerA] /PreserveRB false >>', $document->render());
+        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle 5 0 R] /PreserveRB false >>', $document->render());
     }
 
     #[Test]

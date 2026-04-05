@@ -233,6 +233,11 @@ Die Feldtypen sind aktuell so umgesetzt:
   - sichtbares Widget-Feld fuer spaetere Signaturen
   - aktuell noch ohne `V`-Signaturdictionary und ohne kryptografische Signaturerzeugung
 
+- `OptionalContentGroup`
+  - `/Type /OCG`
+  - eigener Layer-Eintrag mit sichtbarem Namen
+  - Registrierung im `Catalog` ueber `/OCProperties`
+
 - `PushButtonAnnotation`
   - `/FT /Btn`
   - Pushbutton-Flag im `/Ff`
@@ -285,7 +290,7 @@ Die Feldtypen sind aktuell so umgesetzt:
 - `SetOcgStateAction`
   - `/S /SetOCGState`
   - schaltet OCG-/Layer-Zustaende ueber `/State [...]`
-  - ist aktuell nur der low-level Action-Pfad ohne vollstaendiges OCG-Modell
+  - akzeptiert `ON`, `OFF`, `Toggle` und echte `OptionalContentGroup`-Referenzen
 
 - `ThreadAction`
   - `/S /Thread`
@@ -312,6 +317,26 @@ Die aktuelle Stufe ist bewusst pragmatisch:
 - Text- und Choice-Felder verlassen sich fuer die Darstellung noch auf `NeedAppearances`
 - Checkboxen und Radio-Buttons haben bereits eigene Appearance-Streams
 - komplexere Formular-Features wie echte digitale Signaturen oder komplett eigene Appearances fuer Text- und Choice-Felder sind noch nicht Teil des Kernpfads
+
+### Optional Content und Layer
+
+Die erste OCG-Stufe ist jetzt als echter Dokumentpfad modelliert.
+
+Die wichtigsten Bausteine sind:
+
+- `OptionalContentGroup`
+- `Document::addLayer(...)`
+- `Page::layer(...)`
+- `Resources::addProperty(...)`
+- `Catalog` mit `/OCProperties`
+
+Der Ablauf ist:
+
+1. `Document::addLayer(...)` liefert ein `OptionalContentGroup`-Objekt.
+2. `Page::layer(...)` registriert dieses Objekt in den Seiten-Resources unter `/Properties`.
+3. Der enthaltene Seiteninhalt wird mit `/OC /OCn BDC ... EMC` umschlossen.
+4. `Catalog` rendert alle bekannten Layer unter `/OCProperties`.
+5. `SetOcgStateAction` kann diese Layer danach ueber echte OCG-Referenzen schalten.
 
 ### TextFrame
 

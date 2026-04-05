@@ -5,13 +5,20 @@ declare(strict_types=1);
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Document\GoToAction;
+use Kalle\Pdf\Document\GoToRemoteAction;
+use Kalle\Pdf\Document\HideAction;
+use Kalle\Pdf\Document\ImportDataAction;
 use Kalle\Pdf\Document\JavaScriptAction;
+use Kalle\Pdf\Document\LaunchAction;
 use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\ResetFormAction;
+use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\SubmitFormAction;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\ThreadAction;
+use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -966,6 +973,270 @@ $backgroundPage->addBadge(
     ),
 );
 
+$notesLayer = $document->addLayer('Notes');
+$gridLayer = $document->addLayer('Grid', false);
+
+$actionPage = $document->addPage(PageSize::A4());
+$actionPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Action Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Diese Seite sammelt alle aktuellen Push-Button-Actions auf einen Blick.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$actionPage->addPanel(
+    'Die Buttons unten decken Submit, Reset, JavaScript, Navigation, Datei-, URI- und Layer-Actions ab.',
+    Units::mm(20),
+    Units::mm(210),
+    Units::mm(170),
+    Units::mm(28),
+    'Uebersicht',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::gray(0.96),
+        borderWidth: 1.0,
+        borderColor: Color::gray(0.75),
+    ),
+);
+
+$buttonWidth = Units::mm(38);
+$buttonHeight = Units::mm(9);
+$firstColumnX = Units::mm(20);
+$secondColumnX = Units::mm(65);
+$thirdColumnX = Units::mm(110);
+$fourthColumnX = Units::mm(155);
+
+$row1Y = Units::mm(185);
+$row2Y = Units::mm(172);
+$row3Y = Units::mm(159);
+
+$actionPage->addPushButton(
+    'demo_submit',
+    'Submit',
+    $firstColumnX,
+    $row1Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new SubmitFormAction('https://example.com/form-submit'),
+);
+$actionPage->addPushButton(
+    'demo_reset',
+    'Reset',
+    $secondColumnX,
+    $row1Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new ResetFormAction(),
+);
+$actionPage->addPushButton(
+    'demo_js',
+    'JavaScript',
+    $thirdColumnX,
+    $row1Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new JavaScriptAction("app.alert('Action Demo');"),
+);
+$actionPage->addPushButton(
+    'demo_named',
+    'PrevPage',
+    $fourthColumnX,
+    $row1Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new NamedAction('PrevPage'),
+);
+
+$actionPage->addPushButton(
+    'demo_goto',
+    'GoTo',
+    $firstColumnX,
+    $row2Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new GoToAction('table-demo'),
+);
+$actionPage->addPushButton(
+    'demo_gotor',
+    'GoToR',
+    $secondColumnX,
+    $row2Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new GoToRemoteAction('guide.pdf', 'chapter-1'),
+);
+$actionPage->addPushButton(
+    'demo_launch',
+    'Launch',
+    $thirdColumnX,
+    $row2Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new LaunchAction('guide.pdf'),
+);
+$actionPage->addPushButton(
+    'demo_uri',
+    'URI',
+    $fourthColumnX,
+    $row2Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new UriAction('https://example.com'),
+);
+
+$actionPage->addPushButton(
+    'demo_hide',
+    'Hide',
+    $firstColumnX,
+    $row3Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new HideAction('notes_panel'),
+);
+$actionPage->addPushButton(
+    'demo_import',
+    'Import',
+    $secondColumnX,
+    $row3Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new ImportDataAction('form-data.fdf'),
+);
+$actionPage->addPushButton(
+    'demo_ocg',
+    'Layer',
+    $thirdColumnX,
+    $row3Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new SetOcgStateAction(['Toggle', $notesLayer], false),
+);
+$actionPage->addPushButton(
+    'demo_thread',
+    'Thread',
+    $fourthColumnX,
+    $row3Y,
+    $buttonWidth,
+    $buttonHeight,
+    action: new ThreadAction('article-1', 'threads.pdf'),
+);
+
+$layerPage = $document->addPage(PageSize::A4());
+$layerPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Layer Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Diese Seite zeigt echte OCG-Layer. Hinweise und Raster liegen auf eigenen Ebenen und koennen ueber Buttons geschaltet werden.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$layerPage->addPanel(
+    'Der Basisinhalt liegt ausserhalb der Layer und bleibt immer sichtbar.',
+    Units::mm(20),
+    Units::mm(180),
+    Units::mm(75),
+    Units::mm(35),
+    'Basis',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::gray(0.95),
+        borderWidth: 1.0,
+        borderColor: Color::gray(0.75),
+    ),
+);
+
+$layerPage->layer($notesLayer, static function (Page $page): void {
+    $page->addPanel(
+        'Dieser Hinweis liegt auf dem Layer Notes.',
+        Units::mm(110),
+        Units::mm(180),
+        Units::mm(80),
+        Units::mm(35),
+        'Notes',
+        'NotoSans-Regular',
+        new PanelStyle(
+            cornerRadius: Units::mm(2),
+            fillColor: Color::rgb(255, 248, 220),
+            titleColor: Color::rgb(160, 90, 20),
+            bodyColor: Color::rgb(120, 80, 20),
+            borderWidth: 1.0,
+            borderColor: Color::rgb(180, 130, 40),
+        ),
+    );
+});
+
+$layerPage->layer($gridLayer, static function (Page $page): void {
+    for ($x = 20; $x <= 190; $x += 10) {
+        $page->addLine(
+            Units::mm((float) $x),
+            Units::mm(60),
+            Units::mm((float) $x),
+            Units::mm(170),
+            0.35,
+            Color::gray(0.75),
+            Opacity::stroke(0.35),
+        );
+    }
+
+    for ($y = 60; $y <= 170; $y += 10) {
+        $page->addLine(
+            Units::mm(20),
+            Units::mm((float) $y),
+            Units::mm(190),
+            Units::mm((float) $y),
+            0.35,
+            Color::gray(0.75),
+            Opacity::stroke(0.35),
+        );
+    }
+});
+
+$layerPage->addPushButton(
+    'toggle_notes',
+    'Notes',
+    Units::mm(20),
+    Units::mm(145),
+    Units::mm(35),
+    Units::mm(10),
+    action: new SetOcgStateAction(['Toggle', $notesLayer], false),
+);
+
+$layerPage->addPushButton(
+    'toggle_grid',
+    'Grid',
+    Units::mm(60),
+    Units::mm(145),
+    Units::mm(35),
+    Units::mm(10),
+    action: new SetOcgStateAction(['Toggle', $gridLayer], false),
+);
+
+$layerPage->addPushButton(
+    'show_all_layers',
+    'Alle an',
+    Units::mm(100),
+    Units::mm(145),
+    Units::mm(40),
+    Units::mm(10),
+    action: new SetOcgStateAction(['ON', $notesLayer, 'ON', $gridLayer], false),
+);
+
+$layerPage->addText(
+    text: 'Zur Form Demo springen',
+    x: Units::mm(20),
+    y: Units::mm(130),
+    baseFont: 'NotoSans-Regular',
+    size: 11,
+    color: Color::rgb(0, 0, 255),
+    underline: true,
+    link: '#form-demo',
+);
+
 $formPage = $document->addPage(PageSize::A4());
 $formPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
     ->heading('Form Demo', 'NotoSans-Regular', 16, 'H1')
@@ -1230,6 +1501,9 @@ $formPage->addPanel(
 
 $document
     ->addDestination('table-demo', $tablePage)
+    ->addDestination('action-demo', $actionPage)
+    ->addDestination('layer-demo', $layerPage)
+    ->addDestination('form-demo', $formPage)
     ->addOutline('Noto Sans', $sansPage)
     ->addOutline('Noto Serif', $serifPage)
     ->addOutline('Noto Sans Mono', $monoPage)
@@ -1244,6 +1518,8 @@ $document
     ->addOutline('Panel Demo', $panelPage)
     ->addOutline('Callout Demo', $calloutPage)
     ->addOutline('Background Demo', $backgroundPage)
+    ->addOutline('Action Demo', $actionPage)
+    ->addOutline('Layer Demo', $layerPage)
     ->addOutline('Form Demo', $formPage);
 
 $document->addTableOfContents(
