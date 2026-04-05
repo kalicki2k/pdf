@@ -1,6 +1,6 @@
 # Getting Started
 
-Diese Library erzeugt PDFs direkt aus PHP. Der aktuelle Fokus liegt auf einer kleinen, klaren API fuer Dokumente, Seiten, Text, Fonts, Bilder und erste grafische Primitive.
+Diese Library erzeugt PDFs direkt aus PHP. Der aktuelle Fokus liegt auf einer kleinen, klaren API fuer Dokumente, Seiten, Text, Fonts, Bilder, Formulare und grafische Primitive.
 
 ## Voraussetzungen
 
@@ -53,6 +53,7 @@ Alle Dateien verwenden im Beispiel das Passwort `secret`.
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Styles\CellStyle;
@@ -259,6 +260,49 @@ $page->addCallout(
     'NotoSans-Regular',
 );
 
+$page->addText('Name', Units::mm(20), Units::mm(25), 'Helvetica', 11);
+$page->addTextField(
+    'customer_name',
+    Units::mm(20),
+    Units::mm(12),
+    Units::mm(70),
+    Units::mm(10),
+    'Ada Lovelace',
+    'Helvetica',
+    11,
+    defaultValue: 'Grace Hopper',
+);
+
+$page->addText('Land', Units::mm(100), Units::mm(25), 'Helvetica', 11);
+$page->addComboBox(
+    'country',
+    Units::mm(100),
+    Units::mm(12),
+    Units::mm(50),
+    Units::mm(10),
+    [
+        'de' => 'Deutschland',
+        'at' => 'Oesterreich',
+        'ch' => 'Schweiz',
+    ],
+    'de',
+    'Helvetica',
+    11,
+    defaultValue: 'at',
+);
+
+$page->addCheckbox(
+    'accept_terms',
+    Units::mm(160),
+    Units::mm(14),
+    Units::mm(5),
+    true,
+);
+
+$page->addText('Akzeptiert', Units::mm(168), Units::mm(14), 'Helvetica', 11);
+$page->addRadioButton('delivery', 'standard', Units::mm(20), Units::mm(2), Units::mm(5), true);
+$page->addRadioButton('delivery', 'express', Units::mm(55), Units::mm(2), Units::mm(5), false);
+
 $page->addTable(
     Units::mm(20),
     Units::mm(135),
@@ -349,8 +393,9 @@ file_put_contents('hello.pdf', $pdfContent);
 14. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
 15. `addOutline(...)` registriert Bookmarks fuer die Viewer-Navigation im PDF.
 16. `addDestination(...)` registriert benannte interne Sprungziele.
-17. `addTableOfContents(...)` erzeugt ein klickbares Inhaltsverzeichnis aus vorhandenen Outlines.
-18. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
+17. `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)` decken die erste AcroForm-Stufe ab.
+18. `addTableOfContents(...)` erzeugt ein klickbares Inhaltsverzeichnis aus vorhandenen Outlines.
+19. `render()` gibt den kompletten PDF-Inhalt als String zurueck.
 
 ## Tabellen
 
@@ -823,6 +868,186 @@ $frame->paragraph(
 );
 ```
 
+## Formulare
+
+Die Library unterstuetzt aktuell eine erste AcroForm-Stufe ueber Widget-Annotationen.
+
+Vorhandene Feldtypen:
+
+- `addTextField(...)`
+- `addCheckbox(...)`
+- `addRadioButton(...)`
+- `addComboBox(...)`
+- `addListBox(...)`
+
+### TextField
+
+```php
+$page->addTextField(
+    'customer_name',
+    Units::mm(20),
+    Units::mm(200),
+    Units::mm(80),
+    Units::mm(10),
+    'Ada Lovelace',
+    'Helvetica',
+    11,
+    defaultValue: 'Grace Hopper',
+);
+```
+
+Mehrzeilige Felder:
+
+```php
+$page->addTextField(
+    'notes',
+    Units::mm(20),
+    Units::mm(160),
+    Units::mm(80),
+    Units::mm(20),
+    "Erste Zeile\nZweite Zeile",
+    'Helvetica',
+    11,
+    multiline: true,
+);
+```
+
+Feld-Flags:
+
+```php
+$page->addTextField(
+    'pin',
+    Units::mm(20),
+    Units::mm(140),
+    Units::mm(40),
+    Units::mm(10),
+    '1234',
+    'Helvetica',
+    11,
+    flags: new FormFieldFlags(
+        required: true,
+        password: true,
+    ),
+);
+```
+
+### Checkbox
+
+```php
+$page->addCheckbox(
+    'accept_terms',
+    Units::mm(20),
+    Units::mm(120),
+    Units::mm(6),
+    true,
+);
+```
+
+### RadioButton
+
+```php
+$page->addRadioButton('delivery', 'standard', Units::mm(20), Units::mm(100), Units::mm(6), true);
+$page->addRadioButton('delivery', 'express', Units::mm(50), Units::mm(100), Units::mm(6), false);
+```
+
+Radio-Buttons mit demselben Feldnamen bilden automatisch eine Gruppe.
+
+### ComboBox
+
+```php
+$page->addComboBox(
+    'country',
+    Units::mm(20),
+    Units::mm(80),
+    Units::mm(60),
+    Units::mm(10),
+    [
+        'de' => 'Deutschland',
+        'at' => 'Oesterreich',
+        'ch' => 'Schweiz',
+    ],
+    'de',
+    'Helvetica',
+    11,
+    defaultValue: 'at',
+);
+```
+
+Editierbare ComboBox:
+
+```php
+$page->addComboBox(
+    'custom_country',
+    Units::mm(90),
+    Units::mm(80),
+    Units::mm(60),
+    Units::mm(10),
+    [
+        'de' => 'Deutschland',
+        'at' => 'Oesterreich',
+        'ch' => 'Schweiz',
+    ],
+    'de',
+    'Helvetica',
+    11,
+    flags: new FormFieldFlags(editable: true),
+    defaultValue: 'at',
+);
+```
+
+### ListBox
+
+```php
+$page->addListBox(
+    'topics',
+    Units::mm(20),
+    Units::mm(40),
+    Units::mm(60),
+    Units::mm(25),
+    [
+        'pdf' => 'PDF',
+        'forms' => 'Forms',
+        'tables' => 'Tables',
+    ],
+    'forms',
+    'Helvetica',
+    11,
+    defaultValue: 'pdf',
+);
+```
+
+Mehrfachauswahl:
+
+```php
+$page->addListBox(
+    'topic_selection',
+    Units::mm(90),
+    Units::mm(40),
+    Units::mm(60),
+    Units::mm(25),
+    [
+        'pdf' => 'PDF',
+        'forms' => 'Forms',
+        'tables' => 'Tables',
+    ],
+    ['pdf', 'forms'],
+    'Helvetica',
+    11,
+    flags: new FormFieldFlags(multiSelect: true),
+    defaultValue: ['forms', 'tables'],
+);
+```
+
+Wichtig:
+
+- `value` und `defaultValue` muessen bei ComboBox und ListBox auf vorhandene Export-Werte in `options` zeigen
+- `defaultValue` wird als `DV` im PDF gespeichert
+- `editable` aktiviert bei ComboBoxen Freitext-Eingabe zusaetzlich zu den vorhandenen Optionen
+- `multiSelect` erlaubt bei ListBoxen mehrere gleichzeitig gesetzte Werte
+- `AcroForm` wird automatisch aufgebaut, sobald das erste Feld erzeugt wird
+- Text- und Choice-Felder verlassen sich aktuell noch auf `NeedAppearances`
+- Checkboxen und Radio-Buttons haben bereits eigene Appearance-Streams
+
 ## Verschluesselung
 
 Die Library kann Dokumente aktuell ueber den Standard-Security-Handler verschluesseln.
@@ -884,6 +1109,7 @@ Der derzeit belastbare Einstieg ist:
 - klickbare Links ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link`
 - interne Spruenge ueber `addDestination(...)`, `addInternalLink(...)` und `#ziel`
 - Passwortverschluesselung ueber `encrypt(...)` fuer `RC4_40`, `RC4_128`, `AES_128` und `AES_256`
+- Formularfelder ueber `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)`
 
 ## Aktuelle Grenzen
 
@@ -894,6 +1120,8 @@ Der Codebestand enthaelt bereits weitere Bausteine, aber fuer den Einstieg sollt
 - grafische Primitive sind aktuell auf Linien und Rechtecke fokussiert
 - `underline` und `strikethrough` sind aktuell heuristisch positioniert und noch nicht ueber Font-Metriken feinjustiert
 - `bold` und `italic` fuer Embedded Fonts haengen derzeit an benannten Font-Varianten wie `-Bold` oder `-Italic`
+- Text- und Choice-Felder haben aktuell noch keine komplett eigene Appearance-Generierung
+- Signaturfelder und komplett eigene Appearances fuer Text-/Choice-Felder sind noch nicht Teil der aktuellen Formular-Stufe
 - die Doku wird schrittweise parallel zum Code aufgebaut
 
 ## Naechste Datei

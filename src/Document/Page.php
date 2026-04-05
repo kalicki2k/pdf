@@ -35,7 +35,7 @@ final class Page extends IndirectObject
     private const DEFAULT_BOTTOM_MARGIN = 20.0;
 
     private int $markedContentId = 0;
-    /** @var list<LinkAnnotation> */
+    /** @var list<IndirectObject&PageAnnotation> */
     private array $annotations = [];
     public Contents $contents;
     public Resources $resources;
@@ -1125,6 +1125,322 @@ final class Page extends IndirectObject
         return $this;
     }
 
+    public function addTextField(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $value = null,
+        string $baseFont = 'Helvetica',
+        int $size = 12,
+        bool $multiline = false,
+        ?Color $textColor = null,
+        ?FormFieldFlags $flags = null,
+        ?string $defaultValue = null,
+    ): self {
+        if ($name === '') {
+            throw new InvalidArgumentException('Text field name must not be empty.');
+        }
+
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Text field width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Text field height must be greater than zero.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Text field font size must be greater than zero.');
+        }
+
+        $font = $this->resolveFont($baseFont);
+        $acroForm = $this->document->ensureAcroForm();
+        $fontResourceName = $acroForm->registerFont($font);
+        $annotation = new TextFieldAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $name,
+            $value,
+            $fontResourceName,
+            $size,
+            $multiline,
+            $flags,
+            $textColor,
+            $defaultValue,
+        );
+
+        $acroForm->addField($annotation);
+        $this->annotations[] = $annotation;
+
+        return $this;
+    }
+
+    public function addCheckbox(
+        string $name,
+        float $x,
+        float $y,
+        float $size,
+        bool $checked = false,
+    ): self {
+        if ($name === '') {
+            throw new InvalidArgumentException('Checkbox name must not be empty.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Checkbox size must be greater than zero.');
+        }
+
+        $acroForm = $this->document->ensureAcroForm();
+        $annotation = new CheckboxAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $size,
+            $size,
+            $name,
+            $checked,
+            new CheckboxAppearanceStream($this->document->getUniqObjectId(), $size, $size, false),
+            new CheckboxAppearanceStream($this->document->getUniqObjectId(), $size, $size, true),
+        );
+
+        $acroForm->addField($annotation);
+        $this->annotations[] = $annotation;
+
+        return $this;
+    }
+
+    public function addRadioButton(
+        string $name,
+        string $value,
+        float $x,
+        float $y,
+        float $size,
+        bool $checked = false,
+    ): self {
+        if ($name === '') {
+            throw new InvalidArgumentException('Radio button name must not be empty.');
+        }
+
+        if ($value === '' || !preg_match('/^[A-Za-z0-9._-]+$/', $value)) {
+            throw new InvalidArgumentException('Radio button value may contain only letters, numbers, dots, underscores and hyphens.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Radio button size must be greater than zero.');
+        }
+
+        $acroForm = $this->document->ensureAcroForm();
+        $group = $acroForm->getOrCreateRadioGroup($name, $this->document->getUniqObjectId());
+        $annotation = new RadioButtonWidgetAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $group,
+            $x,
+            $y,
+            $size,
+            $value,
+            $checked,
+            new RadioButtonAppearanceStream($this->document->getUniqObjectId(), $size, false),
+            new RadioButtonAppearanceStream($this->document->getUniqObjectId(), $size, true),
+        );
+
+        $group->addWidget($annotation, $value, $checked);
+        $this->annotations[] = $annotation;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, string> $options
+     */
+    public function addComboBox(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $options,
+        ?string $value = null,
+        string $baseFont = 'Helvetica',
+        int $size = 12,
+        ?Color $textColor = null,
+        ?FormFieldFlags $flags = null,
+        ?string $defaultValue = null,
+    ): self {
+        if ($name === '') {
+            throw new InvalidArgumentException('Combo box name must not be empty.');
+        }
+
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Combo box width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Combo box height must be greater than zero.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Combo box font size must be greater than zero.');
+        }
+
+        if ($options === []) {
+            throw new InvalidArgumentException('Combo box options must not be empty.');
+        }
+
+        foreach ($options as $exportValue => $label) {
+            if ($exportValue === '') {
+                throw new InvalidArgumentException('Combo box option values must not be empty.');
+            }
+
+            if ($label === '') {
+                throw new InvalidArgumentException('Combo box option labels must not be empty.');
+            }
+        }
+
+        if ($value !== null && !array_key_exists($value, $options)) {
+            throw new InvalidArgumentException('Combo box value must reference one of the available options.');
+        }
+
+        if ($defaultValue !== null && !array_key_exists($defaultValue, $options)) {
+            throw new InvalidArgumentException('Combo box default value must reference one of the available options.');
+        }
+
+        $font = $this->resolveFont($baseFont);
+        $acroForm = $this->document->ensureAcroForm();
+        $fontResourceName = $acroForm->registerFont($font);
+        $annotation = new ComboBoxAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $name,
+            $options,
+            $value,
+            $fontResourceName,
+            $size,
+            $flags,
+            $textColor,
+            $defaultValue,
+        );
+
+        $acroForm->addField($annotation);
+        $this->annotations[] = $annotation;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, string> $options
+     * @param list<string>|string|null $value
+     * @param list<string>|string|null $defaultValue
+     */
+    public function addListBox(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $options,
+        string|array|null $value = null,
+        string $baseFont = 'Helvetica',
+        int $size = 12,
+        ?Color $textColor = null,
+        ?FormFieldFlags $flags = null,
+        string|array|null $defaultValue = null,
+    ): self {
+        if ($name === '') {
+            throw new InvalidArgumentException('List box name must not be empty.');
+        }
+
+        if ($width <= 0) {
+            throw new InvalidArgumentException('List box width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('List box height must be greater than zero.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('List box font size must be greater than zero.');
+        }
+
+        if ($options === []) {
+            throw new InvalidArgumentException('List box options must not be empty.');
+        }
+
+        foreach ($options as $exportValue => $label) {
+            if ($exportValue === '') {
+                throw new InvalidArgumentException('List box option values must not be empty.');
+            }
+
+            if ($label === '') {
+                throw new InvalidArgumentException('List box option labels must not be empty.');
+            }
+        }
+
+        $this->assertListBoxSelectionExists($value, $options, 'List box value must reference one of the available options.');
+        $this->assertListBoxSelectionExists($defaultValue, $options, 'List box default value must reference one of the available options.');
+
+        $font = $this->resolveFont($baseFont);
+        $acroForm = $this->document->ensureAcroForm();
+        $fontResourceName = $acroForm->registerFont($font);
+        $annotation = new ListBoxAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $name,
+            $options,
+            $value,
+            $fontResourceName,
+            $size,
+            $flags,
+            $textColor,
+            $defaultValue,
+        );
+
+        $acroForm->addField($annotation);
+        $this->annotations[] = $annotation;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, string> $options
+     * @param list<string>|string|null $value
+     */
+    private function assertListBoxSelectionExists(string|array|null $value, array $options, string $message): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        if (is_string($value)) {
+            if (!array_key_exists($value, $options)) {
+                throw new InvalidArgumentException($message);
+            }
+
+            return;
+        }
+
+        foreach ($value as $selectedValue) {
+            if (!array_key_exists($selectedValue, $options)) {
+                throw new InvalidArgumentException($message);
+            }
+        }
+    }
+
     public function render(): string
     {
         $dictionary = new DictionaryType([
@@ -1143,7 +1459,7 @@ final class Page extends IndirectObject
             $dictionary->add(
                 'Annots',
                 new ArrayType(array_map(
-                    static fn (LinkAnnotation $annotation): ReferenceType => new ReferenceType($annotation),
+                    static fn (IndirectObject $annotation): ReferenceType => new ReferenceType($annotation),
                     $this->annotations,
                 )),
             );
@@ -1170,7 +1486,7 @@ final class Page extends IndirectObject
     }
 
     /**
-     * @return list<LinkAnnotation>
+     * @return list<IndirectObject&PageAnnotation>
      */
     public function getAnnotations(): array
     {

@@ -36,6 +36,10 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Badges sind als kleines zusammengesetztes Label-Element ueber `addBadge(...)` verfuegbar
 - Panels sind als einfache Hinweis- und Infoboxen ueber `addPanel(...)` verfuegbar
 - Callouts sind als Hinweisboxen mit Pointer ueber `addCallout(...)` verfuegbar
+- AcroForm ist vorhanden und deckt TextField, Checkbox, RadioButton, ComboBox und ListBox ab
+- TextField unterstuetzt `multiline`, `defaultValue` und gemeinsame Feld-Flags ueber `FormFieldFlags`
+- ComboBox unterstuetzt `defaultValue` und editierbare Varianten
+- ListBox unterstuetzt `defaultValue` und Mehrfachauswahl
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
 - Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
@@ -69,6 +73,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Outline-/Bookmark-API fuer Viewer-Navigation
 - erste interne Dokument-Navigation ueber benannte Ziele
 - erste Verschluesselungs-API ueber `encrypt(...)`, `EncryptionOptions` und versionsabhaengige Profile
+- erste Formular-API ueber `AcroForm`, Widget-Annotationen und mehrere Feldtypen
 
 ## Prioritaeten
 
@@ -119,6 +124,7 @@ Naechste Kandidaten:
 - Ausbau der Bild-API, vor allem fuer Performance bei grossen PNG-Dateien mit Alpha-Kanal
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
 - weiterer Ausbau der PDF-Security, vor allem klare Trennung zwischen aktuellem `AES_256`-R5-Pfad und spaeterem `R6`
+- Formular-Feinschliff, vor allem eigene Appearances fuer Text-/Choice-Felder und spaeter Signaturfelder
 
 Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
 

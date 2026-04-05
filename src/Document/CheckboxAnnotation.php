@@ -11,7 +11,7 @@ use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class LinkAnnotation extends IndirectObject implements PageAnnotation
+final class CheckboxAnnotation extends IndirectObject implements PageAnnotation
 {
     public function __construct(
         int $id,
@@ -20,17 +20,22 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
         private readonly float $y,
         private readonly float $width,
         private readonly float $height,
-        private readonly string $target,
-        private readonly bool $internal = false,
+        private readonly string $name,
+        private readonly bool $checked,
+        private readonly CheckboxAppearanceStream $offAppearance,
+        private readonly CheckboxAppearanceStream $onAppearance,
     ) {
         parent::__construct($id);
     }
 
     public function render(): string
     {
+        $state = $this->checked ? 'Yes' : 'Off';
+
         $dictionary = new DictionaryType([
             'Type' => new NameType('Annot'),
-            'Subtype' => new NameType('Link'),
+            'Subtype' => new NameType('Widget'),
+            'FT' => new NameType('Btn'),
             'Rect' => new ArrayType([
                 $this->x,
                 $this->y,
@@ -39,16 +44,16 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
             ]),
             'Border' => new ArrayType([0, 0, 0]),
             'P' => new ReferenceType($this->page),
+            'T' => new StringType($this->name),
+            'V' => new NameType($state),
+            'AS' => new NameType($state),
+            'AP' => new DictionaryType([
+                'N' => new DictionaryType([
+                    'Off' => new ReferenceType($this->offAppearance),
+                    'Yes' => new ReferenceType($this->onAppearance),
+                ]),
+            ]),
         ]);
-
-        if ($this->internal) {
-            $dictionary->add('Dest', new NameType($this->target));
-        } else {
-            $dictionary->add('A', new DictionaryType([
-                'S' => new NameType('URI'),
-                'URI' => new StringType($this->target),
-            ]));
-        }
 
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
@@ -57,6 +62,6 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
 
     public function getRelatedObjects(): array
     {
-        return [];
+        return [$this->offAppearance, $this->onAppearance];
     }
 }

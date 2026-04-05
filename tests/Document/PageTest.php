@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
@@ -653,6 +654,315 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/Annots [7 0 R]', $page->render());
         self::assertStringContainsString('/Subtype /Link', $document->render());
         self::assertStringContainsString('/URI (https://example.com)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_text_field_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addTextField('customer_name', 10, 20, 80, 12, 'Ada', 'Helvetica', 12);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Annots [9 0 R]', $page->render());
+        self::assertStringContainsString('/AcroForm 8 0 R', $document->render());
+        self::assertStringContainsString('/Subtype /Widget', $document->render());
+        self::assertStringContainsString('/FT /Tx', $document->render());
+        self::assertStringContainsString('/T (customer_name)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_multiline_text_field_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addTextField('notes', 10, 20, 80, 30, "Line 1\nLine 2", 'Helvetica', 12, true);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/FT /Tx', $document->render());
+        self::assertStringContainsString('/T (notes)', $document->render());
+        self::assertStringContainsString('/Ff 4096', $document->render());
+        self::assertStringContainsString('/V (Line 1\\nLine 2)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_text_field_flags_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addTextField(
+            'secret',
+            10,
+            20,
+            80,
+            12,
+            'value',
+            'Helvetica',
+            12,
+            false,
+            null,
+            new FormFieldFlags(readOnly: true, required: true, password: true),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Ff 8195', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_default_value_to_the_text_field_annotation(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addTextField('customer_name', 10, 20, 80, 12, 'Ada', 'Helvetica', 12, defaultValue: 'Grace');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/V (Ada)', $document->render());
+        self::assertStringContainsString('/DV (Grace)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_checkbox_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addCheckbox('accept_terms', 10, 20, 12, true);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Widget', $document->render());
+        self::assertStringContainsString('/FT /Btn', $document->render());
+        self::assertStringContainsString('/T (accept_terms)', $document->render());
+        self::assertStringContainsString('/V /Yes', $document->render());
+        self::assertStringContainsString('/AP << /N << /Off', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_radio_buttons_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addRadioButton('delivery', 'standard', 10, 20, 12, true);
+        $result = $page->addRadioButton('delivery', 'express', 30, 20, 12, false);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/FT /Btn', $document->render());
+        self::assertStringContainsString('/T (delivery)', $document->render());
+        self::assertStringContainsString('/Ff 49152', $document->render());
+        self::assertStringContainsString('/V /standard', $document->render());
+        self::assertStringContainsString('/AS /standard', $document->render());
+        self::assertStringContainsString('/AS /Off', $document->render());
+        self::assertStringContainsString('/Kids [', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_combo_box_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addComboBox(
+            'country',
+            10,
+            20,
+            80,
+            12,
+            ['de' => 'Deutschland', 'at' => 'Oesterreich'],
+            'de',
+            'Helvetica',
+            12,
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/FT /Ch', $document->render());
+        self::assertStringContainsString('/Ff 131072', $document->render());
+        self::assertStringContainsString('/T (country)', $document->render());
+        self::assertStringContainsString('/Opt [[(de) (Deutschland)] [(at) (Oesterreich)]]', $document->render());
+        self::assertStringContainsString('/V (de)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_default_value_to_the_combo_box_annotation(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addComboBox(
+            'country',
+            10,
+            20,
+            80,
+            12,
+            ['de' => 'Deutschland', 'at' => 'Oesterreich'],
+            'de',
+            'Helvetica',
+            12,
+            defaultValue: 'at',
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/V (de)', $document->render());
+        self::assertStringContainsString('/DV (at)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_an_editable_combo_box_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addComboBox(
+            'country',
+            10,
+            20,
+            80,
+            12,
+            ['de' => 'Deutschland'],
+            'de',
+            'Helvetica',
+            12,
+            flags: new FormFieldFlags(editable: true),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Ff 393216', $document->render());
+    }
+
+    #[Test]
+    public function it_rejects_invalid_combo_box_default_values(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Combo box default value must reference one of the available options.');
+
+        $page->addComboBox(
+            'country',
+            10,
+            20,
+            80,
+            12,
+            ['de' => 'Deutschland'],
+            'de',
+            'Helvetica',
+            12,
+            defaultValue: 'at',
+        );
+    }
+
+    #[Test]
+    public function it_adds_a_list_box_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addListBox(
+            'topics',
+            10,
+            20,
+            80,
+            40,
+            ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
+            'forms',
+            'Helvetica',
+            12,
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/FT /Ch', $document->render());
+        self::assertStringContainsString('/T (topics)', $document->render());
+        self::assertStringContainsString('/Opt [[(pdf) (PDF)] [(forms) (Forms)] [(tables) (Tables)]]', $document->render());
+        self::assertStringContainsString('/V (forms)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_default_value_to_the_list_box_annotation(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addListBox(
+            'topics',
+            10,
+            20,
+            80,
+            40,
+            ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
+            'forms',
+            'Helvetica',
+            12,
+            defaultValue: 'pdf',
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/V (forms)', $document->render());
+        self::assertStringContainsString('/DV (pdf)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_multi_select_list_box_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addListBox(
+            'topics',
+            10,
+            20,
+            80,
+            40,
+            ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
+            ['pdf', 'forms'],
+            'Helvetica',
+            12,
+            flags: new FormFieldFlags(multiSelect: true),
+            defaultValue: ['forms', 'tables'],
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Ff 2097152', $document->render());
+        self::assertStringContainsString('/V [(pdf) (forms)]', $document->render());
+        self::assertStringContainsString('/DV [(forms) (tables)]', $document->render());
+    }
+
+    #[Test]
+    public function it_rejects_invalid_list_box_default_values(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('List box default value must reference one of the available options.');
+
+        $page->addListBox(
+            'topics',
+            10,
+            20,
+            80,
+            40,
+            ['pdf' => 'PDF'],
+            'pdf',
+            'Helvetica',
+            12,
+            defaultValue: 'forms',
+        );
     }
 
     #[Test]

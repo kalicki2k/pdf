@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextSegment;
@@ -960,6 +961,209 @@ $backgroundPage->addBadge(
     ),
 );
 
+$formPage = $document->addPage(PageSize::A4());
+$formPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Form Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Diese Seite zeigt die erste Formularstufe mit einfachen Textfeldern ueber ein AcroForm.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$formPage->addText('Name', Units::mm(20), Units::mm(225), 'Helvetica', 11);
+$formPage->addTextField(
+    'customer_name',
+    Units::mm(20),
+    Units::mm(210),
+    Units::mm(70),
+    Units::mm(10),
+    'Ada Lovelace',
+    'Helvetica',
+    11,
+    defaultValue: 'Grace Hopper',
+);
+
+$formPage->addText('E-Mail', Units::mm(20), Units::mm(190), 'Helvetica', 11);
+$formPage->addTextField(
+    'customer_email',
+    Units::mm(20),
+    Units::mm(175),
+    Units::mm(90),
+    Units::mm(10),
+    'ada@example.com',
+    'Helvetica',
+    11,
+    false,
+    null,
+    new FormFieldFlags(required: true),
+);
+
+$formPage->addCheckbox(
+    'accept_terms',
+    Units::mm(20),
+    Units::mm(150),
+    Units::mm(6),
+    true,
+);
+$formPage->addText(
+    'Ich bestaetige die Testdaten fuer dieses Formular.',
+    Units::mm(30),
+    Units::mm(151),
+    'Helvetica',
+    11,
+);
+
+$formPage->addText('Versand', Units::mm(20), Units::mm(132), 'Helvetica', 11);
+$formPage->addRadioButton(
+    'delivery',
+    'standard',
+    Units::mm(20),
+    Units::mm(118),
+    Units::mm(6),
+    true,
+);
+$formPage->addText(
+    'Standard',
+    Units::mm(30),
+    Units::mm(119),
+    'Helvetica',
+    11,
+);
+$formPage->addRadioButton(
+    'delivery',
+    'express',
+    Units::mm(70),
+    Units::mm(118),
+    Units::mm(6),
+    false,
+);
+$formPage->addText(
+    'Express',
+    Units::mm(80),
+    Units::mm(119),
+    'Helvetica',
+    11,
+);
+
+$formPage->addText('Land', Units::mm(20), Units::mm(100), 'Helvetica', 11);
+$formPage->addComboBox(
+    'country',
+    Units::mm(20),
+    Units::mm(85),
+    Units::mm(70),
+    Units::mm(10),
+    [
+        'de' => 'Deutschland',
+        'at' => 'Oesterreich',
+        'ch' => 'Schweiz',
+    ],
+    'de',
+    'Helvetica',
+    11,
+    defaultValue: 'at',
+);
+
+$formPage->addText('Freitext Land', Units::mm(115), Units::mm(100), 'Helvetica', 11);
+$formPage->addComboBox(
+    'custom_country',
+    Units::mm(115),
+    Units::mm(85),
+    Units::mm(35),
+    Units::mm(10),
+    [
+        'de' => 'Deutschland',
+        'at' => 'Oesterreich',
+        'ch' => 'Schweiz',
+    ],
+    'de',
+    'Helvetica',
+    11,
+    flags: new FormFieldFlags(editable: true),
+    defaultValue: 'at',
+);
+
+$formPage->addText('Notizen', Units::mm(20), Units::mm(68), 'Helvetica', 11);
+$formPage->addTextField(
+    'notes',
+    Units::mm(20),
+    Units::mm(42),
+    Units::mm(90),
+    Units::mm(20),
+    "Erste Zeile\nZweite Zeile",
+    'Helvetica',
+    11,
+    true,
+);
+
+$formPage->addText('PIN', Units::mm(155), Units::mm(106), 'Helvetica', 11);
+$formPage->addTextField(
+    'pin',
+    Units::mm(155),
+    Units::mm(92),
+    Units::mm(35),
+    Units::mm(10),
+    '1234',
+    'Helvetica',
+    11,
+    false,
+    null,
+    new FormFieldFlags(password: true),
+);
+
+$formPage->addText('Themen', Units::mm(115), Units::mm(88), 'Helvetica', 11);
+$formPage->addListBox(
+    'topics',
+    Units::mm(115),
+    Units::mm(52),
+    Units::mm(35),
+    Units::mm(30),
+    [
+        'pdf' => 'PDF',
+        'forms' => 'Forms',
+        'tables' => 'Tables',
+    ],
+    'forms',
+    'Helvetica',
+    11,
+    defaultValue: 'pdf',
+);
+
+$formPage->addText('Mehrfachwahl', Units::mm(155), Units::mm(88), 'Helvetica', 11);
+$formPage->addListBox(
+    'topic_selection',
+    Units::mm(155),
+    Units::mm(52),
+    Units::mm(35),
+    Units::mm(30),
+    [
+        'pdf' => 'PDF',
+        'forms' => 'Forms',
+        'tables' => 'Tables',
+    ],
+    ['pdf', 'forms'],
+    'Helvetica',
+    11,
+    flags: new FormFieldFlags(multiSelect: true),
+    defaultValue: ['forms', 'tables'],
+);
+
+$formPage->addPanel(
+    'Die Felder sind als Widget-Annotationen im PDF hinterlegt und werden ueber ein zentrales AcroForm im Catalog referenziert.',
+    Units::mm(155),
+    Units::mm(4),
+    Units::mm(35),
+    Units::mm(40),
+    'Technik',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::gray(0.96),
+        borderColor: Color::gray(0.75),
+        borderWidth: 1.0,
+    ),
+);
+
 $document
     ->addDestination('table-demo', $tablePage)
     ->addOutline('Noto Sans', $sansPage)
@@ -975,7 +1179,8 @@ $document
     ->addOutline('Badge Demo', $badgePage)
     ->addOutline('Panel Demo', $panelPage)
     ->addOutline('Callout Demo', $calloutPage)
-    ->addOutline('Background Demo', $backgroundPage);
+    ->addOutline('Background Demo', $backgroundPage)
+    ->addOutline('Form Demo', $formPage);
 
 $document->addTableOfContents(
     PageSize::A4(),

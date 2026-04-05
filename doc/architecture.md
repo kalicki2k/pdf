@@ -114,7 +114,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)` und `addInternalLink(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `textFrame(...)`, `table(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `path()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)`.
 
 Dabei passiert intern:
 
@@ -157,6 +157,91 @@ Bei grafischen Inhalten kommt stattdessen dazu:
 15. Bilder werden als eigene indirekte XObjects erzeugt und in den Seiten-`Resources` unter `/XObject` registriert.
 16. Ein separates `DrawImage`-Element referenziert die Bild-Resource im Content-Stream per `/ImN Do`.
 17. Links werden als Annotationen im Seiten-Dictionary unter `/Annots` referenziert.
+
+Bei Formularen kommt stattdessen oder zusaetzlich dazu:
+
+7. `Document::ensureAcroForm()` baut bei Bedarf einmalig ein `AcroForm` auf.
+8. `Page::addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)` erzeugen Widget-Annotationen fuer die jeweilige Feldart.
+9. Die Widget-Annotation wird in `/Annots` der Seite eingetragen.
+10. Das Feld wird zusaetzlich im `AcroForm` unter `/Fields` registriert.
+11. Text- und Choice-Felder registrieren ihre verwendete Font-Resource im `AcroForm`-`DR`-Dictionary.
+12. `FormFieldFlags` werden in den jeweiligen `/Ff`-Bitwert uebersetzt.
+13. `defaultValue` wird fuer TextField, ComboBox und ListBox als `/DV` gerendert.
+14. Checkboxen und Radio-Buttons verwenden eigene Appearance-Streams fuer On/Off-Zustaende.
+
+### Formulare und AcroForm
+
+Die aktuelle Formular-Architektur ist als erste AcroForm-Stufe modelliert.
+
+Die wichtigsten Bausteine sind:
+
+- `AcroForm`
+- `TextFieldAnnotation`
+- `CheckboxAnnotation`
+- `RadioButtonField`
+- `RadioButtonWidgetAnnotation`
+- `ComboBoxAnnotation`
+- `ListBoxAnnotation`
+- `FormFieldFlags`
+
+`AcroForm` ist aktuell verantwortlich fuer:
+
+- Sammlung aller Formularfelder unter `/Fields`
+- `NeedAppearances`
+- Default Resources (`DR`) fuer Fonts von Text- und Choice-Feldern
+- Verwaltung gemeinsamer Radio-Gruppen
+
+Die Feldtypen sind aktuell so umgesetzt:
+
+- `TextFieldAnnotation`
+  - `/FT /Tx`
+  - optional `multiline`
+  - optional `DV`
+
+- `CheckboxAnnotation`
+  - `/FT /Btn`
+  - eigener On/Off-Status ueber `/V` und `/AS`
+  - sichtbare Appearance-Streams fuer beide Zustaende
+
+- `RadioButtonField` mit `RadioButtonWidgetAnnotation`
+  - Parent-Feld mit `/Kids`
+  - Widgets teilen denselben Feldnamen
+  - Auswahl wird ueber Export-Werte und Widget-`/AS` synchron gehalten
+
+- `ComboBoxAnnotation`
+  - `/FT /Ch`
+  - Combo-Flag im `/Ff`
+  - optionales Edit-Flag fuer Freitext-Eingabe
+  - Optionen ueber `/Opt`
+  - optional `DV`
+
+- `ListBoxAnnotation`
+  - `/FT /Ch`
+  - kein Combo-Flag
+  - optionales Multi-Select-Flag
+  - Optionen ueber `/Opt`
+  - optional `DV`
+
+`FormFieldFlags` kapselt aktuell die erste gemeinsame Flag-Stufe:
+
+- `readOnly`
+- `required`
+- `password`
+- `editable`
+- `multiSelect`
+
+und wird je nach Feldtyp mit zusaetzlichen feldspezifischen Bits kombiniert, zum Beispiel:
+
+- `multiline` fuer Textfelder
+- Combo-Flag fuer ComboBoxen
+- Edit-Flag fuer editierbare ComboBoxen
+- Multi-Select-Flag fuer ListBoxen
+
+Die aktuelle Stufe ist bewusst pragmatisch:
+
+- Text- und Choice-Felder verlassen sich fuer die Darstellung noch auf `NeedAppearances`
+- Checkboxen und Radio-Buttons haben bereits eigene Appearance-Streams
+- komplexere Formular-Features wie Signaturfelder oder komplett eigene Appearances fuer Text- und Choice-Felder sind noch nicht Teil des Kernpfads
 
 ### TextFrame
 

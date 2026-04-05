@@ -61,6 +61,7 @@ final class Document
     /** @var StructElem[]  */
     private array $structElems = [];
     public Catalog $catalog;
+    public ?AcroForm $acroForm = null;
     public ?EncryptDictionary $encryptDictionary = null;
     public Info $info;
     public ?OutlineRoot $outlineRoot = null;
@@ -119,6 +120,14 @@ final class Document
             }
         }
 
+        if ($this->acroForm !== null) {
+            $objects[] = $this->acroForm;
+
+            foreach ($this->acroForm->getFieldObjectsForRender() as $fieldObject) {
+                $objects[] = $fieldObject;
+            }
+        }
+
         if ($this->structTreeRoot !== null) {
             $objects[] = $this->structTreeRoot;
         }
@@ -163,6 +172,10 @@ final class Document
             $objects[] = $page;
             foreach ($page->getAnnotations() as $annotation) {
                 $objects[] = $annotation;
+
+                foreach ($annotation->getRelatedObjects() as $relatedObject) {
+                    $objects[] = $relatedObject;
+                }
             }
             foreach ($page->resources->getImages() as $image) {
                 $objects[] = $image;
@@ -408,6 +421,26 @@ final class Document
         $this->fonts = [...$this->fonts, $font];
 
         return $this;
+    }
+
+    public function getFontByBaseFont(string $baseFont): ?FontDefinition
+    {
+        foreach ($this->fonts as $font) {
+            if ($font->getBaseFont() === $baseFont) {
+                return $font;
+            }
+        }
+
+        return null;
+    }
+
+    public function ensureAcroForm(): AcroForm
+    {
+        if ($this->acroForm === null) {
+            $this->acroForm = new AcroForm(++$this->objectId);
+        }
+
+        return $this->acroForm;
     }
 
     /**

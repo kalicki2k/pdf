@@ -43,6 +43,10 @@ final class Catalog extends IndirectObject
             $dictionary->add('Dests', $destinations);
         }
 
+        if ($this->document->acroForm !== null) {
+            $dictionary->add('AcroForm', new ReferenceType($this->document->acroForm));
+        }
+
         if ($this->document->version >= 1.4 && $this->document->structTreeRoot !== null) {
             $dictionary->add('MarkInfo', new DictionaryType([
                 'Marked' => new BooleanType(true),
