@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Document\Table\Layout\PreparedTableCellGeometry;
+use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Document\Table\Style\CellStyle;
+use Kalle\Pdf\Document\Table\Style\HeaderStyle;
+use Kalle\Pdf\Document\Table\Style\RowStyle;
+use Kalle\Pdf\Document\Table\Style\TableBorder;
+use Kalle\Pdf\Document\Table\Style\TablePadding;
+use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\Support\ResolvedBorderSide;
+use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
+use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
-use Kalle\Pdf\Styles\CellStyle;
-use Kalle\Pdf\Styles\HeaderStyle;
-use Kalle\Pdf\Styles\RowStyle;
-use Kalle\Pdf\Styles\TableBorder;
-use Kalle\Pdf\Styles\TablePadding;
-use Kalle\Pdf\Styles\TableStyle;
 
 final class Table
 {
@@ -711,8 +717,7 @@ final class Table
         ResolvedBorderSide $right,
         ResolvedBorderSide $bottom,
         ResolvedBorderSide $left,
-    ): bool
-    {
+    ): bool {
         return $top == $right && $right == $bottom && $bottom == $left;
     }
 

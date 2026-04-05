@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Document\Table\Layout;
 
-use Kalle\Pdf\Styles\TablePadding;
+use Kalle\Pdf\Document\Table\Style\TablePadding;
+use Kalle\Pdf\Document\Table\TableCell;
 
 final readonly class PreparedTableCell
 {

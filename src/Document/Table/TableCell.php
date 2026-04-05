@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Document\Table;
 
-use Kalle\Pdf\Styles\CellStyle;
+use Kalle\Pdf\Document\Table\Style\CellStyle;
+use Kalle\Pdf\Document\TextSegment;
 
 final readonly class TableCell
 {

@@ -42,7 +42,7 @@ use Kalle\Pdf\Styles\CellStyle;
 use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Styles\RowStyle;
 use Kalle\Pdf\Styles\TableBorder;
-use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Styles\TablePadding;
 use Kalle\Pdf\Styles\TableStyle;
 use Kalle\Pdf\Layout\HorizontalAlign;

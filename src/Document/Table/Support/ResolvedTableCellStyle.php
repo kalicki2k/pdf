@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Document\Table\Support;
 
+use Kalle\Pdf\Document\Table\Style\TableBorder;
+use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
-use Kalle\Pdf\Styles\TableBorder;
-use Kalle\Pdf\Styles\TablePadding;
 
 final readonly class ResolvedTableCellStyle
 {

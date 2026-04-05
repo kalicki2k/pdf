@@ -6,22 +6,33 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\Table\Style\CellStyle;
+use Kalle\Pdf\Document\Table\Style\HeaderStyle;
+use Kalle\Pdf\Document\Table\Style\RowStyle;
+use Kalle\Pdf\Document\Table\Style\TableBorder;
+use Kalle\Pdf\Document\Table\Style\TablePadding;
+use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
-use Kalle\Pdf\Styles\CellStyle;
-use Kalle\Pdf\Styles\HeaderStyle;
-use Kalle\Pdf\Styles\RowStyle;
-use Kalle\Pdf\Styles\TableBorder;
-use Kalle\Pdf\Styles\TablePadding;
-use Kalle\Pdf\Styles\TableStyle;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class TableTest extends TestCase
 {
+    #[Test]
+    public function it_keeps_legacy_table_style_aliases_available(): void
+    {
+        self::assertInstanceOf(TableStyle::class, new \Kalle\Pdf\Styles\TableStyle());
+        self::assertInstanceOf(TableBorder::class, \Kalle\Pdf\Styles\TableBorder::all());
+        self::assertInstanceOf(TablePadding::class, \Kalle\Pdf\Styles\TablePadding::all(4));
+        self::assertInstanceOf(RowStyle::class, new \Kalle\Pdf\Styles\RowStyle());
+        self::assertInstanceOf(HeaderStyle::class, new \Kalle\Pdf\Styles\HeaderStyle());
+        self::assertInstanceOf(CellStyle::class, new \Kalle\Pdf\Styles\CellStyle());
+    }
+
     #[Test]
     public function it_renders_a_table_row_with_header_and_body_cells(): void
     {
