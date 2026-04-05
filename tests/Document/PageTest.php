@@ -176,7 +176,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString("1 0 0 RG\n1.5 w\n18 60 m", $page->contents->render());
-        self::assertStringContainsString("110 52 c", $page->contents->render());
+        self::assertStringContainsString('110 52 c', $page->contents->render());
         self::assertStringContainsString("\nh\nS", $page->contents->render());
     }
 
@@ -215,8 +215,8 @@ final class PageTest extends TestCase
         $result = $page->addBadge('Beta', 10, 20);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("0.9 g", $page->contents->render());
-        self::assertStringContainsString("(Beta) Tj", $page->contents->render());
+        self::assertStringContainsString('0.9 g', $page->contents->render());
+        self::assertStringContainsString('(Beta) Tj', $page->contents->render());
     }
 
     #[Test]
@@ -246,7 +246,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
         self::assertStringContainsString("0 0 1 RG\n0.8 g\n/GS1 gs\n1.5 w", $page->contents->render());
-        self::assertStringContainsString("(Aktiv) Tj", $page->contents->render());
+        self::assertStringContainsString('(Aktiv) Tj', $page->contents->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
     }
 
@@ -272,7 +272,7 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString("1 0 0 RG\n0.8 g\n1 w\n14 38 m", $page->contents->render());
-        self::assertStringContainsString("(Rounded) Tj", $page->contents->render());
+        self::assertStringContainsString('(Rounded) Tj', $page->contents->render());
     }
 
     #[Test]
