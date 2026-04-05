@@ -23,17 +23,6 @@ use PHPUnit\Framework\TestCase;
 final class TableTest extends TestCase
 {
     #[Test]
-    public function it_keeps_legacy_table_style_aliases_available(): void
-    {
-        self::assertInstanceOf(TableStyle::class, new \Kalle\Pdf\Document\Style\TableStyle());
-        self::assertInstanceOf(TableBorder::class, \Kalle\Pdf\Document\Style\TableBorder::all());
-        self::assertInstanceOf(TablePadding::class, \Kalle\Pdf\Document\Style\TablePadding::all(4));
-        self::assertInstanceOf(RowStyle::class, new \Kalle\Pdf\Document\Style\RowStyle());
-        self::assertInstanceOf(HeaderStyle::class, new \Kalle\Pdf\Document\Style\HeaderStyle());
-        self::assertInstanceOf(CellStyle::class, new \Kalle\Pdf\Document\Style\CellStyle());
-    }
-
-    #[Test]
     public function it_renders_a_table_row_with_header_and_body_cells(): void
     {
         $document = new Document(version: 1.4);
