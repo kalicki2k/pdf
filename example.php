@@ -17,7 +17,13 @@ use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\SetOcgStateAction;
 use Kalle\Pdf\Document\SubmitFormAction;
-use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\Table\Style\CellStyle;
+use Kalle\Pdf\Document\Table\Style\HeaderStyle;
+use Kalle\Pdf\Document\Table\Style\RowStyle;
+use Kalle\Pdf\Document\Table\Style\TableBorder;
+use Kalle\Pdf\Document\Table\Style\TablePadding;
+use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\ThreadAction;
 use Kalle\Pdf\Document\UriAction;
@@ -33,13 +39,7 @@ use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Styles\BadgeStyle;
 use Kalle\Pdf\Styles\CalloutStyle;
-use Kalle\Pdf\Styles\CellStyle;
-use Kalle\Pdf\Styles\HeaderStyle;
 use Kalle\Pdf\Styles\PanelStyle;
-use Kalle\Pdf\Styles\RowStyle;
-use Kalle\Pdf\Styles\TableBorder;
-use Kalle\Pdf\Styles\TablePadding;
-use Kalle\Pdf\Styles\TableStyle;
 
 require 'vendor/autoload.php';
 

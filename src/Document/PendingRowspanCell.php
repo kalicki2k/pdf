@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
+
 final readonly class PendingRowspanCell
 {
     /**

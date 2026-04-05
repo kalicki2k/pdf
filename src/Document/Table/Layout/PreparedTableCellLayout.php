@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Document\Table\Layout;
 
-final readonly class PreparedTableCellGeometry
+final readonly class PreparedTableCellLayout
 {
     public function __construct(
         public float $x,
