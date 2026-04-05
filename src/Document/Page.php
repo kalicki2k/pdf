@@ -1416,6 +1416,42 @@ final class Page extends IndirectObject
         return $this;
     }
 
+    public function addSignatureField(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+    ): self {
+        if ($name === '') {
+            throw new InvalidArgumentException('Signature field name must not be empty.');
+        }
+
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Signature field width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Signature field height must be greater than zero.');
+        }
+
+        $acroForm = $this->document->ensureAcroForm();
+        $annotation = new SignatureFieldAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $name,
+        );
+
+        $acroForm->addField($annotation);
+        $this->annotations[] = $annotation;
+
+        return $this;
+    }
+
     /**
      * @param array<string, string> $options
      * @param list<string>|string|null $value

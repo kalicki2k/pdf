@@ -879,6 +879,7 @@ Vorhandene Feldtypen:
 - `addRadioButton(...)`
 - `addComboBox(...)`
 - `addListBox(...)`
+- `addSignatureField(...)`
 
 ### TextField
 
@@ -1038,12 +1039,25 @@ $page->addListBox(
 );
 ```
 
+### SignatureField
+
+```php
+$page->addSignatureField(
+    'approval_signature',
+    Units::mm(20),
+    Units::mm(10),
+    Units::mm(80),
+    Units::mm(18),
+);
+```
+
 Wichtig:
 
 - `value` und `defaultValue` muessen bei ComboBox und ListBox auf vorhandene Export-Werte in `options` zeigen
 - `defaultValue` wird als `DV` im PDF gespeichert
 - `editable` aktiviert bei ComboBoxen Freitext-Eingabe zusaetzlich zu den vorhandenen Optionen
 - `multiSelect` erlaubt bei ListBoxen mehrere gleichzeitig gesetzte Werte
+- `addSignatureField(...)` erzeugt aktuell ein sichtbares Signaturfeld als Formular-Widget, aber noch keine echte kryptografische Signatur
 - `AcroForm` wird automatisch aufgebaut, sobald das erste Feld erzeugt wird
 - Text- und Choice-Felder verlassen sich aktuell noch auf `NeedAppearances`
 - Checkboxen und Radio-Buttons haben bereits eigene Appearance-Streams
@@ -1121,7 +1135,7 @@ Der Codebestand enthaelt bereits weitere Bausteine, aber fuer den Einstieg sollt
 - `underline` und `strikethrough` sind aktuell heuristisch positioniert und noch nicht ueber Font-Metriken feinjustiert
 - `bold` und `italic` fuer Embedded Fonts haengen derzeit an benannten Font-Varianten wie `-Bold` oder `-Italic`
 - Text- und Choice-Felder haben aktuell noch keine komplett eigene Appearance-Generierung
-- Signaturfelder und komplett eigene Appearances fuer Text-/Choice-Felder sind noch nicht Teil der aktuellen Formular-Stufe
+- echte digitale Signaturen und komplett eigene Appearances fuer Text-/Choice-Felder sind noch nicht Teil der aktuellen Formular-Stufe
 - die Doku wird schrittweise parallel zum Code aufgebaut
 
 ## Naechste Datei

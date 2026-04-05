@@ -182,6 +182,7 @@ Die wichtigsten Bausteine sind:
 - `RadioButtonWidgetAnnotation`
 - `ComboBoxAnnotation`
 - `ListBoxAnnotation`
+- `SignatureFieldAnnotation`
 - `FormFieldFlags`
 
 `AcroForm` ist aktuell verantwortlich fuer:
@@ -222,6 +223,11 @@ Die Feldtypen sind aktuell so umgesetzt:
   - Optionen ueber `/Opt`
   - optional `DV`
 
+- `SignatureFieldAnnotation`
+  - `/FT /Sig`
+  - sichtbares Widget-Feld fuer spaetere Signaturen
+  - aktuell noch ohne `V`-Signaturdictionary und ohne kryptografische Signaturerzeugung
+
 `FormFieldFlags` kapselt aktuell die erste gemeinsame Flag-Stufe:
 
 - `readOnly`
@@ -241,7 +247,7 @@ Die aktuelle Stufe ist bewusst pragmatisch:
 
 - Text- und Choice-Felder verlassen sich fuer die Darstellung noch auf `NeedAppearances`
 - Checkboxen und Radio-Buttons haben bereits eigene Appearance-Streams
-- komplexere Formular-Features wie Signaturfelder oder komplett eigene Appearances fuer Text- und Choice-Felder sind noch nicht Teil des Kernpfads
+- komplexere Formular-Features wie echte digitale Signaturen oder komplett eigene Appearances fuer Text- und Choice-Felder sind noch nicht Teil des Kernpfads
 
 ### TextFrame
 

@@ -966,6 +966,21 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_signature_field_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addSignatureField('approval_signature', 10, 20, 100, 30);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/AcroForm 7 0 R', $document->render());
+        self::assertStringContainsString('/Subtype /Widget', $document->render());
+        self::assertStringContainsString('/FT /Sig', $document->render());
+        self::assertStringContainsString('/T (approval_signature)', $document->render());
+    }
+
+    #[Test]
     public function it_rejects_non_positive_link_dimensions(): void
     {
         $document = new Document(version: 1.4);

@@ -37,6 +37,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Panels sind als einfache Hinweis- und Infoboxen ueber `addPanel(...)` verfuegbar
 - Callouts sind als Hinweisboxen mit Pointer ueber `addCallout(...)` verfuegbar
 - AcroForm ist vorhanden und deckt TextField, Checkbox, RadioButton, ComboBox und ListBox ab
+- Signaturfelder sind als sichtbare `/Sig`-Widgets vorhanden
 - TextField unterstuetzt `multiline`, `defaultValue` und gemeinsame Feld-Flags ueber `FormFieldFlags`
 - ComboBox unterstuetzt `defaultValue` und editierbare Varianten
 - ListBox unterstuetzt `defaultValue` und Mehrfachauswahl
@@ -124,7 +125,7 @@ Naechste Kandidaten:
 - Ausbau der Bild-API, vor allem fuer Performance bei grossen PNG-Dateien mit Alpha-Kanal
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
 - weiterer Ausbau der PDF-Security, vor allem klare Trennung zwischen aktuellem `AES_256`-R5-Pfad und spaeterem `R6`
-- Formular-Feinschliff, vor allem eigene Appearances fuer Text-/Choice-Felder und spaeter Signaturfelder
+- Formular-Feinschliff, vor allem eigene Appearances fuer Text-/Choice-Felder und spaeter echte digitale Signaturen
 
 Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
 

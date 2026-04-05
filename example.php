@@ -1096,6 +1096,15 @@ $formPage->addTextField(
     true,
 );
 
+$formPage->addText('Unterschrift', Units::mm(20), Units::mm(34), 'Helvetica', 11);
+$formPage->addSignatureField(
+    'approval_signature',
+    Units::mm(20),
+    Units::mm(12),
+    Units::mm(90),
+    Units::mm(16),
+);
+
 $formPage->addText('PIN', Units::mm(155), Units::mm(106), 'Helvetica', 11);
 $formPage->addTextField(
     'pin',
