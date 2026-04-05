@@ -137,10 +137,12 @@ final class Page extends IndirectObject
 
         if ($options->link !== null && $textWidth > 0.0) {
             $this->addLinkTarget(
-                $position->x,
-                $position->y - ($size * 0.2),
-                $textWidth,
-                $size,
+                new Rect(
+                    $position->x,
+                    $position->y - ($size * 0.2),
+                    $textWidth,
+                    $size,
+                ),
                 $options->link,
             );
         }
@@ -196,10 +198,7 @@ final class Page extends IndirectObject
 
         if ($style->cornerRadius > 0) {
             $this->addRoundedRectangle(
-                $position->x,
-                $position->y,
-                $badgeWidth,
-                $badgeHeight,
+                new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
                 $style->cornerRadius,
                 $style->borderWidth,
                 $style->borderColor,
@@ -208,10 +207,7 @@ final class Page extends IndirectObject
             );
         } else {
             $this->addRectangle(
-                $position->x,
-                $position->y,
-                $badgeWidth,
-                $badgeHeight,
+                new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
                 $style->borderWidth,
                 $style->borderColor,
                 $style->fillColor,
@@ -272,10 +268,7 @@ final class Page extends IndirectObject
 
         if ($style->cornerRadius > 0) {
             $this->addRoundedRectangle(
-                $x,
-                $y,
-                $width,
-                $height,
+                new Rect($x, $y, $width, $height),
                 $style->cornerRadius,
                 $style->borderWidth,
                 $style->borderColor,
@@ -284,10 +277,7 @@ final class Page extends IndirectObject
             );
         } else {
             $this->addRectangle(
-                $x,
-                $y,
-                $width,
-                $height,
+                new Rect($x, $y, $width, $height),
                 $style->borderWidth,
                 $style->borderColor,
                 $style->fillColor,
@@ -351,7 +341,7 @@ final class Page extends IndirectObject
         }
 
         if ($link !== null) {
-            $this->addLinkTarget($x, $y, $width, $height, $link);
+            $this->addLinkTarget(new Rect($x, $y, $width, $height), $link);
         }
 
         return $this;
@@ -813,20 +803,17 @@ final class Page extends IndirectObject
     }
 
     public function addRectangle(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?float $strokeWidth = 1.0,
         ?Color $strokeColor = null,
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        if ($width <= 0) {
+        if ($box->width <= 0) {
             throw new InvalidArgumentException('Rectangle width must be greater than zero.');
         }
 
-        if ($height <= 0) {
+        if ($box->height <= 0) {
             throw new InvalidArgumentException('Rectangle height must be greater than zero.');
         }
 
@@ -841,10 +828,10 @@ final class Page extends IndirectObject
         $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
 
         $this->contents->addElement(new Rectangle(
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $strokeWidth,
             $strokeColor?->renderStrokingOperator(),
             $fillColor?->renderNonStrokingOperator(),
@@ -855,21 +842,18 @@ final class Page extends IndirectObject
     }
 
     public function addRoundedRectangle(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         float $radius,
         ?float $strokeWidth = 1.0,
         ?Color $strokeColor = null,
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        if ($width <= 0) {
+        if ($box->width <= 0) {
             throw new InvalidArgumentException('Rounded rectangle width must be greater than zero.');
         }
 
-        if ($height <= 0) {
+        if ($box->height <= 0) {
             throw new InvalidArgumentException('Rounded rectangle height must be greater than zero.');
         }
 
@@ -877,7 +861,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Rounded rectangle radius must be greater than zero.');
         }
 
-        if ($radius > ($width / 2) || $radius > ($height / 2)) {
+        if ($radius > ($box->width / 2) || $radius > ($box->height / 2)) {
             throw new InvalidArgumentException('Rounded rectangle radius must not exceed half the width or height.');
         }
 
@@ -890,10 +874,10 @@ final class Page extends IndirectObject
         }
 
         $controlOffset = $radius * 0.5522847498307936;
-        $left = $x;
-        $right = $x + $width;
-        $bottom = $y;
-        $top = $y + $height;
+        $left = $box->x;
+        $right = $box->x + $box->width;
+        $bottom = $box->y;
+        $top = $box->y + $box->height;
 
         $path = $this->addPath()
             ->moveTo($left + $radius, $top)
@@ -1134,10 +1118,8 @@ final class Page extends IndirectObject
     }
 
     public function addArrow(
-        float $startX,
-        float $startY,
-        float $endX,
-        float $endY,
+        Position $from,
+        Position $to,
         float $strokeWidth = 1.0,
         ?Color $color = null,
         ?Opacity $opacity = null,
@@ -1156,8 +1138,8 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Arrow head width must be greater than zero.');
         }
 
-        $dx = $endX - $startX;
-        $dy = $endY - $startY;
+        $dx = $to->x - $from->x;
+        $dy = $to->y - $from->y;
         $length = hypot($dx, $dy);
 
         if ($length <= 0.0) {
@@ -1167,8 +1149,8 @@ final class Page extends IndirectObject
         $usableHeadLength = min($headLength, $length);
         $ux = $dx / $length;
         $uy = $dy / $length;
-        $baseX = $endX - ($ux * $usableHeadLength);
-        $baseY = $endY - ($uy * $usableHeadLength);
+        $baseX = $to->x - ($ux * $usableHeadLength);
+        $baseY = $to->y - ($uy * $usableHeadLength);
         $perpX = -$uy;
         $perpY = $ux;
         $halfHeadWidth = $headWidth / 2;
@@ -1177,10 +1159,10 @@ final class Page extends IndirectObject
         $rightX = $baseX - ($perpX * $halfHeadWidth);
         $rightY = $baseY - ($perpY * $halfHeadWidth);
 
-        $this->addLine(new Position($startX, $startY), new Position($baseX, $baseY), $strokeWidth, $color, $opacity);
+        $this->addLine($from, new Position($baseX, $baseY), $strokeWidth, $color, $opacity);
         $this->addPolygon(
             [
-                [$endX, $endY],
+                [$to->x, $to->y],
                 [$leftX, $leftY],
                 [$rightX, $rightY],
             ],
@@ -1237,95 +1219,78 @@ final class Page extends IndirectObject
     }
 
     public function addLink(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         string $url,
     ): self {
         if (str_starts_with($url, '#')) {
-            return $this->addInternalLink($x, $y, $width, $height, substr($url, 1));
-        }
-
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Link width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Link height must be greater than zero.');
+            return $this->addInternalLink($box, substr($url, 1));
         }
 
         if ($url === '') {
             throw new InvalidArgumentException('Link URL must not be empty.');
         }
 
-        return $this->addLinkTarget($x, $y, $width, $height, LinkTarget::externalUrl($url));
+        return $this->addLinkTarget($box, LinkTarget::externalUrl($url));
     }
 
     public function addInternalLink(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         string $destination,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Link width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Link height must be greater than zero.');
-        }
-
         if ($destination === '') {
             throw new InvalidArgumentException('Link destination must not be empty.');
         }
 
-        return $this->addLinkTarget($x, $y, $width, $height, LinkTarget::namedDestination($destination));
+        return $this->addLinkTarget($box, LinkTarget::namedDestination($destination));
     }
 
     private function addLinkTarget(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         LinkTarget $target,
     ): self {
-        if ($width <= 0) {
+        if ($box->width <= 0) {
             throw new InvalidArgumentException('Link width must be greater than zero.');
         }
 
-        if ($height <= 0) {
+        if ($box->height <= 0) {
             throw new InvalidArgumentException('Link height must be greater than zero.');
         }
 
         $this->annotations[] = new LinkAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $target,
         );
 
         return $this;
     }
 
+    private function assertRectHasPositiveDimensions(Rect $box, string $subject): void
+    {
+        if ($box->width <= 0) {
+            throw new InvalidArgumentException("$subject width must be greater than zero.");
+        }
+
+        if ($box->height <= 0) {
+            throw new InvalidArgumentException("$subject height must be greater than zero.");
+        }
+    }
+
     public function addFileAttachment(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         FileSpecification $file,
         string $icon = 'PushPin',
         ?string $contents = null,
     ): self {
-        if ($width <= 0) {
+        if ($box->width <= 0) {
             throw new InvalidArgumentException('File attachment width must be greater than zero.');
         }
 
-        if ($height <= 0) {
+        if ($box->height <= 0) {
             throw new InvalidArgumentException('File attachment height must be greater than zero.');
         }
 
@@ -1336,10 +1301,10 @@ final class Page extends IndirectObject
         $this->annotations[] = new FileAttachmentAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $file,
             $icon,
             $contents,
@@ -1349,22 +1314,13 @@ final class Page extends IndirectObject
     }
 
     public function addTextAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         string $contents,
         ?string $title = null,
         string $icon = 'Note',
         bool $open = false,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Text annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Text annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Text annotation');
 
         if ($contents === '') {
             throw new InvalidArgumentException('Text annotation contents must not be empty.');
@@ -1377,10 +1333,10 @@ final class Page extends IndirectObject
         $this->annotations[] = new TextAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $contents,
             $title,
             $icon,
@@ -1392,28 +1348,19 @@ final class Page extends IndirectObject
 
     public function addPopupAnnotation(
         PageAnnotation & IndirectObject $parent,
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         bool $open = false,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Popup annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Popup annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Popup annotation');
 
         $popup = new PopupAnnotation(
             $this->document->getUniqObjectId(),
             $this,
             $parent,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $open,
         );
 
@@ -1425,10 +1372,7 @@ final class Page extends IndirectObject
     }
 
     public function addFreeTextAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         string $contents,
         string $baseFont = 'Helvetica',
         int $size = 12,
@@ -1437,13 +1381,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?string $title = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Free text annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Free text annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Free text annotation');
 
         if ($contents === '') {
             throw new InvalidArgumentException('Free text annotation contents must not be empty.');
@@ -1459,10 +1397,10 @@ final class Page extends IndirectObject
         $this->annotations[] = new FreeTextAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $contents,
             $fontResourceName,
             $size,
@@ -1476,29 +1414,20 @@ final class Page extends IndirectObject
     }
 
     public function addHighlightAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Highlight annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Highlight annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Highlight annotation');
 
         $this->annotations[] = new HighlightAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $color,
             $contents,
             $title,
@@ -1508,29 +1437,20 @@ final class Page extends IndirectObject
     }
 
     public function addUnderlineAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Underline annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Underline annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Underline annotation');
 
         $this->annotations[] = new UnderlineAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $color,
             $contents,
             $title,
@@ -1540,29 +1460,20 @@ final class Page extends IndirectObject
     }
 
     public function addStrikeOutAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('StrikeOut annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('StrikeOut annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'StrikeOut annotation');
 
         $this->annotations[] = new StrikeOutAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $color,
             $contents,
             $title,
@@ -1572,29 +1483,20 @@ final class Page extends IndirectObject
     }
 
     public function addSquigglyAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Squiggly annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Squiggly annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Squiggly annotation');
 
         $this->annotations[] = new SquigglyAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $color,
             $contents,
             $title,
@@ -1604,22 +1506,13 @@ final class Page extends IndirectObject
     }
 
     public function addStampAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         string $icon = 'Draft',
         ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Stamp annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Stamp annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Stamp annotation');
 
         if ($icon === '') {
             throw new InvalidArgumentException('Stamp annotation icon must not be empty.');
@@ -1628,10 +1521,10 @@ final class Page extends IndirectObject
         $this->annotations[] = new StampAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $icon,
             $color,
             $contents,
@@ -1642,31 +1535,22 @@ final class Page extends IndirectObject
     }
 
     public function addSquareAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?Color $borderColor = null,
         ?Color $fillColor = null,
         ?string $contents = null,
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Square annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Square annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Square annotation');
 
         $this->annotations[] = new SquareAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $borderColor,
             $fillColor,
             $contents,
@@ -1678,31 +1562,22 @@ final class Page extends IndirectObject
     }
 
     public function addCircleAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?Color $borderColor = null,
         ?Color $fillColor = null,
         ?string $contents = null,
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Circle annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Circle annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Circle annotation');
 
         $this->annotations[] = new CircleAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $borderColor,
             $fillColor,
             $contents,
@@ -1717,30 +1592,21 @@ final class Page extends IndirectObject
      * @param list<list<array{0: float, 1: float}>> $paths
      */
     public function addInkAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         array $paths,
         ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Ink annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Ink annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Ink annotation');
 
         $this->annotations[] = new InkAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $paths,
             $color,
             $contents,
@@ -1751,10 +1617,8 @@ final class Page extends IndirectObject
     }
 
     public function addLineAnnotation(
-        float $x1,
-        float $y1,
-        float $x2,
-        float $y2,
+        Position $from,
+        Position $to,
         ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
@@ -1766,10 +1630,10 @@ final class Page extends IndirectObject
         $this->annotations[] = new LineAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x1,
-            $y1,
-            $x2,
-            $y2,
+            $from->x,
+            $from->y,
+            $to->x,
+            $to->y,
             $color,
             $contents,
             $title,
@@ -1839,29 +1703,20 @@ final class Page extends IndirectObject
     }
 
     public function addCaretAnnotation(
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?string $contents = null,
         ?string $title = null,
         string $symbol = 'None',
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Caret annotation width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Caret annotation height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Caret annotation');
 
         $this->annotations[] = new CaretAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $contents,
             $title,
             $symbol,
@@ -1900,10 +1755,7 @@ final class Page extends IndirectObject
 
     public function addTextField(
         string $name,
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         ?string $value = null,
         string $baseFont = 'Helvetica',
         int $size = 12,
@@ -1916,13 +1768,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Text field name must not be empty.');
         }
 
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Text field width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Text field height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Text field');
 
         if ($size <= 0) {
             throw new InvalidArgumentException('Text field font size must be greater than zero.');
@@ -1934,10 +1780,10 @@ final class Page extends IndirectObject
         $annotation = new TextFieldAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $name,
             $value,
             $fontResourceName,
@@ -1956,8 +1802,7 @@ final class Page extends IndirectObject
 
     public function addCheckbox(
         string $name,
-        float $x,
-        float $y,
+        Position $position,
         float $size,
         bool $checked = false,
     ): self {
@@ -1973,8 +1818,8 @@ final class Page extends IndirectObject
         $annotation = new CheckboxAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
+            $position->x,
+            $position->y,
             $size,
             $size,
             $name,
@@ -1992,8 +1837,7 @@ final class Page extends IndirectObject
     public function addRadioButton(
         string $name,
         string $value,
-        float $x,
-        float $y,
+        Position $position,
         float $size,
         bool $checked = false,
     ): self {
@@ -2015,8 +1859,8 @@ final class Page extends IndirectObject
             $this->document->getUniqObjectId(),
             $this,
             $group,
-            $x,
-            $y,
+            $position->x,
+            $position->y,
             $size,
             $value,
             $checked,
@@ -2035,10 +1879,7 @@ final class Page extends IndirectObject
      */
     public function addComboBox(
         string $name,
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         array $options,
         ?string $value = null,
         string $baseFont = 'Helvetica',
@@ -2051,13 +1892,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Combo box name must not be empty.');
         }
 
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Combo box width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Combo box height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Combo box');
 
         if ($size <= 0) {
             throw new InvalidArgumentException('Combo box font size must be greater than zero.');
@@ -2091,10 +1926,10 @@ final class Page extends IndirectObject
         $annotation = new ComboBoxAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $name,
             $options,
             $value,
@@ -2118,10 +1953,7 @@ final class Page extends IndirectObject
      */
     public function addListBox(
         string $name,
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         array $options,
         string | array | null $value = null,
         string $baseFont = 'Helvetica',
@@ -2134,13 +1966,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('List box name must not be empty.');
         }
 
-        if ($width <= 0) {
-            throw new InvalidArgumentException('List box width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('List box height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'List box');
 
         if ($size <= 0) {
             throw new InvalidArgumentException('List box font size must be greater than zero.');
@@ -2169,10 +1995,10 @@ final class Page extends IndirectObject
         $annotation = new ListBoxAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $name,
             $options,
             $value,
@@ -2191,31 +2017,22 @@ final class Page extends IndirectObject
 
     public function addSignatureField(
         string $name,
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
     ): self {
         if ($name === '') {
             throw new InvalidArgumentException('Signature field name must not be empty.');
         }
 
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Signature field width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Signature field height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Signature field');
 
         $acroForm = $this->document->ensureAcroForm();
         $annotation = new SignatureFieldAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $name,
         );
 
@@ -2228,10 +2045,7 @@ final class Page extends IndirectObject
     public function addPushButton(
         string $name,
         string $label,
-        float $x,
-        float $y,
-        float $width,
-        float $height,
+        Rect $box,
         string $baseFont = 'Helvetica',
         int $size = 12,
         ?Color $textColor = null,
@@ -2245,13 +2059,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Push button label must not be empty.');
         }
 
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Push button width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Push button height must be greater than zero.');
-        }
+        $this->assertRectHasPositiveDimensions($box, 'Push button');
 
         if ($size <= 0) {
             throw new InvalidArgumentException('Push button font size must be greater than zero.');
@@ -2263,10 +2071,10 @@ final class Page extends IndirectObject
         $annotation = new PushButtonAnnotation(
             $this->document->getUniqObjectId(),
             $this,
-            $x,
-            $y,
-            $width,
-            $height,
+            $box->x,
+            $box->y,
+            $box->width,
+            $box->height,
             $name,
             $label,
             $fontResourceName,

@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Catalog;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
 use PHPUnit\Framework\Attributes\Test;
@@ -88,7 +89,7 @@ final class CatalogTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
         $page->layer('Notes', static function (\Kalle\Pdf\Document\Page $page): void {
-            $page->addRectangle(10, 20, 30, 40);
+            $page->addRectangle(new Rect(10, 20, 30, 40));
         });
         $catalog = new Catalog(1, $document);
 

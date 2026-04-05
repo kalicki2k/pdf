@@ -95,19 +95,11 @@ $page
             lineHeight: Units::mm(4),
         ),
     )
-    ->addTextBox(
-        text: "Sehr geehrte Frau Müller,\nhiermit berechne ich Ihnen folgende Leistungen:",
-        box: new Rect(Units::mm(20), Units::mm(180), Units::mm(170), Units::mm(15)),
-        fontName: 'Helvetica',
-        size: 9,
-        options: new TextBoxOptions(
-            lineHeight: Units::mm(4),
-        ),
-    )
     ->addFlowText(
         text: "Sehr geehrte Frau Müller,\nhiermit berechne ich Ihnen folgende Leistungen:",
-        position: new Position(Units::mm(20), Units::mm(160)),
+        position: new Position(Units::mm(20), Units::mm(190)),
         maxWidth: Units::mm(170),
+        size: 9,
     );
 
 $targetPath = $outputDir . '/' . 'rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';

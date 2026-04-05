@@ -65,8 +65,9 @@ use Kalle\Pdf\Document\Action\SubmitFormAction;
 use Kalle\Pdf\Document\Action\ThreadAction;
 use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Text\TextOptions;
@@ -112,7 +113,7 @@ $document
     ->addHeader(static function (\Kalle\Pdf\Document\Page $page, int $pageNumber): void {
         $page->addText("Hello PDF - Seite $pageNumber", new \Kalle\Pdf\Document\Geometry\Position(Units::mm(20), $page->getHeight() - Units::mm(10)), 'Helvetica', 9);
     })
-    ->addPageNumbers(Units::mm(20), Units::mm(7), 'Helvetica', 9);
+    ->addPageNumbers(new Position(Units::mm(20), Units::mm(7)), 'Helvetica', 9);
 
 $page = $document->addPage(PageSize::A4());
 $frame = $page->createTextFrame(new Position(Units::mm(20), Units::mm(265)), Units::mm(170), Units::mm(20));
@@ -147,20 +148,15 @@ $frame
     );
 
 $page->addLine(
-    Units::mm(20),
-    Units::mm(235),
-    Units::mm(190),
-    Units::mm(235),
+    new Position(Units::mm(20), Units::mm(235)),
+    new Position(Units::mm(190), Units::mm(235)),
     1.5,
     Color::rgb(220, 20, 60),
     Opacity::stroke(0.4),
 );
 
 $page->addRectangle(
-    Units::mm(20),
-    Units::mm(200),
-    Units::mm(60),
-    Units::mm(20),
+    new Rect(Units::mm(20), Units::mm(200), Units::mm(60), Units::mm(20)),
     1.0,
     Color::rgb(220, 20, 60),
     Color::gray(0.92),
@@ -210,10 +206,8 @@ $page->addPolygon(
 );
 
 $page->addArrow(
-    Units::mm(145),
-    Units::mm(210),
-    Units::mm(170),
-    Units::mm(210),
+    new Position(Units::mm(145), Units::mm(210)),
+    new Position(Units::mm(170), Units::mm(210)),
     1.5,
     Color::rgb(220, 20, 60),
     Opacity::both(0.4),
@@ -232,8 +226,7 @@ $page->addStar(
 
 $page->addImage(
     Image::fromFile('assets/images/demo.jpg'),
-    Units::mm(100),
-    Units::mm(170),
+    new Position(Units::mm(100), Units::mm(170)),
     Units::mm(70),
     Units::mm(46.67),
 );
@@ -252,8 +245,7 @@ $page->addText(
 
 $page->addBadge(
     'Beta',
-    Units::mm(20),
-    Units::mm(140),
+    new Position(Units::mm(20), Units::mm(140)),
     'NotoSans-Regular',
     11,
     new \Kalle\Pdf\Document\Style\BadgeStyle(
@@ -326,8 +318,8 @@ $page->addCheckbox(
 );
 
 $page->addText('Akzeptiert', new Position(Units::mm(168), Units::mm(14)), 'Helvetica', 11);
-$page->addRadioButton('delivery', 'standard', Units::mm(20), Units::mm(2), Units::mm(5), true);
-$page->addRadioButton('delivery', 'express', Units::mm(55), Units::mm(2), Units::mm(5), false);
+$page->addRadioButton('delivery', 'standard', new Position(Units::mm(20), Units::mm(2)), Units::mm(5), true);
+$page->addRadioButton('delivery', 'express', new Position(Units::mm(55), Units::mm(2)), Units::mm(5), false);
 
 $page->createTable(
     new Position(Units::mm(20), Units::mm(135)),
@@ -820,15 +812,12 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 Beispiele:
 
 ```php
-$page->addLine(20, 200, 180, 200, 2.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
+$page->addLine(new Position(20, 200), new Position(180, 200), 2.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
 
-$page->addRectangle(20, 140, 80, 30, null, null, Color::gray(0.9));
+$page->addRectangle(new Rect(20, 140, 80, 30), null, null, Color::gray(0.9));
 
 $page->addRectangle(
-    20,
-    90,
-    80,
-    30,
+    new Rect(20, 90, 80, 30),
     1.5,
     Color::rgb(0, 0, 0),
     Color::rgb(240, 240, 240),
@@ -866,10 +855,10 @@ $page->addPolygon(
     Color::gray(0.92),
 );
 
-$page->addArrow(320, 160, 380, 160, 2.0, Color::rgb(200, 30, 30), Opacity::both(0.5));
+$page->addArrow(new Position(320, 160), new Position(380, 160), 2.0, Color::rgb(200, 30, 30), Opacity::both(0.5));
 
 $image = Image::fromFile('assets/images/demo.jpg');
-$page->addImage($image, 110, 80, 70, 46.67);
+$page->addImage($image, new Position(110, 80), 70, 46.67);
 
 $page->addText(
     text: 'OpenAI',
@@ -898,7 +887,7 @@ $frame->addParagraph(
 );
 
 $document->addDestination('docs', $page);
-$page->addInternalLink(20, 30, 60, 12, 'docs');
+$page->addInternalLink(new Rect(20, 30, 60, 12), 'docs');
 $page->addText(
     text: 'Zu Docs springen',
     position: new Position(20, 15),
@@ -978,10 +967,7 @@ Vorhandene Feldtypen:
 ```php
 $page->addTextField(
     'customer_name',
-    Units::mm(20),
-    Units::mm(200),
-    Units::mm(80),
-    Units::mm(10),
+    new Rect(Units::mm(20), Units::mm(200), Units::mm(80), Units::mm(10)),
     'Ada Lovelace',
     'Helvetica',
     11,
@@ -994,10 +980,7 @@ Mehrzeilige Felder:
 ```php
 $page->addTextField(
     'notes',
-    Units::mm(20),
-    Units::mm(160),
-    Units::mm(80),
-    Units::mm(20),
+    new Rect(Units::mm(20), Units::mm(160), Units::mm(80), Units::mm(20)),
     "Erste Zeile\nZweite Zeile",
     'Helvetica',
     11,
@@ -1010,10 +993,7 @@ Feld-Flags:
 ```php
 $page->addTextField(
     'pin',
-    Units::mm(20),
-    Units::mm(140),
-    Units::mm(40),
-    Units::mm(10),
+    new Rect(Units::mm(20), Units::mm(140), Units::mm(40), Units::mm(10)),
     '1234',
     'Helvetica',
     11,
@@ -1029,8 +1009,7 @@ $page->addTextField(
 ```php
 $page->addCheckbox(
     'accept_terms',
-    Units::mm(20),
-    Units::mm(120),
+    new Position(Units::mm(20), Units::mm(120)),
     Units::mm(6),
     true,
 );
@@ -1039,8 +1018,8 @@ $page->addCheckbox(
 ### RadioButton
 
 ```php
-$page->addRadioButton('delivery', 'standard', Units::mm(20), Units::mm(100), Units::mm(6), true);
-$page->addRadioButton('delivery', 'express', Units::mm(50), Units::mm(100), Units::mm(6), false);
+$page->addRadioButton('delivery', 'standard', new Position(Units::mm(20), Units::mm(100)), Units::mm(6), true);
+$page->addRadioButton('delivery', 'express', new Position(Units::mm(50), Units::mm(100)), Units::mm(6), false);
 ```
 
 Radio-Buttons mit demselben Feldnamen bilden automatisch eine Gruppe.
@@ -1050,10 +1029,7 @@ Radio-Buttons mit demselben Feldnamen bilden automatisch eine Gruppe.
 ```php
 $page->addComboBox(
     'country',
-    Units::mm(20),
-    Units::mm(80),
-    Units::mm(60),
-    Units::mm(10),
+    new Rect(Units::mm(20), Units::mm(80), Units::mm(60), Units::mm(10)),
     [
         'de' => 'Deutschland',
         'at' => 'Oesterreich',
@@ -1071,10 +1047,7 @@ Editierbare ComboBox:
 ```php
 $page->addComboBox(
     'custom_country',
-    Units::mm(90),
-    Units::mm(80),
-    Units::mm(60),
-    Units::mm(10),
+    new Rect(Units::mm(90), Units::mm(80), Units::mm(60), Units::mm(10)),
     [
         'de' => 'Deutschland',
         'at' => 'Oesterreich',
@@ -1093,10 +1066,7 @@ $page->addComboBox(
 ```php
 $page->addListBox(
     'topics',
-    Units::mm(20),
-    Units::mm(40),
-    Units::mm(60),
-    Units::mm(25),
+    new Rect(Units::mm(20), Units::mm(40), Units::mm(60), Units::mm(25)),
     [
         'pdf' => 'PDF',
         'forms' => 'Forms',
@@ -1114,10 +1084,7 @@ Mehrfachauswahl:
 ```php
 $page->addListBox(
     'topic_selection',
-    Units::mm(90),
-    Units::mm(40),
-    Units::mm(60),
-    Units::mm(25),
+    new Rect(Units::mm(90), Units::mm(40), Units::mm(60), Units::mm(25)),
     [
         'pdf' => 'PDF',
         'forms' => 'Forms',
@@ -1136,10 +1103,7 @@ $page->addListBox(
 ```php
 $page->addSignatureField(
     'approval_signature',
-    Units::mm(20),
-    Units::mm(10),
-    Units::mm(80),
-    Units::mm(18),
+    new Rect(Units::mm(20), Units::mm(10), Units::mm(80), Units::mm(18)),
 );
 ```
 
@@ -1149,10 +1113,7 @@ $page->addSignatureField(
 $page->addPushButton(
     'save_form',
     'Speichern',
-    Units::mm(110),
-    Units::mm(10),
-    Units::mm(40),
-    Units::mm(10),
+    new Rect(Units::mm(110), Units::mm(10), Units::mm(40), Units::mm(10)),
 );
 ```
 
@@ -1162,70 +1123,49 @@ Mit Actions:
 $page->addPushButton(
     'save_form',
     'Speichern',
-    Units::mm(20),
-    Units::mm(10),
-    Units::mm(40),
-    Units::mm(10),
+    new Rect(Units::mm(20), Units::mm(10), Units::mm(40), Units::mm(10)),
     action: new SubmitFormAction('https://example.com/form-submit'),
 );
 
 $page->addPushButton(
     'reset_form',
     'Zuruecksetzen',
-    Units::mm(65),
-    Units::mm(10),
-    Units::mm(45),
-    Units::mm(10),
+    new Rect(Units::mm(65), Units::mm(10), Units::mm(45), Units::mm(10)),
     action: new ResetFormAction(),
 );
 
 $page->addPushButton(
     'validate_form',
     'Pruefen',
-    Units::mm(115),
-    Units::mm(10),
-    Units::mm(35),
-    Units::mm(10),
+    new Rect(Units::mm(115), Units::mm(10), Units::mm(35), Units::mm(10)),
     action: new JavaScriptAction("app.alert('Formular pruefen');"),
 );
 
 $page->addPushButton(
     'prev_page',
     'Zurueck',
-    Units::mm(155),
-    Units::mm(10),
-    Units::mm(35),
-    Units::mm(10),
+    new Rect(Units::mm(155), Units::mm(10), Units::mm(35), Units::mm(10)),
     action: new NamedAction('PrevPage'),
 );
 
 $page->addPushButton(
     'goto_table',
     'Zur Tabelle',
-    Units::mm(20),
-    Units::mm(22),
-    Units::mm(50),
-    Units::mm(10),
+    new Rect(Units::mm(20), Units::mm(22), Units::mm(50), Units::mm(10)),
     action: new GoToAction('table-demo'),
 );
 
 $page->addPushButton(
     'open_remote',
     'Extern',
-    Units::mm(75),
-    Units::mm(22),
-    Units::mm(35),
-    Units::mm(10),
+    new Rect(Units::mm(75), Units::mm(22), Units::mm(35), Units::mm(10)),
     action: new GoToRemoteAction('guide.pdf', 'chapter-1'),
 );
 
 $page->addPushButton(
     'open_file',
     'Datei',
-    Units::mm(115),
-    Units::mm(22),
-    Units::mm(35),
-    Units::mm(10),
+    new Rect(Units::mm(115), Units::mm(22), Units::mm(35), Units::mm(10)),
     action: new LaunchAction('guide.pdf'),
 );
 
@@ -1303,7 +1243,7 @@ $page->layer($notesLayer, static function (\Kalle\Pdf\Document\Page $page): void
 });
 
 $page->layer($gridLayer, static function (\Kalle\Pdf\Document\Page $page): void {
-    $page->addLine(Units::mm(20), Units::mm(200), Units::mm(190), Units::mm(200), 0.5, Color::gray(0.7));
+    $page->addLine(new Position(Units::mm(20), Units::mm(200)), new Position(Units::mm(190), Units::mm(200)), 0.5, Color::gray(0.7));
 });
 
 $page->addPushButton(
@@ -1350,15 +1290,12 @@ Wichtig:
 ### Weitere Annotationen
 
 ```php
-$page->addTextAnnotation(20, 200, 8, 8, 'Kurzer Kommentar', 'QA', 'Comment', true);
+$page->addTextAnnotation(new Rect(20, 200, 8, 8), 'Kurzer Kommentar', 'QA', 'Comment', true);
 $annotation = $page->getAnnotations()[0];
-$page->addPopupAnnotation($annotation, 32, 180, 60, 40, true);
+$page->addPopupAnnotation($annotation, new Rect(32, 180, 60, 40), true);
 
 $page->addFreeTextAnnotation(
-    35,
-    190,
-    70,
-    18,
+    new Rect(35, 190, 70, 18),
     'Direkter Hinweis auf der Seite',
     'Helvetica',
     11,
@@ -1368,19 +1305,17 @@ $page->addFreeTextAnnotation(
     'QA',
 );
 
-$page->addHighlightAnnotation(20, 170, 65, 6, Color::rgb(255, 255, 0), 'Highlight', 'QA');
-$page->addUnderlineAnnotation(88, 170, 28, 6, Color::rgb(0, 0, 255), 'Underline', 'QA');
-$page->addStrikeOutAnnotation(119, 170, 28, 6, Color::rgb(255, 0, 0), 'StrikeOut', 'QA');
-$page->addSquigglyAnnotation(150, 170, 40, 6, Color::rgb(255, 0, 255), 'Squiggly', 'QA');
-$page->addStampAnnotation(20, 150, 35, 14, 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
-$page->addSquareAnnotation(20, 130, 24, 14, Color::rgb(255, 0, 0), Color::gray(0.92), 'Square', 'QA', AnnotationBorderStyle::solid(2.0));
-$page->addCircleAnnotation(52, 130, 24, 14, Color::rgb(0, 0, 255), Color::gray(0.92), 'Circle', 'QA', AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
-$page->addFileAttachment(65, 130, 8, 8, $attachment, 'PushPin', 'Sichtbarer Dateianhang');
+$page->addHighlightAnnotation(new Rect(20, 170, 65, 6), Color::rgb(255, 255, 0), 'Highlight', 'QA');
+$page->addUnderlineAnnotation(new Rect(88, 170, 28, 6), Color::rgb(0, 0, 255), 'Underline', 'QA');
+$page->addStrikeOutAnnotation(new Rect(119, 170, 28, 6), Color::rgb(255, 0, 0), 'StrikeOut', 'QA');
+$page->addSquigglyAnnotation(new Rect(150, 170, 40, 6), Color::rgb(255, 0, 255), 'Squiggly', 'QA');
+$page->addStampAnnotation(new Rect(20, 150, 35, 14), 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
+$page->addSquareAnnotation(new Rect(20, 130, 24, 14), Color::rgb(255, 0, 0), Color::gray(0.92), 'Square', 'QA', AnnotationBorderStyle::solid(2.0));
+$page->addCircleAnnotation(new Rect(52, 130, 24, 14), Color::rgb(0, 0, 255), Color::gray(0.92), 'Circle', 'QA', AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
+$page->addFileAttachment(new Rect(65, 130, 8, 8), $attachment, 'PushPin', 'Sichtbarer Dateianhang');
 $page->addLineAnnotation(
-    20,
-    110,
-    48,
-    102,
+    new Position(20, 110),
+    new Position(48, 102),
     Color::rgb(220, 40, 40),
     'Line',
     'QA',
@@ -1390,7 +1325,7 @@ $page->addLineAnnotation(
     AnnotationBorderStyle::dashed(2.0, [4.0, 2.0]),
 );
 $line = $page->getAnnotations()[count($page->getAnnotations()) - 1];
-$page->addPopupAnnotation($line, 18, 84, 34, 14, true);
+$page->addPopupAnnotation($line, new Rect(18, 84, 34, 14), true);
 $page->addPolyLineAnnotation(
     [
         [58.0, 104.0],
@@ -1407,7 +1342,7 @@ $page->addPolyLineAnnotation(
     AnnotationBorderStyle::solid(2.5),
 );
 $polyLine = $page->getAnnotations()[count($page->getAnnotations()) - 1];
-$page->addPopupAnnotation($polyLine, 58, 84, 34, 14);
+$page->addPopupAnnotation($polyLine, new Rect(58, 84, 34, 14));
 $page->addPolygonAnnotation(
     [
         [95.0, 102.0],
@@ -1423,13 +1358,10 @@ $page->addPolygonAnnotation(
     AnnotationBorderStyle::dashed(),
 );
 $polygon = $page->getAnnotations()[count($page->getAnnotations()) - 1];
-$page->addPopupAnnotation($polygon, 98, 84, 34, 14);
-$page->addCaretAnnotation(128, 98, 10, 12, 'Einfuemarke', 'QA', 'P');
+$page->addPopupAnnotation($polygon, new Rect(98, 84, 34, 14));
+$page->addCaretAnnotation(new Rect(128, 98, 10, 12), 'Einfuemarke', 'QA', 'P');
 $page->addInkAnnotation(
-    85,
-    127,
-    45,
-    20,
+    new Rect(85, 127, 45, 20),
     [
         [
             [88.0, 132.0],

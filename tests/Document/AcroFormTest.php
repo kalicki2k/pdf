@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Geometry\Rect;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +17,7 @@ final class AcroFormTest extends TestCase
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $page = $document->addPage();
-        $page->addTextField('customer_name', 10, 20, 100, 20, 'Ada', 'Helvetica', 12);
+        $page->addTextField('customer_name', new Rect(10, 20, 100, 20), 'Ada', 'Helvetica', 12);
 
         $acroForm = $document->acroForm;
 

@@ -20,7 +20,7 @@ use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Insets;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
@@ -77,7 +77,7 @@ final class PageTest extends TestCase
         $page = $document->addPage();
         $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
 
-        self::assertSame($page, $page->addImage($image, 10, 20, 160, 100));
+        self::assertSame($page, $page->addImage($image, new Position(10, 20), 160, 100));
         self::assertStringContainsString('/XObject << /Im1 7 0 R >>', $page->resources->render());
         self::assertStringContainsString("160 0 0 100 10 20 cm\n/Im1 Do", $page->contents->render());
         self::assertStringContainsString("7 0 obj\n<< /Type /XObject\n/Subtype /Image", $document->render());
@@ -93,7 +93,7 @@ final class PageTest extends TestCase
 
         self::assertNotNull($file);
 
-        $result = $page->addFileAttachment(10, 20, 12, 14, $file, 'Graph', 'Anhang');
+        $result = $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Anhang');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /FileAttachment', $document->render());
@@ -107,7 +107,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addTextAnnotation(10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
+        $result = $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA', 'Comment', true);
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Text', $document->render());
@@ -123,10 +123,10 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->addTextAnnotation(10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
+        $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA', 'Comment', true);
         $annotation = $page->getAnnotations()[0];
 
-        $result = $page->addPopupAnnotation($annotation, 30, 40, 60, 40, true);
+        $result = $page->addPopupAnnotation($annotation, new Rect(30, 40, 60, 40), true);
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Popup', $document->render());
@@ -142,10 +142,7 @@ final class PageTest extends TestCase
         $page = $document->addPage();
 
         $result = $page->addFreeTextAnnotation(
-            10,
-            20,
-            80,
-            24,
+            new Rect(10, 20, 80, 24),
             'Hinweistext',
             'Helvetica',
             12,
@@ -169,7 +166,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addHighlightAnnotation(10, 20, 80, 12, Color::rgb(255, 255, 0), 'Markiert', 'QA');
+        $result = $page->addHighlightAnnotation(new Rect(10, 20, 80, 12), Color::rgb(255, 255, 0), 'Markiert', 'QA');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Highlight', $document->render());
@@ -184,7 +181,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addUnderlineAnnotation(10, 20, 80, 12, Color::rgb(0, 0, 255), 'Unterstrichen', 'QA');
+        $result = $page->addUnderlineAnnotation(new Rect(10, 20, 80, 12), Color::rgb(0, 0, 255), 'Unterstrichen', 'QA');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Underline', $document->render());
@@ -199,7 +196,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addStrikeOutAnnotation(10, 20, 80, 12, Color::rgb(255, 0, 0), 'Durchgestrichen', 'QA');
+        $result = $page->addStrikeOutAnnotation(new Rect(10, 20, 80, 12), Color::rgb(255, 0, 0), 'Durchgestrichen', 'QA');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /StrikeOut', $document->render());
@@ -214,7 +211,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addSquigglyAnnotation(10, 20, 80, 12, Color::rgb(255, 0, 255), 'Wellig', 'QA');
+        $result = $page->addSquigglyAnnotation(new Rect(10, 20, 80, 12), Color::rgb(255, 0, 255), 'Wellig', 'QA');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Squiggly', $document->render());
@@ -229,7 +226,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addStampAnnotation(10, 20, 80, 24, 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
+        $result = $page->addStampAnnotation(new Rect(10, 20, 80, 24), 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Stamp', $document->render());
@@ -244,7 +241,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addSquareAnnotation(10, 20, 80, 24, Color::rgb(255, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
+        $result = $page->addSquareAnnotation(new Rect(10, 20, 80, 24), Color::rgb(255, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Square', $document->render());
@@ -258,7 +255,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addCircleAnnotation(10, 20, 80, 24, Color::rgb(0, 0, 255), Color::gray(0.9), 'Kreis', 'QA', AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
+        $result = $page->addCircleAnnotation(new Rect(10, 20, 80, 24), Color::rgb(0, 0, 255), Color::gray(0.9), 'Kreis', 'QA', AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Circle', $document->render());
@@ -274,10 +271,7 @@ final class PageTest extends TestCase
         $page = $document->addPage();
 
         $result = $page->addInkAnnotation(
-            10,
-            20,
-            80,
-            24,
+            new Rect(10, 20, 80, 24),
             [
                 [[10.0, 20.0], [20.0, 30.0], [30.0, 20.0]],
             ],
@@ -299,10 +293,8 @@ final class PageTest extends TestCase
         $page = $document->addPage();
 
         $result = $page->addLineAnnotation(
-            10,
-            20,
-            90,
-            32,
+            new Position(10, 20),
+            new Position(90, 32),
             Color::rgb(255, 0, 0),
             'Linie',
             'QA',
@@ -369,9 +361,9 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->addLineAnnotation(10, 20, 90, 32, contents: 'Linie');
+        $page->addLineAnnotation(new Position(10, 20), new Position(90, 32), contents: 'Linie');
         $line = $page->getAnnotations()[0];
-        $page->addPopupAnnotation($line, 20, 40, 60, 40, true);
+        $page->addPopupAnnotation($line, new Rect(20, 40, 60, 40), true);
 
         self::assertStringContainsString('/Popup 8 0 R', $document->render());
         self::assertStringContainsString('/Subtype /Popup', $document->render());
@@ -383,7 +375,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addCaretAnnotation(10, 20, 16, 18, 'Einfuegen', 'QA', 'P');
+        $result = $page->addCaretAnnotation(new Rect(10, 20, 16, 18), 'Einfuegen', 'QA', 'P');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Caret', $document->render());
@@ -399,7 +391,7 @@ final class PageTest extends TestCase
         $page = $document->addPage();
         $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
 
-        $page->addImage($image, 10, 20);
+        $page->addImage($image, new Position(10, 20));
 
         self::assertStringContainsString("320 0 0 200 10 20 cm\n/Im1 Do", $page->contents->render());
     }
@@ -414,7 +406,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Image width must be greater than zero.');
 
-        $page->addImage($image, 10, 20, 0, 100);
+        $page->addImage($image, new Position(10, 20), 0, 100);
     }
 
     #[Test]
@@ -423,7 +415,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addLine(10, 20, 100, 20);
+        $result = $page->addLine(new Position(10, 20), new Position(100, 20));
 
         self::assertSame($page, $result);
         self::assertStringContainsString("1 w\n10 20 m\n100 20 l\nS", $page->contents->render());
@@ -467,7 +459,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->addLine(10, 20, 100, 20, 2.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
+        $page->addLine(new Position(10, 20), new Position(100, 20), 2.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
 
         self::assertStringContainsString('/ExtGState << /GS1 << /CA 0.25 >> >>', $page->resources->render());
         self::assertStringContainsString("1 0 0 RG\n/GS1 gs\n2.5 w\n10 20 m\n100 20 l\nS", $page->contents->render());
@@ -482,7 +474,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Line width must be greater than zero.');
 
-        $page->addLine(10, 20, 100, 20, 0);
+        $page->addLine(new Position(10, 20), new Position(100, 20), 0);
     }
 
     #[Test]
@@ -491,7 +483,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addRectangle(10, 20, 100, 40);
+        $result = $page->addRectangle(new Rect(10, 20, 100, 40));
 
         self::assertSame($page, $result);
         self::assertStringContainsString("1 w\n10 20 100 40 re\nS", $page->contents->render());
@@ -503,7 +495,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->addRectangle(10, 20, 100, 40, null, null, Color::gray(0.5));
+        $page->addRectangle(new Rect(10, 20, 100, 40), null, null, Color::gray(0.5));
 
         self::assertStringContainsString("0.5 g\n10 20 100 40 re\nf", $page->contents->render());
     }
@@ -514,7 +506,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->addRectangle(10, 20, 100, 40, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
+        $page->addRectangle(new Rect(10, 20, 100, 40), 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
         self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n10 20 100 40 re\nB", $page->contents->render());
@@ -529,7 +521,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Rectangle requires either a stroke or a fill.');
 
-        $page->addRectangle(10, 20, 100, 40, null, null, null);
+        $page->addRectangle(new Rect(10, 20, 100, 40), null, null, null);
     }
 
     #[Test]
@@ -538,7 +530,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addRoundedRectangle(10, 20, 100, 40, 8, 1.5, Color::rgb(255, 0, 0));
+        $result = $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 8, 1.5, Color::rgb(255, 0, 0));
 
         self::assertSame($page, $result);
         self::assertStringContainsString("1 0 0 RG\n1.5 w\n18 60 m", $page->contents->render());
@@ -552,7 +544,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->addRoundedRectangle(10, 20, 100, 40, 8, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
+        $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 8, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
         self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n18 60 m", $page->contents->render());
@@ -568,7 +560,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Rounded rectangle radius must not exceed half the width or height.');
 
-        $page->addRoundedRectangle(10, 20, 100, 40, 25);
+        $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 25);
     }
 
     #[Test]
@@ -578,7 +570,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addBadge('Beta', 10, 20);
+        $result = $page->addBadge('Beta', new Position(10, 20));
 
         self::assertSame($page, $result);
         self::assertStringContainsString('0.9 g', $page->contents->render());
@@ -594,8 +586,7 @@ final class PageTest extends TestCase
 
         $page->addBadge(
             'Aktiv',
-            10,
-            20,
+            new Position(10, 20),
             'Helvetica',
             12,
             new BadgeStyle(
@@ -625,8 +616,7 @@ final class PageTest extends TestCase
 
         $page->addBadge(
             'Rounded',
-            10,
-            20,
+            new Position(10, 20),
             'Helvetica',
             12,
             new BadgeStyle(
@@ -651,7 +641,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Badge text must not be empty.');
 
-        $page->addBadge('', 10, 20);
+        $page->addBadge('', new Position(10, 20));
     }
 
     #[Test]
@@ -727,7 +717,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addInternalLink(10, 20, 80, 12, 'table-demo');
+        $result = $page->addInternalLink(new Rect(10, 20, 80, 12), 'table-demo');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Annots [7 0 R]', $page->render());
@@ -740,7 +730,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->addLink(10, 20, 80, 12, '#table-demo');
+        $page->addLink(new Rect(10, 20, 80, 12), '#table-demo');
 
         self::assertStringContainsString('/Dest /table-demo', $document->render());
     }
@@ -949,7 +939,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addArrow(20, 200, 100, 200, 2.0, Color::rgb(255, 0, 0), Opacity::both(0.4), 12, 10);
+        $result = $page->addArrow(new Position(20, 200), new Position(100, 200), 2.0, Color::rgb(255, 0, 0), Opacity::both(0.4), 12, 10);
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
@@ -966,7 +956,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Arrow requires distinct start and end points.');
 
-        $page->addArrow(10, 10, 10, 10);
+        $page->addArrow(new Position(10, 10), new Position(10, 10));
     }
 
     #[Test]
@@ -1013,7 +1003,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addLink(10, 20, 80, 12, 'https://example.com');
+        $result = $page->addLink(new Rect(10, 20, 80, 12), 'https://example.com');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Annots [7 0 R]', $page->render());
@@ -1028,7 +1018,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addTextField('customer_name', 10, 20, 80, 12, 'Ada', 'Helvetica', 12);
+        $result = $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12);
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Annots [9 0 R]', $page->render());
@@ -1045,7 +1035,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addTextField('notes', 10, 20, 80, 30, "Line 1\nLine 2", 'Helvetica', 12, true);
+        $result = $page->addTextField('notes', new Rect(10, 20, 80, 30), "Line 1\nLine 2", 'Helvetica', 12, true);
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/FT /Tx', $document->render());
@@ -1063,10 +1053,7 @@ final class PageTest extends TestCase
 
         $result = $page->addTextField(
             'secret',
-            10,
-            20,
-            80,
-            12,
+            new Rect(10, 20, 80, 12),
             'value',
             'Helvetica',
             12,
@@ -1086,7 +1073,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addTextField('customer_name', 10, 20, 80, 12, 'Ada', 'Helvetica', 12, defaultValue: 'Grace');
+        $result = $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12, defaultValue: 'Grace');
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/V (Ada)', $document->render());
@@ -1099,7 +1086,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addCheckbox('accept_terms', 10, 20, 12, true);
+        $result = $page->addCheckbox('accept_terms', new Position(10, 20), 12, true);
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Widget', $document->render());
@@ -1115,8 +1102,8 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $page->addRadioButton('delivery', 'standard', 10, 20, 12, true);
-        $result = $page->addRadioButton('delivery', 'express', 30, 20, 12, false);
+        $page->addRadioButton('delivery', 'standard', new Position(10, 20), 12, true);
+        $result = $page->addRadioButton('delivery', 'express', new Position(30, 20), 12, false);
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/FT /Btn', $document->render());
@@ -1137,10 +1124,7 @@ final class PageTest extends TestCase
 
         $result = $page->addComboBox(
             'country',
-            10,
-            20,
-            80,
-            12,
+            new Rect(10, 20, 80, 12),
             ['de' => 'Deutschland', 'at' => 'Oesterreich'],
             'de',
             'Helvetica',
@@ -1164,10 +1148,7 @@ final class PageTest extends TestCase
 
         $result = $page->addComboBox(
             'country',
-            10,
-            20,
-            80,
-            12,
+            new Rect(10, 20, 80, 12),
             ['de' => 'Deutschland', 'at' => 'Oesterreich'],
             'de',
             'Helvetica',
@@ -1189,10 +1170,7 @@ final class PageTest extends TestCase
 
         $result = $page->addComboBox(
             'country',
-            10,
-            20,
-            80,
-            12,
+            new Rect(10, 20, 80, 12),
             ['de' => 'Deutschland'],
             'de',
             'Helvetica',
@@ -1216,10 +1194,7 @@ final class PageTest extends TestCase
 
         $page->addComboBox(
             'country',
-            10,
-            20,
-            80,
-            12,
+            new Rect(10, 20, 80, 12),
             ['de' => 'Deutschland'],
             'de',
             'Helvetica',
@@ -1237,10 +1212,7 @@ final class PageTest extends TestCase
 
         $result = $page->addListBox(
             'topics',
-            10,
-            20,
-            80,
-            40,
+            new Rect(10, 20, 80, 40),
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
             'forms',
             'Helvetica',
@@ -1263,10 +1235,7 @@ final class PageTest extends TestCase
 
         $result = $page->addListBox(
             'topics',
-            10,
-            20,
-            80,
-            40,
+            new Rect(10, 20, 80, 40),
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
             'forms',
             'Helvetica',
@@ -1288,10 +1257,7 @@ final class PageTest extends TestCase
 
         $result = $page->addListBox(
             'topics',
-            10,
-            20,
-            80,
-            40,
+            new Rect(10, 20, 80, 40),
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
             ['pdf', 'forms'],
             'Helvetica',
@@ -1318,10 +1284,7 @@ final class PageTest extends TestCase
 
         $page->addListBox(
             'topics',
-            10,
-            20,
-            80,
-            40,
+            new Rect(10, 20, 80, 40),
             ['pdf' => 'PDF'],
             'pdf',
             'Helvetica',
@@ -1336,7 +1299,7 @@ final class PageTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
 
-        $result = $page->addSignatureField('approval_signature', 10, 20, 100, 30);
+        $result = $page->addSignatureField('approval_signature', new Rect(10, 20, 100, 30));
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/AcroForm 7 0 R', $document->render());
@@ -1352,7 +1315,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addPushButton('save_form', 'Speichern', 10, 20, 80, 16);
+        $result = $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16));
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/AcroForm 8 0 R', $document->render());
@@ -1372,10 +1335,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'save_form',
             'Speichern',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new SubmitFormAction('https://example.com/submit'),
         );
 
@@ -1393,10 +1353,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'reset_form',
             'Zuruecksetzen',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new ResetFormAction(),
         );
 
@@ -1414,10 +1371,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'validate_form',
             'Pruefen',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new JavaScriptAction("app.alert('Hallo');"),
         );
 
@@ -1435,10 +1389,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'prev_page',
             'Zurueck',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new NamedAction('PrevPage'),
         );
 
@@ -1456,10 +1407,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'goto_table',
             'Zur Tabelle',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new GoToAction('table-demo'),
         );
 
@@ -1477,10 +1425,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'open_remote',
             'Extern',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new GoToRemoteAction('guide.pdf', 'chapter-1'),
         );
 
@@ -1498,10 +1443,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'open_file',
             'Datei',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new LaunchAction('guide.pdf'),
         );
 
@@ -1519,10 +1461,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'open_site',
             'Website',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new UriAction('https://example.com'),
         );
 
@@ -1540,10 +1479,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'hide_notes',
             'Ausblenden',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new HideAction('notes_panel'),
         );
 
@@ -1561,10 +1497,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'import_data',
             'Import',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new ImportDataAction('form-data.fdf'),
         );
 
@@ -1583,10 +1516,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'toggle_layer',
             'Layer',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new SetOcgStateAction(['Toggle', $layer], false),
         );
 
@@ -1604,10 +1534,7 @@ final class PageTest extends TestCase
         $result = $page->addPushButton(
             'open_thread',
             'Thread',
-            10,
-            20,
-            80,
-            16,
+            new Rect(10, 20, 80, 16),
             action: new ThreadAction('article-1', 'threads.pdf'),
         );
 
@@ -1624,7 +1551,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Link width must be greater than zero.');
 
-        $page->addLink(10, 20, 0, 12, 'https://example.com');
+        $page->addLink(new Rect(10, 20, 0, 12), 'https://example.com');
     }
 
     #[Test]
@@ -1636,7 +1563,7 @@ final class PageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Link URL must not be empty.');
 
-        $page->addLink(10, 20, 80, 12, '');
+        $page->addLink(new Rect(10, 20, 80, 12), '');
     }
 
     #[Test]

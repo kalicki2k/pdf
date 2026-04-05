@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Table\Rendering;
 
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
@@ -32,7 +34,7 @@ final readonly class CellBoxRenderer
         bool $renderLeftBorder = true,
     ): void {
         if ($fillColor !== null) {
-            $page->addRectangle($x, $y, $width, $height, null, null, $fillColor);
+            $page->addRectangle(new Rect($x, $y, $width, $height), null, null, $fillColor);
         }
 
         $topBorder = $renderTopBorder ? $this->styleResolver->resolveBorderSide('top', $defaultBorder, $rowBorder, $cellBorder) : null;
@@ -52,10 +54,7 @@ final readonly class CellBoxRenderer
             && $this->styleResolver->bordersAreEquivalent($topBorder, $rightBorder, $bottomBorder, $leftBorder)
         ) {
             $page->addRectangle(
-                $x,
-                $y,
-                $width,
-                $height,
+                new Rect($x, $y, $width, $height),
                 $topBorder->width,
                 $topBorder->color,
                 null,
@@ -66,19 +65,19 @@ final readonly class CellBoxRenderer
         }
 
         if ($topBorder !== null) {
-            $page->addLine($x, $y + $height, $x + $width, $y + $height, $topBorder->width, $topBorder->color, $topBorder->opacity);
+            $page->addLine(new Position($x, $y + $height), new Position($x + $width, $y + $height), $topBorder->width, $topBorder->color, $topBorder->opacity);
         }
 
         if ($rightBorder !== null) {
-            $page->addLine($x + $width, $y, $x + $width, $y + $height, $rightBorder->width, $rightBorder->color, $rightBorder->opacity);
+            $page->addLine(new Position($x + $width, $y), new Position($x + $width, $y + $height), $rightBorder->width, $rightBorder->color, $rightBorder->opacity);
         }
 
         if ($bottomBorder !== null) {
-            $page->addLine($x, $y, $x + $width, $y, $bottomBorder->width, $bottomBorder->color, $bottomBorder->opacity);
+            $page->addLine(new Position($x, $y), new Position($x + $width, $y), $bottomBorder->width, $bottomBorder->color, $bottomBorder->opacity);
         }
 
         if ($leftBorder !== null) {
-            $page->addLine($x, $y, $x, $y + $height, $leftBorder->width, $leftBorder->color, $leftBorder->opacity);
+            $page->addLine(new Position($x, $y), new Position($x, $y + $height), $leftBorder->width, $leftBorder->color, $leftBorder->opacity);
         }
     }
 }

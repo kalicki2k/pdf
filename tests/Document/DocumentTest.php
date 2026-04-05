@@ -235,7 +235,7 @@ final class DocumentTest extends TestCase
         $document->addPage(100, 100);
         $document->addPage(100, 100);
 
-        $document->addPageNumbers(10, 10);
+        $document->addPageNumbers(new Position(10, 10));
         $document->render();
 
         self::assertStringContainsString('(Seite 1 von 2) Tj', $document->pages->pages[0]->contents->render());
@@ -251,7 +251,7 @@ final class DocumentTest extends TestCase
         $document->addPage(100, 100);
         $document->addPage(100, 100);
 
-        $document->addPageNumbers(10, 90, 'Helvetica', 10, 'Seite {{page}} / {{pages}}', false);
+        $document->addPageNumbers(new Position(10, 90), 'Helvetica', 10, 'Seite {{page}} / {{pages}}', false);
         $document->render();
 
         self::assertStringContainsString('(Seite 1 / 3) Tj', $document->pages->pages[0]->contents->render());
@@ -266,7 +266,7 @@ final class DocumentTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Page number template must not be empty.');
 
-        $document->addPageNumbers(10, 10, template: '');
+        $document->addPageNumbers(new Position(10, 10), template: '');
     }
 
     #[Test]
