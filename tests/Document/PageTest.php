@@ -5,9 +5,21 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\ResetFormAction;
+use Kalle\Pdf\Document\NamedAction;
+use Kalle\Pdf\Document\GoToAction;
+use Kalle\Pdf\Document\GoToRemoteAction;
+use Kalle\Pdf\Document\HideAction;
+use Kalle\Pdf\Document\ImportDataAction;
+use Kalle\Pdf\Document\LaunchAction;
+use Kalle\Pdf\Document\SetOcgStateAction;
+use Kalle\Pdf\Document\SubmitFormAction;
+use Kalle\Pdf\Document\ThreadAction;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\TextSegment;
+use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -978,6 +990,275 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/Subtype /Widget', $document->render());
         self::assertStringContainsString('/FT /Sig', $document->render());
         self::assertStringContainsString('/T (approval_signature)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton('save_form', 'Speichern', 10, 20, 80, 16);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/AcroForm 8 0 R', $document->render());
+        self::assertStringContainsString('/FT /Btn', $document->render());
+        self::assertStringContainsString('/Ff 65536', $document->render());
+        self::assertStringContainsString('/T (save_form)', $document->render());
+        self::assertStringContainsString('/CA (Speichern)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_submit_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'save_form',
+            'Speichern',
+            10,
+            20,
+            80,
+            16,
+            action: new SubmitFormAction('https://example.com/submit'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /SubmitForm /F (https://example.com/submit) >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_reset_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'reset_form',
+            'Zuruecksetzen',
+            10,
+            20,
+            80,
+            16,
+            action: new ResetFormAction(),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /ResetForm >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_javascript_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'validate_form',
+            'Pruefen',
+            10,
+            20,
+            80,
+            16,
+            action: new JavaScriptAction("app.alert('Hallo');"),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("/A << /S /JavaScript /JS (app.alert\\('Hallo'\\);) >>", $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_named_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'prev_page',
+            'Zurueck',
+            10,
+            20,
+            80,
+            16,
+            action: new NamedAction('PrevPage'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /Named /N /PrevPage >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_goto_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'goto_table',
+            'Zur Tabelle',
+            10,
+            20,
+            80,
+            16,
+            action: new GoToAction('table-demo'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /GoTo /D /table-demo >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_goto_remote_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'open_remote',
+            'Extern',
+            10,
+            20,
+            80,
+            16,
+            action: new GoToRemoteAction('guide.pdf', 'chapter-1'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /GoToR /F (guide.pdf) /D /chapter-1 >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_launch_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'open_file',
+            'Datei',
+            10,
+            20,
+            80,
+            16,
+            action: new LaunchAction('guide.pdf'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /Launch /F (guide.pdf) >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_uri_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'open_site',
+            'Website',
+            10,
+            20,
+            80,
+            16,
+            action: new UriAction('https://example.com'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com) >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_hide_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'hide_notes',
+            'Ausblenden',
+            10,
+            20,
+            80,
+            16,
+            action: new HideAction('notes_panel'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /Hide /T (notes_panel) >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_an_import_data_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'import_data',
+            'Import',
+            10,
+            20,
+            80,
+            16,
+            action: new ImportDataAction('form-data.fdf'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /ImportData /F (form-data.fdf) >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_set_ocg_state_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'toggle_layer',
+            'Layer',
+            10,
+            20,
+            80,
+            16,
+            action: new SetOcgStateAction(['Toggle', 'LayerA'], false),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle /LayerA] /PreserveRB false >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_push_button_with_a_thread_action_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton(
+            'open_thread',
+            'Thread',
+            10,
+            20,
+            80,
+            16,
+            action: new ThreadAction('article-1', 'threads.pdf'),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/A << /S /Thread /D (article-1) /F (threads.pdf) >>', $document->render());
     }
 
     #[Test]

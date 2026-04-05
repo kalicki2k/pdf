@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\GoToAction;
+use Kalle\Pdf\Document\JavaScriptAction;
+use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\ResetFormAction;
+use Kalle\Pdf\Document\SubmitFormAction;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Element\Image;
@@ -1103,6 +1108,56 @@ $formPage->addSignatureField(
     Units::mm(12),
     Units::mm(90),
     Units::mm(16),
+);
+
+$formPage->addPushButton(
+    'save_form',
+    'Speichern',
+    Units::mm(20),
+    Units::mm(2),
+    Units::mm(40),
+    Units::mm(8),
+    action: new SubmitFormAction('https://example.com/form-submit'),
+);
+
+$formPage->addPushButton(
+    'reset_form',
+    'Zuruecksetzen',
+    Units::mm(65),
+    Units::mm(2),
+    Units::mm(45),
+    Units::mm(8),
+    action: new ResetFormAction(),
+);
+
+$formPage->addPushButton(
+    'validate_form',
+    'Pruefen',
+    Units::mm(115),
+    Units::mm(2),
+    Units::mm(35),
+    Units::mm(8),
+    action: new JavaScriptAction("app.alert('Formular pruefen');"),
+);
+
+$formPage->addPushButton(
+    'prev_page',
+    'Zurueck',
+    Units::mm(155),
+    Units::mm(2),
+    Units::mm(35),
+    Units::mm(8),
+    action: new NamedAction('PrevPage'),
+);
+
+$formPage->addPushButton(
+    'goto_table',
+    'Zur Tabelle',
+    Units::mm(20),
+    Units::mm(22),
+    Units::mm(50),
+    Units::mm(8),
+    action: new GoToAction('table-demo'),
 );
 
 $formPage->addText('PIN', Units::mm(155), Units::mm(106), 'Helvetica', 11);

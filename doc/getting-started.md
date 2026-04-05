@@ -54,6 +54,18 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\FormFieldFlags;
+use Kalle\Pdf\Document\GoToAction;
+use Kalle\Pdf\Document\GoToRemoteAction;
+use Kalle\Pdf\Document\HideAction;
+use Kalle\Pdf\Document\ImportDataAction;
+use Kalle\Pdf\Document\JavaScriptAction;
+use Kalle\Pdf\Document\LaunchAction;
+use Kalle\Pdf\Document\NamedAction;
+use Kalle\Pdf\Document\ResetFormAction;
+use Kalle\Pdf\Document\SetOcgStateAction;
+use Kalle\Pdf\Document\SubmitFormAction;
+use Kalle\Pdf\Document\ThreadAction;
+use Kalle\Pdf\Document\UriAction;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Styles\CellStyle;
@@ -880,6 +892,7 @@ Vorhandene Feldtypen:
 - `addComboBox(...)`
 - `addListBox(...)`
 - `addSignatureField(...)`
+- `addPushButton(...)`
 
 ### TextField
 
@@ -1051,6 +1064,143 @@ $page->addSignatureField(
 );
 ```
 
+### PushButton
+
+```php
+$page->addPushButton(
+    'save_form',
+    'Speichern',
+    Units::mm(110),
+    Units::mm(10),
+    Units::mm(40),
+    Units::mm(10),
+);
+```
+
+Mit Actions:
+
+```php
+$page->addPushButton(
+    'save_form',
+    'Speichern',
+    Units::mm(20),
+    Units::mm(10),
+    Units::mm(40),
+    Units::mm(10),
+    action: new SubmitFormAction('https://example.com/form-submit'),
+);
+
+$page->addPushButton(
+    'reset_form',
+    'Zuruecksetzen',
+    Units::mm(65),
+    Units::mm(10),
+    Units::mm(45),
+    Units::mm(10),
+    action: new ResetFormAction(),
+);
+
+$page->addPushButton(
+    'validate_form',
+    'Pruefen',
+    Units::mm(115),
+    Units::mm(10),
+    Units::mm(35),
+    Units::mm(10),
+    action: new JavaScriptAction("app.alert('Formular pruefen');"),
+);
+
+$page->addPushButton(
+    'prev_page',
+    'Zurueck',
+    Units::mm(155),
+    Units::mm(10),
+    Units::mm(35),
+    Units::mm(10),
+    action: new NamedAction('PrevPage'),
+);
+
+$page->addPushButton(
+    'goto_table',
+    'Zur Tabelle',
+    Units::mm(20),
+    Units::mm(22),
+    Units::mm(50),
+    Units::mm(10),
+    action: new GoToAction('table-demo'),
+);
+
+$page->addPushButton(
+    'open_remote',
+    'Extern',
+    Units::mm(75),
+    Units::mm(22),
+    Units::mm(35),
+    Units::mm(10),
+    action: new GoToRemoteAction('guide.pdf', 'chapter-1'),
+);
+
+$page->addPushButton(
+    'open_file',
+    'Datei',
+    Units::mm(115),
+    Units::mm(22),
+    Units::mm(35),
+    Units::mm(10),
+    action: new LaunchAction('guide.pdf'),
+);
+
+$page->addPushButton(
+    'open_site',
+    'Website',
+    Units::mm(155),
+    Units::mm(22),
+    Units::mm(35),
+    Units::mm(10),
+    action: new UriAction('https://example.com'),
+);
+
+$page->addPushButton(
+    'hide_notes',
+    'Ausblenden',
+    Units::mm(20),
+    Units::mm(34),
+    Units::mm(40),
+    Units::mm(10),
+    action: new HideAction('notes_panel'),
+);
+
+$page->addPushButton(
+    'import_data',
+    'Import',
+    Units::mm(65),
+    Units::mm(34),
+    Units::mm(35),
+    Units::mm(10),
+    action: new ImportDataAction('form-data.fdf'),
+);
+
+$page->addPushButton(
+    'toggle_layer',
+    'Layer',
+    Units::mm(105),
+    Units::mm(34),
+    Units::mm(35),
+    Units::mm(10),
+    action: new SetOcgStateAction(['Toggle', 'LayerA'], preserveRb: false),
+);
+
+$page->addPushButton(
+    'open_thread',
+    'Thread',
+    Units::mm(145),
+    Units::mm(34),
+    Units::mm(45),
+    Units::mm(10),
+    action: new ThreadAction('article-1', 'threads.pdf'),
+);
+```
+
 Wichtig:
 
 - `value` und `defaultValue` muessen bei ComboBox und ListBox auf vorhandene Export-Werte in `options` zeigen
@@ -1058,6 +1208,8 @@ Wichtig:
 - `editable` aktiviert bei ComboBoxen Freitext-Eingabe zusaetzlich zu den vorhandenen Optionen
 - `multiSelect` erlaubt bei ListBoxen mehrere gleichzeitig gesetzte Werte
 - `addSignatureField(...)` erzeugt aktuell ein sichtbares Signaturfeld als Formular-Widget, aber noch keine echte kryptografische Signatur
+- `addPushButton(...)` unterstuetzt aktuell `SubmitFormAction`, `ResetFormAction`, `JavaScriptAction`, `NamedAction`, `GoToAction`, `GoToRemoteAction`, `LaunchAction`, `UriAction`, `HideAction`, `ImportDataAction`, `SetOcgStateAction` und `ThreadAction`
+- `SetOcgStateAction` bildet aktuell bewusst nur den low-level Action-Pfad ab; ein vollstaendiges OCG-/Layer-Modell gibt es noch nicht
 - `AcroForm` wird automatisch aufgebaut, sobald das erste Feld erzeugt wird
 - Text- und Choice-Felder verlassen sich aktuell noch auf `NeedAppearances`
 - Checkboxen und Radio-Buttons haben bereits eigene Appearance-Streams

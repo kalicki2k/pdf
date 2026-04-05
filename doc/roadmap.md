@@ -38,6 +38,11 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Callouts sind als Hinweisboxen mit Pointer ueber `addCallout(...)` verfuegbar
 - AcroForm ist vorhanden und deckt TextField, Checkbox, RadioButton, ComboBox und ListBox ab
 - Signaturfelder sind als sichtbare `/Sig`-Widgets vorhanden
+- Push-Buttons sind als sichtbare `/Btn`-Widgets vorhanden
+- Push-Buttons unterstuetzen `SubmitForm`, `ResetForm` und `JavaScript`
+- Push-Buttons unterstuetzen ausserdem `NamedAction` und `GoToAction` fuer Viewer- und Dokumentnavigation
+- Push-Buttons unterstuetzen zusaetzlich `GoToRemoteAction`, `LaunchAction` und `UriAction`
+- Push-Buttons unterstuetzen ausserdem `HideAction`, `ImportDataAction`, `SetOcgStateAction` und `ThreadAction`
 - TextField unterstuetzt `multiline`, `defaultValue` und gemeinsame Feld-Flags ueber `FormFieldFlags`
 - ComboBox unterstuetzt `defaultValue` und editierbare Varianten
 - ListBox unterstuetzt `defaultValue` und Mehrfachauswahl

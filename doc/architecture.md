@@ -183,7 +183,12 @@ Die wichtigsten Bausteine sind:
 - `ComboBoxAnnotation`
 - `ListBoxAnnotation`
 - `SignatureFieldAnnotation`
+- `PushButtonAnnotation`
 - `FormFieldFlags`
+- `ButtonAction`
+- `SubmitFormAction`
+- `ResetFormAction`
+- `JavaScriptAction`
 
 `AcroForm` ist aktuell verantwortlich fuer:
 
@@ -227,6 +232,65 @@ Die Feldtypen sind aktuell so umgesetzt:
   - `/FT /Sig`
   - sichtbares Widget-Feld fuer spaetere Signaturen
   - aktuell noch ohne `V`-Signaturdictionary und ohne kryptografische Signaturerzeugung
+
+- `PushButtonAnnotation`
+  - `/FT /Btn`
+  - Pushbutton-Flag im `/Ff`
+  - sichtbare Caption ueber `/MK /CA`
+  - optionales Action-Dictionary ueber `/A`
+
+`ButtonAction` kapselt aktuell zwoelf konkrete Action-Typen:
+
+- `SubmitFormAction`
+  - `/S /SubmitForm`
+  - Ziel-URL ueber `/F (...)`
+
+- `ResetFormAction`
+  - `/S /ResetForm`
+
+- `JavaScriptAction`
+  - `/S /JavaScript`
+  - Skript ueber `/JS (...)`
+
+- `NamedAction`
+  - `/S /Named`
+  - Viewer-Navigation ueber `/N /NextPage`, `/PrevPage`, `/FirstPage`, `/LastPage`
+
+- `GoToAction`
+  - `/S /GoTo`
+  - Sprung zu einem benannten Ziel ueber `/D /zielname`
+
+- `GoToRemoteAction`
+  - `/S /GoToR`
+  - externe PDF-Datei ueber `/F (...)`
+  - Ziel in der Zieldatei ueber `/D /zielname`
+
+- `LaunchAction`
+  - `/S /Launch`
+  - oeffnet eine externe Datei ueber `/F (...)`
+
+- `UriAction`
+  - `/S /URI`
+  - oeffnet eine URL ueber `/URI (...)`
+
+- `HideAction`
+  - `/S /Hide`
+  - blendet ein Ziel ueber `/T (...)` ein oder aus
+  - optionales Ruecksetzen ueber `/H false`
+
+- `ImportDataAction`
+  - `/S /ImportData`
+  - importiert FDF/XFDF-Daten ueber `/F (...)`
+
+- `SetOcgStateAction`
+  - `/S /SetOCGState`
+  - schaltet OCG-/Layer-Zustaende ueber `/State [...]`
+  - ist aktuell nur der low-level Action-Pfad ohne vollstaendiges OCG-Modell
+
+- `ThreadAction`
+  - `/S /Thread`
+  - springt zu einem Artikel-Thread ueber `/D (...)`
+  - optional externe Datei ueber `/F (...)`
 
 `FormFieldFlags` kapselt aktuell die erste gemeinsame Flag-Stufe:
 

@@ -1452,6 +1452,62 @@ final class Page extends IndirectObject
         return $this;
     }
 
+    public function addPushButton(
+        string $name,
+        string $label,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $baseFont = 'Helvetica',
+        int $size = 12,
+        ?Color $textColor = null,
+        ?ButtonAction $action = null,
+    ): self {
+        if ($name === '') {
+            throw new InvalidArgumentException('Push button name must not be empty.');
+        }
+
+        if ($label === '') {
+            throw new InvalidArgumentException('Push button label must not be empty.');
+        }
+
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Push button width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Push button height must be greater than zero.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Push button font size must be greater than zero.');
+        }
+
+        $font = $this->resolveFont($baseFont);
+        $acroForm = $this->document->ensureAcroForm();
+        $fontResourceName = $acroForm->registerFont($font);
+        $annotation = new PushButtonAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $name,
+            $label,
+            $fontResourceName,
+            $size,
+            $textColor,
+            $action,
+        );
+
+        $acroForm->addField($annotation);
+        $this->annotations[] = $annotation;
+
+        return $this;
+    }
+
     /**
      * @param array<string, string> $options
      * @param list<string>|string|null $value
