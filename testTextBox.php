@@ -153,6 +153,49 @@ $boxes = [
             padding: Insets::all(Units::mm(2)),
         ),
     ],
+    [
+        'title' => 'Justify text',
+        'box' => new Rect(Units::mm(20), Units::mm(70), Units::mm(50), Units::mm(32)),
+        'text' => 'Justified copy should stretch the first line but keep the last line natural.',
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            align: HorizontalAlign::JUSTIFY,
+            maxLines: 3,
+            overflow: TextOverflow::ELLIPSIS,
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
+    [
+        'title' => 'Uneven padding',
+        'box' => new Rect(Units::mm(80), Units::mm(70), Units::mm(50), Units::mm(32)),
+        'text' => "Top left\nPadding test",
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            verticalAlign: VerticalAlign::TOP,
+            padding: new Insets(
+                Units::mm(1),
+                Units::mm(6),
+                Units::mm(5),
+                Units::mm(2),
+            ),
+        ),
+    ],
+    [
+        'title' => 'Styled ellipsis',
+        'box' => new Rect(Units::mm(140), Units::mm(70), Units::mm(50), Units::mm(32)),
+        'text' => [
+            TextSegment::plain('Mode: '),
+            TextSegment::bold('bold bold bold bold'),
+            TextSegment::plain(' / '),
+            TextSegment::italic('italic italic italic'),
+        ],
+        'options' => new TextBoxOptions(
+            lineHeight: Units::mm(5),
+            maxLines: 2,
+            overflow: TextOverflow::ELLIPSIS,
+            padding: Insets::all(Units::mm(3)),
+        ),
+    ],
 ];
 
 $renderPage = static function (
