@@ -7,6 +7,8 @@ namespace Kalle\Pdf\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Outline\OutlineItem;
+use Kalle\Pdf\Document\Outline\OutlineRoot;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextFrame;

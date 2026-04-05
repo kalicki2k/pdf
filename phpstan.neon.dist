@@ -2,7 +2,6 @@ parameters:
     level: 10
     paths:
         - src
-        - example.php
     parallel:
         maximumNumberOfProcesses: 3
     tmpDir: var/phpstan
