@@ -15,9 +15,7 @@ final readonly class PendingRowspanCell
     public function __construct(
         public PreparedTableCell $cell,
         public ResolvedTableCellStyle $style,
-        public int $startRowIndex,
         public int $remainingRows,
-        public bool $continuesFromPreviousPage = true,
         public array $remainingLines = [],
     ) {
     }
