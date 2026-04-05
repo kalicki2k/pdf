@@ -43,6 +43,21 @@ final class Catalog extends IndirectObject
             $dictionary->add('Dests', $destinations);
         }
 
+        if ($this->document->getAttachments() !== []) {
+            $embeddedFileEntries = [];
+
+            foreach ($this->document->getAttachments() as $attachment) {
+                $embeddedFileEntries[] = new StringType($attachment->getFilename());
+                $embeddedFileEntries[] = new ReferenceType($attachment);
+            }
+
+            $dictionary->add('Names', new DictionaryType([
+                'EmbeddedFiles' => new DictionaryType([
+                    'Names' => new \Kalle\Pdf\Types\ArrayType($embeddedFileEntries),
+                ]),
+            ]));
+        }
+
         if ($this->document->acroForm !== null) {
             $dictionary->add('AcroForm', new ReferenceType($this->document->acroForm));
         }

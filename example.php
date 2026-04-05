@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\AnnotationBorderStyle;
 use Kalle\Pdf\Document\FormFieldFlags;
 use Kalle\Pdf\Document\GoToAction;
 use Kalle\Pdf\Document\GoToRemoteAction;
@@ -10,6 +11,7 @@ use Kalle\Pdf\Document\HideAction;
 use Kalle\Pdf\Document\ImportDataAction;
 use Kalle\Pdf\Document\JavaScriptAction;
 use Kalle\Pdf\Document\LaunchAction;
+use Kalle\Pdf\Document\LineEndingStyle;
 use Kalle\Pdf\Document\NamedAction;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\ResetFormAction;
@@ -113,6 +115,15 @@ $document->addKeyword('demo')
     ->addFont('NotoSerif-Regular')
     ->addFont('NotoSansMono-Regular')
     ->addFont('NotoSansCJKsc-Regular');
+
+$document
+    ->addAttachmentFromFile('README.md', description: 'Projekt-README als eingebettete Datei', mimeType: 'text/markdown')
+    ->addAttachment(
+        'demo-note.txt',
+        "Diese Datei ist als Dokument-Anhang eingebettet.\nSie kann im PDF-Viewer als Attachment erscheinen.\n",
+        'Kleine Demo-Datei fuer Attachments',
+        'text/plain',
+    );
 
 $document
     ->addHeader(static function (Page $page, int $pageNumber): void {
@@ -973,6 +984,89 @@ $backgroundPage->addBadge(
     ),
 );
 
+$attachmentPage = $document->addPage(PageSize::A4());
+$attachmentPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Attachment Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Dieses Dokument enthaelt eingebettete Dateien ueber den EmbeddedFiles-Name-Tree im Catalog.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$attachmentPage->addPanel(
+    "Eingebettet sind:\n- README.md\n- demo-note.txt",
+    Units::mm(20),
+    Units::mm(185),
+    Units::mm(80),
+    Units::mm(42),
+    'Anhaenge',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::gray(0.96),
+        borderWidth: 1.0,
+        borderColor: Color::gray(0.75),
+    ),
+);
+
+$attachmentPage->addPanel(
+    'Je nach PDF-Viewer erscheinen die eingebetteten Dateien in einer Attachments- oder Dateianhaenge-Seitenleiste.',
+    Units::mm(110),
+    Units::mm(185),
+    Units::mm(80),
+    Units::mm(42),
+    'Viewer',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::rgb(245, 248, 255),
+        borderWidth: 1.0,
+        borderColor: Color::rgb(120, 140, 190),
+        titleColor: Color::rgb(60, 80, 140),
+    ),
+);
+
+$attachmentPage->addText(
+    text: 'Zur Action Demo springen',
+    x: Units::mm(20),
+    y: Units::mm(165),
+    baseFont: 'NotoSans-Regular',
+    size: 11,
+    color: Color::rgb(0, 0, 255),
+    underline: true,
+    link: '#action-demo',
+);
+
+$readmeAttachment = $document->getAttachment('README.md');
+$noteAttachment = $document->getAttachment('demo-note.txt');
+
+if ($readmeAttachment !== null) {
+    $attachmentPage->addFileAttachment(
+        Units::mm(25),
+        Units::mm(150),
+        Units::mm(8),
+        Units::mm(8),
+        $readmeAttachment,
+        'Graph',
+        'README.md als eingebettete Datei',
+    );
+    $attachmentPage->addText('README.md', Units::mm(38), Units::mm(152), 'Helvetica', 11);
+}
+
+if ($noteAttachment !== null) {
+    $attachmentPage->addFileAttachment(
+        Units::mm(25),
+        Units::mm(138),
+        Units::mm(8),
+        Units::mm(8),
+        $noteAttachment,
+        'Paperclip',
+        'demo-note.txt als eingebettete Datei',
+    );
+    $attachmentPage->addText('demo-note.txt', Units::mm(38), Units::mm(140), 'Helvetica', 11);
+}
+
 $notesLayer = $document->addLayer('Notes');
 $gridLayer = $document->addLayer('Grid', false);
 
@@ -1122,6 +1216,241 @@ $actionPage->addPushButton(
     $buttonWidth,
     $buttonHeight,
     action: new ThreadAction('article-1', 'threads.pdf'),
+);
+
+$annotationPage = $document->addPage(PageSize::A4());
+$annotationPage->textFrame(Units::mm(20), Units::mm(265), Units::mm(170), Units::mm(20))
+    ->heading('Annotation Demo', 'NotoSans-Regular', 16, 'H1')
+    ->paragraph(
+        'Diese Seite zeigt die aktuellen nicht-formularbasierten Viewer-Annotationen.',
+        'NotoSans-Regular',
+        11,
+        'P',
+    );
+
+$annotationPage->addPanel(
+    'Die Anmerkungen unten werden als echte PDF-Annotationen gespeichert und je nach Viewer direkt visualisiert.',
+    Units::mm(20),
+    Units::mm(215),
+    Units::mm(170),
+    Units::mm(24),
+    'Uebersicht',
+    'NotoSans-Regular',
+    new PanelStyle(
+        cornerRadius: Units::mm(2),
+        fillColor: Color::gray(0.96),
+        borderWidth: 1.0,
+        borderColor: Color::gray(0.75),
+    ),
+);
+
+$annotationPage->addText('Kommentar und FreeText:', Units::mm(20), Units::mm(192), 'Helvetica', 11);
+$annotationPage->addTextAnnotation(
+    Units::mm(20),
+    Units::mm(175),
+    Units::mm(8),
+    Units::mm(8),
+    'Kurzer Kommentar als Sticky Note',
+    'QA',
+    'Comment',
+    true,
+);
+$annotationPage->addFreeTextAnnotation(
+    Units::mm(35),
+    Units::mm(168),
+    Units::mm(70),
+    Units::mm(18),
+    'Direkter Hinweis auf der Seite',
+    'Helvetica',
+    11,
+    Color::rgb(180, 20, 20),
+    Color::gray(0.5),
+    Color::gray(0.95),
+    'QA',
+);
+
+$annotationPage->addText('Markup-Annotationen:', Units::mm(20), Units::mm(150), 'Helvetica', 11);
+$annotationPage->addText('Markierter Beispielsatz fuer Highlight, Underline, StrikeOut und Squiggly.', Units::mm(20), Units::mm(136), 'Helvetica', 11);
+$annotationPage->addHighlightAnnotation(
+    Units::mm(20),
+    Units::mm(132),
+    Units::mm(65),
+    Units::mm(6),
+    Color::rgb(255, 255, 0),
+    'Highlight',
+    'QA',
+);
+$annotationPage->addUnderlineAnnotation(
+    Units::mm(88),
+    Units::mm(132),
+    Units::mm(28),
+    Units::mm(6),
+    Color::rgb(0, 0, 255),
+    'Underline',
+    'QA',
+);
+$annotationPage->addStrikeOutAnnotation(
+    Units::mm(119),
+    Units::mm(132),
+    Units::mm(28),
+    Units::mm(6),
+    Color::rgb(255, 0, 0),
+    'StrikeOut',
+    'QA',
+);
+$annotationPage->addSquigglyAnnotation(
+    Units::mm(150),
+    Units::mm(132),
+    Units::mm(40),
+    Units::mm(6),
+    Color::rgb(255, 0, 255),
+    'Squiggly',
+    'QA',
+);
+
+$annotationPage->addText('Stamp und FileAttachment:', Units::mm(20), Units::mm(110), 'Helvetica', 11);
+$annotationPage->addStampAnnotation(
+    Units::mm(20),
+    Units::mm(92),
+    Units::mm(35),
+    Units::mm(14),
+    'Approved',
+    Color::rgb(0, 128, 0),
+    'Freigegeben',
+    'QA',
+);
+
+$annotationAttachment = $document->getAttachment('demo-note.txt');
+if ($annotationAttachment !== null) {
+    $annotationPage->addFileAttachment(
+        Units::mm(65),
+        Units::mm(92),
+        Units::mm(8),
+        Units::mm(8),
+        $annotationAttachment,
+        'PushPin',
+        'demo-note.txt als sichtbarer Dateianhang',
+    );
+    $annotationPage->addText('demo-note.txt', Units::mm(78), Units::mm(94), 'Helvetica', 11);
+}
+
+$annotationPage->addText('Square, Circle und Ink:', Units::mm(20), Units::mm(72), 'Helvetica', 11);
+$annotationPage->addSquareAnnotation(
+    Units::mm(20),
+    Units::mm(48),
+    Units::mm(24),
+    Units::mm(14),
+    Color::rgb(255, 0, 0),
+    Color::gray(0.92),
+    'Square',
+    'QA',
+    AnnotationBorderStyle::solid(2.0),
+);
+$annotationPage->addCircleAnnotation(
+    Units::mm(52),
+    Units::mm(48),
+    Units::mm(24),
+    Units::mm(14),
+    Color::rgb(0, 0, 255),
+    Color::gray(0.92),
+    'Circle',
+    'QA',
+    AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]),
+);
+$annotationPage->addInkAnnotation(
+    Units::mm(85),
+    Units::mm(45),
+    Units::mm(45),
+    Units::mm(20),
+    [
+        [
+            [Units::mm(88), Units::mm(50)],
+            [Units::mm(95), Units::mm(58)],
+            [Units::mm(102), Units::mm(48)],
+            [Units::mm(110), Units::mm(57)],
+            [Units::mm(118), Units::mm(49)],
+        ],
+    ],
+    Color::rgb(0, 0, 0),
+    'Ink',
+    'QA',
+);
+$annotationPage->addText('Line, PolyLine und Polygon:', Units::mm(20), Units::mm(40), 'Helvetica', 11);
+$annotationPage->addLineAnnotation(
+    Units::mm(20),
+    Units::mm(28),
+    Units::mm(48),
+    Units::mm(20),
+    Color::rgb(220, 40, 40),
+    'Line',
+    'QA',
+    LineEndingStyle::OPEN_ARROW,
+    LineEndingStyle::CLOSED_ARROW,
+    'Messlinie',
+    AnnotationBorderStyle::dashed(2.0, [4.0, 2.0]),
+);
+$lineAnnotation = $annotationPage->getAnnotations()[count($annotationPage->getAnnotations()) - 1];
+$annotationPage->addPopupAnnotation($lineAnnotation, Units::mm(18), Units::mm(2), Units::mm(34), Units::mm(14), true);
+$annotationPage->addPolyLineAnnotation(
+    [
+        [Units::mm(58), Units::mm(22)],
+        [Units::mm(66), Units::mm(30)],
+        [Units::mm(74), Units::mm(20)],
+        [Units::mm(82), Units::mm(28)],
+    ],
+    Color::rgb(30, 90, 210),
+    'PolyLine',
+    'QA',
+    LineEndingStyle::CIRCLE,
+    LineEndingStyle::SLASH,
+    'Korrekturpfad',
+    AnnotationBorderStyle::solid(2.5),
+);
+$polyLineAnnotation = $annotationPage->getAnnotations()[count($annotationPage->getAnnotations()) - 1];
+$annotationPage->addPopupAnnotation($polyLineAnnotation, Units::mm(58), Units::mm(2), Units::mm(34), Units::mm(14));
+$annotationPage->addPolygonAnnotation(
+    [
+        [Units::mm(95), Units::mm(20)],
+        [Units::mm(106), Units::mm(32)],
+        [Units::mm(118), Units::mm(24)],
+        [Units::mm(112), Units::mm(16)],
+    ],
+    Color::rgb(20, 130, 60),
+    Color::gray(0.9),
+    'Polygon',
+    'QA',
+    'Flaechenhinweis',
+    AnnotationBorderStyle::dashed(),
+);
+$polygonAnnotation = $annotationPage->getAnnotations()[count($annotationPage->getAnnotations()) - 1];
+$annotationPage->addPopupAnnotation($polygonAnnotation, Units::mm(98), Units::mm(2), Units::mm(34), Units::mm(14));
+$annotationPage->addCaretAnnotation(
+    Units::mm(128),
+    Units::mm(18),
+    Units::mm(10),
+    Units::mm(12),
+    'Einfuemarke',
+    'QA',
+    'P',
+);
+$annotationPage->addText(
+    text: 'Die Geometrie-Annotationen unten tragen Betreff und Popup.',
+    x: Units::mm(20),
+    y: Units::mm(8),
+    baseFont: 'Helvetica',
+    size: 9,
+    color: Color::gray(0.35),
+);
+
+$annotationPage->addText(
+    text: 'Zur Layer Demo springen',
+    x: Units::mm(20),
+    y: Units::mm(12),
+    baseFont: 'NotoSans-Regular',
+    size: 11,
+    color: Color::rgb(0, 0, 255),
+    underline: true,
+    link: '#layer-demo',
 );
 
 $layerPage = $document->addPage(PageSize::A4());
@@ -1501,7 +1830,9 @@ $formPage->addPanel(
 
 $document
     ->addDestination('table-demo', $tablePage)
+    ->addDestination('attachment-demo', $attachmentPage)
     ->addDestination('action-demo', $actionPage)
+    ->addDestination('annotation-demo', $annotationPage)
     ->addDestination('layer-demo', $layerPage)
     ->addDestination('form-demo', $formPage)
     ->addOutline('Noto Sans', $sansPage)
@@ -1518,7 +1849,9 @@ $document
     ->addOutline('Panel Demo', $panelPage)
     ->addOutline('Callout Demo', $calloutPage)
     ->addOutline('Background Demo', $backgroundPage)
+    ->addOutline('Attachment Demo', $attachmentPage)
     ->addOutline('Action Demo', $actionPage)
+    ->addOutline('Annotation Demo', $annotationPage)
     ->addOutline('Layer Demo', $layerPage)
     ->addOutline('Form Demo', $formPage);
 

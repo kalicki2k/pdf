@@ -338,6 +338,76 @@ Der Ablauf ist:
 4. `Catalog` rendert alle bekannten Layer unter `/OCProperties`.
 5. `SetOcgStateAction` kann diese Layer danach ueber echte OCG-Referenzen schalten.
 
+### Attachments und Embedded Files
+
+Die erste Attachment-Stufe ist als eingebettete Datei auf Dokumentebene modelliert.
+
+Die wichtigsten Bausteine sind:
+
+- `EmbeddedFileStream`
+- `FileSpecification`
+- `Document::addAttachment(...)`
+- `Document::addAttachmentFromFile(...)`
+- `Catalog` mit `Names` und `EmbeddedFiles`
+
+Der Ablauf ist:
+
+1. `Document::addAttachment(...)` erzeugt einen `EmbeddedFileStream` und ein zugehoeriges `FileSpecification`-Objekt.
+2. Beide Objekte werden als indirekte Objekte im Dokument mitgerendert.
+3. `Catalog` rendert die Dateireferenzen ueber `/Names << /EmbeddedFiles << /Names [...] >> >>`.
+4. PDF-Viewer koennen diese Dateien dann als Dokument-Anhaenge anzeigen.
+
+### Weitere Annotationen
+
+Neben `LinkAnnotation`, Widget-Annotationen und `FileAttachmentAnnotation` sind jetzt weitere Viewer-Annotationen modelliert.
+
+Die wichtigsten Bausteine sind:
+
+- `TextAnnotation`
+- `FreeTextAnnotation`
+- `HighlightAnnotation`
+- `UnderlineAnnotation`
+- `StrikeOutAnnotation`
+- `SquigglyAnnotation`
+- `StampAnnotation`
+- `SquareAnnotation`
+- `CircleAnnotation`
+- `LineAnnotation`
+- `PolyLineAnnotation`
+- `PolygonAnnotation`
+- `CaretAnnotation`
+- `InkAnnotation`
+- `PopupAnnotation`
+- `Page::addTextAnnotation(...)`
+- `Page::addFreeTextAnnotation(...)`
+- `Page::addHighlightAnnotation(...)`
+- `Page::addUnderlineAnnotation(...)`
+- `Page::addStrikeOutAnnotation(...)`
+- `Page::addSquigglyAnnotation(...)`
+- `Page::addStampAnnotation(...)`
+- `Page::addSquareAnnotation(...)`
+- `Page::addCircleAnnotation(...)`
+- `Page::addLineAnnotation(...)`
+- `Page::addPolyLineAnnotation(...)`
+- `Page::addPolygonAnnotation(...)`
+- `Page::addCaretAnnotation(...)`
+- `Page::addInkAnnotation(...)`
+- `Page::addPopupAnnotation(...)`
+
+Die aktuelle Stufe ist bewusst pragmatisch:
+
+- Markup-Annotationen werden aus einem Rechteck plus `QuadPoints` derselben Box aufgebaut
+- `FreeTextAnnotation` nutzt aktuell `DA`, Border- und Fill-Farben, aber noch keine komplexen Appearance-Streams
+- `StampAnnotation` verlaesst sich auf den jeweiligen Viewer-Stempel ueber `/Name`
+- `SquareAnnotation` und `CircleAnnotation` folgen dem einfachen Viewer-Annotation-Pfad mit `C` und `IC`
+- `AnnotationBorderStyle` bildet das `BS`-Dictionary fuer geometrische Viewer-Annotationen ab
+- `LineAnnotation` und `PolyLineAnnotation` nutzen `LineEndingStyle` ueber `LE`
+- `LineAnnotation`, `PolyLineAnnotation` und `PolygonAnnotation` nutzen die entsprechenden PDF-Viewer-Geometry-Dictionaries ueber `L` bzw. `Vertices`
+- `LineAnnotation`, `PolyLineAnnotation` und `PolygonAnnotation` koennen fuer Review-Faelle `Subj` und ein verknuepftes `Popup` tragen
+- `CaretAnnotation` nutzt den dedizierten Viewer-Typ `/Caret` mit optionalem `Sy`
+- `InkAnnotation` modelliert freie Linienzuege ueber `InkList`
+- `PopupAnnotation` wird aktuell als verknuepftes Related Object an Kommentar- und Markup-Annotationen angehaengt
+
 ### TextFrame
 
 `TextFrame` ist eine kleine Layout-Hilfe ueber `Page`.

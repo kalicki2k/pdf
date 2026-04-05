@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Document;
+
+use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
+use Kalle\Pdf\Types\StringType;
+
+final class FileSpecification extends IndirectObject
+{
+    public function __construct(
+        int $id,
+        private readonly string $filename,
+        private readonly EmbeddedFileStream $embeddedFile,
+        private readonly ?string $description = null,
+    ) {
+        parent::__construct($id);
+    }
+
+    public function getFilename(): string
+    {
+        return $this->filename;
+    }
+
+    public function getEmbeddedFile(): EmbeddedFileStream
+    {
+        return $this->embeddedFile;
+    }
+
+    public function render(): string
+    {
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Filespec'),
+            'F' => new StringType($this->filename),
+            'UF' => new StringType($this->filename),
+            'EF' => new DictionaryType([
+                'F' => new ReferenceType($this->embeddedFile),
+                'UF' => new ReferenceType($this->embeddedFile),
+            ]),
+        ]);
+
+        if ($this->description !== null && $this->description !== '') {
+            $dictionary->add('Desc', new StringType($this->description));
+        }
+
+        return $this->id . ' 0 obj' . PHP_EOL
+            . $dictionary->render() . PHP_EOL
+            . 'endobj' . PHP_EOL;
+    }
+}

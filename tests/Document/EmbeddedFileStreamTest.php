@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Tests\Document;
+
+use Kalle\Pdf\Document\EmbeddedFileStream;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+
+final class EmbeddedFileStreamTest extends TestCase
+{
+    #[Test]
+    public function it_renders_an_embedded_file_stream(): void
+    {
+        $stream = new EmbeddedFileStream(7, 'hello', 'text/plain');
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /EmbeddedFile /Length 5 /Params << /Size 5 >> /Subtype /text#2Fplain >>\n"
+            . "stream\n"
+            . "hello\n"
+            . "endstream\n"
+            . "endobj\n",
+            $stream->render(),
+        );
+    }
+}

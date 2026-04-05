@@ -57,6 +57,8 @@ final class Document
     private array $destinations = [];
     /** @var array<string, OptionalContentGroup> */
     private array $optionalContentGroups = [];
+    /** @var list<FileSpecification> */
+    private array $attachments = [];
     /** @var array{string, string} */
     private array $documentId;
 
@@ -153,6 +155,11 @@ final class Document
 
         foreach ($this->optionalContentGroups as $optionalContentGroup) {
             $objects[] = $optionalContentGroup;
+        }
+
+        foreach ($this->attachments as $attachment) {
+            $objects[] = $attachment;
+            $objects[] = $attachment->getEmbeddedFile();
         }
 
         $objects[] = $this->info;
@@ -320,6 +327,63 @@ final class Document
     public function addLayer(string $name, bool $visibleByDefault = true): OptionalContentGroup
     {
         return $this->ensureOptionalContentGroup($name, $visibleByDefault);
+    }
+
+    public function addAttachment(
+        string $filename,
+        string $contents,
+        ?string $description = null,
+        ?string $mimeType = null,
+    ): self {
+        if ($filename === '') {
+            throw new InvalidArgumentException('Attachment filename must not be empty.');
+        }
+
+        $embeddedFile = new EmbeddedFileStream($this->getUniqObjectId(), $contents, $mimeType);
+        $this->attachments[] = new FileSpecification($this->getUniqObjectId(), $filename, $embeddedFile, $description);
+
+        return $this;
+    }
+
+    public function addAttachmentFromFile(
+        string $path,
+        ?string $filename = null,
+        ?string $description = null,
+        ?string $mimeType = null,
+    ): self {
+        if (!is_file($path)) {
+            throw new InvalidArgumentException("Attachment file '$path' does not exist.");
+        }
+
+        $filename ??= basename($path);
+
+        /** @var string|false $contents */
+        $contents = file_get_contents($path);
+
+        if ($contents === false) {
+            throw new InvalidArgumentException("Attachment file '$path' could not be read.");
+        }
+
+        return $this->addAttachment($filename, $contents, $description, $mimeType);
+    }
+
+    /**
+     * @return list<FileSpecification>
+     */
+    public function getAttachments(): array
+    {
+        return $this->attachments;
+    }
+
+    public function getAttachment(string $filename): ?FileSpecification
+    {
+        foreach ($this->attachments as $attachment) {
+            if ($attachment->getFilename() === $filename) {
+                return $attachment;
+            }
+        }
+
+        return null;
     }
 
     /**

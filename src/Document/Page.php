@@ -1118,6 +1118,564 @@ final class Page extends IndirectObject
         return $this;
     }
 
+    public function addFileAttachment(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        FileSpecification $file,
+        string $icon = 'PushPin',
+        ?string $contents = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('File attachment width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('File attachment height must be greater than zero.');
+        }
+
+        if ($icon === '') {
+            throw new InvalidArgumentException('File attachment icon must not be empty.');
+        }
+
+        $this->annotations[] = new FileAttachmentAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $file,
+            $icon,
+            $contents,
+        );
+
+        return $this;
+    }
+
+    public function addTextAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $contents,
+        ?string $title = null,
+        string $icon = 'Note',
+        bool $open = false,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Text annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Text annotation height must be greater than zero.');
+        }
+
+        if ($contents === '') {
+            throw new InvalidArgumentException('Text annotation contents must not be empty.');
+        }
+
+        if ($icon === '') {
+            throw new InvalidArgumentException('Text annotation icon must not be empty.');
+        }
+
+        $this->annotations[] = new TextAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+            $title,
+            $icon,
+            $open,
+        );
+
+        return $this;
+    }
+
+    public function addPopupAnnotation(
+        PageAnnotation&IndirectObject $parent,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        bool $open = false,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Popup annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Popup annotation height must be greater than zero.');
+        }
+
+        $popup = new PopupAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $parent,
+            $x,
+            $y,
+            $width,
+            $height,
+            $open,
+        );
+
+        if (method_exists($parent, 'withPopup')) {
+            $parent->withPopup($popup);
+        }
+
+        return $this;
+    }
+
+    public function addFreeTextAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $contents,
+        string $baseFont = 'Helvetica',
+        int $size = 12,
+        ?Color $textColor = null,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $title = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Free text annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Free text annotation height must be greater than zero.');
+        }
+
+        if ($contents === '') {
+            throw new InvalidArgumentException('Free text annotation contents must not be empty.');
+        }
+
+        if ($size <= 0) {
+            throw new InvalidArgumentException('Free text annotation font size must be greater than zero.');
+        }
+
+        $font = $this->resolveFont($baseFont);
+        $fontResourceName = $this->registerFontResource($font);
+
+        $this->annotations[] = new FreeTextAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+            $fontResourceName,
+            $size,
+            $textColor,
+            $borderColor,
+            $fillColor,
+            $title,
+        );
+
+        return $this;
+    }
+
+    public function addHighlightAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Highlight annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Highlight annotation height must be greater than zero.');
+        }
+
+        $this->annotations[] = new HighlightAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $color,
+            $contents,
+            $title,
+        );
+
+        return $this;
+    }
+
+    public function addUnderlineAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Underline annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Underline annotation height must be greater than zero.');
+        }
+
+        $this->annotations[] = new UnderlineAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $color,
+            $contents,
+            $title,
+        );
+
+        return $this;
+    }
+
+    public function addStrikeOutAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('StrikeOut annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('StrikeOut annotation height must be greater than zero.');
+        }
+
+        $this->annotations[] = new StrikeOutAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $color,
+            $contents,
+            $title,
+        );
+
+        return $this;
+    }
+
+    public function addSquigglyAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Squiggly annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Squiggly annotation height must be greater than zero.');
+        }
+
+        $this->annotations[] = new SquigglyAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $color,
+            $contents,
+            $title,
+        );
+
+        return $this;
+    }
+
+    public function addStampAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $icon = 'Draft',
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Stamp annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Stamp annotation height must be greater than zero.');
+        }
+
+        if ($icon === '') {
+            throw new InvalidArgumentException('Stamp annotation icon must not be empty.');
+        }
+
+        $this->annotations[] = new StampAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $icon,
+            $color,
+            $contents,
+            $title,
+        );
+
+        return $this;
+    }
+
+    public function addSquareAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $contents = null,
+        ?string $title = null,
+        ?AnnotationBorderStyle $borderStyle = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Square annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Square annotation height must be greater than zero.');
+        }
+
+        $this->annotations[] = new SquareAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $borderColor,
+            $fillColor,
+            $contents,
+            $title,
+            $borderStyle,
+        );
+
+        return $this;
+    }
+
+    public function addCircleAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $contents = null,
+        ?string $title = null,
+        ?AnnotationBorderStyle $borderStyle = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Circle annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Circle annotation height must be greater than zero.');
+        }
+
+        $this->annotations[] = new CircleAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $borderColor,
+            $fillColor,
+            $contents,
+            $title,
+            $borderStyle,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param list<list<array{0: float, 1: float}>> $paths
+     */
+    public function addInkAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $paths,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Ink annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Ink annotation height must be greater than zero.');
+        }
+
+        $this->annotations[] = new InkAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $paths,
+            $color,
+            $contents,
+            $title,
+        );
+
+        return $this;
+    }
+
+    public function addLineAnnotation(
+        float $x1,
+        float $y1,
+        float $x2,
+        float $y2,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+        ?LineEndingStyle $startStyle = null,
+        ?LineEndingStyle $endStyle = null,
+        ?string $subject = null,
+        ?AnnotationBorderStyle $borderStyle = null,
+    ): self {
+        $this->annotations[] = new LineAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x1,
+            $y1,
+            $x2,
+            $y2,
+            $color,
+            $contents,
+            $title,
+            $startStyle,
+            $endStyle,
+            $subject,
+            $borderStyle,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param list<array{0: float, 1: float}> $vertices
+     */
+    public function addPolyLineAnnotation(
+        array $vertices,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+        ?LineEndingStyle $startStyle = null,
+        ?LineEndingStyle $endStyle = null,
+        ?string $subject = null,
+        ?AnnotationBorderStyle $borderStyle = null,
+    ): self {
+        $this->annotations[] = new PolyLineAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $vertices,
+            $color,
+            $contents,
+            $title,
+            $startStyle,
+            $endStyle,
+            $subject,
+            $borderStyle,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param list<array{0: float, 1: float}> $vertices
+     */
+    public function addPolygonAnnotation(
+        array $vertices,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $contents = null,
+        ?string $title = null,
+        ?string $subject = null,
+        ?AnnotationBorderStyle $borderStyle = null,
+    ): self {
+        $this->annotations[] = new PolygonAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $vertices,
+            $borderColor,
+            $fillColor,
+            $contents,
+            $title,
+            $subject,
+            $borderStyle,
+        );
+
+        return $this;
+    }
+
+    public function addCaretAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $contents = null,
+        ?string $title = null,
+        string $symbol = 'None',
+    ): self {
+        if ($width <= 0) {
+            throw new InvalidArgumentException('Caret annotation width must be greater than zero.');
+        }
+
+        if ($height <= 0) {
+            throw new InvalidArgumentException('Caret annotation height must be greater than zero.');
+        }
+
+        $this->annotations[] = new CaretAnnotation(
+            $this->document->getUniqObjectId(),
+            $this,
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+            $title,
+            $symbol,
+        );
+
+        return $this;
+    }
+
     public function addImage(
         Image $image,
         float $x,

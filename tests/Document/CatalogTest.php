@@ -96,4 +96,19 @@ final class CatalogTest extends TestCase
             $catalog->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_embedded_file_name_tree_when_document_attachments_exist(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
+        $catalog = new Catalog(1, $document);
+
+        self::assertSame(
+            "1 0 obj\n"
+            . "<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles << /Names [(demo.txt) 5 0 R] >> >> >>\n"
+            . "endobj\n",
+            $catalog->render(),
+        );
+    }
 }

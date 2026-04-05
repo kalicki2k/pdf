@@ -44,6 +44,11 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Push-Buttons unterstuetzen zusaetzlich `GoToRemoteAction`, `LaunchAction` und `UriAction`
 - Push-Buttons unterstuetzen ausserdem `HideAction`, `ImportDataAction`, `SetOcgStateAction` und `ThreadAction`
 - OCG-/Layer-Grundlagen sind ueber `OptionalContentGroup`, `addLayer(...)` und `Page::layer(...)` vorhanden
+- Dateianhaenge sind als eingebettete Dateien ueber `addAttachment(...)` und `addAttachmentFromFile(...)` vorhanden
+- Viewer-Annotationen sind ueber `TextAnnotation`, `FreeTextAnnotation`, `HighlightAnnotation`, `UnderlineAnnotation`, `StrikeOutAnnotation`, `SquigglyAnnotation`, `StampAnnotation`, `SquareAnnotation`, `CircleAnnotation`, `LineAnnotation`, `PolyLineAnnotation`, `PolygonAnnotation`, `CaretAnnotation`, `InkAnnotation`, `PopupAnnotation` und `FileAttachmentAnnotation` vorhanden
+- `LineAnnotation` und `PolyLineAnnotation` unterstuetzen bereits Line-Ending-Styles
+- `LineAnnotation`, `PolyLineAnnotation` und `PolygonAnnotation` unterstuetzen ausserdem `Subj` und verknuepfte Popups
+- geometrische Viewer-Annotationen unterstuetzen ueber `AnnotationBorderStyle` jetzt auch PDF-Border-Styles
 - TextField unterstuetzt `multiline`, `defaultValue` und gemeinsame Feld-Flags ueber `FormFieldFlags`
 - ComboBox unterstuetzt `defaultValue` und editierbare Varianten
 - ListBox unterstuetzt `defaultValue` und Mehrfachauswahl
@@ -132,6 +137,7 @@ Naechste Kandidaten:
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
 - weiterer Ausbau der PDF-Security, vor allem klare Trennung zwischen aktuellem `AES_256`-R5-Pfad und spaeterem `R6`
 - Formular-Feinschliff, vor allem eigene Appearances fuer Text-/Choice-Felder und spaeter echte digitale Signaturen
+- Spezial-Actions wie `Movie`, `Sound`, `Rendition`, `Trans`, `GoTo3DView`, `RichMediaExecute` und `NOP` sind bewusst noch offen und haben aktuell keine Prioritaet gegenueber Attachments, Formular-Feinschliff und Rendering-Haertung
 
 Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
 

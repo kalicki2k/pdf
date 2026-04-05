@@ -75,6 +75,19 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_attachments_as_indirect_objects(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
+
+        self::assertSame([1, 2, 5, 4, 3], array_map(
+            static fn (object $object): int => $object->id,
+            $document->getDocumentObjects(),
+        ));
+    }
+
+    #[Test]
     public function it_adds_a_page_from_the_a00_special_case(): void
     {
         $document = new Document(version: 1.4);
@@ -485,7 +498,7 @@ final class DocumentTest extends TestCase
         self::assertStringNotContainsString('/MarkInfo', $output);
         self::assertStringNotContainsString('/StructTreeRoot', $output);
         self::assertStringContainsString("xref\n0 8\n", $output);
-        self::assertStringContainsString("trailer\n<< /Size 8\n/Root 1 0 R\n/Info 3 0 R >>\n", $output);
+        self::assertStringContainsString("trailer\n<< /Size 8\n/Root 1 0 R\n/Info 3 0 R\n/ID [<", $output);
         self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}\)/', $output);
         self::assertStringEndsWith('%%EOF', $output);
     }

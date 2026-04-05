@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\AnnotationBorderStyle;
 use Kalle\Pdf\Document\ResetFormAction;
 use Kalle\Pdf\Document\NamedAction;
+use Kalle\Pdf\Document\LineEndingStyle;
 use Kalle\Pdf\Document\GoToAction;
 use Kalle\Pdf\Document\GoToRemoteAction;
 use Kalle\Pdf\Document\HideAction;
@@ -69,6 +71,315 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/XObject << /Im1 7 0 R >>', $page->resources->render());
         self::assertStringContainsString("160 0 0 100 10 20 cm\n/Im1 Do", $page->contents->render());
         self::assertStringContainsString("7 0 obj\n<< /Type /XObject\n/Subtype /Image", $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_file_attachment_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
+        $page = $document->addPage();
+        $file = $document->getAttachment('demo.txt');
+
+        self::assertNotNull($file);
+
+        $result = $page->addFileAttachment(10, 20, 12, 14, $file, 'Graph', 'Anhang');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /FileAttachment', $document->render());
+        self::assertStringContainsString('/FS 5 0 R', $document->render());
+        self::assertStringContainsString('/Name /Graph', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_text_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addTextAnnotation(10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Text', $document->render());
+        self::assertStringContainsString('/Contents (Kommentar)', $document->render());
+        self::assertStringContainsString('/Name /Comment', $document->render());
+        self::assertStringContainsString('/Open true', $document->render());
+        self::assertStringContainsString('/T (QA)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_popup_annotation_to_an_existing_text_annotation(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addTextAnnotation(10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
+        $annotation = $page->getAnnotations()[0];
+
+        $result = $page->addPopupAnnotation($annotation, 30, 40, 60, 40, true);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Popup', $document->render());
+        self::assertStringContainsString('/Parent 7 0 R', $document->render());
+        self::assertStringContainsString('/Popup 8 0 R', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_free_text_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addFreeTextAnnotation(
+            10,
+            20,
+            80,
+            24,
+            'Hinweistext',
+            'Helvetica',
+            12,
+            Color::rgb(255, 0, 0),
+            Color::gray(0.5),
+            Color::gray(0.9),
+            'QA',
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /FreeText', $document->render());
+        self::assertStringContainsString('/Contents (Hinweistext)', $document->render());
+        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', $document->render());
+        self::assertStringContainsString('/C [0.5]', $document->render());
+        self::assertStringContainsString('/IC [0.9]', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_highlight_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addHighlightAnnotation(10, 20, 80, 12, Color::rgb(255, 255, 0), 'Markiert', 'QA');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Highlight', $document->render());
+        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', $document->render());
+        self::assertStringContainsString('/C [1 1 0]', $document->render());
+        self::assertStringContainsString('/Contents (Markiert)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_an_underline_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addUnderlineAnnotation(10, 20, 80, 12, Color::rgb(0, 0, 255), 'Unterstrichen', 'QA');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Underline', $document->render());
+        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', $document->render());
+        self::assertStringContainsString('/C [0 0 1]', $document->render());
+        self::assertStringContainsString('/Contents (Unterstrichen)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_strike_out_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addStrikeOutAnnotation(10, 20, 80, 12, Color::rgb(255, 0, 0), 'Durchgestrichen', 'QA');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /StrikeOut', $document->render());
+        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', $document->render());
+        self::assertStringContainsString('/C [1 0 0]', $document->render());
+        self::assertStringContainsString('/Contents (Durchgestrichen)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_squiggly_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addSquigglyAnnotation(10, 20, 80, 12, Color::rgb(255, 0, 255), 'Wellig', 'QA');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Squiggly', $document->render());
+        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', $document->render());
+        self::assertStringContainsString('/C [1 0 1]', $document->render());
+        self::assertStringContainsString('/Contents (Wellig)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_stamp_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addStampAnnotation(10, 20, 80, 24, 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Stamp', $document->render());
+        self::assertStringContainsString('/Name /Approved', $document->render());
+        self::assertStringContainsString('/C [0 0.501961 0]', $document->render());
+        self::assertStringContainsString('/Contents (Freigegeben)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_square_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addSquareAnnotation(10, 20, 80, 24, Color::rgb(255, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Square', $document->render());
+        self::assertStringContainsString('/C [1 0 0]', $document->render());
+        self::assertStringContainsString('/IC [0.9]', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_circle_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addCircleAnnotation(10, 20, 80, 24, Color::rgb(0, 0, 255), Color::gray(0.9), 'Kreis', 'QA', AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Circle', $document->render());
+        self::assertStringContainsString('/C [0 0 1]', $document->render());
+        self::assertStringContainsString('/IC [0.9]', $document->render());
+        self::assertStringContainsString('/BS << /W 1.5 /S /D /D [2 1] >>', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_an_ink_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addInkAnnotation(
+            10,
+            20,
+            80,
+            24,
+            [
+                [[10.0, 20.0], [20.0, 30.0], [30.0, 20.0]],
+            ],
+            Color::rgb(0, 0, 0),
+            'Ink',
+            'QA',
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Ink', $document->render());
+        self::assertStringContainsString('/InkList [[10 20 20 30 30 20]]', $document->render());
+        self::assertStringContainsString('/Contents (Ink)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_line_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addLineAnnotation(
+            10,
+            20,
+            90,
+            32,
+            Color::rgb(255, 0, 0),
+            'Linie',
+            'QA',
+            LineEndingStyle::OPEN_ARROW,
+            LineEndingStyle::CLOSED_ARROW,
+            'Messlinie',
+            AnnotationBorderStyle::dashed(2.0, [4.0, 2.0]),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Line', $document->render());
+        self::assertStringContainsString('/L [10 20 90 32]', $document->render());
+        self::assertStringContainsString('/LE [/OpenArrow /ClosedArrow]', $document->render());
+        self::assertStringContainsString('/Subj (Messlinie)', $document->render());
+        self::assertStringContainsString('/BS << /W 2 /S /D /D [4 2] >>', $document->render());
+        self::assertStringContainsString('/Contents (Linie)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_polyline_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addPolyLineAnnotation(
+            [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]],
+            Color::rgb(0, 0, 255),
+            'PolyLine',
+            'QA',
+            LineEndingStyle::CIRCLE,
+            LineEndingStyle::SLASH,
+            'Korrekturpfad',
+            AnnotationBorderStyle::solid(2.5),
+        );
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /PolyLine', $document->render());
+        self::assertStringContainsString('/Vertices [10 20 40 50 90 32]', $document->render());
+        self::assertStringContainsString('/LE [/Circle /Slash]', $document->render());
+        self::assertStringContainsString('/Subj (Korrekturpfad)', $document->render());
+        self::assertStringContainsString('/BS << /W 2.5 /S /S >>', $document->render());
+        self::assertStringContainsString('/Contents (PolyLine)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_polygon_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addPolygonAnnotation([[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(255, 0, 0), Color::gray(0.9), 'Polygon', 'QA', 'Flaechenhinweis', AnnotationBorderStyle::dashed());
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Polygon', $document->render());
+        self::assertStringContainsString('/Vertices [10 20 40 50 90 32]', $document->render());
+        self::assertStringContainsString('/IC [0.9]', $document->render());
+        self::assertStringContainsString('/Subj (Flaechenhinweis)', $document->render());
+        self::assertStringContainsString('/BS << /W 1 /S /D /D [3 2] >>', $document->render());
+    }
+
+    #[Test]
+    public function it_attaches_a_popup_to_line_based_annotations(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addLineAnnotation(10, 20, 90, 32, contents: 'Linie');
+        $line = $page->getAnnotations()[0];
+        $page->addPopupAnnotation($line, 20, 40, 60, 40, true);
+
+        self::assertStringContainsString('/Popup 8 0 R', $document->render());
+        self::assertStringContainsString('/Subtype /Popup', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_caret_annotation_to_the_page_and_document(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $result = $page->addCaretAnnotation(10, 20, 16, 18, 'Einfuegen', 'QA', 'P');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Caret', $document->render());
+        self::assertStringContainsString('/Rect [10 20 26 38]', $document->render());
+        self::assertStringContainsString('/Sy /P', $document->render());
+        self::assertStringContainsString('/Contents (Einfuegen)', $document->render());
     }
 
     #[Test]

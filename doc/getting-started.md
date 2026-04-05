@@ -82,6 +82,8 @@ use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Document\AnnotationBorderStyle;
+use Kalle\Pdf\Document\LineEndingStyle;
 use Kalle\Pdf\Graphics\Opacity;
 
 require 'vendor/autoload.php';
@@ -1244,6 +1246,142 @@ Wichtig:
 - `Page::layer(...)` kapselt Inhalt in `BDC`/`EMC` mit einer echten OCG-Referenz
 - `SetOcgStateAction` arbeitet jetzt mit echten Layer-Referenzen statt nur mit Layer-Namen
 - `example.php` enthaelt dafuer jetzt eine eigene `Layer Demo`- und eine eigene `Action Demo`-Seite
+
+### Attachments
+
+```php
+$document->addAttachment(
+    'demo-note.txt',
+    "Diese Datei ist als Dokument-Anhang eingebettet.\n",
+    'Kleine Demo-Datei fuer Attachments',
+    'text/plain',
+);
+
+$document->addAttachmentFromFile(
+    'README.md',
+    description: 'Projekt-README als eingebettete Datei',
+    mimeType: 'text/markdown',
+);
+```
+
+Wichtig:
+
+- eingebettete Dateien werden aktuell ueber den `EmbeddedFiles`-Name-Tree im `Catalog` registriert
+- `example.php` enthaelt dafuer jetzt eine eigene `Attachment Demo`-Seite
+- eingebettete Dateien koennen zusaetzlich ueber `addFileAttachment(...)` als sichtbare `FileAttachment`-Annotation auf einer Seite erscheinen
+
+### Weitere Annotationen
+
+```php
+$page->addTextAnnotation(20, 200, 8, 8, 'Kurzer Kommentar', 'QA', 'Comment', true);
+$annotation = $page->getAnnotations()[0];
+$page->addPopupAnnotation($annotation, 32, 180, 60, 40, true);
+
+$page->addFreeTextAnnotation(
+    35,
+    190,
+    70,
+    18,
+    'Direkter Hinweis auf der Seite',
+    'Helvetica',
+    11,
+    Color::rgb(180, 20, 20),
+    Color::gray(0.5),
+    Color::gray(0.95),
+    'QA',
+);
+
+$page->addHighlightAnnotation(20, 170, 65, 6, Color::rgb(255, 255, 0), 'Highlight', 'QA');
+$page->addUnderlineAnnotation(88, 170, 28, 6, Color::rgb(0, 0, 255), 'Underline', 'QA');
+$page->addStrikeOutAnnotation(119, 170, 28, 6, Color::rgb(255, 0, 0), 'StrikeOut', 'QA');
+$page->addSquigglyAnnotation(150, 170, 40, 6, Color::rgb(255, 0, 255), 'Squiggly', 'QA');
+$page->addStampAnnotation(20, 150, 35, 14, 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
+$page->addSquareAnnotation(20, 130, 24, 14, Color::rgb(255, 0, 0), Color::gray(0.92), 'Square', 'QA', AnnotationBorderStyle::solid(2.0));
+$page->addCircleAnnotation(52, 130, 24, 14, Color::rgb(0, 0, 255), Color::gray(0.92), 'Circle', 'QA', AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
+$page->addFileAttachment(65, 130, 8, 8, $attachment, 'PushPin', 'Sichtbarer Dateianhang');
+$page->addLineAnnotation(
+    20,
+    110,
+    48,
+    102,
+    Color::rgb(220, 40, 40),
+    'Line',
+    'QA',
+    LineEndingStyle::OPEN_ARROW,
+    LineEndingStyle::CLOSED_ARROW,
+    'Messlinie',
+    AnnotationBorderStyle::dashed(2.0, [4.0, 2.0]),
+);
+$line = $page->getAnnotations()[count($page->getAnnotations()) - 1];
+$page->addPopupAnnotation($line, 18, 84, 34, 14, true);
+$page->addPolyLineAnnotation(
+    [
+        [58.0, 104.0],
+        [66.0, 112.0],
+        [74.0, 102.0],
+        [82.0, 110.0],
+    ],
+    Color::rgb(30, 90, 210),
+    'PolyLine',
+    'QA',
+    LineEndingStyle::CIRCLE,
+    LineEndingStyle::SLASH,
+    'Korrekturpfad',
+    AnnotationBorderStyle::solid(2.5),
+);
+$polyLine = $page->getAnnotations()[count($page->getAnnotations()) - 1];
+$page->addPopupAnnotation($polyLine, 58, 84, 34, 14);
+$page->addPolygonAnnotation(
+    [
+        [95.0, 102.0],
+        [106.0, 114.0],
+        [118.0, 106.0],
+        [112.0, 98.0],
+    ],
+    Color::rgb(20, 130, 60),
+    Color::gray(0.9),
+    'Polygon',
+    'QA',
+    'Flaechenhinweis',
+    AnnotationBorderStyle::dashed(),
+);
+$polygon = $page->getAnnotations()[count($page->getAnnotations()) - 1];
+$page->addPopupAnnotation($polygon, 98, 84, 34, 14);
+$page->addCaretAnnotation(128, 98, 10, 12, 'Einfuemarke', 'QA', 'P');
+$page->addInkAnnotation(
+    85,
+    127,
+    45,
+    20,
+    [
+        [
+            [88.0, 132.0],
+            [95.0, 140.0],
+            [102.0, 130.0],
+        ],
+    ],
+    Color::rgb(0, 0, 0),
+    'Ink',
+    'QA',
+);
+```
+
+Wichtig:
+
+- `TextAnnotation` ist die klassische Sticky-Note-Annotation
+- `FreeTextAnnotation` rendert sichtbaren Kommentartext direkt als Annotation
+- `Highlight`, `Underline`, `StrikeOut` und `Squiggly` werden aktuell ueber ein Rechteck plus `QuadPoints` modelliert
+- `StampAnnotation` nutzt einen Viewer-Stempel ueber `/Name`
+- `SquareAnnotation` und `CircleAnnotation` bilden einfache Viewer-Formannotation mit Border- und optionaler Fill-Farbe ab
+- `LineAnnotation` und `PolyLineAnnotation` unterstuetzen zusaetzlich `LineEndingStyle` ueber `LE`
+- `AnnotationBorderStyle` setzt fuer geometrische Viewer-Annotationen das PDF-`BS`-Dictionary, inklusive gestrichelter Linien
+- `LineAnnotation`, `PolyLineAnnotation` und `PolygonAnnotation` bilden lineare und geschlossene Viewer-Geometrien mit `L` oder `Vertices` ab
+- `LineAnnotation`, `PolyLineAnnotation` und `PolygonAnnotation` koennen ausserdem `Subj` und verknuepfte `PopupAnnotation` tragen
+- `CaretAnnotation` bildet Einfuegemarken oder Korrekturhinweise mit optionalem Symbol `None` oder `P` ab
+- `FileAttachmentAnnotation` wird ueber `addFileAttachment(...)` sichtbar auf einer Seite referenziert
+- `InkAnnotation` verwendet `InkList` fuer freie Stift- oder Handschriftzuege
+- `PopupAnnotation` wird ueber `addPopupAnnotation(...)` an bestehende Kommentar- oder Markup-Annotationen gehaengt
+- `example.php` enthaelt dafuer jetzt eine eigene `Annotation Demo`-Seite
 
 ## Verschluesselung
 
