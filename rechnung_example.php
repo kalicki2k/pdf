@@ -2,7 +2,9 @@
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Rect;
+use Kalle\Pdf\Document\TextSegment;
 use Kalle\Pdf\Document\TextBoxOptions;
+use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 
@@ -63,7 +65,7 @@ $page
         ),
     )
     ->addTextBox(
-        text: 'Rechnung',
+        text: [TextSegment::colored('Rechnung', Color::rgb(220, 20, 60))],
         box: new Rect(Units::mm(20), Units::mm(210), Units::mm(170), Units::mm(10)),
         fontName: 'Helvetica',
         size: 20,

@@ -128,9 +128,12 @@ $frame
     )
     ->addParagraph(
         [
-            new TextSegment('Achtung: ', Color::rgb(220, 20, 60), bold: true, underline: true),
-            new TextSegment('dieser Absatz zeigt gemischte Textstile, Farben und Opacity. ', italic: true),
-            new TextSegment('Dieser Teil ist durchgestrichen.', opacity: Opacity::fill(0.5), strikethrough: true),
+            TextSegment::underlined('Achtung: ', Color::rgb(220, 20, 60)),
+            TextSegment::italic('dieser Absatz zeigt gemischte Textstile, Farben und Opacity. '),
+            TextSegment::strikethrough('Dieser Teil ist durchgestrichen.')->withDefaults(
+                null,
+                Opacity::fill(0.5),
+            ),
         ],
         'NotoSans-Regular',
         12,
@@ -353,12 +356,12 @@ $page->createTable(
         '19,99 EUR',
     ]);
 
-$frame->bulletList(
+$frame->addBulletList(
     [
         'Feste Einzuege fuer Bullet und Textblock.',
         [
-            new TextSegment('Rich Text', bold: true),
-            new TextSegment(' innerhalb eines Listenpunkts.'),
+            TextSegment::bold('Rich Text'),
+            TextSegment::plain(' innerhalb eines Listenpunkts.'),
         ],
     ],
     'NotoSans-Regular',
@@ -367,10 +370,10 @@ $frame->bulletList(
     bulletColor: Color::rgb(220, 20, 60),
 );
 
-$frame->numberedList(
+$frame->addNumberedList(
     [
         'Erster Schritt',
-        [new TextSegment('Zweiter', bold: true), new TextSegment(' Schritt')],
+        [TextSegment::bold('Zweiter'), TextSegment::plain(' Schritt')],
     ],
     'NotoSans-Regular',
     12,
@@ -411,8 +414,8 @@ file_put_contents('hello.pdf', $pdfContent);
 10. `addPanel(...)` rendert einfache Hinweis- und Infoboxen mit Titel, Body, Padding und optional gerundeter Box.
 11. `addCallout(...)` rendert Hinweisboxen mit Pointer-Spitze auf Basis von Panel und Pfad-Geometrie.
 12. `createTable(...)` erzeugt eine erste Tabellen-API mit festen Spaltenbreiten, Header-Zeilen und automatischer Zeilenhoehe.
-13. `bulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
-14. `numberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
+13. `addBulletList(...)` rendert Listen mit Hanging Indent und vordefinierten `BulletType`-Varianten.
+14. `addNumberedList(...)` rendert nummerierte Listen mit demselben Umbruch- und Paging-Verhalten.
 15. `addOutline(...)` registriert Bookmarks fuer die Viewer-Navigation im PDF.
 16. `addDestination(...)` registriert benannte interne Sprungziele.
 17. `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)` decken die erste AcroForm-Stufe ab.
@@ -469,8 +472,8 @@ $table->addRow([
 $table->addRow([
     '2',
     [
-        new TextSegment('Pro Plan', bold: true),
-        new TextSegment(' mit Umbruch in der Tabellenzelle.'),
+        TextSegment::bold('Pro Plan'),
+        TextSegment::plain(' mit Umbruch in der Tabellenzelle.'),
     ],
     new TableCell(
         'Beta',
@@ -644,10 +647,10 @@ Verfuegbare Bullet-Typen:
 Beispiel:
 
 ```php
-$frame->bulletList(
+$frame->addBulletList(
     [
         'Erster Punkt',
-        [new TextSegment('Zweiter', bold: true), new TextSegment(' Punkt')],
+        [TextSegment::bold('Zweiter'), TextSegment::plain(' Punkt')],
         'Dritter Punkt mit automatischem Umbruch in der Liste.',
     ],
     'NotoSans-Regular',
@@ -660,10 +663,10 @@ $frame->bulletList(
 Fuer nummerierte Listen gibt es `TextFrame::addNumberedList(...)`:
 
 ```php
-$frame->numberedList(
+$frame->addNumberedList(
     [
         'Erster Schritt',
-        [new TextSegment('Zweiter', bold: true), new TextSegment(' Schritt')],
+        [TextSegment::bold('Zweiter'), TextSegment::plain(' Schritt')],
         'Dritter Schritt mit automatischem Umbruch in der Liste.',
     ],
     'NotoSans-Regular',
@@ -678,7 +681,7 @@ Aktuell unterstuetzt die API dabei:
 - dezimale Nummerierung
 - `startAt`
 - eigene Nummernfarbe
-- denselben Hanging Indent und Seitenwechsel wie bei `bulletList(...)`
+- denselben Hanging Indent und Seitenwechsel wie bei `addBulletList(...)`
 
 ## Einheiten
 
@@ -906,16 +909,21 @@ Ein kompakter Absatz mit gemischten Stilen sieht zum Beispiel so aus:
 ```php
 $frame->addParagraph(
     [
-        new TextSegment('Achtung: ', Color::rgb(255, 0, 0), bold: true, underline: true),
-        new TextSegment('weiterer Text in Kursivschrift, ', italic: true),
-        new TextSegment('halbtransparent und durchgestrichen', opacity: Opacity::fill(0.5), strikethrough: true),
+        TextSegment::underlined('Achtung: ', Color::rgb(255, 0, 0)),
+        TextSegment::italic('weiterer Text in Kursivschrift, '),
+        TextSegment::strikethrough('halbtransparent und durchgestrichen')->withDefaults(
+            null,
+            Opacity::fill(0.5),
+        ),
     ],
     'NotoSans-Regular',
     12,
-    'P',
-    align: HorizontalAlign::JUSTIFY,
-    maxLines: 2,
-    overflow: TextOverflow::ELLIPSIS,
+    new ParagraphOptions(
+        structureTag: StructureTag::Paragraph,
+        align: HorizontalAlign::JUSTIFY,
+        maxLines: 2,
+        overflow: TextOverflow::ELLIPSIS,
+    ),
 );
 ```
 
