@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Render;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\EncryptDictionary;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 
 class PdfRenderer
 {
@@ -12,10 +14,28 @@ class PdfRenderer
     {
         $output = "%PDF-{$document->version}" . PHP_EOL;
         $offsets = [];
+        $objectEncryptor = $this->buildObjectEncryptor($document);
+        RenderContext::setObjectEncryptor($objectEncryptor);
 
-        foreach ($document->getDocumentObjects() as $object) {
-            $offsets[$object->id] = mb_strlen($output, '8bit');
-            $output .= $object->render();
+        try {
+            foreach ($document->getDocumentObjects() as $object) {
+                RenderContext::enterObject($object->id);
+                $offsets[$object->id] = mb_strlen($output, '8bit');
+                $renderedObject = $object->render();
+
+                if (
+                    $objectEncryptor !== null
+                    && !$object instanceof EncryptDictionary
+                ) {
+                    $renderedObject = $objectEncryptor->encryptStreamObject($renderedObject, $object->id);
+                }
+
+                $output .= $renderedObject;
+                RenderContext::leaveObject();
+            }
+        } finally {
+            RenderContext::leaveObject();
+            RenderContext::setObjectEncryptor(null);
         }
 
         $startxref = mb_strlen($output, '8bit');
@@ -27,10 +47,26 @@ class PdfRenderer
             $maxObjectId + 1,
             $document->catalog->id,
             $document->info->id,
+            $document->encryptDictionary?->id,
+            $document->getDocumentId(),
         );
         $output .= 'startxref' . PHP_EOL . $startxref . PHP_EOL . '%%EOF';
 
         return $output;
+    }
+
+    private function buildObjectEncryptor(Document $document): ?StandardObjectEncryptor
+    {
+        $profile = $document->getEncryptionProfile();
+        $securityHandlerData = $document->getSecurityHandlerData();
+
+        if ($profile === null || $securityHandlerData === null) {
+            return null;
+        }
+
+        $objectEncryptor = new StandardObjectEncryptor($profile, $securityHandlerData);
+
+        return $objectEncryptor->supportsObjectEncryption() ? $objectEncryptor : null;
     }
 
     /**
@@ -58,11 +94,22 @@ class PdfRenderer
         return $xref;
     }
 
-    private function generateTrailer(int $size, int $rootId, int $infoId): string
+    /**
+     * @param array{string, string} $documentId
+     */
+    private function generateTrailer(int $size, int $rootId, int $infoId, ?int $encryptId, array $documentId): string
     {
-        return 'trailer' . PHP_EOL
+        $trailer = 'trailer' . PHP_EOL
             . "<< /Size $size" . PHP_EOL
             . "/Root $rootId 0 R" . PHP_EOL
-            . "/Info $infoId 0 R >>" . PHP_EOL;
+            . "/Info $infoId 0 R";
+
+        if ($encryptId !== null) {
+            $trailer .= PHP_EOL . "/Encrypt $encryptId 0 R";
+        }
+
+        $trailer .= PHP_EOL . "/ID [<{$documentId[0]}> <{$documentId[1]}>]";
+
+        return $trailer . " >>" . PHP_EOL;
     }
 }

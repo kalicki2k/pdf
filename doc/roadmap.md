@@ -15,6 +15,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - PDF-Outlines bzw. Bookmarks koennen ueber `addOutline(...)` registriert werden
 - benannte interne Ziele koennen ueber `addDestination(...)` registriert werden
 - Inhaltsverzeichnisse koennen ueber `addTableOfContents(...)` aus vorhandenen Outlines erzeugt werden
+- Dokumente koennen ueber den Standard-Security-Handler verschluesselt werden
 - Text wird ueber registrierte Fonts gerendert
 - `addParagraph()` und `TextFrame` decken ersten Absatz- und Flow-Layout-Bedarf ab
 - `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
@@ -38,6 +39,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
 - eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
 - Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
+- vier Beispielprofile fuer Verschluesselung stehen ueber `example2.php` zur Verfuegung
 
 Das bedeutet aber nicht, dass bereits alle hoeheren PDF-Ziele erreicht sind.
 
@@ -66,6 +68,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Link-API ueber Annotationen und klickbaren Text
 - erste Outline-/Bookmark-API fuer Viewer-Navigation
 - erste interne Dokument-Navigation ueber benannte Ziele
+- erste Verschluesselungs-API ueber `encrypt(...)`, `EncryptionOptions` und versionsabhaengige Profile
 
 ## Prioritaeten
 
@@ -115,6 +118,7 @@ Naechste Kandidaten:
 - weiterer Feinschliff der Tabellen-API, zum Beispiel fuer noch sauberere `rowspan`-Split-Entscheidungen, feinere Textverteilung ueber Split-Segmente und noch detailliertere Zellstile
 - Ausbau der Bild-API, vor allem fuer Performance bei grossen PNG-Dateien mit Alpha-Kanal
 - feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
+- weiterer Ausbau der PDF-Security, vor allem klare Trennung zwischen aktuellem `AES_256`-R5-Pfad und spaeterem `R6`
 
 Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
 
@@ -231,3 +235,21 @@ Der naechste technisch saubere Schwerpunkt ist nicht sofort ein weiterer Standar
 2. das Layout-System im Textpfad weiter absichern und erst dann ueber Text hinaus erweitern
 3. den naechsten echten Inhaltstyp vollstaendig einfuehren
 4. Struktur- und Standardthemen danach gezielt validieren
+
+## Verschluesselung
+
+Der aktuelle Verschluesselungsstand ist fuer eine erste Standard-Security-Handler-Stufe bereits nutzbar:
+
+- `RC4_40` fuer PDF `1.3`
+- `RC4_128` fuer PDF `1.4` und `1.5`
+- `AES_128` fuer PDF `1.6`
+- `AES_256` fuer PDF `1.7` aktuell ueber den `R5`-Pfad
+
+Strings und Streams werden im Renderpfad wirklich verschluesselt, nicht nur das Encrypt-Dictionary modelliert.
+
+Die naechsten sinnvollen Schritte in diesem Bereich sind:
+
+- Doku und Beispielmaterial weiter ausbauen
+- `R6` spaeter als eigener Ausbau statt halbgarer Mischimplementierung
+- Permissions semantisch noch genauer an die PDF-Spezifikation angleichen
+- Reader-Kompatibilitaet mit weiteren Tools ausser `qpdf` pruefen

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
+use Kalle\Pdf\Render\RenderContext;
 use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 final class StringType implements Type
@@ -16,11 +17,21 @@ final class StringType implements Type
     {
         if ($this->canBeEncodedAsWindows1252($this->value)) {
             $encoded = mb_convert_encoding($this->value, 'Windows-1252', 'UTF-8');
+            $encrypted = RenderContext::encryptString($encoded);
+
+            if ($encrypted !== null) {
+                return '<' . strtoupper(bin2hex($encrypted)) . '>';
+            }
 
             return '(' . PdfStringEscaper::escape($encoded) . ')';
         }
 
         $utf16be = mb_convert_encoding($this->value, 'UTF-16BE', 'UTF-8');
+        $encrypted = RenderContext::encryptString("\xFE\xFF" . $utf16be);
+
+        if ($encrypted !== null) {
+            return '<' . strtoupper(bin2hex($encrypted)) . '>';
+        }
 
         return '<FEFF' . strtoupper(bin2hex($utf16be)) . '>';
     }

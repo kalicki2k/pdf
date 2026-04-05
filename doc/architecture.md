@@ -11,8 +11,9 @@ Der Hauptfluss ist:
 1. `Document` sammelt Metadaten, Fonts und Seiten.
 2. `Page` nimmt Inhalte wie Text, Bilder und einfache grafische Primitive entgegen.
 3. `Contents` und `Resources` sammeln die seitenbezogenen Daten.
-4. `PdfRenderer` rendert alle indirekten Objekte in der richtigen Reihenfolge.
-5. Zum Schluss werden `xref`, `trailer` und `startxref` angehaengt.
+4. optionale Verschluesselung wird ueber Security-Handler-Daten und objektbezogene Schluessel vorbereitet.
+5. `PdfRenderer` rendert alle indirekten Objekte in der richtigen Reihenfolge.
+6. Zum Schluss werden `xref`, `trailer` und `startxref` angehaengt.
 
 ## Kernklassen
 
@@ -29,6 +30,7 @@ Verantwortlich fuer:
 - optionale wiederkehrende Header- und Footer-Renderer fuer neue Seiten
 - optionale Outline-/Bookmark-Navigation fuer PDF-Viewer
 - optionale benannte Ziele fuer interne PDF-Spruenge
+- optionale Dokumentverschluesselung
 - Vergabe von Objekt-IDs
 - lazy Aufbau der Strukturdaten fuer Tagged-Inhalte
 - Start des Renderings
@@ -41,6 +43,7 @@ Wichtige Methoden:
 - `addOutline()` registriert einen Bookmark-Eintrag fuer eine Zielseite
 - `addDestination()` registriert ein benanntes Ziel fuer interne Spruenge
 - `addTableOfContents()` erzeugt Inhaltsverzeichnis-Seiten aus vorhandenen Outlines
+- `encrypt()` aktiviert den Standard-Security-Handler mit Passwort, Permissions und passendem Verschluesselungsprofil
 - `addFont()` registriert Fonts im Dokument
 - `addKeyword()` pflegt die Dokument-Keywords
 - `render()` delegiert an `PdfRenderer`
@@ -53,6 +56,40 @@ Wenn benannte Ziele vorhanden sind, rendert der `Catalog` zusaetzlich ein `/Dest
 `addPageNumbers()` wird erst kurz vor dem finalen Rendern aufgeloest, damit die Gesamtseitenzahl des Dokuments bekannt ist.
 
 `addTableOfContents()` kann die erzeugten TOC-Seiten am Anfang oder Ende der Seitenreihenfolge platzieren. Die Position wird ueber `TableOfContentsPosition::START` oder `::END` gesteuert.
+
+Wenn Verschluesselung aktiv ist, cached `Document` die Security-Handler-Daten einmal zentral. Dadurch verwenden Encrypt-Dictionary und Objektverschluesselung denselben Dateischluessel und dieselben abgeleiteten Werte.
+
+### Verschluesselung
+
+Die Verschluesselung ist aktuell als eigener Teilpfad ueber `src/Encryption` modelliert.
+
+Die wichtigsten Bausteine sind:
+
+- `EncryptionAlgorithm`
+- `EncryptionProfile`
+- `EncryptionOptions`
+- `EncryptionPermissions`
+- `EncryptionVersionResolver`
+- `StandardSecurityHandler`
+- `StandardObjectEncryptor`
+
+Der Ablauf ist:
+
+1. `Document::encrypt(...)` nimmt Passwort und optionalen Algorithmus entgegen.
+2. `EncryptionVersionResolver` waehlt anhand der PDF-Version das passende Profil.
+3. `StandardSecurityHandler` erzeugt die Security-Handler-Daten fuer das Dokument.
+4. `EncryptDictionary` rendert daraus den `/Encrypt`-Eintrag.
+5. `PdfRenderer` verschluesselt Strings und Streams objektbezogen ueber `StandardObjectEncryptor`.
+6. Der Trailer bekommt `/Encrypt` und `/ID`.
+
+Aktuell unterstuetzt:
+
+- `RC4_40` als `V=1 / R=2`
+- `RC4_128` als `V=2 / R=3`
+- `AES_128` als `V=4 / R=4` mit `AESV2`
+- `AES_256` als `V=5 / R=5` mit `AESV3`
+
+Fuer `AES_128` und `AES_256` werden Strings und Streams mit AES verschluesselt. Bei Streams wird die Laenge nach der Verschluesselung aktualisiert, weil IV und Padding die Stream-Daten vergroessern koennen.
 
 ### Pages
 

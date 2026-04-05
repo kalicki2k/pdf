@@ -28,6 +28,23 @@ php example.php
 
 Dabei wird eine PDF-Datei im Projektverzeichnis erzeugt.
 
+Ein zweites Beispiel fuer Verschluesselung liegt in `example2.php`.
+
+Ausfuehren:
+
+```bash
+php example2.php
+```
+
+Dabei werden vier Testdateien in `var/encryption-examples` erzeugt:
+
+- PDF `1.3` mit `RC4_40`
+- PDF `1.4` mit `RC4_128`
+- PDF `1.6` mit `AES_128`
+- PDF `1.7` mit `AES_256`
+
+Alle Dateien verwenden im Beispiel das Passwort `secret`.
+
 ## Erstes Dokument
 
 ```php
@@ -806,6 +823,40 @@ $frame->paragraph(
 );
 ```
 
+## Verschluesselung
+
+Die Library kann Dokumente aktuell ueber den Standard-Security-Handler verschluesseln.
+
+Ein einfaches Beispiel:
+
+```php
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionOptions;
+
+$document = new Document(version: 1.6);
+$document->addFont('Helvetica');
+
+$document->encrypt(new EncryptionOptions(
+    userPassword: 'secret',
+    ownerPassword: 'secret',
+    algorithm: EncryptionAlgorithm::AES_128,
+));
+
+$page = $document->addPage(PageSize::A4());
+$page->addText('Geschuetzter Inhalt', Units::mm(20), Units::mm(260), 'Helvetica', 14);
+
+file_put_contents('encrypted.pdf', $document->render());
+```
+
+Aktuell verfuegbar:
+
+- `RC4_40` fuer PDF `1.3`
+- `RC4_128` fuer PDF `1.4` und `1.5`
+- `AES_128` fuer PDF `1.6`
+- `AES_256` fuer PDF `1.7`
+
+Wenn kein Algorithmus explizit gesetzt wird, waehlt die Library den zur PDF-Version passenden Standardpfad automatisch.
+
 ## Aktueller Funktionsumfang
 
 Der derzeit belastbare Einstieg ist:
@@ -832,6 +883,7 @@ Der derzeit belastbare Einstieg ist:
 - Bilder aus Dateien laden und platzieren
 - klickbare Links ueber `addLink(...)`, `addText(..., link: ...)` und `TextSegment::link`
 - interne Spruenge ueber `addDestination(...)`, `addInternalLink(...)` und `#ziel`
+- Passwortverschluesselung ueber `encrypt(...)` fuer `RC4_40`, `RC4_128`, `AES_128` und `AES_256`
 
 ## Aktuelle Grenzen
 

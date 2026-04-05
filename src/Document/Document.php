@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionOptions;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardSecurityHandler;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Encryption\EncryptionVersionResolver;
 use Kalle\Pdf\Font\CidFont;
 use Kalle\Pdf\Font\CidToGidMap;
 use Kalle\Pdf\Font\FontDefinition;
@@ -24,11 +30,15 @@ use Kalle\Pdf\Structure\ParentTree;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructTreeRoot;
 use Kalle\Pdf\Utilities\StringListNormalizer;
+use Random\RandomException;
 
 final class Document
 {
     private int $objectId = 0;
     private int $structParentId = -1;
+    private ?EncryptionProfile $encryptionProfile = null;
+    private ?EncryptionOptions $encryptionOptions = null;
+    private ?StandardSecurityHandlerData $securityHandlerData = null;
     /** @var list<callable(Page, int): void> */
     private array $headerRenderers = [];
     /** @var list<callable(Page, int): void> */
@@ -45,10 +55,13 @@ final class Document
     public array $keywords = [];
     /** @var array<string, Page> */
     private array $destinations = [];
+    /** @var array{string, string} */
+    private array $documentId;
 
     /** @var StructElem[]  */
     private array $structElems = [];
     public Catalog $catalog;
+    public ?EncryptDictionary $encryptDictionary = null;
     public Info $info;
     public ?OutlineRoot $outlineRoot = null;
     public ?ParentTree $parentTree = null;
@@ -76,6 +89,7 @@ final class Document
         $this->pages = new Pages(++$this->objectId, $this);
 
         $this->info = new Info(++$this->objectId, $this);
+        $this->documentId = $this->generateDocumentId();
     }
 
     /**
@@ -120,6 +134,10 @@ final class Document
             }
 
             $objects[] = $structElem;
+        }
+
+        if ($this->encryptDictionary !== null) {
+            $objects[] = $this->encryptDictionary;
         }
 
         $objects[] = $this->info;
@@ -200,6 +218,60 @@ final class Document
         $this->destinations[$name] = $page;
 
         return $this;
+    }
+
+    public function useEncryptionAlgorithm(EncryptionAlgorithm $algorithm = EncryptionAlgorithm::AUTO): self
+    {
+        $resolver = new EncryptionVersionResolver();
+        $this->encryptionProfile = $resolver->resolve($this->version, $algorithm);
+
+        return $this;
+    }
+
+    public function encrypt(EncryptionOptions $options): self
+    {
+        $resolver = new EncryptionVersionResolver();
+        $this->encryptionOptions = $options;
+        $this->encryptionProfile = $resolver->resolve($this->version, $options->algorithm);
+        $this->securityHandlerData = null;
+        $this->encryptDictionary = new EncryptDictionary(++$this->objectId, $this, $this->encryptionProfile);
+
+        return $this;
+    }
+
+    public function getEncryptionProfile(): ?EncryptionProfile
+    {
+        return $this->encryptionProfile;
+    }
+
+    public function getEncryptionOptions(): ?EncryptionOptions
+    {
+        return $this->encryptionOptions;
+    }
+
+    public function getSecurityHandlerData(): ?StandardSecurityHandlerData
+    {
+        if ($this->encryptionProfile === null || $this->encryptionOptions === null) {
+            return null;
+        }
+
+        if ($this->securityHandlerData === null) {
+            $this->securityHandlerData = (new StandardSecurityHandler())->build(
+                $this->encryptionOptions,
+                $this->encryptionProfile,
+                $this->documentId[0],
+            );
+        }
+
+        return $this->securityHandlerData;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    public function getDocumentId(): array
+    {
+        return $this->documentId;
     }
 
     /**
@@ -596,5 +668,19 @@ final class Document
         }
 
         return rtrim($current) . $ellipsis;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    private function generateDocumentId(): array
+    {
+        try {
+            $value = bin2hex(random_bytes(16));
+        } catch (RandomException) {
+            $value = md5(uniqid((string) mt_rand(), true));
+        }
+
+        return [$value, $value];
     }
 }
