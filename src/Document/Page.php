@@ -327,16 +327,18 @@ final class Page extends IndirectObject
                 throw new InvalidArgumentException('Panel height is too small for its content.');
             }
 
-            $this->addParagraph(
-                $body,
-                $x + $style->paddingHorizontal,
-                $y + $height - $bodyTopOffset - $style->bodySize,
-                $contentWidth,
-                $bodyFont,
-                $style->bodySize,
-                new ParagraphOptions(
+            $this->addTextBox(
+                text: $body,
+                box: new Rect(
+                    $x + $style->paddingHorizontal,
+                    $y + $style->paddingVertical,
+                    $contentWidth,
+                    $availableBodyHeight,
+                ),
+                fontName: $bodyFont,
+                size: $style->bodySize,
+                options: new TextBoxOptions(
                     lineHeight: $bodyLineHeight,
-                    bottomMargin: $y + $style->paddingVertical,
                     color: $style->bodyColor,
                     opacity: $style->opacity,
                     align: $style->bodyAlign,
@@ -457,6 +459,21 @@ final class Page extends IndirectObject
         int $size = 12,
         ParagraphOptions $options = new ParagraphOptions(),
     ): self {
+        return $this->addFlowText($text, $x, $y, $maxWidth, $fontName, $size, $options);
+    }
+
+    /**
+     * @param string|list<TextSegment> $text
+     */
+    public function addFlowText(
+        string | array $text,
+        float $x,
+        float $y,
+        float $maxWidth,
+        string $fontName = 'Helvetica',
+        int $size = 12,
+        ParagraphOptions $options = new ParagraphOptions(),
+    ): self {
         $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
         $bottomMargin = $options->bottomMargin ?? self::DEFAULT_BOTTOM_MARGIN;
 
@@ -508,8 +525,6 @@ final class Page extends IndirectObject
         TextBoxOptions $options = new TextBoxOptions(),
     ): self {
         $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-        $contentWidth = $box->width - $options->padding->left - $options->padding->right;
-        $contentHeight = $box->height - $options->padding->top - $options->padding->bottom;
 
         if ($box->width <= 0) {
             throw new InvalidArgumentException('Text box width must be greater than zero.');
@@ -523,6 +538,10 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Line height must be greater than zero.');
         }
 
+        if ($options->maxLines !== null && $options->maxLines <= 0) {
+            throw new InvalidArgumentException('Max lines must be greater than zero.');
+        }
+
         if (
             $options->padding->top < 0
             || $options->padding->right < 0
@@ -532,9 +551,13 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Text box padding must not be negative.');
         }
 
+        $contentWidth = $box->width - $options->padding->left - $options->padding->right;
+
         if ($contentWidth <= 0) {
             throw new InvalidArgumentException('Text box content width must be greater than zero.');
         }
+
+        $contentHeight = $box->height - $options->padding->top - $options->padding->bottom;
 
         if ($contentHeight < $size) {
             throw new InvalidArgumentException('Text box content height must be at least the font size.');
@@ -544,10 +567,6 @@ final class Page extends IndirectObject
         $maxLines = $options->maxLines === null
             ? $visibleLineCapacity
             : min($options->maxLines, $visibleLineCapacity);
-
-        if ($maxLines <= 0) {
-            throw new InvalidArgumentException('Max lines must be greater than zero.');
-        }
 
         $lines = $this->layoutParagraphLines(
             $text,

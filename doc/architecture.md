@@ -114,7 +114,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addParagraph(...)`, `addTextBox(...)`, `createTextFrame(...)`, `createTable(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `addPath()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addFlowText(...)`, `addTextBox(...)`, `createTextFrame(...)`, `createTable(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `addPath()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)` und `addListBox(...)`.
 
 Dabei passiert intern:
 
@@ -416,7 +416,7 @@ Verantwortlich fuer:
 
 - gemeinsamen Textbereich mit `x`, `y` und Breite
 - Cursor-Fuehrung zwischen mehreren Textbloecken
-- Absatzeinzug ueber `addParagraph(...)`
+- Absatzeinzug ueber `addFlowText(...)`
 - Ueberschriften ueber `addHeading(...)`
 - automatische Folge-Seiten bei Ueberlauf
 - Weitergabe von Alignment, `maxLines` und `TextOverflow`
@@ -539,7 +539,7 @@ Noch offen ist vor allem der optische Feinschliff:
 
 - `Rectangle` oder `RoundedRectangle` als Hintergrundbox
 - einen optionalen Titel ueber `addText(...)`
-- den bestehenden Absatzpfad fuer den Body ueber `addParagraph(...)`
+- den bestehenden Absatzpfad fuer den Body ueber `addFlowText(...)` oder `addTextBox(...)` je nach Layoutbedarf
 - optional eine Link-Annotation ueber die gesamte Box
 
 `Callout` nutzt:
@@ -752,7 +752,7 @@ Ein Segment traegt aktuell:
 - `underline`
 - `strikethrough`
 
-`Page::addParagraph(...)` und `TextFrame::addParagraph(...)` akzeptieren entweder einen einfachen `string` oder eine Liste von `TextSegment`-Objekten.
+`Page::addFlowText(...)`, `Page::addTextBox(...)` und `TextFrame::addParagraph(...)` akzeptieren entweder einen einfachen `string` oder eine Liste von `TextSegment`-Objekten.
 
 ### HorizontalAlign und TextOverflow
 

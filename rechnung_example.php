@@ -2,8 +2,8 @@
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
+use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
@@ -56,7 +56,16 @@ $page
         ),
     )
     ->addTextBox(
-        text: "Telefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de",
+        text: "DEIN FIRMENNAME - Straße Hausnummer - PLZ Ort - Deutschland",
+        box: new Rect(Units::mm(20), Units::mm(239), Units::mm(100), Units::mm(20)),
+        fontName: 'Helvetica',
+        size: 6,
+        options: new TextBoxOptions(
+            lineHeight: Units::mm(4),
+        ),
+    )
+    ->addTextBox(
+        text: "Kundenfirma Müller GmbH\nz. Hd. Anna Müller\nBeispielweg 8\n80331 München\nDeutschland",
         box: new Rect(Units::mm(20), Units::mm(240), Units::mm(70), Units::mm(15)),
         fontName: 'Helvetica',
         size: 9,
@@ -78,6 +87,21 @@ $page
         options: new TextBoxOptions(
             lineHeight: Units::mm(4),
         ),
+    )
+    ->addTextBox(
+        text: "Sehr geehrte Frau Müller,\nhiermit berechne ich Ihnen folgende Leistungen:",
+        box: new Rect(Units::mm(20), Units::mm(180), Units::mm(170), Units::mm(15)),
+        fontName: 'Helvetica',
+        size: 9,
+        options: new TextBoxOptions(
+            lineHeight: Units::mm(4),
+        ),
+    )
+    ->addFlowText(
+        text: "Sehr geehrte Frau Müller,\nhiermit berechne ich Ihnen folgende Leistungen:",
+        x: Units::mm(20),
+        y: Units::mm(160),
+        maxWidth: Units::mm(170),
     );
 
 $targetPath = $outputDir . '/' . 'rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';

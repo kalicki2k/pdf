@@ -1659,7 +1659,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             [
                 new TextSegment('Hello ', link: LinkTarget::externalUrl('https://example.com')),
                 new TextSegment('world', link: LinkTarget::externalUrl('https://example.com')),
@@ -1682,7 +1682,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             [
                 new TextSegment('One', link: LinkTarget::externalUrl('https://one.example')),
                 new TextSegment(' Two', link: LinkTarget::externalUrl('https://two.example')),
@@ -1913,13 +1913,13 @@ final class PageTest extends TestCase
     }
 
     #[Test]
-    public function it_wraps_a_paragraph_into_multiple_text_lines(): void
+    public function it_wraps_open_text_box_content_into_multiple_text_lines(): void
     {
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $result = $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new ParagraphOptions(structureTag: StructureTag::Paragraph, lineHeight: 12.0, bottomMargin: 0.0));
+        $result = $page->addFlowText('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new ParagraphOptions(structureTag: StructureTag::Paragraph, lineHeight: 12.0, bottomMargin: 0.0));
 
         self::assertSame($page, $result);
         self::assertStringContainsString("10 50 Td\n/P << /MCID 0 >> BDC\n(Hello) Tj", $page->contents->render());
@@ -1929,13 +1929,13 @@ final class PageTest extends TestCase
     }
 
     #[Test]
-    public function it_wraps_a_paragraph_without_creating_structure_when_no_tag_is_given(): void
+    public function it_wraps_an_open_text_box_without_creating_structure_when_no_tag_is_given(): void
     {
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new ParagraphOptions(lineHeight: 12.0, bottomMargin: 0.0));
+        $page->addFlowText('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new ParagraphOptions(lineHeight: 12.0, bottomMargin: 0.0));
 
         self::assertStringContainsString('(Hello) Tj', $page->contents->render());
         self::assertStringNotContainsString('BDC', $page->contents->render());
@@ -1993,26 +1993,26 @@ final class PageTest extends TestCase
     }
 
     #[Test]
-    public function it_applies_opacity_to_each_line_of_a_wrapped_paragraph(): void
+    public function it_applies_opacity_to_each_line_of_a_wrapped_open_text_box(): void
     {
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new ParagraphOptions(lineHeight: 12.0, bottomMargin: 0.0, opacity: Opacity::fill(0.5)));
+        $page->addFlowText('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new ParagraphOptions(lineHeight: 12.0, bottomMargin: 0.0, opacity: Opacity::fill(0.5)));
 
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
         self::assertSame(4, substr_count($page->contents->render(), '/GS1 gs'));
     }
 
     #[Test]
-    public function it_applies_color_to_each_line_of_a_wrapped_paragraph(): void
+    public function it_applies_color_to_each_line_of_a_wrapped_open_text_box(): void
     {
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new ParagraphOptions(lineHeight: 12.0, bottomMargin: 0.0, color: Color::gray(0.5)));
+        $page->addFlowText('Hello world from PDF', 10, 50, 40, 'Helvetica', 10, new ParagraphOptions(lineHeight: 12.0, bottomMargin: 0.0, color: Color::gray(0.5)));
 
         self::assertSame(4, substr_count($page->contents->render(), '0.5 g'));
     }
@@ -2024,7 +2024,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             'Hello world from PDF',
             10,
             50,
@@ -2047,7 +2047,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             'Hello world from PDF',
             10,
             50,
@@ -2070,7 +2070,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             [
                 new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
                 new TextSegment(' Hello world from PDF', bold: true),
@@ -2095,7 +2095,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             [
                 new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
                 new TextSegment('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.:,;()*!?\'@#<>$%&^+-=~'),
@@ -2119,7 +2119,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             [
                 new TextSegment('Achtung:', Color::rgb(255, 0, 0)),
                 new TextSegment(' Hello world from PDF'),
@@ -2149,7 +2149,7 @@ final class PageTest extends TestCase
         /** @var mixed $invalidRuns */
         $invalidRuns = ['invalid'];
 
-        $method = new \ReflectionMethod($page, 'addParagraph');
+        $method = new \ReflectionMethod($page, 'addFlowText');
         $method->invoke($page, $invalidRuns, 10, 50, 50, 'Helvetica', 10);
     }
 
@@ -2160,7 +2160,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             [new TextSegment('Achtung', bold: true)],
             10,
             50,
@@ -2179,7 +2179,7 @@ final class PageTest extends TestCase
         $document->registerFont('Times-Roman');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             [new TextSegment('Hinweis', italic: true)],
             10,
             50,
@@ -2198,7 +2198,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph(
+        $page->addFlowText(
             [
                 new TextSegment('Underline', underline: true),
                 new TextSegment(' Strike', strikethrough: true),
@@ -2221,7 +2221,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::CENTER));
+        $page->addFlowText('Hello', 10, 50, 100, 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::CENTER));
 
         self::assertStringContainsString("45 50 Td\n(Hello) Tj", $page->contents->render());
     }
@@ -2233,7 +2233,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello', 10, 50, 100, 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::RIGHT));
+        $page->addFlowText('Hello', 10, 50, 100, 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::RIGHT));
 
         self::assertStringContainsString("80 50 Td\n(Hello) Tj", $page->contents->render());
     }
@@ -2245,7 +2245,7 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph('Hello world from PDF', 10, 50, 70, 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::JUSTIFY));
+        $page->addFlowText('Hello world from PDF', 10, 50, 70, 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::JUSTIFY));
 
         self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
         self::assertStringContainsString("50 50 Td\n(world) Tj", $page->contents->render());
@@ -2258,20 +2258,20 @@ final class PageTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
-        $page->addParagraph("Hello world\nfrom PDF", 10, 50, 100, 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::JUSTIFY));
+        $page->addFlowText("Hello world\nfrom PDF", 10, 50, 100, 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::JUSTIFY));
 
         self::assertStringContainsString("10 50 Td\n(Hello world) Tj", $page->contents->render());
         self::assertStringContainsString("10 38 Td\n(from PDF) Tj", $page->contents->render());
     }
 
     #[Test]
-    public function it_creates_a_follow_up_page_when_a_paragraph_reaches_the_bottom_margin(): void
+    public function it_creates_a_follow_up_page_when_an_open_text_box_reaches_the_bottom_margin(): void
     {
         $document = new Document(version: 1.4);
         $document->registerFont('Helvetica');
         $firstPage = $document->addPage(100.0, 60.0);
 
-        $lastPage = $firstPage->addParagraph(
+        $lastPage = $firstPage->addFlowText(
             'Hello world from PDF',
             10,
             30,

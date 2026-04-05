@@ -17,7 +17,7 @@ Die aktuelle Basis ist weiter als eine reine Skizze:
 - Inhaltsverzeichnisse koennen ueber `addTableOfContents(...)` aus vorhandenen Outlines erzeugt werden
 - Dokumente koennen ueber den Standard-Security-Handler verschluesselt werden
 - Text wird ueber registrierte Fonts gerendert
-- `addParagraph()`, `addTextBox()` und `TextFrame` decken ersten Absatz-, Block- und Flow-Layout-Bedarf ab
+- `addFlowText()`, `addTextBox()` und `TextFrame` decken ersten Absatz-, Block- und Flow-Layout-Bedarf ab
 - `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
 - Textfarbe, Graustufen, CMYK und Opacity sind im Renderpfad angekommen
 - `bold`, `italic`, `underline` und `strikethrough` sind vorhanden
@@ -71,7 +71,7 @@ Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code i
 - erste Unicode-Unterstuetzung
 - zentrale Font-Konfiguration ueber `config/fonts.php`
 - optionale Trennung zwischen normalem Text und strukturiertem Text
-- erste Textfluss-API ueber `addParagraph()`, `addTextBox()` und `TextFrame`
+- erste Textfluss-API ueber `addFlowText()` und `TextFrame`
 - erster Rich-Text-Pfad ueber `TextSegment`
 - erste Textstil- und Alignment-API
 - erste Listen-API mit Bullet- und nummerierten Listen

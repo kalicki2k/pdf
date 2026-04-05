@@ -760,9 +760,9 @@ $document->registerFont('CustomSans-Regular');
 
 Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Ausbaustufen fuer Text:
 
-- `Page::addParagraph(...)` fuer Umbruch innerhalb einer festen Breite
-- `Page::createTextFrame(...)` fuer Fliesstext mit Cursor-Fuehrung
 - `Page::addTextBox(...)` fuer Text in einem festen Rechteck
+- `Page::addFlowText(...)` fuer Umbruch innerhalb einer festen Breite mit optionalem Seitenwechsel
+- `Page::createTextFrame(...)` fuer Fliesstext mit Cursor-Fuehrung
 - `Color::rgb(...)`, `Color::gray(...)`, `Color::cmyk(...)` und `Color::hex(...)`
 - `Opacity::fill(...)`, `Opacity::stroke(...)`, `Opacity::both(...)`
 - `TextSegment` fuer gemischte Inline-Stile innerhalb eines Absatzes
@@ -772,7 +772,7 @@ Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Aus
 - `HorizontalAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `TextOverflow::CLIP` und `TextOverflow::ELLIPSIS` zusammen mit `maxLines`
 
-Ein einfaches `addTextBox(...)`-Beispiel:
+Ein einfaches `addTextBox(...)`-Beispiel mit fester Hoehe:
 
 ```php
 $page->addTextBox(
@@ -807,7 +807,7 @@ Neben Text stehen jetzt auch erste grafische Primitive und Bildplatzierung zur V
 - `Page::addImage(...)` fuer die Platzierung eines Bildes an einer festen Position
 - `Page::addLink(...)` fuer frei positionierbare klickbare Flaechen
 - `TextOptions(link: LinkTarget::...)` fuer klickbaren Text ohne manuelles Link-Rechteck
-- `TextSegment::link` fuer Links innerhalb von `addParagraph(...)` und `createTextFrame(...)`
+- `TextSegment::link` fuer Links innerhalb von `addFlowText(...)`, `addTextBox(...)` und `createTextFrame(...)`
 
 Beispiele:
 
