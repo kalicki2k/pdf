@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 final class StandardFont extends IndirectObject implements FontDefinition
@@ -21,6 +22,9 @@ final class StandardFont extends IndirectObject implements FontDefinition
         private readonly string $encoding,
         private readonly float $version,
         private readonly ?OpenTypeFontParser $fontParser = null,
+        public readonly ?EncodingDictionary $encodingDictionary = null,
+        /** @var array<string, string> */
+        private readonly array $byteMap = [],
     ) {
         parent::__construct($id);
         $this->validate();
@@ -38,8 +42,18 @@ final class StandardFont extends IndirectObject implements FontDefinition
 
     public function supportsText(string $text): bool
     {
-        $encoded = mb_convert_encoding($text, 'Windows-1252', 'UTF-8');
-        $roundTrip = mb_convert_encoding($encoded, 'UTF-8', 'Windows-1252');
+        if ($this->byteMap !== []) {
+            return $this->canEncodeWithByteMap($text);
+        }
+
+        $phpEncoding = $this->resolvePhpEncoding();
+
+        if ($phpEncoding === null) {
+            return $this->supportsAsciiOnlyText($text);
+        }
+
+        $encoded = mb_convert_encoding($text, $phpEncoding, 'UTF-8');
+        $roundTrip = mb_convert_encoding($encoded, 'UTF-8', $phpEncoding);
 
         return $roundTrip === $text;
     }
@@ -50,7 +64,14 @@ final class StandardFont extends IndirectObject implements FontDefinition
             throw new InvalidArgumentException("Text cannot be encoded with font '$this->baseFont'.");
         }
 
-        $encoded = mb_convert_encoding($text, 'Windows-1252', 'UTF-8');
+        if ($this->byteMap !== []) {
+            return '(' . PdfStringEscaper::escape($this->encodeWithByteMap($text)) . ')';
+        }
+
+        $phpEncoding = $this->resolvePhpEncoding();
+        $encoded = $phpEncoding === null
+            ? $text
+            : mb_convert_encoding($text, $phpEncoding, 'UTF-8');
 
         return '(' . PdfStringEscaper::escape($encoded) . ')';
     }
@@ -62,7 +83,16 @@ final class StandardFont extends IndirectObject implements FontDefinition
         }
 
         if ($this->fontParser === null) {
-            return strlen(mb_convert_encoding($text, 'Windows-1252', 'UTF-8')) * ($size * 0.6);
+            if ($this->byteMap !== []) {
+                return strlen($this->encodeWithByteMap($text)) * ($size * 0.6);
+            }
+
+            $phpEncoding = $this->resolvePhpEncoding();
+            $encoded = $phpEncoding === null
+                ? $text
+                : mb_convert_encoding($text, $phpEncoding, 'UTF-8');
+
+            return strlen($encoded) * ($size * 0.6);
         }
 
         $unitsPerEm = $this->fontParser->getUnitsPerEm();
@@ -83,7 +113,9 @@ final class StandardFont extends IndirectObject implements FontDefinition
             'Type' => new NameType('Font'),
             'Subtype' => new NameType($this->subtype),
             'BaseFont' => new NameType($this->baseFont),
-            'Encoding' => new NameType($this->encoding),
+            'Encoding' => $this->encodingDictionary instanceof EncodingDictionary
+                ? new ReferenceType($this->encodingDictionary)
+                : new NameType($this->encoding),
         ]);
 
         return $this->id . ' 0 obj' . PHP_EOL
@@ -115,5 +147,62 @@ final class StandardFont extends IndirectObject implements FontDefinition
         if ($this->encoding === 'ZapfDingbatsEncoding' && $this->baseFont !== StandardFontName::ZAPF_DINGBATS) {
             throw new InvalidArgumentException("BaseFont '$this->baseFont' is not compatible with 'ZapfDingbatsEncoding'.");
         }
+    }
+
+    private function resolvePhpEncoding(): ?string
+    {
+        return match ($this->encoding) {
+            'WinAnsiEncoding' => 'Windows-1252',
+            default => null,
+        };
+    }
+
+    private function supportsAsciiOnlyText(string $text): bool
+    {
+        return preg_match('/^[\x09\x0A\x0D\x20-\x7E]*$/', $text) === 1;
+    }
+
+    private function canEncodeWithByteMap(string $text): bool
+    {
+        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
+            if ($this->isAsciiCompatibleCharacter($character)) {
+                continue;
+            }
+
+            if (array_key_exists($character, $this->byteMap)) {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function encodeWithByteMap(string $text): string
+    {
+        $encoded = '';
+
+        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
+            if ($this->isAsciiCompatibleCharacter($character)) {
+                $encoded .= $character;
+                continue;
+            }
+
+            $mappedByte = $this->byteMap[$character] ?? null;
+
+            if ($mappedByte === null) {
+                throw new InvalidArgumentException("Text cannot be encoded with font '$this->baseFont'.");
+            }
+
+            $encoded .= $mappedByte;
+        }
+
+        return $encoded;
+    }
+
+    private function isAsciiCompatibleCharacter(string $character): bool
+    {
+        return preg_match('/^[\x09\x0A\x0D\x20-\x7E]$/', $character) === 1;
     }
 }

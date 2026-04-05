@@ -66,6 +66,84 @@ final class StandardFontTest extends TestCase
     }
 
     #[Test]
+    public function it_does_not_support_german_sharp_s_with_plain_standard_encoding(): void
+    {
+        $font = new StandardFont(6, 'Helvetica', 'Type1', 'StandardEncoding', 1.0);
+
+        self::assertFalse($font->supportsText('Straße'));
+    }
+
+    #[Test]
+    public function it_encodes_western_characters_with_a_custom_standard_encoding_dictionary(): void
+    {
+        $font = new StandardFont(
+            6,
+            'Helvetica',
+            'Type1',
+            'StandardEncoding',
+            1.0,
+            encodingDictionary: new \Kalle\Pdf\Font\EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis', 138 => 'adieresis', 133 => 'Odieresis', 154 => 'odieresis', 134 => 'Udieresis', 159 => 'udieresis', 167 => 'germandbls', 136 => 'agrave', 135 => 'aacute', 141 => 'ccedilla', 143 => 'egrave', 142 => 'eacute']),
+            byteMap: [
+                'Ä' => "\x80",
+                'ä' => "\x8A",
+                'Ö' => "\x85",
+                'ö' => "\x9A",
+                'Ü' => "\x86",
+                'ü' => "\x9F",
+                'ß' => "\xA7",
+                'à' => "\x88",
+                'á' => "\x87",
+                'ç' => "\x8D",
+                'è' => "\x8F",
+                'é' => "\x8E",
+            ],
+        );
+
+        self::assertTrue($font->supportsText('ÄäÖöÜüßàáçèé'));
+        self::assertSame("(\x80\x8A\x85\x9A\x86\x9F\xA7\x88\x87\x8D\x8F\x8E)", $font->encodeText('ÄäÖöÜüßàáçèé'));
+    }
+
+    #[Test]
+    public function it_rejects_characters_outside_the_supported_western_standard_encoding_set(): void
+    {
+        $font = new StandardFont(
+            6,
+            'Helvetica',
+            'Type1',
+            'StandardEncoding',
+            1.0,
+            encodingDictionary: new \Kalle\Pdf\Font\EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis', 167 => 'germandbls']),
+            byteMap: [
+                'Ä' => "\x80",
+                'ß' => "\xA7",
+            ],
+        );
+
+        self::assertFalse($font->supportsText('€'));
+        self::assertFalse($font->supportsText('Œ'));
+    }
+
+    #[Test]
+    public function it_supports_the_expected_win_ansi_character_matrix(): void
+    {
+        $font = new StandardFont(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);
+
+        self::assertTrue($font->supportsText('ÄÖÜäöüß'));
+        self::assertTrue($font->supportsText('àáâãåçèéêëíìîïñóòôõúùûü'));
+        self::assertTrue($font->supportsText('€ŒœŠšŽžŸ'));
+        self::assertTrue($font->supportsText('„“”‘’…–—•™'));
+    }
+
+    #[Test]
+    public function it_rejects_characters_outside_the_win_ansi_character_matrix(): void
+    {
+        $font = new StandardFont(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);
+
+        self::assertFalse($font->supportsText('Ł'));
+        self::assertFalse($font->supportsText('漢'));
+    }
+
+    #[Test]
     public function it_rejects_unknown_non_embedded_base_fonts(): void
     {
         $this->expectException(InvalidArgumentException::class);

@@ -13,6 +13,7 @@ use Kalle\Pdf\Encryption\StandardSecurityHandler;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Font\CidFont;
 use Kalle\Pdf\Font\CidToGidMap;
+use Kalle\Pdf\Font\EncodingDictionary;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontDescriptor;
 use Kalle\Pdf\Font\FontFileStream;
@@ -172,6 +173,10 @@ final class Document
 
                 $objects[] = $font->descendantFont;
                 $objects[] = $font->toUnicode;
+            }
+
+            if ($font instanceof StandardFont && $font->encodingDictionary !== null) {
+                $objects[] = $font->encodingDictionary;
             }
 
             $objects[] = $font;
@@ -804,6 +809,18 @@ final class Document
         string $encoding,
         ?string $fontFilePath,
     ): StandardFont {
+        $encodingDictionary = null;
+        $byteMap = [];
+
+        if ($fontFilePath === null && $encoding === 'StandardEncoding' && $this->supportsWesternStandardEncodingDifferences($baseFont)) {
+            $encodingDictionary = new EncodingDictionary(
+                ++$this->objectId,
+                'StandardEncoding',
+                $this->westernStandardEncodingDifferences(),
+            );
+            $byteMap = $this->westernStandardEncodingByteMap();
+        }
+
         return new StandardFont(
             ++$this->objectId,
             $baseFont,
@@ -811,6 +828,8 @@ final class Document
             $encoding,
             $this->version,
             $this->createOptionalFontParser($fontFilePath),
+            $encodingDictionary,
+            $byteMap,
         );
     }
 
@@ -828,6 +847,137 @@ final class Document
         }
 
         return new OpenTypeFontParser($fontData);
+    }
+
+    private function supportsWesternStandardEncodingDifferences(string $baseFont): bool
+    {
+        return !in_array($baseFont, ['Symbol', 'ZapfDingbats'], true);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function westernStandardEncodingDifferences(): array
+    {
+        return [
+            128 => 'Adieresis',
+            129 => 'Aring',
+            130 => 'Ccedilla',
+            131 => 'Eacute',
+            132 => 'Ntilde',
+            133 => 'Odieresis',
+            134 => 'Udieresis',
+            135 => 'aacute',
+            136 => 'agrave',
+            137 => 'acircumflex',
+            138 => 'adieresis',
+            139 => 'atilde',
+            140 => 'aring',
+            141 => 'ccedilla',
+            142 => 'eacute',
+            143 => 'egrave',
+            144 => 'ecircumflex',
+            145 => 'edieresis',
+            146 => 'iacute',
+            147 => 'igrave',
+            148 => 'icircumflex',
+            149 => 'idieresis',
+            150 => 'ntilde',
+            151 => 'oacute',
+            152 => 'ograve',
+            153 => 'ocircumflex',
+            154 => 'odieresis',
+            155 => 'otilde',
+            156 => 'uacute',
+            157 => 'ugrave',
+            158 => 'ucircumflex',
+            159 => 'udieresis',
+            160 => 'dagger',
+            161 => 'degree',
+            162 => 'cent',
+            163 => 'sterling',
+            164 => 'section',
+            165 => 'bullet',
+            166 => 'paragraph',
+            167 => 'germandbls',
+            168 => 'registered',
+            169 => 'copyright',
+            170 => 'trademark',
+            171 => 'acute',
+            172 => 'dieresis',
+            174 => 'AE',
+            175 => 'Oslash',
+            177 => 'plusminus',
+            180 => 'yen',
+            181 => 'mu',
+            187 => 'ordfeminine',
+            188 => 'ordmasculine',
+            190 => 'ae',
+            191 => 'oslash',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function westernStandardEncodingByteMap(): array
+    {
+        return [
+            'Ä' => "\x80",
+            'Å' => "\x81",
+            'Ç' => "\x82",
+            'É' => "\x83",
+            'Ñ' => "\x84",
+            'Ö' => "\x85",
+            'Ü' => "\x86",
+            'á' => "\x87",
+            'à' => "\x88",
+            'â' => "\x89",
+            'ä' => "\x8A",
+            'ã' => "\x8B",
+            'å' => "\x8C",
+            'ç' => "\x8D",
+            'é' => "\x8E",
+            'è' => "\x8F",
+            'ê' => "\x90",
+            'ë' => "\x91",
+            'í' => "\x92",
+            'ì' => "\x93",
+            'î' => "\x94",
+            'ï' => "\x95",
+            'ñ' => "\x96",
+            'ó' => "\x97",
+            'ò' => "\x98",
+            'ô' => "\x99",
+            'ö' => "\x9A",
+            'õ' => "\x9B",
+            'ú' => "\x9C",
+            'ù' => "\x9D",
+            'û' => "\x9E",
+            'ü' => "\x9F",
+            '†' => "\xA0",
+            '°' => "\xA1",
+            '¢' => "\xA2",
+            '£' => "\xA3",
+            '§' => "\xA4",
+            '•' => "\xA5",
+            '¶' => "\xA6",
+            'ß' => "\xA7",
+            '®' => "\xA8",
+            '©' => "\xA9",
+            '™' => "\xAA",
+            '´' => "\xAB",
+            '¨' => "\xAC",
+            'Æ' => "\xAE",
+            'Ø' => "\xAF",
+            '±' => "\xB1",
+            '¥' => "\xB4",
+            'µ' => "\xB5",
+            'ª' => "\xBB",
+            'º' => "\xBC",
+            'æ' => "\xBE",
+            'ø' => "\xBF",
+        ];
     }
 
     /**

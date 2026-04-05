@@ -1835,6 +1835,82 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_german_sharp_s_with_helvetica_in_pdf_1_0(): void
+    {
+        $document = new Document(version: 1.0);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addText('Straße', 10, 20, 'Helvetica', 12);
+
+        self::assertStringContainsString("(Stra\xA7e) Tj", $page->contents->render());
+        self::assertStringContainsString('/BaseEncoding /StandardEncoding', $document->render());
+    }
+
+    #[Test]
+    public function it_renders_german_umlauts_and_western_accents_with_helvetica_in_pdf_1_0(): void
+    {
+        $document = new Document(version: 1.0);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addText('ÄäÖöÜüßàáçèé', 10, 20, 'Helvetica', 12);
+
+        self::assertStringContainsString("(\x80\x8A\x85\x9A\x86\x9F\xA7\x88\x87\x8D\x8F\x8E) Tj", $page->contents->render());
+        self::assertStringContainsString('/Adieresis', $document->render());
+        self::assertStringContainsString('/adieresis', $document->render());
+        self::assertStringContainsString('/Odieresis', $document->render());
+        self::assertStringContainsString('/udieresis', $document->render());
+        self::assertStringContainsString('/germandbls', $document->render());
+    }
+
+    #[Test]
+    public function it_renders_the_complete_supported_western_standard_font_set_in_pdf_1_0(): void
+    {
+        $document = new Document(version: 1.0);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $text = 'ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨ÆØ±¥µªºæø';
+        $page->addText($text, 10, 20, 'Helvetica', 12);
+
+        self::assertStringContainsString(
+            "(\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F\xA0\xA1\xA2\xA3\xA4\xA5\xA6\xA7\xA8\xA9\xAA\xAB\xAC\xAE\xAF\xB1\xB4\xB5\xBB\xBC\xBE\xBF) Tj",
+            $page->contents->render(),
+        );
+    }
+
+    #[Test]
+    public function it_renders_the_expected_win_ansi_matrix_with_helvetica_in_pdf_1_4(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $text = 'ÄÖÜäöüßàáâãåçèéêëíìîïñóòôõúùûü€ŒœŠšŽžŸ„“”‘’…–—•™';
+        $page->addText($text, 10, 20, 'Helvetica', 12);
+
+        self::assertStringContainsString(
+            "(\xC4\xD6\xDC\xE4\xF6\xFC\xDF\xE0\xE1\xE2\xE3\xE5\xE7\xE8\xE9\xEA\xEB\xED\xEC\xEE\xEF\xF1\xF3\xF2\xF4\xF5\xFA\xF9\xFB\xFC\x80\x8C\x9C\x8A\x9A\x8E\x9E\x9F\x84\x93\x94\x91\x92\x85\x96\x97\x95\x99) Tj",
+            $page->contents->render(),
+        );
+        self::assertStringContainsString('/Encoding /WinAnsiEncoding', $document->render());
+    }
+
+    #[Test]
+    public function it_rejects_characters_outside_the_win_ansi_matrix_with_helvetica_in_pdf_1_4(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Font 'Helvetica' does not support the provided text.");
+
+        $page->addText('Ł', 10, 20, 'Helvetica', 12);
+    }
+
+    #[Test]
     public function it_wraps_a_paragraph_into_multiple_text_lines(): void
     {
         $document = new Document(version: 1.4);

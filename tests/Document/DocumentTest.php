@@ -85,7 +85,8 @@ final class DocumentTest extends TestCase
 
         $document->registerFont('Helvetica');
 
-        self::assertStringContainsString('/Encoding /StandardEncoding', $document->fonts[0]->render());
+        self::assertStringContainsString('/Encoding ', $document->fonts[0]->render());
+        self::assertStringContainsString('/BaseEncoding /StandardEncoding', $document->render());
     }
 
     #[Test]
