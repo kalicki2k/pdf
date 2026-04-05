@@ -6,21 +6,18 @@ namespace Kalle\Pdf\Document\Text;
 
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\TextOverflow;
 
-final readonly class ParagraphOptions
+final readonly class ListOptions
 {
     public function __construct(
         public ?StructureTag $structureTag = null,
         public ?float $lineHeight = null,
         public ?float $spacingAfter = null,
-        public ?float $bottomMargin = null,
+        public ?float $itemSpacing = null,
         public ?Color $color = null,
         public ?Opacity $opacity = null,
-        public HorizontalAlign $align = HorizontalAlign::LEFT,
-        public ?int $maxLines = null,
-        public TextOverflow $overflow = TextOverflow::CLIP,
+        public ?Color $markerColor = null,
+        public ?float $markerIndent = null,
     ) {
     }
 }

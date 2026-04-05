@@ -366,8 +366,10 @@ $frame->addBulletList(
     ],
     'NotoSans-Regular',
     12,
-    bulletType: BulletType::DISC,
-    bulletColor: Color::rgb(220, 20, 60),
+    BulletType::DISC,
+    new ListOptions(
+        markerColor: Color::rgb(220, 20, 60),
+    ),
 );
 
 $frame->addNumberedList(
@@ -377,8 +379,10 @@ $frame->addNumberedList(
     ],
     'NotoSans-Regular',
     12,
-    startAt: 3,
-    numberColor: Color::rgb(220, 20, 60),
+    3,
+    new ListOptions(
+        markerColor: Color::rgb(220, 20, 60),
+    ),
 );
 
 $document
@@ -655,8 +659,10 @@ $frame->addBulletList(
     ],
     'NotoSans-Regular',
     12,
-    bulletType: BulletType::DISC,
-    bulletColor: Color::rgb(180, 20, 20),
+    BulletType::DISC,
+    new ListOptions(
+        markerColor: Color::rgb(180, 20, 20),
+    ),
 );
 ```
 
@@ -671,8 +677,10 @@ $frame->addNumberedList(
     ],
     'NotoSans-Regular',
     12,
-    startAt: 3,
-    numberColor: Color::rgb(180, 20, 20),
+    3,
+    new ListOptions(
+        markerColor: Color::rgb(180, 20, 20),
+    ),
 );
 ```
 
@@ -680,7 +688,7 @@ Aktuell unterstuetzt die API dabei:
 
 - dezimale Nummerierung
 - `startAt`
-- eigene Nummernfarbe
+- eigene Markerfarbe
 - denselben Hanging Indent und Seitenwechsel wie bei `addBulletList(...)`
 
 ## Einheiten

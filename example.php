@@ -685,8 +685,10 @@ $bulletPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Unit
         ],
         'NotoSans-Regular',
         12,
-        bulletType: BulletType::DISC,
-        bulletColor: Color::rgb(180, 20, 20),
+        BulletType::DISC,
+        new \Kalle\Pdf\Document\Text\ListOptions(
+            markerColor: Color::rgb(180, 20, 20),
+        ),
     );
 
 $numberedPage = $document->addPage(PageSize::A4());
@@ -713,8 +715,10 @@ $numberedPage->createTextFrame(Units::mm(20), Units::mm(265), Units::mm(170), Un
         ],
         'NotoSans-Regular',
         12,
-        numberColor: Color::rgb(180, 20, 20),
-        startAt: 3,
+        3,
+        new \Kalle\Pdf\Document\Text\ListOptions(
+            markerColor: Color::rgb(180, 20, 20),
+        ),
     );
 
 $badgePage = $document->addPage(PageSize::A4());

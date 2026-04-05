@@ -9,12 +9,11 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 
-final readonly class ParagraphOptions
+final readonly class FlowTextOptions
 {
     public function __construct(
         public ?StructureTag $structureTag = null,
         public ?float $lineHeight = null,
-        public ?float $spacingAfter = null,
         public ?float $bottomMargin = null,
         public ?Color $color = null,
         public ?Opacity $opacity = null,

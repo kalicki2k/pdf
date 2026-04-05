@@ -71,23 +71,23 @@ final class TextFrame
      */
     public function addParagraph(
         string | array $text,
-        string $baseFont,
+        string $fontName,
         int $size,
         ParagraphOptions $options = new ParagraphOptions(),
-        ?float $spacingAfter = null,
     ): self {
         $lineHeight = $options->lineHeight ?? $size * 1.2;
-        $spacingAfter ??= $lineHeight;
+        $spacingAfter = $options->spacingAfter ?? $lineHeight;
 
         return $this->flowParagraph(
             text: $text,
             x: $this->x,
             width: $this->width,
-            baseFont: $baseFont,
+            fontName: $fontName,
             size: $size,
             options: new ParagraphOptions(
                 structureTag: $options->structureTag,
                 lineHeight: $lineHeight,
+                spacingAfter: $spacingAfter,
                 color: $options->color,
                 opacity: $options->opacity,
                 align: $options->align,
@@ -103,48 +103,43 @@ final class TextFrame
      */
     public function addBulletList(
         array $items,
-        string $baseFont,
+        string $fontName,
         int $size,
-        ?StructureTag $tag = null,
-        ?float $lineHeight = null,
-        ?float $spacingAfter = null,
-        ?float $itemSpacing = null,
-        ?Color $color = null,
-        ?Opacity $opacity = null,
         BulletType $bulletType = BulletType::DISC,
-        ?Color $bulletColor = null,
-        ?float $bulletIndent = null,
+        ListOptions $options = new ListOptions(),
     ): self {
-        $lineHeight ??= $size * 1.2;
-        $spacingAfter ??= $lineHeight;
-        $itemSpacing ??= $size * 0.4;
-        $bulletIndent ??= self::DEFAULT_BULLET_INDENT;
+        $lineHeight = $options->lineHeight ?? $size * 1.2;
+        $spacingAfter = $options->spacingAfter ?? $lineHeight;
+        $itemSpacing = $options->itemSpacing ?? $size * 0.4;
+        $markerIndent = $options->markerIndent ?? self::DEFAULT_BULLET_INDENT;
 
         if ($items === []) {
             return $this;
         }
 
-        if ($bulletIndent <= 0) {
+        if ($markerIndent <= 0) {
             throw new InvalidArgumentException('Bullet indent must be greater than zero.');
         }
 
-        if ($this->width <= $bulletIndent) {
+        if ($this->width <= $markerIndent) {
             throw new InvalidArgumentException('Bullet indent must be smaller than the text frame width.');
         }
 
         return $this->renderList(
             items: $items,
             markerRenderer: static fn (int $index): string => $bulletType->value,
-            baseFont: $baseFont,
+            fontName: $fontName,
             size: $size,
-            tag: $tag,
-            lineHeight: $lineHeight,
-            spacingAfter: $spacingAfter,
-            itemSpacing: $itemSpacing,
-            color: $color,
-            opacity: $opacity,
-            markerColor: $bulletColor ?? $color,
-            markerIndent: $bulletIndent,
+            options: new ListOptions(
+                structureTag: $options->structureTag,
+                lineHeight: $lineHeight,
+                spacingAfter: $spacingAfter,
+                itemSpacing: $itemSpacing,
+                color: $options->color,
+                opacity: $options->opacity,
+                markerColor: $options->markerColor ?? $options->color,
+                markerIndent: $markerIndent,
+            ),
         );
     }
 
@@ -153,32 +148,25 @@ final class TextFrame
      */
     public function addNumberedList(
         array $items,
-        string $baseFont,
+        string $fontName,
         int $size,
-        ?StructureTag $tag = null,
-        ?float $lineHeight = null,
-        ?float $spacingAfter = null,
-        ?float $itemSpacing = null,
-        ?Color $color = null,
-        ?Opacity $opacity = null,
-        ?Color $numberColor = null,
-        ?float $numberIndent = null,
         int $startAt = 1,
+        ListOptions $options = new ListOptions(),
     ): self {
-        $lineHeight ??= $size * 1.2;
-        $spacingAfter ??= $lineHeight;
-        $itemSpacing ??= $size * 0.4;
-        $numberIndent ??= self::DEFAULT_BULLET_INDENT;
+        $lineHeight = $options->lineHeight ?? $size * 1.2;
+        $spacingAfter = $options->spacingAfter ?? $lineHeight;
+        $itemSpacing = $options->itemSpacing ?? $size * 0.4;
+        $markerIndent = $options->markerIndent ?? self::DEFAULT_BULLET_INDENT;
 
         if ($items === []) {
             return $this;
         }
 
-        if ($numberIndent <= 0) {
+        if ($markerIndent <= 0) {
             throw new InvalidArgumentException('Number indent must be greater than zero.');
         }
 
-        if ($this->width <= $numberIndent) {
+        if ($this->width <= $markerIndent) {
             throw new InvalidArgumentException('Number indent must be smaller than the text frame width.');
         }
 
@@ -189,16 +177,18 @@ final class TextFrame
         return $this->renderList(
             items: $items,
             markerRenderer: static fn (int $index): string => ($startAt + $index) . '.',
-            baseFont: $baseFont,
+            fontName: $fontName,
             size: $size,
-            tag: $tag,
-            lineHeight: $lineHeight,
-            spacingAfter: $spacingAfter,
-            itemSpacing: $itemSpacing,
-            color: $color,
-            opacity: $opacity,
-            markerColor: $numberColor ?? $color,
-            markerIndent: $numberIndent,
+            options: new ListOptions(
+                structureTag: $options->structureTag,
+                lineHeight: $lineHeight,
+                spacingAfter: $spacingAfter,
+                itemSpacing: $itemSpacing,
+                color: $options->color,
+                opacity: $options->opacity,
+                markerColor: $options->markerColor ?? $options->color,
+                markerIndent: $markerIndent,
+            ),
         );
     }
 
@@ -209,17 +199,15 @@ final class TextFrame
     private function renderList(
         array $items,
         \Closure $markerRenderer,
-        string $baseFont,
+        string $fontName,
         int $size,
-        ?StructureTag $tag,
-        float $lineHeight,
-        float $spacingAfter,
-        float $itemSpacing,
-        ?Color $color,
-        ?Opacity $opacity,
-        ?Color $markerColor,
-        float $markerIndent,
+        ListOptions $options,
     ): self {
+        $lineHeight = $options->lineHeight ?? $size * 1.2;
+        $spacingAfter = $options->spacingAfter ?? $lineHeight;
+        $itemSpacing = $options->itemSpacing ?? $size * 0.4;
+        $markerIndent = $options->markerIndent ?? self::DEFAULT_BULLET_INDENT;
+
         foreach ($items as $index => $item) {
             if ($this->cursorY < $this->bottomMargin + $lineHeight) {
                 $topMargin = $this->page->getHeight() - $this->cursorY;
@@ -230,12 +218,12 @@ final class TextFrame
             $this->page->addText(
                 text: $markerRenderer($index),
                 position: new Position($this->x, $this->cursorY),
-                fontName: $baseFont,
+                fontName: $fontName,
                 size: $size,
                 options: new TextOptions(
-                    structureTag: $tag,
-                    color: $markerColor,
-                    opacity: $opacity,
+                    structureTag: $options->structureTag,
+                    color: $options->markerColor,
+                    opacity: $options->opacity,
                 ),
             );
 
@@ -243,15 +231,15 @@ final class TextFrame
                 text: $item,
                 x: $this->x + $markerIndent,
                 width: $this->width - $markerIndent,
-                baseFont: $baseFont,
+                fontName: $fontName,
                 size: $size,
                 options: new ParagraphOptions(
-                    structureTag: $tag,
+                    structureTag: $options->structureTag,
                     lineHeight: $lineHeight,
-                    color: $color,
-                    opacity: $opacity,
+                    spacingAfter: $index === array_key_last($items) ? $spacingAfter : $itemSpacing,
+                    color: $options->color,
+                    opacity: $options->opacity,
                 ),
-                spacingAfter: $index === array_key_last($items) ? $spacingAfter : $itemSpacing,
             );
         }
 
@@ -265,23 +253,23 @@ final class TextFrame
         string | array $text,
         float $x,
         float $width,
-        string $baseFont,
+        string $fontName,
         int $size,
         ?ParagraphOptions $options = null,
         ?float $spacingAfter = null,
     ): self {
         $options ??= new ParagraphOptions();
         $lineHeight = $options->lineHeight ?? $size * 1.2;
-        $spacingAfter ??= $lineHeight;
+        $spacingAfter ??= $options->spacingAfter ?? $lineHeight;
 
         $this->page = $this->page->addFlowText(
             text: $text,
             x: $x,
             y: $this->cursorY,
             maxWidth: $width,
-            fontName: $baseFont,
+            fontName: $fontName,
             size: $size,
-            options: new ParagraphOptions(
+            options: new FlowTextOptions(
                 structureTag: $options->structureTag,
                 lineHeight: $lineHeight,
                 bottomMargin: $this->bottomMargin,
@@ -293,7 +281,7 @@ final class TextFrame
             ),
         );
 
-        $lineCount = $this->page->countParagraphLines($text, $baseFont, $size, $width, $options->maxLines, $options->overflow);
+        $lineCount = $this->page->countParagraphLines($text, $fontName, $size, $width, $options->maxLines, $options->overflow);
         $consumedHeight = ($lineCount * $lineHeight) + $spacingAfter;
         $topMargin = $this->page->getHeight() - $this->cursorY;
         $availableHeight = $this->page->getHeight() - $topMargin - $this->bottomMargin;
@@ -319,25 +307,24 @@ final class TextFrame
      */
     public function addHeading(
         string | array $text,
-        string $baseFont,
+        string $fontName,
         int $size,
         ParagraphOptions $options = new ParagraphOptions(),
-        ?float $spacingAfter = null,
     ): self {
         return $this->addParagraph(
             text: $text,
-            baseFont: $baseFont,
+            fontName: $fontName,
             size: $size,
             options: new ParagraphOptions(
                 structureTag: $options->structureTag,
                 lineHeight: $size * 1.2,
+                spacingAfter: $options->spacingAfter ?? $size * 0.8,
                 color: $options->color,
                 opacity: $options->opacity,
                 align: $options->align,
                 maxLines: $options->maxLines,
                 overflow: $options->overflow,
             ),
-            spacingAfter: $spacingAfter ?? $size * 0.8,
         );
     }
 

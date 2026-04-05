@@ -37,7 +37,7 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
-use Kalle\Pdf\Document\Text\ParagraphOptions;
+use Kalle\Pdf\Document\Text\FlowTextOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextFrame;
@@ -46,7 +46,6 @@ use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Line;
-use Kalle\Pdf\Element\Path;
 use Kalle\Pdf\Element\Raw;
 use Kalle\Pdf\Element\Rectangle;
 use Kalle\Pdf\Element\Text;
@@ -450,21 +449,6 @@ final class Page extends IndirectObject
     /**
      * @param string|list<TextSegment> $text
      */
-    public function addParagraph(
-        string | array $text,
-        float $x,
-        float $y,
-        float $maxWidth,
-        string $fontName = 'Helvetica',
-        int $size = 12,
-        ParagraphOptions $options = new ParagraphOptions(),
-    ): self {
-        return $this->addFlowText($text, $x, $y, $maxWidth, $fontName, $size, $options);
-    }
-
-    /**
-     * @param string|list<TextSegment> $text
-     */
     public function addFlowText(
         string | array $text,
         float $x,
@@ -472,7 +456,7 @@ final class Page extends IndirectObject
         float $maxWidth,
         string $fontName = 'Helvetica',
         int $size = 12,
-        ParagraphOptions $options = new ParagraphOptions(),
+        FlowTextOptions $options = new FlowTextOptions(),
     ): self {
         $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
         $bottomMargin = $options->bottomMargin ?? self::DEFAULT_BOTTOM_MARGIN;

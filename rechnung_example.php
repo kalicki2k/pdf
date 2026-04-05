@@ -2,6 +2,7 @@
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
@@ -27,34 +28,40 @@ $document = new Document(
 
 $page = $document->addPage(PageSize::A4());
 
-$page
-    ->addTextBox(
+$page->createTextFrame(
+    Units::mm(140),
+    Units::mm(257) + Units::mm(20) - 9,
+    Units::mm(70),
+    Units::mm(228),
+)
+    ->addParagraph(
         text: "DEIN FIRMENNAME\nStraße Hausnummer\nPLZ Ort\nDeutschland",
-        box: new Rect(Units::mm(140), Units::mm(257), Units::mm(70), Units::mm(20)),
         fontName: 'Helvetica',
         size: 9,
-        options: new TextBoxOptions(
+        options: new ParagraphOptions(
             lineHeight: Units::mm(4),
+            spacingAfter: Units::mm(6),
         ),
     )
-    ->addTextBox(
+    ->addParagraph(
         text: "Telefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de",
-        box: new Rect(Units::mm(140), Units::mm(240), Units::mm(70), Units::mm(15)),
         fontName: 'Helvetica',
         size: 9,
-        options: new TextBoxOptions(
+        options: new ParagraphOptions(
             lineHeight: Units::mm(4),
+            spacingAfter: Units::mm(5),
         ),
     )
-    ->addTextBox(
+    ->addParagraph(
         text: "Steuernummer: 12/345/67890\nUSt-IdNr.: DE123456789",
-        box: new Rect(Units::mm(140), Units::mm(228), Units::mm(70), Units::mm(10)),
         fontName: 'Helvetica',
         size: 9,
-        options: new TextBoxOptions(
+        options: new ParagraphOptions(
             lineHeight: Units::mm(4),
         ),
-    )
+    );
+
+$page
     ->addTextBox(
         text: "DEIN FIRMENNAME - Straße Hausnummer - PLZ Ort - Deutschland",
         box: new Rect(Units::mm(20), Units::mm(239), Units::mm(100), Units::mm(20)),
