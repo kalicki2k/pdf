@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
+use Kalle\Pdf\Encryption\EncryptionVersionResolver;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -99,5 +100,18 @@ final class EncryptDictionaryTest extends TestCase
 
         self::assertSame(32, strlen($first));
         self::assertSame($first, $second);
+    }
+
+    #[Test]
+    public function it_rejects_rendering_without_initialized_security_handler_data(): void
+    {
+        $document = new Document(version: 1.4);
+        $profile = (new EncryptionVersionResolver())->resolve(1.4, EncryptionAlgorithm::RC4_128);
+        $encryptDictionary = new \Kalle\Pdf\Document\EncryptDictionary(7, $document, $profile);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Encryption dictionary requires initialized security handler data.');
+
+        $encryptDictionary->render();
     }
 }
