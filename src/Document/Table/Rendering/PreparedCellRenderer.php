@@ -154,10 +154,6 @@ final readonly class PreparedCellRenderer
                 $resolvedStyle->opacity,
             );
 
-        if ($allLines === []) {
-            return new CellRenderResult($page, []);
-        }
-
         if ($options->remainingLines === [] && $visibleRowspan < $preparedCell->cell->rowspan && count($allLines) > 1 && $maxLines < 2) {
             return new CellRenderResult($page, $allLines);
         }
