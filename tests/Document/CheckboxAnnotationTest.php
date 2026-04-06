@@ -38,4 +38,34 @@ final class CheckboxAnnotationTest extends TestCase
             $annotation->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_an_unchecked_checkbox_and_returns_related_appearance_streams(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $offAppearance = new CheckboxAppearanceStream(8, 12, 12, false);
+        $onAppearance = new CheckboxAppearanceStream(9, 12, 12, true);
+
+        $annotation = new CheckboxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            12,
+            12,
+            'accept_terms',
+            false,
+            $offAppearance,
+            $onAppearance,
+        );
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Widget /FT /Btn /Rect [10 20 22 32] /Border [0 0 0] /P 4 0 R /T (accept_terms) /V /Off /AS /Off /AP << /N << /Off 8 0 R /Yes 9 0 R >> >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertSame([$offAppearance, $onAppearance], $annotation->getRelatedObjects());
+    }
 }
