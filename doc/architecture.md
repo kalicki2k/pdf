@@ -39,7 +39,7 @@ Wichtige Methoden:
 
 - `addPage()` erzeugt eine neue Seite mit eigener `Contents`- und `Resources`-Instanz
 - `addHeader()` und `addFooter()` registrieren Seiten-Callbacks, die kurz vor dem finalen Rendern mit der finalen Seitenreihenfolge ausgefuehrt werden
-- `addPageNumbers()` registriert einen spaet aufgeloesten Seitenzahl-Renderer mit Zugriff auf `{{page}}` und `{{pages}}`
+- `addPageNumbers()` registriert einen spaet aufgeloesten Seitenzahl-Renderer mit Zugriff auf `{{page}}` und `{{pages}}`; optional kann er logische Seitenzahlen verwenden
 - `excludePageFromNumbering()` markiert Seiten, die fuer logische Seitenzahlen uebersprungen werden sollen
 - `addOutline()` registriert einen Bookmark-Eintrag fuer eine Zielseite
 - `addDestination()` registriert ein benanntes Ziel fuer interne Spruenge
@@ -72,7 +72,7 @@ Wenn benannte Ziele vorhanden sind, rendert der `Catalog` zusaetzlich ein `/Dest
 
 `addPageNumbers()` wird erst kurz vor dem finalen Rendern aufgeloest, damit die Gesamtseitenzahl des Dokuments bekannt ist.
 
-`addTableOfContents()` kann die erzeugten TOC-Seiten am Anfang, Ende oder nach einer bestimmten Seite der Seitenreihenfolge platzieren. Fuer einfache Faelle stehen `TableOfContentsPosition::START` und `::END` zur Verfuegung, fuer gezielte Einfuegepositionen `TableOfContentsPlacement::afterPage(...)`. Optional kann das TOC logische Seitenzahlen verwenden, bei denen vorher ueber `excludePageFromNumbering()` markierte Seiten nicht mitgezaehlt werden.
+`addTableOfContents()` verwendet jetzt ein `TableOfContentsOptions`-Objekt. Darin werden Titel, Font, Groessen, Margin, Platzierung, logische Seitennummerierung und `TableOfContentsStyle` gebuendelt. Die Seitengroesse des TOC wird separat als `PageSize` uebergeben; Default ist `A4`. Fuer die Platzierung wird `TableOfContentsPlacement::start()`, `::end()` oder `::afterPage(...)` verwendet.
 
 Wenn Verschluesselung aktiv ist, cached `Document` die Security-Handler-Daten einmal zentral. Dadurch verwenden Encrypt-Dictionary und Objektverschluesselung denselben Dateischluessel und dieselben abgeleiteten Werte.
 

@@ -32,8 +32,10 @@ use Kalle\Pdf\Font\ToUnicodeCMap;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeGlyphMap;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
+use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
-use Kalle\Pdf\Layout\TableOfContentsPosition;
+use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Structure\ParentTree;
@@ -548,6 +550,7 @@ final class Document
         int $size = 10,
         string $template = 'Seite {{page}} von {{pages}}',
         bool $footer = true,
+        bool $useLogicalPageNumbers = false,
     ): self {
         if ($template === '') {
             throw new InvalidArgumentException('Page number template must not be empty.');
@@ -557,7 +560,22 @@ final class Document
             throw new InvalidArgumentException('Page number size must be greater than zero.');
         }
 
-        $renderer = static function (Page $page, int $pageNumber, int $totalPages) use ($position, $baseFont, $size, $template): void {
+        $renderer = function (Page $page, int $pageNumber, int $totalPages) use (
+            $position,
+            $baseFont,
+            $size,
+            $template,
+            $useLogicalPageNumbers,
+        ): void {
+            if ($useLogicalPageNumbers) {
+                $pageNumber = $this->resolveLogicalPageNumber($page);
+                $totalPages = $this->countLogicalPages();
+
+                if ($pageNumber === null) {
+                    return;
+                }
+            }
+
             $page->addText(
                 str_replace(
                     ['{{page}}', '{{pages}}'],
@@ -721,46 +739,36 @@ final class Document
     }
 
     public function addTableOfContents(
-        PageSize | float $width = 595.2755905511812,
-        ?float $height = null,
-        string $title = 'Inhaltsverzeichnis',
-        string $baseFont = 'Helvetica',
-        int $titleSize = 18,
-        int $entrySize = 12,
-        float $margin = 20.0,
-        TableOfContentsPlacement | TableOfContentsPosition $position = TableOfContentsPosition::END,
-        bool $useLogicalPageNumbers = false,
+        ?PageSize $size = null,
+        ?TableOfContentsOptions $options = null,
     ): Page {
-        if ($titleSize <= 0) {
-            throw new InvalidArgumentException('Table of contents title size must be greater than zero.');
-        }
-
-        if ($entrySize <= 0) {
-            throw new InvalidArgumentException('Table of contents entry size must be greater than zero.');
-        }
-
-        if ($margin < 0) {
-            throw new InvalidArgumentException('Table of contents margin must be zero or greater.');
-        }
-
+        $options ??= new TableOfContentsOptions();
         $firstTocPageIndex = count($this->pages->pages);
-        $placement = $this->normalizeTableOfContentsPlacement($position);
-        $insertionIndex = $placement->insertionIndex($firstTocPageIndex);
-        $page = $this->addPage($width, $height);
-        $contentWidth = $page->getWidth() - ($margin * 2);
+        $insertionIndex = $options->placement->insertionIndex($firstTocPageIndex);
+        $page = $this->addPage($size ?? PageSize::A4());
+        $contentWidth = $page->getWidth() - ($options->margin * 2);
 
         if ($contentWidth <= 0) {
             throw new InvalidArgumentException('Table of contents content width must be greater than zero.');
         }
 
-        $frame = $page->createTextFrame(new Position($margin, $page->getHeight() - $margin), $contentWidth, $margin);
-        $frame->addHeading($title, $baseFont, $titleSize, new ParagraphOptions(structureTag: StructureTag::Heading1));
+        $frame = $page->createTextFrame(
+            new Position($options->margin, $page->getHeight() - $options->margin),
+            $contentWidth,
+            $options->margin,
+        );
+        $frame->addHeading(
+            $options->title,
+            $options->baseFont,
+            $options->titleSize,
+            new ParagraphOptions(structureTag: StructureTag::Heading1),
+        );
 
         if ($this->outlineRoot === null || $this->outlineRoot->getItems() === []) {
             throw new InvalidArgumentException('Table of contents requires at least one outline entry.');
         }
 
-        $entryLineHeight = $entrySize * 1.35;
+        $entryLineHeight = ($options->entrySize * 1.35) + $options->style->entrySpacing;
         $currentPage = $page;
         $currentY = $frame->getCursorY();
         $pageNumbersByObjectId = $this->buildTableOfContentsPageNumbers(
@@ -769,17 +777,17 @@ final class Document
                 count($this->outlineRoot->getItems()),
                 $currentY,
                 $page->getHeight(),
-                $margin,
+                $options->margin,
                 $entryLineHeight,
             ),
             $insertionIndex,
-            $useLogicalPageNumbers,
+            $options->useLogicalPageNumbers,
         );
 
         foreach ($this->outlineRoot->getItems() as $outlineItem) {
-            if ($currentY < $margin + $entryLineHeight) {
+            if ($currentY < $options->margin + $entryLineHeight) {
                 $currentPage = $this->addPage($page->getWidth(), $page->getHeight());
-                $currentY = $currentPage->getHeight() - $margin;
+                $currentY = $currentPage->getHeight() - $options->margin;
             }
 
             $targetPage = $outlineItem->getPage();
@@ -793,33 +801,44 @@ final class Document
             $this->addDestination($destinationName, $targetPage);
 
             $pageNumberText = (string) $pageNumber;
-            $pageNumberWidth = $currentPage->measureTextWidth($pageNumberText, $baseFont, $entrySize);
-            $entryWidth = $contentWidth - $pageNumberWidth - 8.0;
-            $entryTitle = $this->fitTextToWidth($currentPage, $outlineItem->getTitle(), $baseFont, $entrySize, $entryWidth);
-            $entryTitleWidth = $currentPage->measureTextWidth($entryTitle, $baseFont, $entrySize);
-            $leaderWidth = max(0.0, $contentWidth - $entryTitleWidth - $pageNumberWidth - 8.0);
-            $dotWidth = max(0.0001, $currentPage->measureTextWidth('.', $baseFont, $entrySize));
-            $dotCount = max(3, (int) floor($leaderWidth / $dotWidth));
-            $leaders = str_repeat('.', $dotCount);
+            $pageNumberWidth = $currentPage->measureTextWidth($pageNumberText, $options->baseFont, $options->entrySize);
+            $entryWidth = $contentWidth - $pageNumberWidth - $options->style->pageNumberGap;
+            $entryTitle = $this->fitTextToWidth(
+                $currentPage,
+                $outlineItem->getTitle(),
+                $options->baseFont,
+                $options->entrySize,
+                $entryWidth,
+            );
+            $entryTitleWidth = $currentPage->measureTextWidth($entryTitle, $options->baseFont, $options->entrySize);
+            $leaderText = $this->buildTableOfContentsLeaderText(
+                $currentPage,
+                $options->baseFont,
+                $options->entrySize,
+                max(0.0, $contentWidth - $entryTitleWidth - $pageNumberWidth - $options->style->pageNumberGap),
+                $options->style,
+            );
 
             $currentPage->addText(
                 $entryTitle,
-                new Position($margin, $currentY),
-                $baseFont,
-                $entrySize,
+                new Position($options->margin, $currentY),
+                $options->baseFont,
+                $options->entrySize,
                 new TextOptions(link: LinkTarget::namedDestination($destinationName)),
             );
-            $currentPage->addText(
-                $leaders,
-                new Position($margin + $entryTitleWidth + 4.0, $currentY),
-                $baseFont,
-                $entrySize,
-            );
+            if ($leaderText !== '') {
+                $currentPage->addText(
+                    $leaderText,
+                    new Position($options->margin + $entryTitleWidth + ($options->style->pageNumberGap / 2), $currentY),
+                    $options->baseFont,
+                    $options->entrySize,
+                );
+            }
             $currentPage->addText(
                 $pageNumberText,
-                new Position($page->getWidth() - $margin - $pageNumberWidth, $currentY),
-                $baseFont,
-                $entrySize,
+                new Position($page->getWidth() - $options->margin - $pageNumberWidth, $currentY),
+                $options->baseFont,
+                $options->entrySize,
                 new TextOptions(link: LinkTarget::namedDestination($destinationName)),
             );
 
@@ -832,6 +851,28 @@ final class Document
         }
 
         return $page;
+    }
+
+    private function buildTableOfContentsLeaderText(
+        Page $page,
+        string $baseFont,
+        int $entrySize,
+        float $leaderWidth,
+        TableOfContentsStyle $style,
+    ): string {
+        if ($style->leaderStyle === TableOfContentsLeaderStyle::NONE || $leaderWidth <= 0.0) {
+            return '';
+        }
+
+        $leaderCharacter = match ($style->leaderStyle) {
+            TableOfContentsLeaderStyle::DOTS => '.',
+            TableOfContentsLeaderStyle::DASHES => '-',
+        };
+
+        $characterWidth = max(0.0001, $page->measureTextWidth($leaderCharacter, $baseFont, $entrySize));
+        $characterCount = max(3, (int) floor($leaderWidth / $characterWidth));
+
+        return str_repeat($leaderCharacter, $characterCount);
     }
 
     public function addKeyword(string $keyword): self
@@ -1181,20 +1222,42 @@ final class Document
         return $pageNumbersByObjectId;
     }
 
-    private function normalizeTableOfContentsPlacement(
-        TableOfContentsPlacement | TableOfContentsPosition $position,
-    ): TableOfContentsPlacement {
-        if ($position instanceof TableOfContentsPlacement) {
-            return $position;
+    private function resolveLogicalPageNumber(Page $targetPage): ?int
+    {
+        $logicalPageNumber = 0;
+
+        foreach ($this->pages->pages as $page) {
+            if (isset($this->excludedPageIdsFromNumbering[$page->id])) {
+                if ($page === $targetPage) {
+                    return null;
+                }
+
+                continue;
+            }
+
+            $logicalPageNumber++;
+
+            if ($page === $targetPage) {
+                return $logicalPageNumber;
+            }
         }
 
-        return match ($position) {
-            TableOfContentsPosition::START => TableOfContentsPlacement::start(),
-            TableOfContentsPosition::END => TableOfContentsPlacement::end(),
-            TableOfContentsPosition::AFTER_PAGE => throw new InvalidArgumentException(
-                'TableOfContentsPosition::AFTER_PAGE requires TableOfContentsPlacement::afterPage(...).',
-            ),
-        };
+        return null;
+    }
+
+    private function countLogicalPages(): int
+    {
+        $logicalPageCount = 0;
+
+        foreach ($this->pages->pages as $page) {
+            if (isset($this->excludedPageIdsFromNumbering[$page->id])) {
+                continue;
+            }
+
+            $logicalPageCount++;
+        }
+
+        return $logicalPageCount;
     }
 
     private function estimateTableOfContentsPageCount(

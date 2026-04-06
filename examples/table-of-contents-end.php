@@ -8,7 +8,7 @@ use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\TableOfContentsPosition;
+use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\Units;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -163,12 +163,13 @@ $document->addDestination('cover', $coverPage);
 
 $document->addTableOfContents(
     PageSize::A4(),
-    title: 'Contents',
-    baseFont: 'Helvetica',
-    titleSize: 20,
-    entrySize: 11,
-    margin: Units::mm(20),
-    position: TableOfContentsPosition::END,
+    options: new TableOfContentsOptions(
+        title: 'Contents',
+        baseFont: 'Helvetica',
+        titleSize: 20,
+        entrySize: 11,
+        margin: Units::mm(20),
+    ),
 );
 
 $outputPath = $outputDir . '/table-of-contents-end.pdf';

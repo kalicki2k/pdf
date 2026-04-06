@@ -11,8 +11,7 @@ use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\TableOfContentsPlacement;
-use Kalle\Pdf\Layout\TableOfContentsPosition;
+use Kalle\Pdf\Layout\TableOfContentsOptions;
 
 /**
  * Public entry point for building and rendering PDF documents.
@@ -103,9 +102,9 @@ final readonly class Document
     /**
      * Adds a page and returns the public page facade.
      */
-    public function addPage(PageSize | float $width = 595.2755905511812, ?float $height = null): Page
+    public function addPage(?PageSize $size = null): Page
     {
-        return new Page($this->document->addPage($width, $height));
+        return new Page($this->document->addPage($size ?? PageSize::A4()));
     }
 
     /**
@@ -223,8 +222,9 @@ final readonly class Document
         int $size = 10,
         string $template = 'Seite {{page}} von {{pages}}',
         bool $footer = true,
+        bool $useLogicalPageNumbers = false,
     ): self {
-        $this->document->addPageNumbers($position, $baseFont, $size, $template, $footer);
+        $this->document->addPageNumbers($position, $baseFont, $size, $template, $footer, $useLogicalPageNumbers);
 
         return $this;
     }
@@ -255,26 +255,12 @@ final readonly class Document
      * Generates a table of contents page and returns its public page facade.
      */
     public function addTableOfContents(
-        PageSize | float $width = 595.2755905511812,
-        ?float $height = null,
-        string $title = 'Inhaltsverzeichnis',
-        string $baseFont = 'Helvetica',
-        int $titleSize = 18,
-        int $entrySize = 12,
-        float $margin = 20.0,
-        TableOfContentsPlacement | TableOfContentsPosition $position = TableOfContentsPosition::END,
-        bool $useLogicalPageNumbers = false,
+        ?PageSize $size = null,
+        ?TableOfContentsOptions $options = null,
     ): Page {
         return new Page($this->document->addTableOfContents(
-            $width,
-            $height,
-            $title,
-            $baseFont,
-            $titleSize,
-            $entrySize,
-            $margin,
-            $position,
-            $useLogicalPageNumbers,
+            $size,
+            $options,
         ));
     }
 

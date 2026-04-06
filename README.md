@@ -85,8 +85,11 @@ Example scripts live in [examples](examples/):
 - [table.php](examples/table.php)
 - [table-of-contents.php](examples/table-of-contents.php)
 - [table-of-contents-after-cover.php](examples/table-of-contents-after-cover.php)
+- [table-of-contents-dashes.php](examples/table-of-contents-dashes.php)
+- [table-of-contents-dots.php](examples/table-of-contents-dots.php)
 - [table-of-contents-end.php](examples/table-of-contents-end.php)
 - [table-of-contents-logical.php](examples/table-of-contents-logical.php)
+- [table-of-contents-minimal.php](examples/table-of-contents-minimal.php)
 - [textbox.php](examples/textbox.php)
 
 Run one of them with:

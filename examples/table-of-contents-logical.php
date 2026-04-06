@@ -8,7 +8,8 @@ use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\TableOfContentsPosition;
+use Kalle\Pdf\Layout\TableOfContentsOptions;
+use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\Units;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -35,7 +36,6 @@ $document
     ->addKeyword('outline')
     ->addKeyword('table-of-contents')
     ->addKeyword('logical-page-numbers')
-    ->addPageNumbers(new Position(Units::mm(20), Units::mm(10)), 'Helvetica', 10, 'Page {{page}} / {{pages}}')
     ->addHeader(static function (\Kalle\Pdf\Page $page, int $pageNumber): void {
         $page->addText(
             'Project Handbook',
@@ -56,6 +56,7 @@ $document
 
 $coverPage = $document->addPage(PageSize::A4());
 $document->excludePageFromNumbering($coverPage);
+$document->addPageNumbers(new Position(Units::mm(20), Units::mm(10)), 'Helvetica', 10, 'Page {{page}} / {{pages}}', true, true);
 
 $coverPage->addText(
     'Project Handbook',
@@ -76,7 +77,7 @@ $coverPage->createTextFrame(
     Units::mm(155),
     Units::mm(40),
 )->addParagraph(
-    'The cover is excluded from logical numbering. The table of contents still sits at the start, but its entry page numbers skip the cover and therefore begin with the first chapter as logical page 2.',
+    'The cover is excluded from logical numbering. The table of contents still sits at the start, but its entry page numbers skip the cover and therefore begin with the first chapter as logical page 2. The visible footer page numbers use the same logical numbering, so the cover remains unnumbered while the first chapter becomes page 1.',
     'Helvetica',
     12,
     new ParagraphOptions(lineHeight: 18.0),
@@ -88,7 +89,7 @@ $chapters = [
         'lead' => 'This chapter introduces the document structure and the overall goal of the example.',
         'body' => [
             'The table of contents is generated from explicit outline entries. Each chapter page is created first and then registered via addOutline(...).',
-            'The cover is excluded from logical numbering before the table of contents is generated.',
+            'The cover is excluded from logical numbering before the table of contents and visible page numbers are generated.',
         ],
     ],
     [
@@ -96,7 +97,7 @@ $chapters = [
         'lead' => 'The public API stays intentionally small: document, pages and a few focused building blocks.',
         'body' => [
             'A typical flow is: create the document, register fonts, create pages, add visible content and register outline entries for the sections you want to expose in the TOC.',
-            'This variant keeps the physical PDF page order intact while using logical page numbers for the TOC entries.',
+            'This variant keeps the physical PDF page order intact while using logical page numbers consistently for the TOC entries and the visible footer numbers.',
         ],
     ],
     [
@@ -165,13 +166,15 @@ $document->addDestination('cover', $coverPage);
 
 $document->addTableOfContents(
     PageSize::A4(),
-    title: 'Contents',
-    baseFont: 'Helvetica',
-    titleSize: 20,
-    entrySize: 11,
-    margin: Units::mm(20),
-    position: TableOfContentsPosition::START,
-    useLogicalPageNumbers: true,
+    options: new TableOfContentsOptions(
+        title: 'Contents',
+        baseFont: 'Helvetica',
+        titleSize: 20,
+        entrySize: 11,
+        margin: Units::mm(20),
+        placement: TableOfContentsPlacement::start(),
+        useLogicalPageNumbers: true,
+    ),
 );
 
 $outputPath = $outputDir . '/table-of-contents-logical.pdf';
