@@ -542,10 +542,6 @@ final class Page extends IndirectObject
             $options->overflow,
         );
 
-        if ($lines === []) {
-            return $this;
-        }
-
         $startY = $this->resolveTextBoxStartY(
             $box->y,
             $box->height,
@@ -890,15 +886,7 @@ final class Page extends IndirectObject
             )
             ->close();
 
-        if ($strokeWidth !== null && $fillColor !== null) {
-            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
-        }
-
-        if ($fillColor !== null) {
-            return $path->fill($fillColor, $opacity);
-        }
-
-        return $path->stroke($strokeWidth, $strokeColor, $opacity);
+        return $this->finishClosedPath($path, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addCircle(
@@ -996,15 +984,7 @@ final class Page extends IndirectObject
 
         $path->close();
 
-        if ($strokeWidth !== null && $fillColor !== null) {
-            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
-        }
-
-        if ($fillColor !== null) {
-            return $path->fill($fillColor, $opacity);
-        }
-
-        return $path->stroke($strokeWidth, $strokeColor, $opacity);
+        return $this->finishClosedPath($path, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addArrow(
@@ -1691,11 +1671,6 @@ final class Page extends IndirectObject
 
         foreach ($font->getCodePointMap() as $cid => $codePointHex) {
             $utf16 = hex2bin($codePointHex);
-
-            if ($utf16 === false) {
-                throw new InvalidArgumentException("Invalid UTF-16 hex code point '$codePointHex'.");
-            }
-
             $character = mb_convert_encoding($utf16, 'UTF-8', 'UTF-16BE');
             $glyphId = $fontParser->getGlyphIdForCharacter($character);
             $widths[$cid] = $fontParser->getAdvanceWidthForGlyphId($glyphId);
@@ -1979,10 +1954,6 @@ final class Page extends IndirectObject
         }
 
         foreach ($this->buildVariantCandidates($baseFont, $segment->bold, $segment->italic) as $candidate) {
-            if ($candidate === $baseFont) {
-                continue;
-            }
-
             if ($this->hasRegisteredFont($candidate) || FontRegistry::has($candidate, $this->document->getFontConfig())) {
                 $this->registerFontIfNeeded($candidate);
 
@@ -2096,18 +2067,24 @@ final class Page extends IndirectObject
         ?Opacity $opacity,
     ): self {
         if ($strokeWidth !== null && $fillColor !== null) {
-            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
+            $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
+
+            return $this;
         }
 
         if ($fillColor !== null) {
-            return $path->fill($fillColor, $opacity);
+            $path->fill($fillColor, $opacity);
+
+            return $this;
         }
 
         if ($strokeWidth === null) {
             throw new InvalidArgumentException('Closed path requires either a stroke or a fill.');
         }
 
-        return $path->stroke($strokeWidth, $strokeColor, $opacity);
+        $path->stroke($strokeWidth, $strokeColor, $opacity);
+
+        return $this;
     }
 
     private function createImageObject(Image $image): ImageObject

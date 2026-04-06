@@ -35,6 +35,15 @@ use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Document\PathBuilder;
+use Kalle\Pdf\Font\CidFont;
+use Kalle\Pdf\Font\CidToGidMap;
+use Kalle\Pdf\Font\FontDescriptor;
+use Kalle\Pdf\Font\FontFileStream;
+use Kalle\Pdf\Font\OpenTypeFontParser;
+use Kalle\Pdf\Font\ToUnicodeCMap;
+use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Font\UnicodeGlyphMap;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -551,6 +560,42 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_rectangles_with_non_positive_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rectangle width must be greater than zero.');
+
+        $page->addRectangle(new Rect(10, 20, 0, 40));
+    }
+
+    #[Test]
+    public function it_rejects_rectangles_with_non_positive_height(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rectangle height must be greater than zero.');
+
+        $page->addRectangle(new Rect(10, 20, 100, 0));
+    }
+
+    #[Test]
+    public function it_rejects_rectangles_with_non_positive_stroke_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rectangle stroke width must be greater than zero.');
+
+        $page->addRectangle(new Rect(10, 20, 100, 40), 0);
+    }
+
+    #[Test]
     public function it_adds_a_stroked_rounded_rectangle_to_the_page_contents(): void
     {
         $document = new Document(version: 1.4);
@@ -587,6 +632,66 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Rounded rectangle radius must not exceed half the width or height.');
 
         $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 25);
+    }
+
+    #[Test]
+    public function it_rejects_rounded_rectangles_with_non_positive_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rounded rectangle width must be greater than zero.');
+
+        $page->addRoundedRectangle(new Rect(10, 20, 0, 40), 8);
+    }
+
+    #[Test]
+    public function it_rejects_rounded_rectangles_with_non_positive_height(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rounded rectangle height must be greater than zero.');
+
+        $page->addRoundedRectangle(new Rect(10, 20, 100, 0), 8);
+    }
+
+    #[Test]
+    public function it_rejects_rounded_rectangles_with_non_positive_radius(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rounded rectangle radius must be greater than zero.');
+
+        $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 0);
+    }
+
+    #[Test]
+    public function it_rejects_rounded_rectangles_with_non_positive_stroke_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rounded rectangle stroke width must be greater than zero.');
+
+        $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 8, 0);
+    }
+
+    #[Test]
+    public function it_rejects_rounded_rectangles_without_stroke_or_fill(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rounded rectangle requires either a stroke or a fill.');
+
+        $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 8, null, null, null);
     }
 
     #[Test]
@@ -671,6 +776,19 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_non_positive_badge_font_sizes(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Badge font size must be greater than zero.');
+
+        $page->addBadge('Beta', new Position(10, 20), size: 0);
+    }
+
+    #[Test]
     public function it_adds_a_panel_with_title_and_body(): void
     {
         $document = new Document(version: 1.4);
@@ -690,6 +808,30 @@ final class PageTest extends TestCase
         self::assertStringContainsString('0.96 g', $page->contents->render());
         self::assertStringContainsString('(Hinweis) Tj', $page->contents->render());
         self::assertStringContainsString('(Kurzinfo zum Stand.) Tj', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_a_non_rounded_panel_via_the_rectangle_path(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addPanel(
+            'Kurzinfo zum Stand.',
+            10,
+            20,
+            160,
+            70,
+            'Hinweis',
+            style: new PanelStyle(
+                cornerRadius: 0,
+                fillColor: Color::gray(0.96),
+                borderColor: Color::gray(0.75),
+            ),
+        );
+
+        self::assertStringContainsString("10 20 160 70 re\nB", $page->contents->render());
     }
 
     #[Test]
@@ -735,6 +877,79 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Panel requires a title or body.');
 
         $page->addPanel('', 10, 20, 100, 40);
+    }
+
+    #[Test]
+    public function it_rejects_panels_with_non_positive_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Panel width must be greater than zero.');
+
+        $page->addPanel('Kurzinfo', 10, 20, 0, 40);
+    }
+
+    #[Test]
+    public function it_rejects_panels_with_non_positive_height(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Panel height must be greater than zero.');
+
+        $page->addPanel('Kurzinfo', 10, 20, 100, 0);
+    }
+
+    #[Test]
+    public function it_rejects_panels_without_positive_content_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Panel content width must be greater than zero.');
+
+        $page->addPanel(
+            'Kurzinfo',
+            10,
+            20,
+            20,
+            40,
+            style: new PanelStyle(
+                paddingHorizontal: 10,
+            ),
+        );
+    }
+
+    #[Test]
+    public function it_rejects_panels_that_leave_no_space_for_body_content(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Panel height is too small for its content.');
+
+        $page->addPanel(
+            'Kurzinfo',
+            10,
+            20,
+            100,
+            20,
+            'Hinweis',
+            style: new PanelStyle(
+                paddingVertical: 8,
+                titleSize: 13,
+                titleSpacing: 6,
+            ),
+        );
     }
 
     #[Test]
@@ -822,6 +1037,48 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_callout_with_a_bottom_pointer(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addCallout(
+            'Hinweis.',
+            20,
+            40,
+            120,
+            50,
+            80,
+            100,
+            'Achtung',
+        );
+
+        self::assertStringContainsString("72 90 m\n80 100 l\n88 90 l\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_adds_a_callout_with_a_left_pointer(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addCallout(
+            'Hinweis.',
+            20,
+            40,
+            120,
+            50,
+            10,
+            65,
+            'Achtung',
+        );
+
+        self::assertStringContainsString("20 57 m\n20 73 l\n10 65 l\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
     public function it_adds_a_diamond_path_to_the_page_contents(): void
     {
         $document = new Document(version: 1.4);
@@ -885,6 +1142,18 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_fills_a_circle_without_stroking(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addCircle(100, 100, 30, null, null, Color::gray(0.5));
+
+        self::assertStringContainsString("0.5 g\n100 130 m", $page->contents->render());
+        self::assertStringContainsString("\nh\nf", $page->contents->render());
+    }
+
+    #[Test]
     public function it_rejects_circles_without_stroke_or_fill(): void
     {
         $document = new Document(version: 1.4);
@@ -894,6 +1163,30 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Circle requires either a stroke or a fill.');
 
         $page->addCircle(100, 100, 30, null, null, null);
+    }
+
+    #[Test]
+    public function it_rejects_circles_with_non_positive_radius(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Circle radius must be greater than zero.');
+
+        $page->addCircle(100, 100, 0);
+    }
+
+    #[Test]
+    public function it_rejects_circles_with_non_positive_stroke_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Circle stroke width must be greater than zero.');
+
+        $page->addCircle(100, 100, 30, 0);
     }
 
     #[Test]
@@ -936,6 +1229,42 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_ellipses_with_non_positive_radius_x(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Ellipse radiusX must be greater than zero.');
+
+        $page->addEllipse(100, 100, 0, 20);
+    }
+
+    #[Test]
+    public function it_rejects_ellipses_with_non_positive_radius_y(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Ellipse radiusY must be greater than zero.');
+
+        $page->addEllipse(100, 100, 40, 0);
+    }
+
+    #[Test]
+    public function it_rejects_ellipses_with_non_positive_stroke_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Ellipse stroke width must be greater than zero.');
+
+        $page->addEllipse(100, 100, 40, 20, 0);
+    }
+
+    #[Test]
     public function it_adds_a_stroked_polygon_to_the_page_contents(): void
     {
         $document = new Document(version: 1.4);
@@ -957,6 +1286,30 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Polygon requires at least three points.');
 
         $page->addPolygon([[10, 10], [20, 20]]);
+    }
+
+    #[Test]
+    public function it_rejects_polygons_with_non_positive_stroke_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Polygon stroke width must be greater than zero.');
+
+        $page->addPolygon([[60, 240], [100, 200], [60, 160]], 0);
+    }
+
+    #[Test]
+    public function it_rejects_polygons_without_stroke_or_fill(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Polygon requires either a stroke or a fill.');
+
+        $page->addPolygon([[60, 240], [100, 200], [60, 160]], null, null, null);
     }
 
     #[Test]
@@ -986,6 +1339,42 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_arrows_with_non_positive_stroke_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Arrow stroke width must be greater than zero.');
+
+        $page->addArrow(new Position(20, 200), new Position(100, 200), 0);
+    }
+
+    #[Test]
+    public function it_rejects_arrows_with_non_positive_head_length(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Arrow head length must be greater than zero.');
+
+        $page->addArrow(new Position(20, 200), new Position(100, 200), 1.0, null, null, 0);
+    }
+
+    #[Test]
+    public function it_rejects_arrows_with_non_positive_head_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Arrow head width must be greater than zero.');
+
+        $page->addArrow(new Position(20, 200), new Position(100, 200), 1.0, null, null, 10.0, 0);
+    }
+
+    #[Test]
     public function it_adds_a_stroked_star_to_the_page_contents(): void
     {
         $document = new Document(version: 1.4);
@@ -1009,6 +1398,42 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
         self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 70 m", $page->contents->render());
         self::assertStringContainsString("\nh\nB", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_stars_with_too_few_points(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Star requires at least three points.');
+
+        $page->addStar(100, 100, 2, 30, 15);
+    }
+
+    #[Test]
+    public function it_rejects_stars_with_non_positive_outer_radius(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Star outer radius must be greater than zero.');
+
+        $page->addStar(100, 100, 5, 0, 15);
+    }
+
+    #[Test]
+    public function it_rejects_stars_with_non_positive_inner_radius(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Star inner radius must be greater than zero.');
+
+        $page->addStar(100, 100, 5, 30, 0);
     }
 
     #[Test]
@@ -1593,6 +2018,18 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_empty_internal_link_destinations(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Link destination must not be empty.');
+
+        $page->addInternalLink(new Rect(10, 20, 80, 12), '');
+    }
+
+    #[Test]
     public function it_exposes_the_owning_document_and_current_annotations(): void
     {
         $document = new Document(version: 1.4);
@@ -1616,6 +2053,60 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Text size must be greater than zero.');
 
         $page->measureTextWidth('Hello', 'Helvetica', 0);
+    }
+
+    #[Test]
+    public function it_skips_unicode_width_updates_when_the_cid_to_gid_map_is_missing(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $glyphMap = new UnicodeGlyphMap();
+        $font = new UnicodeFont(
+            12,
+            new CidFont(
+                13,
+                'TestUnicode',
+                fontDescriptor: new FontDescriptor(14, 'TestUnicode', new FontFileStream(15, 'FONTDATA')),
+            ),
+            new ToUnicodeCMap(16, $glyphMap),
+            $glyphMap,
+        );
+
+        $method = new \ReflectionMethod($page, 'updateUnicodeFontWidths');
+
+        self::assertNull($method->invoke($page, $font));
+    }
+
+    #[Test]
+    public function it_updates_unicode_font_widths_when_all_required_font_data_is_available(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $glyphMap = new UnicodeGlyphMap();
+        $glyphMap->encodeText('漢字');
+        $fontParser = new OpenTypeFontParser(file_get_contents('assets/fonts/NotoSansCJKsc-Regular.otf'));
+        $font = new UnicodeFont(
+            12,
+            new CidFont(
+                13,
+                'NotoSansCJKsc-Regular',
+                fontDescriptor: new FontDescriptor(
+                    14,
+                    'NotoSansCJKsc-Regular',
+                    new FontFileStream(15, file_get_contents('assets/fonts/NotoSansCJKsc-Regular.otf'), 'FontFile3', 'OpenType'),
+                ),
+                cidToGidMap: new CidToGidMap(16, $glyphMap, $fontParser),
+            ),
+            new ToUnicodeCMap(17, $glyphMap),
+            $glyphMap,
+        );
+
+        $method = new \ReflectionMethod($page, 'updateUnicodeFontWidths');
+        $method->invoke($page, $font);
+
+        $renderedCidFont = $font->descendantFont->render();
+
+        self::assertStringContainsString('/W [1 [1000] 2 [1000]]', $renderedCidFont);
     }
 
     #[Test]
@@ -1989,6 +2480,97 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_text_boxes_with_non_positive_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Text box width must be greater than zero.');
+
+        $page->addTextBox('Hello', new Rect(10, 20, 0, 40), 'Helvetica', 10);
+    }
+
+    #[Test]
+    public function it_rejects_text_boxes_with_non_positive_height(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Text box height must be greater than zero.');
+
+        $page->addTextBox('Hello', new Rect(10, 20, 40, 0), 'Helvetica', 10);
+    }
+
+    #[Test]
+    public function it_rejects_text_boxes_with_non_positive_line_height(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Line height must be greater than zero.');
+
+        $page->addTextBox('Hello', new Rect(10, 20, 40, 40), 'Helvetica', 10, new TextBoxOptions(lineHeight: 0.0));
+    }
+
+    #[Test]
+    public function it_rejects_text_boxes_with_non_positive_max_lines(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Max lines must be greater than zero.');
+
+        $page->addTextBox('Hello', new Rect(10, 20, 40, 40), 'Helvetica', 10, new TextBoxOptions(maxLines: 0));
+    }
+
+    #[Test]
+    public function it_rejects_text_boxes_with_negative_padding(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Text box padding must not be negative.');
+
+        $page->addTextBox('Hello', new Rect(10, 20, 40, 40), 'Helvetica', 10, new TextBoxOptions(padding: new Insets(-1, 0, 0, 0)));
+    }
+
+    #[Test]
+    public function it_rejects_text_boxes_without_positive_content_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Text box content width must be greater than zero.');
+
+        $page->addTextBox('Hello', new Rect(10, 20, 20, 40), 'Helvetica', 10, new TextBoxOptions(padding: new Insets(0, 10, 0, 10)));
+    }
+
+    #[Test]
+    public function it_rejects_text_boxes_without_content_height_for_the_font_size(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Text box content height must be at least the font size.');
+
+        $page->addTextBox('Hello', new Rect(10, 20, 40, 10), 'Helvetica', 10, new TextBoxOptions(padding: new Insets(1, 0, 1, 0)));
+    }
+
+    #[Test]
     public function it_applies_opacity_to_each_line_of_a_wrapped_open_text_box(): void
     {
         $document = new Document(version: 1.4);
@@ -2145,6 +2727,106 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_non_positive_flow_text_widths(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Paragraph width must be greater than zero.');
+
+        $page->addFlowText('Hello', new Position(10, 50), 0, 'Helvetica', 10);
+    }
+
+    #[Test]
+    public function it_rejects_non_positive_flow_text_line_heights(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Line height must be greater than zero.');
+
+        $page->addFlowText('Hello', new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(lineHeight: 0.0));
+    }
+
+    #[Test]
+    public function it_rejects_non_positive_flow_text_max_lines(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Max lines must be greater than zero.');
+
+        $page->addFlowText('Hello', new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(maxLines: 0));
+    }
+
+    #[Test]
+    public function it_rejects_non_positive_render_paragraph_line_widths(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Paragraph width must be greater than zero.');
+
+        $page->renderParagraphLines(
+            [['segments' => [new TextSegment('Hello')], 'justify' => false]],
+            10,
+            50,
+            0,
+            'Helvetica',
+            10,
+        );
+    }
+
+    #[Test]
+    public function it_rejects_non_positive_render_paragraph_line_heights(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Line height must be greater than zero.');
+
+        $page->renderParagraphLines(
+            [['segments' => [new TextSegment('Hello')], 'justify' => false]],
+            10,
+            50,
+            100,
+            'Helvetica',
+            10,
+            lineHeight: 0.0,
+        );
+    }
+
+    #[Test]
+    public function it_keeps_justified_word_spacing_at_zero_when_a_line_contains_no_spaces(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->renderParagraphLines(
+            [['segments' => [new TextSegment('Hello')], 'justify' => true]],
+            10,
+            50,
+            100,
+            'Helvetica',
+            10,
+            align: HorizontalAlign::JUSTIFY,
+        );
+
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
+    }
+
+    #[Test]
     public function it_uses_a_bold_standard_font_variant_for_bold_segments(): void
     {
         $document = new Document(version: 1.4);
@@ -2181,6 +2863,145 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_uses_a_configured_embedded_font_variant_for_bold_segments(): void
+    {
+        $document = new Document(
+            version: 1.4,
+            fontConfig: [
+                [
+                    'baseFont' => 'CustomSans-Regular',
+                    'path' => 'assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+                [
+                    'baseFont' => 'CustomSans-Bold',
+                    'path' => 'assets/fonts/NotoSans-Bold.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('CustomSans-Regular');
+        $page = $document->addPage();
+
+        $page->addFlowText(
+            [new TextSegment('Achtung', bold: true)],
+            new Position(10, 50),
+            100,
+            'CustomSans-Regular',
+            10,
+        );
+
+        self::assertStringContainsString('/BaseFont /CustomSans-Bold', $document->render());
+    }
+
+    #[Test]
+    public function it_falls_back_to_the_base_embedded_font_when_no_variant_candidate_is_available(): void
+    {
+        $document = new Document(
+            version: 1.4,
+            fontConfig: [
+                [
+                    'baseFont' => 'CustomSans-Regular',
+                    'path' => 'assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('CustomSans-Regular');
+        $page = $document->addPage();
+
+        $page->addFlowText(
+            [new TextSegment('Fallback', bold: true)],
+            new Position(10, 50),
+            100,
+            'CustomSans-Regular',
+            10,
+        );
+
+        self::assertStringContainsString('/BaseFont /CustomSans-Regular', $document->render());
+        self::assertStringNotContainsString('/BaseFont /CustomSans-Bold', $document->render());
+    }
+
+    #[Test]
+    public function it_builds_variant_candidates_for_plain_bold_and_italic_font_requests(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $method = new \ReflectionMethod($page, 'buildVariantCandidates');
+
+        self::assertSame(['CustomSans-Regular'], $method->invoke($page, 'CustomSans-Regular', false, false));
+        self::assertSame(['CustomSans-BoldItalic', 'CustomSans-BoldOblique'], $method->invoke($page, 'CustomSans-Regular', true, true));
+        self::assertSame(['CustomSans-Italic', 'CustomSans-Oblique'], $method->invoke($page, 'CustomSans-Regular', false, true));
+    }
+
+    #[Test]
+    public function it_builds_bold_candidates_from_regular_base_fonts(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $method = new \ReflectionMethod($page, 'buildVariantCandidates');
+
+        self::assertSame(['CustomSans-Bold'], $method->invoke($page, 'CustomSans-Regular', true, false));
+    }
+
+    #[Test]
+    public function it_builds_italic_candidates_from_roman_base_fonts(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $method = new \ReflectionMethod($page, 'buildVariantCandidates');
+
+        self::assertSame(['Times-Italic', 'Times-Oblique'], $method->invoke($page, 'Times-Roman', false, true));
+    }
+
+    #[Test]
+    public function it_builds_generic_variant_candidates_for_base_fonts_without_regular_or_roman_suffixes(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $method = new \ReflectionMethod($page, 'buildVariantCandidates');
+
+        self::assertSame(['MyFont-Bold'], $method->invoke($page, 'MyFont', true, false));
+    }
+
+    #[Test]
+    public function it_rejects_closed_paths_without_stroke_or_fill_in_the_shared_finisher(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $method = new \ReflectionMethod($page, 'finishClosedPath');
+        $path = new PathBuilder($page);
+        $path->moveTo(10, 10)->lineTo(20, 10)->lineTo(20, 20)->close();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Closed path requires either a stroke or a fill.');
+
+        $method->invoke($page, $path, null, null, null, null);
+    }
+
+    #[Test]
+    public function it_fills_closed_paths_without_stroking_in_the_shared_finisher(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $method = new \ReflectionMethod($page, 'finishClosedPath');
+        $path = new PathBuilder($page);
+        $path->moveTo(10, 10)->lineTo(20, 10)->lineTo(20, 20)->close();
+
+        $result = $method->invoke($page, $path, null, null, Color::gray(0.5), null);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString("0.5 g\n10 10 m", $page->contents->render());
+        self::assertStringContainsString("\nh\nf", $page->contents->render());
+    }
+
+    #[Test]
     public function it_renders_underlines_and_strikethroughs_for_text_segments(): void
     {
         $document = new Document(version: 1.4);
@@ -2200,6 +3021,19 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString('re f', $page->contents->render());
         self::assertSame(2, substr_count($page->contents->render(), 're f'));
+    }
+
+    #[Test]
+    public function it_does_not_render_decorations_for_empty_text(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addText('', new Position(10, 50), 'Helvetica', 10, new TextOptions(underline: true, strikethrough: true));
+
+        self::assertStringContainsString('() Tj', $page->contents->render());
+        self::assertStringNotContainsString('re f', $page->contents->render());
     }
 
     #[Test]
@@ -2223,6 +3057,22 @@ final class PageTest extends TestCase
         self::assertStringContainsString('(Link:) Tj', $page->contents->render());
         self::assertStringContainsString('( example) Tj', $page->contents->render());
         self::assertStringContainsString('33.9 48.2 37.79 0.5 re f', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_does_not_underline_trailing_spaces_after_a_decorated_segment(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addText('example ', new Position(10, 50), 'Helvetica', 10, new TextOptions(underline: true));
+
+        $expectedUnderlineWidth = $page->measureTextWidth('example', 'Helvetica', 10);
+        $formattedWidth = rtrim(rtrim(sprintf('%.6F', $expectedUnderlineWidth), '0'), '.');
+
+        self::assertStringContainsString('(example ) Tj', $page->contents->render());
+        self::assertStringContainsString("10 48.2 $formattedWidth 0.5 re f", $page->contents->render());
     }
 
     #[Test]
