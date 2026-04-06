@@ -333,7 +333,7 @@ final class Table
                 visibleRowspan: $visibleRowspan,
                 renderText: $pendingRowspanCell->remainingLines !== [],
                 renderTopBorder: false,
-                renderBottomBorder: $pendingRowspanCell->remainingRows <= $rowCount,
+                renderBottomBorder: true,
                 remainingLines: $pendingRowspanCell->remainingLines,
             ),
         );
@@ -366,7 +366,7 @@ final class Table
             $this->style,
             new CellRenderOptions(
                 visibleRowspan: $visibleRowspan,
-                renderBottomBorder: $visibleRowspan === $preparedCell->cell->rowspan,
+                renderBottomBorder: true,
             ),
         );
     }
@@ -386,7 +386,7 @@ final class Table
             $remainingLines = $continuationLines[$continuationIndex] ?? [];
             $continuationIndex++;
 
-            if ($remainingRows > 0 && $remainingLines !== []) {
+            if ($remainingRows > 0) {
                 $continuations[] = new PendingRowspanCell(
                     $pendingRowspanCell->cell,
                     $pendingRowspanCell->style,
@@ -407,7 +407,7 @@ final class Table
                 $remainingLines = $continuationLines[$continuationIndex] ?? [];
                 $continuationIndex++;
 
-                if ($remainingRows <= 0 || $remainingLines === []) {
+                if ($remainingRows <= 0) {
                     continue;
                 }
 

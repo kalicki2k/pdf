@@ -419,7 +419,7 @@ final class TableTest extends TestCase
         self::assertStringContainsString('(Eintrag 1) Tj', $renderedDocument);
         self::assertStringContainsString('(Eintrag 2) Tj', $renderedDocument);
         self::assertStringContainsString('(Eintrag 3) Tj', $renderedDocument);
-        self::assertStringNotContainsString("20 42 80 24 re\nS", $renderedDocument);
+        self::assertStringContainsString("20 42 m\n100 42 l\nS", $renderedDocument);
     }
 
     #[Test]
@@ -452,6 +452,48 @@ final class TableTest extends TestCase
         self::assertStringContainsString('(Gamma) Tj', $renderedDocument);
         self::assertStringContainsString('(Delta) Tj', $renderedDocument);
         self::assertStringContainsString('/Count 3', $renderedDocument);
+    }
+
+    #[Test]
+    public function it_keeps_rowspan_cell_boxes_across_page_boundaries_even_when_text_is_fully_rendered(): void
+    {
+        $document = new Document(version: 1.4);
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $firstPage = $document->addPage(200, 120);
+
+        $firstPage->createTable(new Position(20, 90), 160, [40, 120], 20)
+            ->font('Helvetica', 12)
+            ->addRow(['Gruppe', 'Wert'], header: true)
+            ->addRow([
+                new TableCell(
+                    'G4',
+                    rowspan: 4,
+                    style: new CellStyle(
+                        horizontalAlign: HorizontalAlign::CENTER,
+                        verticalAlign: VerticalAlign::MIDDLE,
+                        fillColor: Color::rgb(220, 235, 255),
+                    ),
+                ),
+                'Eintrag 1',
+            ])
+            ->addRow(['Eintrag 2'])
+            ->addRow(['Eintrag 3'])
+            ->addRow(['Eintrag 4']);
+
+        self::assertSame(1, substr_count($document->render(), '(G4) Tj'));
+        self::assertCount(4, $document->pages->pages);
+
+        foreach (array_slice($document->pages->pages, 1) as $page) {
+            $contents = $page->contents->render();
+
+            self::assertStringContainsString("0.862745 0.921569 1 rg", $contents);
+            self::assertStringContainsString("20 27.6 40 24 re\nf", $contents);
+            self::assertStringContainsString("20 27.6 m\n60 27.6 l\nS", $contents);
+        }
+
+        self::assertStringContainsString('(Eintrag 4) Tj', $document->pages->pages[3]->contents->render());
     }
 
     #[Test]
