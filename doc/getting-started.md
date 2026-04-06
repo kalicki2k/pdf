@@ -5,7 +5,6 @@ Diese Library erzeugt PDFs direkt aus PHP. Der Einstieg ist bewusst klein gehalt
 ## Voraussetzungen
 
 - PHP `^8.4`
-- `ext-iconv`
 - `ext-mbstring`
 - Composer
 
@@ -75,11 +74,11 @@ Die wichtigsten Rollen:
 
 ## Weiterfuehrende Beispiele
 
-Im Verzeichnis [examples](/home/skalicki/Projekte/pdf/examples) liegen drei manuelle Beispielskripte:
+Im Verzeichnis [examples](../examples/) liegen drei manuelle Beispielskripte:
 
-- [rechnung.php](/home/skalicki/Projekte/pdf/examples/rechnung.php)
-- [table.php](/home/skalicki/Projekte/pdf/examples/table.php)
-- [textbox.php](/home/skalicki/Projekte/pdf/examples/textbox.php)
+- [rechnung.php](../examples/rechnung.php)
+- [table.php](../examples/table.php)
+- [textbox.php](../examples/textbox.php)
 
 Zum Beispiel:
 
@@ -99,4 +98,4 @@ Wenn du nach dem ersten Dokument weitergehen willst, sind die typischen naechste
 - Links, Outlines und benannte Ziele
 - Verschluesselung ueber `encrypt(...)`
 
-Die technische Einordnung dazu steht in [architecture.md](/home/skalicki/Projekte/pdf/doc/architecture.md). Der weitere Ausbau ist in [roadmap.md](/home/skalicki/Projekte/pdf/doc/roadmap.md) beschrieben.
+Die technische Einordnung dazu steht in [architecture.md](architecture.md). Der weitere Ausbau ist in [roadmap.md](roadmap.md) beschrieben.

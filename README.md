@@ -23,7 +23,6 @@ The current focus is a stable core library. PDF/A, PDF/UA, and full tagged-PDF c
 ## Requirements
 
 - PHP `^8.4`
-- `ext-iconv`
 - `ext-mbstring`
 - Composer
 
@@ -66,11 +65,11 @@ file_put_contents('hello.pdf', $document->render());
 
 ## Examples
 
-Example scripts live in [examples](/home/skalicki/Projekte/pdf/examples):
+Example scripts live in [examples](examples/):
 
-- [rechnung.php](/home/skalicki/Projekte/pdf/examples/rechnung.php)
-- [table.php](/home/skalicki/Projekte/pdf/examples/table.php)
-- [textbox.php](/home/skalicki/Projekte/pdf/examples/textbox.php)
+- [rechnung.php](examples/rechnung.php)
+- [table.php](examples/table.php)
+- [textbox.php](examples/textbox.php)
 
 Run one of them with:
 

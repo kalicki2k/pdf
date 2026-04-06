@@ -40,7 +40,6 @@
   },
   "require": {
     "php": "^8.4",
-    "ext-iconv": "*",
     "ext-mbstring": "*"
   },
   "extra": {
