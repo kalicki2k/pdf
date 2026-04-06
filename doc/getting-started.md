@@ -766,11 +766,20 @@ Neben einfachem `addText(...)` unterstuetzt die aktuelle API bereits mehrere Aus
 - `Color::rgb(...)`, `Color::gray(...)`, `Color::cmyk(...)` und `Color::hex(...)`
 - `Opacity::fill(...)`, `Opacity::stroke(...)`, `Opacity::both(...)`
 - `TextSegment` fuer gemischte Inline-Stile innerhalb eines Absatzes
+- `TextSegment::plain(...)`, `::colored(...)`, `::link(...)`, `::bold(...)`, `::italic(...)`, `::underlined(...)`, `::strikethrough(...)`
 - `TextOptions` fuer optionale Text-Features wie Farbe, Opacity, Dekorationen und Links
 - `link` direkt pro `TextSegment`
 - `bold`, `italic`, `underline`, `strikethrough` pro `TextSegment`
 - `HorizontalAlign::LEFT`, `CENTER`, `RIGHT`, `JUSTIFY`
 - `TextOverflow::CLIP` und `TextOverflow::ELLIPSIS` zusammen mit `maxLines`
+
+Wichtige Details zum aktuellen Verhalten:
+
+- `Position` beschreibt punktgenaue Platzierung
+- `Rect` beschreibt feste Boxen
+- `Insets` beschreibt innere Abstaende in einer Box
+- `underline` und `strikethrough` orientieren sich an der gemessenen Textbreite und ignorieren fuer die Deko fuehrende und abschliessende Leerzeichen
+- `TextOverflow::ELLIPSIS` nutzt wenn moeglich das echte Ellipsis-Zeichen `…` statt drei einzelner Punkte
 
 Ein einfaches `addTextBox(...)`-Beispiel mit fester Hoehe:
 
@@ -791,6 +800,8 @@ Kleine Geometrie-Value-Objects:
 - `Position` gruppiert `x` und `y` fuer punktgenaue Platzierung, zum Beispiel bei `addText(...)`
 - `Rect` gruppiert `x`, `y`, `width` und `height` fuer feste Boxen, zum Beispiel bei `addTextBox(...)`
 - `Insets` gruppiert innere Abstaende fuer `top`, `right`, `bottom` und `left`, zum Beispiel in `TextBoxOptions`
+
+Fuer manuelle Sichtpruefungen gibt es zusaetzlich [testTextBox.php](/home/skalicki/Projekte/pdf/testTextBox.php). Das Beispiel erzeugt Vergleichsseiten fuer Standardfonts, eingebettete Fonts, Alignment, Padding, Overflow und Rich Text in `TextBox`en.
 
 ## Grafische Elemente und Bilder
 
