@@ -18,6 +18,7 @@ use Kalle\Pdf\Document\Action\ThreadAction;
 use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -327,5 +328,30 @@ final class PushButtonAnnotationTest extends TestCase
         );
 
         self::assertStringContainsString('/A << /S /Thread /D (article-1) /F (threads.pdf) >>', $annotation->render());
+    }
+
+    #[Test]
+    public function it_uses_the_text_color_and_has_no_related_objects(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new PushButtonAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            16,
+            'save_form',
+            'Speichern',
+            'F1',
+            12,
+            Color::rgb(255, 0, 0),
+        );
+
+        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', $annotation->render());
+        self::assertSame([], $annotation->getRelatedObjects());
     }
 }
