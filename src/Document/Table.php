@@ -332,7 +332,7 @@ final class Table
             new CellRenderOptions(
                 visibleRowspan: $visibleRowspan,
                 renderText: $pendingRowspanCell->remainingLines !== [],
-                renderTopBorder: false,
+                renderTopBorder: true,
                 renderBottomBorder: true,
                 remainingLines: $pendingRowspanCell->remainingLines,
             ),

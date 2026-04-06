@@ -419,7 +419,7 @@ final class TableTest extends TestCase
         self::assertStringContainsString('(Eintrag 1) Tj', $renderedDocument);
         self::assertStringContainsString('(Eintrag 2) Tj', $renderedDocument);
         self::assertStringContainsString('(Eintrag 3) Tj', $renderedDocument);
-        self::assertStringContainsString("20 42 m\n100 42 l\nS", $renderedDocument);
+        self::assertStringContainsString("20 42 80 24 re\nS", $renderedDocument);
     }
 
     #[Test]
@@ -490,7 +490,7 @@ final class TableTest extends TestCase
 
             self::assertStringContainsString("0.862745 0.921569 1 rg", $contents);
             self::assertStringContainsString("20 27.6 40 24 re\nf", $contents);
-            self::assertStringContainsString("20 27.6 m\n60 27.6 l\nS", $contents);
+            self::assertStringContainsString("20 27.6 40 24 re\nS", $contents);
         }
 
         self::assertStringContainsString('(Eintrag 4) Tj', $document->pages->pages[3]->contents->render());
