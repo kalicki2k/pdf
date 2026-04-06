@@ -1,274 +1,202 @@
 # Roadmap
 
-Diese Roadmap beschreibt die naechsten sinnvollen technischen Schritte fuer die Library. Sie trennt bewusst zwischen bereits stabilisierten Grundlagen und offenen Baustellen.
+Diese Roadmap beschreibt die naechsten sinnvollen Schritte fuer die Library.
+
+Sie ist bewusst priorisiert:
+
+- zuerst Stabilitaet und Vorhersehbarkeit
+- dann Ausbau der haeufigen Dokumentfaelle
+- erst spaeter tiefere PDF-Sonderfaelle
+
+## Zielbild
+
+Die Library soll ein robuster allgemeiner PDF-Generator werden mit:
+
+- stabiler PDF-Erzeugung
+- klarer, kleiner API
+- gut nachvollziehbarem Layout-Verhalten
+- solider Font- und Text-Unterstuetzung
+- brauchbaren High-Level-Bausteinen fuer echte Dokumente
 
 ## Aktueller Stand
 
-Die aktuelle Basis ist weiter als eine reine Skizze:
-
-- PDFs werden als indirekte Objekte aufgebaut und gerendert
-- `xref`, `trailer` und `startxref` werden erzeugt
-- Dokument-Metadaten sind vorhanden
-- Seiten, Ressourcen und Content-Streams sind getrennt modelliert
-- Header und Footer koennen ueber Dokument-Callbacks auf allen neuen Seiten registriert werden
-- Seitenzahlen mit Gesamtseitenzahl koennen ueber `addPageNumbers(...)` registriert werden
-- PDF-Outlines bzw. Bookmarks koennen ueber `addOutline(...)` registriert werden
-- benannte interne Ziele koennen ueber `addDestination(...)` registriert werden
-- Inhaltsverzeichnisse koennen ueber `addTableOfContents(...)` aus vorhandenen Outlines erzeugt werden
-- Dokumente koennen ueber den Standard-Security-Handler verschluesselt werden
-- Text wird ueber registrierte Fonts gerendert
-- `addFlowText()`, `addTextBox()` und `TextFrame` decken ersten Absatz-, Block- und Flow-Layout-Bedarf ab
-- `TextSegment` erlaubt gemischte Inline-Stile innerhalb eines Absatzes
-- Textfarbe, Graustufen, CMYK und Opacity sind im Renderpfad angekommen
-- `bold`, `italic`, `underline` und `strikethrough` sind vorhanden
-- `HorizontalAlign` deckt `LEFT`, `CENTER`, `RIGHT` und `JUSTIFY` ab
-- `TextOverflow` deckt `CLIP` und `ELLIPSIS` mit `maxLines` ab
-- Listen stehen in einer ersten Stufe ueber `TextFrame::addBulletList(...)`, `TextFrame::addNumberedList(...)` und `BulletType` zur Verfuegung
-- Tabellen stehen ueber `createTable(...)`, `Table`, `TableCell`, `CellStyle`, `TableBorder` und `TablePadding` zur Verfuegung, inklusive wiederholter Header auf Folgeseiten, `colspan`, `rowspan` auch ueber Seitenumbrueche, partiell ueberschreibbaren Zell-Borders sowie horizontaler und vertikaler Zell-Ausrichtung
-- Bilder koennen als XObjects eingebunden und ueber `Image::fromFile(...)` aus Dateien geladen werden
-- Linien und Rechtecke sind als erste grafische Primitive vorhanden
-- gerundete Rechtecke sind ueber `addRoundedRectangle(...)` verfuegbar
-- freie Pfade sind ueber `Page::addPath()` und `PathBuilder` verfuegbar
-- Kreise sind als Convenience-API ueber `addCircle(...)` verfuegbar
-- Ellipsen, Polygone, Pfeile und Sterne sind als weitere Convenience-Formen verfuegbar
-- Links und URI-Annotationen sind ueber `addLink(...)`, `TextOptions(link: LinkTarget::...)` und `TextSegment::link` verfuegbar
-- interne Spruenge sind ueber `addDestination(...)`, `addInternalLink(...)` und `LinkTarget::namedDestination(...)` verfuegbar
-- Badges sind als kleines zusammengesetztes Label-Element ueber `addBadge(...)` verfuegbar
-- Panels sind als einfache Hinweis- und Infoboxen ueber `addPanel(...)` verfuegbar
-- Callouts sind als Hinweisboxen mit Pointer ueber `addCallout(...)` verfuegbar
-- AcroForm ist vorhanden und deckt TextField, Checkbox, RadioButton, ComboBox und ListBox ab
-- Signaturfelder sind als sichtbare `/Sig`-Widgets vorhanden
-- Push-Buttons sind als sichtbare `/Btn`-Widgets vorhanden
-- Push-Buttons unterstuetzen `SubmitForm`, `ResetForm` und `JavaScript`
-- Push-Buttons unterstuetzen ausserdem `NamedAction` und `GoToAction` fuer Viewer- und Dokumentnavigation
-- Push-Buttons unterstuetzen zusaetzlich `GoToRemoteAction`, `LaunchAction` und `UriAction`
-- Push-Buttons unterstuetzen ausserdem `HideAction`, `ImportDataAction`, `SetOcgStateAction` und `ThreadAction`
-- OCG-/Layer-Grundlagen sind ueber `OptionalContentGroup`, `addLayer(...)` und `Page::layer(...)` vorhanden
-- Dateianhaenge sind als eingebettete Dateien ueber `addAttachment(...)` und `addAttachmentFromFile(...)` vorhanden
-- Viewer-Annotationen sind ueber `TextAnnotation`, `FreeTextAnnotation`, `HighlightAnnotation`, `UnderlineAnnotation`, `StrikeOutAnnotation`, `SquigglyAnnotation`, `StampAnnotation`, `SquareAnnotation`, `CircleAnnotation`, `LineAnnotation`, `PolyLineAnnotation`, `PolygonAnnotation`, `CaretAnnotation`, `InkAnnotation`, `PopupAnnotation` und `FileAttachmentAnnotation` vorhanden
-- `LineAnnotation` und `PolyLineAnnotation` unterstuetzen bereits Line-Ending-Styles
-- `LineAnnotation`, `PolyLineAnnotation` und `PolygonAnnotation` unterstuetzen ausserdem `Subj` und verknuepfte Popups
-- geometrische Viewer-Annotationen unterstuetzen ueber `AnnotationBorderStyle` jetzt auch PDF-Border-Styles
-- TextField unterstuetzt `multiline`, `defaultValue` und gemeinsame Feld-Flags ueber `FormFieldFlags`
-- ComboBox unterstuetzt `defaultValue` und editierbare Varianten
-- ListBox unterstuetzt `defaultValue` und Mehrfachauswahl
-- Unicode-Fonts und `ToUnicode`-CMaps sind bereits angelegt
-- eingebettete Fonts werden ueber `config/fonts.php` und optional dokumenteigene `fontConfig` konfiguriert
-- Strukturknoten wie `StructTreeRoot`, `StructElem` und `ParentTree` werden bei Bedarf lazy aufgebaut
-- vier Beispielprofile fuer Verschluesselung stehen ueber `example2.php` zur Verfuegung
-
-Das bedeutet aber nicht, dass bereits alle hoeheren PDF-Ziele erreicht sind.
-
-## Bereits erledigte Grundlagen
-
-Diese Punkte aus der frueheren technischen Vorbereitung sind im aktuellen Code im Kern vorhanden:
-
-- Text-String-Escaping
-- zentrale Vergabe von Objekt-IDs
-- Rendern ueber explizite indirekte Objekte
-- `xref`- und Trailer-Erzeugung
-- grundlegende Dokument-Metadaten
-- erste Unicode-Unterstuetzung
-- zentrale Font-Konfiguration ueber `config/fonts.php`
-- optionale Trennung zwischen normalem Text und strukturiertem Text
-- erste Textfluss-API ueber `addFlowText()` und `TextFrame`
-- erster Rich-Text-Pfad ueber `TextSegment`
-- erste Textstil- und Alignment-API
-- erste Listen-API mit Bullet- und nummerierten Listen
-- Tabellen-API mit festen Spaltenbreiten, Zeilen, wiederholten Headern, `colspan`, `rowspan` auch ueber Seitenumbrueche, `CellStyle`, mergebaren Zell-Borders, flexiblem Zell-Padding sowie horizontaler und vertikaler Zell-Ausrichtung
-- erste Bild- und Grafik-API ueber `addImage()`, `addLine()` und `addRectangle()`
-- gerundete Rechtecke, Badges, Panels und Callouts als erste zusammengesetzte Grafik-/Layout-API
-- erste freie Form-API ueber `addPath()`
-- erste Kreis-API auf Basis von Bezier-Pfaden
-- weitere Form-APIs fuer Ellipsen, Polygone, Pfeile und Sterne
-- erste Link-API ueber Annotationen und klickbaren Text
-- erste Outline-/Bookmark-API fuer Viewer-Navigation
-- erste interne Dokument-Navigation ueber benannte Ziele
-- erste Verschluesselungs-API ueber `encrypt(...)`, `EncryptionOptions` und versionsabhaengige Profile
-- erste Formular-API ueber `AcroForm`, Widget-Annotationen und mehrere Feldtypen
-
-## Prioritaeten
-
-### 1. Layout und Rendering robuster machen
-
-Der Renderpfad ist funktional, aber noch relativ direkt.
-
-Naechste sinnvolle Verbesserungen:
-
-- Content-Stream-Erzeugung weiter kapseln
-- Byte-Laengen und Encodings konsequent pruefen
-- Objektabhaengigkeiten noch klarer modellieren
-- spaeter optionale Stream-Kompression vorbereiten
-- Layout-Bausteine ueber `TextFrame` hinaus systematisieren
-- Textdekorationen ueber Font-Metriken besser positionieren
-- Stilwechsel innerhalb eines Absatzes weiter optimieren, damit nicht unnoetig viele Text-Operatoren entstehen
-
-Warum das wichtig ist:
-
-- Das Rendering ist der kritische Pfad des Projekts.
-- Kleine Fehler in Laengen, Offsets oder Encodings machen PDFs schnell unbrauchbar.
+Die aktuelle Basis ist bereits deutlich ueber einem Prototyp:
 
-### 2. Strukturmodell fachlich absichern
+- Seiten, Ressourcen, Content-Streams und indirekte Objekte sind vorhanden
+- Text, Paragraphen, `TextBox` und `TextFrame` sind vorhanden
+- Tabellen, Bilder, Shapes, Links und Annotationen sind vorhanden
+- Form-Felder sind vorhanden
+- Standardfonts und eingebettete Fonts sind vorhanden
+- Geometrie ueber `Position`, `Rect` und `Insets` ist vorhanden
+- Text-Optionen, Paragraph-Optionen und `TextSegment` sind vorhanden
+- Verschluesselung, Outlines, benannte Ziele und Inhaltsverzeichnisse sind vorhanden
 
-Das Projekt kann bereits Tagged-PDF-nahe Strukturinformationen erzeugen. Dieser Bereich ist technisch heikel und sollte nur kontrolliert erweitert werden.
+Die Kernfrage ist deshalb nicht mehr: "Koennen wir PDFs erzeugen?"
 
-Offene Punkte:
+Die Kernfrage ist jetzt: "Welche Bereiche muessen wir haerten und sauber ausbauen, damit die Library im Alltag verlaesslich ist?"
 
-- erlaubte Struktur-Tags weiter definieren
-- Verschachtelung und Eltern-Kind-Beziehungen genauer absichern
-- Verhalten fuer komplexere Inhalte festlegen
-- Struktur gegen echte Reader und Validatoren pruefen
-- klar dokumentieren, welche Inhalte bewusst unstrukturiert bleiben duerfen
+## Must Have
 
-Wichtig:
+Diese Punkte bringen den groessten realen Nutzen und sollten zuerst kommen.
 
-- Eine teilweise richtige Struktur ist riskanter als eine bewusst reduzierte Struktur.
-- Neue Features in diesem Bereich sollten immer gegen reale PDF-Werkzeuge validiert werden.
+### 1. Tabellen haerten
 
-### 3. API fuer weitere Inhalte erweitern
+Tabellen sind fuer echte Dokumente einer der kritischsten Bereiche.
 
-Aktuell ist Text der belastbare End-to-End-Fall. Weitere Inhaltstypen sollten erst dann hinzukommen, wenn sie in API, Ressourcenmodell und Rendering sauber verankert sind.
+Wichtige Punkte:
 
-Naechste Kandidaten:
+- mehr Regressionstests fuer `rowspan`, `colspan` und Seitenumbrueche
+- wiederholte Header in mehr Randfaellen pruefen
+- Zell-Overflow und vertikale Ausrichtung weiter absichern
+- Split-Verhalten bei langen Tabellenzeilen weiter stabilisieren
 
-- weitere grafische Primitive auf Basis des vorhandenen Path-Builders, zum Beispiel Sprechblasen oder komplexere Diagrammformen
-- weiterer Feinschliff der Tabellen-API, zum Beispiel fuer noch sauberere `rowspan`-Split-Entscheidungen, feinere Textverteilung ueber Split-Segmente und noch detailliertere Zellstile
-- Ausbau der Bild-API, vor allem fuer Performance bei grossen PNG-Dateien mit Alpha-Kanal
-- feinere Typografie fuer Dekorationen wie `underline` und `strikethrough`
-- weiterer Ausbau der PDF-Security, vor allem klare Trennung zwischen aktuellem `AES_256`-R5-Pfad und spaeterem `R6`
-- Formular-Feinschliff, vor allem eigene Appearances fuer Text-/Choice-Felder und spaeter echte digitale Signaturen
-- Spezial-Actions wie `Movie`, `Sound`, `Rendition`, `Trans`, `GoTo3DView`, `RichMediaExecute` und `NOP` sind bewusst noch offen und haben aktuell keine Prioritaet gegenueber Attachments, Formular-Feinschliff und Rendering-Haertung
+Warum:
 
-Vor einem groesseren Inhaltstyp sind im Textsystem noch sinnvolle Zwischenstufen moeglich:
+- Berichte, Rechnungen und Listen stehen und fallen mit Tabellen
+- kleine Layoutfehler wirken dort sofort unprofessionell
 
-- segment-spezifische Fontgroessen oder Fontfamilien innerhalb eines Absatzes
-- Ausbau der Listen-API, zum Beispiel fuer verschachtelte Listen, weitere Nummernformate und Listenstile
-- Tabs oder einfache Spalten
-- explizite Absatz- und Zeilenabstaende als Style-Objekte statt weiterer Parameter
+### 2. Header, Footer und Seitentemplates
 
-Ziel:
+Wiederkehrende Seitenbereiche sollten als klare API vorhanden sein.
 
-- neue Features nicht nur als Klassen anlegen, sondern komplett bis zum finalen PDF-Pfad durchziehen
+Wichtige Punkte:
 
-### 4. Ressourcenmodell ausbauen
+- wiederverwendbare Header/Footer-Definitionen
+- feste Content-Areas statt verteilter Magic Numbers
+- klare Regeln fuer Seitenzahlen und Dokumentbereiche
 
-Die Font-Nutzung pro Seite ist bereits sauber getrennt, und die Font-Definitionen sind jetzt als Konfiguration ausgelagert. Das Ressourcenmodell wird mit mehr Features trotzdem anspruchsvoller.
+Warum:
 
-Offene Erweiterungen:
+- fast jedes reale Dokument braucht diese Bausteine
+- aktuell ist das moeglich, aber noch nicht stark genug als Layout-Modell
 
-- Wiederverwendung und Caching von XObjects fuer Bilder
-- gemeinsam genutzte Ressourcen sauber modellieren
-- Vererbung oder zentrale Verwaltung nur dann einfuehren, wenn sie echten Nutzen bringt
-- Konfigurationsmodell fuer groessere Font-Sets weiter ausbauen, ohne `registerFont()` nach aussen zu verkomplizieren
+### 3. Mehr Rendering-Regressionstests
 
-### 5. Dokumentstandards klar abgrenzen
+Der Renderer ist der kritische Kern.
 
-Syntaktisch lesbare PDF-Dateien sind nicht automatisch:
+Wichtige Punkte:
 
-- Tagged-PDF-konform
-- barrierefrei
-- PDF/A-konform
-- PDF/UA-konform
+- mehr Tests fuer Text-Layout
+- mehr Tests fuer Tabellen
+- mehr Tests fuer Form-Felder
+- mehr Tests fuer Seitenumbrueche
+- gezielte Golden-Master- oder PDF-Assertions fuer stabile Ausgabe
 
-Deshalb sollte das Projekt fuer sich selbst klar festlegen, was kurz- und mittelfristig wirklich Ziel ist.
+Warum:
 
-Sinnvolle Reihenfolge:
+- Rendering-Regressionen sind teuer
+- die Library wird mit wachsender API nur durch gute Regressionstests wirklich stabil
 
-1. stabile allgemeine PDF-Erzeugung
-2. saubere strukturierte PDFs
-3. gezielte Konformitaet gegen PDF/A oder PDF/UA
+### 4. Doku und echte Beispiel-Dokumente
 
-## Empfohlene Umsetzungsreihenfolge
+Die API ist inzwischen deutlich staerker als die Beispielsammlung.
 
-### Phase 1: stabile Kernbibliothek
+Wichtige Punkte:
 
-Fokus:
+- Rechnung als sauberes Referenzbeispiel pflegen
+- Brief / Anschreiben als Beispiel
+- Formular als Beispiel
+- kleiner Bericht oder tabellenlastiges Dokument als Beispiel
+- Best-Practice-Doku fuer `Position`, `Rect`, `Insets`, `TextBox` und `TextFrame`
 
-- Rendering haerten
-- Tests erweitern
-- API fuer Text und Fonts stabil halten
-- TextFrame/Paragraph-Layout weiter schaerfen
-- Doku vervollstaendigen
+Warum:
 
-Ergebnis:
+- gute Beispiele sind fuer Nutzer fast so wichtig wie die API selbst
+- sie zeigen sofort, ob das API-Design wirklich tragfaehig ist
 
-- verlaessliche Basis fuer normale PDFs ohne vorschnelle Feature-Ausweitung
+## Should Have
 
-### Phase 2: kontrollierte Inhaltserweiterung
+Diese Punkte sind wichtig, aber nach den Kernbereichen.
 
-Fokus:
+### 5. Rich Text vorsichtig ausbauen
 
-- Bilder oder weitere grafische Elemente end-to-end einfuehren
-- Ressourcenmodell entsprechend erweitern
-- API konsistent halten
+Der Rich-Text-Pfad ist schon brauchbar, aber noch bewusst klein.
 
-Ergebnis:
+Moegliche naechste Schritte:
 
-- groesserer praktischer Nutzen ohne Architekturbruch
+- segment-spezifischer `fontName`
+- optionale Hintergrundfarbe pro Segment
+- weitere kleine `TextSegment`-Factories nur bei echtem Bedarf
 
-### Phase 3: strukturierte und validierbare PDFs
+Nicht vorschnell:
 
-Fokus:
+- `fontSize` pro Segment
+- zu fruehe HTML- oder Markdown-Importpfade
 
-- Strukturmodell fachlich absichern
-- Tagged-PDF-Verhalten pruefen
-- externe Validatoren in den Entwicklungsprozess aufnehmen
+Warum:
 
-Ergebnis:
+- hier steigt die Layout-Komplexitaet schnell
+- der Ausbau sollte nur kontrolliert erfolgen
 
-- bessere Grundlage fuer Accessibility und weitergehende Standards
+### 6. Bilder und Layout-Bloecke verbessern
 
-## Validierung
+Moegliche Erweiterungen:
 
-Der bisherige interne Fortschritt sollte systematisch gegen mehrere Werkzeuge geprueft werden.
+- `contain`, `cover` oder aehnliche Fit-Strategien fuer Bilder
+- klarere Box-/Panel-Bausteine fuer wiederkehrende Layouts
+- einfache Key-Value- oder Info-Bloecke fuer typische Dokumente
 
-Sinnvolle Kandidaten:
+Warum:
 
-- `qpdf`
-- Poppler-Tools
-- Acrobat Reader oder Acrobat Preflight
-- `veraPDF` fuer PDF/A
-- PAC fuer Accessibility und PDF/UA
+- das bringt fuer echte PDFs sofort Nutzwert
+- ohne die Core-API unnoetig aufzublaehen
 
-Diese Werkzeuge pruefen unterschiedliche Ebenen:
+### 7. Formular-API weiter absichern
 
-- Syntax
-- Objektstruktur
-- Reader-Kompatibilitaet
-- Standard-Konformitaet
+Formulare sind schon vorhanden, aber noch nicht voll ausgereizt.
 
-## Offene Produktfragen
+Moegliche naechste Schritte:
 
-Diese Fragen beeinflussen die Architektur direkt und sollten frueh beantwortet werden:
+- bessere Appearance-Strategien fuer Text- und Choice-Felder
+- mehr Regressionstests fuer Widget-Rendering
+- klarere Doku fuer Formularnutzung
 
-- Soll die Library zuerst vor allem gueltige Standard-PDFs erzeugen?
-- Ist Tagged PDF ein Kernziel oder ein spaeter Ausbau?
-- Sind PDF/A oder PDF/UA echte Projektziele?
-- Soll die API langfristig low-level bleiben oder schrittweise mehr Layout-Abstraktion bekommen?
+## Nice To Have
 
-## Kurzempfehlung
+Diese Punkte sind sinnvoll, aber nicht akut.
 
-Der naechste technisch saubere Schwerpunkt ist nicht sofort ein weiterer Standard, sondern eine noch belastbarere Basis:
+### 8. Dokumentstandards und Validatoren staerker einbinden
 
-1. Rendering und Tests haerten
-2. das Layout-System im Textpfad weiter absichern und erst dann ueber Text hinaus erweitern
-3. den naechsten echten Inhaltstyp vollstaendig einfuehren
-4. Struktur- und Standardthemen danach gezielt validieren
+Moegliche Themen:
 
-## Verschluesselung
+- PDF/A
+- PDF/UA
+- Accessibility-Checks
+- XMP-Metadaten
+- Viewer Preferences
 
-Der aktuelle Verschluesselungsstand ist fuer eine erste Standard-Security-Handler-Stufe bereits nutzbar:
+Warum spaeter:
 
-- `RC4_40` fuer PDF `1.3`
-- `RC4_128` fuer PDF `1.4` und `1.5`
-- `AES_128` fuer PDF `1.6`
-- `AES_256` fuer PDF `1.7` aktuell ueber den `R5`-Pfad
+- das ist wertvoll, aber erst sinnvoll auf stabiler Kernbasis
 
-Strings und Streams werden im Renderpfad wirklich verschluesselt, nicht nur das Encrypt-Dictionary modelliert.
+### 9. Tiefere Typografie und Font-Themen
 
-Die naechsten sinnvollen Schritte in diesem Bereich sind:
+Moegliche Themen:
 
-- Doku und Beispielmaterial weiter ausbauen
-- `R6` spaeter als eigener Ausbau statt halbgarer Mischimplementierung
-- Permissions semantisch noch genauer an die PDF-Spezifikation angleichen
-- Reader-Kompatibilitaet mit weiteren Tools ausser `qpdf` pruefen
+- weiter praezisierte Font-Metriken
+- Fallback-Font-Strategien
+- erweiterte Unicode-/Skript-Themen
+
+Warum spaeter:
+
+- hoher Aufwand
+- nur sinnvoll, wenn reale Dokumente das wirklich brauchen
+
+## Empfohlene Reihenfolge
+
+1. Tabellen-Haertung
+2. Header/Footer/Templates
+3. Mehr Rendering-Regressionstests
+4. Doku und echte Beispiel-Dokumente
+5. Rich Text gezielt erweitern
+6. Bilder und Layout-Bloecke verbessern
+7. Formular-Feinschliff
+8. Standards und Validatoren
+
+## Entscheidungsregel
+
+Wenn mehrere moegliche naechste Schritte offen sind, gilt:
+
+- Stabilitaet vor Feature-Breite
+- haeufige Dokumentfaelle vor Spezialfaellen
+- kleine nachvollziehbare Schritte vor grossem Umbau
