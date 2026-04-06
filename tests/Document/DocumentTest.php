@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
@@ -83,6 +84,16 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_can_find_registered_fonts_by_their_base_font_name(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+
+        self::assertSame($document->getFonts()[0], $document->getFontByBaseFont('Helvetica'));
+        self::assertNull($document->getFontByBaseFont('Courier'));
+    }
+
+    #[Test]
     public function it_uses_distinct_defaults_for_creator_producer_and_creator_tool_metadata(): void
     {
         $document = new Document(version: 1.4);
@@ -118,6 +129,28 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_allows_updating_the_creator_metadata(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $returnedDocument = $document->setCreator('Acme Renderer');
+
+        self::assertSame($document, $returnedDocument);
+        self::assertSame('Acme Renderer', $document->getCreator());
+    }
+
+    #[Test]
+    public function it_rejects_an_empty_creator_metadata_value(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Creator must not be empty.');
+
+        $document->setCreator('');
+    }
+
+    #[Test]
     public function it_rejects_an_empty_producer_metadata_value(): void
     {
         $document = new Document(version: 1.4);
@@ -134,6 +167,28 @@ final class DocumentTest extends TestCase
         $document = new Document(version: 1.4, creatorTool: '');
 
         self::assertSame('kalle/pdf', $document->getCreatorTool());
+    }
+
+    #[Test]
+    public function it_allows_updating_the_creator_tool_metadata(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $returnedDocument = $document->setCreatorTool('Acme Backoffice');
+
+        self::assertSame($document, $returnedDocument);
+        self::assertSame('Acme Backoffice', $document->getCreatorTool());
+    }
+
+    #[Test]
+    public function it_rejects_an_empty_creator_tool_metadata_value(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Creator tool must not be empty.');
+
+        $document->setCreatorTool('');
     }
 
     #[Test]
@@ -190,6 +245,46 @@ final class DocumentTest extends TestCase
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
+    }
+
+    #[Test]
+    public function it_can_add_an_attachment_from_a_file_and_look_it_up_by_filename(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf-attachment-');
+        self::assertNotFalse($path);
+        file_put_contents($path, 'attachment-data');
+
+        try {
+            $document = new Document(version: 1.4);
+
+            $returnedDocument = $document->addAttachmentFromFile(
+                $path,
+                filename: 'custom.txt',
+                description: 'Imported attachment',
+                mimeType: 'text/plain',
+            );
+
+            self::assertSame($document, $returnedDocument);
+            self::assertCount(1, $document->getAttachments());
+            self::assertSame($document->getAttachments()[0], $document->getAttachment('custom.txt'));
+            self::assertNull($document->getAttachment('missing.txt'));
+            self::assertSame('custom.txt', $document->getAttachments()[0]->getFilename());
+            self::assertStringContainsString('/Desc (Imported attachment)', $document->getAttachments()[0]->render());
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    #[Test]
+    public function it_rejects_missing_attachment_files(): void
+    {
+        $document = new Document(version: 1.4);
+        $path = sys_get_temp_dir() . '/pdf-missing-' . uniqid('', true) . '.txt';
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Attachment file '$path' does not exist.");
+
+        $document->addAttachmentFromFile($path);
     }
 
     #[Test]
@@ -648,6 +743,31 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_reuses_optional_content_groups_for_the_same_layer_name(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $firstLayer = $document->addLayer('Draft', visibleByDefault: false);
+        $secondLayer = $document->ensureOptionalContentGroup('Draft');
+
+        self::assertSame($firstLayer, $secondLayer);
+        self::assertSame('Draft', $firstLayer->getName());
+        self::assertFalse($firstLayer->isVisibleByDefault());
+        self::assertSame([$firstLayer], $document->getOptionalContentGroups());
+    }
+
+    #[Test]
+    public function it_rejects_empty_optional_content_group_names(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Optional content group name must not be empty.');
+
+        $document->ensureOptionalContentGroup('');
+    }
+
+    #[Test]
     public function it_rejects_combining_page_size_and_explicit_height(): void
     {
         $document = new Document(version: 1.4);
@@ -781,6 +901,37 @@ final class DocumentTest extends TestCase
                 'encoding' => 'Identity-H',
             ],
         ]);
+    }
+
+    #[Test]
+    public function it_creates_and_reuses_a_single_acro_form_instance(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $firstAcroForm = $document->ensureAcroForm();
+        $secondAcroForm = $document->ensureAcroForm();
+
+        self::assertSame($firstAcroForm, $secondAcroForm);
+        self::assertSame($firstAcroForm, $document->acroForm);
+        self::assertContains($firstAcroForm, $document->getDocumentObjects());
+    }
+
+    #[Test]
+    public function it_sets_encryption_options_and_caches_the_built_security_handler_data(): void
+    {
+        $document = new Document(version: 1.7);
+        $options = new EncryptionOptions('user-secret', 'owner-secret');
+
+        $returnedDocument = $document->encrypt($options);
+        $firstSecurityHandlerData = $document->getSecurityHandlerData();
+        $secondSecurityHandlerData = $document->getSecurityHandlerData();
+
+        self::assertSame($document, $returnedDocument);
+        self::assertSame($options, $document->getEncryptionOptions());
+        self::assertNotNull($document->getEncryptionProfile());
+        self::assertNotNull($document->encryptDictionary);
+        self::assertNotNull($firstSecurityHandlerData);
+        self::assertSame($firstSecurityHandlerData, $secondSecurityHandlerData);
     }
 
     #[Test]
