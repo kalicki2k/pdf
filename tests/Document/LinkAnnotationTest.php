@@ -72,5 +72,6 @@ final class LinkAnnotationTest extends TestCase
             . "endobj\n",
             $annotation->render(),
         );
+        self::assertSame([], $annotation->getRelatedObjects());
     }
 }
