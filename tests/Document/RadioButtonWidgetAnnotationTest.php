@@ -39,4 +39,35 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
             $annotation->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_an_unchecked_radio_button_widget_annotation_and_returns_related_objects(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $field = new RadioButtonField(7, 'delivery');
+        $offAppearance = new RadioButtonAppearanceStream(9, 12, false);
+        $onAppearance = new RadioButtonAppearanceStream(10, 12, true);
+
+        $annotation = new RadioButtonWidgetAnnotation(
+            8,
+            $page,
+            $field,
+            10,
+            20,
+            12,
+            'standard',
+            false,
+            $offAppearance,
+            $onAppearance,
+        );
+
+        self::assertSame(
+            "8 0 obj\n"
+            . "<< /Type /Annot /Subtype /Widget /Rect [10 20 22 32] /Border [0 0 0] /P 4 0 R /Parent 7 0 R /AS /Off /AP << /N << /Off 9 0 R /standard 10 0 R >> >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertSame([$offAppearance, $onAppearance], $annotation->getRelatedObjects());
+    }
 }
