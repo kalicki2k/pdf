@@ -37,7 +37,7 @@ final class CatalogTest extends TestCase
 
         self::assertSame(
             "1 0 obj\n"
-            . "<< /Type /Catalog /Pages 2 0 R /MarkInfo << /Marked true >> /Lang (de-DE) /StructTreeRoot 8 0 R >>\n"
+            . "<< /Type /Catalog /Pages 2 0 R /Metadata 12 0 R /MarkInfo << /Marked true >> /Lang (de-DE) /StructTreeRoot 8 0 R >>\n"
             . "endobj\n",
             $catalog->render(),
         );
@@ -50,7 +50,7 @@ final class CatalogTest extends TestCase
         $catalog = new Catalog(1, $document);
 
         self::assertSame(
-            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata 4 0 R >>\nendobj\n",
             $catalog->render(),
         );
     }
@@ -64,7 +64,7 @@ final class CatalogTest extends TestCase
         $catalog = new Catalog(1, $document);
 
         self::assertSame(
-            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Outlines 7 0 R /PageMode /UseOutlines >>\nendobj\n",
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata 9 0 R /Outlines 7 0 R /PageMode /UseOutlines >>\nendobj\n",
             $catalog->render(),
         );
     }
@@ -78,7 +78,7 @@ final class CatalogTest extends TestCase
         $catalog = new Catalog(1, $document);
 
         self::assertSame(
-            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Dests << /table-demo [4 0 R /Fit] >> >>\nendobj\n",
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata 7 0 R /Dests << /table-demo [4 0 R /Fit] >> >>\nendobj\n",
             $catalog->render(),
         );
     }
@@ -95,7 +95,7 @@ final class CatalogTest extends TestCase
 
         self::assertSame(
             "1 0 obj\n"
-            . "<< /Type /Catalog /Pages 2 0 R /OCProperties << /OCGs [7 0 R] /D << /Order [7 0 R] /ON [7 0 R] >> >> >>\n"
+            . "<< /Type /Catalog /Pages 2 0 R /Metadata 8 0 R /OCProperties << /OCGs [7 0 R] /D << /Order [7 0 R] /ON [7 0 R] >> >> >>\n"
             . "endobj\n",
             $catalog->render(),
         );
@@ -110,7 +110,7 @@ final class CatalogTest extends TestCase
 
         self::assertSame(
             "1 0 obj\n"
-            . "<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles << /Names [(demo.txt) 5 0 R] >> >> >>\n"
+            . "<< /Type /Catalog /Pages 2 0 R /Metadata 6 0 R /Names << /EmbeddedFiles << /Names [(demo.txt) 5 0 R] >> >> >>\n"
             . "endobj\n",
             $catalog->render(),
         );

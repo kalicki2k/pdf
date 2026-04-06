@@ -1443,6 +1443,7 @@ Der derzeit belastbare Einstieg ist:
 
 - Dokument anlegen
 - Metadaten setzen
+- klassische PDF-Info-Metadaten und XMP-Metadaten automatisch konsistent rendern
 - Keywords hinzufuegen
 - globale oder dokumenteigene Fonts konfigurieren
 - eine oder mehrere Seiten anlegen

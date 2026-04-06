@@ -1,6 +1,7 @@
 {
   "name": "kalle/pdf",
   "description": "A PDF library",
+  "version": "0.0.0",
   "type": "library",
   "autoload": {
     "psr-4": {

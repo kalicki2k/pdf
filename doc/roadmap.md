@@ -173,12 +173,12 @@ Moegliche Themen:
 - PDF/A
 - PDF/UA
 - Accessibility-Checks
-- XMP-Metadaten
 - Viewer Preferences
 
 Warum spaeter:
 
-- das ist wertvoll, aber erst sinnvoll auf stabiler Kernbasis
+- XMP-Metadaten fuer allgemeine Dokumentmetadaten sind vorhanden
+- weitergehende Standards und Validatoren sind trotzdem erst auf stabiler Kernbasis sinnvoll
 
 ### 9. Tiefere Typografie und Font-Themen
 

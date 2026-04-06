@@ -46,9 +46,15 @@ $totalsPosition = new Position(Units::mm(120), Units::mm(78));
 
 $document = new Document(
     version: 1.4,
-    title: 'Rechnung',
+    title: 'Rechnung 2026-0015',
+    author: 'DEIN FIRMENNAME',
+    subject: 'Ausgangsrechnung',
+    language: 'de-DE',
+    creator: 'Rechnungsservice',
+    creatorTool: 'Backoffice Export',
 )
     ->addKeyword('Rechnung')
+    ->addKeyword('Buchhaltung')
     ->registerFont('Helvetica')
     ->registerFont('Helvetica-Bold')
     ->registerFont('Helvetica-Oblique');

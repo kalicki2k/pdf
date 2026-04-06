@@ -20,9 +20,10 @@ final class InfoTest extends TestCase
         $rendered = $info->render();
 
         self::assertStringStartsWith("3 0 obj\n<< /Title (Spec) /Author (Kalle)", $rendered);
-        self::assertStringContainsString('/Creator (kalle/pdf)', $rendered);
-        self::assertStringContainsString('/Producer (kalle/pdf)', $rendered);
-        self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}\)/', $rendered);
+        self::assertStringContainsString('/Creator (' . $document->getCreator() . ')', $rendered);
+        self::assertStringContainsString('/Producer (' . $document->getProducer() . ')', $rendered);
+        self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}[+-]\d{4}\)/', $rendered);
+        self::assertMatchesRegularExpression('/\/ModDate \(D:\d{14}[+-]\d{4}\)/', $rendered);
         self::assertStringNotContainsString('/Subject (', $rendered);
         self::assertStringNotContainsString('/Keywords (', $rendered);
         self::assertStringNotContainsString('/Lang (', $rendered);
@@ -46,6 +47,41 @@ final class InfoTest extends TestCase
 
         self::assertStringContainsString('/Subject (Testing)', $rendered);
         self::assertStringContainsString('/Keywords (pdf, tests)', $rendered);
-        self::assertStringContainsString('/Lang (de-DE)', $rendered);
+        self::assertStringNotContainsString('/Lang (de-DE)', $rendered);
+    }
+
+    #[Test]
+    public function it_allows_custom_creator_and_producer_metadata(): void
+    {
+        $document = new Document(
+            title: 'Spec',
+            author: 'Kalle',
+            creator: 'Acme Invoice Service',
+        );
+        $document->setProducer('kalle/pdf 1.0');
+        $info = new Info(3, $document);
+
+        $rendered = $info->render();
+
+        self::assertStringContainsString('/Creator (Acme Invoice Service)', $rendered);
+        self::assertStringContainsString('/Producer (kalle/pdf 1.0)', $rendered);
+    }
+
+    #[Test]
+    public function it_keeps_author_and_creator_as_distinct_metadata_roles(): void
+    {
+        $document = new Document(
+            title: 'Spec',
+            author: 'DEIN FIRMENNAME',
+            creator: 'Rechnungsservice',
+            creatorTool: 'Backoffice Export',
+        );
+        $info = new Info(3, $document);
+
+        $rendered = $info->render();
+
+        self::assertStringContainsString('/Author (DEIN FIRMENNAME)', $rendered);
+        self::assertStringContainsString('/Creator (Rechnungsservice)', $rendered);
+        self::assertStringNotContainsString('/Creator (Backoffice Export)', $rendered);
     }
 }

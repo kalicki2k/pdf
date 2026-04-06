@@ -40,7 +40,7 @@ final class DocumentTest extends TestCase
     {
         $document = new Document(version: 1.4, language: 'de-DE');
 
-        self::assertSame([1, 2, 3], array_map(
+        self::assertSame([1, 2, 3, 4], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -61,7 +61,7 @@ final class DocumentTest extends TestCase
         self::assertSame(5, $page->id);
         self::assertSame(6, $page->contents->id);
         self::assertSame(7, $page->resources->id);
-        self::assertSame([1, 2, 3, 4, 5, 7, 6], array_map(
+        self::assertSame([1, 2, 3, 4, 5, 7, 6, 8], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -77,6 +77,60 @@ final class DocumentTest extends TestCase
         self::assertSame($document, $returnedDocument);
         self::assertCount(1, $document->fonts);
         self::assertSame('Helvetica', $document->fonts[0]->getBaseFont());
+    }
+
+    #[Test]
+    public function it_uses_distinct_defaults_for_creator_producer_and_creator_tool_metadata(): void
+    {
+        $document = new Document(version: 1.4);
+
+        self::assertSame('kalle/pdf', $document->getCreator());
+        self::assertStringStartsWith('kalle/pdf', $document->getProducer());
+        self::assertSame('kalle/pdf', $document->getCreatorTool());
+    }
+
+    #[Test]
+    public function it_allows_custom_creator_producer_and_creator_tool_metadata(): void
+    {
+        $document = new Document(
+            version: 1.4,
+            creator: 'Acme Invoice Service',
+            creatorTool: 'Acme Backoffice',
+        );
+
+        $returnedDocument = $document->setProducer('kalle/pdf 1.0');
+
+        self::assertSame($document, $returnedDocument);
+        self::assertSame('Acme Invoice Service', $document->getCreator());
+        self::assertSame('kalle/pdf 1.0', $document->getProducer());
+        self::assertSame('Acme Backoffice', $document->getCreatorTool());
+    }
+
+    #[Test]
+    public function it_falls_back_to_the_package_name_for_an_empty_creator_metadata_value(): void
+    {
+        $document = new Document(version: 1.4, creator: '');
+
+        self::assertSame('kalle/pdf', $document->getCreator());
+    }
+
+    #[Test]
+    public function it_rejects_an_empty_producer_metadata_value(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Producer must not be empty.');
+
+        $document->setProducer('');
+    }
+
+    #[Test]
+    public function it_falls_back_to_the_package_name_for_an_empty_creator_tool_metadata_value(): void
+    {
+        $document = new Document(version: 1.4, creatorTool: '');
+
+        self::assertSame('kalle/pdf', $document->getCreatorTool());
     }
 
     #[Test]
@@ -129,7 +183,7 @@ final class DocumentTest extends TestCase
 
         $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
 
-        self::assertSame([1, 2, 5, 4, 3], array_map(
+        self::assertSame([1, 2, 5, 4, 3, 6], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -353,7 +407,7 @@ final class DocumentTest extends TestCase
             ->addOutline('Erste Seite', $firstPage)
             ->addOutline('Zweite Seite', $secondPage);
 
-        self::assertSame([1, 2, 10, 11, 12, 3, 4, 6, 5, 7, 9, 8], array_map(
+        self::assertSame([1, 2, 10, 11, 12, 3, 4, 6, 5, 7, 9, 8, 13], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -408,7 +462,7 @@ final class DocumentTest extends TestCase
         self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
         self::assertSame(9, $document->fonts[0]->id);
         self::assertSame(7, $document->fonts[0]->descendantFont->id);
-        self::assertSame([1, 2, 3, 4, 5, 6, 7, 8, 9], array_map(
+        self::assertSame([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -433,7 +487,7 @@ final class DocumentTest extends TestCase
         self::assertNotNull($document->fonts[1]->descendantFont->fontDescriptor);
         self::assertNotNull($document->fonts[1]->descendantFont->cidToGidMap);
         self::assertSame(
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
             array_map(
                 static fn (object $object): int => $object->id,
                 $document->getDocumentObjects(),
@@ -543,7 +597,7 @@ final class DocumentTest extends TestCase
         $result = $document->addStructElem(StructureTag::Paragraph, 42);
 
         self::assertSame($document, $result);
-        self::assertSame([1, 2, 4, 5, 6, 7, 3], array_map(
+        self::assertSame([1, 2, 4, 5, 6, 7, 3, 8], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -573,12 +627,16 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/Author (Kalle)', $output);
         self::assertStringContainsString('/Subject (Tests)', $output);
         self::assertStringContainsString('/Keywords (pdf)', $output);
-        self::assertStringContainsString('/Lang (de-DE)', $output);
+        self::assertStringContainsString('/Metadata 8 0 R', $output);
+        self::assertStringContainsString('<dc:format>application/pdf</dc:format>', $output);
+        self::assertStringContainsString('<rdf:li>de-DE</rdf:li>', $output);
+        self::assertStringNotContainsString('/Lang (de-DE)', $output);
         self::assertStringNotContainsString('/MarkInfo', $output);
         self::assertStringNotContainsString('/StructTreeRoot', $output);
-        self::assertStringContainsString("xref\n0 8\n", $output);
-        self::assertStringContainsString("trailer\n<< /Size 8\n/Root 1 0 R\n/Info 3 0 R\n/ID [<", $output);
-        self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}\)/', $output);
+        self::assertStringContainsString("xref\n0 9\n", $output);
+        self::assertStringContainsString("trailer\n<< /Size 9\n/Root 1 0 R\n/Info 3 0 R\n/ID [<", $output);
+        self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}[+-]\d{4}\)/', $output);
+        self::assertMatchesRegularExpression('/\/ModDate \(D:\d{14}[+-]\d{4}\)/', $output);
         self::assertStringEndsWith('%%EOF', $output);
     }
 
@@ -592,6 +650,7 @@ final class DocumentTest extends TestCase
         $output = $document->render();
 
         self::assertStringContainsString('/Lang (de-DE)', $output);
+        self::assertStringContainsString('/Metadata 12 0 R', $output);
         self::assertStringContainsString('/StructTreeRoot 8 0 R', $output);
         self::assertStringContainsString('/StructParents 0', $output);
     }

@@ -23,7 +23,7 @@ Der Hauptfluss ist:
 
 Verantwortlich fuer:
 
-- PDF-Version und Metadaten
+- PDF-Version sowie klassische PDF-Info- und XMP-Metadaten
 - globale Font-Registrierung
 - optionale dokumenteigene Font-Konfiguration
 - Verwaltung aller Seiten
@@ -48,6 +48,8 @@ Wichtige Methoden:
 - `addKeyword()` pflegt die Dokument-Keywords
 - `render()` delegiert an `PdfRenderer`
 - `getDocumentObjects()` liefert die Menge aller zu rendernden indirekten Objekte
+
+`Document` haelt die fachlichen Dokumentmetadaten zentral und stellt sie sowohl fuer das klassische PDF-Info-Dictionary als auch fuer den XMP-Metadata-Stream bereit. Der `Catalog` verweist ab PDF `1.4` ueber `/Metadata` auf den XMP-Stream.
 
 Wenn Outlines vorhanden sind, erzeugt `Document` zusaetzlich ein `OutlineRoot`-Objekt und eine flache Liste von `OutlineItem`-Objekten aus `src/Document/Outline`. Der `Catalog` verweist dann ueber `/Outlines` auf diese Navigationsstruktur und setzt `/PageMode /UseOutlines`.
 

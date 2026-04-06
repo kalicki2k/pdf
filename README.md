@@ -11,7 +11,7 @@ The project already covers a usable core for:
 - simple flow layout via `TextFrame`
 - lists and basic tables
 - images, lines, rectangles, and path-based shapes
-- links and document metadata
+- links and document metadata including classic PDF info entries and XMP metadata
 
 The current focus is a stable core library, not PDF/A, PDF/UA, or full tagged-PDF compliance yet.
 

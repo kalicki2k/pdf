@@ -20,10 +20,15 @@ final class Catalog extends IndirectObject
 
     public function render(): string
     {
+        $metadata = $this->document->getXmpMetadata();
         $dictionary = new DictionaryType([
             'Type' => new NameType('Catalog'),
             'Pages' => new ReferenceType($this->document->pages),
         ]);
+
+        if ($metadata !== null) {
+            $dictionary->add('Metadata', new ReferenceType($metadata));
+        }
 
         if ($this->document->outlineRoot !== null) {
             $dictionary->add('Outlines', new ReferenceType($this->document->outlineRoot));

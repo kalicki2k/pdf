@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Composer\InstalledVersions;
+use DateTimeImmutable;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
@@ -43,11 +45,18 @@ use Random\RandomException;
 
 final class Document
 {
+    private const PACKAGE_NAME = 'kalle/pdf';
     private int $objectId = 0;
     private int $structParentId = -1;
+    private readonly DateTimeImmutable $creationDate;
+    private readonly DateTimeImmutable $modificationDate;
+    private string $creator;
+    private string $creatorTool;
+    private string $producer;
     private ?EncryptionProfile $encryptionProfile = null;
     private ?EncryptionOptions $encryptionOptions = null;
     private ?StandardSecurityHandlerData $securityHandlerData = null;
+    private ?XmpMetadata $xmpMetadata = null;
     /** @var list<callable(Page, int): void> */
     private array $headerRenderers = [];
     /** @var list<callable(Page, int): void> */
@@ -97,12 +106,19 @@ final class Document
         public readonly ?string $author = null,
         public readonly ?string $subject = null,
         public readonly ?string $language = null,
+        ?string $creator = null,
+        ?string $creatorTool = null,
         private readonly ?array $fontConfig = null,
     ) {
         $this->catalog = new Catalog(++$this->objectId, $this);
         $this->pages = new Pages(++$this->objectId, $this);
 
         $this->info = new Info(++$this->objectId, $this);
+        $this->creationDate = new DateTimeImmutable();
+        $this->modificationDate = $this->creationDate;
+        $this->creator = $creator !== null && $creator !== '' ? $creator : self::PACKAGE_NAME;
+        $this->creatorTool = $creatorTool !== null && $creatorTool !== '' ? $creatorTool : self::PACKAGE_NAME;
+        $this->producer = self::resolveDefaultProducer();
         $this->documentId = $this->generateDocumentId();
     }
 
@@ -119,6 +135,8 @@ final class Document
      */
     public function getDocumentObjects(): array
     {
+        $xmpMetadata = $this->getXmpMetadata();
+
         /** @var list<IndirectObject> $objects */
         $objects = [];
 
@@ -205,7 +223,97 @@ final class Document
             $objects[] = $page->contents;
         }
 
+        if ($xmpMetadata !== null) {
+            $objects[] = $xmpMetadata;
+        }
+
         return $objects;
+    }
+
+    public function getCreationDate(): DateTimeImmutable
+    {
+        return $this->creationDate;
+    }
+
+    public function getModificationDate(): DateTimeImmutable
+    {
+        return $this->modificationDate;
+    }
+
+    public function getCreator(): string
+    {
+        return $this->creator;
+    }
+
+    public function setCreator(string $creator): self
+    {
+        if ($creator === '') {
+            throw new InvalidArgumentException('Creator must not be empty.');
+        }
+
+        $this->creator = $creator;
+
+        return $this;
+    }
+
+    public function getProducer(): string
+    {
+        return $this->producer;
+    }
+
+    public function setProducer(string $producer): self
+    {
+        if ($producer === '') {
+            throw new InvalidArgumentException('Producer must not be empty.');
+        }
+
+        $this->producer = $producer;
+
+        return $this;
+    }
+
+    public function getCreatorTool(): string
+    {
+        return $this->creatorTool;
+    }
+
+    public function setCreatorTool(string $creatorTool): self
+    {
+        if ($creatorTool === '') {
+            throw new InvalidArgumentException('Creator tool must not be empty.');
+        }
+
+        $this->creatorTool = $creatorTool;
+
+        return $this;
+    }
+
+    private static function resolveDefaultProducer(): string
+    {
+        if (!class_exists(InstalledVersions::class)) {
+            return self::PACKAGE_NAME;
+        }
+
+        $version = InstalledVersions::getPrettyVersion(self::PACKAGE_NAME);
+
+        if ($version === null || $version === '') {
+            return self::PACKAGE_NAME;
+        }
+
+        return self::PACKAGE_NAME . ' ' . $version;
+    }
+
+    public function getXmpMetadata(): ?XmpMetadata
+    {
+        if ($this->version < 1.4) {
+            return null;
+        }
+
+        if ($this->xmpMetadata === null) {
+            $this->xmpMetadata = new XmpMetadata($this->getUniqObjectId(), $this);
+        }
+
+        return $this->xmpMetadata;
     }
 
     public function addPage(PageSize | float $width = 595.2755905511812, ?float $height = null): Page

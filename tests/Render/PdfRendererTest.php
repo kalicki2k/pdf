@@ -49,22 +49,26 @@ final class PdfRendererTest extends TestCase
         $infoOffset = strpos($output, "3 0 obj\n");
         $fontOffset = strpos($output, "5 0 obj\n");
 
-        self::assertStringContainsString("xref\n0 6\n", $output);
+        $metadataOffset = strpos($output, "6 0 obj\n");
+
+        self::assertStringContainsString("xref\n0 7\n", $output);
         self::assertNotFalse($catalogOffset);
         self::assertNotFalse($pagesOffset);
         self::assertNotFalse($infoOffset);
         self::assertNotFalse($fontOffset);
+        self::assertNotFalse($metadataOffset);
         self::assertMatchesRegularExpression(
-            '/xref\n0 6\n'
+            '/xref\n0 7\n'
             . '0000000000 65535 f \n'
             . sprintf('%010d', $catalogOffset) . ' 00000 n \n'
             . sprintf('%010d', $pagesOffset) . ' 00000 n \n'
             . sprintf('%010d', $infoOffset) . ' 00000 n \n'
             . '0000000000 65535 f \n'
-            . sprintf('%010d', $fontOffset) . ' 00000 n \n/',
+            . sprintf('%010d', $fontOffset) . ' 00000 n \n'
+            . sprintf('%010d', $metadataOffset) . ' 00000 n \n/',
             $output,
         );
-        self::assertStringContainsString("trailer\n<< /Size 6\n/Root 1 0 R\n/Info 3 0 R\n", $output);
+        self::assertStringContainsString("trailer\n<< /Size 7\n/Root 1 0 R\n/Info 3 0 R\n", $output);
         self::assertMatchesRegularExpression('/\/ID \[<[^>]+> <[^>]+>]/', $output);
     }
 }
