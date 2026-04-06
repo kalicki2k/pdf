@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\ListBoxAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -142,5 +143,34 @@ final class ListBoxAnnotationTest extends TestCase
         );
 
         self::assertStringContainsString('/DV [(pdf) (forms)]', $annotation->render());
+    }
+
+    #[Test]
+    public function it_uses_the_text_color_and_omits_optional_values_when_not_provided(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new ListBoxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            40,
+            'topics',
+            ['pdf' => 'PDF'],
+            null,
+            'F1',
+            12,
+            null,
+            Color::rgb(255, 0, 0),
+        );
+
+        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', $annotation->render());
+        self::assertStringNotContainsString('/V (', $annotation->render());
+        self::assertStringNotContainsString('/DV (', $annotation->render());
+        self::assertSame([], $annotation->getRelatedObjects());
     }
 }
