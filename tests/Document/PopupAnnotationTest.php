@@ -27,4 +27,21 @@ final class PopupAnnotationTest extends TestCase
             $annotation->render(),
         );
     }
+
+    #[Test]
+    public function it_defaults_to_a_closed_popup_and_has_no_related_objects(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $parent = new TextAnnotation(7, $page, 10, 20, 8, 8, 'Kommentar');
+        $annotation = new PopupAnnotation(8, $page, $parent, 20, 30, 60, 40);
+
+        self::assertSame(
+            "8 0 obj\n"
+            . "<< /Type /Annot /Subtype /Popup /Rect [20 30 80 70] /P 4 0 R /Parent 7 0 R /Open false >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertSame([], $annotation->getRelatedObjects());
+    }
 }
