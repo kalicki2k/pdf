@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\PopupAnnotation;
 use Kalle\Pdf\Document\Annotation\PolygonAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
@@ -34,12 +35,13 @@ final class PolygonAnnotationTest extends TestCase
         $document = new Document(version: 1.4);
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], subject: 'Flaechenhinweis');
-        $popup = new \Kalle\Pdf\Document\Annotation\PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
+        $popup = new PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
 
-        $annotation->withPopup($popup);
+        self::assertSame($annotation, $annotation->withPopup($popup));
 
         self::assertStringContainsString('/Subj (Flaechenhinweis)', $annotation->render());
         self::assertStringContainsString('/Popup 8 0 R', $annotation->render());
+        self::assertSame([$popup], $annotation->getRelatedObjects());
     }
 
     #[Test]
@@ -50,5 +52,50 @@ final class PolygonAnnotationTest extends TestCase
         $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], borderStyle: AnnotationBorderStyle::dashed());
 
         self::assertStringContainsString('/BS << /W 1 /S /D /D [3 2] >>', $annotation->render());
+    }
+
+    #[Test]
+    public function it_omits_optional_fields_when_they_are_not_provided(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $annotation = new PolygonAnnotation(7, $page, [[90.0, 32.0], [10.0, 20.0], [40.0, 50.0]]);
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Polygon /Rect [10 20 90 50] /P 4 0 R /Vertices [90 32 10 20 40 50] >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertSame([], $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_renders_cmyk_border_and_fill_colors(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $annotation = new PolygonAnnotation(
+            7,
+            $page,
+            [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]],
+            Color::cmyk(0.1, 0.2, 0.3, 0.4),
+            Color::cmyk(0.5, 0.6, 0.7, 0.8),
+        );
+
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+        self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', $annotation->render());
+    }
+
+    #[Test]
+    public function it_rejects_polygons_with_fewer_than_three_vertices(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Polygon annotation requires at least three vertices.');
+
+        new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0]]);
     }
 }
