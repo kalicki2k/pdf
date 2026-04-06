@@ -51,6 +51,20 @@ Wichtige Methoden:
 
 `Document` haelt die fachlichen Dokumentmetadaten zentral und stellt sie sowohl fuer das klassische PDF-Info-Dictionary als auch fuer den XMP-Metadata-Stream bereit. Der `Catalog` verweist ab PDF `1.4` ueber `/Metadata` auf den XMP-Stream.
 
+Die Metadaten-Rollen sind aktuell bewusst getrennt:
+
+- `author` steht fuer den inhaltlichen Autor oder die verantwortliche Organisation
+- `creator` steht fuer das erzeugende System oder den Service
+- `creatorTool` steht fuer das konkrete Tool oder UI, das den Export ausgeloest hat
+- `producer` steht fuer die technische PDF-Engine und wird aus Paketname und installierter Version abgeleitet
+
+Im Mapping gilt aktuell:
+
+- `Info /Author` und XMP `dc:creator` werden aus `author` gespeist
+- `Info /Creator` wird aus `creator` gespeist
+- XMP `xmp:CreatorTool` wird aus `creatorTool` gespeist
+- `Info /Producer` und XMP `pdf:Producer` werden aus `producer` gespeist
+
 Wenn Outlines vorhanden sind, erzeugt `Document` zusaetzlich ein `OutlineRoot`-Objekt und eine flache Liste von `OutlineItem`-Objekten aus `src/Document/Outline`. Der `Catalog` verweist dann ueber `/Outlines` auf diese Navigationsstruktur und setzt `/PageMode /UseOutlines`.
 
 Wenn benannte Ziele vorhanden sind, rendert der `Catalog` zusaetzlich ein `/Dests`-Dictionary mit Zielnamen und Zielseiten.

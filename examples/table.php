@@ -22,9 +22,9 @@ use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 
-require 'vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-$outputDir = __DIR__ . '/var/examples';
+$outputDir = __DIR__ . '/../var/examples';
 
 if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)) {
     throw new RuntimeException(sprintf('Unable to create output directory "%s".', $outputDir));
@@ -38,7 +38,7 @@ $document = new Document(
     fontConfig: [
         [
             'baseFont' => 'NotoSans-Regular',
-            'path' => 'assets/fonts/NotoSans-Regular.ttf',
+            'path' => __DIR__ . '/../assets/fonts/NotoSans-Regular.ttf',
             'unicode' => true,
             'subtype' => 'CIDFontType2',
             'encoding' => 'Identity-H',

@@ -1,0 +1,9 @@
+/AGENTS.md export-ignore
+/doc export-ignore
+/examples export-ignore
+/tests export-ignore
+/var export-ignore
+/vendor export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/phpstan.neon.dist export-ignore
+/phpunit.xml.dist export-ignore

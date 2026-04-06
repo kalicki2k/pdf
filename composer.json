@@ -1,8 +1,19 @@
 {
   "name": "kalle/pdf",
-  "description": "A PDF library",
-  "version": "0.0.0",
+  "description": "A PHP library for generating PDF files directly from code",
   "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "pdf",
+    "document",
+    "generator",
+    "rendering"
+  ],
+  "homepage": "https://github.com/kalicki2k/pdf",
+  "support": {
+    "issues": "https://github.com/kalicki2k/pdf/issues",
+    "source": "https://github.com/kalicki2k/pdf"
+  },
   "autoload": {
     "psr-4": {
       "Kalle\\Pdf\\": "src/"
@@ -31,5 +42,10 @@
     "php": "^8.4",
     "ext-iconv": "*",
     "ext-mbstring": "*"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "0.1.x-dev"
+    }
   }
 }

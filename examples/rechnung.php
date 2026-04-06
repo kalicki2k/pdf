@@ -21,9 +21,9 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 
-require 'vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-$outputDir = __DIR__ . '/var/examples';
+$outputDir = __DIR__ . '/../var/examples';
 
 if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)) {
     throw new RuntimeException(sprintf('Unable to create output directory "%s".', $outputDir));

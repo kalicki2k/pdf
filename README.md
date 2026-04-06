@@ -1,19 +1,24 @@
 # kalle/pdf
 
-Small PHP library for generating PDF files directly from code.
+A PHP library for generating PDF files directly from code.
 
-## Status
+## Overview
 
-The project already covers a usable core for:
+`kalle/pdf` builds PDF documents from a small PHP object model and renders them directly to PDF syntax.
+
+Current core coverage includes:
 
 - documents and pages
-- text and embedded fonts
+- text with standard and embedded fonts
 - simple flow layout via `TextFrame`
 - lists and basic tables
 - images, lines, rectangles, and path-based shapes
-- links and document metadata including classic PDF info entries and XMP metadata
+- links and named destinations
+- classic PDF info metadata and XMP metadata
+- optional password-based PDF encryption
+- outlines, attachments, layers, and basic form fields
 
-The current focus is a stable core library, not PDF/A, PDF/UA, or full tagged-PDF compliance yet.
+The current focus is a stable core library. PDF/A, PDF/UA, and full tagged-PDF compliance are not the current target yet.
 
 ## Requirements
 
@@ -22,21 +27,72 @@ The current focus is a stable core library, not PDF/A, PDF/UA, or full tagged-PD
 - `ext-mbstring`
 - Composer
 
-## Install
+## Installation
 
 ```bash
-composer install
+composer require kalle/pdf
 ```
 
 ## Quick Start
 
-Run the example:
+```php
+<?php
 
-```bash
-php example.php
+declare(strict_types=1);
+
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Layout\PageSize;
+
+require 'vendor/autoload.php';
+
+$document = new Document(
+    version: 1.4,
+    title: 'Hello PDF',
+    author: 'Example Company',
+    subject: 'Demo document',
+    language: 'en-US',
+    creator: 'Example Service',
+    creatorTool: 'CLI Export',
+);
+
+$document->registerFont('Helvetica');
+
+$page = $document->addPage(PageSize::A4());
+$page->addText('Hello PDF', new Position(20, 800), 'Helvetica', 16);
+
+file_put_contents('hello.pdf', $document->render());
 ```
 
-This generates a PDF file in the project directory.
+## Examples
+
+Example scripts live in [examples](/home/skalicki/Projekte/pdf/examples):
+
+- [rechnung.php](/home/skalicki/Projekte/pdf/examples/rechnung.php)
+- [table.php](/home/skalicki/Projekte/pdf/examples/table.php)
+- [textbox.php](/home/skalicki/Projekte/pdf/examples/textbox.php)
+
+Run one of them with:
+
+```bash
+php examples/rechnung.php
+```
+
+Generated example PDFs are written to `var/examples`.
+
+## Metadata
+
+The library supports both metadata layers that are relevant for normal PDF generation:
+
+- classic PDF info entries such as `Title`, `Author`, `Subject`, `Keywords`, `Creator`, `Producer`, `CreationDate`, and `ModDate`
+- XMP metadata via a catalog `/Metadata` stream
+
+Current metadata role split:
+
+- `author`: content author or responsible organization
+- `creator`: generating application or service
+- `creatorTool`: concrete tool or UI that triggered the export
+- `producer`: PDF engine, derived from the package name and installed version
 
 ## Development
 
@@ -58,8 +114,13 @@ Check code style:
 composer cs:check
 ```
 
-## Documentation
+## Release
 
-- [Getting Started](doc/getting-started.md)
-- [Architecture](doc/architecture.md)
-- [Roadmap](doc/roadmap.md)
+```bash
+git tag 0.1.0-alpha1
+git push origin 0.1.0-alpha1
+```
+
+## License
+
+[MIT](LICENSE)
