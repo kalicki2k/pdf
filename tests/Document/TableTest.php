@@ -488,7 +488,7 @@ final class TableTest extends TestCase
         foreach (array_slice($document->pages->pages, 1) as $page) {
             $contents = $page->contents->render();
 
-            self::assertStringContainsString("0.862745 0.921569 1 rg", $contents);
+            self::assertStringContainsString('0.862745 0.921569 1 rg', $contents);
             self::assertStringContainsString("20 25.2 40 24 re\nf", $contents);
             self::assertStringContainsString("20 25.2 40 24 re\nS", $contents);
         }

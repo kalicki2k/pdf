@@ -10,8 +10,8 @@ use Kalle\Pdf\Document\Table\Style\CellStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
-use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
+use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Text\TextSegment;
 
