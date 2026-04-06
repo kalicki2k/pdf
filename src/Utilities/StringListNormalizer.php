@@ -12,9 +12,12 @@ final class StringListNormalizer
      */
     public static function unique(array $values): array
     {
-        return array_values(array_unique(array_map(
-            static fn (string $value) => trim($value),
-            $values,
+        return array_values(array_unique(array_filter(
+            array_map(
+                static fn (string $value): string => trim($value),
+                $values,
+            ),
+            static fn (string $value): bool => $value !== '',
         )));
     }
 }

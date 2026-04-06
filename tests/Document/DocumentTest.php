@@ -590,6 +590,23 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_discards_empty_keywords_after_trimming(): void
+    {
+        $document = new Document(version: 1.4, title: 'Spec');
+
+        $document
+            ->addKeyword(' ')
+            ->addKeyword('pdf')
+            ->addKeyword('   ');
+
+        self::assertSame(['pdf'], $document->keywords);
+        self::assertStringContainsString('/Keywords (pdf)', $document->render());
+        self::assertStringNotContainsString('/Keywords (,', $document->render());
+        self::assertStringNotContainsString('<rdf:li></rdf:li>', $document->render());
+        self::assertStringContainsString('<pdf:Keywords>pdf</pdf:Keywords>', $document->render());
+    }
+
+    #[Test]
     public function it_adds_structure_elements_and_links_them_to_the_document_root(): void
     {
         $document = new Document(version: 1.4);
