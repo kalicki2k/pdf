@@ -24,6 +24,40 @@ use PHPUnit\Framework\TestCase;
 final class TableTest extends TestCase
 {
     #[Test]
+    public function it_exposes_the_current_cursor_position(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
+
+        self::assertSame(260.0, $table->getCursorY());
+    }
+
+    #[Test]
+    public function it_allows_configuring_font_and_styles_fluently(): void
+    {
+        $document = new Document(version: 1.4);
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $page = $document->addPage();
+        $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
+
+        $result = $table
+            ->font('Helvetica', 10)
+            ->style(new TableStyle(border: TableBorder::none()))
+            ->rowStyle(new RowStyle(textColor: Color::rgb(255, 0, 0)))
+            ->headerStyle(new HeaderStyle(fillColor: Color::gray(0.9)))
+            ->addRow(['A', 'B'], header: true)
+            ->addRow(['1', '2']);
+
+        self::assertSame($table, $result);
+        self::assertStringContainsString('(A) Tj', $page->contents->render());
+        self::assertStringContainsString('(1) Tj', $page->contents->render());
+    }
+
+    #[Test]
     public function it_renders_a_table_row_with_header_and_body_cells(): void
     {
         $document = new Document(version: 1.4);
@@ -455,6 +489,37 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_defers_a_leading_rowspan_split_to_the_next_page_when_only_one_row_would_fit(): void
+    {
+        $document = new Document(version: 1.4);
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $firstPage = $document->addPage(200, 120);
+
+        $table = $firstPage->createTable(new Position(20, 58), 160, [80, 80], 20)
+            ->font('Helvetica', 12)
+            ->addRow(['H1', 'H2'], header: true)
+            ->addRow([
+                new TableCell('Alpha Beta Gamma Delta', rowspan: 2),
+                'B',
+            ])
+            ->addRow(['C']);
+
+        self::assertCount(4, $document->pages->pages);
+        self::assertSame($document->pages->pages[3], $table->getPage());
+        self::assertSame(1, substr_count($document->pages->pages[0]->contents->render(), '(H1) Tj'));
+        self::assertStringNotContainsString('(Alpha Beta)', $document->pages->pages[0]->contents->render());
+        self::assertStringNotContainsString('(B) Tj', $document->pages->pages[0]->contents->render());
+        self::assertStringContainsString('(H1) Tj', $document->pages->pages[1]->contents->render());
+        self::assertStringContainsString('(H1) Tj', $document->pages->pages[2]->contents->render());
+        self::assertStringContainsString('(B) Tj', $document->pages->pages[2]->contents->render());
+        self::assertStringContainsString('(H1) Tj', $document->pages->pages[3]->contents->render());
+        self::assertStringContainsString('(Alpha Beta) Tj', $document->pages->pages[3]->contents->render());
+        self::assertStringContainsString('(C) Tj', $document->pages->pages[3]->contents->render());
+    }
+
+    #[Test]
     public function it_keeps_rowspan_cell_boxes_across_page_boundaries_even_when_text_is_fully_rendered(): void
     {
         $document = new Document(version: 1.4);
@@ -515,5 +580,112 @@ final class TableTest extends TestCase
         self::assertStringContainsString('(Zeile 1) Tj', $contents);
         self::assertStringContainsString('(Zeile 2) Tj', $contents);
         self::assertStringContainsString('(Zeile 3) Tj', $contents);
+    }
+
+    #[Test]
+    public function it_rejects_invalid_table_dimensions_and_column_configuration(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        try {
+            $page->createTable(new Position(20, 260), 0, [85, 85]);
+            self::fail('Expected invalid table width exception.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame('Table width must be greater than zero.', $exception->getMessage());
+        }
+
+        try {
+            $page->createTable(new Position(20, 260), 170, []);
+            self::fail('Expected missing columns exception.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame('Table requires at least one column.', $exception->getMessage());
+        }
+
+        try {
+            $page->createTable(new Position(20, 260), 170, [85, 0]);
+            self::fail('Expected invalid column width exception.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame('Table column widths must be greater than zero.', $exception->getMessage());
+        }
+
+        try {
+            $page->createTable(new Position(20, 260), 170, [80, 80]);
+            self::fail('Expected width sum exception.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame('Table column widths must add up to the table width.', $exception->getMessage());
+        }
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Table bottom margin must be zero or greater.');
+
+        $page->createTable(new Position(20, 260), 170, [85, 85], -1);
+    }
+
+    #[Test]
+    public function it_rejects_invalid_font_configuration(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
+
+        try {
+            $table->font('', 12);
+            self::fail('Expected empty font exception.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame('Table base font must not be empty.', $exception->getMessage());
+        }
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Table font size must be greater than zero.');
+
+        $table->font('Helvetica', 0);
+    }
+
+    #[Test]
+    public function it_rejects_row_groups_that_do_not_fit_on_a_fresh_page_after_repeating_headers(): void
+    {
+        $document = new Document(version: 1.4);
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $page = $document->addPage(200, 85);
+
+        $table = $page->createTable(new Position(20, 30), 160, [80, 80], 20)
+            ->font('Helvetica', 12)
+            ->addRow(['Header 1', 'Header 2'], header: true);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Table rows must fit on a fresh page.');
+
+        $table->addRow([
+            'A very long text that wraps into multiple lines and should not fit',
+            'B',
+        ]);
+    }
+
+    #[Test]
+    public function it_rejects_header_rowspans_that_extend_into_body_rows_when_headers_repeat(): void
+    {
+        $document = new Document(version: 1.4);
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $page = $document->addPage(200, 120);
+
+        $table = $page->createTable(new Position(20, 90), 160, [80, 80], 20)
+            ->font('Helvetica', 12)
+            ->addRow([
+                new TableCell('Header A', rowspan: 2),
+                'Header B',
+            ], header: true);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Header rowspans must be completed within the header rows.');
+
+        $table
+            ->addRow(['Body 1'])
+            ->addRow(['Body 2', 'Body 3'])
+            ->addRow(['Body 4', 'Body 5']);
     }
 }

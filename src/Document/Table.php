@@ -182,10 +182,6 @@ final class Table
 
     private function flushPendingGroup(): void
     {
-        if ($this->pendingGroupRows === []) {
-            return;
-        }
-
         $pendingGroupRows = $this->pendingGroupRows;
         $rowHeights = $this->rowGroupHeightResolver->resolve($pendingGroupRows);
         $isBodyGroup = array_any(
@@ -465,11 +461,6 @@ final class Table
 
             $resolvedStyle = $this->resolveEffectiveCellStyle($preparedCell->cell, $firstRow->header);
             $availableTextHeight = $rowHeights[0] - $resolvedStyle->padding->vertical();
-
-            if ($availableTextHeight <= 0) {
-                return true;
-            }
-
             $maxLines = $this->textMetrics->resolveFittingLineCount($availableTextHeight, $lineHeight, $this->fontSize);
             $lineCount = count($this->page->layoutParagraphLines(
                 $preparedCell->cell->text,
