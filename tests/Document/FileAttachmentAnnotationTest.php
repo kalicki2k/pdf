@@ -29,4 +29,22 @@ final class FileAttachmentAnnotationTest extends TestCase
             $annotation->render(),
         );
     }
+
+    #[Test]
+    public function it_uses_the_default_icon_and_omits_empty_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $embeddedFile = new EmbeddedFileStream(7, 'hello');
+        $fileSpecification = new FileSpecification(8, 'demo.txt', $embeddedFile, 'Demo attachment');
+        $annotation = new FileAttachmentAnnotation(9, $page, 10, 20, 12, 14, $fileSpecification);
+
+        self::assertSame(
+            "9 0 obj\n"
+            . "<< /Type /Annot /Subtype /FileAttachment /Rect [10 20 22 34] /P 4 0 R /FS 8 0 R /Name /PushPin >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertSame([], $annotation->getRelatedObjects());
+    }
 }
