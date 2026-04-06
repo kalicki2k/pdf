@@ -52,4 +52,35 @@ final class PagesTest extends TestCase
             $pages->render(),
         );
     }
+
+    #[Test]
+    public function it_can_reinsert_existing_pages_at_a_specific_index(): void
+    {
+        $document = new Document(version: 1.4);
+        $pages = new Pages(2, $document);
+        $firstPage = $pages->addPage(6, 7, 8, 0, 100.0, 200.0);
+        $secondPage = $pages->addPage(9, 10, 11, 1, 210.0, 297.0);
+        $thirdPage = $pages->addPage(12, 13, 14, 2, 148.0, 210.0);
+
+        $pages->insertPagesAt([$thirdPage], 1);
+
+        self::assertSame([$firstPage, $thirdPage, $secondPage], $pages->pages);
+        self::assertSame(
+            "2 0 obj\n<< /Type /Pages /Kids [6 0 R 12 0 R 9 0 R] /Count 3 >>\nendobj\n",
+            $pages->render(),
+        );
+    }
+
+    #[Test]
+    public function it_rejects_out_of_bounds_page_insertions(): void
+    {
+        $document = new Document(version: 1.4);
+        $pages = new Pages(2, $document);
+        $page = $pages->addPage(6, 7, 8, 0, 100.0, 200.0);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Page insertion index is out of bounds.');
+
+        $pages->insertPagesAt([$page], 2);
+    }
 }
