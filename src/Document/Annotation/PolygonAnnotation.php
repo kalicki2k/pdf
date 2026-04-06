@@ -116,9 +116,6 @@ final class PolygonAnnotation extends IndirectObject implements PageAnnotation
     private function colorComponents(Color $color): array
     {
         $rendered = preg_split('/\s+/', $color->renderNonStrokingOperator());
-        if ($rendered === false) {
-            return [];
-        }
 
         $components = [];
 
