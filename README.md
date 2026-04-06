@@ -1,6 +1,6 @@
 # kalle/pdf
 
-A PHP library for generating PDF files directly from code.
+A lightweight, native PDF engine for PHP for creating structured PDF documents programmatically.
 
 ## Overview
 

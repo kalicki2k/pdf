@@ -1,6 +1,6 @@
 {
   "name": "kalle/pdf",
-  "description": "A PHP library for generating PDF files directly from code",
+  "description": "A lightweight, native PDF engine for PHP for creating structured PDF documents programmatically",
   "type": "library",
   "license": "MIT",
   "keywords": [
