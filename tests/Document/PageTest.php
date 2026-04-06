@@ -410,6 +410,32 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_non_positive_image_height(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Image height must be greater than zero.');
+
+        $page->addImage($image, new Position(10, 20), 100, 0);
+    }
+
+    #[Test]
+    public function it_rejects_images_with_non_positive_intrinsic_dimensions(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $image = new Image(0, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Image dimensions must be greater than zero.');
+
+        $page->addImage($image, new Position(10, 20));
+    }
+
+    #[Test]
     public function it_adds_a_line_to_the_page_contents(): void
     {
         $document = new Document(version: 1.4);
@@ -1564,6 +1590,32 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Link URL must not be empty.');
 
         $page->addLink(new Rect(10, 20, 80, 12), '');
+    }
+
+    #[Test]
+    public function it_exposes_the_owning_document_and_current_annotations(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+
+        $page->addLink(new Rect(10, 20, 80, 12), 'https://example.com');
+
+        self::assertSame($document, $page->getDocument());
+        self::assertCount(1, $page->getAnnotations());
+        self::assertStringContainsString('/Subtype /Link', $page->getAnnotations()[0]->render());
+    }
+
+    #[Test]
+    public function it_rejects_non_positive_text_sizes_when_measuring_text_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Text size must be greater than zero.');
+
+        $page->measureTextWidth('Hello', 'Helvetica', 0);
     }
 
     #[Test]
