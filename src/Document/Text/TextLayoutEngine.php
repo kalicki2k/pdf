@@ -369,12 +369,6 @@ final readonly class TextLayoutEngine
             $lastIndex = array_key_last($line);
             $characters = preg_split('//u', $line[$lastIndex]->text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-            if ($characters === []) {
-                unset($line[$lastIndex]);
-                $line = array_values($line);
-                continue;
-            }
-
             array_pop($characters);
             $updatedText = implode('', $characters);
 
