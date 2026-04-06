@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Text\TextSegment;
@@ -20,6 +21,7 @@ final readonly class PreparedCellRenderer
         private TableStyleResolver $styleResolver,
         private CellLayoutResolver $cellLayoutResolver,
         private CellBoxRenderer $cellBoxRenderer,
+        private TableTextMetrics $textMetrics,
     ) {
     }
 
@@ -140,7 +142,7 @@ final readonly class PreparedCellRenderer
             return new CellRenderResult($page, $options->remainingLines);
         }
 
-        $maxLines = $this->resolveFittingLineCount($availableTextHeight, $lineHeight, $fontSize);
+        $maxLines = $this->textMetrics->resolveFittingLineCount($availableTextHeight, $lineHeight, $fontSize);
         $allLines = $options->remainingLines !== []
             ? $options->remainingLines
             : $page->layoutParagraphLines(
@@ -193,18 +195,5 @@ final readonly class PreparedCellRenderer
         );
 
         return new CellRenderResult($page, $remainingLines);
-    }
-
-    private function resolveFittingLineCount(float $availableTextHeight, float $lineHeight, int $fontSize): int
-    {
-        if ($availableTextHeight <= 0) {
-            return 0;
-        }
-
-        if ($availableTextHeight <= $fontSize) {
-            return 1;
-        }
-
-        return max(1, 1 + (int) floor((($availableTextHeight - $fontSize) + 0.001) / $lineHeight));
     }
 }

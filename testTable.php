@@ -264,6 +264,204 @@ $page->createTable(
         ),
     ]);
 
+$stylePage = $document->addPage(PageSize::A4());
+$renderHeader(
+    $stylePage,
+    'Table test: Padding and Borders',
+    'Gezielte Stilfaelle fuer Innenabstand, Border-Prioritaet und dichte Tabellen.',
+);
+
+$renderChecklist(
+    $stylePage,
+    new Rect(Units::mm(20), Units::mm(248), Units::mm(170), Units::mm(22)),
+    [
+        'Padding muss oben, rechts, unten und links sichtbar unterschiedlich wirken.',
+        'Cell-Border-Overrides muessen gegen Table- und Row-Border lesbar bleiben.',
+        'Dichte Tabellen mit Zahlen duerfen trotz knappen Spalten nicht kippen.',
+    ],
+);
+
+$stylePage->createTable(
+    new Position(Units::mm(20), Units::mm(238)),
+    Units::mm(170),
+    [
+        Units::mm(28),
+        Units::mm(46),
+        Units::mm(46),
+        Units::mm(50),
+    ],
+)
+    ->font('NotoSans-Regular', 9)
+    ->style(new TableStyle(
+        padding: TablePadding::symmetric(Units::mm(2), Units::mm(1.2)),
+        border: TableBorder::all(color: Color::gray(0.72)),
+        verticalAlign: VerticalAlign::TOP,
+    ))
+    ->headerStyle(new HeaderStyle(
+        fillColor: Color::rgb(243, 246, 249),
+    ))
+    ->addRow(['Fall', 'Padding', 'Textbild', 'Erwartung'], header: true)
+    ->addRow([
+        'A',
+        new TableCell(
+            'Standard',
+            style: new CellStyle(fillColor: Color::gray(0.96)),
+        ),
+        "Gleiche Basis\nfuer alle\nVergleiche",
+        'Symmetrischer Abstand ohne Schlagseite.',
+    ])
+    ->addRow([
+        'B',
+        new TableCell(
+            'Top 1 / Bottom 8',
+            style: new CellStyle(
+                padding: TablePadding::only(top: 1, right: 6, bottom: 8, left: 6),
+                fillColor: Color::rgb(250, 245, 232),
+            ),
+        ),
+        "Text soll\nsichtbar nach\noben wandern",
+        'Mehr Luft unten als oben.',
+    ])
+    ->addRow([
+        'C',
+        new TableCell(
+            'Left 12 / Right 2',
+            style: new CellStyle(
+                padding: TablePadding::only(top: 3, right: 2, bottom: 3, left: 12),
+                fillColor: Color::rgb(236, 243, 255),
+            ),
+        ),
+        "Linker Rand\nmuss deutlich\nbreiter wirken",
+        'Textblock sichtbar nach rechts versetzt.',
+    ])
+    ->addRow([
+        'D',
+        new TableCell(
+            'Tight',
+            style: new CellStyle(
+                padding: TablePadding::only(top: 0.5, right: 1, bottom: 0.5, left: 1),
+                fillColor: Color::rgb(245, 245, 245),
+            ),
+        ),
+        "Fast ohne\nInnenabstand",
+        'Text darf knapp wirken, aber nicht am Border kleben.',
+    ]);
+
+$stylePage->createTable(
+    new Position(Units::mm(20), Units::mm(138)),
+    Units::mm(170),
+    [
+        Units::mm(30),
+        Units::mm(40),
+        Units::mm(45),
+        Units::mm(55),
+    ],
+)
+    ->font('NotoSans-Regular', 9)
+    ->style(new TableStyle(
+        padding: TablePadding::symmetric(Units::mm(1.8), Units::mm(1.2)),
+        border: TableBorder::all(color: Color::gray(0.72)),
+        verticalAlign: VerticalAlign::MIDDLE,
+    ))
+    ->rowStyle(new RowStyle(
+        border: TableBorder::horizontal(color: Color::rgb(0, 90, 180)),
+    ))
+    ->headerStyle(new HeaderStyle(
+        fillColor: Color::gray(0.92),
+    ))
+    ->addRow(['Scope', 'Border', 'Fill', 'Lesart'], header: true)
+    ->addRow([
+        'Table',
+        'nur Standard',
+        'keine',
+        'Referenz fuer alle Kanten der Zeile.',
+    ])
+    ->addRow([
+        'Row',
+        new TableCell(
+            'horizontal blau',
+            style: new CellStyle(fillColor: Color::rgb(239, 246, 255)),
+        ),
+        'Row-Fill aus',
+        'Oben und unten blau, Seiten grau.',
+    ])
+    ->addRow([
+        'Cell',
+        new TableCell(
+            'links/unten rot',
+            style: new CellStyle(
+                border: TableBorder::only(['left', 'bottom'], color: Color::rgb(190, 60, 60)),
+                fillColor: Color::rgb(255, 246, 246),
+            ),
+        ),
+        new TableCell(
+            'grau',
+            style: new CellStyle(fillColor: Color::gray(0.95)),
+        ),
+        'Cell-Border muss Row-Border auf den definierten Seiten uebersteuern.',
+    ])
+    ->addRow([
+        'Merge',
+        new TableCell(
+            'alle gruen',
+            style: new CellStyle(
+                border: TableBorder::all(color: Color::rgb(40, 130, 80)),
+                fillColor: Color::rgb(241, 250, 244),
+            ),
+        ),
+        'keine',
+        'Gleiche Borderfarbe auf allen vier Seiten ohne Doppelstriche.',
+    ]);
+
+$stylePage->createTable(
+    new Position(Units::mm(20), Units::mm(62)),
+    Units::mm(170),
+    [
+        Units::mm(18),
+        Units::mm(62),
+        Units::mm(24),
+        Units::mm(28),
+        Units::mm(38),
+    ],
+)
+    ->font('NotoSans-Regular', 8)
+    ->style(new TableStyle(
+        padding: TablePadding::symmetric(Units::mm(1.5), Units::mm(1.1)),
+        border: TableBorder::all(color: Color::gray(0.7)),
+        verticalAlign: VerticalAlign::TOP,
+    ))
+    ->headerStyle(new HeaderStyle(
+        fillColor: Color::rgb(242, 244, 247),
+    ))
+    ->addRow(['Pos.', 'Kurztext', 'Menge', 'Preis', 'Kommentar'], header: true)
+    ->addRow([
+        '1',
+        'Schmale Spalten mit Zahlen rechts.',
+        new TableCell('12', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        new TableCell('48,00', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+        'Soll auch in enger Tabelle ruhig bleiben.',
+    ])
+    ->addRow([
+        '2',
+        'Mehrzeiliger Text mit knapper Breite und bewusst engem Kommentar.',
+        new TableCell('3', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        new TableCell('120,50', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+        'Check fuer Umbruch plus Rechtsbuendigkeit.',
+    ])
+    ->addRow([
+        '3',
+        new TableCell(
+            [
+                TextSegment::plain('Rich '),
+                TextSegment::bold('Text'),
+                TextSegment::plain(' in enger Zelle'),
+            ],
+        ),
+        new TableCell('1', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
+        new TableCell('9,99', style: new CellStyle(horizontalAlign: HorizontalAlign::RIGHT)),
+        'Segment-Mix darf die Zeilenhoehe nicht zerstoeren.',
+    ]);
+
 $paginationPage = $document->addPage(Units::mm(148), Units::mm(110));
 $paginationPage->addText(
     'Table test: Pagination',
@@ -279,9 +477,16 @@ $paginationPage->addTextBox(
     8,
     new TextBoxOptions(lineHeight: Units::mm(3.8)),
 );
+$paginationPage->addTextBox(
+    "Pruefpunkte:\n- Fortgesetzte rowspan-Zellen starten auf Folgeseiten ohne oberen Innenborder.\n- Das sichtbare Segment muss unten trotzdem mit dem Standard-Border schliessen.",
+    new Rect(Units::mm(12), Units::mm(78), Units::mm(124), Units::mm(10)),
+    'NotoSans-Regular',
+    7,
+    new TextBoxOptions(lineHeight: Units::mm(3.4)),
+);
 
 $paginationTable = $paginationPage->createTable(
-    new Position(Units::mm(12), Units::mm(84)),
+    new Position(Units::mm(12), Units::mm(70)),
     Units::mm(124),
     [
         Units::mm(16),
@@ -332,9 +537,28 @@ $paginationTable = $paginationPage->createTable(
         'Letzte Zeile der Group mit identischer rowspan-Zelle links.',
         'ende',
         '70',
+    ])
+    ->addRow([
+        new TableCell(
+            'G5',
+            rowspan: 2,
+            style: new CellStyle(
+                horizontalAlign: HorizontalAlign::CENTER,
+                verticalAlign: VerticalAlign::MIDDLE,
+                fillColor: Color::rgb(245, 240, 230),
+            ),
+        ),
+        'Kurze zweite Group zum Gegencheck des Seitenabschlusses mit Bottom-Border.',
+        'check',
+        '75',
+    ])
+    ->addRow([
+        'Letzte Zeile von G5. Hier sollte die Fortsetzung oben offen, unten aber geschlossen wirken.',
+        'ende',
+        '80',
     ]);
 
-for ($index = 5; $index <= 14; $index++) {
+for ($index = 6; $index <= 14; $index++) {
     $description = sprintf(
         'Regulaere Folgezeile %d fuer wiederholte Header und konstantes Split-Verhalten.',
         $index,
@@ -352,11 +576,12 @@ for ($index = 5; $index <= 14; $index++) {
     ]);
 }
 
-$targetPath = $outputDir . '/table_test_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
-file_put_contents($targetPath, $document->render());
+$outputPath = $outputDir . '/test-table.pdf';
+
+file_put_contents($outputPath, $document->render());
 
 printf(
     "Erstellt in %.3f Sekunden: %s\n",
     microtime(true) - $startedAt,
-    $targetPath,
+    $outputPath,
 );

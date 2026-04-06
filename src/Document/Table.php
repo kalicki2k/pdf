@@ -20,6 +20,7 @@ use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
+use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Table\TableGroupPageFit;
@@ -51,6 +52,7 @@ final class Table
     private ?RowStyle $rowStyle = null;
     private ?HeaderStyle $headerStyle = null;
     private readonly TableStyleResolver $styleResolver;
+    private readonly TableTextMetrics $textMetrics;
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
 
@@ -95,11 +97,13 @@ final class Table
         $this->continuationTopMargin = min($this->topMargin, self::DEFAULT_CONTINUATION_TOP_MARGIN);
         $this->activeRowspans = array_fill(0, count($columnWidths), 0);
         $this->styleResolver = new TableStyleResolver();
+        $this->textMetrics = new TableTextMetrics();
         $this->rowGroupHeightResolver = new RowGroupHeightResolver();
         $this->preparedCellRenderer = new PreparedCellRenderer(
             $this->styleResolver,
             new CellLayoutResolver($this->x, $this->columnWidths),
             new \Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer($this->styleResolver),
+            $this->textMetrics,
         );
         $this->style = new TableStyle(
             padding: TablePadding::all(6.0),
@@ -468,7 +472,7 @@ final class Table
                 return true;
             }
 
-            $maxLines = $this->resolveFittingLineCount($availableTextHeight, $lineHeight);
+            $maxLines = $this->textMetrics->resolveFittingLineCount($availableTextHeight, $lineHeight, $this->fontSize);
             $lineCount = count($this->page->layoutParagraphLines(
                 $preparedCell->cell->text,
                 $this->baseFont,
@@ -584,19 +588,7 @@ final class Table
             $this->rowStyle,
             $this->headerStyle,
             $this->styleResolver,
+            $this->textMetrics,
         );
-    }
-
-    private function resolveFittingLineCount(float $availableTextHeight, float $lineHeight): int
-    {
-        if ($availableTextHeight <= 0) {
-            return 0;
-        }
-
-        if ($availableTextHeight <= $this->fontSize) {
-            return 1;
-        }
-
-        return max(1, 1 + (int) floor((($availableTextHeight - $this->fontSize) + 0.001) / $lineHeight));
     }
 }
