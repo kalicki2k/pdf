@@ -25,5 +25,6 @@ final class SignatureFieldAnnotationTest extends TestCase
             . "endobj\n",
             $annotation->render(),
         );
+        self::assertSame([], $annotation->getRelatedObjects());
     }
 }
