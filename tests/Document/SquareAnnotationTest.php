@@ -37,4 +37,40 @@ final class SquareAnnotationTest extends TestCase
 
         self::assertStringContainsString('/BS << /W 2 /S /S >>', $annotation->render());
     }
+
+    #[Test]
+    public function it_omits_optional_fields_when_they_are_not_provided(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $annotation = new SquareAnnotation(7, $page, 10, 20, 80, 24);
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Square /Rect [10 20 90 44] /P 4 0 R >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertSame([], $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_renders_cmyk_border_and_fill_colors(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $annotation = new SquareAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            24,
+            Color::cmyk(0.1, 0.2, 0.3, 0.4),
+            Color::cmyk(0.5, 0.6, 0.7, 0.8),
+        );
+
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+        self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', $annotation->render());
+    }
 }
