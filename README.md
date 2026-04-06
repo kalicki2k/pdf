@@ -16,7 +16,7 @@ Current core coverage includes:
 - links and named destinations
 - classic PDF info metadata and XMP metadata
 - optional password-based PDF encryption
-- outlines, attachments, layers, and basic form fields
+- outlines, named table-of-contents placement, logical TOC page numbers, attachments, layers, and basic form fields
 
 The current focus is a stable core library. PDF/A, PDF/UA, and full tagged-PDF compliance are not the current target yet.
 
@@ -84,6 +84,9 @@ Example scripts live in [examples](examples/):
 - [rechnung.php](examples/rechnung.php)
 - [table.php](examples/table.php)
 - [table-of-contents.php](examples/table-of-contents.php)
+- [table-of-contents-after-cover.php](examples/table-of-contents-after-cover.php)
+- [table-of-contents-end.php](examples/table-of-contents-end.php)
+- [table-of-contents-logical.php](examples/table-of-contents-logical.php)
 - [textbox.php](examples/textbox.php)
 
 Run one of them with:

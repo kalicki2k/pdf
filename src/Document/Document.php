@@ -32,6 +32,7 @@ use Kalle\Pdf\Font\ToUnicodeCMap;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeGlyphMap;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsPosition;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfRenderer;
@@ -55,10 +56,6 @@ final class Document
     private ?EncryptionOptions $encryptionOptions = null;
     private ?StandardSecurityHandlerData $securityHandlerData = null;
     private ?XmpMetadata $xmpMetadata = null;
-    /** @var list<callable(Page, int): void> */
-    private array $headerRenderers = [];
-    /** @var list<callable(Page, int): void> */
-    private array $footerRenderers = [];
     /** @var list<callable(Page, int, int): void> */
     private array $deferredHeaderRenderers = [];
     /** @var list<callable(Page, int, int): void> */
@@ -69,6 +66,8 @@ final class Document
 
     /** @var string[] */
     private array $keywords = [];
+    /** @var array<int, true> */
+    private array $excludedPageIdsFromNumbering = [];
     /** @var array<string, Page> */
     private array $destinations = [];
     /** @var array<string, OptionalContentGroup> */
@@ -352,10 +351,7 @@ final class Document
 
         $height ??= 841.8897637795277;
 
-        $page = $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, ++$this->structParentId, $width, $height);
-        $this->applyPageDecorators($page);
-
-        return $page;
+        return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, ++$this->structParentId, $width, $height);
     }
 
     public function addOutline(string $title, Page $page): self
@@ -527,7 +523,9 @@ final class Document
      */
     public function addHeader(callable $renderer): self
     {
-        $this->headerRenderers[] = $renderer;
+        $this->deferredHeaderRenderers[] = static function (Page $page, int $pageNumber) use ($renderer): void {
+            $renderer($page, $pageNumber);
+        };
 
         return $this;
     }
@@ -537,7 +535,9 @@ final class Document
      */
     public function addFooter(callable $renderer): self
     {
-        $this->footerRenderers[] = $renderer;
+        $this->deferredFooterRenderers[] = static function (Page $page, int $pageNumber) use ($renderer): void {
+            $renderer($page, $pageNumber);
+        };
 
         return $this;
     }
@@ -575,6 +575,13 @@ final class Document
         } else {
             $this->deferredHeaderRenderers[] = $renderer;
         }
+
+        return $this;
+    }
+
+    public function excludePageFromNumbering(Page $page): self
+    {
+        $this->excludedPageIdsFromNumbering[$page->id] = true;
 
         return $this;
     }
@@ -662,13 +669,6 @@ final class Document
         return $this;
     }
 
-    private function applyPageDecorators(Page $page): void
-    {
-        $pageNumber = count($this->pages->pages);
-        $this->runPageDecorators($this->headerRenderers, $page, $pageNumber);
-        $this->runPageDecorators($this->footerRenderers, $page, $pageNumber);
-    }
-
     private function applyDeferredPageDecorators(): void
     {
         if ($this->deferredHeaderRenderers === [] && $this->deferredFooterRenderers === []) {
@@ -685,16 +685,6 @@ final class Document
 
         $this->deferredHeaderRenderers = [];
         $this->deferredFooterRenderers = [];
-    }
-
-    /**
-     * @param list<callable(Page, int): void> $renderers
-     */
-    private function runPageDecorators(array $renderers, Page $page, int $pageNumber): void
-    {
-        foreach ($renderers as $renderer) {
-            $renderer($page, $pageNumber);
-        }
     }
 
     /**
@@ -738,7 +728,8 @@ final class Document
         int $titleSize = 18,
         int $entrySize = 12,
         float $margin = 20.0,
-        TableOfContentsPosition $position = TableOfContentsPosition::END,
+        TableOfContentsPlacement | TableOfContentsPosition $position = TableOfContentsPosition::END,
+        bool $useLogicalPageNumbers = false,
     ): Page {
         if ($titleSize <= 0) {
             throw new InvalidArgumentException('Table of contents title size must be greater than zero.');
@@ -753,6 +744,8 @@ final class Document
         }
 
         $firstTocPageIndex = count($this->pages->pages);
+        $placement = $this->normalizeTableOfContentsPlacement($position);
+        $insertionIndex = $placement->insertionIndex($firstTocPageIndex);
         $page = $this->addPage($width, $height);
         $contentWidth = $page->getWidth() - ($margin * 2);
 
@@ -779,7 +772,8 @@ final class Document
                 $margin,
                 $entryLineHeight,
             ),
-            $position,
+            $insertionIndex,
+            $useLogicalPageNumbers,
         );
 
         foreach ($this->outlineRoot->getItems() as $outlineItem) {
@@ -832,9 +826,9 @@ final class Document
             $currentY -= $entryLineHeight;
         }
 
-        if ($position === TableOfContentsPosition::START) {
+        if ($insertionIndex !== $firstTocPageIndex) {
             $tocPages = array_values(array_slice($this->pages->pages, $firstTocPageIndex));
-            $this->pages->prependPages($tocPages);
+            $this->pages->insertPagesAt($tocPages, $insertionIndex);
         }
 
         return $page;
@@ -1129,16 +1123,78 @@ final class Document
     private function buildTableOfContentsPageNumbers(
         int $firstTocPageIndex,
         int $tocPageCount,
-        TableOfContentsPosition $position,
+        int $insertionIndex,
+        bool $useLogicalPageNumbers,
     ): array {
+        if ($useLogicalPageNumbers) {
+            return $this->buildLogicalTableOfContentsPageNumbers($firstTocPageIndex, $tocPageCount, $insertionIndex);
+        }
+
         $pageNumbersByObjectId = [];
-        $pageNumberOffset = $position === TableOfContentsPosition::START ? $tocPageCount : 0;
 
         foreach (array_slice($this->pages->pages, 0, $firstTocPageIndex) as $index => $documentPage) {
-            $pageNumbersByObjectId[$documentPage->id] = $index + 1 + $pageNumberOffset;
+            $pageNumbersByObjectId[$documentPage->id] = $index + 1 + ($index >= $insertionIndex ? $tocPageCount : 0);
         }
 
         return $pageNumbersByObjectId;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function buildLogicalTableOfContentsPageNumbers(
+        int $firstTocPageIndex,
+        int $tocPageCount,
+        int $insertionIndex,
+    ): array {
+        $pageNumbersByObjectId = [];
+        $contentPages = array_values(array_slice($this->pages->pages, 0, $firstTocPageIndex));
+        $contentPageIndex = 0;
+        $logicalPageNumber = 0;
+        $totalPageCount = $firstTocPageIndex + $tocPageCount;
+
+        for ($pageIndex = 0; $pageIndex < $totalPageCount; $pageIndex++) {
+            $isTocPage = $pageIndex >= $insertionIndex && $pageIndex < $insertionIndex + $tocPageCount;
+
+            if ($isTocPage) {
+                $logicalPageNumber++;
+
+                continue;
+            }
+
+            $documentPage = $contentPages[$contentPageIndex] ?? null;
+
+            if ($documentPage === null) {
+                continue;
+            }
+
+            $contentPageIndex++;
+
+            if (isset($this->excludedPageIdsFromNumbering[$documentPage->id])) {
+                continue;
+            }
+
+            $logicalPageNumber++;
+            $pageNumbersByObjectId[$documentPage->id] = $logicalPageNumber;
+        }
+
+        return $pageNumbersByObjectId;
+    }
+
+    private function normalizeTableOfContentsPlacement(
+        TableOfContentsPlacement | TableOfContentsPosition $position,
+    ): TableOfContentsPlacement {
+        if ($position instanceof TableOfContentsPlacement) {
+            return $position;
+        }
+
+        return match ($position) {
+            TableOfContentsPosition::START => TableOfContentsPlacement::start(),
+            TableOfContentsPosition::END => TableOfContentsPlacement::end(),
+            TableOfContentsPosition::AFTER_PAGE => throw new InvalidArgumentException(
+                'TableOfContentsPosition::AFTER_PAGE requires TableOfContentsPlacement::afterPage(...).',
+            ),
+        };
     }
 
     private function estimateTableOfContentsPageCount(

@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\PublicApi;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsPosition;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Table;
 use Kalle\Pdf\TextFrame;
@@ -37,9 +38,37 @@ final class PublicApiTest extends TestCase
         });
 
         $document->addPage(100, 100);
+        $document->render();
 
         self::assertInstanceOf(Page::class, $receivedPage);
         self::assertStringContainsString('(Header 1) Tj', $document->render());
+    }
+
+    #[Test]
+    public function it_can_exclude_a_public_page_from_logical_numbering(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+
+        $coverPage = $document->addPage(100, 100);
+        $contentPage = $document->addPage(100, 100);
+
+        $document->excludePageFromNumbering($coverPage);
+        $document->addOutline('Kapitel', $contentPage);
+        $tocPage = $document->addTableOfContents(
+            140,
+            100,
+            'Inhalt',
+            'Helvetica',
+            16,
+            10,
+            10,
+            TableOfContentsPosition::START,
+            true,
+        );
+
+        self::assertStringContainsString('(2) Tj', $document->render());
+        self::assertInstanceOf(Page::class, $tocPage);
     }
 
     #[Test]

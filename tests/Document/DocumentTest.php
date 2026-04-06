@@ -13,6 +13,7 @@ use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsPosition;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -248,6 +249,7 @@ final class DocumentTest extends TestCase
 
         $firstPage = $document->addPage(100, 100);
         $secondPage = $document->addPage(100, 100);
+        $document->render();
 
         self::assertStringContainsString('(Header 1) Tj', $firstPage->contents->render());
         self::assertStringContainsString('(Footer 1) Tj', $firstPage->contents->render());
@@ -273,6 +275,7 @@ final class DocumentTest extends TestCase
         $frame->addParagraph(str_repeat('Wort ', 80), 'Helvetica', 12, new ParagraphOptions(structureTag: StructureTag::Paragraph));
         $lastPage = $document->pages->pages[array_key_last($document->pages->pages)];
         $lastPageNumber = count($document->pages->pages);
+        $document->render();
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertStringContainsString('(Header 1) Tj', $firstPage->contents->render());
@@ -394,6 +397,121 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('(' . ($firstContentPageIndex + 9) . ') Tj', $tocContents);
         self::assertStringNotContainsString('(1) Tj', $tocContents);
         self::assertStringNotContainsString('(2) Tj', $tocContents);
+    }
+
+    #[Test]
+    public function it_applies_header_page_numbers_after_moving_the_table_of_contents_to_the_start(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $document->addHeader(static function (Page $page, int $pageNumber): void {
+            $page->addText("Header $pageNumber", new Position(10, 90), 'Helvetica', 10);
+        });
+
+        $firstPage = $document->addPage(100, 100);
+        $secondPage = $document->addPage(100, 100);
+
+        $document
+            ->addOutline('Erste Seite', $firstPage)
+            ->addOutline('Zweite Seite', $secondPage);
+
+        $tocPage = $document->addTableOfContents(140, 100, 'Inhalt', 'Helvetica', 16, 10, 10, TableOfContentsPosition::START);
+        $document->render();
+
+        self::assertStringContainsString('(Header 1) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(Header 2) Tj', $firstPage->contents->render());
+        self::assertStringContainsString('(Header 3) Tj', $secondPage->contents->render());
+    }
+
+    #[Test]
+    public function it_can_insert_the_table_of_contents_after_the_first_page(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $coverPage = $document->addPage(100, 100);
+        $firstPage = $document->addPage(100, 100);
+        $secondPage = $document->addPage(100, 100);
+
+        $document
+            ->addOutline('Erste Seite', $firstPage)
+            ->addOutline('Zweite Seite', $secondPage);
+
+        $tocPage = $document->addTableOfContents(
+            140,
+            100,
+            'Inhalt',
+            'Helvetica',
+            16,
+            10,
+            10,
+            TableOfContentsPlacement::afterPage(1),
+        );
+
+        self::assertSame($coverPage, $document->pages->pages[0]);
+        self::assertSame($tocPage, $document->pages->pages[1]);
+        self::assertSame($firstPage, $document->pages->pages[2]);
+        self::assertSame($secondPage, $document->pages->pages[3]);
+        self::assertStringContainsString('(3) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(4) Tj', $tocPage->contents->render());
+    }
+
+    #[Test]
+    public function it_can_use_logical_page_numbers_for_a_table_of_contents(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $coverPage = $document->addPage(100, 100);
+        $firstPage = $document->addPage(100, 100);
+        $secondPage = $document->addPage(100, 100);
+        $thirdPage = $document->addPage(100, 100);
+
+        $document->excludePageFromNumbering($coverPage);
+        $document
+            ->addOutline('Erste Seite', $firstPage)
+            ->addOutline('Zweite Seite', $secondPage)
+            ->addOutline('Dritte Seite', $thirdPage);
+
+        $tocPage = $document->addTableOfContents(
+            140,
+            100,
+            'Inhalt',
+            'Helvetica',
+            16,
+            10,
+            10,
+            TableOfContentsPosition::START,
+            true,
+        );
+
+        $tocContents = $tocPage->contents->render();
+
+        self::assertStringContainsString('(2) Tj', $tocContents);
+        self::assertStringContainsString('(3) Tj', $tocContents);
+        self::assertStringContainsString('(4) Tj', $tocContents);
+        self::assertStringNotContainsString('(5) Tj', $tocContents);
+    }
+
+    #[Test]
+    public function it_rejects_an_out_of_bounds_table_of_contents_insertion_page(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(100, 100);
+        $document->addOutline('Erste Seite', $page);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Table of contents insertion page 2 is out of bounds for a document with 1 pages.');
+
+        $document->addTableOfContents(
+            140,
+            100,
+            'Inhalt',
+            'Helvetica',
+            16,
+            10,
+            10,
+            TableOfContentsPlacement::afterPage(2),
+        );
     }
 
     #[Test]

@@ -37,14 +37,19 @@ final class Pages extends IndirectObject
     /**
      * @param list<Page> $pages
      */
-    public function prependPages(array $pages): void
+    public function insertPagesAt(array $pages, int $index): void
     {
+        if ($index < 0 || $index > count($this->pages)) {
+            throw new \InvalidArgumentException('Page insertion index is out of bounds.');
+        }
+
         $remainingPages = array_values(array_filter(
             $this->pages,
             static fn (Page $page): bool => !in_array($page, $pages, true),
         ));
 
-        $this->pages = [...$pages, ...$remainingPages];
+        array_splice($remainingPages, $index, 0, $pages);
+        $this->pages = $remainingPages;
     }
 
     public function render(): string

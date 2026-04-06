@@ -74,11 +74,14 @@ Die wichtigsten Rollen:
 
 ## Weiterfuehrende Beispiele
 
-Im Verzeichnis [examples](../examples/) liegen drei manuelle Beispielskripte:
+Im Verzeichnis [examples](../examples/) liegen manuelle Beispielskripte fuer mehrere typische Dokumentvarianten:
 
 - [rechnung.php](../examples/rechnung.php)
 - [table.php](../examples/table.php)
 - [table-of-contents.php](../examples/table-of-contents.php)
+- [table-of-contents-after-cover.php](../examples/table-of-contents-after-cover.php)
+- [table-of-contents-end.php](../examples/table-of-contents-end.php)
+- [table-of-contents-logical.php](../examples/table-of-contents-logical.php)
 - [textbox.php](../examples/textbox.php)
 
 Zum Beispiel:

@@ -8,4 +8,5 @@ enum TableOfContentsPosition
 {
     case START;
     case END;
+    case AFTER_PAGE;
 }

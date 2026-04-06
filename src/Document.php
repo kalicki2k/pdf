@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsPosition;
 
 /**
@@ -228,6 +229,13 @@ final readonly class Document
         return $this;
     }
 
+    public function excludePageFromNumbering(Page $page): self
+    {
+        $this->document->excludePageFromNumbering($this->toInternalPage($page));
+
+        return $this;
+    }
+
     /**
      * Registers a font for subsequent page operations.
      */
@@ -254,9 +262,20 @@ final readonly class Document
         int $titleSize = 18,
         int $entrySize = 12,
         float $margin = 20.0,
-        TableOfContentsPosition $position = TableOfContentsPosition::END,
+        TableOfContentsPlacement | TableOfContentsPosition $position = TableOfContentsPosition::END,
+        bool $useLogicalPageNumbers = false,
     ): Page {
-        return new Page($this->document->addTableOfContents($width, $height, $title, $baseFont, $titleSize, $entrySize, $margin, $position));
+        return new Page($this->document->addTableOfContents(
+            $width,
+            $height,
+            $title,
+            $baseFont,
+            $titleSize,
+            $entrySize,
+            $margin,
+            $position,
+            $useLogicalPageNumbers,
+        ));
     }
 
     /**

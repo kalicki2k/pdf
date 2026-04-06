@@ -30,6 +30,8 @@ Die aktuelle Basis ist bereits deutlich ueber einem Prototyp:
 - Geometrie ueber `Position`, `Rect` und `Insets` ist vorhanden
 - Text-Optionen, Paragraph-Optionen und `TextSegment` sind vorhanden
 - Verschluesselung, Outlines, benannte Ziele und Inhaltsverzeichnisse sind vorhanden
+- Inhaltsverzeichnisse koennen am Anfang, Ende oder nach einer bestimmten Seite eingefuegt werden
+- fuer Inhaltsverzeichnisse gibt es bereits logische Seitennummern mit ausschliessbaren Seiten
 
 Die Kernfrage ist deshalb nicht mehr: "Koennen wir PDFs erzeugen?"
 
@@ -75,6 +77,7 @@ Wichtige Punkte:
 - wiederverwendbare Header/Footer-Definitionen
 - feste Content-Areas statt verteilter Magic Numbers
 - klare Regeln fuer Seitenzahlen und Dokumentbereiche
+- Vereinheitlichung zwischen physischer und logischer Seitennummerierung
 
 Warum:
 

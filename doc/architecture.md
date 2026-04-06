@@ -38,11 +38,12 @@ Verantwortlich fuer:
 Wichtige Methoden:
 
 - `addPage()` erzeugt eine neue Seite mit eigener `Contents`- und `Resources`-Instanz
-- `addHeader()` und `addFooter()` registrieren Seiten-Callbacks, die bei jeder neuen Seite ausgefuehrt werden
+- `addHeader()` und `addFooter()` registrieren Seiten-Callbacks, die kurz vor dem finalen Rendern mit der finalen Seitenreihenfolge ausgefuehrt werden
 - `addPageNumbers()` registriert einen spaet aufgeloesten Seitenzahl-Renderer mit Zugriff auf `{{page}}` und `{{pages}}`
+- `excludePageFromNumbering()` markiert Seiten, die fuer logische Seitenzahlen uebersprungen werden sollen
 - `addOutline()` registriert einen Bookmark-Eintrag fuer eine Zielseite
 - `addDestination()` registriert ein benanntes Ziel fuer interne Spruenge
-- `addTableOfContents()` erzeugt Inhaltsverzeichnis-Seiten aus vorhandenen Outlines
+- `addTableOfContents()` erzeugt Inhaltsverzeichnis-Seiten aus vorhandenen Outlines und kann sie am Anfang, Ende oder nach einer bestimmten Seite einfuegen
 - `encrypt()` aktiviert den Standard-Security-Handler mit Passwort, Permissions und passendem Verschluesselungsprofil
 - `registerFont()` registriert Fonts im Dokument
 - `addKeyword()` pflegt die Dokument-Keywords
@@ -71,7 +72,7 @@ Wenn benannte Ziele vorhanden sind, rendert der `Catalog` zusaetzlich ein `/Dest
 
 `addPageNumbers()` wird erst kurz vor dem finalen Rendern aufgeloest, damit die Gesamtseitenzahl des Dokuments bekannt ist.
 
-`addTableOfContents()` kann die erzeugten TOC-Seiten am Anfang oder Ende der Seitenreihenfolge platzieren. Die Position wird ueber `TableOfContentsPosition::START` oder `::END` gesteuert.
+`addTableOfContents()` kann die erzeugten TOC-Seiten am Anfang, Ende oder nach einer bestimmten Seite der Seitenreihenfolge platzieren. Fuer einfache Faelle stehen `TableOfContentsPosition::START` und `::END` zur Verfuegung, fuer gezielte Einfuegepositionen `TableOfContentsPlacement::afterPage(...)`. Optional kann das TOC logische Seitenzahlen verwenden, bei denen vorher ueber `excludePageFromNumbering()` markierte Seiten nicht mitgezaehlt werden.
 
 Wenn Verschluesselung aktiv ist, cached `Document` die Security-Handler-Daten einmal zentral. Dadurch verwenden Encrypt-Dictionary und Objektverschluesselung denselben Dateischluessel und dieselben abgeleiteten Werte.
 
