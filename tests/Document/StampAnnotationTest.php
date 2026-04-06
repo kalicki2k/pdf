@@ -26,4 +26,30 @@ final class StampAnnotationTest extends TestCase
             $annotation->render(),
         );
     }
+
+    #[Test]
+    public function it_uses_the_default_icon_and_omits_optional_fields(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $annotation = new StampAnnotation(7, $page, 10, 20, 80, 24);
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Stamp /Rect [10 20 90 44] /P 4 0 R /Name /Draft >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertSame([], $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_renders_a_cmyk_stamp_color(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage();
+        $annotation = new StampAnnotation(7, $page, 10, 20, 80, 24, 'Approved', Color::cmyk(0.1, 0.2, 0.3, 0.4));
+
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+    }
 }
