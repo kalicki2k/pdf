@@ -1,5 +1,9 @@
+/build/
 /var/
 /vendor/
 /.phpunit.cache/
 /.php-cs-fixer.cache
 output_*.pdf
+AGENTS.md
+Note.md
+Plan.md
