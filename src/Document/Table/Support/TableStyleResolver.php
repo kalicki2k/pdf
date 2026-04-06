@@ -91,12 +91,8 @@ final class TableStyleResolver
 
         $resolvedBorder = $applicableBorders[0];
 
-        if (!$resolvedBorder->isEnabled($side)) {
-            return null;
-        }
-
         return new ResolvedBorderSide(
-            $this->firstDefinedBorderWidth($applicableBorders),
+            $resolvedBorder->width,
             $this->firstDefinedBorderColor($applicableBorders),
             $this->firstDefinedBorderOpacity($applicableBorders),
         );
@@ -129,20 +125,6 @@ final class TableStyleResolver
             opacity: $override->opacity ?? $base?->opacity,
             border: $override->border ?? $base?->border,
         );
-    }
-
-    /**
-     * @param list<TableBorder> $borders
-     */
-    private function firstDefinedBorderWidth(array $borders): float
-    {
-        foreach ($borders as $border) {
-            if ($border->width !== null) {
-                return $border->width;
-            }
-        }
-
-        return 1.0;
     }
 
     /**
