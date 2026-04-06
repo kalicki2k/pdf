@@ -77,7 +77,7 @@ final class TableTest extends TestCase
                 '19,99 EUR',
             ]);
 
-        self::assertStringContainsString("50 168.8 90 52.8 re\nS", $page->contents->render());
+        self::assertStringContainsString("50 164 90 55.2 re\nS", $page->contents->render());
         self::assertStringContainsString('(Zusammengef) Tj', $page->contents->render());
         self::assertStringContainsString('(asste) Tj', $page->contents->render());
     }
@@ -103,7 +103,7 @@ final class TableTest extends TestCase
                 'Aktiv',
             ]);
 
-        self::assertStringContainsString("20 144.8 40 76.8 re\nS", $page->contents->render());
+        self::assertStringContainsString("20 137.6 40 81.6 re\nS", $page->contents->render());
         self::assertSame(1, substr_count($page->contents->render(), '(A) Tj'));
         self::assertStringContainsString('(Eintrag) Tj', $page->contents->render());
         self::assertSame(2, substr_count($page->contents->render(), '(Eintrag) Tj'));
@@ -167,7 +167,7 @@ final class TableTest extends TestCase
         $contents = $page->contents->render();
 
         self::assertStringContainsString("26 227.6 Td\n(Kurz) Tj", $contents);
-        self::assertStringContainsString("111 242 Td\n(Erste Zeile) Tj", $contents);
+        self::assertStringContainsString("111 240.8 Td\n(Erste Zeile) Tj", $contents);
         self::assertStringContainsString('(Dritte Zeile) Tj', $contents);
     }
 
@@ -236,7 +236,7 @@ final class TableTest extends TestCase
 
         self::assertStringContainsString("20 240 170 20 re\nf", $contents);
         self::assertStringContainsString("1 0 0 RG\n1 w\n20 240 170 20 re\nS", $contents);
-        self::assertStringContainsString("88.326 244 Td\n(Styled) Tj", $contents);
+        self::assertStringContainsString("88.326 245.2 Td\n(Styled) Tj", $contents);
     }
 
     #[Test]
@@ -262,7 +262,7 @@ final class TableTest extends TestCase
         $contents = $page->contents->render();
 
         self::assertStringContainsString("1 0 0 RG\n1 w\n20 240 170 20 re\nS", $contents);
-        self::assertStringContainsString("88.326 244 Td\n(Styled) Tj", $contents);
+        self::assertStringContainsString("88.326 245.2 Td\n(Styled) Tj", $contents);
     }
 
     #[Test]
@@ -296,7 +296,7 @@ final class TableTest extends TestCase
 
         self::assertStringContainsString("20 236 85 24 re\nf", $contents);
         self::assertStringContainsString("0 0 1 RG\n1 w\n20 260 m\n105 260 l\nS", $contents);
-        self::assertStringContainsString('48.496 242 Td', $contents);
+        self::assertStringContainsString('48.496 243.2 Td', $contents);
         self::assertStringContainsString('1 0 0 rg', $contents);
         self::assertStringContainsString("105 236 85 24 re\nf", $contents);
     }
@@ -318,7 +318,7 @@ final class TableTest extends TestCase
         $contents = $page->contents->render();
 
         self::assertStringContainsString("26 213.2 Td\n(Kurz) Tj", $contents);
-        self::assertStringContainsString("111 242 Td\n(Erste Zeile) Tj", $contents);
+        self::assertStringContainsString("111 240.8 Td\n(Erste Zeile) Tj", $contents);
     }
 
     #[Test]
@@ -489,8 +489,8 @@ final class TableTest extends TestCase
             $contents = $page->contents->render();
 
             self::assertStringContainsString("0.862745 0.921569 1 rg", $contents);
-            self::assertStringContainsString("20 27.6 40 24 re\nf", $contents);
-            self::assertStringContainsString("20 27.6 40 24 re\nS", $contents);
+            self::assertStringContainsString("20 25.2 40 24 re\nf", $contents);
+            self::assertStringContainsString("20 25.2 40 24 re\nS", $contents);
         }
 
         self::assertStringContainsString('(Eintrag 4) Tj', $document->pages->pages[3]->contents->render());

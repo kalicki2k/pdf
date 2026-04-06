@@ -46,7 +46,7 @@ final readonly class CellLayoutResolver
             $this->resolveCellTextStartY(
                 $rowTopY,
                 $bottomY,
-                $preparedCell->contentHeight,
+                $preparedCell->alignmentHeight,
                 $verticalAlign,
                 $fontSize,
                 $preparedCell->padding,

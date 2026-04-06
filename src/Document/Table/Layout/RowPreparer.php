@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\Table\Style\CellStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Text\TextSegment;
@@ -29,6 +30,7 @@ final readonly class RowPreparer
         private ?RowStyle $rowStyle,
         private ?HeaderStyle $headerStyle,
         private TableStyleResolver $styleResolver,
+        private TableTextMetrics $textMetrics,
     ) {
     }
 
@@ -75,7 +77,8 @@ final readonly class RowPreparer
                 $contentWidth,
             );
 
-            $contentHeight = $this->fontSize + (max(0, $lineCount - 1) * $lineHeight);
+            $alignmentHeight = $this->textMetrics->resolveAlignmentHeight($lineCount, $this->fontSize, $lineHeight);
+            $contentHeight = $this->textMetrics->resolveContentHeight($lineCount, $this->fontSize, $lineHeight);
             $cellHeight = $contentHeight + $padding->vertical();
             $preparedCells[] = new PreparedTableCell(
                 $preparedCell,
@@ -83,6 +86,7 @@ final readonly class RowPreparer
                 $columnIndex,
                 $cellHeight,
                 $contentHeight,
+                $alignmentHeight,
                 $resolvedStyle->padding,
             );
 

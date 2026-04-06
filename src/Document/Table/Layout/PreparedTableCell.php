@@ -15,6 +15,7 @@ final readonly class PreparedTableCell
         public int $column,
         public float $minHeight,
         public float $contentHeight,
+        public float $alignmentHeight,
         public TablePadding $padding,
     ) {
     }
