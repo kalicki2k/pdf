@@ -43,12 +43,23 @@ Diese Punkte bringen den groessten realen Nutzen und sollten zuerst kommen.
 
 Tabellen sind fuer echte Dokumente einer der kritischsten Bereiche.
 
+Status:
+
+- grosser Teil erledigt
+- Tabellen-Rendering ist deutlich stabiler als zuvor
+- `testTable.php` und erweiterte Regressionstests decken zentrale Faelle jetzt sichtbar ab
+
 Wichtige Punkte:
 
-- mehr Regressionstests fuer `rowspan`, `colspan` und Seitenumbrueche
-- wiederholte Header in mehr Randfaellen pruefen
-- Zell-Overflow und vertikale Ausrichtung weiter absichern
-- Split-Verhalten bei langen Tabellenzeilen weiter stabilisieren
+- `rowspan`, `colspan` und Seitenumbrueche wurden deutlich weiter abgesichert
+- wiederholte Header und Fortsetzungs-Borders ueber Seitenumbrueche sind jetzt besser geprueft
+- vertikale Ausrichtung und Zellabstaende wurden fuer Tabellen sichtbar nachgeschaerft
+- eine manuelle Referenzseite fuer Tabellenstile, Padding, Border-Prioritaet und Pagination ist vorhanden
+
+Verbleibende Restpunkte:
+
+- weitere Grenzfaelle mit sehr schmalen Spalten und leeren Zellen koennen spaeter noch ergaenzt werden
+- echte Golden-Master- oder Snapshot-Regressionen fuer Tabellen waeren ein sinnvoller naechster Reifegrad
 
 Warum:
 
@@ -184,14 +195,17 @@ Warum spaeter:
 
 ## Empfohlene Reihenfolge
 
-1. Tabellen-Haertung
-2. Header/Footer/Templates
-3. Mehr Rendering-Regressionstests
-4. Doku und echte Beispiel-Dokumente
-5. Rich Text gezielt erweitern
-6. Bilder und Layout-Bloecke verbessern
-7. Formular-Feinschliff
-8. Standards und Validatoren
+1. Header/Footer/Templates
+2. Mehr Rendering-Regressionstests
+3. Doku und echte Beispiel-Dokumente
+4. Rich Text gezielt erweitern
+5. Bilder und Layout-Bloecke verbessern
+6. Formular-Feinschliff
+7. Standards und Validatoren
+
+Hinweis:
+
+- Tabellen-Haertung bleibt ein laufendes Regressionsthema, ist aber nicht mehr der akuteste erste Block
 
 ## Entscheidungsregel
 
