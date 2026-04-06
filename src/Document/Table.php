@@ -337,7 +337,6 @@ final class Table
                 visibleRowspan: $visibleRowspan,
                 renderText: $pendingRowspanCell->remainingLines !== [],
                 renderTopBorder: true,
-                renderBottomBorder: true,
                 remainingLines: $pendingRowspanCell->remainingLines,
             ),
         );
@@ -370,7 +369,6 @@ final class Table
             $this->style,
             new CellRenderOptions(
                 visibleRowspan: $visibleRowspan,
-                renderBottomBorder: true,
             ),
         );
     }
