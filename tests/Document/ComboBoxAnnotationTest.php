@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\ComboBoxAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -115,5 +116,34 @@ final class ComboBoxAnnotationTest extends TestCase
 
         self::assertStringContainsString('/V (de)', $annotation->render());
         self::assertStringContainsString('/DV (at)', $annotation->render());
+    }
+
+    #[Test]
+    public function it_uses_the_text_color_and_omits_optional_values_when_not_provided(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new ComboBoxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            12,
+            'country',
+            ['de' => 'Deutschland'],
+            null,
+            'F1',
+            12,
+            null,
+            Color::rgb(255, 0, 0),
+        );
+
+        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', $annotation->render());
+        self::assertStringNotContainsString('/V (', $annotation->render());
+        self::assertStringNotContainsString('/DV (', $annotation->render());
+        self::assertSame([], $annotation->getRelatedObjects());
     }
 }
