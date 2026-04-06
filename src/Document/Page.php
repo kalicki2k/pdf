@@ -7,35 +7,18 @@ namespace Kalle\Pdf\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Document\Annotation\CaretAnnotation;
 use Kalle\Pdf\Document\Annotation\CheckboxAnnotation;
-use Kalle\Pdf\Document\Annotation\CircleAnnotation;
 use Kalle\Pdf\Document\Annotation\ComboBoxAnnotation;
-use Kalle\Pdf\Document\Annotation\FileAttachmentAnnotation;
-use Kalle\Pdf\Document\Annotation\FreeTextAnnotation;
-use Kalle\Pdf\Document\Annotation\HighlightAnnotation;
-use Kalle\Pdf\Document\Annotation\InkAnnotation;
-use Kalle\Pdf\Document\Annotation\LineAnnotation;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
-use Kalle\Pdf\Document\Annotation\LinkAnnotation;
 use Kalle\Pdf\Document\Annotation\ListBoxAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
-use Kalle\Pdf\Document\Annotation\PolygonAnnotation;
-use Kalle\Pdf\Document\Annotation\PolyLineAnnotation;
-use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\PageAnnotationFactory;
 use Kalle\Pdf\Document\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Document\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Document\Annotation\SignatureFieldAnnotation;
-use Kalle\Pdf\Document\Annotation\SquareAnnotation;
-use Kalle\Pdf\Document\Annotation\SquigglyAnnotation;
-use Kalle\Pdf\Document\Annotation\StampAnnotation;
-use Kalle\Pdf\Document\Annotation\StrikeOutAnnotation;
-use Kalle\Pdf\Document\Annotation\TextAnnotation;
 use Kalle\Pdf\Document\Annotation\TextFieldAnnotation;
-use Kalle\Pdf\Document\Annotation\UnderlineAnnotation;
-use Kalle\Pdf\Document\Form\CheckboxAppearanceStream;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
-use Kalle\Pdf\Document\Form\RadioButtonAppearanceStream;
+use Kalle\Pdf\Document\Form\FormWidgetFactory;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Style\BadgeStyle;
@@ -45,6 +28,7 @@ use Kalle\Pdf\Document\Text\FlowTextOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextFrame;
+use Kalle\Pdf\Document\Text\TextLayoutEngine;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\DrawImage;
@@ -77,6 +61,9 @@ final class Page extends IndirectObject
     private int $markedContentId = 0;
     /** @var list<IndirectObject&PageAnnotation> */
     private array $annotations = [];
+    private ?PageAnnotationFactory $annotationFactory = null;
+    private ?FormWidgetFactory $formWidgetFactory = null;
+    private ?TextLayoutEngine $textLayoutEngine = null;
     public Contents $contents;
     public Resources $resources;
 
@@ -600,21 +587,13 @@ final class Page extends IndirectObject
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): array {
-        if ($maxWidth <= 0) {
-            throw new InvalidArgumentException('Paragraph width must be greater than zero.');
-        }
-
-        if ($maxLines !== null && $maxLines <= 0) {
-            throw new InvalidArgumentException('Max lines must be greater than zero.');
-        }
-
-        $runs = $this->normalizeTextRuns($text, $color, $opacity);
-
-        return $this->applyOverflowToLines(
-            $this->wrapRunsIntoLines($runs, $baseFont, $size, $maxWidth),
+        return $this->textLayoutEngine()->layoutParagraphLines(
+            $text,
             $baseFont,
             $size,
             $maxWidth,
+            $color,
+            $opacity,
             $maxLines,
             $overflow,
         );
@@ -1251,36 +1230,9 @@ final class Page extends IndirectObject
         Rect $box,
         LinkTarget $target,
     ): self {
-        if ($box->width <= 0) {
-            throw new InvalidArgumentException('Link width must be greater than zero.');
-        }
-
-        if ($box->height <= 0) {
-            throw new InvalidArgumentException('Link height must be greater than zero.');
-        }
-
-        $this->annotations[] = new LinkAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $target,
-        );
+        $this->annotations[] = $this->annotationFactory()->createLinkAnnotation($box, $target);
 
         return $this;
-    }
-
-    private function assertRectHasPositiveDimensions(Rect $box, string $subject): void
-    {
-        if ($box->width <= 0) {
-            throw new InvalidArgumentException("$subject width must be greater than zero.");
-        }
-
-        if ($box->height <= 0) {
-            throw new InvalidArgumentException("$subject height must be greater than zero.");
-        }
     }
 
     public function addFileAttachment(
@@ -1289,29 +1241,7 @@ final class Page extends IndirectObject
         string $icon = 'PushPin',
         ?string $contents = null,
     ): self {
-        if ($box->width <= 0) {
-            throw new InvalidArgumentException('File attachment width must be greater than zero.');
-        }
-
-        if ($box->height <= 0) {
-            throw new InvalidArgumentException('File attachment height must be greater than zero.');
-        }
-
-        if ($icon === '') {
-            throw new InvalidArgumentException('File attachment icon must not be empty.');
-        }
-
-        $this->annotations[] = new FileAttachmentAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $file,
-            $icon,
-            $contents,
-        );
+        $this->annotations[] = $this->annotationFactory()->createFileAttachmentAnnotation($box, $file, $icon, $contents);
 
         return $this;
     }
@@ -1323,28 +1253,7 @@ final class Page extends IndirectObject
         string $icon = 'Note',
         bool $open = false,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Text annotation');
-
-        if ($contents === '') {
-            throw new InvalidArgumentException('Text annotation contents must not be empty.');
-        }
-
-        if ($icon === '') {
-            throw new InvalidArgumentException('Text annotation icon must not be empty.');
-        }
-
-        $this->annotations[] = new TextAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $contents,
-            $title,
-            $icon,
-            $open,
-        );
+        $this->annotations[] = $this->annotationFactory()->createTextAnnotation($box, $contents, $title, $icon, $open);
 
         return $this;
     }
@@ -1354,22 +1263,7 @@ final class Page extends IndirectObject
         Rect $box,
         bool $open = false,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Popup annotation');
-
-        $popup = new PopupAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $parent,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $open,
-        );
-
-        if (method_exists($parent, 'withPopup')) {
-            $parent->withPopup($popup);
-        }
+        $this->annotationFactory()->createPopupAnnotation($parent, $box, $open);
 
         return $this;
     }
@@ -1384,28 +1278,10 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?string $title = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Free text annotation');
-
-        if ($contents === '') {
-            throw new InvalidArgumentException('Free text annotation contents must not be empty.');
-        }
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Free text annotation font size must be greater than zero.');
-        }
-
-        $font = $this->resolveFont($baseFont);
-        $fontResourceName = $this->registerFontResource($font);
-
-        $this->annotations[] = new FreeTextAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        $this->annotations[] = $this->annotationFactory()->createFreeTextAnnotation(
+            $box,
             $contents,
-            $fontResourceName,
+            $baseFont,
             $size,
             $textColor,
             $borderColor,
@@ -1422,19 +1298,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Highlight annotation');
-
-        $this->annotations[] = new HighlightAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $color,
-            $contents,
-            $title,
-        );
+        $this->annotations[] = $this->annotationFactory()->createHighlightAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -1445,19 +1309,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Underline annotation');
-
-        $this->annotations[] = new UnderlineAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $color,
-            $contents,
-            $title,
-        );
+        $this->annotations[] = $this->annotationFactory()->createUnderlineAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -1468,19 +1320,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'StrikeOut annotation');
-
-        $this->annotations[] = new StrikeOutAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $color,
-            $contents,
-            $title,
-        );
+        $this->annotations[] = $this->annotationFactory()->createStrikeOutAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -1491,19 +1331,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Squiggly annotation');
-
-        $this->annotations[] = new SquigglyAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $color,
-            $contents,
-            $title,
-        );
+        $this->annotations[] = $this->annotationFactory()->createSquigglyAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -1515,24 +1343,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Stamp annotation');
-
-        if ($icon === '') {
-            throw new InvalidArgumentException('Stamp annotation icon must not be empty.');
-        }
-
-        $this->annotations[] = new StampAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $icon,
-            $color,
-            $contents,
-            $title,
-        );
+        $this->annotations[] = $this->annotationFactory()->createStampAnnotation($box, $icon, $color, $contents, $title);
 
         return $this;
     }
@@ -1545,15 +1356,8 @@ final class Page extends IndirectObject
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Square annotation');
-
-        $this->annotations[] = new SquareAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        $this->annotations[] = $this->annotationFactory()->createSquareAnnotation(
+            $box,
             $borderColor,
             $fillColor,
             $contents,
@@ -1572,15 +1376,8 @@ final class Page extends IndirectObject
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Circle annotation');
-
-        $this->annotations[] = new CircleAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        $this->annotations[] = $this->annotationFactory()->createCircleAnnotation(
+            $box,
             $borderColor,
             $fillColor,
             $contents,
@@ -1601,20 +1398,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Ink annotation');
-
-        $this->annotations[] = new InkAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $paths,
-            $color,
-            $contents,
-            $title,
-        );
+        $this->annotations[] = $this->annotationFactory()->createInkAnnotation($box, $paths, $color, $contents, $title);
 
         return $this;
     }
@@ -1630,13 +1414,9 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->annotations[] = new LineAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $from->x,
-            $from->y,
-            $to->x,
-            $to->y,
+        $this->annotations[] = $this->annotationFactory()->createLineAnnotation(
+            $from,
+            $to,
             $color,
             $contents,
             $title,
@@ -1662,9 +1442,7 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->annotations[] = new PolyLineAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
+        $this->annotations[] = $this->annotationFactory()->createPolyLineAnnotation(
             $vertices,
             $color,
             $contents,
@@ -1690,9 +1468,7 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->annotations[] = new PolygonAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
+        $this->annotations[] = $this->annotationFactory()->createPolygonAnnotation(
             $vertices,
             $borderColor,
             $fillColor,
@@ -1711,19 +1487,7 @@ final class Page extends IndirectObject
         ?string $title = null,
         string $symbol = 'None',
     ): self {
-        $this->assertRectHasPositiveDimensions($box, 'Caret annotation');
-
-        $this->annotations[] = new CaretAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $contents,
-            $title,
-            $symbol,
-        );
+        $this->annotations[] = $this->annotationFactory()->createCaretAnnotation($box, $contents, $title, $symbol);
 
         return $this;
     }
@@ -1767,33 +1531,16 @@ final class Page extends IndirectObject
         ?FormFieldFlags $flags = null,
         ?string $defaultValue = null,
     ): self {
-        if ($name === '') {
-            throw new InvalidArgumentException('Text field name must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'Text field');
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Text field font size must be greater than zero.');
-        }
-
-        $font = $this->resolveFont($baseFont);
         $acroForm = $this->document->ensureAcroForm();
-        $fontResourceName = $acroForm->registerFont($font);
-        $annotation = new TextFieldAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        $annotation = $this->formWidgetFactory()->createTextField(
             $name,
+            $box,
             $value,
-            $fontResourceName,
+            $baseFont,
             $size,
             $multiline,
-            $flags,
             $textColor,
+            $flags,
             $defaultValue,
         );
 
@@ -1809,27 +1556,8 @@ final class Page extends IndirectObject
         float $size,
         bool $checked = false,
     ): self {
-        if ($name === '') {
-            throw new InvalidArgumentException('Checkbox name must not be empty.');
-        }
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Checkbox size must be greater than zero.');
-        }
-
         $acroForm = $this->document->ensureAcroForm();
-        $annotation = new CheckboxAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $position->x,
-            $position->y,
-            $size,
-            $size,
-            $name,
-            $checked,
-            new CheckboxAppearanceStream($this->document->getUniqObjectId(), $size, $size, false),
-            new CheckboxAppearanceStream($this->document->getUniqObjectId(), $size, $size, true),
-        );
+        $annotation = $this->formWidgetFactory()->createCheckbox($name, $position, $size, $checked);
 
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
@@ -1844,33 +1572,8 @@ final class Page extends IndirectObject
         float $size,
         bool $checked = false,
     ): self {
-        if ($name === '') {
-            throw new InvalidArgumentException('Radio button name must not be empty.');
-        }
-
-        if ($value === '' || !preg_match('/^[A-Za-z0-9._-]+$/', $value)) {
-            throw new InvalidArgumentException('Radio button value may contain only letters, numbers, dots, underscores and hyphens.');
-        }
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Radio button size must be greater than zero.');
-        }
-
         $acroForm = $this->document->ensureAcroForm();
-        $group = $acroForm->getOrCreateRadioGroup($name, $this->document->getUniqObjectId());
-        $annotation = new RadioButtonWidgetAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $group,
-            $position->x,
-            $position->y,
-            $size,
-            $value,
-            $checked,
-            new RadioButtonAppearanceStream($this->document->getUniqObjectId(), $size, false),
-            new RadioButtonAppearanceStream($this->document->getUniqObjectId(), $size, true),
-        );
-
+        [$group, $annotation] = $this->formWidgetFactory()->createRadioButton($name, $value, $position, $size, $checked);
         $group->addWidget($annotation, $value, $checked);
         $this->annotations[] = $annotation;
 
@@ -1891,55 +1594,16 @@ final class Page extends IndirectObject
         ?FormFieldFlags $flags = null,
         ?string $defaultValue = null,
     ): self {
-        if ($name === '') {
-            throw new InvalidArgumentException('Combo box name must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'Combo box');
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Combo box font size must be greater than zero.');
-        }
-
-        if ($options === []) {
-            throw new InvalidArgumentException('Combo box options must not be empty.');
-        }
-
-        foreach ($options as $exportValue => $label) {
-            if ($exportValue === '') {
-                throw new InvalidArgumentException('Combo box option values must not be empty.');
-            }
-
-            if ($label === '') {
-                throw new InvalidArgumentException('Combo box option labels must not be empty.');
-            }
-        }
-
-        if ($value !== null && !array_key_exists($value, $options)) {
-            throw new InvalidArgumentException('Combo box value must reference one of the available options.');
-        }
-
-        if ($defaultValue !== null && !array_key_exists($defaultValue, $options)) {
-            throw new InvalidArgumentException('Combo box default value must reference one of the available options.');
-        }
-
-        $font = $this->resolveFont($baseFont);
         $acroForm = $this->document->ensureAcroForm();
-        $fontResourceName = $acroForm->registerFont($font);
-        $annotation = new ComboBoxAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        $annotation = $this->formWidgetFactory()->createComboBox(
             $name,
+            $box,
             $options,
             $value,
-            $fontResourceName,
+            $baseFont,
             $size,
-            $flags,
             $textColor,
+            $flags,
             $defaultValue,
         );
 
@@ -1965,50 +1629,16 @@ final class Page extends IndirectObject
         ?FormFieldFlags $flags = null,
         string | array | null $defaultValue = null,
     ): self {
-        if ($name === '') {
-            throw new InvalidArgumentException('List box name must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'List box');
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('List box font size must be greater than zero.');
-        }
-
-        if ($options === []) {
-            throw new InvalidArgumentException('List box options must not be empty.');
-        }
-
-        foreach ($options as $exportValue => $label) {
-            if ($exportValue === '') {
-                throw new InvalidArgumentException('List box option values must not be empty.');
-            }
-
-            if ($label === '') {
-                throw new InvalidArgumentException('List box option labels must not be empty.');
-            }
-        }
-
-        $this->assertListBoxSelectionExists($value, $options, 'List box value must reference one of the available options.');
-        $this->assertListBoxSelectionExists($defaultValue, $options, 'List box default value must reference one of the available options.');
-
-        $font = $this->resolveFont($baseFont);
         $acroForm = $this->document->ensureAcroForm();
-        $fontResourceName = $acroForm->registerFont($font);
-        $annotation = new ListBoxAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        $annotation = $this->formWidgetFactory()->createListBox(
             $name,
+            $box,
             $options,
             $value,
-            $fontResourceName,
+            $baseFont,
             $size,
-            $flags,
             $textColor,
+            $flags,
             $defaultValue,
         );
 
@@ -2022,22 +1652,8 @@ final class Page extends IndirectObject
         string $name,
         Rect $box,
     ): self {
-        if ($name === '') {
-            throw new InvalidArgumentException('Signature field name must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'Signature field');
-
         $acroForm = $this->document->ensureAcroForm();
-        $annotation = new SignatureFieldAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $name,
-        );
+        $annotation = $this->formWidgetFactory()->createSignatureField($name, $box);
 
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
@@ -2054,33 +1670,12 @@ final class Page extends IndirectObject
         ?Color $textColor = null,
         ?ButtonAction $action = null,
     ): self {
-        if ($name === '') {
-            throw new InvalidArgumentException('Push button name must not be empty.');
-        }
-
-        if ($label === '') {
-            throw new InvalidArgumentException('Push button label must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'Push button');
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Push button font size must be greater than zero.');
-        }
-
-        $font = $this->resolveFont($baseFont);
         $acroForm = $this->document->ensureAcroForm();
-        $fontResourceName = $acroForm->registerFont($font);
-        $annotation = new PushButtonAnnotation(
-            $this->document->getUniqObjectId(),
-            $this,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        $annotation = $this->formWidgetFactory()->createPushButton(
             $name,
             $label,
-            $fontResourceName,
+            $box,
+            $baseFont,
             $size,
             $textColor,
             $action,
@@ -2090,31 +1685,6 @@ final class Page extends IndirectObject
         $this->annotations[] = $annotation;
 
         return $this;
-    }
-
-    /**
-     * @param array<string, string> $options
-     * @param list<string>|string|null $value
-     */
-    private function assertListBoxSelectionExists(string | array | null $value, array $options, string $message): void
-    {
-        if ($value === null) {
-            return;
-        }
-
-        if (is_string($value)) {
-            if (!array_key_exists($value, $options)) {
-                throw new InvalidArgumentException($message);
-            }
-
-            return;
-        }
-
-        foreach ($value as $selectedValue) {
-            if (!array_key_exists($selectedValue, $options)) {
-                throw new InvalidArgumentException($message);
-            }
-        }
     }
 
     public function render(): string
@@ -2241,18 +1811,7 @@ final class Page extends IndirectObject
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): int {
-        if ($maxLines !== null && $maxLines <= 0) {
-            throw new InvalidArgumentException('Max lines must be greater than zero.');
-        }
-
-        return count($this->applyOverflowToLines(
-            $this->wrapRunsIntoLines($this->normalizeTextRuns($text, null, null), $baseFont, $size, $maxWidth),
-            $baseFont,
-            $size,
-            $maxWidth,
-            $maxLines,
-            $overflow,
-        ));
+        return $this->textLayoutEngine()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
     }
 
     public function measureTextWidth(string $text, string $baseFont, int $size): float
@@ -2262,191 +1821,6 @@ final class Page extends IndirectObject
         }
 
         return $this->resolveFont($baseFont)->measureTextWidth($text, $size);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function breakWordToFit(string $word, FontDefinition $font, int $size, float $maxWidth): array
-    {
-        if ($font->measureTextWidth($word, $size) <= $maxWidth) {
-            return [$word];
-        }
-
-        $chunks = [];
-        $currentChunk = '';
-
-        foreach (preg_split('//u', $word, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
-            $candidate = $currentChunk . $character;
-
-            if ($currentChunk !== '' && $font->measureTextWidth($candidate, $size) > $maxWidth) {
-                $chunks[] = $currentChunk;
-                $currentChunk = $character;
-                continue;
-            }
-
-            $currentChunk = $candidate;
-        }
-
-        if ($currentChunk !== '') {
-            $chunks[] = $currentChunk;
-        }
-
-        return $chunks;
-    }
-
-    /**
-     * @param string|array<mixed> $text
-     * @return list<TextSegment>
-     */
-    private function normalizeTextRuns(string | array $text, ?Color $color, ?Opacity $opacity): array
-    {
-        if (is_string($text)) {
-            return [new TextSegment($text, $color, $opacity)];
-        }
-
-        $runs = [];
-
-        foreach ($text as $segment) {
-            if (!$segment instanceof TextSegment) {
-                throw new InvalidArgumentException('Paragraph text arrays must contain only TextSegment instances.');
-            }
-
-            $runs[] = $segment->withDefaults($color, $opacity);
-        }
-
-        return $runs === [] ? [new TextSegment('', $color, $opacity)] : $runs;
-    }
-
-    /**
-     * @param list<TextSegment> $runs
-     * @return list<array{segments: array<int, TextSegment>, justify: bool}>
-     */
-    private function wrapRunsIntoLines(array $runs, string $baseFont, int $size, float $maxWidth): array
-    {
-        /** @var list<array{segments: array<int, TextSegment>, justify: bool}> $lines */
-        $lines = [];
-        /** @var list<TextSegment> $currentLine */
-        $currentLine = [];
-        $currentLineWidth = 0.0;
-        $pendingSpace = false;
-
-        foreach ($runs as $run) {
-            foreach ($this->tokenizeRun($run) as $token) {
-                if ($token['type'] === 'newline') {
-                    $lines[] = ['segments' => $currentLine, 'justify' => false];
-                    $currentLine = [];
-                    $currentLineWidth = 0.0;
-                    $pendingSpace = false;
-                    continue;
-                }
-
-                if ($token['type'] === 'space') {
-                    $pendingSpace = $currentLine !== [];
-                    continue;
-                }
-
-                /** @var TextSegment $wordRun */
-                $wordRun = $token['run'];
-                $wordFont = $this->resolveFont($this->resolveStyledBaseFont($baseFont, $wordRun));
-                $text = ($pendingSpace && $currentLine !== [] ? ' ' : '') . $wordRun->text;
-                $textWidth = $wordFont->measureTextWidth($text, $size);
-
-                if ($currentLineWidth + $textWidth <= $maxWidth) {
-                    $this->appendRun($currentLine, new TextSegment(
-                        $text,
-                        $wordRun->color,
-                        $wordRun->opacity,
-                        $wordRun->link,
-                        $wordRun->bold,
-                        $wordRun->italic,
-                        $wordRun->underline,
-                        $wordRun->strikethrough,
-                    ));
-                    $currentLineWidth += $textWidth;
-                    $pendingSpace = false;
-                    continue;
-                }
-
-                if ($currentLine !== []) {
-                    $lines[] = ['segments' => $currentLine, 'justify' => true];
-                    $currentLine = [];
-                    $currentLineWidth = 0.0;
-                    $pendingSpace = false;
-                    $text = $wordRun->text;
-                }
-
-                $chunks = $this->breakWordToFit($text, $wordFont, $size, $maxWidth);
-
-                foreach ($chunks as $index => $chunk) {
-                    if ($index === count($chunks) - 1) {
-                        $currentLine = [new TextSegment(
-                            $chunk,
-                            $wordRun->color,
-                            $wordRun->opacity,
-                            $wordRun->link,
-                            $wordRun->bold,
-                            $wordRun->italic,
-                            $wordRun->underline,
-                            $wordRun->strikethrough,
-                        )];
-                        $currentLineWidth = $wordFont->measureTextWidth($chunk, $size);
-                        continue;
-                    }
-
-                    $lines[] = ['segments' => [new TextSegment(
-                        $chunk,
-                        $wordRun->color,
-                        $wordRun->opacity,
-                        $wordRun->link,
-                        $wordRun->bold,
-                        $wordRun->italic,
-                        $wordRun->underline,
-                        $wordRun->strikethrough,
-                    )], 'justify' => true];
-                }
-            }
-        }
-
-        if ($currentLine !== []) {
-            $lines[] = ['segments' => $currentLine, 'justify' => false];
-        }
-
-        return $lines === [] ? [['segments' => [], 'justify' => false]] : $lines;
-    }
-
-    /**
-     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $lines
-     * @return list<array{segments: array<int, TextSegment>, justify: bool}>
-     */
-    private function applyOverflowToLines(
-        array $lines,
-        string $baseFont,
-        int $size,
-        float $maxWidth,
-        ?int $maxLines,
-        TextOverflow $overflow,
-    ): array {
-        if ($maxLines === null || count($lines) <= $maxLines) {
-            return $lines;
-        }
-
-        $visibleLines = array_slice($lines, 0, $maxLines);
-
-        if ($overflow === TextOverflow::CLIP || $visibleLines === []) {
-            return array_map(
-                static fn (array $line): array => ['segments' => $line['segments'], 'justify' => false],
-                $visibleLines,
-            );
-        }
-
-        $lastIndex = array_key_last($visibleLines);
-        $visibleLines[$lastIndex] = [
-            'segments' => $this->appendEllipsisToLine($visibleLines[$lastIndex]['segments'], $baseFont, $size, $maxWidth),
-            'justify' => false,
-        ];
-
-        return $visibleLines;
     }
 
     /**
@@ -2464,7 +1838,7 @@ final class Page extends IndirectObject
             return 0.0;
         }
 
-        $line = $this->trimTrailingWhitespaceFromLine($line);
+        $line = $this->textLayoutEngine()->trimTrailingWhitespaceFromLine($line);
 
         $lineWidth = 0.0;
 
@@ -2593,181 +1967,6 @@ final class Page extends IndirectObject
     }
 
     /**
-     * @param array<int, TextSegment> $line
-     * @return array<int, TextSegment>
-     */
-    private function appendEllipsisToLine(array $line, string $baseFont, int $size, float $maxWidth): array
-    {
-        $line = $this->trimTrailingWhitespaceFromLine($line);
-        $ellipsisSegment = $this->buildEllipsisSegment($line, $baseFont);
-
-        while ($line !== [] && $this->measureLineWidthWithSegment($line, $ellipsisSegment, $baseFont, $size) > $maxWidth) {
-            $this->removeLastCharacterFromLine($line);
-            $line = $this->trimTrailingWhitespaceFromLine($line);
-            $ellipsisSegment = $this->buildEllipsisSegment($line, $baseFont);
-        }
-
-        while ($ellipsisSegment->text !== '' && $this->measureSegmentsWidth([$ellipsisSegment], $baseFont, $size) > $maxWidth) {
-            $ellipsisSegment = new TextSegment(
-                substr($ellipsisSegment->text, 0, -1),
-                $ellipsisSegment->color,
-                $ellipsisSegment->opacity,
-                $ellipsisSegment->link,
-                $ellipsisSegment->bold,
-                $ellipsisSegment->italic,
-                $ellipsisSegment->underline,
-                $ellipsisSegment->strikethrough,
-            );
-        }
-
-        if ($ellipsisSegment->text === '') {
-            return $line;
-        }
-
-        $this->appendRun($line, $ellipsisSegment);
-
-        return $line;
-    }
-
-    /**
-     * @param array<int, TextSegment> $line
-     * @return array<int, TextSegment>
-     */
-    private function trimTrailingWhitespaceFromLine(array $line): array
-    {
-        while ($line !== []) {
-            $lastIndex = array_key_last($line);
-            $trimmed = rtrim($line[$lastIndex]->text, ' ');
-
-            if ($trimmed === $line[$lastIndex]->text) {
-                break;
-            }
-
-            if ($trimmed === '') {
-                unset($line[$lastIndex]);
-                $line = array_values($line);
-                continue;
-            }
-
-            $line[$lastIndex] = new TextSegment(
-                $trimmed,
-                $line[$lastIndex]->color,
-                $line[$lastIndex]->opacity,
-                $line[$lastIndex]->link,
-                $line[$lastIndex]->bold,
-                $line[$lastIndex]->italic,
-                $line[$lastIndex]->underline,
-                $line[$lastIndex]->strikethrough,
-            );
-            break;
-        }
-
-        return array_values($line);
-    }
-
-    /**
-     * @param array<int, TextSegment> $line
-     */
-    private function buildEllipsisSegment(array $line, string $baseFont): TextSegment
-    {
-        $lastIndex = array_key_last($line);
-
-        if ($lastIndex === null) {
-            return new TextSegment($this->resolveEllipsisText($baseFont, null));
-        }
-
-        $lastSegment = $line[$lastIndex];
-
-        return new TextSegment(
-            $this->resolveEllipsisText($baseFont, $lastSegment),
-            $lastSegment->color,
-            $lastSegment->opacity,
-            $lastSegment->link,
-            $lastSegment->bold,
-            $lastSegment->italic,
-            $lastSegment->underline,
-            $lastSegment->strikethrough,
-        );
-    }
-
-    private function resolveEllipsisText(string $baseFont, ?TextSegment $segment): string
-    {
-        $fontName = $segment === null
-            ? $baseFont
-            : $this->resolveStyledBaseFont($baseFont, $segment);
-
-        $font = $this->resolveFont($fontName);
-
-        return $font->supportsText('…') ? '…' : '...';
-    }
-
-    /**
-     * @param array<int, TextSegment> $line
-     */
-    private function removeLastCharacterFromLine(array &$line): void
-    {
-        while ($line !== []) {
-            $lastIndex = array_key_last($line);
-            $characters = preg_split('//u', $line[$lastIndex]->text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-
-            if ($characters === []) {
-                unset($line[$lastIndex]);
-                $line = array_values($line);
-                continue;
-            }
-
-            array_pop($characters);
-            $updatedText = implode('', $characters);
-
-            if ($updatedText === '') {
-                unset($line[$lastIndex]);
-                $line = array_values($line);
-                continue;
-            }
-
-            $line[$lastIndex] = new TextSegment(
-                $updatedText,
-                $line[$lastIndex]->color,
-                $line[$lastIndex]->opacity,
-                $line[$lastIndex]->link,
-                $line[$lastIndex]->bold,
-                $line[$lastIndex]->italic,
-                $line[$lastIndex]->underline,
-                $line[$lastIndex]->strikethrough,
-            );
-
-            return;
-        }
-    }
-
-    /**
-     * @param array<int, TextSegment> $line
-     */
-    private function measureLineWidthWithSegment(array $line, TextSegment $segment, string $baseFont, int $size): float
-    {
-        $segments = $line;
-        $this->appendRun($segments, $segment);
-
-        return $this->measureSegmentsWidth($segments, $baseFont, $size);
-    }
-
-    /**
-     * @param array<int, TextSegment> $segments
-     */
-    private function measureSegmentsWidth(array $segments, string $baseFont, int $size): float
-    {
-        $width = 0.0;
-
-        foreach ($segments as $segment) {
-            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
-            $segmentFont = $this->resolveFont($segmentFontName);
-            $width += $segmentFont->measureTextWidth($segment->text, $size);
-        }
-
-        return $width;
-    }
-
-    /**
      * @param array<int, TextSegment> $segments
      * @return list<array{segment: TextSegment, leadingSpaces: int}>
      */
@@ -2806,124 +2005,6 @@ final class Page extends IndirectObject
     }
 
     /**
-     * @return list<array{type: 'word', run: TextSegment}|array{type: 'space'}|array{type: 'newline'}>
-     */
-    private function tokenizeRun(TextSegment $run): array
-    {
-        $text = str_replace(["\r\n", "\r"], "\n", $run->text);
-        /** @var list<array{type: 'word', run: TextSegment}|array{type: 'space'}|array{type: 'newline'}> $tokens */
-        $tokens = [];
-        $buffer = '';
-
-        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
-            if ($character === "\n") {
-                if ($buffer !== '') {
-                    $tokens[] = ['type' => 'word', 'run' => new TextSegment(
-                        $buffer,
-                        $run->color,
-                        $run->opacity,
-                        $run->link,
-                        $run->bold,
-                        $run->italic,
-                        $run->underline,
-                        $run->strikethrough,
-                    )];
-                    $buffer = '';
-                }
-
-                $tokens[] = ['type' => 'newline'];
-                continue;
-            }
-
-            if (preg_match('/\s/u', $character) === 1) {
-                if ($buffer !== '') {
-                    $tokens[] = ['type' => 'word', 'run' => new TextSegment(
-                        $buffer,
-                        $run->color,
-                        $run->opacity,
-                        $run->link,
-                        $run->bold,
-                        $run->italic,
-                        $run->underline,
-                        $run->strikethrough,
-                    )];
-                    $buffer = '';
-                }
-
-                $tokens[] = ['type' => 'space'];
-                continue;
-            }
-
-            $buffer .= $character;
-        }
-
-        if ($buffer !== '') {
-            $tokens[] = ['type' => 'word', 'run' => new TextSegment(
-                $buffer,
-                $run->color,
-                $run->opacity,
-                $run->link,
-                $run->bold,
-                $run->italic,
-                $run->underline,
-                $run->strikethrough,
-            )];
-        }
-
-        return $tokens;
-    }
-
-    /**
-     * @param array<int, TextSegment> $runs
-     */
-    private function appendRun(array &$runs, TextSegment $run): void
-    {
-        $lastIndex = array_key_last($runs);
-
-        if ($lastIndex === null) {
-            $runs[] = $run;
-
-            return;
-        }
-
-        $lastRun = $runs[$lastIndex];
-
-        if (
-            $lastRun->color === $run->color
-            && $lastRun->opacity === $run->opacity
-            && $this->linkTargetsEqual($lastRun->link, $run->link)
-            && $lastRun->bold === $run->bold
-            && $lastRun->italic === $run->italic
-            && $lastRun->underline === $run->underline
-            && $lastRun->strikethrough === $run->strikethrough
-        ) {
-            $runs[$lastIndex] = new TextSegment(
-                $lastRun->text . $run->text,
-                $lastRun->color,
-                $lastRun->opacity,
-                $lastRun->link,
-                $lastRun->bold,
-                $lastRun->italic,
-                $lastRun->underline,
-                $lastRun->strikethrough,
-            );
-
-            return;
-        }
-
-        $runs[] = $run;
-    }
-
-    private function linkTargetsEqual(?LinkTarget $left, ?LinkTarget $right): bool
-    {
-        if ($left === null || $right === null) {
-            return $left === $right;
-        }
-
-        return $left->equals($right);
-    }
-
-    /**
      * @return array{0: float, 1: float}
      */
     private function resolveDecorationInsets(FontDefinition $font, string $text, int $size): array
@@ -2944,6 +2025,43 @@ final class Page extends IndirectObject
             : 0.0;
 
         return [$leadingInset, $trailingInset];
+    }
+
+    /**
+     * Lazily builds the internal text layout helper.
+     */
+    private function textLayoutEngine(): TextLayoutEngine
+    {
+        return $this->textLayoutEngine ??= new TextLayoutEngine(
+            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
+            fn (string $baseFont, TextSegment $segment): string => $this->resolveStyledBaseFont($baseFont, $segment),
+        );
+    }
+
+    /**
+     * Lazily builds the internal annotation factory.
+     */
+    private function annotationFactory(): PageAnnotationFactory
+    {
+        return $this->annotationFactory ??= new PageAnnotationFactory(
+            $this,
+            fn (): int => $this->document->getUniqObjectId(),
+            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
+            fn (FontDefinition $font): string => $this->registerFontResource($font),
+        );
+    }
+
+    /**
+     * Lazily builds the internal form widget factory.
+     */
+    private function formWidgetFactory(): FormWidgetFactory
+    {
+        return $this->formWidgetFactory ??= new FormWidgetFactory(
+            $this,
+            fn (): int => $this->document->getUniqObjectId(),
+            fn (): \Kalle\Pdf\Document\Form\AcroForm => $this->document->ensureAcroForm(),
+            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
+        );
     }
 
     private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string

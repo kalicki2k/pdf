@@ -430,6 +430,21 @@ Verantwortlich fuer:
 - `BulletType` kapselt die aktuell unterstuetzten Standard-Symbole fuer Bullet-Listen
 - `addNumberedList(...)` nutzt denselben Listenpfad mit laufenden Dezimalzahlen und optionalem `startAt`
 
+### TextLayoutEngine
+
+`TextLayoutEngine` ist eine kleine interne Hilfsklasse unter `src/Document/Text`.
+
+Sie gehoert nicht zur oeffentlichen API. `Page` bleibt der oeffentliche Einstiegspunkt fuer Text-Rendering.
+
+Die Klasse kapselt nur die interne Absatz-Logik:
+
+- Text-Runs normalisieren
+- Zeilen umbrechen
+- Overflow und Ellipsis anwenden
+- trailing spaces fuer Alignment bereinigen
+
+Dadurch bleibt `Page` als API stabil, waehrend die Text-Layout-Logik an einer klareren Stelle liegt.
+
 ### Table und TableCell
 
 `Table` ist eine erste Layout-Hilfe fuer tabellarische Inhalte mit fester Spaltenstruktur.
@@ -754,6 +769,8 @@ Ein Segment traegt aktuell:
 
 `Page::addFlowText(...)`, `Page::addTextBox(...)` und `TextFrame::addParagraph(...)` akzeptieren entweder einen einfachen `string` oder eine Liste von `TextSegment`-Objekten.
 
+Fuer haeufige Inline-Faelle gibt es kleine Factory-Methoden direkt auf `TextSegment`, zum Beispiel `plain(...)`, `link(...)`, `bold(...)`, `italic(...)`, `underlined(...)` und `strikethrough(...)`.
+
 ### HorizontalAlign und TextOverflow
 
 Fuer Absatzlayout gibt es aktuell zwei kleine Steuerobjekte:
@@ -766,7 +783,9 @@ Fuer Absatzlayout gibt es aktuell zwei kleine Steuerobjekte:
 `TextOverflow` greift nach dem Umbruch:
 
 - `CLIP` verwirft alle Zeilen hinter `maxLines`
-- `ELLIPSIS` kuerzt die letzte sichtbare Zeile so, dass `...` noch in die Breite passt
+- `ELLIPSIS` kuerzt die letzte sichtbare Zeile so, dass ein Ellipsis noch in die Breite passt
+
+Wenn der verwendete Font das Zeichen `…` unterstuetzt, wird dieses verwendet. Andernfalls faellt der Renderer auf `...` zurueck.
 
 ## Font-Modell
 
