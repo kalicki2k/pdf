@@ -36,13 +36,15 @@ final class XmpMetadata extends IndirectObject
     {
         $creationDate = $this->document->getCreationDate()->format('Y-m-d\TH:i:sP');
         $modificationDate = $this->document->getModificationDate()->format('Y-m-d\TH:i:sP');
-        $title = $this->renderAltProperty('dc:title', $this->document->title);
-        $subject = $this->renderAltProperty('dc:description', $this->document->subject);
-        $author = $this->renderSeqProperty('dc:creator', $this->document->author);
-        $keywords = $this->renderBagProperty('dc:subject', array_values($this->document->keywords));
-        $language = $this->renderBagProperty('dc:language', $this->document->language !== null ? [$this->document->language] : []);
-        $pdfKeywords = $this->document->keywords !== []
-            ? '    <pdf:Keywords>' . $this->escape(implode(', ', $this->document->keywords)) . '</pdf:Keywords>' . PHP_EOL
+        $title = $this->renderAltProperty('dc:title', $this->document->getTitle());
+        $subject = $this->renderAltProperty('dc:description', $this->document->getSubject());
+        $author = $this->renderSeqProperty('dc:creator', $this->document->getAuthor());
+        $documentKeywords = $this->document->getKeywords();
+        $keywords = $this->renderBagProperty('dc:subject', array_values($documentKeywords));
+        $languageValue = $this->document->getLanguage();
+        $language = $this->renderBagProperty('dc:language', $languageValue !== null ? [$languageValue] : []);
+        $pdfKeywords = $documentKeywords !== []
+            ? '    <pdf:Keywords>' . $this->escape(implode(', ', $documentKeywords)) . '</pdf:Keywords>' . PHP_EOL
             : '';
 
         return <<<XML

@@ -23,7 +23,7 @@ composer require kalle/pdf
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Layout\PageSize;
 
@@ -78,6 +78,7 @@ Im Verzeichnis [examples](../examples/) liegen drei manuelle Beispielskripte:
 
 - [rechnung.php](../examples/rechnung.php)
 - [table.php](../examples/table.php)
+- [table-of-contents.php](../examples/table-of-contents.php)
 - [textbox.php](../examples/textbox.php)
 
 Zum Beispiel:

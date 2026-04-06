@@ -1,0 +1,284 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf;
+
+use DateTimeImmutable;
+use Kalle\Pdf\Document\FileSpecification;
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\OptionalContentGroup;
+use Kalle\Pdf\Encryption\EncryptionOptions;
+use Kalle\Pdf\Internal\PageRegistry;
+use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\TableOfContentsPosition;
+
+/**
+ * Public entry point for building and rendering PDF documents.
+ */
+final readonly class Document
+{
+    private Document\Document $document;
+
+    /**
+     * Creates a new PDF document with metadata and optional font presets.
+     *
+     * @param list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>|null $fontConfig
+     */
+    public function __construct(
+        float $version = 1.0,
+        ?string $title = null,
+        ?string $author = null,
+        ?string $subject = null,
+        ?string $language = null,
+        ?string $creator = null,
+        ?string $creatorTool = null,
+        ?array $fontConfig = null,
+    ) {
+        $this->document = new Document\Document(
+            version: $version,
+            title: $title,
+            author: $author,
+            subject: $subject,
+            language: $language,
+            creator: $creator,
+            creatorTool: $creatorTool,
+            fontConfig: $fontConfig,
+        );
+    }
+
+    public function getCreationDate(): DateTimeImmutable
+    {
+        return $this->document->getCreationDate();
+    }
+
+    public function getModificationDate(): DateTimeImmutable
+    {
+        return $this->document->getModificationDate();
+    }
+
+    public function getCreator(): string
+    {
+        return $this->document->getCreator();
+    }
+
+    public function setCreator(string $creator): self
+    {
+        $this->document->setCreator($creator);
+
+        return $this;
+    }
+
+    public function getProducer(): string
+    {
+        return $this->document->getProducer();
+    }
+
+    public function setProducer(string $producer): self
+    {
+        $this->document->setProducer($producer);
+
+        return $this;
+    }
+
+    public function getCreatorTool(): string
+    {
+        return $this->document->getCreatorTool();
+    }
+
+    public function setCreatorTool(string $creatorTool): self
+    {
+        $this->document->setCreatorTool($creatorTool);
+
+        return $this;
+    }
+
+    /**
+     * Adds a page and returns the public page facade.
+     */
+    public function addPage(PageSize | float $width = 595.2755905511812, ?float $height = null): Page
+    {
+        return new Page($this->document->addPage($width, $height));
+    }
+
+    /**
+     * Adds an outline entry that points to the given page.
+     */
+    public function addOutline(string $title, Page $page): self
+    {
+        $this->document->addOutline($title, $this->toInternalPage($page));
+
+        return $this;
+    }
+
+    /**
+     * Registers a named destination for the given page.
+     */
+    public function addDestination(string $name, Page $page): self
+    {
+        $this->document->addDestination($name, $this->toInternalPage($page));
+
+        return $this;
+    }
+
+    /**
+     * Enables PDF encryption for the rendered output.
+     */
+    public function encrypt(EncryptionOptions $options): self
+    {
+        $this->document->encrypt($options);
+
+        return $this;
+    }
+
+    /**
+     * Registers an optional content layer.
+     */
+    public function addLayer(string $name, bool $visibleByDefault = true): OptionalContentGroup
+    {
+        return $this->document->addLayer($name, $visibleByDefault);
+    }
+
+    /**
+     * Adds an embedded file attachment.
+     */
+    public function addAttachment(
+        string $filename,
+        string $contents,
+        ?string $description = null,
+        ?string $mimeType = null,
+    ): self {
+        $this->document->addAttachment($filename, $contents, $description, $mimeType);
+
+        return $this;
+    }
+
+    /**
+     * Adds an embedded file attachment from the filesystem.
+     */
+    public function addAttachmentFromFile(
+        string $path,
+        ?string $filename = null,
+        ?string $description = null,
+        ?string $mimeType = null,
+    ): self {
+        $this->document->addAttachmentFromFile($path, $filename, $description, $mimeType);
+
+        return $this;
+    }
+
+    /**
+     * Returns a previously added attachment by filename.
+     */
+    public function getAttachment(string $filename): ?FileSpecification
+    {
+        return $this->document->getAttachment($filename);
+    }
+
+    /**
+     * Adds a header renderer that runs for newly created pages.
+     *
+     * @param callable(\Kalle\Pdf\Page, int): void $renderer
+     */
+    public function addHeader(callable $renderer): self
+    {
+        $this->document->addHeader(
+            static function (\Kalle\Pdf\Document\Page $page, int $pageNumber) use ($renderer): void {
+                $renderer(new Page($page), $pageNumber);
+            },
+        );
+
+        return $this;
+    }
+
+    /**
+     * Adds a footer renderer that runs for newly created pages.
+     *
+     * @param callable(\Kalle\Pdf\Page, int): void $renderer
+     */
+    public function addFooter(callable $renderer): self
+    {
+        $this->document->addFooter(
+            static function (\Kalle\Pdf\Document\Page $page, int $pageNumber) use ($renderer): void {
+                $renderer(new Page($page), $pageNumber);
+            },
+        );
+
+        return $this;
+    }
+
+    /**
+     * Adds automatic page numbers to all pages.
+     */
+    public function addPageNumbers(
+        Position $position,
+        string $baseFont = 'Helvetica',
+        int $size = 10,
+        string $template = 'Seite {{page}} von {{pages}}',
+        bool $footer = true,
+    ): self {
+        $this->document->addPageNumbers($position, $baseFont, $size, $template, $footer);
+
+        return $this;
+    }
+
+    /**
+     * Registers a font for subsequent page operations.
+     */
+    public function registerFont(
+        string $fontName,
+        string $subtype = 'Type1',
+        ?string $encoding = null,
+        bool $unicode = false,
+        ?string $fontFilePath = null,
+    ): self {
+        $this->document->registerFont($fontName, $subtype, $encoding, $unicode, $fontFilePath);
+
+        return $this;
+    }
+
+    /**
+     * Generates a table of contents page and returns its public page facade.
+     */
+    public function addTableOfContents(
+        PageSize | float $width = 595.2755905511812,
+        ?float $height = null,
+        string $title = 'Inhaltsverzeichnis',
+        string $baseFont = 'Helvetica',
+        int $titleSize = 18,
+        int $entrySize = 12,
+        float $margin = 20.0,
+        TableOfContentsPosition $position = TableOfContentsPosition::END,
+    ): Page {
+        return new Page($this->document->addTableOfContents($width, $height, $title, $baseFont, $titleSize, $entrySize, $margin, $position));
+    }
+
+    /**
+     * Adds a keyword to the document metadata.
+     */
+    public function addKeyword(string $keyword): self
+    {
+        $this->document->addKeyword($keyword);
+
+        return $this;
+    }
+
+    /**
+     * Renders the complete PDF as a binary string.
+     */
+    public function render(): string
+    {
+        return $this->document->render();
+    }
+
+    private function toInternalPage(Page $page): \Kalle\Pdf\Document\Page
+    {
+        return PageRegistry::resolve($page);
+    }
+}

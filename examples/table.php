@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Table\Style\CellStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
@@ -21,6 +20,7 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Page;
 
 require __DIR__ . '/../vendor/autoload.php';
 

@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Insets;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
@@ -17,6 +16,7 @@ use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Page;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -314,4 +314,4 @@ $renderPage(
 $outputPath = $outputDir . '/test-textbox.pdf';
 file_put_contents($outputPath, $document->render());
 
-printf("Generated %s%s", $outputPath, PHP_EOL);
+printf('Generated %s%s', $outputPath, PHP_EOL);

@@ -12,7 +12,7 @@ class PdfRenderer
 {
     public function render(Document $document): string
     {
-        $output = "%PDF-{$document->version}" . PHP_EOL;
+        $output = "%PDF-{$document->getVersion()}" . PHP_EOL;
         $offsets = [];
         $objectEncryptor = $this->buildObjectEncryptor($document);
         RenderContext::setObjectEncryptor($objectEncryptor);

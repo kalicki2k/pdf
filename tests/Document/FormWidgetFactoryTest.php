@@ -197,7 +197,7 @@ final class FormWidgetFactoryTest extends TestCase
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
-        $action = new class implements ButtonAction {
+        $action = new class () implements ButtonAction {
             public function toPdfDictionary(): DictionaryType
             {
                 return new DictionaryType([

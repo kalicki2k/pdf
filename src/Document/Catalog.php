@@ -105,11 +105,11 @@ final class Catalog extends IndirectObject
             ]));
         }
 
-        if ($this->document->version >= 1.4 && $this->document->structTreeRoot !== null) {
+        if ($this->document->getVersion() >= 1.4 && $this->document->structTreeRoot !== null) {
             $dictionary->add('MarkInfo', new DictionaryType([
                 'Marked' => new BooleanType(true),
             ]));
-            $dictionary->add('Lang', new StringType($this->document->language ?? ''));
+            $dictionary->add('Lang', new StringType($this->document->getLanguage() ?? ''));
             $dictionary->add('StructTreeRoot', new ReferenceType($this->document->structTreeRoot));
         }
 

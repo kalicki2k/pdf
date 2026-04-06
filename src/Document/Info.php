@@ -18,20 +18,22 @@ final class Info extends IndirectObject
     public function render(): string
     {
         $dictionary = new DictionaryType([
-            'Title' => new StringType($this->document->title ?? ''),
-            'Author' => new StringType($this->document->author ?? ''),
+            'Title' => new StringType($this->document->getTitle() ?? ''),
+            'Author' => new StringType($this->document->getAuthor() ?? ''),
             'Creator' => new StringType($this->document->getCreator()),
             'Producer' => new StringType($this->document->getProducer()),
             'CreationDate' => new StringType('D:' . $this->document->getCreationDate()->format('YmdHisO')),
             'ModDate' => new StringType('D:' . $this->document->getModificationDate()->format('YmdHisO')),
         ]);
 
-        if (!empty($this->document->subject)) {
-            $dictionary->add('Subject', new StringType($this->document->subject));
+        if (!empty($this->document->getSubject())) {
+            $dictionary->add('Subject', new StringType($this->document->getSubject()));
         }
 
-        if (!empty($this->document->keywords)) {
-            $dictionary->add('Keywords', new StringType(implode(', ', $this->document->keywords)));
+        $keywords = $this->document->getKeywords();
+
+        if ($keywords !== []) {
+            $dictionary->add('Keywords', new StringType(implode(', ', $keywords)));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

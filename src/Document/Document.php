@@ -13,9 +13,7 @@ use Kalle\Pdf\Document\Outline\OutlineItem;
 use Kalle\Pdf\Document\Outline\OutlineRoot;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Document\Text\TextFrame;
 use Kalle\Pdf\Document\Text\TextOptions;
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\EncryptionVersionResolver;
@@ -45,7 +43,7 @@ use Random\RandomException;
 
 final class Document
 {
-    private const PACKAGE_NAME = 'kalle/pdf';
+    private const string PACKAGE_NAME = 'kalle/pdf';
     private int $objectId = 0;
     private int $structParentId = -1;
     private readonly DateTimeImmutable $creationDate;
@@ -67,10 +65,10 @@ final class Document
     private array $deferredFooterRenderers = [];
 
     /** @var array<int, FontDefinition&IndirectObject> */
-    public array $fonts = [];
+    private array $fonts = [];
 
     /** @var string[] */
-    public array $keywords = [];
+    private array $keywords = [];
     /** @var array<string, Page> */
     private array $destinations = [];
     /** @var array<string, OptionalContentGroup> */
@@ -101,11 +99,11 @@ final class Document
      * }>|null $fontConfig
      */
     public function __construct(
-        public readonly float   $version = 1.0,
-        public readonly ?string $title = null,
-        public readonly ?string $author = null,
-        public readonly ?string $subject = null,
-        public readonly ?string $language = null,
+        private readonly float   $version = 1.0,
+        private readonly ?string $title = null,
+        private readonly ?string $author = null,
+        private readonly ?string $subject = null,
+        private readonly ?string $language = null,
         ?string $creator = null,
         ?string $creatorTool = null,
         private readonly ?array $fontConfig = null,
@@ -233,6 +231,31 @@ final class Document
     public function getCreationDate(): DateTimeImmutable
     {
         return $this->creationDate;
+    }
+
+    public function getVersion(): float
+    {
+        return $this->version;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function getAuthor(): ?string
+    {
+        return $this->author;
+    }
+
+    public function getSubject(): ?string
+    {
+        return $this->subject;
+    }
+
+    public function getLanguage(): ?string
+    {
+        return $this->language;
     }
 
     public function getModificationDate(): DateTimeImmutable
@@ -390,7 +413,7 @@ final class Document
         }
 
         if ($this->securityHandlerData === null) {
-            $this->securityHandlerData = (new StandardSecurityHandler())->build(
+            $this->securityHandlerData = new StandardSecurityHandler()->build(
                 $this->encryptionOptions,
                 $this->encryptionProfile,
                 $this->documentId[0],
@@ -485,13 +508,10 @@ final class Document
 
     public function getAttachment(string $filename): ?FileSpecification
     {
-        foreach ($this->attachments as $attachment) {
-            if ($attachment->getFilename() === $filename) {
-                return $attachment;
-            }
-        }
-
-        return null;
+        return array_find(
+            $this->attachments,
+            static fn (FileSpecification $attachment): bool => $attachment->getFilename() === $filename,
+        );
     }
 
     /**
@@ -579,13 +599,18 @@ final class Document
 
     public function getFontByBaseFont(string $baseFont): ?FontDefinition
     {
-        foreach ($this->fonts as $font) {
-            if ($font->getBaseFont() === $baseFont) {
-                return $font;
-            }
-        }
+        return array_find(
+            $this->fonts,
+            static fn (FontDefinition $font): bool => $font->getBaseFont() === $baseFont,
+        );
+    }
 
-        return null;
+    /**
+     * @return array<int, FontDefinition&IndirectObject>
+     */
+    public function getFonts(): array
+    {
+        return $this->fonts;
     }
 
     public function ensureAcroForm(): AcroForm
@@ -612,6 +637,7 @@ final class Document
     }
 
     /**
+     * @param StructureTag $tag
      * @param int $markedContentId
      * @param Page|null $page
      * @return $this
@@ -738,9 +764,7 @@ final class Document
         $frame->addHeading($title, $baseFont, $titleSize, new ParagraphOptions(structureTag: StructureTag::Heading1));
 
         if ($this->outlineRoot === null || $this->outlineRoot->getItems() === []) {
-            $frame->addParagraph('Keine Eintraege vorhanden.', $baseFont, $entrySize, new ParagraphOptions(structureTag: StructureTag::Paragraph));
-
-            return $page;
+            throw new InvalidArgumentException('Table of contents requires at least one outline entry.');
         }
 
         $entryLineHeight = $entrySize * 1.35;
@@ -821,6 +845,14 @@ final class Document
         $this->keywords = StringListNormalizer::unique([...$this->keywords, $keyword]);
 
         return $this;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getKeywords(): array
+    {
+        return $this->keywords;
     }
 
     public function render(): string

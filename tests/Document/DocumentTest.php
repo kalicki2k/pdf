@@ -56,8 +56,8 @@ final class DocumentTest extends TestCase
         $page = $document->addPage(100.0, 200.0);
 
         self::assertSame($document, $returnedDocument);
-        self::assertCount(1, $document->fonts);
-        self::assertSame(4, $document->fonts[0]->id);
+        self::assertCount(1, $document->getFonts());
+        self::assertSame(4, $document->getFonts()[0]->id);
         self::assertSame(5, $page->id);
         self::assertSame(6, $page->contents->id);
         self::assertSame(7, $page->resources->id);
@@ -75,8 +75,8 @@ final class DocumentTest extends TestCase
         $returnedDocument = $document->registerFont('Helvetica');
 
         self::assertSame($document, $returnedDocument);
-        self::assertCount(1, $document->fonts);
-        self::assertSame('Helvetica', $document->fonts[0]->getBaseFont());
+        self::assertCount(1, $document->getFonts());
+        self::assertSame('Helvetica', $document->getFonts()[0]->getBaseFont());
     }
 
     #[Test]
@@ -140,7 +140,7 @@ final class DocumentTest extends TestCase
 
         $document->registerFont('Helvetica');
 
-        self::assertStringContainsString('/Encoding ', $document->fonts[0]->render());
+        self::assertStringContainsString('/Encoding ', $document->getFonts()[0]->render());
         self::assertStringContainsString('/BaseEncoding /StandardEncoding', $document->render());
     }
 
@@ -151,7 +151,7 @@ final class DocumentTest extends TestCase
 
         $document->registerFont('Helvetica');
 
-        self::assertStringContainsString('/Encoding /WinAnsiEncoding', $document->fonts[0]->render());
+        self::assertStringContainsString('/Encoding /WinAnsiEncoding', $document->getFonts()[0]->render());
     }
 
     #[Test]
@@ -397,6 +397,18 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_a_table_of_contents_without_outline_entries(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Table of contents requires at least one outline entry.');
+
+        $document->addTableOfContents(140, 100, 'Inhalt', 'Helvetica', 16, 10, 10);
+    }
+
+    #[Test]
     public function it_registers_outline_objects_and_links_them_to_pages(): void
     {
         $document = new Document(version: 1.4);
@@ -458,10 +470,10 @@ final class DocumentTest extends TestCase
         $returnedDocument = $document->registerFont('NotoSansCJKsc-Regular', 'CIDFontType2', unicode: true);
 
         self::assertSame($document, $returnedDocument);
-        self::assertCount(1, $document->fonts);
-        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
-        self::assertSame(9, $document->fonts[0]->id);
-        self::assertSame(7, $document->fonts[0]->descendantFont->id);
+        self::assertCount(1, $document->getFonts());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[0]);
+        self::assertSame(9, $document->getFonts()[0]->id);
+        self::assertSame(7, $document->getFonts()[0]->descendantFont->id);
         self::assertSame([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
@@ -477,15 +489,15 @@ final class DocumentTest extends TestCase
             ->registerFont('NotoSans-Regular')
             ->registerFont('NotoSansCJKsc-Regular');
 
-        self::assertCount(2, $document->fonts);
-        self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
-        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
-        self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
-        self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
-        self::assertSame('NotoSansCJKsc-Regular', $document->fonts[1]->getBaseFont());
-        self::assertInstanceOf(UnicodeFont::class, $document->fonts[1]);
-        self::assertNotNull($document->fonts[1]->descendantFont->fontDescriptor);
-        self::assertNotNull($document->fonts[1]->descendantFont->cidToGidMap);
+        self::assertCount(2, $document->getFonts());
+        self::assertSame('NotoSans-Regular', $document->getFonts()[0]->getBaseFont());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[0]);
+        self::assertNotNull($document->getFonts()[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->getFonts()[0]->descendantFont->cidToGidMap);
+        self::assertSame('NotoSansCJKsc-Regular', $document->getFonts()[1]->getBaseFont());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[1]);
+        self::assertNotNull($document->getFonts()[1]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->getFonts()[1]->descendantFont->cidToGidMap);
         self::assertSame(
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
             array_map(
@@ -502,11 +514,11 @@ final class DocumentTest extends TestCase
 
         $document->registerFont('NotoSans-Regular');
 
-        self::assertCount(1, $document->fonts);
-        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
-        self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
-        self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
-        self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
+        self::assertCount(1, $document->getFonts());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[0]);
+        self::assertSame('NotoSans-Regular', $document->getFonts()[0]->getBaseFont());
+        self::assertNotNull($document->getFonts()[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->getFonts()[0]->descendantFont->cidToGidMap);
     }
 
     #[Test]
@@ -516,11 +528,11 @@ final class DocumentTest extends TestCase
 
         $document->registerFont('NotoSans-Regular');
 
-        self::assertCount(1, $document->fonts);
-        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
-        self::assertSame('NotoSans-Regular', $document->fonts[0]->getBaseFont());
-        self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
-        self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
+        self::assertCount(1, $document->getFonts());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[0]);
+        self::assertSame('NotoSans-Regular', $document->getFonts()[0]->getBaseFont());
+        self::assertNotNull($document->getFonts()[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->getFonts()[0]->descendantFont->cidToGidMap);
     }
 
     #[Test]
@@ -532,15 +544,15 @@ final class DocumentTest extends TestCase
             ->registerFont('NotoSerif-Regular')
             ->registerFont('NotoSansMono-Regular');
 
-        self::assertCount(2, $document->fonts);
-        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
-        self::assertInstanceOf(UnicodeFont::class, $document->fonts[1]);
-        self::assertSame('NotoSerif-Regular', $document->fonts[0]->getBaseFont());
-        self::assertSame('NotoSansMono-Regular', $document->fonts[1]->getBaseFont());
-        self::assertNotNull($document->fonts[0]->descendantFont->fontDescriptor);
-        self::assertNotNull($document->fonts[1]->descendantFont->fontDescriptor);
-        self::assertNotNull($document->fonts[0]->descendantFont->cidToGidMap);
-        self::assertNotNull($document->fonts[1]->descendantFont->cidToGidMap);
+        self::assertCount(2, $document->getFonts());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[0]);
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[1]);
+        self::assertSame('NotoSerif-Regular', $document->getFonts()[0]->getBaseFont());
+        self::assertSame('NotoSansMono-Regular', $document->getFonts()[1]->getBaseFont());
+        self::assertNotNull($document->getFonts()[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->getFonts()[1]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->getFonts()[0]->descendantFont->cidToGidMap);
+        self::assertNotNull($document->getFonts()[1]->descendantFont->cidToGidMap);
     }
 
     #[Test]
@@ -561,9 +573,9 @@ final class DocumentTest extends TestCase
 
         $document->registerFont('CustomSans-Regular');
 
-        self::assertCount(1, $document->fonts);
-        self::assertInstanceOf(UnicodeFont::class, $document->fonts[0]);
-        self::assertSame('CustomSans-Regular', $document->fonts[0]->getBaseFont());
+        self::assertCount(1, $document->getFonts());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[0]);
+        self::assertSame('CustomSans-Regular', $document->getFonts()[0]->getBaseFont());
         self::assertSame($document->getFontConfig(), [
             [
                 'baseFont' => 'CustomSans-Regular',
@@ -586,7 +598,7 @@ final class DocumentTest extends TestCase
             ->addKeyword('pdf')
             ->addKeyword(' testing ');
 
-        self::assertSame(['pdf', 'testing'], $document->keywords);
+        self::assertSame(['pdf', 'testing'], $document->getKeywords());
     }
 
     #[Test]
@@ -599,7 +611,7 @@ final class DocumentTest extends TestCase
             ->addKeyword('pdf')
             ->addKeyword('   ');
 
-        self::assertSame(['pdf'], $document->keywords);
+        self::assertSame(['pdf'], $document->getKeywords());
         self::assertStringContainsString('/Keywords (pdf)', $document->render());
         self::assertStringNotContainsString('/Keywords (,', $document->render());
         self::assertStringNotContainsString('<rdf:li></rdf:li>', $document->render());

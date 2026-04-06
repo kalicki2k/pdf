@@ -34,12 +34,19 @@ composer require kalle/pdf
 
 ## Quick Start
 
+The public entry points live in the root namespace:
+
+- `Kalle\Pdf\Document`
+- `Kalle\Pdf\Page`
+- `Kalle\Pdf\TextFrame`
+- `Kalle\Pdf\Table`
+
 ```php
 <?php
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Layout\PageSize;
 
@@ -60,6 +67,13 @@ $document->registerFont('Helvetica');
 $page = $document->addPage(PageSize::A4());
 $page->addText('Hello PDF', new Position(20, 800), 'Helvetica', 16);
 
+$page->createTextFrame(new Position(20, 760), 300)
+    ->addParagraph(
+        'This paragraph is rendered through the public TextFrame API.',
+        'Helvetica',
+        11,
+    );
+
 file_put_contents('hello.pdf', $document->render());
 ```
 
@@ -69,6 +83,7 @@ Example scripts live in [examples](examples/):
 
 - [rechnung.php](examples/rechnung.php)
 - [table.php](examples/table.php)
+- [table-of-contents.php](examples/table-of-contents.php)
 - [textbox.php](examples/textbox.php)
 
 Run one of them with:

@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Geometry\Insets;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Table\Style\CellStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextOptions;

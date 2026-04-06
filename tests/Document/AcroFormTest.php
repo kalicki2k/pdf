@@ -54,7 +54,7 @@ final class AcroFormTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('AcroForm fonts must be indirect objects.');
 
-        $acroForm->registerFont(new class implements FontDefinition {
+        $acroForm->registerFont(new class () implements FontDefinition {
             public function getId(): int
             {
                 return 1;

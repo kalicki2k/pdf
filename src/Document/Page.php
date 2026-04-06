@@ -7,16 +7,10 @@ namespace Kalle\Pdf\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Document\Annotation\CheckboxAnnotation;
-use Kalle\Pdf\Document\Annotation\ComboBoxAnnotation;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
-use Kalle\Pdf\Document\Annotation\ListBoxAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotationFactory;
-use Kalle\Pdf\Document\Annotation\PushButtonAnnotation;
-use Kalle\Pdf\Document\Annotation\RadioButtonWidgetAnnotation;
-use Kalle\Pdf\Document\Annotation\SignatureFieldAnnotation;
-use Kalle\Pdf\Document\Annotation\TextFieldAnnotation;
+use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Form\FormWidgetFactory;
 use Kalle\Pdf\Document\Geometry\Position;
@@ -53,10 +47,13 @@ use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 
+/**
+ * @internal Internal page implementation. Use Kalle\Pdf\Page from the public API.
+ */
 final class Page extends IndirectObject
 {
-    private const DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
-    private const DEFAULT_BOTTOM_MARGIN = 20.0;
+    private const float DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
+    private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
     private int $markedContentId = 0;
     /** @var list<IndirectObject&PageAnnotation> */
@@ -635,40 +632,17 @@ final class Page extends IndirectObject
                 $currentY = $this->height - $topMargin;
             }
 
-            if ($line['segments'] === []) {
-                $currentY -= $lineHeight;
-                continue;
-            }
-
-            $cursorX = $x + $this->calculateAlignedOffset($line['segments'], $baseFont, $size, $maxWidth, $align, $line['justify']);
-
-            if ($align === HorizontalAlign::JUSTIFY && $line['justify']) {
-                $this->renderJustifiedLine($page, $line['segments'], $cursorX, $currentY, $baseFont, $size, $tag, $maxWidth);
-                $currentY -= $lineHeight;
-                continue;
-            }
-
-            foreach ($line['segments'] as $segment) {
-                $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
-                $segmentFont = $this->resolveFont($segmentFontName);
-
-                $page->addText(
-                    $segment->text,
-                    new Position($cursorX, $currentY),
-                    $segmentFontName,
-                    $size,
-                    new TextOptions(
-                        structureTag: $tag,
-                        color: $segment->color,
-                        opacity: $segment->opacity,
-                        underline: $segment->underline,
-                        strikethrough: $segment->strikethrough,
-                        link: $segment->link,
-                    ),
-                );
-                $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
-            }
-
+            $this->renderTextLine(
+                $page,
+                $line,
+                $x,
+                $currentY,
+                $maxWidth,
+                $baseFont,
+                $size,
+                $tag,
+                $align,
+            );
             $currentY -= $lineHeight;
         }
 
@@ -692,44 +666,59 @@ final class Page extends IndirectObject
         $currentY = $y;
 
         foreach ($lines as $line) {
-            if ($line['segments'] === []) {
-                $currentY -= $lineHeight;
-                continue;
-            }
-
-            $cursorX = $x + $this->calculateAlignedOffset($line['segments'], $baseFont, $size, $maxWidth, $align, $line['justify']);
-
-            if ($align === HorizontalAlign::JUSTIFY && $line['justify']) {
-                $this->renderJustifiedLine($this, $line['segments'], $cursorX, $currentY, $baseFont, $size, $tag, $maxWidth);
-                $currentY -= $lineHeight;
-                continue;
-            }
-
-            foreach ($line['segments'] as $segment) {
-                $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
-                $segmentFont = $this->resolveFont($segmentFontName);
-
-                $this->addText(
-                    $segment->text,
-                    new Position($cursorX, $currentY),
-                    $segmentFontName,
-                    $size,
-                    new TextOptions(
-                        structureTag: $tag,
-                        color: $segment->color,
-                        opacity: $segment->opacity,
-                        underline: $segment->underline,
-                        strikethrough: $segment->strikethrough,
-                        link: $segment->link,
-                    ),
-                );
-                $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
-            }
-
+            $this->renderTextLine($this, $line, $x, $currentY, $maxWidth, $baseFont, $size, $tag, $align);
             $currentY -= $lineHeight;
         }
 
         return $this;
+    }
+
+    /**
+     * @param array{segments: array<int, TextSegment>, justify: bool} $line
+     */
+    private function renderTextLine(
+        self $page,
+        array $line,
+        float $x,
+        float $y,
+        float $maxWidth,
+        string $baseFont,
+        int $size,
+        ?StructureTag $tag,
+        HorizontalAlign $align,
+    ): void {
+        if ($line['segments'] === []) {
+            return;
+        }
+
+        $cursorX = $x + $this->calculateAlignedOffset($line['segments'], $baseFont, $size, $maxWidth, $align);
+
+        if ($align === HorizontalAlign::JUSTIFY && $line['justify']) {
+            $this->renderJustifiedLine($page, $line['segments'], $cursorX, $y, $baseFont, $size, $tag, $maxWidth);
+
+            return;
+        }
+
+        foreach ($line['segments'] as $segment) {
+            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
+            $segmentFont = $this->resolveFont($segmentFontName);
+
+            $page->addText(
+                $segment->text,
+                new Position($cursorX, $y),
+                $segmentFontName,
+                $size,
+                new TextOptions(
+                    structureTag: $tag,
+                    color: $segment->color,
+                    opacity: $segment->opacity,
+                    underline: $segment->underline,
+                    strikethrough: $segment->strikethrough,
+                    link: $segment->link,
+                ),
+            );
+            $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
+        }
     }
 
     public function createTextFrame(
@@ -933,53 +922,13 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Circle requires either a stroke or a fill.');
         }
 
-        $controlOffset = $radius * 0.5522847498307936;
-
-        $path = $this->addPath()
-            ->moveTo($centerX, $centerY + $radius)
-            ->curveTo(
-                $centerX + $controlOffset,
-                $centerY + $radius,
-                $centerX + $radius,
-                $centerY + $controlOffset,
-                $centerX + $radius,
-                $centerY,
-            )
-            ->curveTo(
-                $centerX + $radius,
-                $centerY - $controlOffset,
-                $centerX + $controlOffset,
-                $centerY - $radius,
-                $centerX,
-                $centerY - $radius,
-            )
-            ->curveTo(
-                $centerX - $controlOffset,
-                $centerY - $radius,
-                $centerX - $radius,
-                $centerY - $controlOffset,
-                $centerX - $radius,
-                $centerY,
-            )
-            ->curveTo(
-                $centerX - $radius,
-                $centerY + $controlOffset,
-                $centerX - $controlOffset,
-                $centerY + $radius,
-                $centerX,
-                $centerY + $radius,
-            )
-            ->close();
-
-        if ($strokeWidth !== null && $fillColor !== null) {
-            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
-        }
-
-        if ($fillColor !== null) {
-            return $path->fill($fillColor, $opacity);
-        }
-
-        return $path->stroke($strokeWidth, $strokeColor, $opacity);
+        return $this->finishClosedPath(
+            $this->buildEllipsePath($centerX, $centerY, $radius, $radius),
+            $strokeWidth,
+            $strokeColor,
+            $fillColor,
+            $opacity,
+        );
     }
 
     public function addEllipse(
@@ -1008,54 +957,13 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Ellipse requires either a stroke or a fill.');
         }
 
-        $controlOffsetX = $radiusX * 0.5522847498307936;
-        $controlOffsetY = $radiusY * 0.5522847498307936;
-
-        $path = $this->addPath()
-            ->moveTo($centerX, $centerY + $radiusY)
-            ->curveTo(
-                $centerX + $controlOffsetX,
-                $centerY + $radiusY,
-                $centerX + $radiusX,
-                $centerY + $controlOffsetY,
-                $centerX + $radiusX,
-                $centerY,
-            )
-            ->curveTo(
-                $centerX + $radiusX,
-                $centerY - $controlOffsetY,
-                $centerX + $controlOffsetX,
-                $centerY - $radiusY,
-                $centerX,
-                $centerY - $radiusY,
-            )
-            ->curveTo(
-                $centerX - $controlOffsetX,
-                $centerY - $radiusY,
-                $centerX - $radiusX,
-                $centerY - $controlOffsetY,
-                $centerX - $radiusX,
-                $centerY,
-            )
-            ->curveTo(
-                $centerX - $radiusX,
-                $centerY + $controlOffsetY,
-                $centerX - $controlOffsetX,
-                $centerY + $radiusY,
-                $centerX,
-                $centerY + $radiusY,
-            )
-            ->close();
-
-        if ($strokeWidth !== null && $fillColor !== null) {
-            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
-        }
-
-        if ($fillColor !== null) {
-            return $path->fill($fillColor, $opacity);
-        }
-
-        return $path->stroke($strokeWidth, $strokeColor, $opacity);
+        return $this->finishClosedPath(
+            $this->buildEllipsePath($centerX, $centerY, $radiusX, $radiusY),
+            $strokeWidth,
+            $strokeColor,
+            $fillColor,
+            $opacity,
+        );
     }
 
     /**
@@ -1572,7 +1480,6 @@ final class Page extends IndirectObject
         float $size,
         bool $checked = false,
     ): self {
-        $acroForm = $this->document->ensureAcroForm();
         [$group, $annotation] = $this->formWidgetFactory()->createRadioButton($name, $value, $position, $size, $checked);
         $group->addWidget($annotation, $value, $checked);
         $this->annotations[] = $annotation;
@@ -1741,7 +1648,7 @@ final class Page extends IndirectObject
 
     private function resolveFont(string $baseFont): FontDefinition
     {
-        foreach ($this->document->fonts as $registeredFont) {
+        foreach ($this->document->getFonts() as $registeredFont) {
             if ($registeredFont->getBaseFont() === $baseFont) {
                 return $registeredFont;
             }
@@ -1832,7 +1739,6 @@ final class Page extends IndirectObject
         int $size,
         float $maxWidth,
         HorizontalAlign $align,
-        bool $canJustify,
     ): float {
         if ($align === HorizontalAlign::LEFT || $align === HorizontalAlign::JUSTIFY) {
             return 0.0;
@@ -1865,13 +1771,7 @@ final class Page extends IndirectObject
         string $baseFont,
         int $size,
         float $maxWidth,
-        HorizontalAlign $align,
-        bool $canJustify,
     ): float {
-        if ($align !== HorizontalAlign::JUSTIFY || !$canJustify) {
-            return 0.0;
-        }
-
         $lineWidth = 0.0;
         $spaceCount = 0;
         $pieces = $this->splitSegmentsIntoWordPieces($line);
@@ -1911,7 +1811,7 @@ final class Page extends IndirectObject
         float $maxWidth,
     ): void {
         $pieces = $this->splitSegmentsIntoWordPieces($line);
-        $extraWordSpacing = $this->calculateJustifiedWordSpacing($line, $baseFont, $size, $maxWidth, HorizontalAlign::JUSTIFY, true);
+        $extraWordSpacing = $this->calculateJustifiedWordSpacing($line, $baseFont, $size, $maxWidth);
         $cursorX = $x;
         $isFirstWord = true;
 
@@ -2059,7 +1959,7 @@ final class Page extends IndirectObject
         return $this->formWidgetFactory ??= new FormWidgetFactory(
             $this,
             fn (): int => $this->document->getUniqObjectId(),
-            fn (): \Kalle\Pdf\Document\Form\AcroForm => $this->document->ensureAcroForm(),
+            fn (): AcroForm => $this->document->ensureAcroForm(),
             fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
         );
     }
@@ -2131,13 +2031,10 @@ final class Page extends IndirectObject
 
     private function hasRegisteredFont(string $baseFont): bool
     {
-        foreach ($this->document->fonts as $registeredFont) {
-            if ($registeredFont->getBaseFont() === $baseFont) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any(
+            $this->document->getFonts(),
+            static fn (FontDefinition $registeredFont): bool => $registeredFont->getBaseFont() === $baseFont,
+        );
     }
 
     private function registerFontIfNeeded(string $baseFont): void
@@ -2147,6 +2044,70 @@ final class Page extends IndirectObject
         }
 
         $this->document->registerFont($baseFont);
+    }
+
+    private function buildEllipsePath(float $centerX, float $centerY, float $radiusX, float $radiusY): PathBuilder
+    {
+        $controlOffsetX = $radiusX * 0.5522847498307936;
+        $controlOffsetY = $radiusY * 0.5522847498307936;
+
+        return $this->addPath()
+            ->moveTo($centerX, $centerY + $radiusY)
+            ->curveTo(
+                $centerX + $controlOffsetX,
+                $centerY + $radiusY,
+                $centerX + $radiusX,
+                $centerY + $controlOffsetY,
+                $centerX + $radiusX,
+                $centerY,
+            )
+            ->curveTo(
+                $centerX + $radiusX,
+                $centerY - $controlOffsetY,
+                $centerX + $controlOffsetX,
+                $centerY - $radiusY,
+                $centerX,
+                $centerY - $radiusY,
+            )
+            ->curveTo(
+                $centerX - $controlOffsetX,
+                $centerY - $radiusY,
+                $centerX - $radiusX,
+                $centerY - $controlOffsetY,
+                $centerX - $radiusX,
+                $centerY,
+            )
+            ->curveTo(
+                $centerX - $radiusX,
+                $centerY + $controlOffsetY,
+                $centerX - $controlOffsetX,
+                $centerY + $radiusY,
+                $centerX,
+                $centerY + $radiusY,
+            )
+            ->close();
+    }
+
+    private function finishClosedPath(
+        PathBuilder $path,
+        ?float $strokeWidth,
+        ?Color $strokeColor,
+        ?Color $fillColor,
+        ?Opacity $opacity,
+    ): self {
+        if ($strokeWidth !== null && $fillColor !== null) {
+            return $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
+        }
+
+        if ($fillColor !== null) {
+            return $path->fill($fillColor, $opacity);
+        }
+
+        if ($strokeWidth === null) {
+            throw new InvalidArgumentException('Closed path requires either a stroke or a fill.');
+        }
+
+        return $path->stroke($strokeWidth, $strokeColor, $opacity);
     }
 
     private function createImageObject(Image $image): ImageObject
