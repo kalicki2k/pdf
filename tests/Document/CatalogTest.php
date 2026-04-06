@@ -102,6 +102,22 @@ final class CatalogTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_off_optional_content_groups_when_layers_are_hidden_by_default(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addLayer('Visible');
+        $document->addLayer('Hidden', false);
+        $catalog = new Catalog(1, $document);
+
+        self::assertSame(
+            "1 0 obj\n"
+            . "<< /Type /Catalog /Pages 2 0 R /Metadata 6 0 R /OCProperties << /OCGs [4 0 R 5 0 R] /D << /Order [4 0 R 5 0 R] /ON [4 0 R] /OFF [5 0 R] >> >> >>\n"
+            . "endobj\n",
+            $catalog->render(),
+        );
+    }
+
+    #[Test]
     public function it_renders_embedded_file_name_tree_when_document_attachments_exist(): void
     {
         $document = new Document(version: 1.4);
@@ -112,6 +128,20 @@ final class CatalogTest extends TestCase
             "1 0 obj\n"
             . "<< /Type /Catalog /Pages 2 0 R /Metadata 6 0 R /Names << /EmbeddedFiles << /Names [(demo.txt) 5 0 R] >> >> >>\n"
             . "endobj\n",
+            $catalog->render(),
+        );
+    }
+
+    #[Test]
+    public function it_renders_an_acro_form_reference_when_the_document_contains_form_fields(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->addPage();
+        $document->ensureAcroForm();
+        $catalog = new Catalog(1, $document);
+
+        self::assertSame(
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata 8 0 R /AcroForm 7 0 R >>\nendobj\n",
             $catalog->render(),
         );
     }
