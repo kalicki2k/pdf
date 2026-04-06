@@ -21,6 +21,39 @@ use PHPUnit\Framework\TestCase;
 final class TextFrameTest extends TestCase
 {
     #[Test]
+    public function it_adds_plain_text_and_uses_default_spacing(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
+        $frame->addText('Hello', 'Helvetica', 10);
+
+        self::assertSame($page, $frame->getPage());
+        self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->contents->render());
+        self::assertSame(88.0, $frame->getCursorY());
+    }
+
+    #[Test]
+    public function it_moves_plain_text_to_a_new_page_before_and_after_rendering_when_needed(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(100, 60);
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(10, 20), 60, 15);
+        $frame->addText('Hello', 'Helvetica', 10, spacingAfter: 8);
+        $frame->addText('World', 'Helvetica', 10, spacingAfter: 12);
+
+        self::assertCount(5, $document->pages->pages);
+        self::assertStringContainsString('(Hello) Tj', $document->pages->pages[1]->contents->render());
+        self::assertStringContainsString('(World) Tj', $document->pages->pages[3]->contents->render());
+        self::assertSame($document->pages->pages[4], $frame->getPage());
+        self::assertSame(20.0, $frame->getCursorY());
+    }
+
+    #[Test]
     public function it_flows_headings_and_paragraphs_using_a_shared_cursor(): void
     {
         $document = new Document(version: 1.4);
@@ -52,6 +85,21 @@ final class TextFrameTest extends TestCase
         self::assertCount(2, $document->pages->pages);
         self::assertSame($document->pages->pages[1], $frame->getPage());
         self::assertGreaterThanOrEqual(15.0, $frame->getCursorY());
+    }
+
+    #[Test]
+    public function it_advances_to_a_new_page_when_a_paragraph_starts_at_the_bottom_margin(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(100, 60);
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(10, 15), 40, 15);
+        $frame->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(spacingAfter: 6));
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertNotSame($page, $frame->getPage());
+        self::assertSame(15.0, $frame->getCursorY());
     }
 
     #[Test]
@@ -223,6 +271,42 @@ final class TextFrameTest extends TestCase
     }
 
     #[Test]
+    public function it_uses_the_text_color_as_default_marker_color_for_bullet_lists(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
+        $frame->addBulletList(
+            ['First bullet item'],
+            'Helvetica',
+            10,
+            BulletType::DISC,
+            new ListOptions(color: Color::rgb(255, 0, 0)),
+        );
+
+        self::assertStringContainsString("1 0 0 rg\n(\225) Tj", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_leaves_the_frame_unchanged_for_empty_lists(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
+        $sameFrame = $frame->addBulletList([], 'Helvetica', 10);
+        $sameFrame = $sameFrame->addNumberedList([], 'Helvetica', 10);
+
+        self::assertSame($frame, $sameFrame);
+        self::assertSame($page, $frame->getPage());
+        self::assertSame(100.0, $frame->getCursorY());
+        self::assertStringNotContainsString('Tj', $page->contents->render());
+    }
+
+    #[Test]
     public function it_moves_bullet_list_items_to_a_new_page_when_needed(): void
     {
         $document = new Document(version: 1.4);
@@ -287,5 +371,68 @@ final class TextFrameTest extends TestCase
         $this->expectExceptionMessage('Numbered lists must start at 1 or greater.');
 
         $frame->addNumberedList(['One'], 'Helvetica', 10, 0);
+    }
+
+    #[Test]
+    public function it_rejects_invalid_bullet_list_indents(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 12, 20);
+
+        try {
+            $frame->addBulletList(['One'], 'Helvetica', 10, options: new ListOptions(markerIndent: 0.0));
+            self::fail('Expected exception for non-positive bullet indent.');
+        } catch (\InvalidArgumentException $exception) {
+            self::assertSame('Bullet indent must be greater than zero.', $exception->getMessage());
+        }
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Bullet indent must be smaller than the text frame width.');
+
+        $frame->addBulletList(['One'], 'Helvetica', 10, options: new ListOptions(markerIndent: 12.0));
+    }
+
+    #[Test]
+    public function it_rejects_invalid_numbered_list_indents(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 12, 20);
+
+        try {
+            $frame->addNumberedList(['One'], 'Helvetica', 10, 1, new ListOptions(markerIndent: 0.0));
+            self::fail('Expected exception for non-positive number indent.');
+        } catch (\InvalidArgumentException $exception) {
+            self::assertSame('Number indent must be greater than zero.', $exception->getMessage());
+        }
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Number indent must be smaller than the text frame width.');
+
+        $frame->addNumberedList(['One'], 'Helvetica', 10, 1, new ListOptions(markerIndent: 12.0));
+    }
+
+    #[Test]
+    public function it_adds_spacers_and_tracks_page_breaks(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage(100, 60);
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(10, 30), 60, 15);
+        $frame->addSpacer(5);
+
+        self::assertSame($page, $frame->getPage());
+        self::assertSame(25.0, $frame->getCursorY());
+
+        $frame->addSpacer(12);
+
+        self::assertCount(2, $document->pages->pages);
+        self::assertSame($document->pages->pages[1], $frame->getPage());
+        self::assertSame(25.0, $frame->getCursorY());
     }
 }
