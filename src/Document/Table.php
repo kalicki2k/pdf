@@ -468,7 +468,7 @@ final class Table
                 return true;
             }
 
-            $maxLines = (int) floor($availableTextHeight / $lineHeight);
+            $maxLines = $this->resolveFittingLineCount($availableTextHeight, $lineHeight);
             $lineCount = count($this->page->layoutParagraphLines(
                 $preparedCell->cell->text,
                 $this->baseFont,
@@ -585,5 +585,18 @@ final class Table
             $this->headerStyle,
             $this->styleResolver,
         );
+    }
+
+    private function resolveFittingLineCount(float $availableTextHeight, float $lineHeight): int
+    {
+        if ($availableTextHeight <= 0) {
+            return 0;
+        }
+
+        if ($availableTextHeight <= $this->fontSize) {
+            return 1;
+        }
+
+        return max(1, 1 + (int) floor((($availableTextHeight - $this->fontSize) + 0.001) / $lineHeight));
     }
 }

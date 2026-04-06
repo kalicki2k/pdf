@@ -140,7 +140,7 @@ final readonly class PreparedCellRenderer
             return new CellRenderResult($page, $options->remainingLines);
         }
 
-        $maxLines = max(1, (int) floor($availableTextHeight / $lineHeight));
+        $maxLines = $this->resolveFittingLineCount($availableTextHeight, $lineHeight, $fontSize);
         $allLines = $options->remainingLines !== []
             ? $options->remainingLines
             : $page->layoutParagraphLines(
@@ -193,5 +193,18 @@ final readonly class PreparedCellRenderer
         );
 
         return new CellRenderResult($page, $remainingLines);
+    }
+
+    private function resolveFittingLineCount(float $availableTextHeight, float $lineHeight, int $fontSize): int
+    {
+        if ($availableTextHeight <= 0) {
+            return 0;
+        }
+
+        if ($availableTextHeight <= $fontSize) {
+            return 1;
+        }
+
+        return max(1, 1 + (int) floor((($availableTextHeight - $fontSize) + 0.001) / $lineHeight));
     }
 }

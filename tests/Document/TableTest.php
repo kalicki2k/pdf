@@ -168,6 +168,7 @@ final class TableTest extends TestCase
 
         self::assertStringContainsString("26 227.6 Td\n(Kurz) Tj", $contents);
         self::assertStringContainsString("111 242 Td\n(Erste Zeile) Tj", $contents);
+        self::assertStringContainsString('(Dritte Zeile) Tj', $contents);
     }
 
     #[Test]
@@ -451,5 +452,26 @@ final class TableTest extends TestCase
         self::assertStringContainsString('(Gamma) Tj', $renderedDocument);
         self::assertStringContainsString('(Delta) Tj', $renderedDocument);
         self::assertStringContainsString('/Count 3', $renderedDocument);
+    }
+
+    #[Test]
+    public function it_renders_all_lines_that_fit_exactly_within_the_cell_height(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->createTable(new Position(20, 260), 170, [85, 85])
+            ->style(new TableStyle(verticalAlign: VerticalAlign::TOP))
+            ->addRow([
+                "Zeile 1\nZeile 2\nZeile 3",
+                'Kurz',
+            ]);
+
+        $contents = $page->contents->render();
+
+        self::assertStringContainsString('(Zeile 1) Tj', $contents);
+        self::assertStringContainsString('(Zeile 2) Tj', $contents);
+        self::assertStringContainsString('(Zeile 3) Tj', $contents);
     }
 }
