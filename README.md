@@ -156,7 +156,7 @@ composer validate:pdfa -- var/examples/pdf-a-4f_YYYY-mm-dd-HH-ii-ss.pdf
 
 The PDF/A validation command uses the official Docker image `verapdf/cli:v1.28.2`.
 
-For an automated PDF/A regression run with representative fixtures for `PDF/A-1b`, `PDF/A-2u`, `PDF/A-3b`, and `PDF/A-4f`:
+For an automated PDF/A regression run with representative fixtures for `PDF/A-1b`, `PDF/A-2a`, `PDF/A-2u`, `PDF/A-3a`, `PDF/A-3b`, `PDF/A-3u`, `PDF/A-4`, `PDF/A-4e`, and `PDF/A-4f`:
 
 ```bash
 composer test:pdfa-regression

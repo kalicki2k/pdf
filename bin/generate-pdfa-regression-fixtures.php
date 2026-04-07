@@ -7,7 +7,9 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page as InternalPage;
+use Kalle\Pdf\Document\Text\ListOptions;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
+use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
@@ -31,10 +33,15 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 
 $fixtures = [
     $outputDir . '/pdf-a-1b-minimal.pdf' => createMinimalPdfA1bFixture(...),
+    $outputDir . '/pdf-a-2a-tagged.pdf' => createPdfA2aTaggedFixture(...),
     $outputDir . '/pdf-a-2u-minimal.pdf' => createMinimalPdfA2uFixture(...),
     $outputDir . '/pdf-a-2u-popup.pdf' => createPdfA2uPopupFixture(...),
     $outputDir . '/pdf-a-2u-annotation-batch.pdf' => createPdfA2uAnnotationBatchFixture(...),
+    $outputDir . '/pdf-a-3a-tagged-attachment.pdf' => createPdfA3aTaggedAttachmentFixture(...),
     $outputDir . '/pdf-a-3b-attachment.pdf' => createPdfA3bAttachmentFixture(...),
+    $outputDir . '/pdf-a-3u-attachment.pdf' => createPdfA3uAttachmentFixture(...),
+    $outputDir . '/pdf-a-4-minimal.pdf' => createPdfA4MinimalFixture(...),
+    $outputDir . '/pdf-a-4e-minimal.pdf' => createPdfA4eMinimalFixture(...),
     $outputDir . '/pdf-a-4f-attachment.pdf' => createPdfA4fAttachmentFixture(...),
 ];
 
@@ -122,6 +129,13 @@ function createPdfA2uPopupFixture(): Document
     return $document;
 }
 
+function createPdfA2aTaggedFixture(): Document
+{
+    $document = createTaggedPdfADocument(Profile::pdfA2a(), 'PDF/A-2a Tagged Regression');
+
+    return $document;
+}
+
 function createPdfA2uAnnotationBatchFixture(): Document
 {
     $document = createPdfA2uDocument('PDF/A-2u Annotation Batch Regression');
@@ -139,12 +153,142 @@ function createPdfA2uAnnotationBatchFixture(): Document
     return $document;
 }
 
+function createPdfA3aTaggedAttachmentFixture(): Document
+{
+    $document = createTaggedPdfADocument(Profile::pdfA3a(), 'PDF/A-3a Tagged Attachment Regression');
+    $document->addAttachment(
+        'source-data.xml',
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<document><id>3A-REGRESSION</id><status>tagged</status></document>\n",
+        'Machine-readable source',
+        'application/xml',
+    );
+
+    return $document;
+}
+
 function createPdfA3bAttachmentFixture(): Document
 {
     $document = createPdfADocument(Profile::pdfA3b(), 'PDF/A-3b Attachment Regression');
     $page = $document->addPage(PageSize::custom(120, 120));
     $page->addText('Archive bundle', new Position(10, 60), 'NotoSans-Regular', 12);
     $document->addAttachment('payload.txt', "payload\n", 'Regression payload', 'text/plain');
+
+    return $document;
+}
+
+function createPdfA3uAttachmentFixture(): Document
+{
+    $document = createPdfADocument(Profile::pdfA3u(), 'PDF/A-3u Attachment Regression');
+    $page = $document->addPage(PageSize::A4());
+    $page->addText(
+        'PDF/A-3u Regression',
+        new Position(Units::mm(20), Units::mm(270)),
+        'NotoSans-Regular',
+        18,
+        new TextOptions(color: Color::rgb(20, 40, 90)),
+    );
+    $page->createTextFrame(
+        new Position(Units::mm(20), Units::mm(245)),
+        Units::mm(170),
+        Units::mm(20),
+    )
+        ->addParagraph(
+            'Dieses Fixture prueft den Unicode-Pfad von PDF/A-3u mit Umlauten wie ÄÖÜ äöü ß und einem eingebetteten XML-Anhang.',
+            'NotoSans-Regular',
+            11,
+            new ParagraphOptions(
+                lineHeight: Units::mm(6),
+                spacingAfter: Units::mm(5),
+            ),
+        )
+        ->addParagraph(
+            'Damit bleibt der U-Conformance-Pfad fuer Text und Attachment gemeinsam in der Regression sichtbar.',
+            'NotoSans-Regular',
+            10,
+            new ParagraphOptions(
+                lineHeight: Units::mm(5),
+            ),
+        );
+    $document->addAttachment(
+        'invoice-data.xml',
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<invoice><number>2026-0002</number><customer>Mueller GmbH</customer></invoice>\n",
+        'Machine-readable invoice source',
+        'application/xml',
+    );
+
+    return $document;
+}
+
+function createPdfA4MinimalFixture(): Document
+{
+    $document = createPdfADocument(Profile::pdfA4(), 'PDF/A-4 Minimal Regression');
+    $page = $document->addPage(PageSize::A4());
+    $page->addText(
+        'PDF/A-4 Regression',
+        new Position(Units::mm(20), Units::mm(270)),
+        'NotoSans-Regular',
+        18,
+        new TextOptions(color: Color::rgb(20, 40, 90)),
+    );
+    $page->createTextFrame(
+        new Position(Units::mm(20), Units::mm(245)),
+        Units::mm(170),
+        Units::mm(20),
+    )
+        ->addParagraph(
+            'Dieses Fixture prueft den schlanken PDF/A-4-Kernpfad auf Basis von PDF 2.0 mit XMP, OutputIntent und eingebettetem Unicode-Font.',
+            'NotoSans-Regular',
+            11,
+            new ParagraphOptions(
+                lineHeight: Units::mm(6),
+                spacingAfter: Units::mm(5),
+            ),
+        )
+        ->addParagraph(
+            'Der klassische Info-Dictionary-Pfad bleibt fuer PDF/A-4 bewusst aus, damit die Regression genau dieses Profilverhalten absichert.',
+            'NotoSans-Regular',
+            10,
+            new ParagraphOptions(
+                lineHeight: Units::mm(5),
+            ),
+        );
+
+    return $document;
+}
+
+function createPdfA4eMinimalFixture(): Document
+{
+    $document = createPdfADocument(Profile::pdfA4e(), 'PDF/A-4e Minimal Regression');
+    $page = $document->addPage(PageSize::A4());
+    $page->addText(
+        'PDF/A-4e Regression',
+        new Position(Units::mm(20), Units::mm(270)),
+        'NotoSans-Regular',
+        18,
+        new TextOptions(color: Color::rgb(20, 40, 90)),
+    );
+    $page->createTextFrame(
+        new Position(Units::mm(20), Units::mm(245)),
+        Units::mm(170),
+        Units::mm(20),
+    )
+        ->addParagraph(
+            'Dieses Fixture prueft den schlanken PDF/A-4e-Pfad mit PDF-2.0-Unterbau und eingebettetem Unicode-Font.',
+            'NotoSans-Regular',
+            11,
+            new ParagraphOptions(
+                lineHeight: Units::mm(6),
+                spacingAfter: Units::mm(5),
+            ),
+        )
+        ->addParagraph(
+            'Es bleibt absichtlich nah am bestehenden Beispiel, aber klein genug fuer die Regression.',
+            'NotoSans-Regular',
+            10,
+            new ParagraphOptions(
+                lineHeight: Units::mm(5),
+            ),
+        );
 
     return $document;
 }
@@ -162,6 +306,54 @@ function createPdfA4fAttachmentFixture(): Document
 function createPdfA2uDocument(string $title): Document
 {
     return createPdfADocument(Profile::pdfA2u(), $title);
+}
+
+function createTaggedPdfADocument(Profile $profile, string $title): Document
+{
+    $document = createPdfADocument($profile, $title);
+    $page = $document->addPage(PageSize::A4());
+
+    $page->createTextFrame(
+        new Position(Units::mm(20), Units::mm(262)),
+        Units::mm(170),
+        Units::mm(190),
+    )
+        ->addHeading(
+            $title,
+            'NotoSans-Regular',
+            18,
+            new ParagraphOptions(
+                structureTag: StructureTag::Heading1,
+                spacingAfter: Units::mm(6),
+            ),
+        )
+        ->addParagraph(
+            'Dieses Fixture prueft den getaggten PDF/A-A-Pfad mit Ueberschrift, Absatz und Liste.',
+            'NotoSans-Regular',
+            11,
+            new ParagraphOptions(
+                structureTag: StructureTag::Paragraph,
+                lineHeight: Units::mm(6),
+                spacingAfter: Units::mm(6),
+            ),
+        )
+        ->addBulletList(
+            [
+                'Ueberschrift mit H1-Struktur.',
+                'Absatz mit P-Struktur.',
+                'Liste mit L-, LI-, Lbl- und LBody-Struktur.',
+            ],
+            'NotoSans-Regular',
+            10,
+            options: new ListOptions(
+                structureTag: StructureTag::List,
+                lineHeight: Units::mm(5),
+                spacingAfter: Units::mm(5),
+                itemSpacing: Units::mm(3),
+            ),
+        );
+
+    return $document;
 }
 
 function createPdfADocument(Profile $profile, string $title): Document
