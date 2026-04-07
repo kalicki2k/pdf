@@ -141,15 +141,25 @@ Aktuelle Regeln:
 ```bash
 composer validate:pdfua -- <pdf-file>
 composer test:pdfua-regression
+composer test:pdfua-negative-regression
 ```
 
-Die Regression prueft aktuell fuenf reprasentative PDF/UA-1-Fixtures:
+Die Regression prueft aktuell sechs reprasentative PDF/UA-1-Fixtures:
 
 - minimaler Tagged-PDF-Basispfad
 - Layout-/Decorative-Graphics-Pfad
 - Link-Pfad
 - Form-Pfad
 - Annotation-Batch
+- Mixed-Integrationspfad ueber mehrere Seiten
+
+Zusaetzlich gibt es aktuell fuenf gezielte Negativ-Fixtures, die bei veraPDF fehlschlagen muessen:
+
+- fehlende Dokumentsprache
+- fehlendes `DisplayDocTitle`
+- `Figure` ohne `Alt`
+- standalone Link ohne Struktur-Anbindung
+- Formular-Widget ohne Struktur-Anbindung
 
 ## Oeffentliche API
 
@@ -172,6 +182,7 @@ Wichtig fuer die Einordnung:
 - die Regressionssuiten sind bewusst reprasentativ und keine Vollmatrix aller Feature-Kombinationen
 - `PDF/UA` ist aktuell auf `PDF/UA-1` ausgerichtet
 - die Library validiert reale Ausgabedateien ueber veraPDF, nicht nur interne Objektstrukturen
+- die Negativ-Suite arbeitet mit gezielten Byte-Mutationen auf sonst validen PDF/UA-Ausgaben, um konkrete Validator-Fehler stabil zu reproduzieren
 - weitere PDF/UA-Regeln koennen noch folgen, wenn neue Features freigeschaltet oder strengere Fixtures aufgebaut werden
 
 ## Zugehoerige Dateien

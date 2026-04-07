@@ -46,6 +46,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-links.pdf' => createPdfUa1LinksFixture(...),
     $outputDir . '/pdf-ua-1-forms.pdf' => createPdfUa1FormsFixture(...),
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
+    $outputDir . '/pdf-ua-1-mixed.pdf' => createPdfUa1MixedFixture(...),
 ];
 
 foreach ($fixtures as $path => $createFixture) {
@@ -405,6 +406,208 @@ function createPdfUa1AnnotationBatchFixture(): Document
     }
 
     $page->addFileAttachment(new Rect(220, 84, 14, 16), $file, 'Graph', 'Regression attachment');
+
+    return $document;
+}
+
+function createPdfUa1MixedFixture(): Document
+{
+    $document = createPdfUaDocument('PDF/UA-1 Mixed Regression', 'Representative PDF/UA-1 mixed regression fixture');
+    $document->addAttachment('source.xml', '<data/>', 'Source data attachment', 'application/xml');
+
+    $overviewPage = $document->addPage(PageSize::custom(220, 260));
+
+    $overviewPage->addText(
+        'Accessible Summary',
+        new Position(12, 242),
+        'NotoSans-Bold',
+        15,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $overviewPage->addText(
+        'This mixed fixture combines layout, links, tables, form labels, annotations and embedded files in one tagged PDF/UA-1 document.',
+        new Position(12, 226),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $overviewPage->addBadge(
+        'Validated',
+        new Position(12, 206),
+        'NotoSans-Regular',
+        10,
+        new BadgeStyle(
+            fillColor: Color::rgb(226, 240, 222),
+            textColor: Color::rgb(38, 78, 45),
+        ),
+    );
+    $overviewPage->addPanel(
+        'Visible linked panel body.',
+        12,
+        138,
+        92,
+        54,
+        'Status panel',
+        'NotoSans-Regular',
+        new PanelStyle(),
+        null,
+        LinkTarget::externalUrl('https://example.com/status'),
+    );
+    $overviewPage->addCallout(
+        'Linked callout body.',
+        116,
+        138,
+        92,
+        54,
+        108,
+        132,
+        'Callout',
+        'NotoSans-Regular',
+        new CalloutStyle(),
+        null,
+        LinkTarget::externalUrl('https://example.com/callout'),
+    );
+
+    $overviewPage->addText(
+        'Read the detailed guide',
+        new Position(12, 126),
+        'NotoSans-Regular',
+        11,
+        new TextOptions(
+            structureTag: StructureTag::Paragraph,
+            link: LinkTarget::externalUrl('https://example.com/guide'),
+        ),
+    );
+    $overviewPage->addLink(new Rect(12, 108, 72, 12), 'https://example.com/api', 'Open API guide');
+
+    $table = $overviewPage->createTable(new Position(12, 96), 196, [92, 104]);
+    $table
+        ->font('NotoSans-Regular', 10)
+        ->addRow(['Area', 'Result'], header: true)
+        ->addRow(['Layout', 'Decorative frames are artifacts and visible text is tagged.'])
+        ->addRow(['Links', 'Text and standalone links carry accessible descriptions.']);
+
+    $overviewPage->addImage(
+        new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+        new Position(190, 20),
+        12,
+        12,
+        new ImageOptions(
+            structureTag: StructureTag::Figure,
+            altText: 'Small mixed fixture marker image',
+        ),
+    );
+
+    $formPage = $document->addPage(PageSize::custom(220, 260));
+
+    $formPage->addText(
+        'Accessible Form Review',
+        new Position(12, 242),
+        'NotoSans-Bold',
+        15,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $formPage->addTextField(
+        'customer_name',
+        new Rect(12, 204, 92, 16),
+        'Ada Lovelace',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Customer name',
+        fieldLabel: new FormFieldLabel('Customer name', new Position(12, 224), 'NotoSans-Regular', 10),
+    );
+    $formPage->addCheckbox(
+        'accept_terms',
+        new Position(12, 178),
+        12,
+        true,
+        'Accept terms',
+        new FormFieldLabel('Accept terms', new Position(30, 180), 'NotoSans-Regular', 10),
+    );
+    $formPage->addRadioButton(
+        'delivery',
+        'standard',
+        new Position(12, 152),
+        12,
+        true,
+        'Standard delivery',
+        new FormFieldLabel('Standard delivery', new Position(30, 154), 'NotoSans-Regular', 10),
+    );
+    $formPage->addRadioButton(
+        'delivery',
+        'express',
+        new Position(116, 152),
+        12,
+        false,
+        'Express delivery',
+        new FormFieldLabel('Express delivery', new Position(134, 154), 'NotoSans-Regular', 10),
+    );
+    $formPage->addComboBox(
+        'country',
+        new Rect(12, 118, 92, 16),
+        ['de' => 'Germany', 'at' => 'Austria'],
+        'de',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Country selection',
+        fieldLabel: new FormFieldLabel('Country', new Position(12, 138), 'NotoSans-Regular', 10),
+    );
+    $formPage->addListBox(
+        'topics',
+        new Rect(12, 56, 92, 44),
+        ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
+        'forms',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Topics selection',
+        fieldLabel: new FormFieldLabel('Topics', new Position(12, 104), 'NotoSans-Regular', 10),
+    );
+    $formPage->addSignatureField(
+        'approval_signature',
+        new Rect(116, 204, 92, 16),
+        'Approval signature',
+        new FormFieldLabel('Approval signature', new Position(116, 224), 'NotoSans-Regular', 10),
+    );
+    $formPage->addPushButton(
+        'save_form',
+        'Save',
+        new Rect(116, 118, 56, 16),
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Save form',
+        fieldLabel: new FormFieldLabel('Save action', new Position(116, 138), 'NotoSans-Regular', 10),
+    );
+
+    $annotationPage = $document->addPage(PageSize::custom(220, 220));
+
+    $annotationPage->addText(
+        'Accessible Notes',
+        new Position(12, 202),
+        'NotoSans-Bold',
+        15,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $annotationPage->addText(
+        'Annotations and file references stay tagged in the same document as the layout and form content.',
+        new Position(12, 186),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+    $annotationPage->addTextAnnotation(new Rect(12, 154, 12, 12), 'Review note', 'QA');
+    $popupParent = internalPage($annotationPage)->getAnnotations()[0];
+    $annotationPage->addPopupAnnotation($popupParent, new Rect(28, 144, 36, 20), true);
+    $annotationPage->addHighlightAnnotation(new Rect(12, 126, 60, 12), Color::rgb(255, 230, 0), 'Highlight note', 'QA');
+    $annotationPage->addFreeTextAnnotation(new Rect(84, 118, 80, 24), 'Annotation summary', 'NotoSans-Regular', 11);
+
+    $attachment = $document->getAttachment('source.xml');
+
+    if ($attachment === null) {
+        throw new RuntimeException('Expected mixed regression attachment to exist.');
+    }
+
+    $annotationPage->addFileAttachment(new Rect(180, 118, 14, 16), $attachment, 'PushPin', 'Source data attachment');
 
     return $document;
 }

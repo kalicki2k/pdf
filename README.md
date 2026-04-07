@@ -170,10 +170,16 @@ For an automated PDF/A regression run with representative fixtures for `PDF/A-1a
 composer test:pdfa-regression
 ```
 
-For PDF/UA-1 there is a matching automated veraPDF regression run with representative fixtures for the supported baseline, layout/decorative graphics, link, annotation, and form widget paths:
+For PDF/UA-1 there is a matching automated veraPDF regression run with representative fixtures for the supported baseline, layout/decorative graphics, link, annotation, form widget, and mixed integration paths:
 
 ```bash
 composer test:pdfua-regression
+```
+
+There is also a negative regression run with targeted invalid fixtures that must fail veraPDF:
+
+```bash
+composer test:pdfua-negative-regression
 ```
 
 Further detail on supported profiles, active guards and current limits lives in [doc/pdf-standards.md](doc/pdf-standards.md).
