@@ -970,6 +970,55 @@ final class Document
         }
     }
 
+    private function assertRenderRequirements(): void
+    {
+        $this->assertRequiredDocumentTitle();
+        $this->assertRequiredDocumentLanguage();
+        $this->assertRequiredDocumentStructure();
+    }
+
+    private function assertRequiredDocumentTitle(): void
+    {
+        if (!$this->profile->requiresDocumentTitle()) {
+            return;
+        }
+
+        if ($this->title !== null && $this->title !== '') {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf('Profile %s requires a document title.', $this->profile->name()));
+    }
+
+    private function assertRequiredDocumentLanguage(): void
+    {
+        if (!$this->profile->requiresDocumentLanguage()) {
+            return;
+        }
+
+        if ($this->language !== null && $this->language !== '') {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf('Profile %s requires a document language.', $this->profile->name()));
+    }
+
+    private function assertRequiredDocumentStructure(): void
+    {
+        if (!$this->profile->requiresDocumentStructure()) {
+            return;
+        }
+
+        if ($this->structTreeRoot !== null) {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Profile %s requires tagged content in the current implementation.',
+            $this->profile->name(),
+        ));
+    }
+
     public function addTableOfContents(
         ?PageSize $size = null,
         ?TableOfContentsOptions $options = null,
@@ -1130,6 +1179,7 @@ final class Document
     public function render(): string
     {
         $this->applyDeferredPageDecorators();
+        $this->assertRenderRequirements();
 
         $renderer = new PdfRenderer();
 

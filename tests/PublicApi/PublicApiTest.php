@@ -179,6 +179,15 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_exposes_a_pdf_ua_1_profile_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1());
+
+        self::assertSame('PDF/UA-1', $document->getProfile()->name());
+        self::assertSame(1.7, $document->getProfile()->version());
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_2b_document_through_the_public_api(): void
     {
         $document = new Document(
@@ -313,6 +322,61 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /TH', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /TD', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Figure', $rendered);
+        self::assertStringContainsString('/Alt (Dekorative Testgrafik)', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_a_minimal_pdf_ua_1_document_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+                [
+                    'baseFont' => 'NotoSans-Bold',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Bold.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+        $document->registerFont('NotoSans-Bold');
+
+        $page = $document->addPage(PageSize::custom(150, 180));
+        $frame = $page->createTextFrame(new Position(10, 160), 120, 120);
+        $frame
+            ->addHeading('Heading', 'NotoSans-Bold', 12, new ParagraphOptions(structureTag: StructureTag::Heading1))
+            ->addParagraph('Paragraph', 'NotoSans-Regular', 10, new ParagraphOptions(structureTag: StructureTag::Paragraph))
+            ->addBulletList(['One item'], 'NotoSans-Regular', 10, options: new ListOptions(structureTag: StructureTag::List));
+
+        $page->addImage(
+            new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+            new Position(115, 20),
+            10,
+            10,
+            new ImageOptions(structureTag: StructureTag::Figure, altText: 'Dekorative Testgrafik'),
+        );
+
+        $rendered = $document->render();
+
+        self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
+        self::assertStringContainsString('/ViewerPreferences << /DisplayDocTitle true >>', $rendered);
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $rendered);
+        self::assertStringContainsString('/Lang (de-DE)', $rendered);
+        self::assertStringContainsString('/StructTreeRoot', $rendered);
+        self::assertStringContainsString('xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"', $rendered);
+        self::assertStringContainsString('<pdfuaid:part>1</pdfuaid:part>', $rendered);
+        self::assertStringContainsString('/Title (PDF/UA-1)', $rendered);
         self::assertStringContainsString('/Alt (Dekorative Testgrafik)', $rendered);
     }
 

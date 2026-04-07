@@ -47,6 +47,22 @@ final class CatalogTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_pdf_ua_viewer_preferences_and_structure_metadata(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $catalog = new Catalog(1, $document);
+
+        self::assertSame(
+            "1 0 obj\n"
+            . "<< /Type /Catalog /Pages 2 0 R /Metadata 12 0 R /ViewerPreferences << /DisplayDocTitle true >> /MarkInfo << /Marked true >> /Lang (de-DE) /StructTreeRoot 8 0 R >>\n"
+            . "endobj\n",
+            $catalog->render(),
+        );
+    }
+
+    #[Test]
     public function it_keeps_the_catalog_unstructured_for_pdf_1_4_without_tagged_content(): void
     {
         $document = new Document(profile: Profile::standard(1.4), language: 'de-DE');

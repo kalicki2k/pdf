@@ -31,6 +31,12 @@ final class Catalog extends IndirectObject
             $dictionary->add('Metadata', new ReferenceType($metadata));
         }
 
+        if ($this->document->getProfile()->displaysDocumentTitleInViewer()) {
+            $dictionary->add('ViewerPreferences', new DictionaryType([
+                'DisplayDocTitle' => new BooleanType(true),
+            ]));
+        }
+
         $pdfaOutputIntentProfile = $this->document->getPdfAOutputIntentProfile();
 
         if ($pdfaOutputIntentProfile !== null) {

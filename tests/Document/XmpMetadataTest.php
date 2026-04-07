@@ -99,6 +99,22 @@ final class XmpMetadataTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_pdf_ua_identification_metadata_for_pdf_ua_1(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'Accessible Copy',
+            language: 'de-DE',
+        );
+        $metadata = new XmpMetadata(4, $document);
+
+        $rendered = $metadata->render();
+
+        self::assertStringContainsString('xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"', $rendered);
+        self::assertStringContainsString('<pdfuaid:part>1</pdfuaid:part>', $rendered);
+    }
+
+    #[Test]
     public function it_adds_pdf_a_identification_metadata_for_pdf_a_2u(): void
     {
         $document = new Document(

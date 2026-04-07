@@ -48,6 +48,7 @@ final class XmpMetadata extends IndirectObject
             ? '    <pdf:Keywords>' . $this->escape(implode(', ', $documentKeywords)) . '</pdf:Keywords>' . PHP_EOL
             : '';
         $pdfAIdentification = $this->renderPdfAIdentification();
+        $pdfUaIdentification = $this->renderPdfUaIdentification();
 
         return <<<XML
 <?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
@@ -64,7 +65,7 @@ final class XmpMetadata extends IndirectObject
     <xmp:ModifyDate>{$modificationDate}</xmp:ModifyDate>
     <xmp:MetadataDate>{$modificationDate}</xmp:MetadataDate>
   </rdf:Description>
-{$pdfAIdentification}</rdf:RDF>
+{$pdfAIdentification}{$pdfUaIdentification}</rdf:RDF>
 </x:xmpmeta>
 <?xpacket end="w"?>
 XML;
@@ -96,6 +97,26 @@ XML;
     xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
     <pdfaid:part>{$part}</pdfaid:part>
 {$revisionXml}{$conformanceXml}  </rdf:Description>
+XML . PHP_EOL;
+    }
+
+    private function renderPdfUaIdentification(): string
+    {
+        if (!$this->document->getProfile()->writesPdfUaIdentificationMetadata()) {
+            return '';
+        }
+
+        $part = $this->document->getProfile()->pdfuaPart();
+
+        if ($part === null) {
+            return '';
+        }
+
+        return <<<XML
+  <rdf:Description rdf:about=""
+    xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">
+    <pdfuaid:part>{$part}</pdfuaid:part>
+  </rdf:Description>
 XML . PHP_EOL;
     }
 

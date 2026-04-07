@@ -94,10 +94,20 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_exposes_the_base_version_for_pdf_ua_1(): void
+    {
+        self::assertSame('PDF/UA-1', Profile::pdfUa1()->name());
+        self::assertSame(1.7, Profile::pdfUa1()->version());
+        self::assertTrue(Profile::pdfUa1()->isPdfUa());
+        self::assertTrue(Profile::pdfUa1()->isPdfUa1());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_require_tagged_pdf(): void
     {
         self::assertTrue(Profile::pdfA2a()->requiresTaggedPdf());
         self::assertTrue(Profile::pdfA3a()->requiresTaggedPdf());
+        self::assertTrue(Profile::pdfUa1()->requiresTaggedPdf());
         self::assertFalse(Profile::pdfA2u()->requiresTaggedPdf());
     }
 
@@ -218,6 +228,27 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdf14()->writesPdfAIdentificationMetadata());
         self::assertTrue(Profile::pdfA2u()->writesPdfAIdentificationMetadata());
         self::assertTrue(Profile::pdfA4()->writesPdfAIdentificationMetadata());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_write_pdf_ua_identification_metadata(): void
+    {
+        self::assertFalse(Profile::pdf17()->writesPdfUaIdentificationMetadata());
+        self::assertTrue(Profile::pdfUa1()->writesPdfUaIdentificationMetadata());
+        self::assertSame(1, Profile::pdfUa1()->pdfuaPart());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_require_pdf_ua_document_metadata_and_structure(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresDocumentTitle());
+        self::assertFalse(Profile::pdf17()->requiresDocumentLanguage());
+        self::assertFalse(Profile::pdf17()->requiresDocumentStructure());
+        self::assertFalse(Profile::pdf17()->displaysDocumentTitleInViewer());
+        self::assertTrue(Profile::pdfUa1()->requiresDocumentTitle());
+        self::assertTrue(Profile::pdfUa1()->requiresDocumentLanguage());
+        self::assertTrue(Profile::pdfUa1()->requiresDocumentStructure());
+        self::assertTrue(Profile::pdfUa1()->displaysDocumentTitleInViewer());
     }
 
     #[Test]

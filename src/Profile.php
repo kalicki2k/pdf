@@ -121,6 +121,11 @@ final readonly class Profile
         return new self('PDF/A-4f', PdfVersion::V2_0); // PDF/A-4f is based on PDF 2.0.
     }
 
+    public static function pdfUa1(): self
+    {
+        return new self('PDF/UA-1', PdfVersion::V1_7); // PDF/UA-1 is based on PDF 1.7.
+    }
+
     public function name(): string
     {
         return $this->name;
@@ -139,6 +144,16 @@ final readonly class Profile
     public function isPdfA(): bool
     {
         return str_starts_with($this->name, 'PDF/A-');
+    }
+
+    public function isPdfUa(): bool
+    {
+        return str_starts_with($this->name, 'PDF/UA-');
+    }
+
+    public function isPdfUa1(): bool
+    {
+        return $this->name === 'PDF/UA-1';
     }
 
     public function isPdfA2(): bool
@@ -168,7 +183,8 @@ final readonly class Profile
 
     public function requiresTaggedPdf(): bool
     {
-        return $this->pdfaConformance() === 'A';
+        return $this->pdfaConformance() === 'A'
+            || $this->isPdfUa();
     }
 
     public function usesPdfAOutputIntent(): bool
@@ -266,6 +282,31 @@ final readonly class Profile
         return $this->isPdfA();
     }
 
+    public function writesPdfUaIdentificationMetadata(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresDocumentLanguage(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresDocumentTitle(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresDocumentStructure(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function displaysDocumentTitleInViewer(): bool
+    {
+        return $this->isPdfUa();
+    }
+
     public function requiresPrintableAnnotations(): bool
     {
         return $this->isPdfA();
@@ -306,6 +347,14 @@ final readonly class Profile
             'PDF/A-4e' => 'E',
             'PDF/A-4f' => 'F',
             'PDF/A-4' => null,
+            default => null,
+        };
+    }
+
+    public function pdfuaPart(): ?int
+    {
+        return match ($this->name) {
+            'PDF/UA-1' => 1,
             default => null,
         };
     }

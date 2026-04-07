@@ -93,6 +93,54 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_accepts_a_pdf_ua_1_profile(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1());
+
+        self::assertSame('PDF/UA-1', $document->getProfile()->name());
+        self::assertSame(1.7, $document->getVersion());
+    }
+
+    #[Test]
+    public function it_rejects_rendering_pdf_ua_1_without_a_document_title(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires a document title.');
+
+        $document->render();
+    }
+
+    #[Test]
+    public function it_rejects_rendering_pdf_ua_1_without_a_document_language(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec');
+        $document->registerFont('Helvetica');
+        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires a document language.');
+
+        $document->render();
+    }
+
+    #[Test]
+    public function it_rejects_rendering_pdf_ua_1_without_tagged_content(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires tagged content in the current implementation.');
+
+        $document->render();
+    }
+
+    #[Test]
     public function it_rejects_encryption_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());
