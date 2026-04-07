@@ -6,11 +6,13 @@ declare(strict_types=1);
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Document\Text\ListOptions;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
@@ -32,8 +34,10 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 }
 
 $fixtures = [
+    $outputDir . '/pdf-a-1a-tagged.pdf' => createPdfA1aTaggedFixture(...),
     $outputDir . '/pdf-a-1b-minimal.pdf' => createMinimalPdfA1bFixture(...),
     $outputDir . '/pdf-a-2a-tagged.pdf' => createPdfA2aTaggedFixture(...),
+    $outputDir . '/pdf-a-2b-minimal.pdf' => createPdfA2bMinimalFixture(...),
     $outputDir . '/pdf-a-2u-minimal.pdf' => createMinimalPdfA2uFixture(...),
     $outputDir . '/pdf-a-2u-popup.pdf' => createPdfA2uPopupFixture(...),
     $outputDir . '/pdf-a-2u-annotation-batch.pdf' => createPdfA2uAnnotationBatchFixture(...),
@@ -116,6 +120,100 @@ function createMinimalPdfA1bFixture(): Document
     return $document;
 }
 
+function createPdfA1aTaggedFixture(): Document
+{
+    $document = new Document(
+        profile: Profile::pdfA1a(),
+        title: 'PDF/A-1a Tagged Regression',
+        author: 'kalle/pdf',
+        subject: 'Representative PDF/A-1a regression fixture',
+        language: 'de-DE',
+        creator: 'Regression Fixture',
+        creatorTool: 'bin/generate-pdfa-regression-fixtures.php',
+        fontConfig: [
+            [
+                'baseFont' => 'NotoSans-Regular',
+                'path' => dirname(__DIR__) . '/assets/fonts/NotoSans-Regular.ttf',
+                'unicode' => true,
+                'subtype' => 'CIDFontType2',
+                'encoding' => 'Identity-H',
+            ],
+            [
+                'baseFont' => 'NotoSans-Bold',
+                'path' => dirname(__DIR__) . '/assets/fonts/NotoSans-Bold.ttf',
+                'unicode' => true,
+                'subtype' => 'CIDFontType2',
+                'encoding' => 'Identity-H',
+            ],
+        ],
+    );
+    $document
+        ->addKeyword('PDF/A')
+        ->addKeyword('PDF/A-1a')
+        ->addKeyword('Tagged PDF')
+        ->registerFont('NotoSans-Regular')
+        ->registerFont('NotoSans-Bold')
+        ->addHeader(static function (Page $page, int $pageNumber): void {
+            $page->addText("Archivkopf $pageNumber", new Position(Units::mm(20), Units::mm(287)), 'NotoSans-Regular', 9);
+        })
+        ->addFooter(static function (Page $page, int $pageNumber): void {
+            $page->addText("Seite $pageNumber", new Position(Units::mm(20), Units::mm(12)), 'NotoSans-Regular', 9);
+        });
+    $page = $document->addPage(PageSize::A4());
+    $page->addText(
+        'PDF/A-1a Tagged Regression',
+        new Position(Units::mm(20), Units::mm(278)),
+        'NotoSans-Bold',
+        18,
+        new TextOptions(
+            structureTag: StructureTag::Heading1,
+            color: Color::rgb(20, 40, 90),
+        ),
+    );
+    $page->createTextFrame(
+        new Position(Units::mm(20), Units::mm(260)),
+        Units::mm(170),
+        Units::mm(190),
+    )
+        ->addParagraph(
+            'Dieses Fixture bleibt nahe am validierten PDF/A-1a-Beispiel und sichert den getaggten Kernpfad ohne spaetere PDF-Spezialfeatures ab.',
+            'NotoSans-Regular',
+            11,
+            new ParagraphOptions(
+                structureTag: StructureTag::Paragraph,
+                lineHeight: Units::mm(6),
+                spacingAfter: Units::mm(6),
+            ),
+        )
+        ->addBulletList(
+            [
+                'Ueberschrift und Absatz sind getaggt.',
+                'Liste nutzt L, LI, Lbl und LBody.',
+                'Figure ist mit Alt-Text versehen.',
+            ],
+            'NotoSans-Regular',
+            10,
+            options: new ListOptions(
+                structureTag: StructureTag::List,
+                lineHeight: Units::mm(5),
+                spacingAfter: Units::mm(5),
+                itemSpacing: Units::mm(3),
+            ),
+        );
+    $page->addImage(
+        new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+        new Position(Units::mm(160), Units::mm(255)),
+        Units::mm(10),
+        Units::mm(10),
+        new ImageOptions(
+            structureTag: StructureTag::Figure,
+            altText: 'Kleines Beispielbild',
+        ),
+    );
+
+    return $document;
+}
+
 function createPdfA2uPopupFixture(): Document
 {
     $document = createPdfA2uDocument('PDF/A-2u Popup Regression');
@@ -132,6 +230,43 @@ function createPdfA2uPopupFixture(): Document
 function createPdfA2aTaggedFixture(): Document
 {
     $document = createTaggedPdfADocument(Profile::pdfA2a(), 'PDF/A-2a Tagged Regression');
+
+    return $document;
+}
+
+function createPdfA2bMinimalFixture(): Document
+{
+    $document = createPdfADocument(Profile::pdfA2b(), 'PDF/A-2b Minimal Regression');
+    $page = $document->addPage(PageSize::A4());
+    $page->addText(
+        'PDF/A-2b Regression',
+        new Position(Units::mm(20), Units::mm(270)),
+        'NotoSans-Regular',
+        18,
+        new TextOptions(color: Color::rgb(20, 40, 90)),
+    );
+    $page->createTextFrame(
+        new Position(Units::mm(20), Units::mm(245)),
+        Units::mm(170),
+        Units::mm(20),
+    )
+        ->addParagraph(
+            'Dieses Fixture prueft den schlanken PDF/A-2b-Kernpfad mit XMP-Kennung, OutputIntent und eingebettetem Font.',
+            'NotoSans-Regular',
+            11,
+            new ParagraphOptions(
+                lineHeight: Units::mm(6),
+                spacingAfter: Units::mm(5),
+            ),
+        )
+        ->addParagraph(
+            'Es bleibt bewusst nahe am bestehenden Beispiel und bildet den stabilen B-Conformance-Pfad ab.',
+            'NotoSans-Regular',
+            10,
+            new ParagraphOptions(
+                lineHeight: Units::mm(5),
+            ),
+        );
 
     return $document;
 }

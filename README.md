@@ -24,7 +24,7 @@ Current core coverage includes:
 - optional password-based PDF encryption
 - outlines, named table-of-contents placement, logical TOC page numbers, attachments, layers, and basic form fields
 
-The current focus is a stable core library. PDF/A, PDF/UA, and full tagged-PDF compliance are not the current target yet.
+The current focus is a stable core library. PDF/A now has a validated baseline across all supported conformance profiles, while PDF/UA and full tagged-PDF compliance are still not the current target.
 
 ## Requirements
 
@@ -156,7 +156,7 @@ composer validate:pdfa -- var/examples/pdf-a-4f_YYYY-mm-dd-HH-ii-ss.pdf
 
 The PDF/A validation command uses the official Docker image `verapdf/cli:v1.28.2`.
 
-For an automated PDF/A regression run with representative fixtures for `PDF/A-1b`, `PDF/A-2a`, `PDF/A-2u`, `PDF/A-3a`, `PDF/A-3b`, `PDF/A-3u`, `PDF/A-4`, `PDF/A-4e`, and `PDF/A-4f`:
+For an automated PDF/A regression run with representative fixtures for `PDF/A-1a`, `PDF/A-1b`, `PDF/A-2a`, `PDF/A-2b`, `PDF/A-2u`, `PDF/A-3a`, `PDF/A-3b`, `PDF/A-3u`, `PDF/A-4`, `PDF/A-4e`, and `PDF/A-4f`:
 
 ```bash
 composer test:pdfa-regression
