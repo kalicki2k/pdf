@@ -323,6 +323,11 @@ final readonly class Profile
         return $this->isPdfUa();
     }
 
+    public function requiresLinkAnnotationAlternativeDescriptions(): bool
+    {
+        return $this->isPdfUa();
+    }
+
     public function supportsCurrentPageAnnotationsImplementation(): bool
     {
         return !$this->isPdfUa();

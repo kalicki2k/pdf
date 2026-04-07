@@ -169,7 +169,9 @@ final class PageTest extends TestCase
 
         self::assertMatchesRegularExpression('/\/Annots \[\d+ 0 R\]/', $page->render());
         self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Contents (Hello)', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Link', $rendered);
+        self::assertStringContainsString('/Alt (Hello)', $rendered);
         self::assertMatchesRegularExpression('/\/K \[0 << \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
         self::assertMatchesRegularExpression('/\/Nums \[0 \[\d+ 0 R\] 1 \d+ 0 R\]/', $rendered);
     }
@@ -195,7 +197,9 @@ final class PageTest extends TestCase
         $rendered = $document->render();
 
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
-        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/K \[0 << \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertStringContainsString('/Contents (Hello)', $rendered);
+        self::assertStringContainsString('/Alt (Hello)', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Hello\) \/K \[0 << \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
         self::assertMatchesRegularExpression('/\/Nums \[0 \[\d+ 0 R\] 1 \d+ 0 R\]/', $rendered);
     }
 
@@ -218,6 +222,8 @@ final class PageTest extends TestCase
         $rendered = $document->render();
 
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
+        self::assertStringContainsString('/Contents (Hello)', $rendered);
+        self::assertStringContainsString('/Alt (Hello)', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Link', $rendered);
         self::assertStringContainsString('/Subtype /Link', $rendered);
     }
@@ -1088,6 +1094,10 @@ final class PageTest extends TestCase
         self::assertMatchesRegularExpression('/\/Annots \[\d+ 0 R \d+ 0 R\]/', $page->render());
         self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
         self::assertGreaterThanOrEqual(2, substr_count($rendered, '/Type /StructElem /S /Link'));
+        self::assertStringContainsString('/Contents (Hinweis)', $rendered);
+        self::assertStringContainsString('/Contents (Kurzinfo zum Stand.)', $rendered);
+        self::assertStringContainsString('/Alt (Hinweis)', $rendered);
+        self::assertStringContainsString('/Alt (Kurzinfo zum Stand.)', $rendered);
         self::assertStringContainsString('(Hinweis) Tj', $page->contents->render());
         self::assertStringContainsString('(Kurzinfo zum Stand.) Tj', $page->contents->render());
     }
@@ -1287,6 +1297,10 @@ final class PageTest extends TestCase
 
         self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
         self::assertGreaterThanOrEqual(2, substr_count($rendered, '/Type /StructElem /S /Link'));
+        self::assertStringContainsString('/Contents (Info)', $rendered);
+        self::assertStringContainsString('/Contents (Interner Hinweis.)', $rendered);
+        self::assertStringContainsString('/Alt (Info)', $rendered);
+        self::assertStringContainsString('/Alt (Interner Hinweis.)', $rendered);
         self::assertStringContainsString('(Info) Tj', $page->contents->render());
         self::assertStringContainsString('(Interner Hinweis.) Tj', $page->contents->render());
     }

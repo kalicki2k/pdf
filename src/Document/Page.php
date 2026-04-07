@@ -133,7 +133,7 @@ final class Page extends IndirectObject
         $textStructElem = null;
 
         if ($structureTag !== null && $markedContentId !== null) {
-            $textStructElem = $this->attachTextToStructure($options, $structureTag, $markedContentId);
+            $textStructElem = $this->attachTextToStructure($options, $structureTag, $markedContentId, $text);
         }
 
         if ($options->link !== null && $textWidth > 0.0) {
@@ -146,6 +146,7 @@ final class Page extends IndirectObject
                 ),
                 $options->link,
                 $textStructElem,
+                $this->resolveLinkAlternativeDescription($text),
             );
         }
 
@@ -1142,8 +1143,9 @@ final class Page extends IndirectObject
         Rect $box,
         LinkTarget $target,
         ?StructElem $linkStructElem = null,
+        ?string $alternativeDescription = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createLinkAnnotation($box, $target, $linkStructElem);
+        $this->annotations[] = $this->annotationFactory()->createLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
 
         return $this;
     }
@@ -1802,7 +1804,7 @@ final class Page extends IndirectObject
         return StructureTag::Link;
     }
 
-    private function attachTextToStructure(TextOptions $options, StructureTag $tag, int $markedContentId): StructElem
+    private function attachTextToStructure(TextOptions $options, StructureTag $tag, int $markedContentId, string $text): StructElem
     {
         $profile = $this->document->getProfile();
 
@@ -1811,12 +1813,35 @@ final class Page extends IndirectObject
         }
 
         if ($options->structureTag === null || $options->structureTag === StructureTag::Link) {
-            return $this->document->createStructElem(StructureTag::Link, $markedContentId, $this, $options->parentStructElem);
+            $linkStructElem = $this->document->createStructElem(StructureTag::Link, $markedContentId, $this, $options->parentStructElem);
+
+            return $this->applyLinkAlternativeDescription($linkStructElem, $text);
         }
 
         $containerStructElem = $this->document->createStructElem($options->structureTag, parent: $options->parentStructElem);
+        $linkStructElem = $this->document->createStructElem(StructureTag::Link, $markedContentId, $this, $containerStructElem);
 
-        return $this->document->createStructElem(StructureTag::Link, $markedContentId, $this, $containerStructElem);
+        return $this->applyLinkAlternativeDescription($linkStructElem, $text);
+    }
+
+    private function resolveLinkAlternativeDescription(string $text): ?string
+    {
+        if (!$this->document->getProfile()->requiresLinkAnnotationAlternativeDescriptions()) {
+            return null;
+        }
+
+        return $text !== '' ? $text : null;
+    }
+
+    private function applyLinkAlternativeDescription(StructElem $linkStructElem, string $text): StructElem
+    {
+        $alternativeDescription = $this->resolveLinkAlternativeDescription($text);
+
+        if ($alternativeDescription !== null) {
+            $linkStructElem->setAltText($alternativeDescription);
+        }
+
+        return $linkStructElem;
     }
 
     private function registerFontResource(FontDefinition $font): string

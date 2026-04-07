@@ -135,10 +135,13 @@ final class PageAnnotationFactoryTest extends TestCase
             new Rect(10, 20, 80, 12),
             LinkTarget::externalUrl('https://example.com'),
             $linkStructElem,
+            'Example',
         );
 
         self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/Contents (Example)', $annotation->render());
         self::assertStringContainsString('/K [0 << /Type /OBJR /Obj', $linkStructElem->render());
+        self::assertStringContainsString('/Alt (Example)', $linkStructElem->render());
     }
 
     #[Test]

@@ -474,7 +474,9 @@ final class PublicApiTest extends TestCase
 
         self::assertStringContainsString('/Subtype /Link', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Contents (Weiterlesen)', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Link', $rendered);
+        self::assertStringContainsString('/Alt (Weiterlesen)', $rendered);
         self::assertStringContainsString('xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"', $rendered);
     }
 
@@ -503,7 +505,9 @@ final class PublicApiTest extends TestCase
         $rendered = $document->render();
 
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
-        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/K \[0 << \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertStringContainsString('/Contents (Weiterlesen)', $rendered);
+        self::assertStringContainsString('/Alt (Weiterlesen)', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Weiterlesen\) \/K \[0 << \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
@@ -534,6 +538,10 @@ final class PublicApiTest extends TestCase
 
         self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
         self::assertGreaterThanOrEqual(2, substr_count($rendered, '/Type /StructElem /S /Link'));
+        self::assertStringContainsString('/Contents (Title)', $rendered);
+        self::assertStringContainsString('/Contents (Body)', $rendered);
+        self::assertStringContainsString('/Alt (Title)', $rendered);
+        self::assertStringContainsString('/Alt (Body)', $rendered);
         self::assertStringContainsString('(Title) Tj', $rendered);
         self::assertStringContainsString('(Body) Tj', $rendered);
     }

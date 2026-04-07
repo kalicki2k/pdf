@@ -270,6 +270,14 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_require_link_annotation_alternative_descriptions(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresLinkAnnotationAlternativeDescriptions());
+        self::assertFalse(Profile::pdfA2u()->requiresLinkAnnotationAlternativeDescriptions());
+        self::assertTrue(Profile::pdfUa1()->requiresLinkAnnotationAlternativeDescriptions());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_the_current_page_annotation_implementation(): void
     {
         self::assertTrue(Profile::pdf17()->supportsCurrentPageAnnotationsImplementation());

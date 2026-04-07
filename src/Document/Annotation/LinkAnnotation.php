@@ -13,11 +13,13 @@ use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\RawType;
 use Kalle\Pdf\Types\ReferenceType;
+use Kalle\Pdf\Types\StringType;
 
 final class LinkAnnotation extends IndirectObject implements PageAnnotation
 {
     private const int PRINT_FLAG = 4;
     private ?int $structParentId = null;
+    private ?string $contents = null;
 
     public function __construct(
         int $id,
@@ -34,6 +36,13 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
     public function withStructParent(int $structParentId): self
     {
         $this->structParentId = $structParentId;
+
+        return $this;
+    }
+
+    public function withContents(string $contents): self
+    {
+        $this->contents = $contents;
 
         return $this;
     }
@@ -59,6 +68,10 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
 
         if ($this->structParentId !== null) {
             $dictionary->add('StructParent', $this->structParentId);
+        }
+
+        if ($this->contents !== null && $this->contents !== '') {
+            $dictionary->add('Contents', new StringType($this->contents));
         }
 
         if ($this->target->isNamedDestination()) {

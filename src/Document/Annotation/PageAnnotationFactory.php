@@ -36,8 +36,12 @@ final readonly class PageAnnotationFactory
     ) {
     }
 
-    public function createLinkAnnotation(Rect $box, LinkTarget $target, ?StructElem $linkStructElem = null): LinkAnnotation
-    {
+    public function createLinkAnnotation(
+        Rect $box,
+        LinkTarget $target,
+        ?StructElem $linkStructElem = null,
+        ?string $alternativeDescription = null,
+    ): LinkAnnotation {
         $this->assertAllowsLinkAnnotation($linkStructElem);
         $this->assertRectHasPositiveDimensions($box, 'Link');
 
@@ -56,6 +60,18 @@ final readonly class PageAnnotationFactory
             $annotation->withStructParent($structParentId);
             $linkStructElem->addObjectReference($annotation, $this->page);
             $this->page->getDocument()->registerObjectStructElem($structParentId, $linkStructElem);
+        }
+
+        if (
+            $alternativeDescription !== null
+            && $alternativeDescription !== ''
+            && $this->page->getDocument()->getProfile()->requiresLinkAnnotationAlternativeDescriptions()
+        ) {
+            $annotation->withContents($alternativeDescription);
+
+            if ($linkStructElem !== null) {
+                $linkStructElem->setAltText($alternativeDescription);
+            }
         }
 
         return $annotation;
