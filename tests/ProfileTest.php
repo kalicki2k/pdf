@@ -179,6 +179,15 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_write_the_info_dictionary(): void
+    {
+        self::assertTrue(Profile::pdf14()->writesInfoDictionary());
+        self::assertTrue(Profile::pdfA2u()->writesInfoDictionary());
+        self::assertFalse(Profile::pdfA4()->writesInfoDictionary());
+        self::assertFalse(Profile::pdfA4f()->writesInfoDictionary());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_win_ansi_encoding(): void
     {
         self::assertFalse(Profile::pdf10()->supportsWinAnsiEncoding());

@@ -241,6 +241,11 @@ final readonly class Profile
         return !$this->isPdfA();
     }
 
+    public function writesInfoDictionary(): bool
+    {
+        return !$this->isPdfA4();
+    }
+
     public function supportsWinAnsiEncoding(): bool
     {
         return $this->version > PdfVersion::V1_0;

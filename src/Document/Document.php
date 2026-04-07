@@ -199,7 +199,7 @@ final class Document
             $objects[] = $attachment->getEmbeddedFile();
         }
 
-        if (!$this->profile->isPdfA4()) {
+        if ($this->profile->writesInfoDictionary()) {
             $objects[] = $this->info;
         }
 
@@ -1126,7 +1126,7 @@ final class Document
 
     public function shouldWriteInfoDictionary(): bool
     {
-        return !$this->profile->isPdfA4();
+        return $this->profile->writesInfoDictionary();
     }
 
     public function render(): string
