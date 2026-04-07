@@ -54,5 +54,15 @@ final class StructElemTest extends TestCase
         self::assertStringContainsString('/S /TR', (new StructElem(13, 'TR'))->render());
         self::assertStringContainsString('/S /TH', (new StructElem(14, 'TH'))->render());
         self::assertStringContainsString('/S /TD', (new StructElem(15, 'TD'))->render());
+        self::assertStringContainsString('/S /Figure', (new StructElem(16, 'Figure'))->render());
+    }
+
+    #[Test]
+    public function it_renders_alt_text_for_structure_elements(): void
+    {
+        $structElem = new StructElem(12, 'Figure');
+        $structElem->setAltText('Illustration');
+
+        self::assertStringContainsString('/Alt (Illustration)', $structElem->render());
     }
 }

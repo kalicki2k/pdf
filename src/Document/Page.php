@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Form\FormWidgetFactory;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
@@ -1400,6 +1401,7 @@ final class Page extends IndirectObject
         Position $position,
         ?float $width = null,
         ?float $height = null,
+        ImageOptions $options = new ImageOptions(),
     ): self {
         if ($width !== null && $width <= 0) {
             throw new InvalidArgumentException('Image width must be greater than zero.');
@@ -1407,6 +1409,10 @@ final class Page extends IndirectObject
 
         if ($height !== null && $height <= 0) {
             throw new InvalidArgumentException('Image height must be greater than zero.');
+        }
+
+        if ($options->structureTag !== null) {
+            $this->document->ensureStructureEnabled();
         }
 
         $width ??= $image->getWidth();
@@ -1418,7 +1424,36 @@ final class Page extends IndirectObject
 
         $imageObject = $this->createImageObject($image);
         $resourceName = $this->resources->addImage($imageObject);
-        $this->contents->addElement(new DrawImage($resourceName, $position->x, $position->y, $width, $height));
+        $artifactTag = $options->structureTag === null && $this->document->isRenderingArtifactContext()
+            ? 'Artifact'
+            : null;
+        $contentTag = $options->structureTag !== null
+            ? $options->structureTag->value
+            : $artifactTag;
+        $markedContentId = $options->structureTag !== null ? $this->markedContentId++ : null;
+
+        $this->contents->addElement(new DrawImage(
+            $resourceName,
+            $position->x,
+            $position->y,
+            $width,
+            $height,
+            $markedContentId,
+            $contentTag,
+        ));
+
+        if ($options->structureTag !== null && $markedContentId !== null) {
+            $structElem = $this->document->createStructElem(
+                $options->structureTag,
+                $markedContentId,
+                $this,
+                $options->parentStructElem,
+            );
+
+            if ($options->altText !== null && $options->altText !== '') {
+                $structElem->setAltText($options->altText);
+            }
+        }
 
         return $this;
     }

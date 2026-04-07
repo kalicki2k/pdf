@@ -12,6 +12,7 @@ use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Document\PathBuilder;
@@ -409,9 +410,9 @@ final readonly class Page
         return $this;
     }
 
-    public function addImage(Image $image, Position $position, ?float $width = null, ?float $height = null): self
+    public function addImage(Image $image, Position $position, ?float $width = null, ?float $height = null, ImageOptions $options = new ImageOptions()): self
     {
-        $this->page->addImage($image, $position, $width, $height);
+        $this->page->addImage($image, $position, $width, $height, $options);
 
         return $this;
     }

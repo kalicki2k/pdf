@@ -14,6 +14,7 @@ use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Style\BadgeStyle;
@@ -220,6 +221,14 @@ final class PublicApiTest extends TestCase
             ->addRow(['Spalte A', 'Spalte B'], header: true)
             ->addRow(['Wert A', 'Wert B']);
 
+        $page->addImage(
+            new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+            new Position(115, 20),
+            10,
+            10,
+            new ImageOptions(structureTag: StructureTag::Figure, altText: 'Dekorative Testgrafik'),
+        );
+
         $rendered = $document->render();
 
         self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
@@ -237,6 +246,8 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /TR', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /TH', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /TD', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Figure', $rendered);
+        self::assertStringContainsString('/Alt (Dekorative Testgrafik)', $rendered);
     }
 
     #[Test]

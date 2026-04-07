@@ -24,6 +24,7 @@ use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Insets;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\PathBuilder;
@@ -92,6 +93,28 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/XObject << /Im1 7 0 R >>', $page->resources->render());
         self::assertStringContainsString("160 0 0 100 10 20 cm\n/Im1 Do", $page->contents->render());
         self::assertStringContainsString("7 0 obj\n<< /Type /XObject\n/Subtype /Image", $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_tagged_figure_with_alt_text_to_the_page(): void
+    {
+        $document = new Document(profile: Profile::pdfA2a());
+        $page = $document->addPage();
+        $image = new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00");
+
+        $page->addImage(
+            $image,
+            new Position(10, 20),
+            30,
+            40,
+            new ImageOptions(structureTag: StructureTag::Figure, altText: 'Schwarzes Pixel'),
+        );
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Figure << /MCID 0 >> BDC', $page->contents->render());
+        self::assertStringContainsString('/Type /StructElem /S /Figure', $rendered);
+        self::assertStringContainsString('/Alt (Schwarzes Pixel)', $rendered);
     }
 
     #[Test]

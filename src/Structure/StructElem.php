@@ -13,6 +13,7 @@ use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\RawType;
 use Kalle\Pdf\Types\ReferenceType;
+use Kalle\Pdf\Types\StringType;
 
 final class StructElem extends IndirectObject
 {
@@ -21,6 +22,7 @@ final class StructElem extends IndirectObject
     private ?int $markedContentId = null;
     private ?StructElem $parent = null;
     private ?Page $page = null;
+    private ?string $altText = null;
 
     public function __construct(
         int                     $id,
@@ -46,6 +48,13 @@ final class StructElem extends IndirectObject
         return $this;
     }
 
+    public function setAltText(string $altText): self
+    {
+        $this->altText = $altText;
+
+        return $this;
+    }
+
     public function render(): string
     {
         $dictionary = new DictionaryType([
@@ -59,6 +68,10 @@ final class StructElem extends IndirectObject
 
         if ($this->page !== null) {
             $dictionary->add('Pg', new ReferenceType($this->page));
+        }
+
+        if ($this->altText !== null && $this->altText !== '') {
+            $dictionary->add('Alt', new StringType($this->altText));
         }
 
         if ($this->markedContentId !== null) {

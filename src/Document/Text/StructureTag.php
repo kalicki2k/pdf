@@ -30,4 +30,5 @@ enum StructureTag: string
     case TableRow = 'TR';
     case TableHeaderCell = 'TH';
     case TableDataCell = 'TD';
+    case Figure = 'Figure';
 }

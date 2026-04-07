@@ -37,4 +37,20 @@ final class DrawImageTest extends TestCase
             $image->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_a_tagged_image_draw_command(): void
+    {
+        $image = new DrawImage('Im3', 10, 20, 30, 40, 7, 'Figure');
+
+        self::assertSame(
+            "q\n"
+            . "/Figure << /MCID 7 >> BDC\n"
+            . "30 0 0 40 10 20 cm\n"
+            . "/Im3 Do\n"
+            . "EMC\n"
+            . 'Q',
+            $image->render(),
+        );
+    }
 }

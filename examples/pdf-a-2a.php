@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\Text\ListOptions;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
@@ -125,6 +127,17 @@ $table
     ->addRow(['Strukturierte Ueberschrift', 'H1'])
     ->addRow(['Strukturierte Liste', 'L / LI / Lbl / LBody'])
     ->addRow(['Strukturierte Tabelle', 'Table / TR / TH / TD']);
+
+$page->addImage(
+    new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+    new Position(Units::mm(160), Units::mm(255)),
+    Units::mm(10),
+    Units::mm(10),
+    new ImageOptions(
+        structureTag: StructureTag::Figure,
+        altText: 'Kleines Beispielbild',
+    ),
+);
 
 $targetPath = $outputDir . '/pdf-a-2a_' . date('Y-m-d-H-i-s') . '.pdf';
 file_put_contents($targetPath, $document->render());
