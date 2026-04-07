@@ -14,6 +14,8 @@ use Kalle\Pdf\Types\StringType;
 
 final class SignatureFieldAnnotation extends IndirectObject implements PageAnnotation
 {
+    private ?int $structParentId = null;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -22,8 +24,16 @@ final class SignatureFieldAnnotation extends IndirectObject implements PageAnnot
         private readonly float $width,
         private readonly float $height,
         private readonly string $name,
+        private readonly ?string $tooltip = null,
     ) {
         parent::__construct($id);
+    }
+
+    public function withStructParent(int $structParentId): self
+    {
+        $this->structParentId = $structParentId;
+
+        return $this;
     }
 
     public function render(): string
@@ -42,6 +52,14 @@ final class SignatureFieldAnnotation extends IndirectObject implements PageAnnot
             'P' => new ReferenceType($this->page),
             'T' => new StringType($this->name),
         ]);
+
+        if ($this->structParentId !== null) {
+            $dictionary->add('StructParent', $this->structParentId);
+        }
+
+        if ($this->tooltip !== null && $this->tooltip !== '') {
+            $dictionary->add('TU', new StringType($this->tooltip));
+        }
 
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL

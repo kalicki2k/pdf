@@ -247,6 +247,30 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_the_current_combo_box_implementation(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsCurrentComboBoxImplementation());
+        self::assertTrue(Profile::pdfUa1()->supportsCurrentComboBoxImplementation());
+        self::assertFalse(Profile::pdfA2u()->supportsCurrentComboBoxImplementation());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_support_the_current_list_box_implementation(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsCurrentListBoxImplementation());
+        self::assertTrue(Profile::pdfUa1()->supportsCurrentListBoxImplementation());
+        self::assertFalse(Profile::pdfA2u()->supportsCurrentListBoxImplementation());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_support_the_current_signature_field_implementation(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsCurrentSignatureFieldImplementation());
+        self::assertTrue(Profile::pdfUa1()->supportsCurrentSignatureFieldImplementation());
+        self::assertFalse(Profile::pdfA2u()->supportsCurrentSignatureFieldImplementation());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_write_the_info_dictionary(): void
     {
         self::assertTrue(Profile::pdf14()->writesInfoDictionary());

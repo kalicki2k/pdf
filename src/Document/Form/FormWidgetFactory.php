@@ -27,19 +27,21 @@ final readonly class FormWidgetFactory
 {
     /**
      * @param Closure(): int $nextObjectId
-     * @param Closure(): AcroForm $ensureAcroForm
      * @param Closure(): AcroForm $ensureTextFieldAcroForm
      * @param Closure(): AcroForm $ensurePushButtonAcroForm
      * @param Closure(): AcroForm $ensureRadioButtonAcroForm
+     * @param Closure(): AcroForm $ensureComboBoxAcroForm
+     * @param Closure(): AcroForm $ensureListBoxAcroForm
      * @param Closure(string): FontDefinition $resolveFont
      */
     public function __construct(
         private Page    $page,
         private Closure $nextObjectId,
-        private Closure $ensureAcroForm,
         private Closure $ensureTextFieldAcroForm,
         private Closure $ensurePushButtonAcroForm,
         private Closure $ensureRadioButtonAcroForm,
+        private Closure $ensureComboBoxAcroForm,
+        private Closure $ensureListBoxAcroForm,
         private Closure $resolveFont,
     ) {
     }
@@ -175,6 +177,7 @@ final readonly class FormWidgetFactory
         ?Color $textColor,
         ?FormFieldFlags $flags,
         ?string $defaultValue,
+        ?string $accessibleName,
     ): ComboBoxAnnotation {
         if ($name === '') {
             throw new InvalidArgumentException('Combo box name must not be empty.');
@@ -196,7 +199,7 @@ final readonly class FormWidgetFactory
             throw new InvalidArgumentException('Combo box default value must reference one of the available options.');
         }
 
-        $fontResourceName = $this->registerAcroFormFont($baseFont);
+        $fontResourceName = $this->registerComboBoxAcroFormFont($baseFont);
 
         return new ComboBoxAnnotation(
             $this->nextObjectId(),
@@ -213,6 +216,7 @@ final readonly class FormWidgetFactory
             $flags,
             $textColor,
             $defaultValue,
+            $accessibleName,
         );
     }
 
@@ -231,6 +235,7 @@ final readonly class FormWidgetFactory
         ?Color $textColor,
         ?FormFieldFlags $flags,
         string | array | null $defaultValue,
+        ?string $accessibleName,
     ): ListBoxAnnotation {
         if ($name === '') {
             throw new InvalidArgumentException('List box name must not be empty.');
@@ -246,7 +251,7 @@ final readonly class FormWidgetFactory
         $this->assertSelectionExists($value, $options, 'List box value must reference one of the available options.');
         $this->assertSelectionExists($defaultValue, $options, 'List box default value must reference one of the available options.');
 
-        $fontResourceName = $this->registerAcroFormFont($baseFont);
+        $fontResourceName = $this->registerListBoxAcroFormFont($baseFont);
 
         return new ListBoxAnnotation(
             $this->nextObjectId(),
@@ -263,10 +268,11 @@ final readonly class FormWidgetFactory
             $flags,
             $textColor,
             $defaultValue,
+            $accessibleName,
         );
     }
 
-    public function createSignatureField(string $name, Rect $box): SignatureFieldAnnotation
+    public function createSignatureField(string $name, Rect $box, ?string $accessibleName): SignatureFieldAnnotation
     {
         if ($name === '') {
             throw new InvalidArgumentException('Signature field name must not be empty.');
@@ -282,6 +288,7 @@ final readonly class FormWidgetFactory
             $box->width,
             $box->height,
             $name,
+            $accessibleName,
         );
     }
 
@@ -333,21 +340,9 @@ final readonly class FormWidgetFactory
         return ($this->nextObjectId)();
     }
 
-    private function ensureAcroForm(): AcroForm
-    {
-        return ($this->ensureAcroForm)();
-    }
-
     private function ensureTextFieldAcroForm(): AcroForm
     {
         return ($this->ensureTextFieldAcroForm)();
-    }
-
-    private function registerAcroFormFont(string $baseFont): string
-    {
-        $font = ($this->resolveFont)($baseFont);
-
-        return $this->ensureAcroForm()->registerFont($font);
     }
 
     private function registerTextFieldAcroFormFont(string $baseFont): string
@@ -367,11 +362,35 @@ final readonly class FormWidgetFactory
         return ($this->ensureRadioButtonAcroForm)();
     }
 
+    private function ensureComboBoxAcroForm(): AcroForm
+    {
+        return ($this->ensureComboBoxAcroForm)();
+    }
+
+    private function ensureListBoxAcroForm(): AcroForm
+    {
+        return ($this->ensureListBoxAcroForm)();
+    }
+
     private function registerPushButtonAcroFormFont(string $baseFont): string
     {
         $font = ($this->resolveFont)($baseFont);
 
         return $this->ensurePushButtonAcroForm()->registerFont($font);
+    }
+
+    private function registerComboBoxAcroFormFont(string $baseFont): string
+    {
+        $font = ($this->resolveFont)($baseFont);
+
+        return $this->ensureComboBoxAcroForm()->registerFont($font);
+    }
+
+    private function registerListBoxAcroFormFont(string $baseFont): string
+    {
+        $font = ($this->resolveFont)($baseFont);
+
+        return $this->ensureListBoxAcroForm()->registerFont($font);
     }
 
     private function assertRectHasPositiveDimensions(Rect $box, string $subject): void

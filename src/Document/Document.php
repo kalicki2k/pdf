@@ -791,6 +791,54 @@ final class Document
         return $this->acroForm;
     }
 
+    public function ensureComboBoxAcroForm(): AcroForm
+    {
+        if (!$this->profile->supportsCurrentComboBoxImplementation()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow AcroForm fields in the current implementation.',
+                $this->profile->name(),
+            ));
+        }
+
+        if ($this->acroForm === null) {
+            $this->acroForm = new AcroForm(++$this->objectId);
+        }
+
+        return $this->acroForm;
+    }
+
+    public function ensureListBoxAcroForm(): AcroForm
+    {
+        if (!$this->profile->supportsCurrentListBoxImplementation()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow AcroForm fields in the current implementation.',
+                $this->profile->name(),
+            ));
+        }
+
+        if ($this->acroForm === null) {
+            $this->acroForm = new AcroForm(++$this->objectId);
+        }
+
+        return $this->acroForm;
+    }
+
+    public function ensureSignatureFieldAcroForm(): AcroForm
+    {
+        if (!$this->profile->supportsCurrentSignatureFieldImplementation()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow AcroForm fields in the current implementation.',
+                $this->profile->name(),
+            ));
+        }
+
+        if ($this->acroForm === null) {
+            $this->acroForm = new AcroForm(++$this->objectId);
+        }
+
+        return $this->acroForm;
+    }
+
     /**
      * @return list<array{
      *     baseFont: string,

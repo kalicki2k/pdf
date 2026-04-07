@@ -461,8 +461,9 @@ final readonly class Page
         ?Color $textColor = null,
         ?FormFieldFlags $flags = null,
         ?string $defaultValue = null,
+        ?string $accessibleName = null,
     ): self {
-        $this->page->addComboBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue);
+        $this->page->addComboBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue, $accessibleName);
 
         return $this;
     }
@@ -482,15 +483,16 @@ final readonly class Page
         ?Color $textColor = null,
         ?FormFieldFlags $flags = null,
         string | array | null $defaultValue = null,
+        ?string $accessibleName = null,
     ): self {
-        $this->page->addListBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue);
+        $this->page->addListBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue, $accessibleName);
 
         return $this;
     }
 
-    public function addSignatureField(string $name, Rect $box): self
+    public function addSignatureField(string $name, Rect $box, ?string $accessibleName = null): self
     {
-        $this->page->addSignatureField($name, $box);
+        $this->page->addSignatureField($name, $box, $accessibleName);
 
         return $this;
     }

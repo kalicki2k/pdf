@@ -297,6 +297,24 @@ final readonly class Profile
             || $this->isPdfUa();
     }
 
+    public function supportsCurrentComboBoxImplementation(): bool
+    {
+        return $this->supportsAcroForms()
+            || $this->isPdfUa();
+    }
+
+    public function supportsCurrentListBoxImplementation(): bool
+    {
+        return $this->supportsAcroForms()
+            || $this->isPdfUa();
+    }
+
+    public function supportsCurrentSignatureFieldImplementation(): bool
+    {
+        return $this->supportsAcroForms()
+            || $this->isPdfUa();
+    }
+
     public function writesInfoDictionary(): bool
     {
         return !$this->isPdfA4();

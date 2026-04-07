@@ -27,4 +27,17 @@ final class SignatureFieldAnnotationTest extends TestCase
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
+
+    #[Test]
+    public function it_renders_accessibility_entries_for_pdf_ua_signature_fields(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $annotation = new SignatureFieldAnnotation(7, $page, 10, 20, 100, 30, 'approval_signature', 'Approval signature');
+        $annotation->withStructParent(3);
+
+        self::assertStringContainsString('/StructParent 3', $annotation->render());
+        self::assertStringContainsString('/TU (Approval signature)', $annotation->render());
+    }
 }

@@ -441,7 +441,7 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_signature_fields_for_pdf_ua_1_through_the_public_api(): void
+    public function it_renders_an_accessible_signature_field_for_pdf_ua_1_through_the_public_api(): void
     {
         $document = new Document(
             profile: Profile::pdfUa1(),
@@ -450,10 +450,15 @@ final class PublicApiTest extends TestCase
         );
         $page = $document->addPage(PageSize::custom(100, 100));
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/UA-1 does not allow AcroForm fields in the current implementation.');
+        $page->addSignatureField('signature', new Rect(10, 20, 40, 15), 'Approval signature');
 
-        $page->addSignatureField('signature', new Rect(10, 20, 40, 15));
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/FT /Sig', $rendered);
+        self::assertStringContainsString('/TU (Approval signature)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Approval signature\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
@@ -522,6 +527,68 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('/Tabs /S', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Standard delivery\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Express delivery\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_an_accessible_combo_box_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addComboBox(
+            'country',
+            new Rect(10, 20, 80, 12),
+            ['de' => 'Deutschland', 'at' => 'Oesterreich'],
+            'de',
+            'Helvetica',
+            12,
+            accessibleName: 'Country selection',
+        );
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/T (country)', $rendered);
+        self::assertStringContainsString('/V (de)', $rendered);
+        self::assertStringContainsString('/TU (Country selection)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Country selection\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_an_accessible_list_box_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addListBox(
+            'topics',
+            new Rect(10, 20, 80, 40),
+            ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
+            'forms',
+            'Helvetica',
+            12,
+            accessibleName: 'Topics selection',
+        );
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/T (topics)', $rendered);
+        self::assertStringContainsString('/V (forms)', $rendered);
+        self::assertStringContainsString('/TU (Topics selection)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Topics selection\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]

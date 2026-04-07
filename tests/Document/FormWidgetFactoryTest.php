@@ -118,6 +118,7 @@ final class FormWidgetFactoryTest extends TestCase
             Color::rgb(255, 0, 0),
             new FormFieldFlags(required: true, editable: true),
             'standard',
+            'Delivery method',
         );
 
         self::assertInstanceOf(ComboBoxAnnotation::class, $annotation);
@@ -126,6 +127,7 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/V (express)', $annotation->render());
         self::assertStringContainsString('/DV (standard)', $annotation->render());
         self::assertStringContainsString('/Ff 393218', $annotation->render());
+        self::assertStringContainsString('/TU (Delivery method)', $annotation->render());
     }
 
     #[Test]
@@ -146,6 +148,7 @@ final class FormWidgetFactoryTest extends TestCase
             null,
             new FormFieldFlags(multiSelect: true),
             ['b'],
+            'Feature selection',
         );
 
         self::assertInstanceOf(ListBoxAnnotation::class, $annotation);
@@ -154,6 +157,7 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/V [(a) (c)]', $annotation->render());
         self::assertStringContainsString('/DV [(b)]', $annotation->render());
         self::assertStringContainsString('/Ff 2097152', $annotation->render());
+        self::assertStringContainsString('/TU (Feature selection)', $annotation->render());
     }
 
     #[Test]
@@ -174,6 +178,7 @@ final class FormWidgetFactoryTest extends TestCase
             null,
             null,
             null,
+            null,
         );
 
         self::assertInstanceOf(ListBoxAnnotation::class, $annotation);
@@ -188,10 +193,11 @@ final class FormWidgetFactoryTest extends TestCase
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
 
-        $annotation = $factory->createSignatureField('signature', new Rect(10, 20, 100, 30));
+        $annotation = $factory->createSignatureField('signature', new Rect(10, 20, 100, 30), 'Approval signature');
 
         self::assertInstanceOf(SignatureFieldAnnotation::class, $annotation);
         self::assertStringContainsString('/T (signature)', $annotation->render());
+        self::assertStringContainsString('/TU (Approval signature)', $annotation->render());
     }
 
     #[Test]
@@ -247,28 +253,28 @@ final class FormWidgetFactoryTest extends TestCase
             ['Radio button name must not be empty.', fn (): array => $factory->createRadioButton('', 'yes', new Position(10, 20), 12, false, null)],
             ['Radio button value may contain only letters, numbers, dots, underscores and hyphens.', fn (): array => $factory->createRadioButton('delivery', 'bad value', new Position(10, 20), 12, false, null)],
             ['Radio button size must be greater than zero.', fn (): array => $factory->createRadioButton('delivery', 'yes', new Position(10, 20), 0, false, null)],
-            ['Combo box name must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['Combo box width must be greater than zero.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 0, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['Combo box height must be greater than zero.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 0), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['Combo box font size must be greater than zero.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 0, null, null, null)],
-            ['Combo box options must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), [], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['Combo box option values must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['Combo box option labels must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['a' => ''], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['Combo box value must reference one of the available options.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], 'b', StandardFontName::HELVETICA, 12, null, null, null)],
-            ['Combo box default value must reference one of the available options.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, 'b')],
-            ['List box name must not be empty.', fn (): ListBoxAnnotation => $factory->createListBox('', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['List box width must be greater than zero.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 0, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['List box height must be greater than zero.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 0), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['List box font size must be greater than zero.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 0, null, null, null)],
-            ['List box options must not be empty.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), [], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['List box option values must not be empty.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['List box option labels must not be empty.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => ''], null, StandardFontName::HELVETICA, 12, null, null, null)],
-            ['List box value must reference one of the available options.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], 'b', StandardFontName::HELVETICA, 12, null, null, null)],
-            ['List box value must reference one of the available options.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], ['a', 'b'], StandardFontName::HELVETICA, 12, null, null, null)],
-            ['List box default value must reference one of the available options.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, 'b')],
-            ['Signature field name must not be empty.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('', new Rect(10, 20, 100, 20))],
-            ['Signature field width must be greater than zero.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('signature', new Rect(10, 20, 0, 20))],
-            ['Signature field height must be greater than zero.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('signature', new Rect(10, 20, 100, 0))],
+            ['Combo box name must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['Combo box width must be greater than zero.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 0, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['Combo box height must be greater than zero.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 0), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['Combo box font size must be greater than zero.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 0, null, null, null, null)],
+            ['Combo box options must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), [], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['Combo box option values must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['Combo box option labels must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['a' => ''], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['Combo box value must reference one of the available options.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], 'b', StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['Combo box default value must reference one of the available options.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, 'b', null)],
+            ['List box name must not be empty.', fn (): ListBoxAnnotation => $factory->createListBox('', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['List box width must be greater than zero.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 0, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['List box height must be greater than zero.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 0), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['List box font size must be greater than zero.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 0, null, null, null, null)],
+            ['List box options must not be empty.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), [], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['List box option values must not be empty.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['List box option labels must not be empty.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => ''], null, StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['List box value must reference one of the available options.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], 'b', StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['List box value must reference one of the available options.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], ['a', 'b'], StandardFontName::HELVETICA, 12, null, null, null, null)],
+            ['List box default value must reference one of the available options.', fn (): ListBoxAnnotation => $factory->createListBox('features', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, 'b', null)],
+            ['Signature field name must not be empty.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('', new Rect(10, 20, 100, 20), null)],
+            ['Signature field width must be greater than zero.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('signature', new Rect(10, 20, 0, 20), null)],
+            ['Signature field height must be greater than zero.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('signature', new Rect(10, 20, 100, 0), null)],
             ['Push button name must not be empty.', fn (): PushButtonAnnotation => $factory->createPushButton('', 'Senden', new Rect(10, 20, 100, 20), StandardFontName::HELVETICA, 12, null, null, null)],
             ['Push button label must not be empty.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', '', new Rect(10, 20, 100, 20), StandardFontName::HELVETICA, 12, null, null, null)],
             ['Push button width must be greater than zero.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', 'Senden', new Rect(10, 20, 0, 20), StandardFontName::HELVETICA, 12, null, null, null)],
@@ -298,6 +304,9 @@ final class FormWidgetFactoryTest extends TestCase
             $page,
             static function () use (&$nextObjectId): int {
                 return $nextObjectId++;
+            },
+            static function () use (&$acroForm): AcroForm {
+                return $acroForm;
             },
             static function () use (&$acroForm): AcroForm {
                 return $acroForm;

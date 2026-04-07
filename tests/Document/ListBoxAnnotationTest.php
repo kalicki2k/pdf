@@ -173,4 +173,31 @@ final class ListBoxAnnotationTest extends TestCase
         self::assertStringNotContainsString('/DV (', $annotation->render());
         self::assertSame([], $annotation->getRelatedObjects());
     }
+
+    #[Test]
+    public function it_renders_accessibility_metadata_for_list_boxes(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new ListBoxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            40,
+            'topics',
+            ['pdf' => 'PDF'],
+            'pdf',
+            'F1',
+            12,
+            tooltip: 'Topics selection',
+        );
+        $annotation->withStructParent(1);
+
+        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/TU (Topics selection)', $annotation->render());
+    }
 }

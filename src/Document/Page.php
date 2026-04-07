@@ -1631,8 +1631,10 @@ final class Page extends IndirectObject
         ?Color $textColor = null,
         ?FormFieldFlags $flags = null,
         ?string $defaultValue = null,
+        ?string $accessibleName = null,
     ): self {
-        $acroForm = $this->document->ensureAcroForm();
+        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName);
+        $acroForm = $this->document->ensureComboBoxAcroForm();
         $annotation = $this->formWidgetFactory()->createComboBox(
             $name,
             $box,
@@ -1643,8 +1645,10 @@ final class Page extends IndirectObject
             $textColor,
             $flags,
             $defaultValue,
+            $resolvedAccessibleName,
         );
 
+        $this->bindAccessibleFormField($annotation, $resolvedAccessibleName);
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
 
@@ -1666,8 +1670,10 @@ final class Page extends IndirectObject
         ?Color $textColor = null,
         ?FormFieldFlags $flags = null,
         string | array | null $defaultValue = null,
+        ?string $accessibleName = null,
     ): self {
-        $acroForm = $this->document->ensureAcroForm();
+        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName);
+        $acroForm = $this->document->ensureListBoxAcroForm();
         $annotation = $this->formWidgetFactory()->createListBox(
             $name,
             $box,
@@ -1678,8 +1684,10 @@ final class Page extends IndirectObject
             $textColor,
             $flags,
             $defaultValue,
+            $resolvedAccessibleName,
         );
 
+        $this->bindAccessibleFormField($annotation, $resolvedAccessibleName);
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
 
@@ -1689,10 +1697,13 @@ final class Page extends IndirectObject
     public function addSignatureField(
         string $name,
         Rect $box,
+        ?string $accessibleName = null,
     ): self {
-        $acroForm = $this->document->ensureAcroForm();
-        $annotation = $this->formWidgetFactory()->createSignatureField($name, $box);
+        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName);
+        $acroForm = $this->document->ensureSignatureFieldAcroForm();
+        $annotation = $this->formWidgetFactory()->createSignatureField($name, $box, $resolvedAccessibleName);
 
+        $this->bindAccessibleFormField($annotation, $resolvedAccessibleName);
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
 
@@ -2154,16 +2165,17 @@ final class Page extends IndirectObject
         return $this->formWidgetFactory ??= new FormWidgetFactory(
             $this,
             fn (): int => $this->document->getUniqObjectId(),
-            fn (): AcroForm => $this->document->ensureAcroForm(),
             fn (): AcroForm => $this->document->ensureTextFieldAcroForm(),
             fn (): AcroForm => $this->document->ensurePushButtonAcroForm(),
             fn (): AcroForm => $this->document->ensureRadioButtonAcroForm(),
+            fn (): AcroForm => $this->document->ensureComboBoxAcroForm(),
+            fn (): AcroForm => $this->document->ensureListBoxAcroForm(),
             fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
         );
     }
 
     private function bindAccessibleFormField(
-        Annotation\TextFieldAnnotation | Annotation\CheckboxAnnotation | Annotation\PushButtonAnnotation | Annotation\RadioButtonWidgetAnnotation $annotation,
+        Annotation\TextFieldAnnotation | Annotation\CheckboxAnnotation | Annotation\PushButtonAnnotation | Annotation\RadioButtonWidgetAnnotation | Annotation\ComboBoxAnnotation | Annotation\ListBoxAnnotation | Annotation\SignatureFieldAnnotation $annotation,
         ?string $accessibleName,
     ): void {
         $profile = $this->document->getProfile();

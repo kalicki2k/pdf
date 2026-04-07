@@ -146,4 +146,31 @@ final class ComboBoxAnnotationTest extends TestCase
         self::assertStringNotContainsString('/DV (', $annotation->render());
         self::assertSame([], $annotation->getRelatedObjects());
     }
+
+    #[Test]
+    public function it_renders_accessibility_metadata_for_combo_boxes(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new ComboBoxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            12,
+            'country',
+            ['de' => 'Deutschland'],
+            'de',
+            'F1',
+            12,
+            tooltip: 'Country selection',
+        );
+        $annotation->withStructParent(1);
+
+        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/TU (Country selection)', $annotation->render());
+    }
 }

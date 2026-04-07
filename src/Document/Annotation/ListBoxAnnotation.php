@@ -16,6 +16,8 @@ use Kalle\Pdf\Types\StringType;
 
 final class ListBoxAnnotation extends IndirectObject implements PageAnnotation
 {
+    private ?int $structParentId = null;
+
     /**
      * @param array<string, string> $options
      * @param list<string>|string|null $value
@@ -36,8 +38,16 @@ final class ListBoxAnnotation extends IndirectObject implements PageAnnotation
         private readonly ?FormFieldFlags $flags = null,
         private readonly ?Color $textColor = null,
         private readonly string | array | null $defaultValue = null,
+        private readonly ?string $tooltip = null,
     ) {
         parent::__construct($id);
+    }
+
+    public function withStructParent(int $structParentId): self
+    {
+        $this->structParentId = $structParentId;
+
+        return $this;
     }
 
     public function render(): string
@@ -72,6 +82,14 @@ final class ListBoxAnnotation extends IndirectObject implements PageAnnotation
                 array_values($this->options),
             )),
         ]);
+
+        if ($this->structParentId !== null) {
+            $dictionary->add('StructParent', $this->structParentId);
+        }
+
+        if ($this->tooltip !== null && $this->tooltip !== '') {
+            $dictionary->add('TU', new StringType($this->tooltip));
+        }
 
         $fieldFlags = ($this->flags ?? new FormFieldFlags())->toPdfFlags(listBox: true);
 

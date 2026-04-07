@@ -1918,6 +1918,33 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_an_accessible_combo_box_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addComboBox(
+            'country',
+            new Rect(10, 20, 80, 12),
+            ['de' => 'Deutschland', 'at' => 'Oesterreich'],
+            'de',
+            'Helvetica',
+            12,
+            accessibleName: 'Country selection',
+        );
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (Country selection)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $page->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Country selection\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_adds_a_default_value_to_the_combo_box_annotation(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
@@ -2005,6 +2032,33 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_an_accessible_list_box_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addListBox(
+            'topics',
+            new Rect(10, 20, 80, 40),
+            ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
+            'forms',
+            'Helvetica',
+            12,
+            accessibleName: 'Topics selection',
+        );
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (Topics selection)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $page->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Topics selection\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_adds_a_default_value_to_the_list_box_annotation(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
@@ -2084,6 +2138,24 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/Subtype /Widget', $document->render());
         self::assertStringContainsString('/FT /Sig', $document->render());
         self::assertStringContainsString('/T (approval_signature)', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_an_accessible_signature_field_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $result = $page->addSignatureField('approval_signature', new Rect(10, 20, 100, 30), 'Approval signature');
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (Approval signature)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $page->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Approval signature\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
