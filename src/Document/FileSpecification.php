@@ -17,7 +17,7 @@ final class FileSpecification extends IndirectObject
         private readonly string $filename,
         private readonly EmbeddedFileStream $embeddedFile,
         private readonly ?string $description = null,
-        private readonly ?string $afRelationship = null,
+        private readonly ?AssociatedFileRelationship $afRelationship = null,
     ) {
         parent::__construct($id);
     }
@@ -34,7 +34,7 @@ final class FileSpecification extends IndirectObject
 
     public function hasAfRelationship(): bool
     {
-        return $this->afRelationship !== null && $this->afRelationship !== '';
+        return $this->afRelationship !== null;
     }
 
     public function render(): string
@@ -54,9 +54,9 @@ final class FileSpecification extends IndirectObject
         }
 
         if ($this->hasAfRelationship()) {
-            /** @var string $afRelationship */
+            /** @var AssociatedFileRelationship $afRelationship */
             $afRelationship = $this->afRelationship;
-            $dictionary->add('AFRelationship', new NameType($afRelationship));
+            $dictionary->add('AFRelationship', new NameType($afRelationship->value));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

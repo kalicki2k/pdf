@@ -8,6 +8,7 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
+use Kalle\Pdf\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Document as InternalDocument;
 use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
@@ -536,6 +537,44 @@ final class PublicApiTest extends TestCase
         self::assertSame('pdf', $internalDocument->getKeywords()[0]);
         self::assertNotNull($internalDocument->getFontByBaseFont('Helvetica'));
         self::assertNotNull($internalDocument->getEncryptionOptions());
+    }
+
+    #[Test]
+    public function it_allows_associated_files_for_pdf_2_0_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::pdf20());
+
+        $document->addAttachment(
+            'data.json',
+            '{"items":[]}',
+            'Machine-readable source',
+            'application/json',
+            AssociatedFileRelationship::DATA,
+        );
+
+        $attachment = $this->internalDocument($document)->getAttachment('data.json');
+        $rendered = $document->render();
+
+        self::assertInstanceOf(FileSpecification::class, $attachment);
+        self::assertStringContainsString('/AFRelationship /Data', $attachment->render());
+        self::assertStringContainsString('/AF [', $rendered);
+    }
+
+    #[Test]
+    public function it_rejects_associated_files_for_pdf_1_7_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::pdf17());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.7 does not allow associated files. PDF 2.0 or a supporting archival profile is required.');
+
+        $document->addAttachment(
+            'data.json',
+            '{"items":[]}',
+            'Machine-readable source',
+            'application/json',
+            AssociatedFileRelationship::DATA,
+        );
     }
 
     #[Test]

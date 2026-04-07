@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Catalog;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Geometry\Position;
@@ -214,6 +215,25 @@ final class CatalogTest extends TestCase
         $rendered = $catalog->render();
 
         self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.xml) 5 0 R] >> >>', $rendered);
+        self::assertStringContainsString('/AF [5 0 R]', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_associated_files_for_pdf_2_0_attachments(): void
+    {
+        $document = new Document(profile: Profile::pdf20());
+        $document->addAttachment(
+            'data.json',
+            '{"items":[]}',
+            'Machine-readable source',
+            'application/json',
+            AssociatedFileRelationship::DATA,
+        );
+        $catalog = new Catalog(1, $document);
+
+        $rendered = $catalog->render();
+
+        self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.json) 5 0 R] >> >>', $rendered);
         self::assertStringContainsString('/AF [5 0 R]', $rendered);
     }
 }

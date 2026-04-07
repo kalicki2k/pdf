@@ -134,6 +134,16 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_associated_files(): void
+    {
+        self::assertFalse(Profile::pdf17()->supportsAssociatedFiles());
+        self::assertTrue(Profile::pdf20()->supportsAssociatedFiles());
+        self::assertTrue(Profile::pdfA3b()->supportsAssociatedFiles());
+        self::assertTrue(Profile::pdfA4f()->supportsAssociatedFiles());
+        self::assertFalse(Profile::pdfA4()->supportsAssociatedFiles());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_optional_content_groups(): void
     {
         self::assertFalse(Profile::pdf14()->supportsOptionalContentGroups());

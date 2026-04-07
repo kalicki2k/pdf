@@ -502,11 +502,20 @@ final class Document
         string $contents,
         ?string $description = null,
         ?string $mimeType = null,
+        ?AssociatedFileRelationship $afRelationship = null,
     ): self {
         $this->assertAllowsAttachments();
 
         if ($filename === '') {
             throw new InvalidArgumentException('Attachment filename must not be empty.');
+        }
+
+        $afRelationship ??= $this->profile->isPdfA3() || $this->profile->isPdfA4f()
+            ? AssociatedFileRelationship::DATA
+            : null;
+
+        if ($afRelationship !== null) {
+            $this->assertAllowsAssociatedFiles();
         }
 
         $embeddedFile = new EmbeddedFileStream($this->getUniqObjectId(), $contents, $mimeType);
@@ -515,7 +524,7 @@ final class Document
             $filename,
             $embeddedFile,
             $description,
-            $this->profile->isPdfA3() || $this->profile->isPdfA4f() ? 'Data' : null,
+            $afRelationship,
         );
 
         return $this;
@@ -526,6 +535,7 @@ final class Document
         ?string $filename = null,
         ?string $description = null,
         ?string $mimeType = null,
+        ?AssociatedFileRelationship $afRelationship = null,
     ): self {
         if (!is_file($path)) {
             throw new InvalidArgumentException("Attachment file '$path' does not exist.");
@@ -540,7 +550,7 @@ final class Document
             throw new InvalidArgumentException("Attachment file '$path' could not be read.");
         }
 
-        return $this->addAttachment($filename, $contents, $description, $mimeType);
+        return $this->addAttachment($filename, $contents, $description, $mimeType, $afRelationship);
     }
 
     /**
@@ -861,6 +871,18 @@ final class Document
         if ($this->profile->isPdfA()) {
             throw new InvalidArgumentException(sprintf('Profile %s does not allow embedded file attachments.', $this->profile->name()));
         }
+    }
+
+    private function assertAllowsAssociatedFiles(): void
+    {
+        if ($this->profile->supportsAssociatedFiles()) {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'PDF version %s does not allow associated files. PDF 2.0 or a supporting archival profile is required.',
+            PdfVersion::format($this->getVersion()),
+        ));
     }
 
     public function assertAllowsOptionalContentGroups(): void

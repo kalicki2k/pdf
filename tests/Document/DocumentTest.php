@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
@@ -276,6 +277,40 @@ final class DocumentTest extends TestCase
 
         self::assertCount(1, $document->getAttachments());
         self::assertStringContainsString('/AFRelationship /Data', $document->getAttachments()[0]->render());
+    }
+
+    #[Test]
+    public function it_allows_associated_files_for_pdf_2_0_documents(): void
+    {
+        $document = new Document(profile: Profile::pdf20());
+
+        $document->addAttachment(
+            'data.json',
+            '{"items":[]}',
+            'Machine-readable source',
+            'application/json',
+            AssociatedFileRelationship::DATA,
+        );
+
+        self::assertCount(1, $document->getAttachments());
+        self::assertStringContainsString('/AFRelationship /Data', $document->getAttachments()[0]->render());
+    }
+
+    #[Test]
+    public function it_rejects_associated_files_for_pdf_1_7_documents(): void
+    {
+        $document = new Document(profile: Profile::pdf17());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.7 does not allow associated files. PDF 2.0 or a supporting archival profile is required.');
+
+        $document->addAttachment(
+            'data.json',
+            '{"items":[]}',
+            'Machine-readable source',
+            'application/json',
+            AssociatedFileRelationship::DATA,
+        );
     }
 
     #[Test]

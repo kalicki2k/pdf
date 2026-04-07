@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf;
 
 use DateTimeImmutable;
+use Kalle\Pdf\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\OptionalContentGroup;
@@ -158,8 +159,9 @@ final readonly class Document
         string $contents,
         ?string $description = null,
         ?string $mimeType = null,
+        ?AssociatedFileRelationship $afRelationship = null,
     ): self {
-        $this->document->addAttachment($filename, $contents, $description, $mimeType);
+        $this->document->addAttachment($filename, $contents, $description, $mimeType, $afRelationship);
 
         return $this;
     }
@@ -172,8 +174,9 @@ final readonly class Document
         ?string $filename = null,
         ?string $description = null,
         ?string $mimeType = null,
+        ?AssociatedFileRelationship $afRelationship = null,
     ): self {
-        $this->document->addAttachmentFromFile($path, $filename, $description, $mimeType);
+        $this->document->addAttachmentFromFile($path, $filename, $description, $mimeType, $afRelationship);
 
         return $this;
     }

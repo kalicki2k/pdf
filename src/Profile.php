@@ -206,6 +206,13 @@ final readonly class Profile
         return $this->version >= PdfVersion::V1_7 && !$this->isPdfA();
     }
 
+    public function supportsAssociatedFiles(): bool
+    {
+        return ($this->isStandard() && $this->version >= PdfVersion::V2_0)
+            || $this->isPdfA3()
+            || $this->isPdfA4f();
+    }
+
     public function supportsOptionalContentGroups(): bool
     {
         return $this->version >= PdfVersion::V1_5 && !$this->isPdfA();
