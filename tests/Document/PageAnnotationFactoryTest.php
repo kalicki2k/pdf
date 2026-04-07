@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Annotation\FreeTextAnnotation;
+use Kalle\Pdf\Document\Annotation\HighlightAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotationFactory;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
 use Kalle\Pdf\Document\Annotation\TextAnnotation;
@@ -90,6 +91,23 @@ final class PageAnnotationFactoryTest extends TestCase
 
         self::assertInstanceOf(PopupAnnotation::class, $popup);
         self::assertSame([$popup], $parent->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_adds_a_pdf_a_appearance_stream_to_highlight_annotations(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $annotation = $factory->createHighlightAnnotation(new Rect(10, 20, 80, 12), null, 'Markiert', 'QA');
+
+        self::assertInstanceOf(HighlightAnnotation::class, $annotation);
+        self::assertStringContainsString('/F 4', $annotation->render());
+        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]

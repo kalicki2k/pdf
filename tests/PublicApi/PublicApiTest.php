@@ -438,6 +438,36 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_pdf_a_2u_highlight_annotations_with_flags_and_appearance_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            title: 'PDF/A-2u Highlight',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+
+        $page = $document->addPage(PageSize::custom(100, 100));
+        $page->addText('Hallo Highlight', new Position(10, 70), 'NotoSans-Regular', 12);
+        $page->addHighlightAnnotation(new Rect(10, 65, 20, 8), Color::rgb(1, 1, 0), 'Markiert', 'QA');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Highlight', $rendered);
+        self::assertStringContainsString('/F 4', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_3a_document_through_the_public_api(): void
     {
         $document = new Document(

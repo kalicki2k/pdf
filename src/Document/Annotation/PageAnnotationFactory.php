@@ -200,7 +200,7 @@ final readonly class PageAnnotationFactory
     ): HighlightAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'Highlight annotation');
 
-        return new HighlightAnnotation(
+        $annotation = new HighlightAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -211,6 +211,16 @@ final readonly class PageAnnotationFactory
             $contents,
             $title,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance(new TextAnnotationAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+            ));
+        }
+
+        return $annotation;
     }
 
     public function createUnderlineAnnotation(
