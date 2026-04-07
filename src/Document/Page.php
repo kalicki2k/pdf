@@ -28,6 +28,7 @@ use Kalle\Pdf\Document\Text\TextLayoutEngine;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\DrawImage;
+use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Line;
 use Kalle\Pdf\Element\Raw;
@@ -199,16 +200,20 @@ final class Page extends IndirectObject
         $badgeWidth = $textWidth + ($style->paddingHorizontal * 2);
         $badgeHeight = $size + ($style->paddingVertical * 2);
 
-        if ($style->cornerRadius > 0) {
-            $this->addRoundedRectangle(
-                new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
-                $style->cornerRadius,
-                $style->borderWidth,
-                $style->borderColor,
-                $style->fillColor,
-                $style->opacity,
-            );
-        } else {
+        $this->renderDecorativeContent(function () use ($position, $badgeWidth, $badgeHeight, $style): void {
+            if ($style->cornerRadius > 0) {
+                $this->addRoundedRectangle(
+                    new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
+                    $style->cornerRadius,
+                    $style->borderWidth,
+                    $style->borderColor,
+                    $style->fillColor,
+                    $style->opacity,
+                );
+
+                return;
+            }
+
             $this->addRectangle(
                 new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
                 $style->borderWidth,
@@ -216,7 +221,7 @@ final class Page extends IndirectObject
                 $style->fillColor,
                 $style->opacity,
             );
-        }
+        });
 
         $this->addText(
             $text,
@@ -270,16 +275,20 @@ final class Page extends IndirectObject
         $titleFont ??= $bodyFont;
         $bindLinkToText = $this->shouldBindHighLevelComponentLinkToText($link);
 
-        if ($style->cornerRadius > 0) {
-            $this->addRoundedRectangle(
-                new Rect($x, $y, $width, $height),
-                $style->cornerRadius,
-                $style->borderWidth,
-                $style->borderColor,
-                $style->fillColor,
-                $style->opacity,
-            );
-        } else {
+        $this->renderDecorativeContent(function () use ($style, $x, $y, $width, $height): void {
+            if ($style->cornerRadius > 0) {
+                $this->addRoundedRectangle(
+                    new Rect($x, $y, $width, $height),
+                    $style->cornerRadius,
+                    $style->borderWidth,
+                    $style->borderColor,
+                    $style->fillColor,
+                    $style->opacity,
+                );
+
+                return;
+            }
+
             $this->addRectangle(
                 new Rect($x, $y, $width, $height),
                 $style->borderWidth,
@@ -287,7 +296,7 @@ final class Page extends IndirectObject
                 $style->fillColor,
                 $style->opacity,
             );
-        }
+        });
 
         $contentWidth = $width - ($style->paddingHorizontal * 2);
 
@@ -433,13 +442,15 @@ final class Page extends IndirectObject
             ];
         }
 
-        $this->addPolygon(
-            $points,
-            $pointerStrokeWidth,
-            $pointerStrokeColor,
-            $pointerFillColor,
-            $pointerOpacity,
-        );
+        $this->renderDecorativeContent(function () use ($points, $pointerStrokeWidth, $pointerStrokeColor, $pointerFillColor, $pointerOpacity): void {
+            $this->addPolygon(
+                $points,
+                $pointerStrokeWidth,
+                $pointerStrokeColor,
+                $pointerFillColor,
+                $pointerOpacity,
+            );
+        });
 
         return $this;
     }
@@ -781,7 +792,7 @@ final class Page extends IndirectObject
         $colorOperator = $color?->renderStrokingOperator();
         $graphicsStateName = $this->resolveGraphicsStateName($opacity);
 
-        $this->contents->addElement(new Line(
+        $this->addGraphicElement(new Line(
             $from->x,
             $from->y,
             $to->x,
@@ -819,7 +830,7 @@ final class Page extends IndirectObject
 
         $graphicsStateName = $this->resolveGraphicsStateName($opacity);
 
-        $this->contents->addElement(new Rectangle(
+        $this->addGraphicElement(new Rectangle(
             $box->x,
             $box->y,
             $box->width,
@@ -1860,6 +1871,13 @@ final class Page extends IndirectObject
         $profile = $this->document->getProfile();
 
         if ($options->link === null || !$profile->requiresTaggedLinkAnnotations()) {
+            if ($options->parentStructElem !== null && $options->parentStructElem->tag() === $tag->value) {
+                $options->parentStructElem->setMarkedContent($markedContentId, $this);
+                $this->document->registerMarkedContentStructElem($this->structParentId, $options->parentStructElem);
+
+                return $options->parentStructElem;
+            }
+
             return $this->document->createStructElem($tag, $markedContentId, $this, $options->parentStructElem);
         }
 
@@ -2419,6 +2437,33 @@ final class Page extends IndirectObject
         $this->document->assertAllowsTransparency();
 
         return $this->resources->addOpacity($opacity);
+    }
+
+    public function addGraphicElement(Element $element): void
+    {
+        if ($this->document->isRenderingArtifactContext()) {
+            $this->contents->addElement(new Raw('/Artifact BMC'));
+            $this->contents->addElement($element);
+            $this->contents->addElement(new Raw('EMC'));
+
+            return;
+        }
+
+        $this->contents->addElement($element);
+    }
+
+    /**
+     * @param callable(): void $renderer
+     */
+    private function renderDecorativeContent(callable $renderer): void
+    {
+        if ($this->document->getProfile()->requiresTaggedPdf()) {
+            $this->document->renderInArtifactContext($renderer);
+
+            return;
+        }
+
+        $renderer();
     }
 
     private function createImageObject(Image $image): ImageObject

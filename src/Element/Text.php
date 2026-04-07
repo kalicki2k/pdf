@@ -53,8 +53,15 @@ class Text extends Element
 
     public function render(): string
     {
-        $output = 'q' . PHP_EOL
-            . 'BT' . PHP_EOL
+        $output = 'q' . PHP_EOL;
+
+        if ($this->tag !== null && $this->markedContentId !== null) {
+            $output .= "/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL;
+        } elseif ($this->tag !== null) {
+            $output .= "/$this->tag BMC" . PHP_EOL;
+        }
+
+        $output .= 'BT' . PHP_EOL
             . "/$this->font $this->size Tf" . PHP_EOL
             . "$this->x $this->y Td" . PHP_EOL;
 
@@ -66,19 +73,12 @@ class Text extends Element
             $output .= "/$this->graphicsState gs" . PHP_EOL;
         }
 
-        if ($this->tag !== null && $this->markedContentId !== null) {
-            $output .= "/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL;
-        } elseif ($this->tag !== null) {
-            $output .= "/$this->tag BMC" . PHP_EOL;
-        }
-
         $output .= $this->content . ' Tj' . PHP_EOL;
+        $output .= 'ET' . PHP_EOL;
 
         if ($this->tag !== null) {
             $output .= 'EMC' . PHP_EOL;
         }
-
-        $output .= 'ET' . PHP_EOL;
 
         foreach ($this->renderDecorations() as $decoration) {
             $output .= $decoration . PHP_EOL;

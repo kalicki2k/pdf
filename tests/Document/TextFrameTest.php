@@ -67,8 +67,8 @@ final class TextFrameTest extends TestCase
             ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(structureTag: StructureTag::Paragraph, spacingAfter: 8));
 
         self::assertSame($page, $frame->getPage());
-        self::assertStringContainsString("20 100 Td\n/H1 << /MCID 0 >> BDC\n(Headline) Tj", $page->contents->render());
-        self::assertStringContainsString("20 60 Td\n/P << /MCID 1 >> BDC\n(Hello world from PDF) Tj", $page->contents->render());
+        self::assertStringContainsString("/H1 << /MCID 0 >> BDC\nBT\n/F1 20 Tf\n20 100 Td\n(Headline) Tj\nET\nEMC", $page->contents->render());
+        self::assertStringContainsString("/P << /MCID 1 >> BDC\nBT\n/F1 10 Tf\n20 60 Td\n(Hello world from PDF) Tj\nET\nEMC", $page->contents->render());
         self::assertSame(40.0, $frame->getCursorY());
     }
 
@@ -294,6 +294,10 @@ final class TextFrameTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /LI ', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Lbl ', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /LBody ', $rendered);
+        self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Lbl '));
+        self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /LBody '));
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Lbl \/P \d+ 0 R \/Pg \d+ 0 R \/K 0/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/LBody \/P \d+ 0 R \/Pg \d+ 0 R \/K 1/', $rendered);
     }
 
     #[Test]

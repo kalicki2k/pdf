@@ -21,8 +21,9 @@ final class StructElem extends IndirectObject
     private array $kids = [];
     /** @var RawType[] */
     private array $objectReferences = [];
-    private ?int $markedContentId = null;
-    private ?StructElem $parent = null;
+    /** @var list<int> */
+    private array $markedContentIds = [];
+    private ?IndirectObject $parent = null;
     private ?Page $page = null;
     private ?string $altText = null;
 
@@ -42,12 +43,24 @@ final class StructElem extends IndirectObject
         return $this;
     }
 
+    public function setParent(IndirectObject $parent): self
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
     public function setMarkedContent(int $markedContentId, Page $page): self
     {
-        $this->markedContentId = $markedContentId;
+        $this->markedContentIds[] = $markedContentId;
         $this->page = $page;
 
         return $this;
+    }
+
+    public function tag(): string
+    {
+        return $this->tag;
     }
 
     public function setPage(Page $page): self
@@ -94,13 +107,13 @@ final class StructElem extends IndirectObject
             $dictionary->add('Alt', new StringType($this->altText));
         }
 
-        if ($this->markedContentId !== null && $this->kids === [] && $this->objectReferences === []) {
-            $dictionary->add('K', $this->markedContentId);
+        if (count($this->markedContentIds) === 1 && $this->kids === [] && $this->objectReferences === []) {
+            $dictionary->add('K', $this->markedContentIds[0]);
         } else {
             $kidReferences = [];
 
-            if ($this->markedContentId !== null) {
-                $kidReferences[] = $this->markedContentId;
+            foreach ($this->markedContentIds as $markedContentId) {
+                $kidReferences[] = $markedContentId;
             }
 
             foreach ($this->kids as $kid) {

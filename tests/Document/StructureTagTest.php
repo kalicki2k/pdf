@@ -31,6 +31,7 @@ final class StructureTagTest extends TestCase
             'ListBody' => 'LBody',
             'Quote' => 'Quote',
             'Note' => 'Note',
+            'Annotation' => 'Annot',
             'Part' => 'Part',
             'Section' => 'Sect',
             'Article' => 'Art',

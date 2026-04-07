@@ -47,12 +47,16 @@
     "example:pdfa4": "php examples/pdf-a-4.php",
     "example:pdfa4e": "php examples/pdf-a-4e.php",
     "example:pdfa4f": "php examples/pdf-a-4f.php",
+    "example:pdfua1": "php examples/pdf-ua-1.php",
     "phpstan": "phpstan analyse --debug",
     "test": "phpunit --configuration phpunit.xml.dist",
     "test:coverage": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-text",
     "test:coverage-html": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-html var/coverage",
     "test:pdfa-regression": "bash bin/test-pdfa-regression.sh",
+    "test:pdfua-regression": "bash bin/test-pdfua-regression.sh",
     "validate:pdfa": "bash bin/validate-pdfa.sh"
+    ,
+    "validate:pdfua": "bash bin/validate-pdfua.sh"
   },
   "require": {
     "php": "^8.4",

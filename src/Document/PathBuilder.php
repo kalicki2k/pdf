@@ -115,7 +115,7 @@ final class PathBuilder
 
         $graphicsStateName = $this->page->resolveGraphicsStateName($opacity);
 
-        $this->page->contents->addElement(new Path(
+        $this->page->addGraphicElement(new Path(
             $this->commands,
             $strokeWidth,
             $strokeColorOperator,

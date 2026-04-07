@@ -156,7 +156,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString('/Subtype /Text', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
-        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Annot \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
@@ -302,7 +302,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString('/Subtype /FileAttachment', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
-        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Demo attachment\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Annot \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Demo attachment\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
@@ -2759,10 +2759,34 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Font << /F1 4 0 R >>', $page->resources->render());
-        self::assertStringContainsString('/P << /MCID 0 >> BDC', $page->contents->render());
+        self::assertStringContainsString("/P << /MCID 0 >> BDC\nBT", $page->contents->render());
         self::assertStringContainsString('(Hello) Tj', $page->contents->render());
-        self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [11 0 R] >>', $document->render());
+        self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /StructElem /S /Document /P 8 0 R /K [11 0 R] >>', $document->render());
         self::assertStringContainsString('11 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 10 0 R /Pg 5 0 R /K 0 >>', $document->render());
+    }
+
+    #[Test]
+    public function it_marks_panel_backgrounds_as_artifacts_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addPanel(
+            'Body',
+            10,
+            120,
+            80,
+            55,
+            'Title',
+            'Helvetica',
+            new PanelStyle(),
+        );
+
+        $rendered = $page->contents->render();
+
+        self::assertStringContainsString('/Artifact BMC', $rendered);
+        self::assertStringContainsString('EMC', $rendered);
     }
 
     #[Test]
@@ -2959,10 +2983,10 @@ final class PageTest extends TestCase
         $result = $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(structureTag: StructureTag::Paragraph, lineHeight: 12.0, bottomMargin: 0.0));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("10 50 Td\n/P << /MCID 0 >> BDC\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n/P << /MCID 1 >> BDC\n(world) Tj", $page->contents->render());
-        self::assertStringContainsString("10 26 Td\n/P << /MCID 2 >> BDC\n(from) Tj", $page->contents->render());
-        self::assertStringContainsString("10 14 Td\n/P << /MCID 3 >> BDC\n(PDF) Tj", $page->contents->render());
+        self::assertStringContainsString("/P << /MCID 0 >> BDC\nBT\n/F1 10 Tf\n10 50 Td\n(Hello) Tj\nET\nEMC", $page->contents->render());
+        self::assertStringContainsString("/P << /MCID 1 >> BDC\nBT\n/F1 10 Tf\n10 38 Td\n(world) Tj\nET\nEMC", $page->contents->render());
+        self::assertStringContainsString("/P << /MCID 2 >> BDC\nBT\n/F1 10 Tf\n10 26 Td\n(from) Tj\nET\nEMC", $page->contents->render());
+        self::assertStringContainsString("/P << /MCID 3 >> BDC\nBT\n/F1 10 Tf\n10 14 Td\n(PDF) Tj\nET\nEMC", $page->contents->render());
     }
 
     #[Test]

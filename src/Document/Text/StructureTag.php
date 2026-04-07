@@ -23,6 +23,7 @@ enum StructureTag: string
     case ListBody = 'LBody';
     case Quote = 'Quote';
     case Note = 'Note';
+    case Annotation = 'Annot';
     case Part = 'Part';
     case Section = 'Sect';
     case Article = 'Art';

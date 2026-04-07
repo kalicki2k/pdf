@@ -1835,7 +1835,7 @@ final class DocumentTest extends TestCase
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
-        self::assertStringContainsString('6 0 obj' . "\n" . '<< /Type /StructElem /S /Document /K [7 0 R] >>', $document->render());
+        self::assertStringContainsString('6 0 obj' . "\n" . '<< /Type /StructElem /S /Document /P 4 0 R /K [7 0 R] >>', $document->render());
         self::assertStringContainsString('7 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 6 0 R /K [] >>', $document->render());
     }
 
@@ -1851,7 +1851,7 @@ final class DocumentTest extends TestCase
 
         $rendered = $document->render();
 
-        self::assertStringContainsString('/Type /StructElem /S /Document /K [10 0 R]', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Document /P 7 0 R /K [10 0 R]', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /L /P 9 0 R /K [11 0 R]', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /LI /P 10 0 R /K [12 0 R]', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Lbl /P 11 0 R /Pg 4 0 R /K 0', $rendered);

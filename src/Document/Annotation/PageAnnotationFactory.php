@@ -758,7 +758,7 @@ final readonly class PageAnnotationFactory
     private function bindAccessiblePageAnnotation(
         IndirectObject & StructParentAwareAnnotation $annotation,
         string $alternativeDescription,
-        StructureTag $tag = StructureTag::Note,
+        StructureTag $tag = StructureTag::Annotation,
     ): void {
         $profile = $this->page->getDocument()->getProfile();
 

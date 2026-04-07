@@ -17,13 +17,13 @@ final class TextTest extends TestCase
 
         self::assertSame(
             "q\n"
+            . "/P << /MCID 3 >> BDC\n"
             . "BT\n"
             . "/F1 12 Tf\n"
             . "10 20 Td\n"
-            . "/P << /MCID 3 >> BDC\n"
             . "(Hello \\(PDF\\)\\n) Tj\n"
-            . "EMC\n"
             . "ET\n"
+            . "EMC\n"
             . 'Q',
             $text->render(),
         );
@@ -36,13 +36,13 @@ final class TextTest extends TestCase
 
         self::assertSame(
             "q\n"
+            . "/Span << /MCID 0 >> BDC\n"
             . "BT\n"
             . "/F2 9 Tf\n"
             . "1.5 2.5 Td\n"
-            . "/Span << /MCID 0 >> BDC\n"
             . "<FEFF6F22> Tj\n"
-            . "EMC\n"
             . "ET\n"
+            . "EMC\n"
             . 'Q',
             $text->render(),
         );

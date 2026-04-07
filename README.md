@@ -24,7 +24,7 @@ Current core coverage includes:
 - optional password-based PDF encryption
 - outlines, named table-of-contents placement, logical TOC page numbers, attachments, layers, and basic form fields
 
-The current focus is a stable core library. PDF/A now has a validated baseline across all supported conformance profiles, while PDF/UA and full tagged-PDF compliance are still not the current target.
+The current focus is a stable core library. PDF/A now has a validated baseline across all supported conformance profiles, and PDF/UA-1 currently has a validated baseline for the supported tagged content, links, annotations, and form widget paths.
 
 ## Requirements
 
@@ -99,6 +99,7 @@ Example scripts live in [examples](examples/):
 - [pdf-a-4.php](examples/pdf-a-4.php)
 - [pdf-a-4e.php](examples/pdf-a-4e.php)
 - [pdf-a-4f.php](examples/pdf-a-4f.php)
+- [pdf-ua-1.php](examples/pdf-ua-1.php)
 - [table.php](examples/table.php)
 - [table-of-contents.php](examples/table-of-contents.php)
 - [table-of-contents-after-cover.php](examples/table-of-contents-after-cover.php)
@@ -152,6 +153,9 @@ composer validate:pdfa -- var/examples/pdf-a-4e_YYYY-mm-dd-HH-ii-ss.pdf
 
 composer example:pdfa4f
 composer validate:pdfa -- var/examples/pdf-a-4f_YYYY-mm-dd-HH-ii-ss.pdf
+
+composer example:pdfua1
+composer validate:pdfua -- var/examples/pdf-ua-1_YYYY-mm-dd-HH-ii-ss.pdf
 ```
 
 The PDF/A validation command uses the official Docker image `verapdf/cli:v1.28.2`.
@@ -160,6 +164,12 @@ For an automated PDF/A regression run with representative fixtures for `PDF/A-1a
 
 ```bash
 composer test:pdfa-regression
+```
+
+For PDF/UA-1 there is a matching automated veraPDF regression run with representative fixtures for the supported baseline, link, annotation, and form widget paths:
+
+```bash
+composer test:pdfua-regression
 ```
 
 ## Metadata

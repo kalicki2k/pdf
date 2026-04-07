@@ -627,7 +627,7 @@ final class PublicApiTest extends TestCase
 
         self::assertStringContainsString('/Subtype /Text', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
-        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Annot \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
@@ -650,7 +650,7 @@ final class PublicApiTest extends TestCase
 
         self::assertStringContainsString('/Subtype /FileAttachment', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
-        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Demo attachment\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Annot \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Demo attachment\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]

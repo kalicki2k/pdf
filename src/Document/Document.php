@@ -899,6 +899,15 @@ final class Document
         $this->parentTree->addObject($structParentId, $structElem);
     }
 
+    public function registerMarkedContentStructElem(int $structParentId, StructElem $structElem): void
+    {
+        if ($this->parentTree === null) {
+            return;
+        }
+
+        $this->parentTree->add($structParentId, $structElem);
+    }
+
     private function applyDeferredPageDecorators(): void
     {
         if ($this->deferredHeaderRenderers === [] && $this->deferredFooterRenderers === []) {
@@ -948,6 +957,7 @@ final class Document
         $this->parentTree = new ParentTree(++$this->objectId);
         $this->structTreeRoot->parentTree = $this->parentTree;
         $structElem = new StructElem(++$this->objectId, StructureTag::Document->value);
+        $structElem->setParent($this->structTreeRoot);
         $this->structTreeRoot->addKid($structElem->id);
         $this->structElems['document'] = $structElem;
     }
@@ -960,6 +970,21 @@ final class Document
     public function isRenderingArtifactContext(): bool
     {
         return $this->renderingArtifactContext;
+    }
+
+    /**
+     * @param callable(): void $renderer
+     */
+    public function renderInArtifactContext(callable $renderer): void
+    {
+        $previousArtifactContext = $this->renderingArtifactContext;
+        $this->renderingArtifactContext = true;
+
+        try {
+            $renderer();
+        } finally {
+            $this->renderingArtifactContext = $previousArtifactContext;
+        }
     }
 
     private function assertAllowsEncryption(): void
