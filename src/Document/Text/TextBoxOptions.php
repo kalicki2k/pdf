@@ -10,6 +10,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Structure\StructElem;
 
 /**
  * Controls how text is rendered inside a fixed rectangle.
@@ -32,6 +33,7 @@ final readonly class TextBoxOptions
      */
     public function __construct(
         public ?StructureTag $structureTag = null,
+        public ?StructElem $parentStructElem = null,
         public ?float $lineHeight = null,
         public ?Color $color = null,
         public ?Opacity $opacity = null,

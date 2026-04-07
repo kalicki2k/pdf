@@ -728,22 +728,33 @@ final class Document
      */
     public function addStructElem(StructureTag $tag, int $markedContentId, ?Page $page = null): self
     {
+        $this->createStructElem($tag, $markedContentId, $page);
+
+        return $this;
+    }
+
+    public function createStructElem(
+        StructureTag $tag,
+        ?int $markedContentId = null,
+        ?Page $page = null,
+        ?StructElem $parent = null,
+    ): StructElem {
         $this->ensureStructureEnabled();
 
         $structElem = new StructElem(++$this->objectId, $tag->value);
-        $this->structElems['document']->addKid($structElem);
+        ($parent ?? $this->structElems['document'])->addKid($structElem);
 
         $this->structElems[] = $structElem;
 
-        if ($page !== null) {
+        if ($markedContentId !== null && $page !== null) {
             $structElem->setMarkedContent($markedContentId, $page);
         }
 
-        if ($page !== null && $this->parentTree !== null) {
+        if ($markedContentId !== null && $page !== null && $this->parentTree !== null) {
             $this->parentTree->add($page->structParentId, $structElem);
         }
 
-        return $this;
+        return $structElem;
     }
 
     private function applyDeferredPageDecorators(): void

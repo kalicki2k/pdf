@@ -12,6 +12,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Structure\StructElem;
 
 final class TextFrame
 {
@@ -125,6 +126,8 @@ final class TextFrame
             throw new InvalidArgumentException('Bullet indent must be smaller than the text frame width.');
         }
 
+        $listStructElem = $this->resolveListStructElem($options->structureTag);
+
         return $this->renderList(
             items: $items,
             markerRenderer: static fn (int $index): string => $bulletType->value,
@@ -140,6 +143,7 @@ final class TextFrame
                 markerColor: $options->markerColor ?? $options->color,
                 markerIndent: $markerIndent,
             ),
+            listStructElem: $listStructElem,
         );
     }
 
@@ -174,6 +178,8 @@ final class TextFrame
             throw new InvalidArgumentException('Numbered lists must start at 1 or greater.');
         }
 
+        $listStructElem = $this->resolveListStructElem($options->structureTag);
+
         return $this->renderList(
             items: $items,
             markerRenderer: static fn (int $index): string => ($startAt + $index) . '.',
@@ -189,6 +195,7 @@ final class TextFrame
                 markerColor: $options->markerColor ?? $options->color,
                 markerIndent: $markerIndent,
             ),
+            listStructElem: $listStructElem,
         );
     }
 
@@ -202,6 +209,7 @@ final class TextFrame
         string $fontName,
         int $size,
         ListOptions $options,
+        ?StructElem $listStructElem = null,
     ): self {
         $lineHeight = $options->lineHeight ?? $size * 1.2;
         $spacingAfter = $options->spacingAfter ?? $lineHeight;
@@ -215,13 +223,16 @@ final class TextFrame
                 $this->cursorY = $this->page->getHeight() - $topMargin;
             }
 
+            [$labelStructElem, $bodyStructElem] = $this->createListItemStructElems($options->structureTag, $listStructElem);
+
             $this->page->addText(
                 text: $markerRenderer($index),
                 position: new Position($this->x, $this->cursorY),
                 fontName: $fontName,
                 size: $size,
                 options: new TextOptions(
-                    structureTag: $options->structureTag,
+                    structureTag: $labelStructElem !== null ? StructureTag::Label : $options->structureTag,
+                    parentStructElem: $labelStructElem,
                     color: $options->markerColor,
                     opacity: $options->opacity,
                 ),
@@ -234,7 +245,8 @@ final class TextFrame
                 fontName: $fontName,
                 size: $size,
                 options: new ParagraphOptions(
-                    structureTag: $options->structureTag,
+                    structureTag: $bodyStructElem !== null ? StructureTag::ListBody : $options->structureTag,
+                    parentStructElem: $bodyStructElem,
                     lineHeight: $lineHeight,
                     spacingAfter: $index === array_key_last($items) ? $spacingAfter : $itemSpacing,
                     color: $options->color,
@@ -244,6 +256,32 @@ final class TextFrame
         }
 
         return $this;
+    }
+
+    private function resolveListStructElem(?StructureTag $structureTag): ?StructElem
+    {
+        if ($structureTag !== StructureTag::List) {
+            return null;
+        }
+
+        return $this->page->getDocument()->createStructElem(StructureTag::List);
+    }
+
+    /**
+     * @return array{0: ?StructElem, 1: ?StructElem}
+     */
+    private function createListItemStructElems(?StructureTag $structureTag, ?StructElem $listStructElem): array
+    {
+        if ($structureTag !== StructureTag::List || $listStructElem === null) {
+            return [null, null];
+        }
+
+        $document = $this->page->getDocument();
+        $listItemStructElem = $document->createStructElem(StructureTag::ListItem, parent: $listStructElem);
+        $labelStructElem = $document->createStructElem(StructureTag::Label, parent: $listItemStructElem);
+        $listBodyStructElem = $document->createStructElem(StructureTag::ListBody, parent: $listItemStructElem);
+
+        return [$labelStructElem, $listBodyStructElem];
     }
 
     /**
@@ -270,6 +308,7 @@ final class TextFrame
             size: $size,
             options: new FlowTextOptions(
                 structureTag: $options->structureTag,
+                parentStructElem: $options->parentStructElem,
                 lineHeight: $lineHeight,
                 bottomMargin: $this->bottomMargin,
                 color: $options->color,
@@ -316,6 +355,7 @@ final class TextFrame
             size: $size,
             options: new ParagraphOptions(
                 structureTag: $options->structureTag,
+                parentStructElem: $options->parentStructElem,
                 lineHeight: $size * 1.2,
                 spacingAfter: $options->spacingAfter ?? $size * 0.8,
                 color: $options->color,

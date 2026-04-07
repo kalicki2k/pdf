@@ -42,6 +42,7 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
@@ -119,7 +120,7 @@ final class Page extends IndirectObject
         ));
 
         if ($options->structureTag !== null && $markedContentId !== null) {
-            $this->attachTextToStructure($options->structureTag, $markedContentId);
+            $this->attachTextToStructure($options->structureTag, $markedContentId, $options->parentStructElem);
         }
 
         if ($options->link !== null && $textWidth > 0.0) {
@@ -471,6 +472,7 @@ final class Page extends IndirectObject
             $fontName,
             $size,
             $options->structureTag,
+            $options->parentStructElem,
             $lineHeight,
             $bottomMargin,
             $options->align,
@@ -561,6 +563,7 @@ final class Page extends IndirectObject
             $fontName,
             $size,
             $options->structureTag,
+            $options->parentStructElem,
             $lineHeight,
             $options->align,
         );
@@ -603,6 +606,7 @@ final class Page extends IndirectObject
         string $baseFont,
         int $size,
         ?StructureTag $tag = null,
+        ?StructElem $parentStructElem = null,
         ?float $lineHeight = null,
         ?float $bottomMargin = null,
         HorizontalAlign $align = HorizontalAlign::LEFT,
@@ -637,6 +641,7 @@ final class Page extends IndirectObject
                 $baseFont,
                 $size,
                 $tag,
+                $parentStructElem,
                 $align,
             );
             $currentY -= $lineHeight;
@@ -656,13 +661,14 @@ final class Page extends IndirectObject
         string $baseFont,
         int $size,
         ?StructureTag $tag,
+        ?StructElem $parentStructElem,
         float $lineHeight,
         HorizontalAlign $align,
     ): self {
         $currentY = $y;
 
         foreach ($lines as $line) {
-            $this->renderTextLine($this, $line, $x, $currentY, $maxWidth, $baseFont, $size, $tag, $align);
+            $this->renderTextLine($this, $line, $x, $currentY, $maxWidth, $baseFont, $size, $tag, $parentStructElem, $align);
             $currentY -= $lineHeight;
         }
 
@@ -681,6 +687,7 @@ final class Page extends IndirectObject
         string $baseFont,
         int $size,
         ?StructureTag $tag,
+        ?StructElem $parentStructElem,
         HorizontalAlign $align,
     ): void {
         if ($line['segments'] === []) {
@@ -690,7 +697,7 @@ final class Page extends IndirectObject
         $cursorX = $x + $this->calculateAlignedOffset($line['segments'], $baseFont, $size, $maxWidth, $align);
 
         if ($align === HorizontalAlign::JUSTIFY && $line['justify']) {
-            $this->renderJustifiedLine($page, $line['segments'], $cursorX, $y, $baseFont, $size, $tag, $maxWidth);
+            $this->renderJustifiedLine($page, $line['segments'], $cursorX, $y, $baseFont, $size, $tag, $maxWidth, $parentStructElem);
 
             return;
         }
@@ -706,6 +713,7 @@ final class Page extends IndirectObject
                 $size,
                 new TextOptions(
                     structureTag: $tag,
+                    parentStructElem: $parentStructElem,
                     color: $segment->color,
                     opacity: $segment->opacity,
                     underline: $segment->underline,
@@ -1654,9 +1662,9 @@ final class Page extends IndirectObject
         return $font->encodeText($text);
     }
 
-    private function attachTextToStructure(StructureTag $tag, int $markedContentId): void
+    private function attachTextToStructure(StructureTag $tag, int $markedContentId, ?StructElem $parentStructElem = null): void
     {
-        $this->document->addStructElem($tag, $markedContentId, $this);
+        $this->document->createStructElem($tag, $markedContentId, $this, $parentStructElem);
     }
 
     private function registerFontResource(FontDefinition $font): string
@@ -1793,6 +1801,7 @@ final class Page extends IndirectObject
         int $size,
         ?StructureTag $tag,
         float $maxWidth,
+        ?StructElem $parentStructElem,
     ): void {
         $pieces = $this->splitSegmentsIntoWordPieces($line);
         $extraWordSpacing = $this->calculateJustifiedWordSpacing($line, $baseFont, $size, $maxWidth);
@@ -1816,6 +1825,7 @@ final class Page extends IndirectObject
                 $size,
                 new TextOptions(
                     structureTag: $tag,
+                    parentStructElem: $parentStructElem,
                     color: $segment->color,
                     opacity: $segment->opacity,
                     underline: $segment->underline,

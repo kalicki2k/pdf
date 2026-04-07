@@ -8,11 +8,13 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Structure\StructElem;
 
 final readonly class FlowTextOptions
 {
     public function __construct(
         public ?StructureTag $structureTag = null,
+        public ?StructElem $parentStructElem = null,
         public ?float $lineHeight = null,
         public ?float $bottomMargin = null,
         public ?Color $color = null,

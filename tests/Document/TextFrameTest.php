@@ -271,6 +271,32 @@ final class TextFrameTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_a_structured_list_hierarchy_for_tagged_lists(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4), language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(20, 100), 120, 20);
+        $frame->addBulletList(
+            ['First bullet item'],
+            'Helvetica',
+            10,
+            BulletType::DASH,
+            new ListOptions(structureTag: StructureTag::List),
+        );
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', $page->contents->render());
+        self::assertStringContainsString('/LBody << /MCID 1 >> BDC', $page->contents->render());
+        self::assertStringContainsString('/Type /StructElem /S /L ', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /LI ', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Lbl ', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /LBody ', $rendered);
+    }
+
+    #[Test]
     public function it_uses_the_text_color_as_default_marker_color_for_bullet_lists(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));

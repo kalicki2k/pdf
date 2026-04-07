@@ -1503,6 +1503,24 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_can_create_nested_structure_elements(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+        $document->addPage();
+
+        $list = $document->createStructElem(StructureTag::List);
+        $item = $document->createStructElem(StructureTag::ListItem, parent: $list);
+        $label = $document->createStructElem(StructureTag::Label, 0, $document->pages->pages[0], $item);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Type /StructElem /S /Document /K [10 0 R]', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /L /P 9 0 R /K [11 0 R]', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /LI /P 10 0 R /K [12 0 R]', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Lbl /P 11 0 R /Pg 4 0 R /K 0', $rendered);
+    }
+
+    #[Test]
     public function it_renders_a_pdf_document_with_structure_metadata_for_version_1_4(): void
     {
         $document = new Document(

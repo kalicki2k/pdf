@@ -31,6 +31,7 @@ final class ProfileTest extends TestCase
     #[Test]
     public function it_exposes_the_base_versions_for_pdf_a_profiles(): void
     {
+        self::assertSame(1.7, Profile::pdfA2a()->version());
         self::assertSame(1.4, Profile::pdfA1b()->version());
         self::assertSame(1.7, Profile::pdfA2b()->version());
         self::assertSame(1.7, Profile::pdfA2u()->version());
@@ -41,6 +42,7 @@ final class ProfileTest extends TestCase
     #[Test]
     public function it_detects_pdf_a_part_2_profiles(): void
     {
+        self::assertTrue(Profile::pdfA2a()->isPdfA2());
         self::assertTrue(Profile::pdfA2b()->isPdfA2());
         self::assertTrue(Profile::pdfA2u()->isPdfA2());
         self::assertFalse(Profile::pdfA3u()->isPdfA2());
