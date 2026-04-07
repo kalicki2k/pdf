@@ -16,6 +16,14 @@ use PHPUnit\Framework\TestCase;
 final class CidFontTest extends TestCase
 {
     #[Test]
+    public function it_returns_the_base_font_name(): void
+    {
+        $font = new CidFont(13, 'NotoSansCJKsc-Regular');
+
+        self::assertSame('NotoSansCJKsc-Regular', $font->getBaseFont());
+    }
+
+    #[Test]
     public function it_renders_a_cid_font_dictionary(): void
     {
         $font = new CidFont(13, 'NotoSansCJKsc-Regular');
@@ -64,5 +72,17 @@ final class CidFontTest extends TestCase
 
         self::assertStringContainsString('/DW 1000', $font->render());
         self::assertStringContainsString('/W [1 [1000] 2 [980]]', $font->render());
+    }
+
+    #[Test]
+    public function it_can_replace_explicit_cid_widths_after_construction(): void
+    {
+        $font = new CidFont(13, 'NotoSansCJKsc-Regular');
+        $font->setWidths([
+            '000A' => 700,
+            '000B' => 710,
+        ]);
+
+        self::assertStringContainsString('/W [10 [700] 11 [710]]', $font->render());
     }
 }
