@@ -6,9 +6,11 @@ namespace Kalle\Pdf\Tests\PublicApi;
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
+use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
@@ -191,6 +193,48 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('(2 / 2) Tj', $rendered);
     }
 
+    #[Test]
+    public function it_forwards_basic_public_page_operations(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(120, 140));
+
+        $returnedPage = $page
+            ->addText('Hello', new Position(10, 100), 'Helvetica', 10)
+            ->addLine(new Position(10, 90), new Position(40, 90), 1.0, Color::rgb(0, 0, 0))
+            ->addRectangle(new Rect(10, 60, 20, 10), 1.0, Color::rgb(0, 0, 0), Color::rgb(1, 0, 0))
+            ->addLink(new Rect(10, 40, 30, 10), 'https://example.com')
+            ->addInternalLink(new Rect(10, 25, 30, 10), 'chapter-1');
+
+        $internalPage = $this->internalPage($page);
+
+        self::assertSame($page, $returnedPage);
+        self::assertSame(120.0, $page->getWidth());
+        self::assertSame(140.0, $page->getHeight());
+        self::assertStringContainsString('(Hello) Tj', $internalPage->contents->render());
+        self::assertCount(2, $internalPage->getAnnotations());
+    }
+
+    #[Test]
+    public function it_wraps_public_page_layers_with_public_page_instances(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(120, 140));
+
+        $receivedPage = null;
+        $page->layer('Layer A', static function (Page $layerPage) use (&$receivedPage): void {
+            $receivedPage = $layerPage;
+            $layerPage->addText('Layered', new Position(10, 100), 'Helvetica', 10);
+        });
+
+        $internalPage = $this->internalPage($page);
+
+        self::assertInstanceOf(Page::class, $receivedPage);
+        self::assertStringContainsString('(Layered) Tj', $internalPage->contents->render());
+    }
+
     private function internalDocument(Document $document): \Kalle\Pdf\Document\Document
     {
         $property = new \ReflectionProperty($document, 'document');
@@ -199,5 +243,15 @@ final class PublicApiTest extends TestCase
         $internalDocument = $property->getValue($document);
 
         return $internalDocument;
+    }
+
+    private function internalPage(Page $page): \Kalle\Pdf\Document\Page
+    {
+        $property = new \ReflectionProperty($page, 'page');
+
+        /** @var \Kalle\Pdf\Document\Page $internalPage */
+        $internalPage = $property->getValue($page);
+
+        return $internalPage;
     }
 }
