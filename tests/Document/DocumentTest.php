@@ -719,6 +719,73 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_can_append_the_table_of_contents_and_keep_logical_numbers_for_content_pages(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $firstPage = $document->addPage(100, 100);
+        $secondPage = $document->addPage(100, 100);
+
+        $document
+            ->addOutline('Erste Seite', $firstPage)
+            ->addOutline('Zweite Seite', $secondPage);
+
+        $tocPage = $document->addTableOfContents(
+            PageSize::A6(),
+            new TableOfContentsOptions(
+                title: 'Inhalt',
+                baseFont: 'Helvetica',
+                titleSize: 16,
+                entrySize: 10,
+                margin: 10,
+            ),
+        );
+
+        self::assertSame($firstPage, $document->pages->pages[0]);
+        self::assertSame($secondPage, $document->pages->pages[1]);
+        self::assertSame($tocPage, $document->pages->pages[2]);
+        self::assertStringContainsString('(1) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(2) Tj', $tocPage->contents->render());
+    }
+
+    #[Test]
+    public function it_can_append_the_table_of_contents_and_use_logical_numbers_at_the_end(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $coverPage = $document->addPage(100, 100);
+        $firstPage = $document->addPage(100, 100);
+        $secondPage = $document->addPage(100, 100);
+        $thirdPage = $document->addPage(100, 100);
+
+        $document
+            ->addOutline('Erste Seite', $firstPage)
+            ->addOutline('Zweite Seite', $secondPage)
+            ->addOutline('Dritte Seite', $thirdPage);
+
+        $tocPage = $document->addTableOfContents(
+            PageSize::A6(),
+            new TableOfContentsOptions(
+                title: 'Inhalt',
+                baseFont: 'Helvetica',
+                titleSize: 16,
+                entrySize: 10,
+                margin: 10,
+                useLogicalPageNumbers: true,
+            ),
+        );
+
+        self::assertSame($coverPage, $document->pages->pages[0]);
+        self::assertSame($firstPage, $document->pages->pages[1]);
+        self::assertSame($secondPage, $document->pages->pages[2]);
+        self::assertSame($thirdPage, $document->pages->pages[3]);
+        self::assertSame($tocPage, $document->pages->pages[4]);
+        self::assertStringContainsString('(2) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(3) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(4) Tj', $tocPage->contents->render());
+    }
+
+    #[Test]
     public function it_can_use_logical_page_numbers_for_a_table_of_contents(): void
     {
         $document = new Document(version: 1.4);

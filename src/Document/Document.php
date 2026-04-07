@@ -1199,23 +1199,17 @@ final class Document
     ): array {
         $pageNumbersByObjectId = [];
         $contentPages = array_values(array_slice($this->pages->pages, 0, $firstTocPageIndex));
-        $contentPageIndex = 0;
         $logicalPageNumber = 0;
+        $pageIndex = 0;
         $totalPageCount = $firstTocPageIndex + $tocPageCount;
 
-        for ($pageIndex = 0; $pageIndex < $totalPageCount; $pageIndex++) {
-            $isTocPage = $pageIndex >= $insertionIndex && $pageIndex < $insertionIndex + $tocPageCount;
-
-            if ($isTocPage) {
+        foreach ($contentPages as $documentPage) {
+            while ($pageIndex >= $insertionIndex && $pageIndex < $insertionIndex + $tocPageCount) {
                 $logicalPageNumber++;
-
-                continue;
+                $pageIndex++;
             }
 
-            assert(isset($contentPages[$contentPageIndex]));
-            $documentPage = $contentPages[$contentPageIndex];
-
-            $contentPageIndex++;
+            $pageIndex++;
 
             if (isset($this->excludedPageIdsFromNumbering[$documentPage->id])) {
                 continue;
@@ -1223,6 +1217,10 @@ final class Document
 
             $logicalPageNumber++;
             $pageNumbersByObjectId[$documentPage->id] = $logicalPageNumber;
+        }
+
+        while ($pageIndex < $totalPageCount) {
+            $pageIndex++;
         }
 
         return $pageNumbersByObjectId;
