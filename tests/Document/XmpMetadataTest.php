@@ -83,6 +83,22 @@ final class XmpMetadataTest extends TestCase
     }
 
     #[Test]
+    public function it_does_not_add_pdf_a_identification_metadata_for_standard_profiles(): void
+    {
+        $document = new Document(
+            profile: Profile::standard(1.4),
+            title: 'Spec',
+        );
+        $metadata = new XmpMetadata(4, $document);
+
+        $rendered = $metadata->render();
+
+        self::assertStringNotContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
+        self::assertStringNotContainsString('<pdfaid:part>', $rendered);
+        self::assertStringNotContainsString('<pdfaid:conformance>', $rendered);
+    }
+
+    #[Test]
     public function it_adds_pdf_a_identification_metadata_for_pdf_a_2u(): void
     {
         $document = new Document(

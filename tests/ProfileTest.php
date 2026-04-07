@@ -188,6 +188,14 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_write_pdf_a_identification_metadata(): void
+    {
+        self::assertFalse(Profile::pdf14()->writesPdfAIdentificationMetadata());
+        self::assertTrue(Profile::pdfA2u()->writesPdfAIdentificationMetadata());
+        self::assertTrue(Profile::pdfA4()->writesPdfAIdentificationMetadata());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_win_ansi_encoding(): void
     {
         self::assertFalse(Profile::pdf10()->supportsWinAnsiEncoding());

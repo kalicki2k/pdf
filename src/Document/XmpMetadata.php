@@ -72,7 +72,7 @@ XML;
 
     private function renderPdfAIdentification(): string
     {
-        if (!$this->document->getProfile()->isPdfA()) {
+        if (!$this->document->getProfile()->writesPdfAIdentificationMetadata()) {
             return '';
         }
 
