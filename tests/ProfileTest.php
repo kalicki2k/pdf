@@ -35,6 +35,7 @@ final class ProfileTest extends TestCase
         self::assertSame(1.4, Profile::pdfA1b()->version());
         self::assertSame(1.7, Profile::pdfA2b()->version());
         self::assertSame(1.7, Profile::pdfA2u()->version());
+        self::assertSame(1.7, Profile::pdfA3a()->version());
         self::assertSame(1.7, Profile::pdfA3u()->version());
         self::assertSame(2.0, Profile::pdfA4f()->version());
     }

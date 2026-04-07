@@ -39,6 +39,7 @@
     "example:pdfa2a": "php examples/pdf-a-2a.php",
     "example:pdfa2b": "php examples/pdf-a-2b.php",
     "example:pdfa2u": "php examples/pdf-a-2u.php",
+    "example:pdfa3a": "php examples/pdf-a-3a.php",
     "example:pdfa3b": "php examples/pdf-a-3b.php",
     "example:pdfa3u": "php examples/pdf-a-3u.php",
     "example:pdfa4": "php examples/pdf-a-4.php",

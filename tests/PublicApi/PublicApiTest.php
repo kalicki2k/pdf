@@ -108,6 +108,15 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_exposes_a_pdf_a_3a_profile_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::pdfA3a());
+
+        self::assertSame('PDF/A-3a', $document->getProfile()->name());
+        self::assertSame(1.7, $document->getProfile()->version());
+    }
+
+    #[Test]
     public function it_exposes_a_pdf_a_2a_profile_through_the_public_api(): void
     {
         $document = new Document(profile: Profile::pdfA2a());
@@ -280,6 +289,69 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
         self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $rendered);
         self::assertStringContainsString('/Subtype /CIDFontType2', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_a_minimal_pdf_a_3a_document_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA3a(),
+            title: 'PDF/A-3a',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+                [
+                    'baseFont' => 'NotoSans-Bold',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Bold.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+        $document->registerFont('NotoSans-Bold');
+        $document->addAttachment('source-data.xml', '<root/>', 'Machine-readable source', 'application/xml');
+
+        $page = $document->addPage(PageSize::custom(150, 180));
+        $frame = $page->createTextFrame(new Position(10, 160), 120, 120);
+        $frame
+            ->addHeading('Heading', 'NotoSans-Bold', 12, new ParagraphOptions(structureTag: StructureTag::Heading1))
+            ->addParagraph('Paragraph', 'NotoSans-Regular', 10, new ParagraphOptions(structureTag: StructureTag::Paragraph))
+            ->addBulletList(['One item'], 'NotoSans-Regular', 10, options: new ListOptions(structureTag: StructureTag::List));
+
+        $table = $page->createTable(new Position(10, 110), 100, [50, 50]);
+        $table
+            ->font('NotoSans-Regular', 10)
+            ->addRow(['Spalte A', 'Spalte B'], header: true)
+            ->addRow(['Wert A', 'Wert B']);
+
+        $page->addImage(
+            new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+            new Position(115, 20),
+            10,
+            10,
+            new ImageOptions(structureTag: StructureTag::Figure, altText: 'Dekorative Testgrafik'),
+        );
+
+        $rendered = $document->render();
+
+        self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
+        self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $rendered);
+        self::assertStringContainsString('/StructTreeRoot', $rendered);
+        self::assertStringContainsString('<pdfaid:part>3</pdfaid:part>', $rendered);
+        self::assertStringContainsString('<pdfaid:conformance>A</pdfaid:conformance>', $rendered);
+        self::assertStringContainsString('/AF [', $rendered);
+        self::assertStringContainsString('/AFRelationship /Data', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Figure', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Table', $rendered);
     }
 
     #[Test]

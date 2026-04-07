@@ -126,6 +126,9 @@ composer validate:pdfa -- var/examples/pdf-a-2b_YYYY-mm-dd-HH-ii-ss.pdf
 composer example:pdfa2u
 composer validate:pdfa -- var/examples/pdf-a-2u_YYYY-mm-dd-HH-ii-ss.pdf
 
+composer example:pdfa3a
+composer validate:pdfa -- var/examples/pdf-a-3a_YYYY-mm-dd-HH-ii-ss.pdf
+
 composer example:pdfa3b
 composer validate:pdfa -- var/examples/pdf-a-3b_YYYY-mm-dd-HH-ii-ss.pdf
 
