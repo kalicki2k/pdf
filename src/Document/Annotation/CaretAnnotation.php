@@ -13,8 +13,10 @@ use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class CaretAnnotation extends IndirectObject implements PageAnnotation
+final class CaretAnnotation extends IndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {
+    use HasStructParent;
+
     private const int PRINT_FLAG = 4;
 
     private ?TextAnnotationAppearanceStream $appearance = null;
@@ -55,6 +57,8 @@ final class CaretAnnotation extends IndirectObject implements PageAnnotation
         if ($this->page->getDocument()->getProfile()->requiresPrintableAnnotations()) {
             $dictionary->add('F', self::PRINT_FLAG);
         }
+
+        $this->addStructParentEntry($dictionary);
 
         if ($this->contents !== null && $this->contents !== '') {
             $dictionary->add('Contents', new StringType($this->contents));

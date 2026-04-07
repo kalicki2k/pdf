@@ -592,7 +592,69 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_page_annotations_for_pdf_ua_1_through_the_public_api(): void
+    public function it_renders_an_accessible_rect_link_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addLink(new Rect(10, 20, 30, 10), 'https://example.com', 'Read more');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Link', $rendered);
+        self::assertStringContainsString('/Contents (Read more)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Read more\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_text_annotations_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addTextAnnotation(new Rect(10, 20, 10, 10), 'Kommentar', 'QA');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Text', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_file_attachment_annotations_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
+        $page = $document->addPage(PageSize::custom(100, 100));
+        $file = $document->getAttachment('demo.txt');
+
+        self::assertNotNull($file);
+
+        $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Demo attachment');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /FileAttachment', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Demo attachment\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_requires_accessible_names_for_rect_links_in_pdf_ua_1_through_the_public_api(): void
     {
         $document = new Document(
             profile: Profile::pdfUa1(),
@@ -602,7 +664,7 @@ final class PublicApiTest extends TestCase
         $page = $document->addPage(PageSize::custom(100, 100));
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/UA-1 currently requires link annotations to be bound to tagged Link content.');
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires an accessible name for standalone link annotations.');
 
         $page->addLink(new Rect(10, 20, 30, 10), 'https://example.com');
     }

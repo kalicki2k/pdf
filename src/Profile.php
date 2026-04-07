@@ -252,6 +252,7 @@ final readonly class Profile
     public function supportsEmbeddedFileAttachments(): bool
     {
         return $this->isStandard()
+            || $this->isPdfUa()
             || $this->isPdfA3()
             || $this->isPdfA4f();
     }
@@ -366,6 +367,16 @@ final readonly class Profile
     }
 
     public function requiresLinkAnnotationAlternativeDescriptions(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresTaggedPageAnnotations(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresPageAnnotationAlternativeDescriptions(): bool
     {
         return $this->isPdfUa();
     }

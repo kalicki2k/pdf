@@ -145,15 +145,18 @@ final class PageTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_page_annotations_for_pdf_ua_1(): void
+    public function it_adds_text_annotations_for_pdf_ua_1(): void
     {
         $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/UA-1 does not allow page annotations in the current implementation.');
-
         $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Text', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
@@ -282,6 +285,27 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_file_attachment_annotations_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
+        $page = $document->addPage();
+        $file = $document->getAttachment('demo.txt');
+
+        self::assertNotNull($file);
+
+        $result = $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Demo attachment');
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /FileAttachment', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Demo attachment\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_adds_a_text_annotation_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
@@ -310,8 +334,25 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Subtype /Popup', $document->render());
-        self::assertStringContainsString('/Parent 7 0 R', $document->render());
-        self::assertStringContainsString('/Popup 8 0 R', $document->render());
+        self::assertMatchesRegularExpression('/\/Parent 7 0 R/', $document->render());
+        self::assertMatchesRegularExpression('/\/Popup \d+ 0 R/', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_a_popup_annotation_to_an_existing_text_annotation_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA', 'Comment', true);
+        $annotation = $page->getAnnotations()[0];
+
+        $result = $page->addPopupAnnotation($annotation, new Rect(30, 40, 60, 40), true);
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /Popup', $document->render());
+        self::assertMatchesRegularExpression('/\/Parent 7 0 R/', $document->render());
+        self::assertMatchesRegularExpression('/\/Popup \d+ 0 R/', $document->render());
     }
 
     #[Test]
@@ -1199,6 +1240,42 @@ final class PageTest extends TestCase
         self::assertSame($page, $result);
         self::assertStringContainsString('/Annots [7 0 R]', $page->render());
         self::assertStringContainsString('/Dest /table-demo', $document->render());
+    }
+
+    #[Test]
+    public function it_adds_an_accessible_rect_link_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $result = $page->addLink(new Rect(10, 20, 80, 12), 'https://example.com', 'Read more');
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Link', $rendered);
+        self::assertStringContainsString('/Contents (Read more)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Read more\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_adds_an_accessible_internal_rect_link_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $result = $page->addInternalLink(new Rect(10, 20, 80, 12), 'chapter-1', 'Jump to chapter 1');
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Dest /chapter-1', $rendered);
+        self::assertStringContainsString('/Contents (Jump to chapter 1)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Jump to chapter 1\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
@@ -2464,6 +2541,18 @@ final class PageTest extends TestCase
         $this->expectExceptionMessage('Link destination must not be empty.');
 
         $page->addInternalLink(new Rect(10, 20, 80, 12), '');
+    }
+
+    #[Test]
+    public function it_requires_accessible_names_for_standalone_links_in_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires an accessible name for standalone link annotations.');
+
+        $page->addLink(new Rect(10, 20, 80, 12), 'https://example.com');
     }
 
     #[Test]

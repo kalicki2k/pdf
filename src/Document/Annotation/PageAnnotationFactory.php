@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
@@ -91,7 +92,7 @@ final readonly class PageAnnotationFactory
             throw new InvalidArgumentException('File attachment icon must not be empty.');
         }
 
-        return new FileAttachmentAnnotation(
+        $annotation = new FileAttachmentAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -102,6 +103,17 @@ final readonly class PageAnnotationFactory
             $icon,
             $contents,
         );
+
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription(
+                'File attachment',
+                $contents,
+                $file->getFilename(),
+            ),
+        );
+
+        return $annotation;
     }
 
     public function createTextAnnotation(
@@ -138,6 +150,11 @@ final readonly class PageAnnotationFactory
         if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
+
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Text annotation', $contents, $title, $icon),
+        );
 
         return $annotation;
     }
@@ -215,6 +232,11 @@ final readonly class PageAnnotationFactory
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Free text annotation', $contents, $title),
+        );
+
         return $annotation;
     }
 
@@ -242,6 +264,11 @@ final readonly class PageAnnotationFactory
         if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
+
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Highlight annotation', $contents, $title),
+        );
 
         return $annotation;
     }
@@ -271,6 +298,11 @@ final readonly class PageAnnotationFactory
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Underline annotation', $contents, $title),
+        );
+
         return $annotation;
     }
 
@@ -299,6 +331,11 @@ final readonly class PageAnnotationFactory
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Strike-out annotation', $contents, $title),
+        );
+
         return $annotation;
     }
 
@@ -326,6 +363,11 @@ final readonly class PageAnnotationFactory
         if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
+
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Squiggly annotation', $contents, $title),
+        );
 
         return $annotation;
     }
@@ -361,6 +403,11 @@ final readonly class PageAnnotationFactory
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Stamp annotation', $contents, $title, $icon),
+        );
+
         return $annotation;
     }
 
@@ -392,6 +439,11 @@ final readonly class PageAnnotationFactory
         if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
+
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Square annotation', $contents, $title),
+        );
 
         return $annotation;
     }
@@ -425,6 +477,11 @@ final readonly class PageAnnotationFactory
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Circle annotation', $contents, $title),
+        );
+
         return $annotation;
     }
 
@@ -457,6 +514,11 @@ final readonly class PageAnnotationFactory
         if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
+
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Ink annotation', $contents, $title),
+        );
 
         return $annotation;
     }
@@ -496,6 +558,11 @@ final readonly class PageAnnotationFactory
             ));
         }
 
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Line annotation', $contents, $title, $subject),
+        );
+
         return $annotation;
     }
 
@@ -530,6 +597,11 @@ final readonly class PageAnnotationFactory
             $annotation->withAppearance($this->createAppearanceStreamForVertices($vertices));
         }
 
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Polyline annotation', $contents, $title, $subject),
+        );
+
         return $annotation;
     }
 
@@ -562,6 +634,11 @@ final readonly class PageAnnotationFactory
             $annotation->withAppearance($this->createAppearanceStreamForVertices($vertices));
         }
 
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Polygon annotation', $contents, $title, $subject),
+        );
+
         return $annotation;
     }
 
@@ -589,6 +666,11 @@ final readonly class PageAnnotationFactory
         if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
+
+        $this->bindAccessiblePageAnnotation(
+            $annotation,
+            $this->resolvePageAnnotationAlternativeDescription('Caret annotation', $contents, $title, $symbol),
+        );
 
         return $annotation;
     }
@@ -638,7 +720,7 @@ final readonly class PageAnnotationFactory
     {
         $profile = $this->page->getDocument()->getProfile();
 
-        if ($profile->supportsCurrentPageAnnotationsImplementation()) {
+        if ($profile->supportsCurrentPageAnnotationsImplementation() || $profile->requiresTaggedPageAnnotations()) {
             return;
         }
 
@@ -668,5 +750,44 @@ final readonly class PageAnnotationFactory
         }
 
         $this->assertAllowsAnnotations();
+    }
+
+    /**
+     * @param IndirectObject&StructParentAwareAnnotation $annotation
+     */
+    private function bindAccessiblePageAnnotation(
+        IndirectObject & StructParentAwareAnnotation $annotation,
+        string $alternativeDescription,
+        StructureTag $tag = StructureTag::Note,
+    ): void {
+        $profile = $this->page->getDocument()->getProfile();
+
+        if (!$profile->requiresTaggedPageAnnotations()) {
+            return;
+        }
+
+        $structElem = $this->page->getDocument()->createStructElem($tag);
+        $structElem->setPage($this->page);
+
+        $structParentId = $this->page->getDocument()->getNextStructParentId();
+        $annotation->withStructParent($structParentId);
+        $structElem->addObjectReference($annotation, $this->page);
+
+        if ($profile->requiresPageAnnotationAlternativeDescriptions() && $alternativeDescription !== '') {
+            $structElem->setAltText($alternativeDescription);
+        }
+
+        $this->page->getDocument()->registerObjectStructElem($structParentId, $structElem);
+    }
+
+    private function resolvePageAnnotationAlternativeDescription(string $fallback, ?string ...$candidates): string
+    {
+        foreach ($candidates as $candidate) {
+            if ($candidate !== null && $candidate !== '') {
+                return $candidate;
+            }
+        }
+
+        return $fallback;
     }
 }

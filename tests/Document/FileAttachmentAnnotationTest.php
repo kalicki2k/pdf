@@ -47,4 +47,17 @@ final class FileAttachmentAnnotationTest extends TestCase
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
+
+    #[Test]
+    public function it_renders_a_file_attachment_annotation_with_a_struct_parent_reference(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $embeddedFile = new EmbeddedFileStream(7, 'hello');
+        $fileSpecification = new FileSpecification(8, 'demo.txt', $embeddedFile, 'Demo attachment');
+        $annotation = new FileAttachmentAnnotation(9, $page, 10, 20, 12, 14, $fileSpecification, 'Graph', 'Anhang');
+        $annotation->withStructParent(4);
+
+        self::assertStringContainsString('/StructParent 4', $annotation->render());
+    }
 }

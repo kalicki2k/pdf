@@ -1116,27 +1116,29 @@ final class Page extends IndirectObject
     public function addLink(
         Rect $box,
         string $url,
+        ?string $accessibleName = null,
     ): self {
         if (str_starts_with($url, '#')) {
-            return $this->addInternalLink($box, substr($url, 1));
+            return $this->addInternalLink($box, substr($url, 1), $accessibleName);
         }
 
         if ($url === '') {
             throw new InvalidArgumentException('Link URL must not be empty.');
         }
 
-        return $this->addLinkTarget($box, LinkTarget::externalUrl($url));
+        return $this->addLinkTarget($box, LinkTarget::externalUrl($url), alternativeDescription: $accessibleName);
     }
 
     public function addInternalLink(
         Rect $box,
         string $destination,
+        ?string $accessibleName = null,
     ): self {
         if ($destination === '') {
             throw new InvalidArgumentException('Link destination must not be empty.');
         }
 
-        return $this->addLinkTarget($box, LinkTarget::namedDestination($destination));
+        return $this->addLinkTarget($box, LinkTarget::namedDestination($destination), alternativeDescription: $accessibleName);
     }
 
     private function addLinkTarget(
@@ -1145,6 +1147,20 @@ final class Page extends IndirectObject
         ?StructElem $linkStructElem = null,
         ?string $alternativeDescription = null,
     ): self {
+        $profile = $this->document->getProfile();
+
+        if ($profile->requiresTaggedLinkAnnotations() && $linkStructElem === null) {
+            if ($alternativeDescription === null || $alternativeDescription === '') {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s requires an accessible name for standalone link annotations.',
+                    $profile->name(),
+                ));
+            }
+
+            $linkStructElem = $this->document->createStructElem(StructureTag::Link);
+            $linkStructElem->setPage($this);
+        }
+
         $this->annotations[] = $this->annotationFactory()->createLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
 
         return $this;

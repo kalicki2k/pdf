@@ -243,16 +243,16 @@ final readonly class Page
         return $this;
     }
 
-    public function addLink(Rect $box, string $url): self
+    public function addLink(Rect $box, string $url, ?string $accessibleName = null): self
     {
-        $this->page->addLink($box, $url);
+        $this->page->addLink($box, $url, $accessibleName);
 
         return $this;
     }
 
-    public function addInternalLink(Rect $box, string $destination): self
+    public function addInternalLink(Rect $box, string $destination, ?string $accessibleName = null): self
     {
-        $this->page->addInternalLink($box, $destination);
+        $this->page->addInternalLink($box, $destination, $accessibleName);
 
         return $this;
     }

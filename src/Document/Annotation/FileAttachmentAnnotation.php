@@ -13,8 +13,10 @@ use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class FileAttachmentAnnotation extends IndirectObject implements PageAnnotation
+final class FileAttachmentAnnotation extends IndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {
+    use HasStructParent;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -44,6 +46,8 @@ final class FileAttachmentAnnotation extends IndirectObject implements PageAnnot
             'FS' => new ReferenceType($this->file),
             'Name' => new NameType($this->icon),
         ]);
+
+        $this->addStructParentEntry($dictionary);
 
         if ($this->contents !== null && $this->contents !== '') {
             $dictionary->add('Contents', new StringType($this->contents));

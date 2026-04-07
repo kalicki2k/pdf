@@ -92,7 +92,7 @@ final class PageAnnotationFactoryTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_non_link_page_annotations_for_pdf_ua_1(): void
+    public function it_binds_text_annotations_to_structure_for_pdf_ua_1(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
@@ -100,10 +100,10 @@ final class PageAnnotationFactoryTest extends TestCase
         $registeredFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/UA-1 does not allow page annotations in the current implementation.');
+        $annotation = $factory->createTextAnnotation(new Rect(10, 20, 80, 12), 'Kommentar', 'QA', 'Note', false);
 
-        $factory->createTextAnnotation(new Rect(10, 20, 80, 12), 'Kommentar', 'QA', 'Note', false);
+        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Note \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $document->render());
     }
 
     #[Test]
@@ -153,6 +153,22 @@ final class PageAnnotationFactoryTest extends TestCase
         $registeredFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
         $parent = $factory->createHighlightAnnotation(new Rect(10, 20, 80, 12), null, 'Markiert', 'QA');
+
+        $popup = $factory->createPopupAnnotation($parent, new Rect(20, 40, 60, 30), true);
+
+        self::assertInstanceOf(PopupAnnotation::class, $popup);
+        self::assertSame([$popup], $parent->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_links_a_popup_to_a_parent_annotation_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+        $parent = $factory->createTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA', 'Comment', false);
 
         $popup = $factory->createPopupAnnotation($parent, new Rect(20, 40, 60, 30), true);
 

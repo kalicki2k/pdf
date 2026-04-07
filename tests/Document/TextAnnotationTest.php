@@ -57,4 +57,15 @@ final class TextAnnotationTest extends TestCase
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }
+
+    #[Test]
+    public function it_renders_a_text_annotation_with_a_struct_parent_reference(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $annotation = new TextAnnotation(7, $page, 10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
+        $annotation->withStructParent(3);
+
+        self::assertStringContainsString('/StructParent 3', $annotation->render());
+    }
 }

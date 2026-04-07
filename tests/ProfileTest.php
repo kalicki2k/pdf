@@ -182,6 +182,7 @@ final class ProfileTest extends TestCase
     public function it_detects_profiles_that_support_embedded_file_attachments(): void
     {
         self::assertTrue(Profile::pdf14()->supportsEmbeddedFileAttachments());
+        self::assertTrue(Profile::pdfUa1()->supportsEmbeddedFileAttachments());
         self::assertFalse(Profile::pdfA2u()->supportsEmbeddedFileAttachments());
         self::assertTrue(Profile::pdfA3b()->supportsEmbeddedFileAttachments());
         self::assertTrue(Profile::pdfA4f()->supportsEmbeddedFileAttachments());
@@ -331,6 +332,22 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdf17()->requiresLinkAnnotationAlternativeDescriptions());
         self::assertFalse(Profile::pdfA2u()->requiresLinkAnnotationAlternativeDescriptions());
         self::assertTrue(Profile::pdfUa1()->requiresLinkAnnotationAlternativeDescriptions());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_require_tagged_page_annotations(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresTaggedPageAnnotations());
+        self::assertFalse(Profile::pdfA2u()->requiresTaggedPageAnnotations());
+        self::assertTrue(Profile::pdfUa1()->requiresTaggedPageAnnotations());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_require_page_annotation_alternative_descriptions(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresPageAnnotationAlternativeDescriptions());
+        self::assertFalse(Profile::pdfA2u()->requiresPageAnnotationAlternativeDescriptions());
+        self::assertTrue(Profile::pdfUa1()->requiresPageAnnotationAlternativeDescriptions());
     }
 
     #[Test]

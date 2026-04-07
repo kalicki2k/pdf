@@ -12,9 +12,9 @@ use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class SignatureFieldAnnotation extends IndirectObject implements PageAnnotation
+final class SignatureFieldAnnotation extends IndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {
-    private ?int $structParentId = null;
+    use HasStructParent;
 
     public function __construct(
         int $id,
@@ -27,13 +27,6 @@ final class SignatureFieldAnnotation extends IndirectObject implements PageAnnot
         private readonly ?string $tooltip = null,
     ) {
         parent::__construct($id);
-    }
-
-    public function withStructParent(int $structParentId): self
-    {
-        $this->structParentId = $structParentId;
-
-        return $this;
     }
 
     public function render(): string
@@ -53,9 +46,7 @@ final class SignatureFieldAnnotation extends IndirectObject implements PageAnnot
             'T' => new StringType($this->name),
         ]);
 
-        if ($this->structParentId !== null) {
-            $dictionary->add('StructParent', $this->structParentId);
-        }
+        $this->addStructParentEntry($dictionary);
 
         if ($this->tooltip !== null && $this->tooltip !== '') {
             $dictionary->add('TU', new StringType($this->tooltip));
