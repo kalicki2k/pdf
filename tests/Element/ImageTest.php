@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Element;
 
+require_once __DIR__ . '/Support/ImageGzcompressStub.php';
+
 use Kalle\Pdf\Element\Image;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -411,6 +413,29 @@ final class ImageTest extends TestCase
             throw $exception;
         } catch (\Throwable $exception) {
             self::assertSame("Unable to decompress PNG image data for 'alpha.png'.", $exception->getMessage());
+        }
+    }
+
+    #[Test]
+    public function it_rejects_png_alpha_recompression_failures(): void
+    {
+        $splitPngAlphaChannels = new \ReflectionMethod(Image::class, 'splitPngAlphaChannels');
+        $pixelData = chr(0) . chr(10) . chr(20) . chr(30) . chr(40);
+        $compressed = gzcompress($pixelData);
+
+        self::assertNotFalse($compressed);
+
+        \Kalle\Pdf\Element\setImageGzcompressFailure(true);
+
+        try {
+            $splitPngAlphaChannels->invoke(null, 'alpha-recompress.png', $compressed, 1, 1, 3);
+            self::fail('Expected exception for failed PNG alpha recompression.');
+        } catch (\ReflectionException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            self::assertSame('Failed to recompress PNG image data.', $exception->getMessage());
+        } finally {
+            \Kalle\Pdf\Element\setImageGzcompressFailure(false);
         }
     }
 
