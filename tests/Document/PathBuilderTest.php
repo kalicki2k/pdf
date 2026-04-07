@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +17,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_strokes_a_path_with_stroke_width_color_and_opacity(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $returnedPage = $page->addPath()
@@ -34,7 +35,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_fills_a_path_without_stroke_settings(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $page->addPath()
@@ -49,7 +50,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_fills_and_strokes_a_path(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $page->addPath()
@@ -64,7 +65,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_rejects_non_positive_stroke_widths(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $this->expectException(InvalidArgumentException::class);
@@ -78,7 +79,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_rejects_non_positive_stroke_widths_for_fill_and_stroke(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $this->expectException(InvalidArgumentException::class);
@@ -92,12 +93,27 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_rejects_finishing_a_path_without_drawing_commands(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Path requires at least one drawing command.');
 
         $page->addPath()->fill();
+    }
+
+    #[Test]
+    public function it_rejects_transparent_paths_for_pdf_a_1b(): void
+    {
+        $document = new Document(profile: Profile::pdfA1b());
+        $page = $document->addPage(100, 100);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow transparency in the current implementation.');
+
+        $page->addPath()
+            ->moveTo(10, 20)
+            ->lineTo(30, 40)
+            ->stroke(1.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
     }
 }

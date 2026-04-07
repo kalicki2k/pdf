@@ -101,6 +101,11 @@ final readonly class Profile
         return $this->pdfaPart() === 2;
     }
 
+    public function isPdfA1(): bool
+    {
+        return $this->pdfaPart() === 1;
+    }
+
     public function isPdfA3(): bool
     {
         return $this->pdfaPart() === 3;

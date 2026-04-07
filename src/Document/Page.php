@@ -106,7 +106,7 @@ final class Page extends IndirectObject
         $textWidth = $font->measureTextWidth($text, $size);
         [$leadingDecorationInset, $trailingDecorationInset] = $this->resolveDecorationInsets($font, $text, $size);
         $colorOperator = $options->color?->renderNonStrokingOperator();
-        $graphicsStateName = $options->opacity !== null ? $this->resources->addOpacity($options->opacity) : null;
+        $graphicsStateName = $this->resolveGraphicsStateName($options->opacity);
 
         $this->updateUnicodeFontWidths($font);
 
@@ -770,7 +770,7 @@ final class Page extends IndirectObject
         }
 
         $colorOperator = $color?->renderStrokingOperator();
-        $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
+        $graphicsStateName = $this->resolveGraphicsStateName($opacity);
 
         $this->contents->addElement(new Line(
             $from->x,
@@ -808,7 +808,7 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Rectangle requires either a stroke or a fill.');
         }
 
-        $graphicsStateName = $opacity !== null ? $this->resources->addOpacity($opacity) : null;
+        $graphicsStateName = $this->resolveGraphicsStateName($opacity);
 
         $this->contents->addElement(new Rectangle(
             $box->x,
@@ -2146,6 +2146,22 @@ final class Page extends IndirectObject
         $path->stroke($strokeWidth, $strokeColor, $opacity);
 
         return $this;
+    }
+
+    public function resolveGraphicsStateName(?Opacity $opacity): ?string
+    {
+        if ($opacity === null) {
+            return null;
+        }
+
+        if ($this->document->getProfile()->isPdfA1()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow transparency in the current implementation.',
+                $this->document->getProfile()->name(),
+            ));
+        }
+
+        return $this->resources->addOpacity($opacity);
     }
 
     private function createImageObject(Image $image): ImageObject

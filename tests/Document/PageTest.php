@@ -3057,6 +3057,47 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_transparent_text_for_pdf_a_1b(): void
+    {
+        $document = new Document(profile: Profile::pdfA1b());
+        $document->registerFont(
+            'NotoSans-Regular',
+            'CIDFontType2',
+            'Identity-H',
+            true,
+            __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+        );
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow transparency in the current implementation.');
+
+        $page->addText(
+            'Transparent',
+            new Position(10, 50),
+            'NotoSans-Regular',
+            12,
+            new TextOptions(opacity: Opacity::fill(0.5)),
+        );
+    }
+
+    #[Test]
+    public function it_rejects_transparent_rectangles_for_pdf_a_1a(): void
+    {
+        $document = new Document(profile: Profile::pdfA1a());
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a does not allow transparency in the current implementation.');
+
+        $page->addRectangle(
+            new Rect(10, 10, 20, 20),
+            fillColor: Color::gray(0.5),
+            opacity: Opacity::both(0.4),
+        );
+    }
+
+    #[Test]
     public function it_renders_underlines_and_strikethroughs_for_text_segments(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

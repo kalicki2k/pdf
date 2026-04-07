@@ -113,7 +113,7 @@ final class PathBuilder
             throw new InvalidArgumentException('Path requires at least one drawing command.');
         }
 
-        $graphicsStateName = $opacity !== null ? $this->page->resources->addOpacity($opacity) : null;
+        $graphicsStateName = $this->page->resolveGraphicsStateName($opacity);
 
         $this->page->contents->addElement(new Path(
             $this->commands,

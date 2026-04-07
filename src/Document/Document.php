@@ -826,28 +826,32 @@ final class Document
 
     private function assertAllowsEncryption(): void
     {
-        if ($this->profile->isPdfA2()) {
+        if ($this->profile->isPdfA()) {
             throw new InvalidArgumentException(sprintf('Profile %s does not allow encryption.', $this->profile->name()));
         }
     }
 
     private function assertAllowsAttachments(): void
     {
-        if ($this->profile->isPdfA2()) {
+        if ($this->profile->isPdfA3() || $this->profile->isPdfA4f()) {
+            return;
+        }
+
+        if ($this->profile->isPdfA()) {
             throw new InvalidArgumentException(sprintf('Profile %s does not allow embedded file attachments.', $this->profile->name()));
         }
     }
 
     private function assertAllowsLayers(): void
     {
-        if ($this->profile->isPdfA2()) {
+        if ($this->profile->isPdfA()) {
             throw new InvalidArgumentException(sprintf('Profile %s does not allow optional content groups (layers).', $this->profile->name()));
         }
     }
 
     private function assertAllowsForms(): void
     {
-        if ($this->profile->isPdfA2()) {
+        if ($this->profile->isPdfA()) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s does not allow AcroForm fields in the current implementation.',
                 $this->profile->name(),
@@ -866,7 +870,7 @@ final class Document
      */
     private function assertAllowsFontRegistration(array $options): void
     {
-        if (!$this->profile->isPdfA2()) {
+        if (!$this->profile->isPdfA()) {
             return;
         }
 

@@ -114,12 +114,34 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_encryption_for_pdf_a_1b(): void
+    {
+        $document = new Document(profile: Profile::pdfA1b());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow encryption.');
+
+        $document->encrypt(new EncryptionOptions('user', 'owner'));
+    }
+
+    #[Test]
     public function it_rejects_attachments_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments.');
+
+        $document->addAttachment('demo.txt', 'hello');
+    }
+
+    #[Test]
+    public function it_rejects_attachments_for_pdf_a_1b(): void
+    {
+        $document = new Document(profile: Profile::pdfA1b());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow embedded file attachments.');
 
         $document->addAttachment('demo.txt', 'hello');
     }
@@ -136,6 +158,17 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_layers_for_pdf_a_1b(): void
+    {
+        $document = new Document(profile: Profile::pdfA1b());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow optional content groups (layers).');
+
+        $document->addLayer('Draft');
+    }
+
+    #[Test]
     public function it_rejects_acroform_fields_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());
@@ -143,6 +176,18 @@ final class DocumentTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+
+        $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12);
+    }
+
+    #[Test]
+    public function it_rejects_acroform_fields_for_pdf_a_1b(): void
+    {
+        $document = new Document(profile: Profile::pdfA1b());
+        $page = $document->addPage(100.0, 200.0);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow AcroForm fields in the current implementation.');
 
         $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12);
     }
