@@ -390,6 +390,7 @@ final readonly class TextLayoutEngine
     private function replaceLastLineSegmentText(array &$line, string $text): void
     {
         $lastIndex = array_key_last($line);
+        assert(is_int($lastIndex));
         $lastSegment = $line[$lastIndex];
         $line[$lastIndex] = new TextSegment(
             $text,

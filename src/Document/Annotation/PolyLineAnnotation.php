@@ -120,6 +120,7 @@ final class PolyLineAnnotation extends IndirectObject implements PageAnnotation
     private function colorComponents(Color $color): array
     {
         $rendered = preg_split('/\s+/', $color->renderNonStrokingOperator());
+        assert(is_array($rendered));
 
         $components = [];
 

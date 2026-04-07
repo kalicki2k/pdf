@@ -90,6 +90,7 @@ final class TableStyleResolver
         }
 
         $resolvedBorder = $applicableBorders[0];
+        assert($resolvedBorder->width !== null);
 
         return new ResolvedBorderSide(
             $resolvedBorder->width,
