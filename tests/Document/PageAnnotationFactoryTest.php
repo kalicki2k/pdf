@@ -49,6 +49,34 @@ final class PageAnnotationFactoryTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_pdf_a_appearance_stream_to_free_text_annotations(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $annotation = $factory->createFreeTextAnnotation(
+            new Rect(10, 20, 80, 24),
+            'Hinweistext',
+            StandardFontName::HELVETICA,
+            12,
+            null,
+            null,
+            null,
+            'QA',
+        );
+
+        self::assertInstanceOf(FreeTextAnnotation::class, $annotation);
+        self::assertSame([StandardFontName::HELVETICA], $resolvedFonts);
+        self::assertSame([StandardFontName::HELVETICA], $registeredFonts);
+        self::assertStringContainsString('/F 4', $annotation->render());
+        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
+    }
+
+    #[Test]
     public function it_links_a_popup_to_a_parent_annotation_when_supported(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));

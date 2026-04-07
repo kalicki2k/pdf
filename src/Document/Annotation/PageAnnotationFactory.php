@@ -165,7 +165,7 @@ final readonly class PageAnnotationFactory
         $font = ($this->resolveFont)($baseFont);
         $fontResourceName = ($this->registerFontResource)($font);
 
-        return new FreeTextAnnotation(
+        $annotation = new FreeTextAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -180,6 +180,16 @@ final readonly class PageAnnotationFactory
             $fillColor,
             $title,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance(new TextAnnotationAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+            ));
+        }
+
+        return $annotation;
     }
 
     public function createHighlightAnnotation(

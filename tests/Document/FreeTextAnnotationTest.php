@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Annotation\FreeTextAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
@@ -79,5 +80,22 @@ final class FreeTextAnnotationTest extends TestCase
 
         self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
         self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', $annotation->render());
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_free_text_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new FreeTextAnnotation(7, $page, 10, 20, 80, 24, 'Hinweistext', 'F1', 12);
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 24));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /FreeText /Rect [10 20 90 44] /P 4 0 R /Contents (Hinweistext) /DA (/F1 12 Tf 0 g) /F 4 /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }
