@@ -8,9 +8,11 @@ require_once __DIR__ . '/Support/StandardObjectEncryptorOpenSslStub.php';
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
+
+use function Kalle\Pdf\Encryption\setStandardObjectEncryptorOpenSslShouldFail;
+
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
-use function Kalle\Pdf\Encryption\setStandardObjectEncryptorOpenSslShouldFail;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;

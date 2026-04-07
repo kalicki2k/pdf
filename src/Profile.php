@@ -96,6 +96,35 @@ final readonly class Profile
         return str_starts_with($this->name, 'PDF/A-');
     }
 
+    public function isPdfA2u(): bool
+    {
+        return $this->name === 'PDF/A-2u';
+    }
+
+    public function pdfaPart(): ?int
+    {
+        return match ($this->name) {
+            'PDF/A-1a', 'PDF/A-1b' => 1,
+            'PDF/A-2a', 'PDF/A-2b', 'PDF/A-2u' => 2,
+            'PDF/A-3a', 'PDF/A-3b', 'PDF/A-3u' => 3,
+            'PDF/A-4', 'PDF/A-4e', 'PDF/A-4f' => 4,
+            default => null,
+        };
+    }
+
+    public function pdfaConformance(): ?string
+    {
+        return match ($this->name) {
+            'PDF/A-1a', 'PDF/A-2a', 'PDF/A-3a' => 'A',
+            'PDF/A-1b', 'PDF/A-2b', 'PDF/A-3b' => 'B',
+            'PDF/A-2u', 'PDF/A-3u' => 'U',
+            'PDF/A-4e' => 'E',
+            'PDF/A-4f' => 'F',
+            'PDF/A-4' => null,
+            default => null,
+        };
+    }
+
     private static function assertSupportedStandardVersion(float $version): void
     {
         $supportedVersions = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.0];

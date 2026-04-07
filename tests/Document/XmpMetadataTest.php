@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\XmpMetadata;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +16,7 @@ final class XmpMetadataTest extends TestCase
     public function it_renders_xmp_metadata_from_document_properties(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.4),
+            profile: Profile::standard(1.4),
             title: 'Spec',
             author: 'Kalle',
             subject: 'Testing',
@@ -47,7 +48,7 @@ final class XmpMetadataTest extends TestCase
     public function it_allows_custom_producer_and_creator_tool_metadata(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.4),
+            profile: Profile::standard(1.4),
             title: 'Spec',
             creatorTool: 'Acme Backoffice',
         );
@@ -65,7 +66,7 @@ final class XmpMetadataTest extends TestCase
     public function it_maps_author_creator_and_creator_tool_to_distinct_xmp_fields(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.4),
+            profile: Profile::standard(1.4),
             title: 'Rechnung 2026-0015',
             author: 'DEIN FIRMENNAME',
             creator: 'Rechnungsservice',
@@ -79,5 +80,21 @@ final class XmpMetadataTest extends TestCase
         self::assertStringContainsString('<rdf:li>DEIN FIRMENNAME</rdf:li>', $rendered);
         self::assertStringContainsString('<xmp:CreatorTool>Backoffice Export</xmp:CreatorTool>', $rendered);
         self::assertStringNotContainsString('<rdf:li>Rechnungsservice</rdf:li>', $rendered);
+    }
+
+    #[Test]
+    public function it_adds_pdf_a_identification_metadata_for_pdf_a_2u(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            title: 'Archive Copy',
+        );
+        $metadata = new XmpMetadata(4, $document);
+
+        $rendered = $metadata->render();
+
+        self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
+        self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
+        self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $rendered);
     }
 }

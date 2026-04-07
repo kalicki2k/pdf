@@ -10,6 +10,8 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Page;
+use Kalle\Pdf\Profile;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -20,7 +22,7 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 }
 
 $document = new Document(
-    profile: \Kalle\Pdf\Profile::standard(1.4),
+    profile: Profile::standard(1.4),
     title: 'Project Handbook',
     author: 'kalle/pdf',
     subject: 'Table of contents demo',
@@ -36,7 +38,7 @@ $document
     ->addKeyword('table-of-contents')
     ->addKeyword('example')
     ->addPageNumbers(new Position(Units::mm(20), Units::mm(10)), 'Helvetica', 10, 'Page {{page}} / {{pages}}')
-    ->addHeader(static function (\Kalle\Pdf\Page $page, int $pageNumber): void {
+    ->addHeader(static function (Page $page, int $pageNumber): void {
         $page->addText(
             'Project Handbook',
             new Position(Units::mm(20), Units::mm(287)),

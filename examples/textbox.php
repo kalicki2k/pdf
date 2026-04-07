@@ -17,6 +17,7 @@ use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\Profile;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -27,7 +28,7 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 }
 
 $document = new Document(
-    profile: \Kalle\Pdf\Profile::standard(1.4),
+    profile: Profile::standard(1.4),
     title: 'TextBox test',
     fontConfig: [
         [

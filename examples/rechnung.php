@@ -19,6 +19,7 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Profile;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -44,7 +45,7 @@ $tablePosition = new Position($left, Units::mm(165));
 $totalsPosition = new Position(Units::mm(120), Units::mm(78));
 
 $document = new Document(
-    profile: \Kalle\Pdf\Profile::standard(1.4),
+    profile: Profile::standard(1.4),
     title: 'Rechnung 2026-0015',
     author: 'DEIN FIRMENNAME',
     subject: 'Ausgangsrechnung',

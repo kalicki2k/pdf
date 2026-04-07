@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Profile;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
+
+use function Kalle\Pdf\Document\setDocumentRandomBytesShouldThrow;
+
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
@@ -20,7 +23,7 @@ use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
-use function Kalle\Pdf\Document\setDocumentRandomBytesShouldThrow;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -31,7 +34,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_initializes_base_objects_for_pdf_1_0(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.0));
+        $document = new Document(profile: Profile::standard(1.0));
 
         self::assertSame(1, $document->catalog->id);
         self::assertSame(2, $document->pages->id);
@@ -45,7 +48,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_creates_a_standard_pdf_profile(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         self::assertSame('standard', $document->getProfile()->name());
         self::assertSame(1.4, $document->getProfile()->version());
@@ -62,9 +65,68 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_encryption_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow encryption.');
+
+        $document->encrypt(new EncryptionOptions('user', 'owner'));
+    }
+
+    #[Test]
+    public function it_rejects_attachments_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments.');
+
+        $document->addAttachment('demo.txt', 'hello');
+    }
+
+    #[Test]
+    public function it_rejects_layers_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow optional content groups (layers).');
+
+        $document->addLayer('Draft');
+    }
+
+    #[Test]
+    public function it_rejects_acroform_fields_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+        $page = $document->addPage(100.0, 200.0);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+
+        $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12);
+    }
+
+    #[Test]
+    public function it_registers_an_icc_profile_stream_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+
+        $objectIds = array_map(
+            static fn (object $object): int => $object->id,
+            $document->getDocumentObjects(),
+        );
+
+        self::assertSame([1, 2, 5, 3, 4], $objectIds);
+        self::assertNotNull($document->getPdfAOutputIntentProfile());
+    }
+
+    #[Test]
     public function it_initializes_structure_objects_for_pdf_1_4_and_above(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4), language: 'de-DE');
+        $document = new Document(profile: Profile::standard(1.4), language: 'de-DE');
 
         self::assertSame([1, 2, 3, 4], array_map(
             static fn (object $object): int => $object->id,
@@ -76,7 +138,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_assigns_object_ids_to_added_fonts_and_pages(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $returnedDocument = $document->registerFont('Helvetica');
         $page = $document->addPage(100.0, 200.0);
@@ -96,7 +158,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_registers_standard_fonts_via_the_explicit_register_font_api(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $returnedDocument = $document->registerFont('Helvetica');
 
@@ -108,7 +170,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_find_registered_fonts_by_their_base_font_name(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
 
         self::assertSame($document->getFonts()[0], $document->getFontByBaseFont('Helvetica'));
@@ -118,7 +180,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_uses_distinct_defaults_for_creator_producer_and_creator_tool_metadata(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         self::assertSame('kalle/pdf', $document->getCreator());
         self::assertStringStartsWith('kalle/pdf', $document->getProducer());
@@ -129,7 +191,7 @@ final class DocumentTest extends TestCase
     public function it_allows_custom_creator_producer_and_creator_tool_metadata(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.4),
+            profile: Profile::standard(1.4),
             creator: 'Acme Invoice Service',
             creatorTool: 'Acme Backoffice',
         );
@@ -145,7 +207,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_falls_back_to_the_package_name_for_an_empty_creator_metadata_value(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4), creator: '');
+        $document = new Document(profile: Profile::standard(1.4), creator: '');
 
         self::assertSame('kalle/pdf', $document->getCreator());
     }
@@ -153,7 +215,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_allows_updating_the_creator_metadata(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $returnedDocument = $document->setCreator('Acme Renderer');
 
@@ -164,7 +226,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_an_empty_creator_metadata_value(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Creator must not be empty.');
@@ -175,7 +237,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_an_empty_producer_metadata_value(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Producer must not be empty.');
@@ -186,7 +248,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_falls_back_to_the_package_name_for_an_empty_creator_tool_metadata_value(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4), creatorTool: '');
+        $document = new Document(profile: Profile::standard(1.4), creatorTool: '');
 
         self::assertSame('kalle/pdf', $document->getCreatorTool());
     }
@@ -194,7 +256,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_allows_updating_the_creator_tool_metadata(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $returnedDocument = $document->setCreatorTool('Acme Backoffice');
 
@@ -205,7 +267,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_an_empty_creator_tool_metadata_value(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Creator tool must not be empty.');
@@ -216,7 +278,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_uses_a_pdf_1_0_compatible_default_encoding_for_standard_fonts(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.0));
+        $document = new Document(profile: Profile::standard(1.0));
 
         $document->registerFont('Helvetica');
 
@@ -227,7 +289,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_keeps_the_win_ansi_default_for_newer_pdf_versions(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $document->registerFont('Helvetica');
 
@@ -237,7 +299,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_still_validates_explicitly_provided_encodings_against_the_pdf_version(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.0));
+        $document = new Document(profile: Profile::standard(1.0));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Encoding 'WinAnsiEncoding' is not allowed in PDF 1.0.");
@@ -248,7 +310,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_page_from_a_named_page_size(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $page = $document->addPage(PageSize::A5());
 
@@ -259,7 +321,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_attachments_as_indirect_objects(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
 
@@ -272,7 +334,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_empty_attachment_filenames(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Attachment filename must not be empty.');
@@ -288,7 +350,7 @@ final class DocumentTest extends TestCase
         file_put_contents($path, 'attachment-data');
 
         try {
-            $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+            $document = new Document(profile: Profile::standard(1.4));
 
             $returnedDocument = $document->addAttachmentFromFile(
                 $path,
@@ -311,7 +373,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_missing_attachment_files(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $path = sys_get_temp_dir() . '/pdf-missing-' . uniqid('', true) . '.txt';
 
         $this->expectException(InvalidArgumentException::class);
@@ -329,7 +391,7 @@ final class DocumentTest extends TestCase
         chmod($path, 0000);
 
         try {
-            $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+            $document = new Document(profile: Profile::standard(1.4));
 
             $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage("Attachment file '$path' could not be read.");
@@ -350,7 +412,7 @@ final class DocumentTest extends TestCase
         chmod($path, 0000);
 
         try {
-            $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+            $document = new Document(profile: Profile::standard(1.4));
 
             $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage("Unable to read font file '$path'.");
@@ -365,7 +427,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_creates_an_optional_font_parser_for_readable_font_files(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $method = new \ReflectionMethod($document, 'createOptionalFontParser');
 
         $parser = $method->invoke($document, 'assets/fonts/NotoSans-Regular.ttf');
@@ -379,7 +441,7 @@ final class DocumentTest extends TestCase
         setDocumentRandomBytesShouldThrow(true);
 
         try {
-            $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+            $document = new Document(profile: Profile::standard(1.4));
             $documentId = $document->getDocumentId();
 
             self::assertCount(2, $documentId);
@@ -393,7 +455,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_page_from_the_a00_special_case(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $page = $document->addPage(PageSize::A00());
 
@@ -404,7 +466,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_page_from_the_b_series(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $page = $document->addPage(PageSize::B4());
 
@@ -415,7 +477,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_page_from_the_c_series(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $page = $document->addPage(PageSize::C5());
 
@@ -426,7 +488,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_landscape_page_from_a_named_page_size(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $page = $document->addPage(PageSize::A4()->landscape());
 
@@ -437,7 +499,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_applies_header_and_footer_callbacks_to_new_pages(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $document
             ->addHeader(static function (Page $page, int $pageNumber): void {
@@ -460,7 +522,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_structured_content_on_pdf_versions_below_1_4(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.3));
+        $document = new Document(profile: Profile::standard(1.3));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Structured content requires PDF version 1.4 or higher.');
@@ -471,7 +533,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_applies_header_and_footer_callbacks_to_overflow_pages(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $document
             ->addHeader(static function (Page $page, int $pageNumber): void {
@@ -498,7 +560,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_footer_page_numbers_with_total_page_count(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $document->addPage(100, 100);
         $document->addPage(100, 100);
@@ -513,7 +575,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_header_page_numbers_with_a_custom_template(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $document->addPage(100, 100);
         $document->addPage(100, 100);
@@ -529,7 +591,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_use_logical_page_numbers_for_visible_page_numbering(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $coverPage = $document->addPage(100, 100);
         $firstPage = $document->addPage(100, 100);
@@ -547,7 +609,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_empty_page_number_templates(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Page number template must not be empty.');
@@ -558,7 +620,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_non_positive_page_number_sizes(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Page number size must be greater than zero.');
@@ -569,7 +631,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_table_of_contents_from_existing_outlines(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $firstPage = $document->addPage(100, 100);
         $secondPage = $document->addPage(100, 100);
@@ -592,7 +654,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_table_of_contents_pages_without_positive_content_width(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100.0, 100.0);
         $document->addOutline('Erste Seite', $page);
@@ -609,11 +671,11 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_skips_table_of_contents_entries_when_the_target_page_has_no_resolved_page_number(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $validPage = $document->addPage(100, 100);
 
-        $foreignDocument = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $foreignDocument = new Document(profile: Profile::standard(1.4));
         $foreignDocument->addPage(100, 100);
         $foreignPage = $foreignDocument->addPage(100, 100);
 
@@ -634,7 +696,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_move_the_table_of_contents_to_the_start(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $firstPage = $document->addPage(100, 100);
         $secondPage = $document->addPage(100, 100);
@@ -653,7 +715,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_numbers_entries_correctly_when_a_multi_page_table_of_contents_moves_to_the_start(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $firstContentPage = null;
 
@@ -684,7 +746,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_applies_header_page_numbers_after_moving_the_table_of_contents_to_the_start(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $document->addHeader(static function (Page $page, int $pageNumber): void {
             $page->addText("Header $pageNumber", new Position(10, 90), 'Helvetica', 10);
@@ -708,7 +770,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_insert_the_table_of_contents_after_the_first_page(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $coverPage = $document->addPage(100, 100);
         $firstPage = $document->addPage(100, 100);
@@ -741,7 +803,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_append_the_table_of_contents_and_keep_logical_numbers_for_content_pages(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $firstPage = $document->addPage(100, 100);
         $secondPage = $document->addPage(100, 100);
@@ -771,7 +833,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_append_the_table_of_contents_and_use_logical_numbers_at_the_end(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $coverPage = $document->addPage(100, 100);
         $firstPage = $document->addPage(100, 100);
@@ -808,7 +870,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_use_logical_page_numbers_for_a_table_of_contents(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $coverPage = $document->addPage(100, 100);
         $firstPage = $document->addPage(100, 100);
@@ -845,7 +907,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_render_a_table_of_contents_without_leader_characters(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 100);
         $document->addOutline('Erste Seite', $page);
@@ -868,7 +930,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_can_render_a_table_of_contents_with_dash_leaders(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 100);
         $document->addOutline('Erste Seite', $page);
@@ -891,7 +953,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_truncates_table_of_contents_titles_to_an_ellipsis_when_even_the_short_form_barely_fits(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 100);
         $document->addOutline('ABCDEFGHIJKLMN', $page);
@@ -917,7 +979,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_truncates_table_of_contents_titles_with_a_visible_prefix_when_space_allows(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 100);
         $document->addOutline('ABCDEFGHIJKLMN', $page);
@@ -952,7 +1014,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_an_out_of_bounds_table_of_contents_insertion_page(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 100);
         $document->addOutline('Erste Seite', $page);
@@ -976,7 +1038,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_a_table_of_contents_without_outline_entries(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
 
         $this->expectException(InvalidArgumentException::class);
@@ -988,7 +1050,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_registers_outline_objects_and_links_them_to_pages(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $firstPage = $document->addPage(100.0, 200.0);
         $secondPage = $document->addPage(100.0, 200.0);
 
@@ -1008,7 +1070,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_empty_outline_titles(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100.0, 200.0);
 
         $this->expectException(InvalidArgumentException::class);
@@ -1020,7 +1082,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_registers_named_destinations_on_the_catalog(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100.0, 200.0);
 
         $document->addDestination('table-demo', $page);
@@ -1031,7 +1093,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_empty_destination_names(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100.0, 200.0);
 
         $this->expectException(InvalidArgumentException::class);
@@ -1043,7 +1105,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_invalid_destination_names(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100.0, 200.0);
 
         $this->expectException(InvalidArgumentException::class);
@@ -1055,7 +1117,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_reuses_optional_content_groups_for_the_same_layer_name(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $firstLayer = $document->addLayer('Draft', visibleByDefault: false);
         $secondLayer = $document->ensureOptionalContentGroup('Draft');
@@ -1069,7 +1131,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_empty_optional_content_group_names(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Optional content group name must not be empty.');
@@ -1080,7 +1142,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_combining_page_size_and_explicit_height(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Height must not be provided when using a PageSize.');
@@ -1091,7 +1153,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_registers_unicode_fonts_together_with_their_descendant_font_objects(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $returnedDocument = $document->registerFont('NotoSansCJKsc-Regular', 'CIDFontType2', unicode: true);
 
@@ -1109,7 +1171,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_registers_embedded_fonts_via_their_direct_font_names(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $document
             ->registerFont('NotoSans-Regular')
@@ -1136,7 +1198,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_registers_the_noto_sans_font_as_an_embedded_font(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $document->registerFont('NotoSans-Regular');
 
@@ -1150,7 +1212,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_registers_an_embedded_font_by_its_direct_font_name(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $document->registerFont('NotoSans-Regular');
 
@@ -1164,7 +1226,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_registers_serif_and_mono_fonts_as_embedded_fonts_by_their_direct_names(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $document
             ->registerFont('NotoSerif-Regular')
@@ -1185,7 +1247,7 @@ final class DocumentTest extends TestCase
     public function it_can_use_a_document_specific_font_configuration(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.4),
+            profile: Profile::standard(1.4),
             fontConfig: [
                 [
                     'baseFont' => 'CustomSans-Regular',
@@ -1216,7 +1278,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_creates_and_reuses_a_single_acro_form_instance(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $firstAcroForm = $document->ensureAcroForm();
         $secondAcroForm = $document->ensureAcroForm();
@@ -1229,7 +1291,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_sets_encryption_options_and_caches_the_built_security_handler_data(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.7));
+        $document = new Document(profile: Profile::standard(1.7));
         $options = new EncryptionOptions('user-secret', 'owner-secret');
 
         $returnedDocument = $document->encrypt($options);
@@ -1247,7 +1309,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_normalizes_keywords_uniquely_while_preserving_first_occurrence(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.0));
+        $document = new Document(profile: Profile::standard(1.0));
 
         $document
             ->addKeyword('  pdf ')
@@ -1261,7 +1323,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_discards_empty_keywords_after_trimming(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4), title: 'Spec');
+        $document = new Document(profile: Profile::standard(1.4), title: 'Spec');
 
         $document
             ->addKeyword(' ')
@@ -1278,7 +1340,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_structure_elements_and_links_them_to_the_document_root(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
 
         $result = $document->addStructElem(StructureTag::Paragraph, 42);
 
@@ -1295,7 +1357,7 @@ final class DocumentTest extends TestCase
     public function it_renders_a_pdf_document_with_structure_metadata_for_version_1_4(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.4),
+            profile: Profile::standard(1.4),
             title: 'Spec',
             author: 'Kalle',
             subject: 'Tests',
@@ -1329,7 +1391,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_enables_structure_metadata_only_after_tagged_content_is_added(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4), language: 'de-DE');
+        $document = new Document(profile: Profile::standard(1.4), language: 'de-DE');
         $document->registerFont('Helvetica');
         $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
 

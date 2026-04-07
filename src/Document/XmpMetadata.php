@@ -46,6 +46,7 @@ final class XmpMetadata extends IndirectObject
         $pdfKeywords = $documentKeywords !== []
             ? '    <pdf:Keywords>' . $this->escape(implode(', ', $documentKeywords)) . '</pdf:Keywords>' . PHP_EOL
             : '';
+        $pdfAIdentification = $this->renderPdfAIdentification();
 
         return <<<XML
 <?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
@@ -62,10 +63,35 @@ final class XmpMetadata extends IndirectObject
     <xmp:ModifyDate>{$modificationDate}</xmp:ModifyDate>
     <xmp:MetadataDate>{$modificationDate}</xmp:MetadataDate>
   </rdf:Description>
-</rdf:RDF>
+{$pdfAIdentification}</rdf:RDF>
 </x:xmpmeta>
 <?xpacket end="w"?>
 XML;
+    }
+
+    private function renderPdfAIdentification(): string
+    {
+        if (!$this->document->getProfile()->isPdfA()) {
+            return '';
+        }
+
+        $part = $this->document->getProfile()->pdfaPart();
+        $conformance = $this->document->getProfile()->pdfaConformance();
+
+        if ($part === null) {
+            return '';
+        }
+
+        $conformanceXml = $conformance !== null
+            ? '    <pdfaid:conformance>' . $this->escape($conformance) . '</pdfaid:conformance>' . PHP_EOL
+            : '';
+
+        return <<<XML
+  <rdf:Description rdf:about=""
+    xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
+    <pdfaid:part>{$part}</pdfaid:part>
+{$conformanceXml}  </rdf:Description>
+XML . PHP_EOL;
     }
 
     private function renderAltProperty(string $name, ?string $value): string

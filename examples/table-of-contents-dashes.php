@@ -13,6 +13,7 @@ use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Profile;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -23,7 +24,7 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 }
 
 $document = new Document(
-    profile: \Kalle\Pdf\Profile::standard(1.4),
+    profile: Profile::standard(1.4),
     title: 'Project Handbook',
     author: 'kalle/pdf',
     subject: 'Table of contents demo with dash leaders',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
@@ -30,6 +31,20 @@ final class Catalog extends IndirectObject
             $dictionary->add('Metadata', new ReferenceType($metadata));
         }
 
+        $pdfaOutputIntentProfile = $this->document->getPdfAOutputIntentProfile();
+
+        if ($pdfaOutputIntentProfile !== null) {
+            $dictionary->add('OutputIntents', new ArrayType([
+                new DictionaryType([
+                    'Type' => new NameType('OutputIntent'),
+                    'S' => new NameType('GTS_PDFA1'),
+                    'OutputConditionIdentifier' => new StringType('sRGB IEC61966-2.1'),
+                    'Info' => new StringType('sRGB IEC61966-2.1'),
+                    'DestOutputProfile' => new ReferenceType($pdfaOutputIntentProfile),
+                ]),
+            ]));
+        }
+
         if ($this->document->outlineRoot !== null) {
             $dictionary->add('Outlines', new ReferenceType($this->document->outlineRoot));
             $dictionary->add('PageMode', new NameType('UseOutlines'));
@@ -39,7 +54,7 @@ final class Catalog extends IndirectObject
             $destinations = new DictionaryType([]);
 
             foreach ($this->document->getDestinations() as $name => $page) {
-                $destinations->add($name, new \Kalle\Pdf\Types\ArrayType([
+                $destinations->add($name, new ArrayType([
                     new ReferenceType($page),
                     new NameType('Fit'),
                 ]));
@@ -58,7 +73,7 @@ final class Catalog extends IndirectObject
 
             $dictionary->add('Names', new DictionaryType([
                 'EmbeddedFiles' => new DictionaryType([
-                    'Names' => new \Kalle\Pdf\Types\ArrayType($embeddedFileEntries),
+                    'Names' => new ArrayType($embeddedFileEntries),
                 ]),
             ]));
         }
@@ -82,22 +97,22 @@ final class Catalog extends IndirectObject
             }
 
             $defaultConfiguration = new DictionaryType([
-                'Order' => new \Kalle\Pdf\Types\ArrayType(array_map(
+                'Order' => new ArrayType(array_map(
                     static fn (OptionalContentGroup $group): ReferenceType => new ReferenceType($group),
                     $groups,
                 )),
             ]);
 
             if ($onGroups !== []) {
-                $defaultConfiguration->add('ON', new \Kalle\Pdf\Types\ArrayType($onGroups));
+                $defaultConfiguration->add('ON', new ArrayType($onGroups));
             }
 
             if ($offGroups !== []) {
-                $defaultConfiguration->add('OFF', new \Kalle\Pdf\Types\ArrayType($offGroups));
+                $defaultConfiguration->add('OFF', new ArrayType($offGroups));
             }
 
             $dictionary->add('OCProperties', new DictionaryType([
-                'OCGs' => new \Kalle\Pdf\Types\ArrayType(array_map(
+                'OCGs' => new ArrayType(array_map(
                     static fn (OptionalContentGroup $group): ReferenceType => new ReferenceType($group),
                     $groups,
                 )),

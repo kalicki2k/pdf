@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Document;
 use Composer\InstalledVersions;
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Kalle\Pdf\Profile;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Outline\OutlineItem;
@@ -38,6 +37,7 @@ use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Structure\ParentTree;
 use Kalle\Pdf\Structure\StructElem;
@@ -48,6 +48,7 @@ use Random\RandomException;
 final class Document
 {
     private const string PACKAGE_NAME = 'kalle/pdf';
+    private const string PDFA_SRGB_ICC_PROFILE_PATH = __DIR__ . '/../../assets/color-srgb.icc';
     private int $objectId = 0;
     private int $structParentId = -1;
     private readonly DateTimeImmutable $creationDate;
@@ -58,6 +59,7 @@ final class Document
     private ?EncryptionProfile $encryptionProfile = null;
     private ?EncryptionOptions $encryptionOptions = null;
     private ?StandardSecurityHandlerData $securityHandlerData = null;
+    private ?IccProfileStream $pdfaOutputIntentProfile = null;
     private ?XmpMetadata $xmpMetadata = null;
     /** @var list<callable(Page, int, int): void> */
     private array $deferredHeaderRenderers = [];
@@ -139,6 +141,7 @@ final class Document
     public function getDocumentObjects(): array
     {
         $xmpMetadata = $this->getXmpMetadata();
+        $pdfaOutputIntentProfile = $this->getPdfAOutputIntentProfile();
 
         /** @var list<IndirectObject> $objects */
         $objects = [];
@@ -176,6 +179,10 @@ final class Document
 
         if ($this->encryptDictionary !== null) {
             $objects[] = $this->encryptDictionary;
+        }
+
+        if ($pdfaOutputIntentProfile !== null) {
+            $objects[] = $pdfaOutputIntentProfile;
         }
 
         foreach ($this->optionalContentGroups as $optionalContentGroup) {
@@ -246,6 +253,22 @@ final class Document
     public function getProfile(): Profile
     {
         return $this->profile;
+    }
+
+    public function getPdfAOutputIntentProfile(): ?IccProfileStream
+    {
+        if (!$this->profile->isPdfA2u()) {
+            return null;
+        }
+
+        if ($this->pdfaOutputIntentProfile === null) {
+            $this->pdfaOutputIntentProfile = IccProfileStream::fromPath(
+                $this->getUniqObjectId(),
+                self::PDFA_SRGB_ICC_PROFILE_PATH,
+            );
+        }
+
+        return $this->pdfaOutputIntentProfile;
     }
 
     public function getTitle(): ?string
@@ -388,6 +411,8 @@ final class Document
 
     public function encrypt(EncryptionOptions $options): self
     {
+        $this->assertAllowsEncryption();
+
         $resolver = new EncryptionVersionResolver();
         $this->encryptionOptions = $options;
         $this->encryptionProfile = $resolver->resolve($this->getVersion(), $options->algorithm);
@@ -458,6 +483,8 @@ final class Document
 
     public function addLayer(string $name, bool $visibleByDefault = true): OptionalContentGroup
     {
+        $this->assertAllowsLayers();
+
         return $this->ensureOptionalContentGroup($name, $visibleByDefault);
     }
 
@@ -467,6 +494,8 @@ final class Document
         ?string $description = null,
         ?string $mimeType = null,
     ): self {
+        $this->assertAllowsAttachments();
+
         if ($filename === '') {
             throw new InvalidArgumentException('Attachment filename must not be empty.');
         }
@@ -658,6 +687,8 @@ final class Document
 
     public function ensureAcroForm(): AcroForm
     {
+        $this->assertAllowsForms();
+
         if ($this->acroForm === null) {
             $this->acroForm = new AcroForm(++$this->objectId);
         }
@@ -754,6 +785,34 @@ final class Document
     public function hasStructure(): bool
     {
         return $this->structTreeRoot !== null;
+    }
+
+    private function assertAllowsEncryption(): void
+    {
+        if ($this->profile->isPdfA2u()) {
+            throw new InvalidArgumentException('Profile PDF/A-2u does not allow encryption.');
+        }
+    }
+
+    private function assertAllowsAttachments(): void
+    {
+        if ($this->profile->isPdfA2u()) {
+            throw new InvalidArgumentException('Profile PDF/A-2u does not allow embedded file attachments.');
+        }
+    }
+
+    private function assertAllowsLayers(): void
+    {
+        if ($this->profile->isPdfA2u()) {
+            throw new InvalidArgumentException('Profile PDF/A-2u does not allow optional content groups (layers).');
+        }
+    }
+
+    private function assertAllowsForms(): void
+    {
+        if ($this->profile->isPdfA2u()) {
+            throw new InvalidArgumentException('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+        }
     }
 
     public function addTableOfContents(

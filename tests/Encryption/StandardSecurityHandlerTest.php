@@ -6,17 +6,19 @@ namespace Kalle\Pdf\Tests\Encryption;
 
 require_once __DIR__ . '/Support/StandardObjectEncryptorOpenSslStub.php';
 
+use InvalidArgumentException;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\EncryptionVersionResolver;
+
+use function Kalle\Pdf\Encryption\setStandardSecurityHandlerOpenSslShouldFail;
+
 use Kalle\Pdf\Encryption\StandardSecurityHandler;
-use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
-use function Kalle\Pdf\Encryption\setStandardSecurityHandlerOpenSslShouldFail;
 
 final class StandardSecurityHandlerTest extends TestCase
 {

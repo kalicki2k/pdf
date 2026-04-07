@@ -25,7 +25,7 @@ function openssl_encrypt(
     &$tag = null,
     string $aad = '',
     int $tag_length = 16,
-): string|false {
+): string | false {
     if (($GLOBALS['kalle_pdf_standard_object_encryptor_openssl_should_fail'] ?? false) === true) {
         return false;
     }

@@ -144,7 +144,7 @@ final class ResourcesTest extends TestCase
     public function it_rejects_fonts_that_are_not_indirect_objects(): void
     {
         $resources = new Resources(8);
-        $font = new class implements FontDefinition {
+        $font = new class () implements FontDefinition {
             public function getId(): int
             {
                 return 1;

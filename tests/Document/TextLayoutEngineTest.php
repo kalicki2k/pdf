@@ -193,7 +193,7 @@ final class TextLayoutEngineTest extends TestCase
     private function createEngine(bool $supportsEllipsis = true): TextLayoutEngine
     {
         return new TextLayoutEngine(
-            resolveFont: static fn (string $fontName): FontDefinition => new class($fontName, $supportsEllipsis) implements FontDefinition {
+            resolveFont: static fn (string $fontName): FontDefinition => new class ($fontName, $supportsEllipsis) implements FontDefinition {
                 public function __construct(
                     private readonly string $fontName,
                     private readonly bool $supportsEllipsis,
