@@ -307,6 +307,16 @@ final readonly class Profile
         return $this->isPdfUa();
     }
 
+    public function requiresTaggedImages(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresFigureAltText(): bool
+    {
+        return $this->isPdfUa();
+    }
+
     public function requiresPrintableAnnotations(): bool
     {
         return $this->isPdfA();

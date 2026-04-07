@@ -252,6 +252,15 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_require_accessible_images(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresTaggedImages());
+        self::assertFalse(Profile::pdf17()->requiresFigureAltText());
+        self::assertTrue(Profile::pdfUa1()->requiresTaggedImages());
+        self::assertTrue(Profile::pdfUa1()->requiresFigureAltText());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_require_printable_annotations(): void
     {
         self::assertFalse(Profile::pdf14()->requiresPrintableAnnotations());

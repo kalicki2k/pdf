@@ -119,6 +119,32 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_untagged_images_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $image = new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00");
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires images to be tagged as Figure or rendered as artifacts in the current implementation.');
+
+        $page->addImage($image, new Position(10, 20), 30, 40);
+    }
+
+    #[Test]
+    public function it_rejects_figure_images_without_alt_text_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $image = new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00");
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires alt text for Figure images in the current implementation.');
+
+        $page->addImage($image, new Position(10, 20), 30, 40, new ImageOptions(structureTag: StructureTag::Figure));
+    }
+
+    #[Test]
     public function it_adds_a_file_attachment_annotation_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

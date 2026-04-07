@@ -381,6 +381,44 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_untagged_images_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires images to be tagged as Figure or rendered as artifacts in the current implementation.');
+
+        $page->addImage(new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"), new Position(10, 20), 10, 10);
+    }
+
+    #[Test]
+    public function it_rejects_figure_images_without_alt_text_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires alt text for Figure images in the current implementation.');
+
+        $page->addImage(
+            new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+            new Position(10, 20),
+            10,
+            10,
+            new ImageOptions(structureTag: StructureTag::Figure),
+        );
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_2u_document_through_the_public_api(): void
     {
         $document = new Document(

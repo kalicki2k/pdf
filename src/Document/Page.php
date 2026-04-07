@@ -1429,9 +1429,9 @@ final class Page extends IndirectObject
 
         $imageObject = $this->createImageObject($image);
         $resourceName = $this->resources->addImage($imageObject);
-        $artifactTag = $options->structureTag === null && $this->document->isRenderingArtifactContext()
-            ? 'Artifact'
-            : null;
+        $artifactContext = $options->structureTag === null && $this->document->isRenderingArtifactContext();
+        $this->assertAllowsImageAccessibility($options, $artifactContext);
+        $artifactTag = $artifactContext ? 'Artifact' : null;
         $contentTag = $options->structureTag !== null
             ? $options->structureTag->value
             : $artifactTag;
@@ -1461,6 +1461,39 @@ final class Page extends IndirectObject
         }
 
         return $this;
+    }
+
+    private function assertAllowsImageAccessibility(ImageOptions $options, bool $artifactContext): void
+    {
+        $profile = $this->document->getProfile();
+
+        if (!$profile->requiresTaggedImages()) {
+            return;
+        }
+
+        if ($artifactContext) {
+            return;
+        }
+
+        if ($options->structureTag !== StructureTag::Figure) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s requires images to be tagged as Figure or rendered as artifacts in the current implementation.',
+                $profile->name(),
+            ));
+        }
+
+        if (!$profile->requiresFigureAltText()) {
+            return;
+        }
+
+        if ($options->altText !== null && $options->altText !== '') {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Profile %s requires alt text for Figure images in the current implementation.',
+            $profile->name(),
+        ));
     }
 
     public function addTextField(
