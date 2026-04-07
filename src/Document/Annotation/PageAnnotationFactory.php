@@ -14,6 +14,7 @@ use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Structure\StructElem;
 
 /**
  * Builds page annotations so Page can stay focused on the public API surface.
@@ -35,11 +36,12 @@ final readonly class PageAnnotationFactory
     ) {
     }
 
-    public function createLinkAnnotation(Rect $box, LinkTarget $target): LinkAnnotation
+    public function createLinkAnnotation(Rect $box, LinkTarget $target, ?StructElem $linkStructElem = null): LinkAnnotation
     {
+        $this->assertAllowsLinkAnnotation($linkStructElem);
         $this->assertRectHasPositiveDimensions($box, 'Link');
 
-        return new LinkAnnotation(
+        $annotation = new LinkAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -48,6 +50,15 @@ final readonly class PageAnnotationFactory
             $box->height,
             $target,
         );
+
+        if ($linkStructElem !== null) {
+            $structParentId = $this->page->getDocument()->getNextStructParentId();
+            $annotation->withStructParent($structParentId);
+            $linkStructElem->addObjectReference($annotation, $this->page);
+            $this->page->getDocument()->registerObjectStructElem($structParentId, $linkStructElem);
+        }
+
+        return $annotation;
     }
 
     public function createFileAttachmentAnnotation(
@@ -56,6 +67,7 @@ final readonly class PageAnnotationFactory
         string $icon,
         ?string $contents,
     ): FileAttachmentAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'File attachment');
         $this->page->getDocument()->assertAllowsAttachments();
 
@@ -83,6 +95,7 @@ final readonly class PageAnnotationFactory
         string $icon,
         bool $open,
     ): TextAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Text annotation');
 
         if ($contents === '') {
@@ -121,6 +134,7 @@ final readonly class PageAnnotationFactory
         Rect $box,
         bool $open,
     ): PopupAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Popup annotation');
 
         $popup = new PopupAnnotation(
@@ -151,6 +165,7 @@ final readonly class PageAnnotationFactory
         ?Color $fillColor,
         ?string $title,
     ): FreeTextAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Free text annotation');
 
         if ($contents === '') {
@@ -193,6 +208,7 @@ final readonly class PageAnnotationFactory
         ?string $contents,
         ?string $title,
     ): HighlightAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Highlight annotation');
 
         $annotation = new HighlightAnnotation(
@@ -220,6 +236,7 @@ final readonly class PageAnnotationFactory
         ?string $contents,
         ?string $title,
     ): UnderlineAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Underline annotation');
 
         $annotation = new UnderlineAnnotation(
@@ -247,6 +264,7 @@ final readonly class PageAnnotationFactory
         ?string $contents,
         ?string $title,
     ): StrikeOutAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'StrikeOut annotation');
 
         $annotation = new StrikeOutAnnotation(
@@ -274,6 +292,7 @@ final readonly class PageAnnotationFactory
         ?string $contents,
         ?string $title,
     ): SquigglyAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Squiggly annotation');
 
         $annotation = new SquigglyAnnotation(
@@ -302,6 +321,7 @@ final readonly class PageAnnotationFactory
         ?string $contents,
         ?string $title,
     ): StampAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Stamp annotation');
 
         if ($icon === '') {
@@ -336,6 +356,7 @@ final readonly class PageAnnotationFactory
         ?string $title,
         ?AnnotationBorderStyle $borderStyle,
     ): SquareAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Square annotation');
 
         $annotation = new SquareAnnotation(
@@ -367,6 +388,7 @@ final readonly class PageAnnotationFactory
         ?string $title,
         ?AnnotationBorderStyle $borderStyle,
     ): CircleAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Circle annotation');
 
         $annotation = new CircleAnnotation(
@@ -400,6 +422,7 @@ final readonly class PageAnnotationFactory
         ?string $contents,
         ?string $title,
     ): InkAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Ink annotation');
 
         $annotation = new InkAnnotation(
@@ -433,6 +456,7 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): LineAnnotation {
+        $this->assertAllowsAnnotations();
         $annotation = new LineAnnotation(
             $this->nextObjectId(),
             $this->page,
@@ -472,6 +496,7 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): PolyLineAnnotation {
+        $this->assertAllowsAnnotations();
         $annotation = new PolyLineAnnotation(
             $this->nextObjectId(),
             $this->page,
@@ -504,6 +529,7 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): PolygonAnnotation {
+        $this->assertAllowsAnnotations();
         $annotation = new PolygonAnnotation(
             $this->nextObjectId(),
             $this->page,
@@ -529,6 +555,7 @@ final readonly class PageAnnotationFactory
         ?string $title,
         string $symbol,
     ): CaretAnnotation {
+        $this->assertAllowsAnnotations();
         $this->assertRectHasPositiveDimensions($box, 'Caret annotation');
 
         $annotation = new CaretAnnotation(
@@ -589,5 +616,41 @@ final readonly class PageAnnotationFactory
         if ($box->height <= 0) {
             throw new InvalidArgumentException("$subject height must be greater than zero.");
         }
+    }
+
+    private function assertAllowsAnnotations(): void
+    {
+        $profile = $this->page->getDocument()->getProfile();
+
+        if ($profile->supportsCurrentPageAnnotationsImplementation()) {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Profile %s does not allow page annotations in the current implementation.',
+            $profile->name(),
+        ));
+    }
+
+    private function assertAllowsLinkAnnotation(?StructElem $linkStructElem): void
+    {
+        $profile = $this->page->getDocument()->getProfile();
+
+        if ($profile->supportsCurrentPageAnnotationsImplementation()) {
+            return;
+        }
+
+        if ($profile->requiresTaggedLinkAnnotations() && $linkStructElem !== null) {
+            return;
+        }
+
+        if ($profile->requiresTaggedLinkAnnotations()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s currently requires link annotations to be bound to tagged Link content.',
+                $profile->name(),
+            ));
+        }
+
+        $this->assertAllowsAnnotations();
     }
 }

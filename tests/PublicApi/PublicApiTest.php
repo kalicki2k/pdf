@@ -16,6 +16,7 @@ use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
+use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Style\BadgeStyle;
@@ -432,6 +433,49 @@ final class PublicApiTest extends TestCase
         $this->expectExceptionMessage('Profile PDF/UA-1 does not allow AcroForm fields in the current implementation.');
 
         $page->addTextField('field', new Rect(10, 20, 40, 15), 'value', 'Helvetica', 10);
+    }
+
+    #[Test]
+    public function it_rejects_page_annotations_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 currently requires link annotations to be bound to tagged Link content.');
+
+        $page->addLink(new Rect(10, 20, 30, 10), 'https://example.com');
+    }
+
+    #[Test]
+    public function it_renders_tagged_text_links_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addText(
+            'Weiterlesen',
+            new Position(10, 20),
+            'Helvetica',
+            12,
+            new TextOptions(link: LinkTarget::externalUrl('https://example.com')),
+        );
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Link', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Link', $rendered);
+        self::assertStringContainsString('xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"', $rendered);
     }
 
     #[Test]

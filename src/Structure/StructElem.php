@@ -19,6 +19,8 @@ final class StructElem extends IndirectObject
 {
     /** @var StructElem[] */
     private array $kids = [];
+    /** @var RawType[] */
+    private array $objectReferences = [];
     private ?int $markedContentId = null;
     private ?StructElem $parent = null;
     private ?Page $page = null;
@@ -55,6 +57,17 @@ final class StructElem extends IndirectObject
         return $this;
     }
 
+    public function addObjectReference(IndirectObject $object, Page $page): self
+    {
+        $this->objectReferences[] = new RawType(sprintf(
+            '<< /Type /OBJR /Obj %d 0 R /Pg %d 0 R >>',
+            $object->id,
+            $page->id,
+        ));
+
+        return $this;
+    }
+
     public function render(): string
     {
         $dictionary = new DictionaryType([
@@ -74,13 +87,21 @@ final class StructElem extends IndirectObject
             $dictionary->add('Alt', new StringType($this->altText));
         }
 
-        if ($this->markedContentId !== null) {
+        if ($this->markedContentId !== null && $this->kids === [] && $this->objectReferences === []) {
             $dictionary->add('K', $this->markedContentId);
         } else {
             $kidReferences = [];
 
+            if ($this->markedContentId !== null) {
+                $kidReferences[] = $this->markedContentId;
+            }
+
             foreach ($this->kids as $kid) {
-                $kidReferences[] = new RawType($kid->id . ' 0 R');
+                $kidReferences[] = new ReferenceType($kid);
+            }
+
+            foreach ($this->objectReferences as $objectReference) {
+                $kidReferences[] = $objectReference;
             }
 
             $dictionary->add('K', new ArrayType($kidReferences));

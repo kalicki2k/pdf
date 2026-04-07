@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Structure;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\LinkTarget;
+use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructElem;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -64,5 +67,32 @@ final class StructElemTest extends TestCase
         $structElem->setAltText('Illustration');
 
         self::assertStringContainsString('/Alt (Illustration)', $structElem->render());
+    }
+
+    #[Test]
+    public function it_renders_object_references_alongside_marked_content(): void
+    {
+        $document = new Document(profile: Profile::standard(1.7));
+        $page = $document->addPage();
+        $annotation = new \Kalle\Pdf\Document\Annotation\LinkAnnotation(
+            12,
+            $page,
+            10,
+            20,
+            80,
+            12,
+            LinkTarget::externalUrl('https://example.com'),
+        );
+        $structElem = new StructElem(11, 'Link');
+        $structElem
+            ->setMarkedContent(0, $page)
+            ->addObjectReference($annotation, $page);
+
+        self::assertSame(
+            "11 0 obj\n"
+            . "<< /Type /StructElem /S /Link /Pg 4 0 R /K [0 << /Type /OBJR /Obj 12 0 R /Pg 4 0 R >>] >>\n"
+            . "endobj\n",
+            $structElem->render(),
+        );
     }
 }

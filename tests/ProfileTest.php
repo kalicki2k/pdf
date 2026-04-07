@@ -262,6 +262,22 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_require_tagged_link_annotations(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresTaggedLinkAnnotations());
+        self::assertFalse(Profile::pdfA2u()->requiresTaggedLinkAnnotations());
+        self::assertTrue(Profile::pdfUa1()->requiresTaggedLinkAnnotations());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_support_the_current_page_annotation_implementation(): void
+    {
+        self::assertTrue(Profile::pdf17()->supportsCurrentPageAnnotationsImplementation());
+        self::assertTrue(Profile::pdfA2u()->supportsCurrentPageAnnotationsImplementation());
+        self::assertFalse(Profile::pdfUa1()->supportsCurrentPageAnnotationsImplementation());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_require_printable_annotations(): void
     {
         self::assertFalse(Profile::pdf14()->requiresPrintableAnnotations());

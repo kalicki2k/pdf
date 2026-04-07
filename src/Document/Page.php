@@ -89,19 +89,21 @@ final class Page extends IndirectObject
         int $size = 12,
         TextOptions $options = new TextOptions(),
     ): self {
-        $artifactTag = $options->structureTag === null && $this->document->isRenderingArtifactContext()
+        [$structureTag, $parentStructElem] = $this->resolveLinkedTextStructure($options);
+
+        $artifactTag = $structureTag === null && $this->document->isRenderingArtifactContext()
             ? 'Artifact'
             : null;
-        $contentTag = $options->structureTag !== null
-            ? $options->structureTag->value
+        $contentTag = $structureTag !== null
+            ? $structureTag->value
             : $artifactTag;
 
-        if ($options->structureTag !== null) {
+        if ($structureTag !== null) {
             $this->document->ensureStructureEnabled();
         }
 
         $font = $this->resolveFont($fontName);
-        $markedContentId = $options->structureTag !== null ? $this->markedContentId++ : null;
+        $markedContentId = $structureTag !== null ? $this->markedContentId++ : null;
         $encodedText = $this->encodeText($font, $fontName, $text);
         $resourceFontName = $this->registerFontResource($font);
         $textWidth = $font->measureTextWidth($text, $size);
@@ -128,8 +130,10 @@ final class Page extends IndirectObject
             $trailingDecorationInset,
         ));
 
-        if ($options->structureTag !== null && $markedContentId !== null) {
-            $this->attachTextToStructure($options->structureTag, $markedContentId, $options->parentStructElem);
+        $textStructElem = null;
+
+        if ($structureTag !== null && $markedContentId !== null) {
+            $textStructElem = $this->attachTextToStructure($structureTag, $markedContentId, $parentStructElem);
         }
 
         if ($options->link !== null && $textWidth > 0.0) {
@@ -141,6 +145,7 @@ final class Page extends IndirectObject
                     $size,
                 ),
                 $options->link,
+                $textStructElem,
             );
         }
 
@@ -1134,8 +1139,9 @@ final class Page extends IndirectObject
     private function addLinkTarget(
         Rect $box,
         LinkTarget $target,
+        ?StructElem $linkStructElem = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createLinkAnnotation($box, $target);
+        $this->annotations[] = $this->annotationFactory()->createLinkAnnotation($box, $target, $linkStructElem);
 
         return $this;
     }
@@ -1746,9 +1752,30 @@ final class Page extends IndirectObject
         return $font->encodeText($text);
     }
 
-    private function attachTextToStructure(StructureTag $tag, int $markedContentId, ?StructElem $parentStructElem = null): void
+    /**
+     * @return array{0: ?StructureTag, 1: ?StructElem}
+     */
+    private function resolveLinkedTextStructure(TextOptions $options): array
     {
-        $this->document->createStructElem($tag, $markedContentId, $this, $parentStructElem);
+        $profile = $this->document->getProfile();
+
+        if ($options->link === null || !$profile->requiresTaggedLinkAnnotations()) {
+            return [$options->structureTag, $options->parentStructElem];
+        }
+
+        if ($options->structureTag === null || $options->structureTag === StructureTag::Link) {
+            return [StructureTag::Link, $options->parentStructElem];
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Profile %s currently requires linked text to use the Link structure tag.',
+            $profile->name(),
+        ));
+    }
+
+    private function attachTextToStructure(StructureTag $tag, int $markedContentId, ?StructElem $parentStructElem = null): StructElem
+    {
+        return $this->document->createStructElem($tag, $markedContentId, $this, $parentStructElem);
     }
 
     private function registerFontResource(FontDefinition $font): string

@@ -26,7 +26,9 @@ use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
@@ -87,6 +89,56 @@ final class PageAnnotationFactoryTest extends TestCase
         self::assertStringContainsString('/F 4', $annotation->render());
         self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
         self::assertCount(1, $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_rejects_non_link_page_annotations_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 does not allow page annotations in the current implementation.');
+
+        $factory->createTextAnnotation(new Rect(10, 20, 80, 12), 'Kommentar', 'QA', 'Note', false);
+    }
+
+    #[Test]
+    public function it_rejects_unbound_link_annotations_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 currently requires link annotations to be bound to tagged Link content.');
+
+        $factory->createLinkAnnotation(new Rect(10, 20, 80, 12), LinkTarget::externalUrl('https://example.com'));
+    }
+
+    #[Test]
+    public function it_allows_bound_link_annotations_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+        $linkStructElem = $document->createStructElem(StructureTag::Link, 0, $page);
+
+        $annotation = $factory->createLinkAnnotation(
+            new Rect(10, 20, 80, 12),
+            LinkTarget::externalUrl('https://example.com'),
+            $linkStructElem,
+        );
+
+        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj', $linkStructElem->render());
     }
 
     #[Test]

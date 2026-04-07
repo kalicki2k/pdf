@@ -7,17 +7,26 @@ namespace Kalle\Pdf\Structure;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\RawType;
+use Kalle\Pdf\Types\ReferenceType;
 
 final class ParentTree extends IndirectObject
 {
     /** @var array<int, list<StructElem>> */
-    private array $structElems = [];
+    private array $markedContentStructElems = [];
+    /** @var array<int, StructElem> */
+    private array $objectStructElems = [];
 
     public function add(int $structParentId, StructElem $structElem): self
     {
-        $this->structElems[$structParentId] ??= [];
-        $this->structElems[$structParentId][] = $structElem;
+        $this->markedContentStructElems[$structParentId] ??= [];
+        $this->markedContentStructElems[$structParentId][] = $structElem;
+
+        return $this;
+    }
+
+    public function addObject(int $structParentId, StructElem $structElem): self
+    {
+        $this->objectStructElems[$structParentId] = $structElem;
 
         return $this;
     }
@@ -25,14 +34,24 @@ final class ParentTree extends IndirectObject
     public function render(): string
     {
         $nums = [];
-        ksort($this->structElems);
+        $entries = [];
 
-        foreach ($this->structElems as $structParentId => $structElems) {
-            $nums[] = $structParentId;
-            $nums[] = new ArrayType(array_map(
-                static fn (StructElem $structElem): RawType => new RawType($structElem->id . ' 0 R'),
+        foreach ($this->markedContentStructElems as $structParentId => $structElems) {
+            $entries[$structParentId] = new ArrayType(array_map(
+                static fn (StructElem $structElem): ReferenceType => new ReferenceType($structElem),
                 $structElems,
             ));
+        }
+
+        foreach ($this->objectStructElems as $structParentId => $structElem) {
+            $entries[$structParentId] = new ReferenceType($structElem);
+        }
+
+        ksort($entries);
+
+        foreach ($entries as $structParentId => $entry) {
+            $nums[] = $structParentId;
+            $nums[] = $entry;
         }
 
         $dictionary = new DictionaryType([

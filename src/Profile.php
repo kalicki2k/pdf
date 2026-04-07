@@ -318,6 +318,16 @@ final readonly class Profile
         return $this->isPdfUa();
     }
 
+    public function requiresTaggedLinkAnnotations(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function supportsCurrentPageAnnotationsImplementation(): bool
+    {
+        return !$this->isPdfUa();
+    }
+
     public function requiresPrintableAnnotations(): bool
     {
         return $this->isPdfA();

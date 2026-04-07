@@ -388,7 +388,12 @@ final class Document
 
         $height ??= 841.8897637795277;
 
-        return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, ++$this->structParentId, $width, $height);
+        return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, $this->getNextStructParentId(), $width, $height);
+    }
+
+    public function getNextStructParentId(): int
+    {
+        return ++$this->structParentId;
     }
 
     public function addOutline(string $title, Page $page): self
@@ -771,6 +776,15 @@ final class Document
         }
 
         return $structElem;
+    }
+
+    public function registerObjectStructElem(int $structParentId, StructElem $structElem): void
+    {
+        if ($this->parentTree === null) {
+            return;
+        }
+
+        $this->parentTree->addObject($structParentId, $structElem);
     }
 
     private function applyDeferredPageDecorators(): void

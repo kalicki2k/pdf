@@ -145,6 +145,58 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_page_annotations_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 does not allow page annotations in the current implementation.');
+
+        $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA');
+    }
+
+    #[Test]
+    public function it_adds_tagged_link_annotations_for_linked_text_in_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(link: LinkTarget::externalUrl('https://example.com')));
+
+        $rendered = $document->render();
+
+        self::assertMatchesRegularExpression('/\/Annots \[\d+ 0 R\]/', $page->render());
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Link', $rendered);
+        self::assertMatchesRegularExpression('/\/K \[0 << \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Nums \[0 \[\d+ 0 R\] 1 \d+ 0 R\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_requires_link_structure_tags_for_linked_text_in_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 currently requires linked text to use the Link structure tag.');
+
+        $page->addText(
+            'Hello',
+            new Position(10, 20),
+            'Helvetica',
+            12,
+            new TextOptions(
+                structureTag: StructureTag::Paragraph,
+                link: LinkTarget::externalUrl('https://example.com'),
+            ),
+        );
+    }
+
+    #[Test]
     public function it_adds_a_file_attachment_annotation_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

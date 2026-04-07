@@ -17,6 +17,7 @@ use Kalle\Pdf\Types\ReferenceType;
 final class LinkAnnotation extends IndirectObject implements PageAnnotation
 {
     private const int PRINT_FLAG = 4;
+    private ?int $structParentId = null;
 
     public function __construct(
         int $id,
@@ -28,6 +29,13 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
         private readonly LinkTarget $target,
     ) {
         parent::__construct($id);
+    }
+
+    public function withStructParent(int $structParentId): self
+    {
+        $this->structParentId = $structParentId;
+
+        return $this;
     }
 
     public function render(): string
@@ -47,6 +55,10 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
 
         if ($this->page->getDocument()->getProfile()->requiresPrintableAnnotations()) {
             $dictionary->add('F', self::PRINT_FLAG);
+        }
+
+        if ($this->structParentId !== null) {
+            $dictionary->add('StructParent', $this->structParentId);
         }
 
         if ($this->target->isNamedDestination()) {
