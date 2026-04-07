@@ -259,6 +259,35 @@ final class PublicApiTest extends TestCase
         self::assertLessThan(190.0, $table->getCursorY());
     }
 
+    #[Test]
+    public function it_forwards_public_text_frame_operations(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(200, 200));
+
+        $frame = $page->createTextFrame(new Position(10, 190), 100);
+        $returnedFrame = $frame
+            ->addText('Intro', 'Helvetica', 10)
+            ->addParagraph('Paragraph', 'Helvetica', 10)
+            ->addBulletList(['One', 'Two'], 'Helvetica', 10)
+            ->addNumberedList(['First', 'Second'], 'Helvetica', 10)
+            ->addHeading('Heading', 'Helvetica', 12)
+            ->addSpacer(8.0);
+
+        self::assertSame($frame, $returnedFrame);
+        self::assertInstanceOf(Page::class, $frame->getPage());
+        self::assertLessThan(190.0, $frame->getCursorY());
+
+        $rendered = $this->internalPage($page)->contents->render();
+
+        self::assertStringContainsString('(Intro) Tj', $rendered);
+        self::assertStringContainsString('(Paragraph) Tj', $rendered);
+        self::assertStringContainsString('(One) Tj', $rendered);
+        self::assertStringContainsString('(First) Tj', $rendered);
+        self::assertStringContainsString('(Heading) Tj', $rendered);
+    }
+
     private function internalDocument(Document $document): \Kalle\Pdf\Document\Document
     {
         $property = new \ReflectionProperty($document, 'document');
