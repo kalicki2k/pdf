@@ -120,12 +120,16 @@ final readonly class StandardObjectEncryptor
             . substr($renderedObject, $dataEnd);
 
         if (strlen($encryptedData) !== strlen($streamData)) {
-            $updatedObject = preg_replace(
+            $updatedLengthObject = preg_replace(
                 '/\/Length\s+\d+/',
                 '/Length ' . strlen($encryptedData),
                 $updatedObject,
                 1,
             );
+
+            if (is_string($updatedLengthObject)) {
+                $updatedObject = $updatedLengthObject;
+            }
         }
 
         return $updatedObject;

@@ -305,6 +305,10 @@ class Image extends Element
         $compressedColorOutput = gzcompress($colorOutput);
         $compressedAlphaOutput = gzcompress($alphaOutput);
 
+        if ($compressedColorOutput === false || $compressedAlphaOutput === false) {
+            throw new InvalidArgumentException('Failed to recompress PNG image data.');
+        }
+
         return [$compressedColorOutput, $compressedAlphaOutput];
     }
 
