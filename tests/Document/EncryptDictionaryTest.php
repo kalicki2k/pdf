@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
+use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\EncryptionVersionResolver;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -69,6 +70,22 @@ final class EncryptDictionaryTest extends TestCase
         self::assertStringContainsString('/CF << /StdCF << /CFM /AESV2 /AuthEvent /DocOpen /Length 16 >> >>', $encryptDictionary->render());
         self::assertStringContainsString('/StmF /StdCF', $encryptDictionary->render());
         self::assertStringContainsString('/StrF /StdCF', $encryptDictionary->render());
+    }
+
+    #[Test]
+    public function it_rejects_aes_128_encrypt_dictionaries_for_pdf_1_5(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf15());
+        $encryptDictionary = new \Kalle\Pdf\Document\EncryptDictionary(
+            7,
+            $document,
+            new EncryptionProfile(EncryptionAlgorithm::AES_128, 128, 4, 4),
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.5 does not allow AES-128 encryption. PDF 1.6 or higher is required.');
+
+        $encryptDictionary->render();
     }
 
     #[Test]

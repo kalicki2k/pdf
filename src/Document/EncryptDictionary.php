@@ -23,6 +23,8 @@ final class EncryptDictionary extends IndirectObject
 
     public function render(): string
     {
+        $this->document->assertAllowsEncryptionAlgorithm($this->profile->algorithm);
+
         $securityHandlerData = $this->document->getSecurityHandlerData();
 
         if ($securityHandlerData === null) {

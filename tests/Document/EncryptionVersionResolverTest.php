@@ -64,6 +64,32 @@ final class EncryptionVersionResolverTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_aes_128_via_document_encrypt_for_pdf_1_5(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf15());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.5 does not allow AES-128 encryption. PDF 1.6 or higher is required.');
+
+        $document->encrypt(new EncryptionOptions(
+            userPassword: 'user-secret',
+            ownerPassword: 'owner-secret',
+            algorithm: EncryptionAlgorithm::AES_128,
+        ));
+    }
+
+    #[Test]
+    public function it_rejects_aes_128_encryption_algorithms_for_pdf_1_5(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf15());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.5 does not allow AES-128 encryption. PDF 1.6 or higher is required.');
+
+        $document->assertAllowsEncryptionAlgorithm(EncryptionAlgorithm::AES_128);
+    }
+
+    #[Test]
     public function it_resolves_rc4_128_for_pdf_1_4_when_requested_explicitly(): void
     {
         $resolver = new EncryptionVersionResolver();

@@ -14,6 +14,7 @@ use Kalle\Pdf\Document\Outline\OutlineRoot;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\EncryptionVersionResolver;
@@ -419,7 +420,7 @@ final class Document
 
     public function encrypt(EncryptionOptions $options): self
     {
-        $this->assertAllowsEncryption();
+        $this->assertAllowsEncryptionAlgorithm($options->algorithm);
 
         $resolver = new EncryptionVersionResolver();
         $this->encryptionOptions = $options;
@@ -829,6 +830,18 @@ final class Document
     {
         if ($this->profile->isPdfA()) {
             throw new InvalidArgumentException(sprintf('Profile %s does not allow encryption.', $this->profile->name()));
+        }
+    }
+
+    public function assertAllowsEncryptionAlgorithm(EncryptionAlgorithm $algorithm): void
+    {
+        $this->assertAllowsEncryption();
+
+        if ($algorithm === EncryptionAlgorithm::AES_128 && !$this->profile->supportsAes128Encryption()) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF version %s does not allow AES-128 encryption. PDF 1.6 or higher is required.',
+                PdfVersion::format($this->getVersion()),
+            ));
         }
     }
 
