@@ -38,6 +38,9 @@ The current focus is a stable core library. PDF/A, PDF/UA, and full tagged-PDF c
 composer require kalle/pdf
 ```
 
+Named standard profile helpers are available from `Profile::pdf10()` to `Profile::pdf20()`.
+If the target version is dynamic, `Profile::standard($version)` remains available.
+
 ## Quick Start
 
 The public entry points live in the root namespace:
@@ -60,7 +63,7 @@ use Kalle\Pdf\Profile;
 require 'vendor/autoload.php';
 
 $document = new Document(
-    profile: Profile::standard(1.4),
+    profile: Profile::pdf14(),
     title: 'Hello PDF',
     author: 'Example Company',
     subject: 'Demo document',
