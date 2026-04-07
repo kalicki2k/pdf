@@ -124,6 +124,31 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_standard_fonts_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Profile PDF/A-2u does not allow PDF standard fonts like 'Helvetica'. Register an embedded Unicode font instead.");
+
+        $document->registerFont('Helvetica');
+    }
+
+    #[Test]
+    public function it_accepts_embedded_unicode_fonts_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+
+        $document->registerFont('NotoSans-Regular');
+
+        self::assertCount(1, $document->getFonts());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[0]);
+        self::assertSame('NotoSans-Regular', $document->getFonts()[0]->getBaseFont());
+        self::assertNotNull($document->getFonts()[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->getFonts()[0]->descendantFont->cidToGidMap);
+    }
+
+    #[Test]
     public function it_initializes_structure_objects_for_pdf_1_4_and_above(): void
     {
         $document = new Document(profile: Profile::standard(1.4), language: 'de-DE');

@@ -28,6 +28,7 @@ use Kalle\Pdf\Font\FontFileStream;
 use Kalle\Pdf\Font\FontRegistry;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\ToUnicodeCMap;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeGlyphMap;
@@ -659,6 +660,7 @@ final class Document
         ?string $fontFilePath = null,
     ): self {
         $options = $this->resolveFontRegistrationOptions($fontName, $subtype, $encoding, $unicode, $fontFilePath);
+        $this->assertAllowsFontRegistration($options);
         $this->fonts = [
             ...$this->fonts,
             $options['unicode']
@@ -812,6 +814,36 @@ final class Document
     {
         if ($this->profile->isPdfA2u()) {
             throw new InvalidArgumentException('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+        }
+    }
+
+    /**
+     * @param array{
+     *     baseFont: string,
+     *     subtype: string,
+     *     encoding: string,
+     *     unicode: bool,
+     *     fontFilePath: ?string
+     * } $options
+     */
+    private function assertAllowsFontRegistration(array $options): void
+    {
+        if (!$this->profile->isPdfA2u()) {
+            return;
+        }
+
+        if (StandardFontName::isValid($options['baseFont']) && $options['fontFilePath'] === null) {
+            throw new InvalidArgumentException(sprintf(
+                "Profile PDF/A-2u does not allow PDF standard fonts like '%s'. Register an embedded Unicode font instead.",
+                $options['baseFont'],
+            ));
+        }
+
+        if ($options['fontFilePath'] === null || !$options['unicode']) {
+            throw new InvalidArgumentException(sprintf(
+                "Profile PDF/A-2u requires embedded Unicode fonts. Font '%s' must provide an embedded font file and Unicode mapping.",
+                $options['baseFont'],
+            ));
         }
     }
 
