@@ -349,6 +349,35 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_marks_pdf_a_2u_link_annotations_as_printable_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            title: 'PDF/A-2u Links',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+
+        $page = $document->addPage(PageSize::custom(100, 100));
+        $page->addText('Hallo Link', new Position(10, 50), 'NotoSans-Regular', 12);
+        $page->addLink(new Rect(10, 45, 40, 10), 'https://example.com');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Link', $rendered);
+        self::assertStringContainsString('/F 4', $rendered);
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_3a_document_through_the_public_api(): void
     {
         $document = new Document(

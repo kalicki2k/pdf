@@ -16,6 +16,8 @@ use Kalle\Pdf\Types\ReferenceType;
 
 final class LinkAnnotation extends IndirectObject implements PageAnnotation
 {
+    private const int PRINT_FLAG = 4;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -42,6 +44,10 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation
             'Border' => new ArrayType([0, 0, 0]),
             'P' => new ReferenceType($this->page),
         ]);
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $dictionary->add('F', self::PRINT_FLAG);
+        }
 
         if ($this->target->isNamedDestination()) {
             $dictionary->add('Dest', new NameType($this->target->namedDestinationValue()));
