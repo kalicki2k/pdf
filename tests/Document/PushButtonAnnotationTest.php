@@ -42,6 +42,20 @@ final class PushButtonAnnotationTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_accessibility_metadata_for_push_buttons(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new PushButtonAnnotation(7, $page, 10, 20, 80, 16, 'save_form', 'Speichern', 'F1', 12, action: null, tooltip: 'Save form');
+        $annotation->withStructParent(1);
+
+        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/TU (Save form)', $annotation->render());
+    }
+
+    #[Test]
     public function it_renders_a_push_button_with_a_submit_action(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));

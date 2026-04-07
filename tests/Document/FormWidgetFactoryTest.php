@@ -217,6 +217,7 @@ final class FormWidgetFactoryTest extends TestCase
             12,
             null,
             $action,
+            'Submit form',
         );
 
         self::assertInstanceOf(PushButtonAnnotation::class, $annotation);
@@ -224,6 +225,7 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/T (submit)', $annotation->render());
         self::assertStringContainsString('/MK << /CA (Senden) >>', $annotation->render());
         self::assertStringContainsString('/A << /S /ResetForm >>', $annotation->render());
+        self::assertStringContainsString('/TU (Submit form)', $annotation->render());
     }
 
     #[Test]
@@ -266,11 +268,11 @@ final class FormWidgetFactoryTest extends TestCase
             ['Signature field name must not be empty.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('', new Rect(10, 20, 100, 20))],
             ['Signature field width must be greater than zero.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('signature', new Rect(10, 20, 0, 20))],
             ['Signature field height must be greater than zero.', fn (): SignatureFieldAnnotation => $factory->createSignatureField('signature', new Rect(10, 20, 100, 0))],
-            ['Push button name must not be empty.', fn (): PushButtonAnnotation => $factory->createPushButton('', 'Senden', new Rect(10, 20, 100, 20), StandardFontName::HELVETICA, 12, null, null)],
-            ['Push button label must not be empty.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', '', new Rect(10, 20, 100, 20), StandardFontName::HELVETICA, 12, null, null)],
-            ['Push button width must be greater than zero.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', 'Senden', new Rect(10, 20, 0, 20), StandardFontName::HELVETICA, 12, null, null)],
-            ['Push button height must be greater than zero.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', 'Senden', new Rect(10, 20, 100, 0), StandardFontName::HELVETICA, 12, null, null)],
-            ['Push button font size must be greater than zero.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', 'Senden', new Rect(10, 20, 100, 20), StandardFontName::HELVETICA, 0, null, null)],
+            ['Push button name must not be empty.', fn (): PushButtonAnnotation => $factory->createPushButton('', 'Senden', new Rect(10, 20, 100, 20), StandardFontName::HELVETICA, 12, null, null, null)],
+            ['Push button label must not be empty.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', '', new Rect(10, 20, 100, 20), StandardFontName::HELVETICA, 12, null, null, null)],
+            ['Push button width must be greater than zero.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', 'Senden', new Rect(10, 20, 0, 20), StandardFontName::HELVETICA, 12, null, null, null)],
+            ['Push button height must be greater than zero.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', 'Senden', new Rect(10, 20, 100, 0), StandardFontName::HELVETICA, 12, null, null, null)],
+            ['Push button font size must be greater than zero.', fn (): PushButtonAnnotation => $factory->createPushButton('submit', 'Senden', new Rect(10, 20, 100, 20), StandardFontName::HELVETICA, 0, null, null, null)],
         ];
 
         foreach ($cases as [$expectedMessage, $callback]) {
@@ -295,6 +297,9 @@ final class FormWidgetFactoryTest extends TestCase
             $page,
             static function () use (&$nextObjectId): int {
                 return $nextObjectId++;
+            },
+            static function () use (&$acroForm): AcroForm {
+                return $acroForm;
             },
             static function () use (&$acroForm): AcroForm {
                 return $acroForm;

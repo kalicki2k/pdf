@@ -301,6 +301,26 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_a_push_button_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(100.0, 200.0);
+
+        $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), 'Helvetica', 12, accessibleName: 'Save form');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Widget', $rendered);
+        self::assertStringContainsString('/Ff 65536', $rendered);
+        self::assertStringContainsString('/T (save_form)', $rendered);
+        self::assertStringContainsString('/CA (Speichern)', $rendered);
+        self::assertStringContainsString('/TU (Save form)', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Save form\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_registers_an_icc_profile_stream_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());

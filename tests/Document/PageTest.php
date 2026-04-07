@@ -2083,6 +2083,25 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_an_accessible_push_button_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), 'Helvetica', 12, accessibleName: 'Save form');
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (Save form)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $page->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Save form\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_adds_a_push_button_with_a_submit_action_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

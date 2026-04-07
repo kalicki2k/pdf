@@ -1570,7 +1570,7 @@ final class Page extends IndirectObject
             $resolvedAccessibleName,
         );
 
-        $this->bindTextFieldAccessibility($annotation, $resolvedAccessibleName);
+        $this->bindAccessibleFormField($annotation, $resolvedAccessibleName);
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
 
@@ -1588,7 +1588,7 @@ final class Page extends IndirectObject
         $acroForm = $this->document->ensureCheckboxAcroForm();
         $annotation = $this->formWidgetFactory()->createCheckbox($name, $position, $size, $checked, $resolvedAccessibleName);
 
-        $this->bindCheckboxAccessibility($annotation, $resolvedAccessibleName);
+        $this->bindAccessibleFormField($annotation, $resolvedAccessibleName);
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
 
@@ -1698,12 +1698,14 @@ final class Page extends IndirectObject
         int $size = 12,
         ?Color $textColor = null,
         ?ButtonAction $action = null,
+        ?string $accessibleName = null,
     ): self {
         if ($action instanceof SetOcgStateAction) {
             $this->document->assertAllowsOptionalContentGroups();
         }
 
-        $acroForm = $this->document->ensureAcroForm();
+        $resolvedAccessibleName = $this->resolvePushButtonAccessibleName($name, $label, $accessibleName);
+        $acroForm = $this->document->ensurePushButtonAcroForm();
         $annotation = $this->formWidgetFactory()->createPushButton(
             $name,
             $label,
@@ -1712,8 +1714,10 @@ final class Page extends IndirectObject
             $size,
             $textColor,
             $action,
+            $resolvedAccessibleName,
         );
 
+        $this->bindAccessibleFormField($annotation, $resolvedAccessibleName);
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
 
@@ -2143,36 +2147,13 @@ final class Page extends IndirectObject
             fn (): int => $this->document->getUniqObjectId(),
             fn (): AcroForm => $this->document->ensureAcroForm(),
             fn (): AcroForm => $this->document->ensureTextFieldAcroForm(),
+            fn (): AcroForm => $this->document->ensurePushButtonAcroForm(),
             fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
         );
     }
 
-    private function bindTextFieldAccessibility(
-        Annotation\TextFieldAnnotation $annotation,
-        ?string $accessibleName,
-    ): void {
-        $profile = $this->document->getProfile();
-
-        if (!$profile->requiresTaggedFormFields()) {
-            return;
-        }
-
-        $formStructElem = $this->document->createStructElem(StructureTag::Form);
-        $formStructElem->setPage($this);
-
-        $structParentId = $this->document->getNextStructParentId();
-        $annotation->withStructParent($structParentId);
-        $formStructElem->addObjectReference($annotation, $this);
-
-        if ($profile->requiresFormFieldAlternativeDescriptions() && $accessibleName !== null && $accessibleName !== '') {
-            $formStructElem->setAltText($accessibleName);
-        }
-
-        $this->document->registerObjectStructElem($structParentId, $formStructElem);
-    }
-
-    private function bindCheckboxAccessibility(
-        Annotation\CheckboxAnnotation $annotation,
+    private function bindAccessibleFormField(
+        Annotation\TextFieldAnnotation | Annotation\CheckboxAnnotation | Annotation\PushButtonAnnotation $annotation,
         ?string $accessibleName,
     ): void {
         $profile = $this->document->getProfile();
@@ -2203,6 +2184,19 @@ final class Page extends IndirectObject
 
         if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
             return $name;
+        }
+
+        return null;
+    }
+
+    private function resolvePushButtonAccessibleName(string $name, string $label, ?string $accessibleName): ?string
+    {
+        if ($accessibleName !== null && $accessibleName !== '') {
+            return $accessibleName;
+        }
+
+        if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
+            return $label !== '' ? $label : $name;
         }
 
         return null;

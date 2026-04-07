@@ -503,8 +503,9 @@ final readonly class Page
         int $size = 12,
         ?Color $textColor = null,
         ?ButtonAction $action = null,
+        ?string $accessibleName = null,
     ): self {
-        $this->page->addPushButton($name, $label, $box, $baseFont, $size, $textColor, $action);
+        $this->page->addPushButton($name, $label, $box, $baseFont, $size, $textColor, $action, $accessibleName);
 
         return $this;
     }

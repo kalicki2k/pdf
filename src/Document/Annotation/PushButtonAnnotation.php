@@ -16,6 +16,8 @@ use Kalle\Pdf\Types\StringType;
 
 final class PushButtonAnnotation extends IndirectObject implements PageAnnotation
 {
+    private ?int $structParentId = null;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -29,8 +31,16 @@ final class PushButtonAnnotation extends IndirectObject implements PageAnnotatio
         private readonly int $fontSize,
         private readonly ?Color $textColor = null,
         private readonly ?ButtonAction $action = null,
+        private readonly ?string $tooltip = null,
     ) {
         parent::__construct($id);
+    }
+
+    public function withStructParent(int $structParentId): self
+    {
+        $this->structParentId = $structParentId;
+
+        return $this;
     }
 
     public function render(): string
@@ -61,6 +71,14 @@ final class PushButtonAnnotation extends IndirectObject implements PageAnnotatio
                 'CA' => new StringType($this->label),
             ]),
         ]);
+
+        if ($this->structParentId !== null) {
+            $dictionary->add('StructParent', $this->structParentId);
+        }
+
+        if ($this->tooltip !== null && $this->tooltip !== '') {
+            $dictionary->add('TU', new StringType($this->tooltip));
+        }
 
         if ($this->action !== null) {
             $dictionary->add('A', $this->action->toPdfDictionary());

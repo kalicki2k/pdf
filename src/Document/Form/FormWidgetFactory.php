@@ -29,6 +29,7 @@ final readonly class FormWidgetFactory
      * @param Closure(): int $nextObjectId
      * @param Closure(): AcroForm $ensureAcroForm
      * @param Closure(): AcroForm $ensureTextFieldAcroForm
+     * @param Closure(): AcroForm $ensurePushButtonAcroForm
      * @param Closure(string): FontDefinition $resolveFont
      */
     public function __construct(
@@ -36,6 +37,7 @@ final readonly class FormWidgetFactory
         private Closure $nextObjectId,
         private Closure $ensureAcroForm,
         private Closure $ensureTextFieldAcroForm,
+        private Closure $ensurePushButtonAcroForm,
         private Closure $resolveFont,
     ) {
     }
@@ -284,6 +286,7 @@ final readonly class FormWidgetFactory
         int $size,
         ?Color $textColor,
         ?ButtonAction $action,
+        ?string $accessibleName,
     ): PushButtonAnnotation {
         if ($name === '') {
             throw new InvalidArgumentException('Push button name must not be empty.');
@@ -299,7 +302,7 @@ final readonly class FormWidgetFactory
             throw new InvalidArgumentException('Push button font size must be greater than zero.');
         }
 
-        $fontResourceName = $this->registerAcroFormFont($baseFont);
+        $fontResourceName = $this->registerPushButtonAcroFormFont($baseFont);
 
         return new PushButtonAnnotation(
             $this->nextObjectId(),
@@ -314,6 +317,7 @@ final readonly class FormWidgetFactory
             $size,
             $textColor,
             $action,
+            $accessibleName,
         );
     }
 
@@ -344,6 +348,18 @@ final readonly class FormWidgetFactory
         $font = ($this->resolveFont)($baseFont);
 
         return $this->ensureTextFieldAcroForm()->registerFont($font);
+    }
+
+    private function ensurePushButtonAcroForm(): AcroForm
+    {
+        return ($this->ensurePushButtonAcroForm)();
+    }
+
+    private function registerPushButtonAcroFormFont(string $baseFont): string
+    {
+        $font = ($this->resolveFont)($baseFont);
+
+        return $this->ensurePushButtonAcroForm()->registerFont($font);
     }
 
     private function assertRectHasPositiveDimensions(Rect $box, string $subject): void

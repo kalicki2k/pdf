@@ -478,6 +478,28 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_an_accessible_push_button_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), 'Helvetica', 12, accessibleName: 'Save form');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/T (save_form)', $rendered);
+        self::assertStringContainsString('/CA (Speichern)', $rendered);
+        self::assertStringContainsString('/TU (Save form)', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Save form\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_rejects_page_annotations_for_pdf_ua_1_through_the_public_api(): void
     {
         $document = new Document(

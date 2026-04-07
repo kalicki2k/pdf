@@ -231,6 +231,14 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_the_current_push_button_implementation(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsCurrentPushButtonImplementation());
+        self::assertTrue(Profile::pdfUa1()->supportsCurrentPushButtonImplementation());
+        self::assertFalse(Profile::pdfA2u()->supportsCurrentPushButtonImplementation());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_write_the_info_dictionary(): void
     {
         self::assertTrue(Profile::pdf14()->writesInfoDictionary());
