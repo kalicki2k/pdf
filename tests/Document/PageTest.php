@@ -440,6 +440,26 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_allows_popups_for_pdf_a_2u_annotations(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+        $page = $document->addPage();
+
+        $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA');
+        $annotation = $page->getAnnotations()[0];
+        $page->addPopupAnnotation($annotation, new Rect(30, 40, 60, 40), true);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Text', $rendered);
+        self::assertStringContainsString('/F 4', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
+        self::assertStringContainsString('/Subtype /Popup', $rendered);
+        self::assertStringContainsString('/Popup ', $rendered);
+        self::assertStringContainsString('/Parent ', $rendered);
+    }
+
+    #[Test]
     public function it_adds_a_caret_annotation_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
