@@ -1671,6 +1671,7 @@ final class Page extends IndirectObject
 
         foreach ($font->getCodePointMap() as $cid => $codePointHex) {
             $utf16 = hex2bin($codePointHex);
+            /** @var string $utf16 */
             $character = mb_convert_encoding($utf16, 'UTF-8', 'UTF-16BE');
             $glyphId = $fontParser->getGlyphIdForCharacter($character);
             $widths[$cid] = $fontParser->getAdvanceWidthForGlyphId($glyphId);
