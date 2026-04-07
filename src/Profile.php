@@ -213,6 +213,11 @@ final readonly class Profile
             || $this->isPdfA4f();
     }
 
+    public function supportsWinAnsiEncoding(): bool
+    {
+        return $this->version > PdfVersion::V1_0;
+    }
+
     public function supportsOptionalContentGroups(): bool
     {
         return $this->version >= PdfVersion::V1_5 && !$this->isPdfA();

@@ -937,6 +937,13 @@ final class Document
      */
     private function assertAllowsFontRegistration(array $options): void
     {
+        if (!$options['unicode'] && $options['encoding'] === 'WinAnsiEncoding' && !$this->profile->supportsWinAnsiEncoding()) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF version %s does not allow WinAnsiEncoding for standard fonts. PDF 1.1 or higher is required.',
+                PdfVersion::format($this->getVersion()),
+            ));
+        }
+
         if (!$this->profile->isPdfA()) {
             return;
         }
@@ -1163,7 +1170,7 @@ final class Document
 
     private function resolveDefaultStandardFontEncoding(): string
     {
-        if ($this->getVersion() <= PdfVersion::V1_0) {
+        if (!$this->profile->supportsWinAnsiEncoding()) {
             return 'StandardEncoding';
         }
 

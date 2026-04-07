@@ -144,6 +144,13 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_win_ansi_encoding(): void
+    {
+        self::assertFalse(Profile::pdf10()->supportsWinAnsiEncoding());
+        self::assertTrue(Profile::pdf11()->supportsWinAnsiEncoding());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_optional_content_groups(): void
     {
         self::assertFalse(Profile::pdf14()->supportsOptionalContentGroups());

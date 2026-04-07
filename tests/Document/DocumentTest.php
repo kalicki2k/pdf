@@ -542,9 +542,19 @@ final class DocumentTest extends TestCase
         $document = new Document(profile: Profile::standard(1.0));
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Encoding 'WinAnsiEncoding' is not allowed in PDF 1.0.");
+        $this->expectExceptionMessage('PDF version 1.0 does not allow WinAnsiEncoding for standard fonts. PDF 1.1 or higher is required.');
 
         $document->registerFont('Helvetica', encoding: 'WinAnsiEncoding');
+    }
+
+    #[Test]
+    public function it_uses_win_ansi_as_the_default_standard_font_encoding_from_pdf_1_1_onwards(): void
+    {
+        $document = new Document(profile: Profile::pdf11());
+
+        $document->registerFont('Helvetica');
+
+        self::assertStringContainsString('/Encoding /WinAnsiEncoding', $document->getFonts()[0]->render());
     }
 
     #[Test]

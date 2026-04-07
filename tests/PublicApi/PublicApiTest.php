@@ -739,6 +739,17 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_win_ansi_font_registration_for_pdf_version_1_0(): void
+    {
+        $document = new Document(profile: Profile::pdf10());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.0 does not allow WinAnsiEncoding for standard fonts. PDF 1.1 or higher is required.');
+
+        $document->registerFont('Helvetica', encoding: 'WinAnsiEncoding');
+    }
+
+    #[Test]
     public function it_forwards_public_table_operations(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
