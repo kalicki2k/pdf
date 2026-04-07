@@ -13,6 +13,7 @@ use Kalle\Pdf\Document\Document as InternalDocument;
 use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Document\Form\FormFieldLabel;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
@@ -435,6 +436,35 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('/Subtype /Widget', $rendered);
         self::assertStringContainsString('/TU (Customer name)', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_visible_text_field_labels_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'PDF/UA-1');
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addTextField(
+            'field',
+            new Rect(10, 20, 40, 15),
+            'value',
+            self::pdfUaRegularFont(),
+            10,
+            fieldLabel: new FormFieldLabel(
+                'Customer name',
+                new Position(10, 42),
+                self::pdfUaRegularFont(),
+                10,
+            ),
+        );
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (Customer name)', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertSame(1, substr_count($page->contents->render(), '/P << /MCID'));
+        self::assertStringContainsString('/Type /StructElem /S /Div', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 

@@ -21,6 +21,7 @@ use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Document\Form\FormFieldLabel;
 use Kalle\Pdf\Document\Geometry\Insets;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
@@ -1916,6 +1917,37 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/TU (Customer name)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
         self::assertStringContainsString('/Tabs /S', $page->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_binds_visible_text_field_labels_into_the_form_structure_for_pdf_ua_1(): void
+    {
+        $document = $this->createPdfUaTestDocument();
+        $page = $document->addPage();
+
+        $result = $page->addTextField(
+            'customer_name',
+            new Rect(10, 20, 80, 12),
+            'Ada',
+            self::pdfUaRegularFont(),
+            12,
+            fieldLabel: new FormFieldLabel(
+                'Customer name',
+                new Position(10, 38),
+                self::pdfUaRegularFont(),
+                10,
+            ),
+        );
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (Customer name)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertSame(1, substr_count($page->contents->render(), '/P << /MCID'));
+        self::assertStringContainsString('/Type /StructElem /S /Div', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 

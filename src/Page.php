@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Document\Form\FormFieldLabel;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
@@ -428,22 +429,23 @@ final readonly class Page
         ?FormFieldFlags $flags = null,
         ?string $defaultValue = null,
         ?string $accessibleName = null,
+        ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->page->addTextField($name, $box, $value, $baseFont, $size, $multiline, $textColor, $flags, $defaultValue, $accessibleName);
+        $this->page->addTextField($name, $box, $value, $baseFont, $size, $multiline, $textColor, $flags, $defaultValue, $accessibleName, $fieldLabel);
 
         return $this;
     }
 
-    public function addCheckbox(string $name, Position $position, float $size, bool $checked = false, ?string $accessibleName = null): self
+    public function addCheckbox(string $name, Position $position, float $size, bool $checked = false, ?string $accessibleName = null, ?FormFieldLabel $fieldLabel = null): self
     {
-        $this->page->addCheckbox($name, $position, $size, $checked, $accessibleName);
+        $this->page->addCheckbox($name, $position, $size, $checked, $accessibleName, $fieldLabel);
 
         return $this;
     }
 
-    public function addRadioButton(string $name, string $value, Position $position, float $size, bool $checked = false, ?string $accessibleName = null): self
+    public function addRadioButton(string $name, string $value, Position $position, float $size, bool $checked = false, ?string $accessibleName = null, ?FormFieldLabel $fieldLabel = null): self
     {
-        $this->page->addRadioButton($name, $value, $position, $size, $checked, $accessibleName);
+        $this->page->addRadioButton($name, $value, $position, $size, $checked, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -462,8 +464,9 @@ final readonly class Page
         ?FormFieldFlags $flags = null,
         ?string $defaultValue = null,
         ?string $accessibleName = null,
+        ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->page->addComboBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue, $accessibleName);
+        $this->page->addComboBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -484,15 +487,16 @@ final readonly class Page
         ?FormFieldFlags $flags = null,
         string | array | null $defaultValue = null,
         ?string $accessibleName = null,
+        ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->page->addListBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue, $accessibleName);
+        $this->page->addListBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue, $accessibleName, $fieldLabel);
 
         return $this;
     }
 
-    public function addSignatureField(string $name, Rect $box, ?string $accessibleName = null): self
+    public function addSignatureField(string $name, Rect $box, ?string $accessibleName = null, ?FormFieldLabel $fieldLabel = null): self
     {
-        $this->page->addSignatureField($name, $box, $accessibleName);
+        $this->page->addSignatureField($name, $box, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -506,8 +510,9 @@ final readonly class Page
         ?Color $textColor = null,
         ?ButtonAction $action = null,
         ?string $accessibleName = null,
+        ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->page->addPushButton($name, $label, $box, $baseFont, $size, $textColor, $action, $accessibleName);
+        $this->page->addPushButton($name, $label, $box, $baseFont, $size, $textColor, $action, $accessibleName, $fieldLabel);
 
         return $this;
     }

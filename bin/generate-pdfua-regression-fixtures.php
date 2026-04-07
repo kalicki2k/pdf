@@ -6,6 +6,7 @@ declare(strict_types=1);
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
+use Kalle\Pdf\Document\Form\FormFieldLabel;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
@@ -246,11 +247,42 @@ function createPdfUa1FormsFixture(): Document
         new TextOptions(structureTag: StructureTag::Paragraph),
     );
 
-    $page->addTextField('customer_name', new Rect(12, 176, 90, 16), 'Ada Lovelace', 'NotoSans-Regular', 11, accessibleName: 'Customer name');
-    $page->addCheckbox('accept_terms', new Position(12, 150), 12, true, 'Accept terms');
+    $page->addTextField(
+        'customer_name',
+        new Rect(12, 176, 90, 16),
+        'Ada Lovelace',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Customer name',
+        fieldLabel: new FormFieldLabel('Customer name', new Position(12, 196), 'NotoSans-Regular', 10),
+    );
+    $page->addCheckbox(
+        'accept_terms',
+        new Position(12, 150),
+        12,
+        true,
+        'Accept terms',
+        new FormFieldLabel('Accept terms', new Position(30, 152), 'NotoSans-Regular', 10),
+    );
     $page->addPushButton('save_form', 'Save', new Rect(12, 126, 56, 16), 'NotoSans-Regular', 11, accessibleName: 'Save form');
-    $page->addRadioButton('delivery', 'standard', new Position(12, 102), 12, true, 'Standard delivery');
-    $page->addRadioButton('delivery', 'express', new Position(34, 102), 12, false, 'Express delivery');
+    $page->addRadioButton(
+        'delivery',
+        'standard',
+        new Position(12, 102),
+        12,
+        true,
+        'Standard delivery',
+        new FormFieldLabel('Standard delivery', new Position(30, 104), 'NotoSans-Regular', 10),
+    );
+    $page->addRadioButton(
+        'delivery',
+        'express',
+        new Position(110, 102),
+        12,
+        false,
+        'Express delivery',
+        new FormFieldLabel('Express delivery', new Position(128, 104), 'NotoSans-Regular', 10),
+    );
     $page->addComboBox(
         'country',
         new Rect(12, 74, 90, 16),
@@ -259,6 +291,7 @@ function createPdfUa1FormsFixture(): Document
         'NotoSans-Regular',
         11,
         accessibleName: 'Country selection',
+        fieldLabel: new FormFieldLabel('Country', new Position(12, 94), 'NotoSans-Regular', 10),
     );
     $page->addListBox(
         'topics',
@@ -268,8 +301,14 @@ function createPdfUa1FormsFixture(): Document
         'NotoSans-Regular',
         11,
         accessibleName: 'Topics selection',
+        fieldLabel: new FormFieldLabel('Topics', new Position(12, 66), 'NotoSans-Regular', 10),
     );
-    $page->addSignatureField('approval_signature', new Rect(124, 176, 90, 16), 'Approval signature');
+    $page->addSignatureField(
+        'approval_signature',
+        new Rect(124, 176, 90, 16),
+        'Approval signature',
+        new FormFieldLabel('Approval signature', new Position(124, 196), 'NotoSans-Regular', 10),
+    );
 
     return $document;
 }

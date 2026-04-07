@@ -77,6 +77,8 @@ Profile::pdfUa1();
 
 Wenn du mit PDF/A oder PDF/UA arbeitest, steht der aktuelle Unterstuetzungsstand in [pdf-standards.md](pdf-standards.md).
 
+Fuer sichtbare Formular-Labels gibt es `FormFieldLabel`. Damit kannst du Label-Text explizit mit einem Widget-Aufruf verbinden, statt ihn getrennt als normalen Absatz zu rendern.
+
 ## Metadaten
 
 Die Library rendert klassische PDF-Info-Metadaten und XMP-Metadaten konsistent.

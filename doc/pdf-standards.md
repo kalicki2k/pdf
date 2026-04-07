@@ -105,6 +105,7 @@ Aktuelle Regeln:
 - Widgets bekommen `TU`, `StructParent` und einen `<Form>`-Eintrag im Strukturbaum
 - Seiten mit Widgets schreiben `Tabs /S`
 - der zugaengliche Name kommt aus `accessibleName` oder faellt kontrolliert auf vorhandene Feldinformationen zurueck
+- sichtbare Feldlabels koennen explizit ueber `FormFieldLabel` an denselben Formular-Block gebunden werden
 
 ### Page Annotations
 
