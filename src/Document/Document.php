@@ -847,6 +847,13 @@ final class Document
     {
         $this->assertAllowsEncryption();
 
+        if ($algorithm === EncryptionAlgorithm::RC4_40 && !$this->profile->supportsRc440Encryption()) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF version %s does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.',
+                PdfVersion::format($this->getVersion()),
+            ));
+        }
+
         if ($algorithm === EncryptionAlgorithm::AES_128 && !$this->profile->supportsAes128Encryption()) {
             throw new InvalidArgumentException(sprintf(
                 'PDF version %s does not allow AES-128 encryption. PDF 1.6 or higher is required.',

@@ -578,6 +578,22 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_public_api_rc4_40_encryption_for_pdf_version_1_2(): void
+    {
+        $document = new Document(profile: Profile::pdf12());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.2 does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.');
+
+        $document->encrypt(new EncryptionOptions(
+            'user',
+            'owner',
+            EncryptionPermissions::all(),
+            EncryptionAlgorithm::RC4_40,
+        ));
+    }
+
+    #[Test]
     public function it_rejects_public_api_aes_128_encryption_for_pdf_version_1_5(): void
     {
         $document = new Document(profile: Profile::pdf15());

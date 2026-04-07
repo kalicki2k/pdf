@@ -151,6 +151,14 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_rc4_40_encryption(): void
+    {
+        self::assertFalse(Profile::pdf12()->supportsRc440Encryption());
+        self::assertTrue(Profile::pdf13()->supportsRc440Encryption());
+        self::assertFalse(Profile::pdfA3b()->supportsRc440Encryption());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_optional_content_groups(): void
     {
         self::assertFalse(Profile::pdf14()->supportsOptionalContentGroups());

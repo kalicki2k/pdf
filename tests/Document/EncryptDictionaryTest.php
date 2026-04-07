@@ -16,6 +16,27 @@ use PHPUnit\Framework\TestCase;
 final class EncryptDictionaryTest extends TestCase
 {
     #[Test]
+    public function it_renders_an_encrypt_dictionary_for_rc4_40(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf13());
+        $document->encrypt(new EncryptionOptions(
+            userPassword: 'user',
+            ownerPassword: 'owner',
+            permissions: EncryptionPermissions::readOnly(),
+            algorithm: EncryptionAlgorithm::RC4_40,
+        ));
+
+        $encryptDictionary = $document->encryptDictionary;
+
+        self::assertNotNull($encryptDictionary);
+        self::assertStringContainsString('/Filter /Standard', $encryptDictionary->render());
+        self::assertStringContainsString('/V 1', $encryptDictionary->render());
+        self::assertStringContainsString('/R 2', $encryptDictionary->render());
+        self::assertStringContainsString('/Length 40', $encryptDictionary->render());
+        self::assertStringContainsString('/P -4', $encryptDictionary->render());
+    }
+
+    #[Test]
     public function it_renders_an_encrypt_dictionary_for_rc4_128(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
@@ -70,6 +91,22 @@ final class EncryptDictionaryTest extends TestCase
         self::assertStringContainsString('/CF << /StdCF << /CFM /AESV2 /AuthEvent /DocOpen /Length 16 >> >>', $encryptDictionary->render());
         self::assertStringContainsString('/StmF /StdCF', $encryptDictionary->render());
         self::assertStringContainsString('/StrF /StdCF', $encryptDictionary->render());
+    }
+
+    #[Test]
+    public function it_rejects_rc4_40_encrypt_dictionaries_for_pdf_1_2(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf12());
+        $encryptDictionary = new \Kalle\Pdf\Document\EncryptDictionary(
+            7,
+            $document,
+            new EncryptionProfile(EncryptionAlgorithm::RC4_40, 40, 1, 2),
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.2 does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.');
+
+        $encryptDictionary->render();
     }
 
     #[Test]

@@ -124,6 +124,46 @@ final class EncryptionVersionResolverTest extends TestCase
     }
 
     #[Test]
+    public function it_resolves_and_stores_the_rc4_40_profile_via_encrypt_options_for_pdf_1_3(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf13());
+        $document->encrypt(new EncryptionOptions(
+            userPassword: 'user-secret',
+            ownerPassword: 'owner-secret',
+            algorithm: EncryptionAlgorithm::RC4_40,
+        ));
+
+        self::assertNotNull($document->getEncryptionProfile());
+        self::assertSame(EncryptionAlgorithm::RC4_40, $document->getEncryptionProfile()?->algorithm);
+    }
+
+    #[Test]
+    public function it_rejects_rc4_40_via_document_encrypt_for_pdf_1_2(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf12());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.2 does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.');
+
+        $document->encrypt(new EncryptionOptions(
+            userPassword: 'user-secret',
+            ownerPassword: 'owner-secret',
+            algorithm: EncryptionAlgorithm::RC4_40,
+        ));
+    }
+
+    #[Test]
+    public function it_rejects_rc4_40_encryption_algorithms_for_pdf_1_2(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf12());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.2 does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.');
+
+        $document->assertAllowsEncryptionAlgorithm(EncryptionAlgorithm::RC4_40);
+    }
+
+    #[Test]
     public function it_resolves_aes_256_for_pdf_1_7(): void
     {
         $resolver = new EncryptionVersionResolver();
