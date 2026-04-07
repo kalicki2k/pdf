@@ -89,6 +89,7 @@ file_put_contents('hello.pdf', $document->render());
 Example scripts live in [examples](examples/):
 
 - [rechnung.php](examples/rechnung.php)
+- [pdf-a-2b.php](examples/pdf-a-2b.php)
 - [pdf-a-2u.php](examples/pdf-a-2u.php)
 - [table.php](examples/table.php)
 - [table-of-contents.php](examples/table-of-contents.php)
@@ -108,9 +109,12 @@ php examples/rechnung.php
 
 Generated example PDFs are written to `var/examples`.
 
-For the PDF/A-2u example:
+For the PDF/A examples:
 
 ```bash
+composer example:pdfa2b
+composer validate:pdfa -- var/examples/pdf-a-2b_YYYY-mm-dd-HH-ii-ss.pdf
+
 composer example:pdfa2u
 composer validate:pdfa -- var/examples/pdf-a-2u_YYYY-mm-dd-HH-ii-ss.pdf
 ```

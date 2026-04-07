@@ -2195,7 +2195,19 @@ final class PageTest extends TestCase
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Profile PDF/A-2u requires embedded Unicode fonts. Font 'Helvetica' is not registered.");
+        $this->expectExceptionMessage("Profile PDF/A-2u requires embedded Unicode fonts in the current implementation. Font 'Helvetica' is not registered.");
+
+        $page->addText('Hallo', new Position(10, 20), 'Helvetica', 12);
+    }
+
+    #[Test]
+    public function it_reports_pdf_a_2b_font_requirements_for_unregistered_text_fonts(): void
+    {
+        $document = new Document(profile: Profile::pdfA2b());
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Profile PDF/A-2b requires embedded Unicode fonts in the current implementation. Font 'Helvetica' is not registered.");
 
         $page->addText('Hallo', new Position(10, 20), 'Helvetica', 12);
     }

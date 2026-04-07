@@ -65,12 +65,32 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_accepts_a_pdf_a_2b_profile(): void
+    {
+        $document = new Document(profile: Profile::pdfA2b());
+
+        self::assertSame('PDF/A-2b', $document->getProfile()->name());
+        self::assertSame(1.7, $document->getVersion());
+    }
+
+    #[Test]
     public function it_rejects_encryption_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-2u does not allow encryption.');
+
+        $document->encrypt(new EncryptionOptions('user', 'owner'));
+    }
+
+    #[Test]
+    public function it_rejects_encryption_for_pdf_a_2b(): void
+    {
+        $document = new Document(profile: Profile::pdfA2b());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2b does not allow encryption.');
 
         $document->encrypt(new EncryptionOptions('user', 'owner'));
     }
@@ -124,6 +144,20 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_registers_an_icc_profile_stream_for_pdf_a_2b(): void
+    {
+        $document = new Document(profile: Profile::pdfA2b());
+
+        $objectIds = array_map(
+            static fn (object $object): int => $object->id,
+            $document->getDocumentObjects(),
+        );
+
+        self::assertSame([1, 2, 5, 3, 4], $objectIds);
+        self::assertNotNull($document->getPdfAOutputIntentProfile());
+    }
+
+    #[Test]
     public function it_rejects_standard_fonts_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());
@@ -132,6 +166,31 @@ final class DocumentTest extends TestCase
         $this->expectExceptionMessage("Profile PDF/A-2u does not allow PDF standard fonts like 'Helvetica'. Register an embedded Unicode font instead.");
 
         $document->registerFont('Helvetica');
+    }
+
+    #[Test]
+    public function it_rejects_standard_fonts_for_pdf_a_2b(): void
+    {
+        $document = new Document(profile: Profile::pdfA2b());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Profile PDF/A-2b does not allow PDF standard fonts like 'Helvetica'. Register an embedded Unicode font instead.");
+
+        $document->registerFont('Helvetica');
+    }
+
+    #[Test]
+    public function it_accepts_embedded_unicode_fonts_for_pdf_a_2b(): void
+    {
+        $document = new Document(profile: Profile::pdfA2b());
+
+        $document->registerFont('NotoSans-Regular');
+
+        self::assertCount(1, $document->getFonts());
+        self::assertInstanceOf(UnicodeFont::class, $document->getFonts()[0]);
+        self::assertSame('NotoSans-Regular', $document->getFonts()[0]->getBaseFont());
+        self::assertNotNull($document->getFonts()[0]->descendantFont->fontDescriptor);
+        self::assertNotNull($document->getFonts()[0]->descendantFont->cidToGidMap);
     }
 
     #[Test]

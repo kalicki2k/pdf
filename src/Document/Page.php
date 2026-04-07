@@ -1634,9 +1634,10 @@ final class Page extends IndirectObject
             }
         }
 
-        if ($this->document->getProfile()->isPdfA2u()) {
+        if ($this->document->getProfile()->isPdfA2()) {
             throw new InvalidArgumentException(sprintf(
-                "Profile PDF/A-2u requires embedded Unicode fonts. Font '%s' is not registered.",
+                "Profile %s requires embedded Unicode fonts in the current implementation. Font '%s' is not registered.",
+                $this->document->getProfile()->name(),
                 $baseFont,
             ));
         }

@@ -161,4 +161,18 @@ final class CatalogTest extends TestCase
         self::assertStringContainsString('/OutputConditionIdentifier (sRGB IEC61966-2.1)', $rendered);
         self::assertStringContainsString('/DestOutputProfile 5 0 R', $rendered);
     }
+
+    #[Test]
+    public function it_renders_a_pdf_a_output_intent_for_pdf_a_2b(): void
+    {
+        $document = new Document(profile: Profile::pdfA2b());
+        $catalog = new Catalog(1, $document);
+
+        $rendered = $catalog->render();
+
+        self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
+        self::assertStringContainsString('/S /GTS_PDFA1', $rendered);
+        self::assertStringContainsString('/OutputConditionIdentifier (sRGB IEC61966-2.1)', $rendered);
+        self::assertStringContainsString('/DestOutputProfile 5 0 R', $rendered);
+    }
 }

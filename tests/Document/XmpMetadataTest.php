@@ -97,4 +97,20 @@ final class XmpMetadataTest extends TestCase
         self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
         self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $rendered);
     }
+
+    #[Test]
+    public function it_adds_pdf_a_identification_metadata_for_pdf_a_2b(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA2b(),
+            title: 'Archive Copy',
+        );
+        $metadata = new XmpMetadata(4, $document);
+
+        $rendered = $metadata->render();
+
+        self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
+        self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
+        self::assertStringContainsString('<pdfaid:conformance>B</pdfaid:conformance>', $rendered);
+    }
 }

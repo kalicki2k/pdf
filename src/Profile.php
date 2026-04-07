@@ -96,6 +96,11 @@ final readonly class Profile
         return str_starts_with($this->name, 'PDF/A-');
     }
 
+    public function isPdfA2(): bool
+    {
+        return $this->pdfaPart() === 2;
+    }
+
     public function isPdfA2u(): bool
     {
         return $this->name === 'PDF/A-2u';

@@ -258,7 +258,7 @@ final class Document
 
     public function getPdfAOutputIntentProfile(): ?IccProfileStream
     {
-        if (!$this->profile->isPdfA2u()) {
+        if (!$this->profile->isPdfA2()) {
             return null;
         }
 
@@ -791,29 +791,32 @@ final class Document
 
     private function assertAllowsEncryption(): void
     {
-        if ($this->profile->isPdfA2u()) {
-            throw new InvalidArgumentException('Profile PDF/A-2u does not allow encryption.');
+        if ($this->profile->isPdfA2()) {
+            throw new InvalidArgumentException(sprintf('Profile %s does not allow encryption.', $this->profile->name()));
         }
     }
 
     private function assertAllowsAttachments(): void
     {
-        if ($this->profile->isPdfA2u()) {
-            throw new InvalidArgumentException('Profile PDF/A-2u does not allow embedded file attachments.');
+        if ($this->profile->isPdfA2()) {
+            throw new InvalidArgumentException(sprintf('Profile %s does not allow embedded file attachments.', $this->profile->name()));
         }
     }
 
     private function assertAllowsLayers(): void
     {
-        if ($this->profile->isPdfA2u()) {
-            throw new InvalidArgumentException('Profile PDF/A-2u does not allow optional content groups (layers).');
+        if ($this->profile->isPdfA2()) {
+            throw new InvalidArgumentException(sprintf('Profile %s does not allow optional content groups (layers).', $this->profile->name()));
         }
     }
 
     private function assertAllowsForms(): void
     {
-        if ($this->profile->isPdfA2u()) {
-            throw new InvalidArgumentException('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+        if ($this->profile->isPdfA2()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow AcroForm fields in the current implementation.',
+                $this->profile->name(),
+            ));
         }
     }
 
@@ -828,20 +831,22 @@ final class Document
      */
     private function assertAllowsFontRegistration(array $options): void
     {
-        if (!$this->profile->isPdfA2u()) {
+        if (!$this->profile->isPdfA2()) {
             return;
         }
 
         if (StandardFontName::isValid($options['baseFont']) && $options['fontFilePath'] === null) {
             throw new InvalidArgumentException(sprintf(
-                "Profile PDF/A-2u does not allow PDF standard fonts like '%s'. Register an embedded Unicode font instead.",
+                "Profile %s does not allow PDF standard fonts like '%s'. Register an embedded Unicode font instead.",
+                $this->profile->name(),
                 $options['baseFont'],
             ));
         }
 
         if ($options['fontFilePath'] === null || !$options['unicode']) {
             throw new InvalidArgumentException(sprintf(
-                "Profile PDF/A-2u requires embedded Unicode fonts. Font '%s' must provide an embedded font file and Unicode mapping.",
+                "Profile %s requires embedded Unicode fonts in the current implementation. Font '%s' must provide an embedded font file and Unicode mapping.",
+                $this->profile->name(),
                 $options['baseFont'],
             ));
         }
