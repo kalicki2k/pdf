@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\PdfVersion;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
@@ -132,7 +133,7 @@ final class StandardFont extends IndirectObject implements FontDefinition
             throw new InvalidArgumentException("BaseFont '$this->baseFont' is not a valid PDF standard font.");
         }
 
-        if ($this->version === 1.0 && !in_array($this->encoding, $allowedEncodings10, true)) {
+        if ($this->version === PdfVersion::V1_0 && !in_array($this->encoding, $allowedEncodings10, true)) {
             throw new InvalidArgumentException("Encoding '$this->encoding' is not allowed in PDF 1.0.");
         }
 

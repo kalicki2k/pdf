@@ -284,7 +284,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_set_ocg_state_action(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.5));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $layer = $document->addLayer('LayerA');

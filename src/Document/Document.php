@@ -38,6 +38,7 @@ use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\PdfVersion;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Structure\ParentTree;
@@ -362,7 +363,7 @@ final class Document
 
     public function getXmpMetadata(): ?XmpMetadata
     {
-        if ($this->getVersion() < 1.4) {
+        if (!$this->profile->supportsXmpMetadata()) {
             return null;
         }
 
@@ -474,6 +475,8 @@ final class Document
 
     public function ensureOptionalContentGroup(string $name, bool $visibleByDefault = true): OptionalContentGroup
     {
+        $this->assertAllowsOptionalContentGroups();
+
         if ($name === '') {
             throw new InvalidArgumentException('Optional content group name must not be empty.');
         }
@@ -490,8 +493,6 @@ final class Document
 
     public function addLayer(string $name, bool $visibleByDefault = true): OptionalContentGroup
     {
-        $this->assertAllowsLayers();
-
         return $this->ensureOptionalContentGroup($name, $visibleByDefault);
     }
 
@@ -798,7 +799,7 @@ final class Document
 
     public function ensureStructureEnabled(): void
     {
-        if ($this->getVersion() < 1.4) {
+        if (!$this->profile->supportsStructure()) {
             throw new InvalidArgumentException('Structured content requires PDF version 1.4 or higher.');
         }
 
@@ -842,10 +843,34 @@ final class Document
         }
     }
 
-    private function assertAllowsLayers(): void
+    public function assertAllowsOptionalContentGroups(): void
     {
         if ($this->profile->isPdfA()) {
             throw new InvalidArgumentException(sprintf('Profile %s does not allow optional content groups (layers).', $this->profile->name()));
+        }
+
+        if (!$this->profile->supportsOptionalContentGroups()) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF version %s does not allow optional content groups (layers). PDF 1.5 or higher is required.',
+                PdfVersion::format($this->getVersion()),
+            ));
+        }
+    }
+
+    public function assertAllowsTransparency(): void
+    {
+        if ($this->profile->isPdfA1()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow transparency in the current implementation.',
+                $this->profile->name(),
+            ));
+        }
+
+        if (!$this->profile->supportsTransparency()) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF version %s does not allow transparency. PDF 1.4 or higher is required.',
+                PdfVersion::format($this->getVersion()),
+            ));
         }
     }
 
@@ -1096,7 +1121,7 @@ final class Document
 
     private function resolveDefaultStandardFontEncoding(): string
     {
-        if ($this->getVersion() <= 1.0) {
+        if ($this->getVersion() <= PdfVersion::V1_0) {
             return 'StandardEncoding';
         }
 

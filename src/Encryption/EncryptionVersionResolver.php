@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Encryption;
 
 use InvalidArgumentException;
+use Kalle\Pdf\PdfVersion;
 
 final class EncryptionVersionResolver
 {
@@ -21,11 +22,11 @@ final class EncryptionVersionResolver
 
     private function resolveAuto(float $pdfVersion): EncryptionProfile
     {
-        if ($pdfVersion >= 1.6) {
+        if ($pdfVersion >= PdfVersion::V1_6) {
             return $this->resolveAes128($pdfVersion);
         }
 
-        if ($pdfVersion >= 1.4) {
+        if ($pdfVersion >= PdfVersion::V1_4) {
             return $this->resolveRc4_128($pdfVersion);
         }
 
@@ -34,7 +35,7 @@ final class EncryptionVersionResolver
 
     private function resolveRc4_40(float $pdfVersion): EncryptionProfile
     {
-        if ($pdfVersion < 1.3) {
+        if ($pdfVersion < PdfVersion::V1_3) {
             throw new InvalidArgumentException('RC4 40-bit encryption requires PDF 1.3 or newer.');
         }
 
@@ -48,7 +49,7 @@ final class EncryptionVersionResolver
 
     private function resolveRc4_128(float $pdfVersion): EncryptionProfile
     {
-        if ($pdfVersion < 1.4) {
+        if ($pdfVersion < PdfVersion::V1_4) {
             throw new InvalidArgumentException('RC4 128-bit encryption requires PDF 1.4 or newer.');
         }
 
@@ -62,7 +63,7 @@ final class EncryptionVersionResolver
 
     private function resolveAes128(float $pdfVersion): EncryptionProfile
     {
-        if ($pdfVersion < 1.6) {
+        if ($pdfVersion < PdfVersion::V1_6) {
             throw new InvalidArgumentException('AES 128-bit encryption requires PDF 1.6 or newer.');
         }
 
@@ -76,7 +77,7 @@ final class EncryptionVersionResolver
 
     private function resolveAes256(float $pdfVersion): EncryptionProfile
     {
-        if ($pdfVersion < 1.7) {
+        if ($pdfVersion < PdfVersion::V1_7) {
             throw new InvalidArgumentException('AES 256-bit encryption requires PDF 1.7 or newer.');
         }
 

@@ -169,6 +169,17 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_layers_for_pdf_version_1_4(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.4 does not allow optional content groups (layers). PDF 1.5 or higher is required.');
+
+        $document->addLayer('Draft');
+    }
+
+    #[Test]
     public function it_rejects_acroform_fields_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());
@@ -741,6 +752,25 @@ final class DocumentTest extends TestCase
         $this->expectExceptionMessage('Structured content requires PDF version 1.4 or higher.');
 
         $document->ensureStructureEnabled();
+    }
+
+    #[Test]
+    public function it_skips_xmp_metadata_on_pdf_versions_below_1_4(): void
+    {
+        $document = new Document(
+            profile: Profile::pdf13(),
+            title: 'Legacy spec',
+            language: 'de-DE',
+        );
+        $document->registerFont('Helvetica');
+        $document->addPage();
+
+        $output = $document->render();
+
+        self::assertNull($document->getXmpMetadata());
+        self::assertStringStartsWith("%PDF-1.3\n", $output);
+        self::assertStringNotContainsString('/Metadata ', $output);
+        self::assertStringNotContainsString('<dc:format>application/pdf</dc:format>', $output);
     }
 
     #[Test]
@@ -1330,7 +1360,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_reuses_optional_content_groups_for_the_same_layer_name(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
 
         $firstLayer = $document->addLayer('Draft', visibleByDefault: false);
         $secondLayer = $document->ensureOptionalContentGroup('Draft');
@@ -1344,7 +1374,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_empty_optional_content_group_names(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Optional content group name must not be empty.');

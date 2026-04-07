@@ -14,7 +14,7 @@ final readonly class Profile
     ) {
     }
 
-    public static function standard(float $version = 1.4): self
+    public static function standard(float $version = PdfVersion::V1_4): self
     {
         self::assertSupportedStandardVersion($version);
 
@@ -23,102 +23,102 @@ final readonly class Profile
 
     public static function pdf10(): self
     {
-        return self::standard(1.0);
+        return self::standard(PdfVersion::V1_0);
     }
 
     public static function pdf11(): self
     {
-        return self::standard(1.1);
+        return self::standard(PdfVersion::V1_1);
     }
 
     public static function pdf12(): self
     {
-        return self::standard(1.2);
+        return self::standard(PdfVersion::V1_2);
     }
 
     public static function pdf13(): self
     {
-        return self::standard(1.3);
+        return self::standard(PdfVersion::V1_3);
     }
 
     public static function pdf14(): self
     {
-        return self::standard(1.4);
+        return self::standard(PdfVersion::V1_4);
     }
 
     public static function pdf15(): self
     {
-        return self::standard(1.5);
+        return self::standard(PdfVersion::V1_5);
     }
 
     public static function pdf16(): self
     {
-        return self::standard(1.6);
+        return self::standard(PdfVersion::V1_6);
     }
 
     public static function pdf17(): self
     {
-        return self::standard(1.7);
+        return self::standard(PdfVersion::V1_7);
     }
 
     public static function pdf20(): self
     {
-        return self::standard(2.0);
+        return self::standard(PdfVersion::V2_0);
     }
 
     public static function pdfA1a(): self
     {
-        return new self('PDF/A-1a', 1.4); // PDF/A-1 is based on PDF 1.4.
+        return new self('PDF/A-1a', PdfVersion::V1_4); // PDF/A-1 is based on PDF 1.4.
     }
 
     public static function pdfA1b(): self
     {
-        return new self('PDF/A-1b', 1.4); // PDF/A-1 is based on PDF 1.4.
+        return new self('PDF/A-1b', PdfVersion::V1_4); // PDF/A-1 is based on PDF 1.4.
     }
 
     public static function pdfA2a(): self
     {
-        return new self('PDF/A-2a', 1.7); // PDF/A-2 is based on PDF 1.7.
+        return new self('PDF/A-2a', PdfVersion::V1_7); // PDF/A-2 is based on PDF 1.7.
     }
 
     public static function pdfA2b(): self
     {
-        return new self('PDF/A-2b', 1.7); // PDF/A-2 is based on PDF 1.7.
+        return new self('PDF/A-2b', PdfVersion::V1_7); // PDF/A-2 is based on PDF 1.7.
     }
 
     public static function pdfA2u(): self
     {
-        return new self('PDF/A-2u', 1.7); // PDF/A-2 is based on PDF 1.7.
+        return new self('PDF/A-2u', PdfVersion::V1_7); // PDF/A-2 is based on PDF 1.7.
     }
 
     public static function pdfA3a(): self
     {
-        return new self('PDF/A-3a', 1.7); // PDF/A-3 is based on PDF 1.7.
+        return new self('PDF/A-3a', PdfVersion::V1_7); // PDF/A-3 is based on PDF 1.7.
     }
 
     public static function pdfA3b(): self
     {
-        return new self('PDF/A-3b', 1.7); // PDF/A-3 is based on PDF 1.7.
+        return new self('PDF/A-3b', PdfVersion::V1_7); // PDF/A-3 is based on PDF 1.7.
     }
 
     public static function pdfA3u(): self
     {
-        return new self('PDF/A-3u', 1.7); // PDF/A-3 is based on PDF 1.7.
+        return new self('PDF/A-3u', PdfVersion::V1_7); // PDF/A-3 is based on PDF 1.7.
     }
 
     public static function pdfA4(): self
     {
-        return new self('PDF/A-4', 2.0); // PDF/A-4 is based on PDF 2.0.
+        return new self('PDF/A-4', PdfVersion::V2_0); // PDF/A-4 is based on PDF 2.0.
     }
 
     public static function pdfA4e(): self
     {
-        return new self('PDF/A-4e', 2.0); // PDF/A-4e is based on PDF 2.0.
+        return new self('PDF/A-4e', PdfVersion::V2_0); // PDF/A-4e is based on PDF 2.0.
     }
 
     public static function pdfA4f(): self
     {
-        return new self('PDF/A-4f', 2.0); // PDF/A-4f is based on PDF 2.0.
+        return new self('PDF/A-4f', PdfVersion::V2_0); // PDF/A-4f is based on PDF 2.0.
     }
 
     public function name(): string
@@ -181,6 +181,26 @@ final readonly class Profile
         return $this->name === 'PDF/A-2u';
     }
 
+    public function supportsXmpMetadata(): bool
+    {
+        return $this->version >= PdfVersion::V1_4;
+    }
+
+    public function supportsStructure(): bool
+    {
+        return $this->version >= PdfVersion::V1_4;
+    }
+
+    public function supportsTransparency(): bool
+    {
+        return $this->version >= PdfVersion::V1_4 && !$this->isPdfA1();
+    }
+
+    public function supportsOptionalContentGroups(): bool
+    {
+        return $this->version >= PdfVersion::V1_5 && !$this->isPdfA();
+    }
+
     public function pdfaPart(): ?int
     {
         return match ($this->name) {
@@ -207,7 +227,7 @@ final readonly class Profile
 
     private static function assertSupportedStandardVersion(float $version): void
     {
-        $supportedVersions = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.0];
+        $supportedVersions = PdfVersion::all();
 
         if (!in_array($version, $supportedVersions, true)) {
             throw new InvalidArgumentException('Unsupported PDF version. Supported versions are 1.0 to 1.7 and 2.0.');

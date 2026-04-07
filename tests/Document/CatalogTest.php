@@ -88,7 +88,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_optional_content_properties_when_document_layers_exist(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
         $page = $document->addPage();
         $page->layer('Notes', static function (Page $page): void {
             $page->addRectangle(new Rect(10, 20, 30, 40));
@@ -106,7 +106,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_off_optional_content_groups_when_layers_are_hidden_by_default(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
         $document->addLayer('Visible');
         $document->addLayer('Hidden', false);
         $catalog = new Catalog(1, $document);

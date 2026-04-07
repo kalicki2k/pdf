@@ -129,7 +129,7 @@ final class Catalog extends IndirectObject
             ]));
         }
 
-        if ($this->document->getVersion() >= 1.4 && $this->document->structTreeRoot !== null) {
+        if ($this->document->getProfile()->supportsStructure() && $this->document->structTreeRoot !== null) {
             $dictionary->add('MarkInfo', new DictionaryType([
                 'Marked' => new BooleanType(true),
             ]));

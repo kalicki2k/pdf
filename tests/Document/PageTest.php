@@ -26,6 +26,7 @@ use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\LinkTarget;
+use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Style\BadgeStyle;
@@ -484,7 +485,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_wraps_layered_page_content_with_optional_content_markers(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -501,7 +502,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_accepts_an_existing_layer_object_for_page_layer_content(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
         $document->registerFont('Helvetica');
         $layer = $document->addLayer('Notes');
         $page = $document->addPage();
@@ -511,6 +512,21 @@ final class PageTest extends TestCase
         });
 
         self::assertStringContainsString('/Properties << /OC1 5 0 R >>', $page->resources->render());
+    }
+
+    #[Test]
+    public function it_rejects_layered_page_content_for_pdf_version_1_4(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.4 does not allow optional content groups (layers). PDF 1.5 or higher is required.');
+
+        $page->layer('Notes', static function (Page $page): void {
+            $page->addText('Layered', new Position(10, 20), 'Helvetica', 12);
+        });
     }
 
     #[Test]
@@ -1984,7 +2000,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_a_push_button_with_a_set_ocg_state_action_to_the_page_and_document(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
         $document->registerFont('Helvetica');
         $layer = $document->addLayer('LayerA');
         $page = $document->addPage();
@@ -1998,6 +2014,25 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle 5 0 R] /PreserveRB false >>', $document->render());
+    }
+
+    #[Test]
+    public function it_rejects_a_push_button_with_a_set_ocg_state_action_for_pdf_version_1_4(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+        $layer = new OptionalContentGroup(99, 'LayerA');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.4 does not allow optional content groups (layers). PDF 1.5 or higher is required.');
+
+        $page->addPushButton(
+            'toggle_layer',
+            'Layer',
+            new Rect(10, 20, 80, 16),
+            action: new SetOcgStateAction(['Toggle', $layer], false),
+        );
     }
 
     #[Test]
@@ -3095,6 +3130,46 @@ final class PageTest extends TestCase
             fillColor: Color::gray(0.5),
             opacity: Opacity::both(0.4),
         );
+    }
+
+    #[Test]
+    public function it_rejects_transparent_text_for_pdf_versions_below_1_4(): void
+    {
+        $document = new Document(profile: Profile::pdf13());
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.3 does not allow transparency. PDF 1.4 or higher is required.');
+
+        $page->addText(
+            'Transparent',
+            new Position(10, 50),
+            'Helvetica',
+            12,
+            new TextOptions(opacity: Opacity::fill(0.5)),
+        );
+    }
+
+    #[Test]
+    public function it_rejects_images_with_soft_masks_for_pdf_versions_below_1_4(): void
+    {
+        $document = new Document(profile: Profile::pdf13());
+        $page = $document->addPage();
+
+        $image = new Image(
+            1,
+            1,
+            'DeviceRGB',
+            'FlateDecode',
+            "\x00\x00\x00",
+            softMask: new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.3 does not allow transparency. PDF 1.4 or higher is required.');
+
+        $page->addImage($image, new Position(10, 20), 10, 10);
     }
 
     #[Test]

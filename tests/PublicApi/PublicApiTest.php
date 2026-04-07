@@ -34,6 +34,7 @@ use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
@@ -508,7 +509,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_forwards_public_api_registrations_to_the_internal_document(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
         $page = $document->addPage(PageSize::custom(100, 100));
 
         $attachmentPath = sys_get_temp_dir() . '/pdf-public-api-attachment.txt';
@@ -622,7 +623,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_wraps_public_page_layers_with_public_page_instances(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.5));
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(120, 140));
 
@@ -636,6 +637,34 @@ final class PublicApiTest extends TestCase
 
         self::assertInstanceOf(Page::class, $receivedPage);
         self::assertStringContainsString('(Layered) Tj', $internalPage->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_public_page_layers_for_pdf_version_1_4(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(120, 140));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.4 does not allow optional content groups (layers). PDF 1.5 or higher is required.');
+
+        $page->layer('Layer A', static function (Page $layerPage): void {
+            $layerPage->addText('Layered', new Position(10, 100), 'Helvetica', 10);
+        });
+    }
+
+    #[Test]
+    public function it_rejects_public_page_transparency_for_pdf_version_1_3(): void
+    {
+        $document = new Document(profile: Profile::pdf13());
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(120, 140));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.3 does not allow transparency. PDF 1.4 or higher is required.');
+
+        $page->addText('Transparent', new Position(10, 100), 'Helvetica', 10, new TextOptions(opacity: Opacity::fill(0.5)));
     }
 
     #[Test]

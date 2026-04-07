@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Action\ButtonAction;
+use Kalle\Pdf\Document\Action\SetOcgStateAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
@@ -152,8 +153,8 @@ final class Page extends IndirectObject
     public function layer(string | OptionalContentGroup $layer, callable $renderer, bool $visibleByDefault = true): self
     {
         $group = is_string($layer)
-            ? $this->document->ensureOptionalContentGroup($layer, $visibleByDefault)
-            : $layer;
+            ? $this->document->addLayer($layer, $visibleByDefault)
+            : $this->document->addLayer($layer->getName(), $layer->isVisibleByDefault());
         $resourceName = $this->resources->addProperty($group);
 
         $this->contents->addElement(new Raw("/OC /$resourceName BDC"));
@@ -1422,6 +1423,10 @@ final class Page extends IndirectObject
             throw new InvalidArgumentException('Image dimensions must be greater than zero.');
         }
 
+        if ($image->getSoftMask() !== null) {
+            $this->document->assertAllowsTransparency();
+        }
+
         $imageObject = $this->createImageObject($image);
         $resourceName = $this->resources->addImage($imageObject);
         $artifactTag = $options->structureTag === null && $this->document->isRenderingArtifactContext()
@@ -1607,6 +1612,10 @@ final class Page extends IndirectObject
         ?Color $textColor = null,
         ?ButtonAction $action = null,
     ): self {
+        if ($action instanceof SetOcgStateAction) {
+            $this->document->assertAllowsOptionalContentGroups();
+        }
+
         $acroForm = $this->document->ensureAcroForm();
         $annotation = $this->formWidgetFactory()->createPushButton(
             $name,
@@ -2154,12 +2163,7 @@ final class Page extends IndirectObject
             return null;
         }
 
-        if ($this->document->getProfile()->isPdfA1()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow transparency in the current implementation.',
-                $this->document->getProfile()->name(),
-            ));
-        }
+        $this->document->assertAllowsTransparency();
 
         return $this->resources->addOpacity($opacity);
     }

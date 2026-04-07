@@ -101,6 +101,30 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdfA2u()->requiresTaggedPdf());
     }
 
+    #[Test]
+    public function it_detects_profiles_that_support_pdf_1_4_features(): void
+    {
+        self::assertFalse(Profile::pdf13()->supportsXmpMetadata());
+        self::assertFalse(Profile::pdf13()->supportsStructure());
+        self::assertFalse(Profile::pdf13()->supportsTransparency());
+
+        self::assertTrue(Profile::pdf14()->supportsXmpMetadata());
+        self::assertTrue(Profile::pdf14()->supportsStructure());
+        self::assertTrue(Profile::pdf14()->supportsTransparency());
+
+        self::assertTrue(Profile::pdfA1b()->supportsXmpMetadata());
+        self::assertTrue(Profile::pdfA1b()->supportsStructure());
+        self::assertFalse(Profile::pdfA1b()->supportsTransparency());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_support_optional_content_groups(): void
+    {
+        self::assertFalse(Profile::pdf14()->supportsOptionalContentGroups());
+        self::assertTrue(Profile::pdf15()->supportsOptionalContentGroups());
+        self::assertFalse(Profile::pdfA2u()->supportsOptionalContentGroups());
+    }
+
     /**
      * @return array<string, array{string, float}>
      */
