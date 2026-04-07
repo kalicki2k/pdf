@@ -265,7 +265,8 @@ final readonly class Profile
 
     public function requiresEmbeddedUnicodeFonts(): bool
     {
-        return $this->isPdfA();
+        return $this->isPdfA()
+            || $this->isPdfUa();
     }
 
     public function supportsAcroForms(): bool

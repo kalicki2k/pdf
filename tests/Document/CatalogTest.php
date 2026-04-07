@@ -13,11 +13,14 @@ use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class CatalogTest extends TestCase
 {
+    use CreatesPdfUaTestDocument;
+
     #[Test]
     public function it_renders_a_minimal_catalog_for_pdf_1_0(): void
     {
@@ -49,17 +52,18 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_pdf_ua_viewer_preferences_and_structure_metadata(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
-        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $document = $this->createPdfUaTestDocument();
+        $document->addPage()->addText('Hello', new Position(10, 20), self::pdfUaRegularFont(), 12, new TextOptions(structureTag: StructureTag::Paragraph));
         $catalog = new Catalog(1, $document);
 
-        self::assertSame(
-            "1 0 obj\n"
-            . "<< /Type /Catalog /Pages 2 0 R /Metadata 12 0 R /ViewerPreferences << /DisplayDocTitle true >> /MarkInfo << /Marked true >> /Lang (de-DE) /StructTreeRoot 8 0 R >>\n"
-            . "endobj\n",
-            $catalog->render(),
-        );
+        $rendered = $catalog->render();
+
+        self::assertStringStartsWith("1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata ", $rendered);
+        self::assertStringContainsString('/ViewerPreferences << /DisplayDocTitle true >>', $rendered);
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $rendered);
+        self::assertStringContainsString('/Lang (de-DE)', $rendered);
+        self::assertStringContainsString('/StructTreeRoot ', $rendered);
+        self::assertStringEndsWith(">>\nendobj\n", $rendered);
     }
 
     #[Test]

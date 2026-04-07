@@ -7,11 +7,14 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class TextFieldAnnotationTest extends TestCase
 {
+    use CreatesPdfUaTestDocument;
+
     #[Test]
     public function it_renders_a_text_field_widget_annotation(): void
     {
@@ -87,8 +90,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_accessibility_metadata_for_text_fields(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $annotation = new TextFieldAnnotation(7, $page, 10, 20, 80, 12, 'customer_name', 'Ada', 'F1', 12, tooltip: 'Customer name');

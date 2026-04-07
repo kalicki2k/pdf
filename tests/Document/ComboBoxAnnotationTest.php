@@ -8,11 +8,14 @@ use Kalle\Pdf\Document\Annotation\ComboBoxAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class ComboBoxAnnotationTest extends TestCase
 {
+    use CreatesPdfUaTestDocument;
+
     #[Test]
     public function it_renders_a_combo_box_widget_annotation(): void
     {
@@ -150,8 +153,7 @@ final class ComboBoxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_accessibility_metadata_for_combo_boxes(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $annotation = new ComboBoxAnnotation(

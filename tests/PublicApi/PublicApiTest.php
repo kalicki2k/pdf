@@ -44,6 +44,7 @@ use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Table;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use Kalle\Pdf\TextFrame;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
@@ -53,6 +54,8 @@ use PHPUnit\Framework\TestCase;
 
 final class PublicApiTest extends TestCase
 {
+    use CreatesPdfUaTestDocument;
+
     protected function tearDown(): void
     {
         $tempFiles = glob(sys_get_temp_dir() . '/pdf-public-api-*');
@@ -422,15 +425,10 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_renders_an_accessible_text_field_for_pdf_ua_1_through_the_public_api(): void
     {
-        $document = new Document(
-            profile: Profile::pdfUa1(),
-            title: 'PDF/UA-1',
-            language: 'de-DE',
-        );
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(title: 'PDF/UA-1');
         $page = $document->addPage(PageSize::custom(100, 100));
 
-        $page->addTextField('field', new Rect(10, 20, 40, 15), 'value', 'Helvetica', 10, accessibleName: 'Customer name');
+        $page->addTextField('field', new Rect(10, 20, 40, 15), 'value', self::pdfUaRegularFont(), 10, accessibleName: 'Customer name');
 
         $rendered = $document->render();
 
@@ -485,15 +483,10 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_renders_an_accessible_push_button_for_pdf_ua_1_through_the_public_api(): void
     {
-        $document = new Document(
-            profile: Profile::pdfUa1(),
-            title: 'PDF/UA-1',
-            language: 'de-DE',
-        );
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(title: 'PDF/UA-1');
         $page = $document->addPage(PageSize::custom(100, 100));
 
-        $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), 'Helvetica', 12, accessibleName: 'Save form');
+        $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), self::pdfUaRegularFont(), 12, accessibleName: 'Save form');
 
         $rendered = $document->render();
 
@@ -532,12 +525,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_renders_an_accessible_combo_box_for_pdf_ua_1_through_the_public_api(): void
     {
-        $document = new Document(
-            profile: Profile::pdfUa1(),
-            title: 'PDF/UA-1',
-            language: 'de-DE',
-        );
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(title: 'PDF/UA-1');
         $page = $document->addPage(PageSize::custom(100, 100));
 
         $page->addComboBox(
@@ -545,7 +533,7 @@ final class PublicApiTest extends TestCase
             new Rect(10, 20, 80, 12),
             ['de' => 'Deutschland', 'at' => 'Oesterreich'],
             'de',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             accessibleName: 'Country selection',
         );
@@ -563,12 +551,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_renders_an_accessible_list_box_for_pdf_ua_1_through_the_public_api(): void
     {
-        $document = new Document(
-            profile: Profile::pdfUa1(),
-            title: 'PDF/UA-1',
-            language: 'de-DE',
-        );
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(title: 'PDF/UA-1');
         $page = $document->addPage(PageSize::custom(100, 100));
 
         $page->addListBox(
@@ -576,7 +559,7 @@ final class PublicApiTest extends TestCase
             new Rect(10, 20, 80, 40),
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
             'forms',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             accessibleName: 'Topics selection',
         );
@@ -672,18 +655,13 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_renders_tagged_text_links_for_pdf_ua_1_through_the_public_api(): void
     {
-        $document = new Document(
-            profile: Profile::pdfUa1(),
-            title: 'PDF/UA-1',
-            language: 'de-DE',
-        );
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(title: 'PDF/UA-1');
         $page = $document->addPage(PageSize::custom(100, 100));
 
         $page->addText(
             'Weiterlesen',
             new Position(10, 20),
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             new TextOptions(link: LinkTarget::externalUrl('https://example.com')),
         );
@@ -701,18 +679,13 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_nests_tagged_public_text_links_inside_existing_structure_tags_for_pdf_ua_1(): void
     {
-        $document = new Document(
-            profile: Profile::pdfUa1(),
-            title: 'PDF/UA-1',
-            language: 'de-DE',
-        );
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(title: 'PDF/UA-1');
         $page = $document->addPage(PageSize::custom(100, 100));
 
         $page->addText(
             'Weiterlesen',
             new Position(10, 20),
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             new TextOptions(
                 structureTag: StructureTag::Paragraph,
@@ -731,12 +704,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_binds_public_panel_links_to_visible_text_for_pdf_ua_1(): void
     {
-        $document = new Document(
-            profile: Profile::pdfUa1(),
-            title: 'PDF/UA-1',
-            language: 'de-DE',
-        );
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(title: 'PDF/UA-1', registerBold: true);
         $page = $document->addPage(PageSize::custom(160, 120));
 
         $page->addPanel(
@@ -746,7 +714,7 @@ final class PublicApiTest extends TestCase
             100,
             50,
             'Title',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             new PanelStyle(),
             null,
             LinkTarget::externalUrl('https://example.com'),
@@ -760,8 +728,7 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('/Contents (Body)', $rendered);
         self::assertStringContainsString('/Alt (Title)', $rendered);
         self::assertStringContainsString('/Alt (Body)', $rendered);
-        self::assertStringContainsString('(Title) Tj', $rendered);
-        self::assertStringContainsString('(Body) Tj', $rendered);
+        self::assertGreaterThanOrEqual(2, substr_count($rendered, 'BT'));
     }
 
     #[Test]

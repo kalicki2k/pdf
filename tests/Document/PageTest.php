@@ -54,11 +54,14 @@ use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class PageTest extends TestCase
 {
+    use CreatesPdfUaTestDocument;
+
     #[Test]
     public function it_renders_the_page_dictionary(): void
     {
@@ -162,11 +165,10 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_tagged_link_annotations_for_linked_text_in_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
-        $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(link: LinkTarget::externalUrl('https://example.com')));
+        $page->addText('Hello', new Position(10, 20), self::pdfUaRegularFont(), 12, new TextOptions(link: LinkTarget::externalUrl('https://example.com')));
 
         $rendered = $document->render();
 
@@ -182,14 +184,13 @@ final class PageTest extends TestCase
     #[Test]
     public function it_nests_pdf_ua_1_text_links_inside_existing_structure_tags(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $page->addText(
             'Hello',
             new Position(10, 20),
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             new TextOptions(
                 structureTag: StructureTag::Paragraph,
@@ -209,15 +210,14 @@ final class PageTest extends TestCase
     #[Test]
     public function it_nests_pdf_ua_1_flow_text_links_inside_existing_structure_tags(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $page->addFlowText(
             [new TextSegment('Hello', link: LinkTarget::externalUrl('https://example.com'))],
             new Position(10, 20),
             200,
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             new FlowTextOptions(structureTag: StructureTag::Paragraph),
         );
@@ -1116,8 +1116,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_binds_panel_links_to_visible_text_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(registerBold: true);
         $page = $document->addPage();
 
         $page->addPanel(
@@ -1127,6 +1126,7 @@ final class PageTest extends TestCase
             160,
             70,
             'Hinweis',
+            self::pdfUaRegularFont(),
             link: LinkTarget::externalUrl('https://example.com'),
         );
 
@@ -1139,8 +1139,7 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/Contents (Kurzinfo zum Stand.)', $rendered);
         self::assertStringContainsString('/Alt (Hinweis)', $rendered);
         self::assertStringContainsString('/Alt (Kurzinfo zum Stand.)', $rendered);
-        self::assertStringContainsString('(Hinweis) Tj', $page->contents->render());
-        self::assertStringContainsString('(Kurzinfo zum Stand.) Tj', $page->contents->render());
+        self::assertSame(2, substr_count($page->contents->render(), 'BT'));
     }
 
     #[Test]
@@ -1352,8 +1351,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_binds_callout_links_to_visible_text_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(registerBold: true);
         $page = $document->addPage();
 
         $page->addCallout(
@@ -1365,7 +1363,7 @@ final class PageTest extends TestCase
             150,
             65,
             'Info',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             new CalloutStyle(),
             link: LinkTarget::externalUrl('https://example.com'),
         );
@@ -1378,8 +1376,7 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/Contents (Interner Hinweis.)', $rendered);
         self::assertStringContainsString('/Alt (Info)', $rendered);
         self::assertStringContainsString('/Alt (Interner Hinweis.)', $rendered);
-        self::assertStringContainsString('(Info) Tj', $page->contents->render());
-        self::assertStringContainsString('(Interner Hinweis.) Tj', $page->contents->render());
+        self::assertSame(2, substr_count($page->contents->render(), 'BT'));
     }
 
     #[Test]
@@ -1880,11 +1877,10 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_an_accessible_text_field_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
-        $result = $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12, accessibleName: 'Customer name');
+        $result = $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', self::pdfUaRegularFont(), 12, accessibleName: 'Customer name');
 
         self::assertSame($page, $result);
 
@@ -1915,7 +1911,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_an_accessible_checkbox_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $result = $page->addCheckbox('accept_terms', new Position(10, 20), 12, true, 'Accept terms');
@@ -1952,7 +1948,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_accessible_radio_buttons_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $page->addRadioButton('delivery', 'standard', new Position(10, 20), 12, true, 'Standard delivery');
@@ -1997,8 +1993,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_an_accessible_combo_box_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $result = $page->addComboBox(
@@ -2006,7 +2001,7 @@ final class PageTest extends TestCase
             new Rect(10, 20, 80, 12),
             ['de' => 'Deutschland', 'at' => 'Oesterreich'],
             'de',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             accessibleName: 'Country selection',
         );
@@ -2111,8 +2106,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_an_accessible_list_box_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $result = $page->addListBox(
@@ -2120,7 +2114,7 @@ final class PageTest extends TestCase
             new Rect(10, 20, 80, 40),
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
             'forms',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             accessibleName: 'Topics selection',
         );
@@ -2220,7 +2214,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_an_accessible_signature_field_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $result = $page->addSignatureField('approval_signature', new Rect(10, 20, 100, 30), 'Approval signature');
@@ -2255,11 +2249,10 @@ final class PageTest extends TestCase
     #[Test]
     public function it_adds_an_accessible_push_button_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
-        $result = $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), 'Helvetica', 12, accessibleName: 'Save form');
+        $result = $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), self::pdfUaRegularFont(), 12, accessibleName: 'Save form');
 
         self::assertSame($page, $result);
 
@@ -2749,6 +2742,18 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_reports_pdf_ua_1_font_requirements_for_unregistered_text_fonts(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Profile PDF/UA-1 requires embedded Unicode fonts in the current implementation. Font 'Helvetica' is not registered.");
+
+        $page->addText('Hallo', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+    }
+
+    #[Test]
     public function it_adds_text_to_contents_and_registers_the_font_resource(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
@@ -2768,8 +2773,7 @@ final class PageTest extends TestCase
     #[Test]
     public function it_marks_panel_backgrounds_as_artifacts_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument(registerBold: true);
         $page = $document->addPage();
 
         $page->addPanel(
@@ -2779,7 +2783,7 @@ final class PageTest extends TestCase
             80,
             55,
             'Title',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             new PanelStyle(),
         );
 

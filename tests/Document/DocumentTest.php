@@ -25,11 +25,14 @@ use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class DocumentTest extends TestCase
 {
+    use CreatesPdfUaTestDocument;
+
     private const FLOAT_DELTA = 0.0001;
 
     #[Test]
@@ -104,9 +107,8 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_rendering_pdf_ua_1_without_a_document_title(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), language: 'de-DE');
-        $document->registerFont('Helvetica');
-        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $document = $this->createPdfUaTestDocument(title: null);
+        $document->addPage()->addText('Hello', new Position(10, 20), self::pdfUaRegularFont(), 12, new TextOptions(structureTag: StructureTag::Paragraph));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires a document title.');
@@ -117,9 +119,8 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_rendering_pdf_ua_1_without_a_document_language(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec');
-        $document->registerFont('Helvetica');
-        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
+        $document = $this->createPdfUaTestDocument(language: null);
+        $document->addPage()->addText('Hello', new Position(10, 20), self::pdfUaRegularFont(), 12, new TextOptions(structureTag: StructureTag::Paragraph));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires a document language.');
@@ -130,9 +131,8 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_rejects_rendering_pdf_ua_1_without_tagged_content(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
-        $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12);
+        $document = $this->createPdfUaTestDocument();
+        $document->addPage()->addText('Hello', new Position(10, 20), self::pdfUaRegularFont(), 12);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires tagged content in the current implementation.');
@@ -255,11 +255,10 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_text_field_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage(100.0, 200.0);
 
-        $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12, accessibleName: 'Customer name');
+        $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', self::pdfUaRegularFont(), 12, accessibleName: 'Customer name');
 
         $rendered = $document->render();
 
@@ -273,7 +272,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_signature_field_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage(100.0, 200.0);
 
         $page->addSignatureField('approval_signature', new Rect(10, 20, 80, 16), 'Approval signature');
@@ -291,7 +290,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_checkbox_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage(100.0, 200.0);
 
         $page->addCheckbox('accept_terms', new Position(10, 20), 12, true, 'Accept terms');
@@ -309,11 +308,10 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_push_button_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage(100.0, 200.0);
 
-        $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), 'Helvetica', 12, accessibleName: 'Save form');
+        $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), self::pdfUaRegularFont(), 12, accessibleName: 'Save form');
 
         $rendered = $document->render();
 
@@ -329,7 +327,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_radio_buttons_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage(100.0, 200.0);
 
         $page->addRadioButton('delivery', 'standard', new Position(10, 20), 12, true, 'Standard delivery');
@@ -351,8 +349,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_combo_box_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage(100.0, 200.0);
 
         $page->addComboBox(
@@ -360,7 +357,7 @@ final class DocumentTest extends TestCase
             new Rect(10, 20, 80, 12),
             ['de' => 'Deutschland', 'at' => 'Oesterreich'],
             'de',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             accessibleName: 'Country selection',
         );
@@ -378,8 +375,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_adds_a_list_box_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage(100.0, 200.0);
 
         $page->addListBox(
@@ -387,7 +383,7 @@ final class DocumentTest extends TestCase
             new Rect(10, 20, 80, 40),
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
             'forms',
-            'Helvetica',
+            self::pdfUaRegularFont(),
             12,
             accessibleName: 'Topics selection',
         );
@@ -529,6 +525,17 @@ final class DocumentTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Profile PDF/A-2b does not allow PDF standard fonts like 'Helvetica'. Register an embedded Unicode font instead.");
+
+        $document->registerFont('Helvetica');
+    }
+
+    #[Test]
+    public function it_rejects_standard_fonts_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Profile PDF/UA-1 does not allow PDF standard fonts like 'Helvetica'. Register an embedded Unicode font instead.");
 
         $document->registerFont('Helvetica');
     }

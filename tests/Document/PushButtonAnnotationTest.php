@@ -19,11 +19,14 @@ use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class PushButtonAnnotationTest extends TestCase
 {
+    use CreatesPdfUaTestDocument;
+
     #[Test]
     public function it_renders_a_push_button_widget_annotation(): void
     {
@@ -44,8 +47,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_accessibility_metadata_for_push_buttons(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
-        $document->registerFont('Helvetica');
+        $document = $this->createPdfUaTestDocument();
         $page = $document->addPage();
 
         $annotation = new PushButtonAnnotation(7, $page, 10, 20, 80, 16, 'save_form', 'Speichern', 'F1', 12, action: null, tooltip: 'Save form');

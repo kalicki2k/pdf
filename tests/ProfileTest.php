@@ -203,6 +203,7 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdf14()->requiresEmbeddedUnicodeFonts());
         self::assertTrue(Profile::pdfA2u()->requiresEmbeddedUnicodeFonts());
         self::assertTrue(Profile::pdfA3b()->requiresEmbeddedUnicodeFonts());
+        self::assertTrue(Profile::pdfUa1()->requiresEmbeddedUnicodeFonts());
     }
 
     #[Test]
