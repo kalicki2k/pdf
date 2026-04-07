@@ -51,6 +51,7 @@
     "test": "phpunit --configuration phpunit.xml.dist",
     "test:coverage": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-text",
     "test:coverage-html": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-html var/coverage",
+    "test:pdfa-regression": "bash bin/test-pdfa-regression.sh",
     "validate:pdfa": "bash bin/validate-pdfa.sh"
   },
   "require": {

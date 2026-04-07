@@ -156,6 +156,12 @@ composer validate:pdfa -- var/examples/pdf-a-4f_YYYY-mm-dd-HH-ii-ss.pdf
 
 The PDF/A validation command uses the official Docker image `verapdf/cli:v1.28.2`.
 
+For an automated `PDF/A-2u` regression run with representative fixtures:
+
+```bash
+composer test:pdfa-regression
+```
+
 ## Metadata
 
 The library supports both metadata layers that are relevant for normal PDF generation:
