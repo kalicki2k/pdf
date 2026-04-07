@@ -618,9 +618,15 @@ final class Table
             return null;
         }
 
-        return $this->page->getDocument()->createStructElem(
+        $structElem = $this->page->getDocument()->createStructElem(
             $header ? StructureTag::TableHeaderCell : StructureTag::TableDataCell,
             parent: $rowStructElem,
         );
+
+        if ($header) {
+            $structElem->setScope('Column');
+        }
+
+        return $structElem;
     }
 }

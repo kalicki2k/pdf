@@ -170,7 +170,7 @@ For an automated PDF/A regression run with representative fixtures for `PDF/A-1a
 composer test:pdfa-regression
 ```
 
-For PDF/UA-1 there is a matching automated veraPDF regression run with representative fixtures for the supported baseline, link, annotation, and form widget paths:
+For PDF/UA-1 there is a matching automated veraPDF regression run with representative fixtures for the supported baseline, layout/decorative graphics, link, annotation, and form widget paths:
 
 ```bash
 composer test:pdfua-regression

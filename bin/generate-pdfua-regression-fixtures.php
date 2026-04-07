@@ -11,6 +11,8 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page as InternalPage;
+use Kalle\Pdf\Document\Style\BadgeStyle;
+use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
 use Kalle\Pdf\Document\Text\ListOptions;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
@@ -39,6 +41,7 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 
 $fixtures = [
     $outputDir . '/pdf-ua-1-minimal.pdf' => createMinimalPdfUa1Fixture(...),
+    $outputDir . '/pdf-ua-1-layout.pdf' => createPdfUa1LayoutFixture(...),
     $outputDir . '/pdf-ua-1-links.pdf' => createPdfUa1LinksFixture(...),
     $outputDir . '/pdf-ua-1-forms.pdf' => createPdfUa1FormsFixture(...),
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
@@ -144,6 +147,80 @@ function createPdfUa1LinksFixture(): Document
         new PanelStyle(),
         null,
         LinkTarget::externalUrl('https://example.com/panel'),
+    );
+
+    return $document;
+}
+
+function createPdfUa1LayoutFixture(): Document
+{
+    $document = createPdfUaDocument('PDF/UA-1 Layout Regression', 'Representative PDF/UA-1 layout and graphics regression fixture');
+    $page = $document->addPage(PageSize::custom(220, 240));
+
+    $page->addText(
+        'Accessible Layout',
+        new Position(12, 220),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addText(
+        'Decorative graphics are emitted through high-level APIs so they stay artifacts while the visible text and table content remain tagged.',
+        new Position(12, 204),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $page->addBadge(
+        'Stable',
+        new Position(12, 184),
+        'NotoSans-Regular',
+        10,
+        new BadgeStyle(
+            fillColor: Color::rgb(225, 238, 252),
+            textColor: Color::rgb(20, 40, 90),
+        ),
+    );
+    $page->addPanel(
+        'Panel body',
+        12,
+        116,
+        92,
+        54,
+        'Panel title',
+        'NotoSans-Regular',
+        new PanelStyle(),
+    );
+    $page->addCallout(
+        'Callout body',
+        118,
+        116,
+        92,
+        54,
+        108,
+        110,
+        'Callout title',
+        'NotoSans-Regular',
+        new CalloutStyle(),
+    );
+
+    $table = $page->createTable(new Position(12, 96), 194, [96, 98]);
+    $table
+        ->font('NotoSans-Regular', 10)
+        ->addRow(['Area', 'State'], header: true)
+        ->addRow(['Badge', 'Artifact background with tagged text'])
+        ->addRow(['Panel', 'Artifact frame with tagged body content']);
+
+    $page->addImage(
+        new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+        new Position(188, 24),
+        12,
+        12,
+        new ImageOptions(
+            structureTag: StructureTag::Figure,
+            altText: 'Small layout marker image',
+        ),
     );
 
     return $document;

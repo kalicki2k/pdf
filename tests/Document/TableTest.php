@@ -18,11 +18,14 @@ use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class TableTest extends TestCase
 {
+    use CreatesPdfUaTestDocument;
+
     #[Test]
     public function it_exposes_the_current_cursor_position(): void
     {
@@ -88,6 +91,26 @@ final class TableTest extends TestCase
         self::assertStringContainsString('/BaseFont /Helvetica-Bold', $document->render());
         self::assertStringContainsString('(Produkt A) Tj', $page->contents->render());
         self::assertStringContainsString('(19,99) Tj', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_renders_table_boxes_as_artifacts_for_pdf_ua_1(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Table');
+        $page = $document->addPage();
+
+        $page->createTable(new Position(20, 260), 170, [85, 85])
+            ->font(self::pdfUaRegularFont(), 10)
+            ->addRow(['Column A', 'Column B'], header: true)
+            ->addRow(['Value A', 'Value B']);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Artifact BMC', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Table', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /TH', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /TD', $rendered);
+        self::assertStringContainsString('/Scope /Column', $rendered);
     }
 
     #[Test]

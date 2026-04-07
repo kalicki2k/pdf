@@ -26,6 +26,7 @@ final class StructElem extends IndirectObject
     private ?IndirectObject $parent = null;
     private ?Page $page = null;
     private ?string $altText = null;
+    private ?string $scope = null;
 
     public function __construct(
         int                     $id,
@@ -77,6 +78,17 @@ final class StructElem extends IndirectObject
         return $this;
     }
 
+    public function setScope(string $scope): self
+    {
+        if (!in_array($scope, ['Row', 'Column', 'Both'], true)) {
+            throw new InvalidArgumentException("Scope '$scope' is not allowed.");
+        }
+
+        $this->scope = $scope;
+
+        return $this;
+    }
+
     public function addObjectReference(IndirectObject $object, Page $page): self
     {
         $this->objectReferences[] = new RawType(sprintf(
@@ -105,6 +117,13 @@ final class StructElem extends IndirectObject
 
         if ($this->altText !== null && $this->altText !== '') {
             $dictionary->add('Alt', new StringType($this->altText));
+        }
+
+        if ($this->scope !== null) {
+            $dictionary->add('A', new DictionaryType([
+                'O' => new NameType('Table'),
+                'Scope' => new NameType($this->scope),
+            ]));
         }
 
         if (count($this->markedContentIds) === 1 && $this->kids === [] && $this->objectReferences === []) {

@@ -2821,6 +2821,27 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_tags_badge_and_panel_text_for_pdf_ua_1(): void
+    {
+        $document = $this->createPdfUaTestDocument(registerBold: true);
+        $page = $document->addPage();
+
+        $page->addBadge('Beta', new Position(10, 200), self::pdfUaRegularFont(), 10);
+        $page->addPanel(
+            'Body',
+            10,
+            130,
+            80,
+            55,
+            'Title',
+            self::pdfUaRegularFont(),
+            new PanelStyle(),
+        );
+
+        self::assertGreaterThanOrEqual(3, substr_count($page->contents->render(), '/P << /MCID'));
+    }
+
+    #[Test]
     public function it_can_add_text_without_creating_structure_metadata(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

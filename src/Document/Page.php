@@ -232,6 +232,7 @@ final class Page extends IndirectObject
             $baseFont,
             $size,
             new TextOptions(
+                structureTag: $this->resolveComponentTextStructureTag(),
                 color: $style->textColor,
                 opacity: $style->opacity,
                 link: $link,
@@ -316,6 +317,7 @@ final class Page extends IndirectObject
                 $titleFont,
                 $style->titleSize,
                 new TextOptions(
+                    structureTag: $this->resolveComponentTextStructureTag(),
                     color: $style->titleColor,
                     opacity: $style->opacity,
                     link: $bindLinkToText ? $link : null,
@@ -344,6 +346,7 @@ final class Page extends IndirectObject
                 fontName: $bodyFont,
                 size: $style->bodySize,
                 options: new TextBoxOptions(
+                    structureTag: $this->resolveComponentTextStructureTag(),
                     lineHeight: $bodyLineHeight,
                     color: $style->bodyColor,
                     opacity: $style->opacity,
@@ -2456,7 +2459,7 @@ final class Page extends IndirectObject
     /**
      * @param callable(): void $renderer
      */
-    private function renderDecorativeContent(callable $renderer): void
+    public function renderDecorativeContent(callable $renderer): void
     {
         if ($this->document->getProfile()->requiresTaggedPdf()) {
             $this->document->renderInArtifactContext($renderer);
@@ -2465,6 +2468,15 @@ final class Page extends IndirectObject
         }
 
         $renderer();
+    }
+
+    private function resolveComponentTextStructureTag(): ?StructureTag
+    {
+        if (!$this->document->getProfile()->requiresTaggedPdf()) {
+            return null;
+        }
+
+        return StructureTag::Paragraph;
     }
 
     private function assertAllowsGraphicElements(): void

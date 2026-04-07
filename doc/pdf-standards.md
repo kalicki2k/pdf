@@ -142,9 +142,10 @@ composer validate:pdfua -- <pdf-file>
 composer test:pdfua-regression
 ```
 
-Die Regression prueft aktuell vier reprasentative PDF/UA-1-Fixtures:
+Die Regression prueft aktuell fuenf reprasentative PDF/UA-1-Fixtures:
 
 - minimaler Tagged-PDF-Basispfad
+- Layout-/Decorative-Graphics-Pfad
 - Link-Pfad
 - Form-Pfad
 - Annotation-Batch
