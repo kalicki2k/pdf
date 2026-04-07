@@ -201,6 +201,11 @@ final readonly class Profile
         return $this->version >= PdfVersion::V1_6 && !$this->isPdfA();
     }
 
+    public function supportsAes256Encryption(): bool
+    {
+        return $this->version >= PdfVersion::V1_7 && !$this->isPdfA();
+    }
+
     public function supportsOptionalContentGroups(): bool
     {
         return $this->version >= PdfVersion::V1_5 && !$this->isPdfA();

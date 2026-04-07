@@ -147,6 +147,32 @@ final class EncryptionVersionResolverTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_aes_256_via_document_encrypt_for_pdf_1_6(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf16());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.6 does not allow AES-256 encryption. PDF 1.7 or higher is required.');
+
+        $document->encrypt(new EncryptionOptions(
+            userPassword: 'user-secret',
+            ownerPassword: 'owner-secret',
+            algorithm: EncryptionAlgorithm::AES_256,
+        ));
+    }
+
+    #[Test]
+    public function it_rejects_aes_256_encryption_algorithms_for_pdf_1_6(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf16());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.6 does not allow AES-256 encryption. PDF 1.7 or higher is required.');
+
+        $document->assertAllowsEncryptionAlgorithm(EncryptionAlgorithm::AES_256);
+    }
+
+    #[Test]
     public function it_resolves_and_stores_the_encryption_profile_via_encrypt_options(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.6));

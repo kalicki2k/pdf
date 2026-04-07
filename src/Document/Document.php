@@ -843,6 +843,13 @@ final class Document
                 PdfVersion::format($this->getVersion()),
             ));
         }
+
+        if ($algorithm === EncryptionAlgorithm::AES_256 && !$this->profile->supportsAes256Encryption()) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF version %s does not allow AES-256 encryption. PDF 1.7 or higher is required.',
+                PdfVersion::format($this->getVersion()),
+            ));
+        }
     }
 
     private function assertAllowsAttachments(): void

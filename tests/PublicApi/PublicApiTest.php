@@ -555,6 +555,22 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_public_api_aes_256_encryption_for_pdf_version_1_6(): void
+    {
+        $document = new Document(profile: Profile::pdf16());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.6 does not allow AES-256 encryption. PDF 1.7 or higher is required.');
+
+        $document->encrypt(new EncryptionOptions(
+            'user',
+            'owner',
+            EncryptionPermissions::all(),
+            EncryptionAlgorithm::AES_256,
+        ));
+    }
+
+    #[Test]
     public function it_adds_footers_and_page_numbers_through_the_public_api(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

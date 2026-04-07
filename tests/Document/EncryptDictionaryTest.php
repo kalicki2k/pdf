@@ -110,6 +110,22 @@ final class EncryptDictionaryTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_aes_256_encrypt_dictionaries_for_pdf_1_6(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdf16());
+        $encryptDictionary = new \Kalle\Pdf\Document\EncryptDictionary(
+            7,
+            $document,
+            new EncryptionProfile(EncryptionAlgorithm::AES_256, 256, 5, 5),
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF version 1.6 does not allow AES-256 encryption. PDF 1.7 or higher is required.');
+
+        $encryptDictionary->render();
+    }
+
+    #[Test]
     public function it_assigns_a_stable_document_id_pair(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
