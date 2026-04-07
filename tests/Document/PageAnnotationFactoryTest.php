@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Annotation\FreeTextAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotationFactory;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
@@ -137,6 +138,23 @@ final class PageAnnotationFactoryTest extends TestCase
         $this->expectExceptionMessage('Text annotation icon must not be empty.');
 
         $factory->createTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA', '', true);
+    }
+
+    #[Test]
+    public function it_adds_a_pdf_a_appearance_stream_to_text_annotations(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $annotation = $factory->createTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA', 'Comment', true);
+
+        self::assertInstanceOf(TextAnnotation::class, $annotation);
+        self::assertStringContainsString('/F 4', $annotation->render());
+        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]

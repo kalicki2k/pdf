@@ -90,7 +90,7 @@ final readonly class PageAnnotationFactory
             throw new InvalidArgumentException('Text annotation icon must not be empty.');
         }
 
-        return new TextAnnotation(
+        $annotation = new TextAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -102,6 +102,16 @@ final readonly class PageAnnotationFactory
             $icon,
             $open,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance(new TextAnnotationAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+            ));
+        }
+
+        return $annotation;
     }
 
     /**
