@@ -5,21 +5,38 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\PublicApi;
 
 use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Action\ButtonAction;
+use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Document\Annotation\LineEndingStyle;
+use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\FileSpecification;
+use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Document\Style\BadgeStyle;
+use Kalle\Pdf\Document\Style\CalloutStyle;
+use Kalle\Pdf\Document\Style\PanelStyle;
+use Kalle\Pdf\Document\Text\FlowTextOptions;
+use Kalle\Pdf\Document\Text\TextBoxOptions;
+use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
+use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Table;
 use Kalle\Pdf\TextFrame;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -286,6 +303,105 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('(One) Tj', $rendered);
         self::assertStringContainsString('(First) Tj', $rendered);
         self::assertStringContainsString('(Heading) Tj', $rendered);
+    }
+
+    #[Test]
+    public function it_forwards_public_page_text_shape_and_measurement_operations(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(200, 220));
+
+        $path = $page->addPath();
+        $image = new Image(1, 1, 'DeviceRGB', 'FlateDecode', 'x');
+
+        $returnedPage = $page
+            ->addBadge('Badge', new Position(10, 200), 'Helvetica', 10, new BadgeStyle(fillColor: Color::rgb(230, 230, 230), textColor: Color::rgb(0, 0, 0)))
+            ->addPanel('Body', 10, 135, 80, 55, 'Title', 'Helvetica', new PanelStyle())
+            ->addCallout('Body', 100, 135, 80, 55, 90, 125, 'Callout', 'Helvetica', new CalloutStyle())
+            ->addFlowText('Flow text', new Position(10, 130), 80, 'Helvetica', 10, new FlowTextOptions())
+            ->addTextBox('Box text', new Rect(10, 100, 80, 20), 'Helvetica', 10, new TextBoxOptions())
+            ->addRoundedRectangle(new Rect(10, 70, 20, 10), 2.0, 1.0, Color::rgb(0, 0, 0), Color::rgb(0, 1, 0))
+            ->addCircle(50, 75, 5.0, 1.0, Color::rgb(0, 0, 0), Color::rgb(0, 0, 1))
+            ->addEllipse(80, 75, 7.0, 4.0, 1.0, Color::rgb(0, 0, 0), Color::rgb(1, 0, 1))
+            ->addPolygon([[100, 70], [110, 80], [120, 70]], 1.0, Color::rgb(0, 0, 0), Color::rgb(1, 1, 0))
+            ->addArrow(new Position(10, 50), new Position(40, 50), color: Color::rgb(0, 0, 0))
+            ->addStar(70, 45, 5, 8.0, 4.0, 1.0, Color::rgb(0, 0, 0), Color::rgb(255, 128, 0))
+            ->addImage($image, new Position(130, 40), 10, 10);
+
+        self::assertInstanceOf(PathBuilder::class, $path);
+        self::assertSame($page, $returnedPage);
+        self::assertGreaterThan(0, $page->countParagraphLines('Hello world', 'Helvetica', 10, 40));
+        self::assertSame(22.78, $page->measureTextWidth('Hello', 'Helvetica', 10));
+
+        $rendered = $this->internalPage($page)->contents->render();
+
+        self::assertStringContainsString('(Badge) Tj', $rendered);
+        self::assertStringContainsString('(Title) Tj', $rendered);
+        self::assertStringContainsString('(Callout) Tj', $rendered);
+        self::assertStringContainsString('(Flow text) Tj', $rendered);
+        self::assertStringContainsString('(Box text) Tj', $rendered);
+    }
+
+    #[Test]
+    public function it_forwards_public_page_annotation_form_and_attachment_operations(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(220, 260));
+        $file = new FileSpecification(99, 'manual.txt', new EmbeddedFileStream(100, 'data'));
+
+        $returnedPage = $page
+            ->addFileAttachment(new Rect(10, 230, 10, 10), $file)
+            ->addTextAnnotation(new Rect(25, 230, 10, 10), 'Text note', 'Alice')
+            ->addFreeTextAnnotation(new Rect(40, 220, 40, 20), 'Free text', 'Helvetica', 10, Color::rgb(0, 0, 0))
+            ->addHighlightAnnotation(new Rect(10, 205, 30, 8), Color::rgb(1, 1, 0), 'Highlight', 'Bob')
+            ->addUnderlineAnnotation(new Rect(45, 205, 30, 8), Color::rgb(0, 0, 1), 'Underline', 'Bob')
+            ->addStrikeOutAnnotation(new Rect(80, 205, 30, 8), Color::rgb(1, 0, 0), 'Strike', 'Bob')
+            ->addSquigglyAnnotation(new Rect(115, 205, 30, 8), Color::rgb(0, 1, 0), 'Squiggle', 'Bob')
+            ->addStampAnnotation(new Rect(150, 200, 25, 12))
+            ->addSquareAnnotation(new Rect(10, 180, 20, 20), Color::rgb(0, 0, 0), Color::rgb(1, 0, 0), 'Square', 'Bob', AnnotationBorderStyle::dashed())
+            ->addCircleAnnotation(new Rect(35, 180, 20, 20), Color::rgb(0, 0, 0), Color::rgb(0, 1, 0), 'Circle', 'Bob', AnnotationBorderStyle::solid())
+            ->addInkAnnotation(new Rect(60, 180, 30, 20), [[[60.0, 180.0], [70.0, 190.0]]], Color::rgb(0, 0, 0), 'Ink', 'Bob')
+            ->addLineAnnotation(new Position(100, 180), new Position(130, 195), Color::rgb(0, 0, 0), 'Line', 'Bob', LineEndingStyle::OPEN_ARROW, LineEndingStyle::CLOSED_ARROW, 'Subject', AnnotationBorderStyle::solid())
+            ->addPolyLineAnnotation([[140, 180], [150, 190], [160, 180]], Color::rgb(0, 0, 0), 'Polyline', 'Bob', LineEndingStyle::NONE, LineEndingStyle::SLASH, 'Subject', AnnotationBorderStyle::solid())
+            ->addPolygonAnnotation([[170, 180], [180, 190], [190, 180]], Color::rgb(0, 0, 0), Color::rgb(1, 1, 0), 'Polygon', 'Bob', 'Subject', AnnotationBorderStyle::solid())
+            ->addCaretAnnotation(new Rect(10, 160, 10, 10), 'Caret', 'Bob')
+            ->addTextField('field', new Rect(10, 130, 40, 15), 'value', 'Helvetica', 10, false, Color::rgb(0, 0, 0), new FormFieldFlags(readOnly: true), 'default')
+            ->addCheckbox('check', new Position(60, 137), 10, true)
+            ->addRadioButton('radio', 'yes', new Position(80, 137), 10, true)
+            ->addComboBox('combo', new Rect(95, 130, 40, 15), ['a' => 'A', 'b' => 'B'], 'a', 'Helvetica', 10, Color::rgb(0, 0, 0), new FormFieldFlags(editable: true), 'b')
+            ->addListBox('list', new Rect(140, 120, 50, 30), ['a' => 'A', 'b' => 'B'], ['a'], 'Helvetica', 10, Color::rgb(0, 0, 0), new FormFieldFlags(multiSelect: true), ['b'])
+            ->addSignatureField('signature', new Rect(10, 100, 50, 20))
+            ->addPushButton(
+                'push',
+                'Go',
+                new Rect(70, 100, 40, 20),
+                'Helvetica',
+                10,
+                Color::rgb(0, 0, 0),
+                new class implements ButtonAction
+                {
+                    public function toPdfDictionary(): DictionaryType
+                    {
+                        return new DictionaryType([
+                            'S' => new NameType('ResetForm'),
+                        ]);
+                    }
+                },
+            );
+
+        $internalPage = $this->internalPage($page);
+        $annotations = $internalPage->getAnnotations();
+
+        self::assertSame($page, $returnedPage);
+        self::assertGreaterThanOrEqual(18, count($annotations));
+
+        $popupParent = $annotations[1];
+        $page->addPopupAnnotation($popupParent, new Rect(195, 200, 15, 15), true);
+
+        self::assertGreaterThanOrEqual(19, count($internalPage->getAnnotations()));
+        self::assertNotNull($this->internalDocument($document)->acroForm);
     }
 
     private function internalDocument(Document $document): \Kalle\Pdf\Document\Document
