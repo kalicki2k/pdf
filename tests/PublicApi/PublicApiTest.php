@@ -8,12 +8,12 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
+use Kalle\Pdf\Document\Document as InternalDocument;
 use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\Document as InternalDocument;
 use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Style\BadgeStyle;
@@ -74,6 +74,38 @@ final class PublicApiTest extends TestCase
 
         self::assertSame('PDF/A-2u', $document->getProfile()->name());
         self::assertSame(1.7, $document->getProfile()->version());
+    }
+
+    #[Test]
+    public function it_renders_a_minimal_pdf_a_2u_document_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            title: 'PDF/A-2u',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+
+        $page = $document->addPage(PageSize::custom(100, 100));
+        $page->addText('Hallo PDF/A', new Position(10, 50), 'NotoSans-Regular', 12);
+
+        $rendered = $document->render();
+
+        self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
+        self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
+        self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
+        self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
+        self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $rendered);
+        self::assertStringContainsString('/Subtype /CIDFontType2', $rendered);
     }
 
     #[Test]
