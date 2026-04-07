@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Annotation;
 
 use Kalle\Pdf\Document\Action\ButtonAction;
+use Kalle\Pdf\Document\Form\FormFieldTextAppearanceStream;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
@@ -32,6 +33,7 @@ final class PushButtonAnnotation extends IndirectObject implements PageAnnotatio
         private readonly ?Color $textColor = null,
         private readonly ?ButtonAction $action = null,
         private readonly ?string $tooltip = null,
+        private readonly ?FormFieldTextAppearanceStream $appearance = null,
     ) {
         parent::__construct($id);
     }
@@ -75,6 +77,12 @@ final class PushButtonAnnotation extends IndirectObject implements PageAnnotatio
             $dictionary->add('A', $this->action->toPdfDictionary());
         }
 
+        if ($this->appearance !== null) {
+            $dictionary->add('AP', new DictionaryType([
+                'N' => new ReferenceType($this->appearance),
+            ]));
+        }
+
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'endobj' . PHP_EOL;
@@ -82,6 +90,6 @@ final class PushButtonAnnotation extends IndirectObject implements PageAnnotatio
 
     public function getRelatedObjects(): array
     {
-        return [];
+        return $this->appearance === null ? [] : [$this->appearance];
     }
 }

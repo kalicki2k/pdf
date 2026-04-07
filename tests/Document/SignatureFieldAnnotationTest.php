@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Annotation\SignatureFieldAnnotation;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Form\FormFieldSignatureAppearanceStream;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -39,5 +40,26 @@ final class SignatureFieldAnnotationTest extends TestCase
 
         self::assertStringContainsString('/StructParent 3', $annotation->render());
         self::assertStringContainsString('/TU (Approval signature)', $annotation->render());
+    }
+
+    #[Test]
+    public function it_renders_an_appearance_stream_for_signature_fields(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $page = $document->addPage();
+
+        $annotation = new SignatureFieldAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            100,
+            30,
+            'approval_signature',
+            appearance: new FormFieldSignatureAppearanceStream(8, 100, 30),
+        );
+
+        self::assertStringContainsString('/AP << /N 8 0 R >>', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

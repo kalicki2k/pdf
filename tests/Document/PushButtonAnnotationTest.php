@@ -18,6 +18,9 @@ use Kalle\Pdf\Document\Action\ThreadAction;
 use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Form\FormFieldTextAppearanceStream;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
@@ -55,6 +58,32 @@ final class PushButtonAnnotationTest extends TestCase
 
         self::assertStringContainsString('/StructParent 1', $annotation->render());
         self::assertStringContainsString('/TU (Save form)', $annotation->render());
+    }
+
+    #[Test]
+    public function it_renders_an_appearance_stream_for_push_buttons(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+        $font = new StandardFont(9, StandardFontName::HELVETICA, 'Type1', 'WinAnsiEncoding', 1.4);
+
+        $annotation = new PushButtonAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            16,
+            'save_form',
+            'Speichern',
+            'F1',
+            12,
+            appearance: new FormFieldTextAppearanceStream(8, 80, 16, $font, 'F1', 12, ['Speichern']),
+        );
+
+        self::assertStringContainsString('/AP << /N 8 0 R >>', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]

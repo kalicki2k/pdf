@@ -320,6 +320,11 @@ final readonly class FormWidgetFactory
             $box->height,
             $name,
             $accessibleName,
+            new FormFieldSignatureAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+            ),
         );
     }
 
@@ -347,7 +352,7 @@ final readonly class FormWidgetFactory
             throw new InvalidArgumentException('Push button font size must be greater than zero.');
         }
 
-        $fontResourceName = $this->registerPushButtonAcroFormFont($baseFont);
+        [$font, $fontResourceName] = $this->preparePushButtonAcroFormFont($baseFont);
 
         return new PushButtonAnnotation(
             $this->nextObjectId(),
@@ -363,6 +368,16 @@ final readonly class FormWidgetFactory
             $textColor,
             $action,
             $accessibleName,
+            new FormFieldTextAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+                $font,
+                $fontResourceName,
+                $size,
+                [$label],
+                $textColor,
+            ),
         );
     }
 
@@ -396,13 +411,6 @@ final readonly class FormWidgetFactory
         return ($this->ensureListBoxAcroForm)();
     }
 
-    private function registerPushButtonAcroFormFont(string $baseFont): string
-    {
-        $font = ($this->resolveFont)($baseFont);
-
-        return $this->ensurePushButtonAcroForm()->registerFont($font);
-    }
-
     /**
      * @return array{0: FontDefinition&IndirectObject, 1: string}
      */
@@ -415,6 +423,20 @@ final readonly class FormWidgetFactory
         }
 
         return [$font, $this->ensureTextFieldAcroForm()->registerFont($font)];
+    }
+
+    /**
+     * @return array{0: FontDefinition&IndirectObject, 1: string}
+     */
+    private function preparePushButtonAcroFormFont(string $baseFont): array
+    {
+        $font = ($this->resolveFont)($baseFont);
+
+        if (!$font instanceof IndirectObject) {
+            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
+        }
+
+        return [$font, $this->ensurePushButtonAcroForm()->registerFont($font)];
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Annotation;
 
+use Kalle\Pdf\Document\Form\FormFieldSignatureAppearanceStream;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
@@ -25,6 +26,7 @@ final class SignatureFieldAnnotation extends IndirectObject implements PageAnnot
         private readonly float $height,
         private readonly string $name,
         private readonly ?string $tooltip = null,
+        private readonly ?FormFieldSignatureAppearanceStream $appearance = null,
     ) {
         parent::__construct($id);
     }
@@ -52,6 +54,12 @@ final class SignatureFieldAnnotation extends IndirectObject implements PageAnnot
             $dictionary->add('TU', new StringType($this->tooltip));
         }
 
+        if ($this->appearance !== null) {
+            $dictionary->add('AP', new DictionaryType([
+                'N' => new ReferenceType($this->appearance),
+            ]));
+        }
+
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'endobj' . PHP_EOL;
@@ -59,6 +67,6 @@ final class SignatureFieldAnnotation extends IndirectObject implements PageAnnot
 
     public function getRelatedObjects(): array
     {
-        return [];
+        return $this->appearance === null ? [] : [$this->appearance];
     }
 }

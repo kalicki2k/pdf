@@ -206,6 +206,8 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertInstanceOf(SignatureFieldAnnotation::class, $annotation);
         self::assertStringContainsString('/T (signature)', $annotation->render());
         self::assertStringContainsString('/TU (Approval signature)', $annotation->render());
+        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]
@@ -241,6 +243,8 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/MK << /CA (Senden) >>', $annotation->render());
         self::assertStringContainsString('/A << /S /ResetForm >>', $annotation->render());
         self::assertStringContainsString('/TU (Submit form)', $annotation->render());
+        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]

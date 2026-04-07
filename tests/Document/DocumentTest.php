@@ -283,6 +283,7 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/FT /Sig', $rendered);
         self::assertStringContainsString('/T (approval_signature)', $rendered);
         self::assertStringContainsString('/TU (Approval signature)', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Approval signature\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
@@ -321,6 +322,7 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/T (save_form)', $rendered);
         self::assertStringContainsString('/CA (Speichern)', $rendered);
         self::assertStringContainsString('/TU (Save form)', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Save form\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
