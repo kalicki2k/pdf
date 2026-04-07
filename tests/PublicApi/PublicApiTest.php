@@ -113,6 +113,15 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_exposes_a_pdf_a_4f_profile_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::pdfA4f());
+
+        self::assertSame('PDF/A-4f', $document->getProfile()->name());
+        self::assertSame(2.0, $document->getProfile()->version());
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_2b_document_through_the_public_api(): void
     {
         $document = new Document(

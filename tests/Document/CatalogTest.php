@@ -203,4 +203,17 @@ final class CatalogTest extends TestCase
         self::assertStringContainsString('/OutputConditionIdentifier (sRGB IEC61966-2.1)', $rendered);
         self::assertStringContainsString('/DestOutputProfile 5 0 R', $rendered);
     }
+
+    #[Test]
+    public function it_renders_associated_files_for_pdf_a_4f_attachments(): void
+    {
+        $document = new Document(profile: Profile::pdfA4f());
+        $document->addAttachment('data.xml', '<root/>', 'Machine-readable source', 'application/xml');
+        $catalog = new Catalog(1, $document);
+
+        $rendered = $catalog->render();
+
+        self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.xml) 5 0 R] >> >>', $rendered);
+        self::assertStringContainsString('/AF [5 0 R]', $rendered);
+    }
 }

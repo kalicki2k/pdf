@@ -212,6 +212,17 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_allows_attachments_for_pdf_a_4f_and_marks_them_as_associated_files(): void
+    {
+        $document = new Document(profile: Profile::pdfA4f());
+
+        $document->addAttachment('data.xml', '<root/>', 'Machine-readable source', 'application/xml');
+
+        self::assertCount(1, $document->getAttachments());
+        self::assertStringContainsString('/AFRelationship /Data', $document->getAttachments()[0]->render());
+    }
+
+    #[Test]
     public function it_rejects_standard_fonts_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());

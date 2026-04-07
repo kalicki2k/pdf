@@ -111,6 +111,11 @@ final readonly class Profile
         return $this->pdfaPart() === 4;
     }
 
+    public function isPdfA4f(): bool
+    {
+        return $this->name === 'PDF/A-4f';
+    }
+
     public function usesPdfAOutputIntent(): bool
     {
         return in_array($this->pdfaPart(), [2, 3, 4], true);

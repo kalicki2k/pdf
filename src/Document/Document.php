@@ -509,7 +509,7 @@ final class Document
             $filename,
             $embeddedFile,
             $description,
-            $this->profile->isPdfA3() ? 'Data' : null,
+            $this->profile->isPdfA3() || $this->profile->isPdfA4f() ? 'Data' : null,
         );
 
         return $this;
