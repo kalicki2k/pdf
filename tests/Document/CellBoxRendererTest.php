@@ -17,7 +17,7 @@ final class CellBoxRendererTest extends TestCase
     #[Test]
     public function it_renders_only_the_fill_when_no_borders_are_defined(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $renderer = new CellBoxRenderer(new TableStyleResolver());
 
@@ -29,7 +29,7 @@ final class CellBoxRendererTest extends TestCase
     #[Test]
     public function it_renders_a_single_rectangle_when_all_borders_are_equivalent(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $renderer = new CellBoxRenderer(new TableStyleResolver());
 
@@ -51,7 +51,7 @@ final class CellBoxRendererTest extends TestCase
     #[Test]
     public function it_renders_individual_border_lines_for_non_equivalent_sides(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $renderer = new CellBoxRenderer(new TableStyleResolver());
 
@@ -79,7 +79,7 @@ final class CellBoxRendererTest extends TestCase
     #[Test]
     public function it_renders_a_top_border_line_when_requested(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $renderer = new CellBoxRenderer(new TableStyleResolver());
 

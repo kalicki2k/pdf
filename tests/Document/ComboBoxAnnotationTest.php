@@ -16,7 +16,7 @@ final class ComboBoxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_combo_box_widget_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -45,7 +45,7 @@ final class ComboBoxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_read_only_and_required_flags_for_combo_boxes(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -70,7 +70,7 @@ final class ComboBoxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_editable_combo_boxes(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -95,7 +95,7 @@ final class ComboBoxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_default_value_for_combo_boxes(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -121,7 +121,7 @@ final class ComboBoxAnnotationTest extends TestCase
     #[Test]
     public function it_uses_the_text_color_and_omits_optional_values_when_not_provided(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 

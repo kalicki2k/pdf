@@ -18,7 +18,7 @@ final class PolyLineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_polyline_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(0, 0, 255), 'PolyLine', 'QA');
 
@@ -33,7 +33,7 @@ final class PolyLineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_polyline_ending_styles(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(
             7,
@@ -49,7 +49,7 @@ final class PolyLineAnnotationTest extends TestCase
     #[Test]
     public function it_uses_none_for_the_missing_polyline_ending_style(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(
             7,
@@ -64,7 +64,7 @@ final class PolyLineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_subject_and_popup_reference_for_a_polyline_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], subject: 'Korrekturpfad');
         $popup = new PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
@@ -79,7 +79,7 @@ final class PolyLineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_border_style_for_a_polyline_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], borderStyle: AnnotationBorderStyle::solid(2.5));
 
@@ -89,7 +89,7 @@ final class PolyLineAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(7, $page, [[90.0, 32.0], [10.0, 20.0], [40.0, 50.0]]);
 
@@ -105,7 +105,7 @@ final class PolyLineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_cmyk_polyline_color(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(
             7,
@@ -120,7 +120,7 @@ final class PolyLineAnnotationTest extends TestCase
     #[Test]
     public function it_rejects_polylines_with_fewer_than_two_vertices(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
 
         $this->expectException(\InvalidArgumentException::class);

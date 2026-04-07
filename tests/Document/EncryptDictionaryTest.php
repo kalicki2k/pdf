@@ -17,7 +17,7 @@ final class EncryptDictionaryTest extends TestCase
     #[Test]
     public function it_renders_an_encrypt_dictionary_for_rc4_128(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user',
             ownerPassword: 'owner',
@@ -38,7 +38,7 @@ final class EncryptDictionaryTest extends TestCase
     #[Test]
     public function it_writes_the_encrypt_reference_into_the_trailer(): void
     {
-        $document = new Document(version: 1.6);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.6));
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user',
             ownerPassword: 'owner',
@@ -54,7 +54,7 @@ final class EncryptDictionaryTest extends TestCase
     #[Test]
     public function it_renders_aes_128_crypt_filter_entries_for_pdf_1_6(): void
     {
-        $document = new Document(version: 1.6);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.6));
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user',
             ownerPassword: 'owner',
@@ -74,7 +74,7 @@ final class EncryptDictionaryTest extends TestCase
     #[Test]
     public function it_renders_aes_256_entries_for_pdf_1_7(): void
     {
-        $document = new Document(version: 1.7);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.7));
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user',
             ownerPassword: 'owner',
@@ -95,7 +95,7 @@ final class EncryptDictionaryTest extends TestCase
     #[Test]
     public function it_assigns_a_stable_document_id_pair(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         [$first, $second] = $document->getDocumentId();
 
         self::assertSame(32, strlen($first));
@@ -105,7 +105,7 @@ final class EncryptDictionaryTest extends TestCase
     #[Test]
     public function it_rejects_rendering_without_initialized_security_handler_data(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $profile = (new EncryptionVersionResolver())->resolve(1.4, EncryptionAlgorithm::RC4_128);
         $encryptDictionary = new \Kalle\Pdf\Document\EncryptDictionary(7, $document, $profile);
 

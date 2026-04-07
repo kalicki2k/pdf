@@ -23,7 +23,7 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 }
 
 $document = new Document(
-    version: 1.4,
+    profile: \Kalle\Pdf\Profile::standard(1.4),
     title: 'Project Handbook',
     author: 'kalle/pdf',
     subject: 'Table of contents demo with dash leaders',

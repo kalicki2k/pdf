@@ -15,7 +15,7 @@ final class FreeTextAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_free_text_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new FreeTextAnnotation(
             7,
@@ -44,7 +44,7 @@ final class FreeTextAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new FreeTextAnnotation(7, $page, 10, 20, 80, 24, 'Hinweistext', 'F1', 12);
 
@@ -60,7 +60,7 @@ final class FreeTextAnnotationTest extends TestCase
     #[Test]
     public function it_renders_cmyk_border_and_fill_colors(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new FreeTextAnnotation(
             7,

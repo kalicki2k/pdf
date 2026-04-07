@@ -126,7 +126,7 @@ final class RowPreparerTest extends TestCase
         ?RowStyle $rowStyle = null,
         ?HeaderStyle $headerStyle = null,
     ): RowPreparer {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 

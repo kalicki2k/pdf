@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Document;
 use Composer\InstalledVersions;
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Kalle\Pdf\Profile;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Outline\OutlineItem;
@@ -100,7 +101,7 @@ final class Document
      * }>|null $fontConfig
      */
     public function __construct(
-        private readonly float   $version = 1.0,
+        Profile $profile,
         private readonly ?string $title = null,
         private readonly ?string $author = null,
         private readonly ?string $subject = null,
@@ -109,6 +110,7 @@ final class Document
         ?string $creatorTool = null,
         private readonly ?array $fontConfig = null,
     ) {
+        $this->profile = $profile;
         $this->catalog = new Catalog(++$this->objectId, $this);
         $this->pages = new Pages(++$this->objectId, $this);
 
@@ -120,6 +122,8 @@ final class Document
         $this->producer = self::resolveDefaultProducer();
         $this->documentId = $this->generateDocumentId();
     }
+
+    private readonly Profile $profile;
 
     /**
      * @return int
@@ -236,7 +240,12 @@ final class Document
 
     public function getVersion(): float
     {
-        return $this->version;
+        return $this->profile->version();
+    }
+
+    public function getProfile(): Profile
+    {
+        return $this->profile;
     }
 
     public function getTitle(): ?string
@@ -323,7 +332,7 @@ final class Document
 
     public function getXmpMetadata(): ?XmpMetadata
     {
-        if ($this->version < 1.4) {
+        if ($this->getVersion() < 1.4) {
             return null;
         }
 
@@ -381,7 +390,7 @@ final class Document
     {
         $resolver = new EncryptionVersionResolver();
         $this->encryptionOptions = $options;
-        $this->encryptionProfile = $resolver->resolve($this->version, $options->algorithm);
+        $this->encryptionProfile = $resolver->resolve($this->getVersion(), $options->algorithm);
         $this->securityHandlerData = null;
         $this->encryptDictionary = new EncryptDictionary(++$this->objectId, $this, $this->encryptionProfile);
 
@@ -726,7 +735,7 @@ final class Document
 
     public function ensureStructureEnabled(): void
     {
-        if ($this->version < 1.4) {
+        if ($this->getVersion() < 1.4) {
             throw new InvalidArgumentException('Structured content requires PDF version 1.4 or higher.');
         }
 
@@ -947,7 +956,7 @@ final class Document
 
     private function resolveDefaultStandardFontEncoding(): string
     {
-        if ($this->version <= 1.0) {
+        if ($this->getVersion() <= 1.0) {
             return 'StandardEncoding';
         }
 
@@ -1013,7 +1022,7 @@ final class Document
             $baseFont,
             $subtype,
             $encoding,
-            $this->version,
+            $this->getVersion(),
             $this->createOptionalFontParser($fontFilePath),
             $encodingDictionary,
             $byteMap,

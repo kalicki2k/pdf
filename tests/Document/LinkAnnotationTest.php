@@ -15,7 +15,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_uri_link_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::externalUrl('https://example.com'));
 
@@ -30,7 +30,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_internal_link_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::namedDestination('table-demo'));
 
@@ -45,7 +45,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_page_link_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $targetPage = $document->addPage();
         $annotation = new LinkAnnotation(10, $page, 10, 20, 80, 12, LinkTarget::page($targetPage));
@@ -61,7 +61,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_position_link_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $targetPage = $document->addPage();
         $annotation = new LinkAnnotation(10, $page, 10, 20, 80, 12, LinkTarget::position($targetPage, 15, 25));

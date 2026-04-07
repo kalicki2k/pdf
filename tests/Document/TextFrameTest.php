@@ -23,7 +23,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_adds_plain_text_and_uses_default_spacing(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -38,7 +38,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_moves_plain_text_to_a_new_page_before_and_after_rendering_when_needed(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
@@ -56,7 +56,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_flows_headings_and_paragraphs_using_a_shared_cursor(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -75,7 +75,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_tracks_the_new_page_after_an_automatic_page_break(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
@@ -90,7 +90,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_advances_to_a_new_page_when_a_paragraph_starts_at_the_bottom_margin(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
@@ -105,7 +105,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_can_flow_text_without_structure_tags(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -121,7 +121,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_forwards_opacity_for_heading_and_paragraph_content(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -137,7 +137,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_forwards_color_for_heading_and_paragraph_content(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -153,7 +153,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_accepts_text_runs_in_text_frames(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -176,7 +176,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_forwards_center_alignment_from_text_frames(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -189,7 +189,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_forwards_justify_alignment_from_text_frames(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -203,7 +203,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_limits_text_frame_paragraphs_to_max_lines_when_requested(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -223,7 +223,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_forwards_linked_text_segments_in_text_frames(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -245,7 +245,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_renders_a_bullet_list_with_hanging_indent(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -273,7 +273,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_uses_the_text_color_as_default_marker_color_for_bullet_lists(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -292,7 +292,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_leaves_the_frame_unchanged_for_empty_lists(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -309,7 +309,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_moves_bullet_list_items_to_a_new_page_when_needed(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(100, 60);
 
@@ -334,7 +334,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_renders_a_numbered_list_with_custom_start_index(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -361,7 +361,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_rejects_numbered_lists_that_start_before_one(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -376,7 +376,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_rejects_invalid_bullet_list_indents(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -398,7 +398,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_rejects_invalid_numbered_list_indents(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -420,7 +420,7 @@ final class TextFrameTest extends TestCase
     #[Test]
     public function it_adds_spacers_and_tracks_page_breaks(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(100, 60);
 
         $frame = $page->createTextFrame(new \Kalle\Pdf\Document\Geometry\Position(10, 30), 60, 15);

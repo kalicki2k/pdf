@@ -15,7 +15,7 @@ final class XmpMetadataTest extends TestCase
     public function it_renders_xmp_metadata_from_document_properties(): void
     {
         $document = new Document(
-            version: 1.4,
+            profile: \Kalle\Pdf\Profile::standard(1.4),
             title: 'Spec',
             author: 'Kalle',
             subject: 'Testing',
@@ -47,7 +47,7 @@ final class XmpMetadataTest extends TestCase
     public function it_allows_custom_producer_and_creator_tool_metadata(): void
     {
         $document = new Document(
-            version: 1.4,
+            profile: \Kalle\Pdf\Profile::standard(1.4),
             title: 'Spec',
             creatorTool: 'Acme Backoffice',
         );
@@ -65,7 +65,7 @@ final class XmpMetadataTest extends TestCase
     public function it_maps_author_creator_and_creator_tool_to_distinct_xmp_fields(): void
     {
         $document = new Document(
-            version: 1.4,
+            profile: \Kalle\Pdf\Profile::standard(1.4),
             title: 'Rechnung 2026-0015',
             author: 'DEIN FIRMENNAME',
             creator: 'Rechnungsservice',

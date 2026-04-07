@@ -16,7 +16,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_strokes_a_path_with_stroke_width_color_and_opacity(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $returnedPage = $page->addPath()
@@ -34,7 +34,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_fills_a_path_without_stroke_settings(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $page->addPath()
@@ -49,7 +49,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_fills_and_strokes_a_path(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $page->addPath()
@@ -64,7 +64,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_rejects_non_positive_stroke_widths(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $this->expectException(InvalidArgumentException::class);
@@ -78,7 +78,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_rejects_non_positive_stroke_widths_for_fill_and_stroke(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $this->expectException(InvalidArgumentException::class);
@@ -92,7 +92,7 @@ final class PathBuilderTest extends TestCase
     #[Test]
     public function it_rejects_finishing_a_path_without_drawing_commands(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(100, 100);
 
         $this->expectException(InvalidArgumentException::class);

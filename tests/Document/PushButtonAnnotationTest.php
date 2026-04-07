@@ -27,7 +27,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_widget_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -44,7 +44,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_submit_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -68,7 +68,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_reset_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -92,7 +92,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_javascript_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -116,7 +116,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_named_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -140,7 +140,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_goto_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -164,7 +164,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_goto_remote_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -188,7 +188,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_launch_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -212,7 +212,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_uri_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -236,7 +236,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_hide_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -260,7 +260,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_an_import_data_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -284,7 +284,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_set_ocg_state_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $layer = $document->addLayer('LayerA');
@@ -309,7 +309,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_push_button_with_a_thread_action(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -333,7 +333,7 @@ final class PushButtonAnnotationTest extends TestCase
     #[Test]
     public function it_uses_the_text_color_and_has_no_related_objects(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 

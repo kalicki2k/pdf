@@ -14,7 +14,10 @@ final class PdfRendererTest extends TestCase
     #[Test]
     public function it_writes_cross_reference_entries_with_the_actual_object_offsets(): void
     {
-        $document = new Document(title: 'Minimal');
+        $document = new Document(
+            profile: \Kalle\Pdf\Profile::standard(1.0),
+            title: 'Minimal',
+        );
         $renderer = new PdfRenderer();
 
         $output = $renderer->render($document);
@@ -38,7 +41,7 @@ final class PdfRendererTest extends TestCase
     #[Test]
     public function it_marks_missing_object_ids_as_free_entries_in_the_cross_reference_table(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->getUniqObjectId();
         $document->registerFont('Helvetica');
 

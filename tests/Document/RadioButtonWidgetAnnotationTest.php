@@ -16,7 +16,7 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_radio_button_widget_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $field = new RadioButtonField(7, 'delivery');
         $annotation = new RadioButtonWidgetAnnotation(
@@ -43,7 +43,7 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_unchecked_radio_button_widget_annotation_and_returns_related_objects(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $field = new RadioButtonField(7, 'delivery');
         $offAppearance = new RadioButtonAppearanceStream(9, 12, false);

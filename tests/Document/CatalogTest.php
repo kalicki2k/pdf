@@ -18,7 +18,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_a_minimal_catalog_for_pdf_1_0(): void
     {
-        $document = new Document();
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.0));
         $catalog = new Catalog(1, $document);
 
         self::assertSame(
@@ -30,7 +30,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_structure_metadata_for_pdf_1_4(): void
     {
-        $document = new Document(version: 1.4, language: 'de-DE');
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4), language: 'de-DE');
         $document->registerFont('Helvetica');
         $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
         $catalog = new Catalog(1, $document);
@@ -46,7 +46,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_keeps_the_catalog_unstructured_for_pdf_1_4_without_tagged_content(): void
     {
-        $document = new Document(version: 1.4, language: 'de-DE');
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4), language: 'de-DE');
         $catalog = new Catalog(1, $document);
 
         self::assertSame(
@@ -58,7 +58,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_outline_references_when_document_outlines_exist(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $document->addOutline('Intro', $page);
         $catalog = new Catalog(1, $document);
@@ -72,7 +72,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_named_destinations_when_document_destinations_exist(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $document->addDestination('table-demo', $page);
         $catalog = new Catalog(1, $document);
@@ -86,7 +86,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_optional_content_properties_when_document_layers_exist(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $page->layer('Notes', static function (\Kalle\Pdf\Document\Page $page): void {
             $page->addRectangle(new Rect(10, 20, 30, 40));
@@ -104,7 +104,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_off_optional_content_groups_when_layers_are_hidden_by_default(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->addLayer('Visible');
         $document->addLayer('Hidden', false);
         $catalog = new Catalog(1, $document);
@@ -120,7 +120,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_embedded_file_name_tree_when_document_attachments_exist(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
         $catalog = new Catalog(1, $document);
 
@@ -135,7 +135,7 @@ final class CatalogTest extends TestCase
     #[Test]
     public function it_renders_an_acro_form_reference_when_the_document_contains_form_fields(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->addPage();
         $document->ensureAcroForm();
         $catalog = new Catalog(1, $document);

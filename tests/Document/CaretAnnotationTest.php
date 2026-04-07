@@ -15,7 +15,7 @@ final class CaretAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_caret_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new CaretAnnotation(7, $page, 10, 20, 16, 18, 'Einfuegen', 'QA', 'P');
 
@@ -30,7 +30,7 @@ final class CaretAnnotationTest extends TestCase
     #[Test]
     public function it_rejects_an_invalid_caret_symbol(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
@@ -42,7 +42,7 @@ final class CaretAnnotationTest extends TestCase
     #[Test]
     public function it_uses_the_default_symbol_and_omits_empty_optional_fields(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new CaretAnnotation(7, $page, 10, 20, 16, 18, '', '');
 

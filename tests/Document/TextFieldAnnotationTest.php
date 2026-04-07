@@ -15,7 +15,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_text_field_widget_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -32,7 +32,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_multiline_text_field_widget_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -49,7 +49,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_read_only_required_password_flags_for_text_fields(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -74,7 +74,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_default_value_for_text_fields(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 

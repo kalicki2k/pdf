@@ -39,7 +39,7 @@ final class LinkTargetTest extends TestCase
     #[Test]
     public function it_creates_a_page_target(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $target = LinkTarget::page($page);
 
@@ -53,7 +53,7 @@ final class LinkTargetTest extends TestCase
     #[Test]
     public function it_creates_a_position_target(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $target = LinkTarget::position($page, 15.5, 25.0);
 
@@ -69,7 +69,7 @@ final class LinkTargetTest extends TestCase
     #[Test]
     public function it_compares_targets_by_value(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
 
         self::assertTrue(
@@ -107,7 +107,7 @@ final class LinkTargetTest extends TestCase
     #[Test]
     public function it_rejects_reading_the_wrong_value_kind(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $target = LinkTarget::page($page);
 
@@ -120,7 +120,7 @@ final class LinkTargetTest extends TestCase
     #[Test]
     public function it_rejects_missing_named_destination_values(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $target = LinkTarget::page($page);
 
@@ -144,7 +144,7 @@ final class LinkTargetTest extends TestCase
     #[Test]
     public function it_rejects_missing_coordinates(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $target = LinkTarget::page($page);
 

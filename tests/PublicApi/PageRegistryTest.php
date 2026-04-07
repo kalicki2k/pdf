@@ -15,7 +15,7 @@ final class PageRegistryTest extends TestCase
     #[Test]
     public function it_resolves_the_internal_page_for_a_public_page(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
 
         $property = new \ReflectionProperty($page, 'page');

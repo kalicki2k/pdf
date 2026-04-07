@@ -17,7 +17,7 @@ final class EncryptedPdfRenderTest extends TestCase
     public function it_does_not_leave_plaintext_strings_or_contents_in_an_rc4_encrypted_pdf(): void
     {
         $document = new Document(
-            version: 1.4,
+            profile: \Kalle\Pdf\Profile::standard(1.4),
             title: 'Secret Title',
             author: 'Secret Author',
         );
@@ -43,7 +43,7 @@ final class EncryptedPdfRenderTest extends TestCase
     public function it_produces_a_qpdf_readable_aes_128_encrypted_pdf(): void
     {
         $document = new Document(
-            version: 1.6,
+            profile: \Kalle\Pdf\Profile::standard(1.6),
             title: 'AES Secret Title',
             author: 'AES Secret Author',
         );
@@ -96,7 +96,7 @@ final class EncryptedPdfRenderTest extends TestCase
     public function it_produces_a_qpdf_readable_aes_256_encrypted_pdf(): void
     {
         $document = new Document(
-            version: 1.7,
+            profile: \Kalle\Pdf\Profile::standard(1.7),
             title: 'AES256 Secret Title',
             author: 'AES256 Secret Author',
         );

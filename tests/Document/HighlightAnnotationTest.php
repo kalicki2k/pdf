@@ -16,7 +16,7 @@ final class HighlightAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_highlight_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new HighlightAnnotation(7, $page, 10, 20, 80, 12, Color::rgb(255, 255, 0), 'Markiert', 'QA');
 
@@ -31,7 +31,7 @@ final class HighlightAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new HighlightAnnotation(7, $page, 10, 20, 80, 12);
 
@@ -47,7 +47,7 @@ final class HighlightAnnotationTest extends TestCase
     #[Test]
     public function it_can_link_a_popup_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new HighlightAnnotation(7, $page, 10, 20, 80, 12, contents: 'Markiert');
         $popup = new PopupAnnotation(8, $page, $annotation, 20, 40, 60, 30, true);
@@ -60,7 +60,7 @@ final class HighlightAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_cmyk_highlight_color(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new HighlightAnnotation(7, $page, 10, 20, 80, 12, Color::cmyk(0.1, 0.2, 0.3, 0.4));
 

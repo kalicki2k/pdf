@@ -123,7 +123,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_resolves_and_stores_the_encryption_profile_via_encrypt_options(): void
     {
-        $document = new Document(version: 1.6);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.6));
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user-secret',
             ownerPassword: 'owner-secret',
@@ -136,7 +136,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_allows_documents_to_store_encryption_options_and_resolve_the_profile(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user-secret',
             ownerPassword: 'owner-secret',

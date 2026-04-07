@@ -16,7 +16,7 @@ final class RadioButtonFieldTest extends TestCase
     #[Test]
     public function it_renders_a_radio_button_parent_field(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $field = new RadioButtonField(7, 'delivery');
         $field->addWidget(

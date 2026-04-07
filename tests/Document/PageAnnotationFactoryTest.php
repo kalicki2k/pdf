@@ -24,7 +24,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_free_text_annotation_and_registers_the_resolved_font(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -50,7 +50,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_links_a_popup_to_a_parent_annotation_when_supported(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -66,7 +66,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_rectangles_with_non_positive_width(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -81,7 +81,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_rectangles_with_non_positive_height(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -96,7 +96,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_an_empty_file_attachment_icon(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -112,7 +112,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_empty_text_annotation_contents(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -127,7 +127,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_empty_text_annotation_icons(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -142,7 +142,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_empty_free_text_contents(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -166,7 +166,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_non_positive_free_text_font_sizes(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -190,7 +190,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_empty_stamp_icons(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];

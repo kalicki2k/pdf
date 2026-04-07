@@ -33,6 +33,7 @@ use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\Profile;
 use Kalle\Pdf\Table;
 use Kalle\Pdf\TextFrame;
 use Kalle\Pdf\Types\DictionaryType;
@@ -58,16 +59,25 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_returns_the_small_public_page_type_from_the_public_document_api(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(PageSize::A4());
 
         self::assertInstanceOf(Page::class, $page);
     }
 
     #[Test]
+    public function it_exposes_the_selected_pdf_profile_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+
+        self::assertSame('PDF/A-2u', $document->getProfile()->name());
+        self::assertSame(1.7, $document->getProfile()->version());
+    }
+
+    #[Test]
     public function it_passes_the_public_page_type_to_header_callbacks(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
 
         $receivedPage = null;
@@ -86,7 +96,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_can_exclude_a_public_page_from_logical_numbering(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
 
         $coverPage = $document->addPage(PageSize::custom(100, 100));
@@ -126,7 +136,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_keeps_text_frame_and_table_page_access_on_the_public_page_type(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(PageSize::custom(200, 200));
 
         $textFrame = $page->createTextFrame(new Position(10, 190), 100);
@@ -142,7 +152,7 @@ final class PublicApiTest extends TestCase
     public function it_exposes_and_updates_document_metadata_through_the_public_api(): void
     {
         $document = new Document(
-            version: 1.4,
+            profile: \Kalle\Pdf\Profile::standard(1.4),
             creator: 'Initial Creator',
             creatorTool: 'Initial Tool',
         );
@@ -163,7 +173,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_forwards_public_api_registrations_to_the_internal_document(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage(PageSize::custom(100, 100));
 
         $attachmentPath = sys_get_temp_dir() . '/pdf-public-api-attachment.txt';
@@ -195,7 +205,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_adds_footers_and_page_numbers_through_the_public_api(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $document->addFooter(static function (Page $page, int $pageNumber): void {
             $page->addText("Footer $pageNumber", new Position(10, 10), 'Helvetica', 10);
@@ -217,7 +227,7 @@ final class PublicApiTest extends TestCase
     public function it_exposes_document_dates_default_pages_attachments_and_table_of_contents_through_the_public_api(): void
     {
         $document = new Document(
-            version: 1.4,
+            profile: \Kalle\Pdf\Profile::standard(1.4),
             title: 'Public API Document',
             author: 'Alice',
             subject: 'Coverage',
@@ -254,7 +264,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_forwards_basic_public_page_operations(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(120, 140));
 
@@ -277,7 +287,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_wraps_public_page_layers_with_public_page_instances(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(120, 140));
 
@@ -296,7 +306,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_forwards_public_table_operations(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(200, 200));
 
@@ -317,7 +327,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_forwards_public_text_frame_operations(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(200, 200));
 
@@ -346,7 +356,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_forwards_public_page_text_shape_and_measurement_operations(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(200, 220));
 
@@ -384,7 +394,7 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_forwards_public_page_annotation_form_and_attachment_operations(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(220, 260));
         $file = new FileSpecification(99, 'manual.txt', new EmbeddedFileStream(100, 'data'));

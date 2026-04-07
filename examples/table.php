@@ -33,7 +33,7 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 $startedAt = microtime(true);
 
 $document = new Document(
-    version: 1.4,
+    profile: \Kalle\Pdf\Profile::standard(1.4),
     title: 'Table test',
     fontConfig: [
         [

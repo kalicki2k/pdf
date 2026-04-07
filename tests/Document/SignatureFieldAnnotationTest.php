@@ -14,7 +14,7 @@ final class SignatureFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_signature_field_widget_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
 
         $annotation = new SignatureFieldAnnotation(7, $page, 10, 20, 100, 30, 'approval_signature');

@@ -15,7 +15,7 @@ final class TextAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_text_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new TextAnnotation(7, $page, 10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
 
@@ -30,7 +30,7 @@ final class TextAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_text_annotation_with_popup_reference(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new TextAnnotation(7, $page, 10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
         $popup = new PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, false);

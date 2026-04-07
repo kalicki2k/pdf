@@ -32,7 +32,7 @@ final readonly class Document
      * }>|null $fontConfig
      */
     public function __construct(
-        float $version = 1.0,
+        Profile $profile,
         ?string $title = null,
         ?string $author = null,
         ?string $subject = null,
@@ -42,7 +42,7 @@ final readonly class Document
         ?array $fontConfig = null,
     ) {
         $this->document = new Document\Document(
-            version: $version,
+            profile: $profile,
             title: $title,
             author: $author,
             subject: $subject,
@@ -51,6 +51,11 @@ final readonly class Document
             creatorTool: $creatorTool,
             fontConfig: $fontConfig,
         );
+    }
+
+    public function getProfile(): Profile
+    {
+        return $this->document->getProfile();
     }
 
     public function getCreationDate(): DateTimeImmutable

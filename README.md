@@ -59,7 +59,7 @@ use Kalle\Pdf\Layout\PageSize;
 require 'vendor/autoload.php';
 
 $document = new Document(
-    version: 1.4,
+    profile: \Kalle\Pdf\Profile::standard(1.4),
     title: 'Hello PDF',
     author: 'Example Company',
     subject: 'Demo document',

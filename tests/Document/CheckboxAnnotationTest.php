@@ -15,7 +15,7 @@ final class CheckboxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_checkbox_widget_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
 
         $annotation = new CheckboxAnnotation(
@@ -42,7 +42,7 @@ final class CheckboxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_unchecked_checkbox_and_returns_related_appearance_streams(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $offAppearance = new CheckboxAppearanceStream(8, 12, 12, false);
         $onAppearance = new CheckboxAppearanceStream(9, 12, 12, true);

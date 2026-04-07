@@ -16,7 +16,7 @@ final class CircleAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_circle_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new CircleAnnotation(7, $page, 10, 20, 80, 24, Color::rgb(0, 0, 255), Color::gray(0.9), 'Kreis', 'QA');
 
@@ -31,7 +31,7 @@ final class CircleAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_border_style_for_a_circle_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new CircleAnnotation(7, $page, 10, 20, 80, 24, borderStyle: AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
 
@@ -41,7 +41,7 @@ final class CircleAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new CircleAnnotation(7, $page, 10, 20, 80, 24);
 
@@ -57,7 +57,7 @@ final class CircleAnnotationTest extends TestCase
     #[Test]
     public function it_renders_cmyk_border_and_fill_colors(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new CircleAnnotation(
             7,

@@ -16,7 +16,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_ink_annotation(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new InkAnnotation(
             7,
@@ -44,7 +44,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new InkAnnotation(
             7,
@@ -70,7 +70,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_cmyk_ink_color(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new InkAnnotation(
             7,
@@ -91,7 +91,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_rejects_empty_paths(): void
     {
-        $document = new Document(version: 1.4);
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
