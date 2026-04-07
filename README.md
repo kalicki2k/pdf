@@ -1,5 +1,11 @@
 # kalle/pdf
 
+![PHP 8.4](https://img.shields.io/badge/PHP-8.4-777bb4?logo=php&logoColor=white)
+![Tests Passing](https://img.shields.io/badge/tests-passing-2ea44f?logo=githubactions&logoColor=white)
+![PHPStan No Errors](https://img.shields.io/badge/PHPStan-no%20errors-2ea44f?logo=php&logoColor=white)
+![Code Coverage 100%](https://img.shields.io/badge/coverage-100%25-2ea44f?logo=codecov&logoColor=white)
+![License MIT](https://img.shields.io/badge/license-MIT-1f6feb?logo=open-source-initiative&logoColor=white)
+
 A lightweight, native PDF engine for PHP for creating structured PDF documents programmatically.
 
 ## Overview
