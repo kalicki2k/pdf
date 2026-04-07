@@ -175,14 +175,11 @@ final class PageTest extends TestCase
     }
 
     #[Test]
-    public function it_requires_link_structure_tags_for_linked_text_in_pdf_ua_1(): void
+    public function it_nests_pdf_ua_1_text_links_inside_existing_structure_tags(): void
     {
         $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $document->registerFont('Helvetica');
         $page = $document->addPage();
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/UA-1 currently requires linked text to use the Link structure tag.');
 
         $page->addText(
             'Hello',
@@ -194,6 +191,35 @@ final class PageTest extends TestCase
                 link: LinkTarget::externalUrl('https://example.com'),
             ),
         );
+
+        $rendered = $document->render();
+
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/K \[0 << \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Nums \[0 \[\d+ 0 R\] 1 \d+ 0 R\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_nests_pdf_ua_1_flow_text_links_inside_existing_structure_tags(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addFlowText(
+            [new TextSegment('Hello', link: LinkTarget::externalUrl('https://example.com'))],
+            new Position(10, 20),
+            200,
+            'Helvetica',
+            12,
+            new FlowTextOptions(structureTag: StructureTag::Paragraph),
+        );
+
+        $rendered = $document->render();
+
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Link', $rendered);
+        self::assertStringContainsString('/Subtype /Link', $rendered);
     }
 
     #[Test]

@@ -89,7 +89,7 @@ final class Page extends IndirectObject
         int $size = 12,
         TextOptions $options = new TextOptions(),
     ): self {
-        [$structureTag, $parentStructElem] = $this->resolveLinkedTextStructure($options);
+        $structureTag = $this->resolveMarkedContentStructureTag($options);
 
         $artifactTag = $structureTag === null && $this->document->isRenderingArtifactContext()
             ? 'Artifact'
@@ -133,7 +133,7 @@ final class Page extends IndirectObject
         $textStructElem = null;
 
         if ($structureTag !== null && $markedContentId !== null) {
-            $textStructElem = $this->attachTextToStructure($structureTag, $markedContentId, $parentStructElem);
+            $textStructElem = $this->attachTextToStructure($options, $structureTag, $markedContentId);
         }
 
         if ($options->link !== null && $textWidth > 0.0) {
@@ -1752,30 +1752,32 @@ final class Page extends IndirectObject
         return $font->encodeText($text);
     }
 
-    /**
-     * @return array{0: ?StructureTag, 1: ?StructElem}
-     */
-    private function resolveLinkedTextStructure(TextOptions $options): array
+    private function resolveMarkedContentStructureTag(TextOptions $options): ?StructureTag
     {
         $profile = $this->document->getProfile();
 
         if ($options->link === null || !$profile->requiresTaggedLinkAnnotations()) {
-            return [$options->structureTag, $options->parentStructElem];
+            return $options->structureTag;
+        }
+
+        return StructureTag::Link;
+    }
+
+    private function attachTextToStructure(TextOptions $options, StructureTag $tag, int $markedContentId): StructElem
+    {
+        $profile = $this->document->getProfile();
+
+        if ($options->link === null || !$profile->requiresTaggedLinkAnnotations()) {
+            return $this->document->createStructElem($tag, $markedContentId, $this, $options->parentStructElem);
         }
 
         if ($options->structureTag === null || $options->structureTag === StructureTag::Link) {
-            return [StructureTag::Link, $options->parentStructElem];
+            return $this->document->createStructElem(StructureTag::Link, $markedContentId, $this, $options->parentStructElem);
         }
 
-        throw new InvalidArgumentException(sprintf(
-            'Profile %s currently requires linked text to use the Link structure tag.',
-            $profile->name(),
-        ));
-    }
+        $containerStructElem = $this->document->createStructElem($options->structureTag, parent: $options->parentStructElem);
 
-    private function attachTextToStructure(StructureTag $tag, int $markedContentId, ?StructElem $parentStructElem = null): StructElem
-    {
-        return $this->document->createStructElem($tag, $markedContentId, $this, $parentStructElem);
+        return $this->document->createStructElem(StructureTag::Link, $markedContentId, $this, $containerStructElem);
     }
 
     private function registerFontResource(FontDefinition $font): string

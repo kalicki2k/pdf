@@ -479,6 +479,34 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_nests_tagged_public_text_links_inside_existing_structure_tags_for_pdf_ua_1(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addText(
+            'Weiterlesen',
+            new Position(10, 20),
+            'Helvetica',
+            12,
+            new TextOptions(
+                structureTag: StructureTag::Paragraph,
+                link: LinkTarget::externalUrl('https://example.com'),
+            ),
+        );
+
+        $rendered = $document->render();
+
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Link \/P \d+ 0 R \/Pg \d+ 0 R \/K \[0 << \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_2u_document_through_the_public_api(): void
     {
         $document = new Document(
