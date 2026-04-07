@@ -170,6 +170,15 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_acro_forms(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsAcroForms());
+        self::assertTrue(Profile::pdf20()->supportsAcroForms());
+        self::assertFalse(Profile::pdfA2u()->supportsAcroForms());
+        self::assertFalse(Profile::pdfA4f()->supportsAcroForms());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_win_ansi_encoding(): void
     {
         self::assertFalse(Profile::pdf10()->supportsWinAnsiEncoding());

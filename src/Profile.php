@@ -236,6 +236,11 @@ final readonly class Profile
         return $this->isPdfA();
     }
 
+    public function supportsAcroForms(): bool
+    {
+        return !$this->isPdfA();
+    }
+
     public function supportsWinAnsiEncoding(): bool
     {
         return $this->version > PdfVersion::V1_0;

@@ -925,7 +925,7 @@ final class Document
 
     private function assertAllowsForms(): void
     {
-        if ($this->profile->isPdfA()) {
+        if (!$this->profile->supportsAcroForms()) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s does not allow AcroForm fields in the current implementation.',
                 $this->profile->name(),
