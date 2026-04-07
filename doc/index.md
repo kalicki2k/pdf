@@ -5,6 +5,7 @@ Diese Dokumentation beschreibt den aktuellen Stand der Library und die naechsten
 ## Inhalte
 
 - [Getting Started](getting-started.md)
+- [PDF Standards](pdf-standards.md)
 - [Page Sizes](page-sizes.md)
 - [Architecture](architecture.md)
 - [Roadmap](roadmap.md)

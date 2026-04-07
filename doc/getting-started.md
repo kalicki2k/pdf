@@ -26,11 +26,12 @@ declare(strict_types=1);
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Profile;
 
 require 'vendor/autoload.php';
 
 $document = new Document(
-    version: 1.4,
+    profile: Profile::pdf14(),
     title: 'Hello PDF',
     author: 'Example Company',
     subject: 'Getting Started',
@@ -56,10 +57,25 @@ Das erzeugt eine Datei `hello.pdf` im aktuellen Verzeichnis.
 ## Was hier passiert
 
 1. `Document` sammelt PDF-Version, Metadaten und globale Konfiguration.
+   Die PDF-Version wird heute ueber `Profile` gesteuert.
 2. `registerFont('Helvetica')` macht die Schrift im Dokument verfuegbar.
 3. `addPage(PageSize::A4())` erzeugt eine neue Seite.
 4. `addText(...)` schreibt Inhalt auf die Seite.
 5. `render()` serialisiert das komplette PDF.
+
+## Profile und Standards
+
+Neben `Profile::standard($version)` gibt es benannte Helfer fuer Standardprofile und Dokumentstandards:
+
+```php
+Profile::pdf10();
+Profile::pdf14();
+Profile::pdf20();
+Profile::pdfA2u();
+Profile::pdfUa1();
+```
+
+Wenn du mit PDF/A oder PDF/UA arbeitest, steht der aktuelle Unterstuetzungsstand in [pdf-standards.md](pdf-standards.md).
 
 ## Metadaten
 

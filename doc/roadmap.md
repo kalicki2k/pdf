@@ -32,6 +32,8 @@ Die aktuelle Basis ist bereits deutlich ueber einem Prototyp:
 - Verschluesselung, Outlines, benannte Ziele und Inhaltsverzeichnisse sind vorhanden
 - Inhaltsverzeichnisse koennen am Anfang, Ende oder nach einer bestimmten Seite eingefuegt werden
 - fuer Inhaltsverzeichnisse gibt es bereits logische Seitennummern mit ausschliessbaren Seiten
+- PDF/A hat eine validierte Baseline ueber alle unterstuetzten Profile
+- PDF/UA-1 hat eine validierte Baseline fuer die aktuell freigegebenen Tagged-, Link-, Annotation- und Formularpfade
 
 Die Kernfrage ist deshalb nicht mehr: "Koennen wir PDFs erzeugen?"
 
@@ -169,19 +171,19 @@ Moegliche naechste Schritte:
 
 Diese Punkte sind sinnvoll, aber nicht akut.
 
-### 8. Dokumentstandards und Validatoren staerker einbinden
+### 8. Dokumentstandards weiter ausbauen
 
 Moegliche Themen:
 
-- PDF/A
-- PDF/UA
-- Accessibility-Checks
-- Viewer Preferences
+- tiefere PDF/UA-Fixtures
+- weitere PDF/UA-Regeln ausserhalb der aktuellen Baseline
+- zusaetzliche Negativ- und Kombinationsfaelle fuer PDF/A und PDF/UA
+- weitere Viewer- und Accessibility-Checks
 
 Warum spaeter:
 
-- XMP-Metadaten fuer allgemeine Dokumentmetadaten sind vorhanden
-- weitergehende Standards und Validatoren sind trotzdem erst auf stabiler Kernbasis sinnvoll
+- die Baseline fuer PDF/A und PDF/UA-1 ist jetzt vorhanden
+- der naechste Schritt ist nicht mehr "ob", sondern "wie tief" die Standards weiter abgesichert werden
 
 ### 9. Tiefere Typografie und Font-Themen
 

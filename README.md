@@ -26,6 +26,8 @@ Current core coverage includes:
 
 The current focus is a stable core library. PDF/A now has a validated baseline across all supported conformance profiles, and PDF/UA-1 currently has a validated baseline for the supported tagged content, links, annotations, and form widget paths.
 
+The current support matrix and the active API rules for PDF/A and PDF/UA-1 are documented in [doc/pdf-standards.md](doc/pdf-standards.md).
+
 ## Requirements
 
 - PHP `^8.4`
@@ -40,6 +42,8 @@ composer require kalle/pdf
 
 Named standard profile helpers are available from `Profile::pdf10()` to `Profile::pdf20()`.
 If the target version is dynamic, `Profile::standard($version)` remains available.
+
+For document standards there are dedicated helpers such as `Profile::pdfA2u()` and `Profile::pdfUa1()`.
 
 ## Quick Start
 
@@ -171,6 +175,8 @@ For PDF/UA-1 there is a matching automated veraPDF regression run with represent
 ```bash
 composer test:pdfua-regression
 ```
+
+Further detail on supported profiles, active guards and current limits lives in [doc/pdf-standards.md](doc/pdf-standards.md).
 
 ## Metadata
 

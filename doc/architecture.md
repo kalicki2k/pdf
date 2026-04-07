@@ -8,7 +8,7 @@ Die Library baut ein PDF als kleines Objektmodell in PHP auf und rendert dieses 
 
 Der Hauptfluss ist:
 
-1. `Document` sammelt Metadaten, Fonts und Seiten.
+1. `Document` sammelt Profil, Metadaten, Fonts und Seiten.
 2. `Page` nimmt Inhalte wie Text, Bilder und einfache grafische Primitive entgegen.
 3. `Contents` und `Resources` sammeln die seitenbezogenen Daten.
 4. optionale Verschluesselung wird ueber Security-Handler-Daten und objektbezogene Schluessel vorbereitet.
@@ -23,7 +23,7 @@ Der Hauptfluss ist:
 
 Verantwortlich fuer:
 
-- PDF-Version sowie klassische PDF-Info- und XMP-Metadaten
+- Profil, PDF-Version sowie klassische PDF-Info- und XMP-Metadaten
 - globale Font-Registrierung
 - optionale dokumenteigene Font-Konfiguration
 - Verwaltung aller Seiten
@@ -34,6 +34,8 @@ Verantwortlich fuer:
 - Vergabe von Objekt-IDs
 - lazy Aufbau der Strukturdaten fuer Tagged-Inhalte
 - Start des Renderings
+
+Das `Profile` steuert heute nicht nur die PDF-Version, sondern auch Standardregeln fuer PDF/A-, PDF/UA- und versionsabhaengige Feature-Guards.
 
 Wichtige Methoden:
 
@@ -131,7 +133,7 @@ Verantwortlich fuer:
 - Entgegennahme von Inhaltselementen
 - Vergabe lokaler Marked-Content-IDs pro Seite nur bei strukturierten Inhalten
 
-Die wichtigsten APIs sind aktuell `addText(...)`, `addFlowText(...)`, `addTextBox(...)`, `createTextFrame(...)`, `createTable(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `addPath()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)`, `addListBox(...)`, `addSignatureField(...)` und `addPushButton(...)`.
+Die wichtigsten APIs sind aktuell `addText(...)`, `addFlowText(...)`, `addTextBox(...)`, `createTextFrame(...)`, `createTable(...)`, `addLine(...)`, `addRectangle(...)`, `addRoundedRectangle(...)`, `addPath()`, `addCircle(...)`, `addEllipse(...)`, `addPolygon(...)`, `addArrow(...)`, `addStar(...)`, `addBadge(...)`, `addPanel(...)`, `addCallout(...)`, `addImage(...)`, `addLink(...)`, `addInternalLink(...)`, `addTextField(...)`, `addCheckbox(...)`, `addRadioButton(...)`, `addComboBox(...)`, `addListBox(...)`, `addSignatureField(...)`, `addPushButton(...)` sowie die Page-Annotation-Methoden.
 
 Dabei passiert intern:
 
