@@ -190,17 +190,14 @@ final class OpenTypeFontParser
 
     private function readUInt16(int $offset): int
     {
-        $value = unpack('n', substr($this->data, $offset, 2));
+        $value = @unpack('n', substr($this->data, $offset, 2));
 
         if ($value === false) {
             throw new InvalidArgumentException('Unable to read 16-bit unsigned integer from font data.');
         }
 
+        /** @var int $result */
         $result = $value[1];
-
-        if (!is_int($result)) {
-            throw new InvalidArgumentException('Expected a 16-bit integer value from font data.');
-        }
 
         return $result;
     }
@@ -214,17 +211,14 @@ final class OpenTypeFontParser
 
     private function readUInt32(int $offset): int
     {
-        $value = unpack('N', substr($this->data, $offset, 4));
+        $value = @unpack('N', substr($this->data, $offset, 4));
 
         if ($value === false) {
             throw new InvalidArgumentException('Unable to read 32-bit unsigned integer from font data.');
         }
 
+        /** @var int $result */
         $result = $value[1];
-
-        if (!is_int($result)) {
-            throw new InvalidArgumentException('Expected a 32-bit integer value from font data.');
-        }
 
         return $result;
     }
