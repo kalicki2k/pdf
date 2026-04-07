@@ -120,4 +120,40 @@ final class TextTest extends TestCase
             $text->render(),
         );
     }
+
+    #[Test]
+    public function it_skips_text_decorations_when_the_rendered_width_is_non_positive(): void
+    {
+        $text = new Text(null, '(Hello)', 10, 20, 'F1', 12, 0, '1 0 0 rg', null, true, true);
+
+        self::assertSame(
+            "q\n"
+            . "BT\n"
+            . "/F1 12 Tf\n"
+            . "10 20 Td\n"
+            . "1 0 0 rg\n"
+            . "(Hello) Tj\n"
+            . "ET\n"
+            . 'Q',
+            $text->render(),
+        );
+    }
+
+    #[Test]
+    public function it_applies_decoration_insets_to_underlines(): void
+    {
+        $text = new Text(null, '(Hello)', 10, 20, 'F1', 12, 30, null, null, true, false, null, 2.5, 4.5);
+
+        self::assertSame(
+            "q\n"
+            . "BT\n"
+            . "/F1 12 Tf\n"
+            . "10 20 Td\n"
+            . "(Hello) Tj\n"
+            . "ET\n"
+            . "12.5 17.84 23 0.6 re f\n"
+            . 'Q',
+            $text->render(),
+        );
+    }
 }
