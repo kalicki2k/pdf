@@ -15,6 +15,8 @@ use Kalle\Pdf\Types\ReferenceType;
 
 final class RadioButtonWidgetAnnotation extends IndirectObject implements PageAnnotation
 {
+    private ?int $structParentId = null;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -28,6 +30,13 @@ final class RadioButtonWidgetAnnotation extends IndirectObject implements PageAn
         private readonly RadioButtonAppearanceStream $onAppearance,
     ) {
         parent::__construct($id);
+    }
+
+    public function withStructParent(int $structParentId): self
+    {
+        $this->structParentId = $structParentId;
+
+        return $this;
     }
 
     public function render(): string
@@ -54,6 +63,10 @@ final class RadioButtonWidgetAnnotation extends IndirectObject implements PageAn
                 ]),
             ]),
         ]);
+
+        if ($this->structParentId !== null) {
+            $dictionary->add('StructParent', $this->structParentId);
+        }
 
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL

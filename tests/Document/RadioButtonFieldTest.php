@@ -43,4 +43,30 @@ final class RadioButtonFieldTest extends TestCase
             $field->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_accessibility_metadata_for_radio_button_parent_fields(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $field = (new RadioButtonField(7, 'delivery'))->withTooltip('delivery');
+        $field->addWidget(
+            new RadioButtonWidgetAnnotation(
+                8,
+                $page,
+                $field,
+                10,
+                20,
+                12,
+                'standard',
+                true,
+                new RadioButtonAppearanceStream(9, 12, false),
+                new RadioButtonAppearanceStream(10, 12, true),
+            ),
+            'standard',
+            true,
+        );
+
+        self::assertStringContainsString('/TU (delivery)', $field->render());
+    }
 }

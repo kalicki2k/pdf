@@ -88,8 +88,8 @@ final class FormWidgetFactoryTest extends TestCase
         $acroForm = null;
         $factory = $this->createFactory($page, $resolvedFonts, $acroForm);
 
-        [$groupA, $annotationA] = $factory->createRadioButton('delivery', 'standard', new Position(10, 20), 12, true);
-        [$groupB, $annotationB] = $factory->createRadioButton('delivery', 'express', new Position(30, 20), 12, false);
+        [$groupA, $annotationA] = $factory->createRadioButton('delivery', 'standard', new Position(10, 20), 12, true, 'Standard delivery');
+        [$groupB, $annotationB] = $factory->createRadioButton('delivery', 'express', new Position(30, 20), 12, false, 'Express delivery');
 
         self::assertInstanceOf(RadioButtonField::class, $groupA);
         self::assertSame($groupA, $groupB);
@@ -97,6 +97,7 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertInstanceOf(RadioButtonWidgetAnnotation::class, $annotationB);
         self::assertCount(1, $acroForm?->getFields() ?? []);
         self::assertSame([$groupA], $acroForm?->getFields());
+        self::assertStringContainsString('/TU (delivery)', $groupA->render());
     }
 
     #[Test]
@@ -243,9 +244,9 @@ final class FormWidgetFactoryTest extends TestCase
             ['Text field font size must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 100, 20), null, StandardFontName::HELVETICA, 0, false, null, null, null, null)],
             ['Checkbox name must not be empty.', fn (): CheckboxAnnotation => $factory->createCheckbox('', new Position(10, 20), 12, false, null)],
             ['Checkbox size must be greater than zero.', fn (): CheckboxAnnotation => $factory->createCheckbox('terms', new Position(10, 20), 0, false, null)],
-            ['Radio button name must not be empty.', fn (): array => $factory->createRadioButton('', 'yes', new Position(10, 20), 12, false)],
-            ['Radio button value may contain only letters, numbers, dots, underscores and hyphens.', fn (): array => $factory->createRadioButton('delivery', 'bad value', new Position(10, 20), 12, false)],
-            ['Radio button size must be greater than zero.', fn (): array => $factory->createRadioButton('delivery', 'yes', new Position(10, 20), 0, false)],
+            ['Radio button name must not be empty.', fn (): array => $factory->createRadioButton('', 'yes', new Position(10, 20), 12, false, null)],
+            ['Radio button value may contain only letters, numbers, dots, underscores and hyphens.', fn (): array => $factory->createRadioButton('delivery', 'bad value', new Position(10, 20), 12, false, null)],
+            ['Radio button size must be greater than zero.', fn (): array => $factory->createRadioButton('delivery', 'yes', new Position(10, 20), 0, false, null)],
             ['Combo box name must not be empty.', fn (): ComboBoxAnnotation => $factory->createComboBox('', new Rect(10, 20, 100, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
             ['Combo box width must be greater than zero.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 0, 20), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
             ['Combo box height must be greater than zero.', fn (): ComboBoxAnnotation => $factory->createComboBox('delivery', new Rect(10, 20, 100, 0), ['a' => 'Alpha'], null, StandardFontName::HELVETICA, 12, null, null, null)],
@@ -297,6 +298,9 @@ final class FormWidgetFactoryTest extends TestCase
             $page,
             static function () use (&$nextObjectId): int {
                 return $nextObjectId++;
+            },
+            static function () use (&$acroForm): AcroForm {
+                return $acroForm;
             },
             static function () use (&$acroForm): AcroForm {
                 return $acroForm;

@@ -30,6 +30,7 @@ final readonly class FormWidgetFactory
      * @param Closure(): AcroForm $ensureAcroForm
      * @param Closure(): AcroForm $ensureTextFieldAcroForm
      * @param Closure(): AcroForm $ensurePushButtonAcroForm
+     * @param Closure(): AcroForm $ensureRadioButtonAcroForm
      * @param Closure(string): FontDefinition $resolveFont
      */
     public function __construct(
@@ -38,6 +39,7 @@ final readonly class FormWidgetFactory
         private Closure $ensureAcroForm,
         private Closure $ensureTextFieldAcroForm,
         private Closure $ensurePushButtonAcroForm,
+        private Closure $ensureRadioButtonAcroForm,
         private Closure $resolveFont,
     ) {
     }
@@ -124,6 +126,7 @@ final readonly class FormWidgetFactory
         Position $position,
         float $size,
         bool $checked,
+        ?string $accessibleName,
     ): array {
         if ($name === '') {
             throw new InvalidArgumentException('Radio button name must not be empty.');
@@ -137,7 +140,7 @@ final readonly class FormWidgetFactory
             throw new InvalidArgumentException('Radio button size must be greater than zero.');
         }
 
-        $acroForm = $this->ensureAcroForm();
+        $acroForm = $this->ensureRadioButtonAcroForm();
         $group = $acroForm->getOrCreateRadioGroup($name, $this->nextObjectId());
         $annotation = new RadioButtonWidgetAnnotation(
             $this->nextObjectId(),
@@ -151,6 +154,10 @@ final readonly class FormWidgetFactory
             new RadioButtonAppearanceStream($this->nextObjectId(), $size, false),
             new RadioButtonAppearanceStream($this->nextObjectId(), $size, true),
         );
+
+        if ($accessibleName !== null && $accessibleName !== '') {
+            $group->withTooltip($name);
+        }
 
         return [$group, $annotation];
     }
@@ -353,6 +360,11 @@ final readonly class FormWidgetFactory
     private function ensurePushButtonAcroForm(): AcroForm
     {
         return ($this->ensurePushButtonAcroForm)();
+    }
+
+    private function ensureRadioButtonAcroForm(): AcroForm
+    {
+        return ($this->ensureRadioButtonAcroForm)();
     }
 
     private function registerPushButtonAcroFormFont(string $baseFont): string

@@ -17,6 +17,7 @@ final class RadioButtonField extends IndirectObject
     /** @var list<RadioButtonWidgetAnnotation> */
     private array $widgets = [];
     private ?string $selectedValue = null;
+    private ?string $tooltip = null;
 
     public function __construct(
         int $id,
@@ -36,6 +37,15 @@ final class RadioButtonField extends IndirectObject
         return $this;
     }
 
+    public function withTooltip(string $tooltip): self
+    {
+        if ($tooltip !== '' && $this->tooltip === null) {
+            $this->tooltip = $tooltip;
+        }
+
+        return $this;
+    }
+
     public function render(): string
     {
         $dictionary = new DictionaryType([
@@ -50,6 +60,10 @@ final class RadioButtonField extends IndirectObject
 
         if ($this->selectedValue !== null) {
             $dictionary->add('V', new NameType($this->selectedValue));
+        }
+
+        if ($this->tooltip !== null && $this->tooltip !== '') {
+            $dictionary->add('TU', new StringType($this->tooltip));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

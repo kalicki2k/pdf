@@ -70,4 +70,27 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
         );
         self::assertSame([$offAppearance, $onAppearance], $annotation->getRelatedObjects());
     }
+
+    #[Test]
+    public function it_renders_structural_metadata_for_radio_button_widgets(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+        $field = new RadioButtonField(7, 'delivery');
+        $annotation = new RadioButtonWidgetAnnotation(
+            8,
+            $page,
+            $field,
+            10,
+            20,
+            12,
+            'standard',
+            true,
+            new RadioButtonAppearanceStream(9, 12, false),
+            new RadioButtonAppearanceStream(10, 12, true),
+        );
+        $annotation->withStructParent(1);
+
+        self::assertStringContainsString('/StructParent 1', $annotation->render());
+    }
 }

@@ -1601,9 +1601,18 @@ final class Page extends IndirectObject
         Position $position,
         float $size,
         bool $checked = false,
+        ?string $accessibleName = null,
     ): self {
-        [$group, $annotation] = $this->formWidgetFactory()->createRadioButton($name, $value, $position, $size, $checked);
+        $resolvedAccessibleName = $this->resolveRadioButtonAccessibleName($value, $accessibleName);
+        [$group, $annotation] = $this->formWidgetFactory()->createRadioButton($name, $value, $position, $size, $checked, $resolvedAccessibleName);
+        $groupAccessibleName = $this->resolveRadioButtonGroupAccessibleName($name);
+
+        if ($groupAccessibleName !== null) {
+            $group->withTooltip($groupAccessibleName);
+        }
+
         $group->addWidget($annotation, $value, $checked);
+        $this->bindAccessibleFormField($annotation, $resolvedAccessibleName);
         $this->annotations[] = $annotation;
 
         return $this;
@@ -2148,12 +2157,13 @@ final class Page extends IndirectObject
             fn (): AcroForm => $this->document->ensureAcroForm(),
             fn (): AcroForm => $this->document->ensureTextFieldAcroForm(),
             fn (): AcroForm => $this->document->ensurePushButtonAcroForm(),
+            fn (): AcroForm => $this->document->ensureRadioButtonAcroForm(),
             fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
         );
     }
 
     private function bindAccessibleFormField(
-        Annotation\TextFieldAnnotation | Annotation\CheckboxAnnotation | Annotation\PushButtonAnnotation $annotation,
+        Annotation\TextFieldAnnotation | Annotation\CheckboxAnnotation | Annotation\PushButtonAnnotation | Annotation\RadioButtonWidgetAnnotation $annotation,
         ?string $accessibleName,
     ): void {
         $profile = $this->document->getProfile();
@@ -2197,6 +2207,28 @@ final class Page extends IndirectObject
 
         if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
             return $label !== '' ? $label : $name;
+        }
+
+        return null;
+    }
+
+    private function resolveRadioButtonAccessibleName(string $value, ?string $accessibleName): ?string
+    {
+        if ($accessibleName !== null && $accessibleName !== '') {
+            return $accessibleName;
+        }
+
+        if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
+            return $value;
+        }
+
+        return null;
+    }
+
+    private function resolveRadioButtonGroupAccessibleName(string $name): ?string
+    {
+        if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
+            return $name;
         }
 
         return null;

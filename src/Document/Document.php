@@ -775,6 +775,22 @@ final class Document
         return $this->acroForm;
     }
 
+    public function ensureRadioButtonAcroForm(): AcroForm
+    {
+        if (!$this->profile->supportsCurrentRadioButtonImplementation()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow AcroForm fields in the current implementation.',
+                $this->profile->name(),
+            ));
+        }
+
+        if ($this->acroForm === null) {
+            $this->acroForm = new AcroForm(++$this->objectId);
+        }
+
+        return $this->acroForm;
+    }
+
     /**
      * @return list<array{
      *     baseFont: string,

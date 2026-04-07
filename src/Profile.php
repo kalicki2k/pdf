@@ -291,6 +291,12 @@ final readonly class Profile
             || $this->isPdfUa();
     }
 
+    public function supportsCurrentRadioButtonImplementation(): bool
+    {
+        return $this->supportsAcroForms()
+            || $this->isPdfUa();
+    }
+
     public function writesInfoDictionary(): bool
     {
         return !$this->isPdfA4();

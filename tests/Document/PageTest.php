@@ -1873,6 +1873,27 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_accessible_radio_buttons_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $page->addRadioButton('delivery', 'standard', new Position(10, 20), 12, true, 'Standard delivery');
+        $result = $page->addRadioButton('delivery', 'express', new Position(30, 20), 12, false, 'Express delivery');
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (delivery)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/StructParent 2', $rendered);
+        self::assertStringContainsString('/Tabs /S', $page->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Standard delivery\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Express delivery\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_adds_a_combo_box_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

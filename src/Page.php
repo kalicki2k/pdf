@@ -441,9 +441,9 @@ final readonly class Page
         return $this;
     }
 
-    public function addRadioButton(string $name, string $value, Position $position, float $size, bool $checked = false): self
+    public function addRadioButton(string $name, string $value, Position $position, float $size, bool $checked = false, ?string $accessibleName = null): self
     {
-        $this->page->addRadioButton($name, $value, $position, $size, $checked);
+        $this->page->addRadioButton($name, $value, $position, $size, $checked, $accessibleName);
 
         return $this;
     }

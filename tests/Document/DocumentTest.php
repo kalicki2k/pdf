@@ -271,7 +271,7 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_non_text_acroform_fields_for_pdf_ua_1(): void
+    public function it_rejects_signature_fields_for_pdf_ua_1(): void
     {
         $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage(100.0, 200.0);
@@ -279,7 +279,7 @@ final class DocumentTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 does not allow AcroForm fields in the current implementation.');
 
-        $page->addRadioButton('delivery', 'yes', new Position(10, 20), 12, true);
+        $page->addSignatureField('approval_signature', new Rect(10, 20, 80, 16));
     }
 
     #[Test]
@@ -318,6 +318,28 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/TU (Save form)', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Save form\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_adds_radio_buttons_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage(100.0, 200.0);
+
+        $page->addRadioButton('delivery', 'standard', new Position(10, 20), 12, true, 'Standard delivery');
+        $page->addRadioButton('delivery', 'express', new Position(30, 20), 12, false, 'Express delivery');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/FT /Btn', $rendered);
+        self::assertStringContainsString('/T (delivery)', $rendered);
+        self::assertStringContainsString('/TU (delivery)', $rendered);
+        self::assertStringContainsString('/V /standard', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/StructParent 2', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Standard delivery\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Express delivery\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]
