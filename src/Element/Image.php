@@ -39,7 +39,7 @@ class Image extends Element
 
     public static function fromFile(string $path): self
     {
-        $data = file_get_contents($path);
+        $data = @file_get_contents($path);
 
         if ($data === false) {
             throw new InvalidArgumentException("Unable to read image file '$path'.");
