@@ -1067,6 +1067,32 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_binds_panel_links_to_visible_text_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addPanel(
+            'Kurzinfo zum Stand.',
+            10,
+            20,
+            160,
+            70,
+            'Hinweis',
+            link: LinkTarget::externalUrl('https://example.com'),
+        );
+
+        $rendered = $document->render();
+
+        self::assertMatchesRegularExpression('/\/Annots \[\d+ 0 R \d+ 0 R\]/', $page->render());
+        self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
+        self::assertGreaterThanOrEqual(2, substr_count($rendered, '/Type /StructElem /S /Link'));
+        self::assertStringContainsString('(Hinweis) Tj', $page->contents->render());
+        self::assertStringContainsString('(Kurzinfo zum Stand.) Tj', $page->contents->render());
+    }
+
+    #[Test]
     public function it_rejects_panels_without_title_or_body(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
@@ -1234,6 +1260,35 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
         self::assertStringContainsString('(Info) Tj', $page->contents->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
+    }
+
+    #[Test]
+    public function it_binds_callout_links_to_visible_text_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $page->addCallout(
+            'Interner Hinweis.',
+            20,
+            40,
+            120,
+            50,
+            150,
+            65,
+            'Info',
+            'Helvetica',
+            new CalloutStyle(),
+            link: LinkTarget::externalUrl('https://example.com'),
+        );
+
+        $rendered = $document->render();
+
+        self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
+        self::assertGreaterThanOrEqual(2, substr_count($rendered, '/Type /StructElem /S /Link'));
+        self::assertStringContainsString('(Info) Tj', $page->contents->render());
+        self::assertStringContainsString('(Interner Hinweis.) Tj', $page->contents->render());
     }
 
     #[Test]

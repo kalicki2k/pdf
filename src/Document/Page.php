@@ -267,6 +267,7 @@ final class Page extends IndirectObject
             borderColor: Color::gray(0.75),
         );
         $titleFont ??= $bodyFont;
+        $bindLinkToText = $this->shouldBindHighLevelComponentLinkToText($link);
 
         if ($style->cornerRadius > 0) {
             $this->addRoundedRectangle(
@@ -307,6 +308,7 @@ final class Page extends IndirectObject
                 new TextOptions(
                     color: $style->titleColor,
                     opacity: $style->opacity,
+                    link: $bindLinkToText ? $link : null,
                 ),
             );
             $bodyTopOffset += $style->titleSize + $style->titleSpacing;
@@ -322,7 +324,7 @@ final class Page extends IndirectObject
             }
 
             $this->addTextBox(
-                text: $body,
+                text: $this->bindLinkToTextContent($body, $link),
                 box: new Rect(
                     $x + $style->paddingHorizontal,
                     $y + $style->paddingVertical,
@@ -342,7 +344,7 @@ final class Page extends IndirectObject
             );
         }
 
-        if ($link !== null) {
+        if ($link !== null && !$bindLinkToText) {
             $this->addLinkTarget(new Rect($x, $y, $width, $height), $link);
         }
 
@@ -1144,6 +1146,43 @@ final class Page extends IndirectObject
         $this->annotations[] = $this->annotationFactory()->createLinkAnnotation($box, $target, $linkStructElem);
 
         return $this;
+    }
+
+    /**
+     * @param string|list<TextSegment> $text
+     * @return string|list<TextSegment>
+     */
+    private function bindLinkToTextContent(string | array $text, ?LinkTarget $link): string | array
+    {
+        if ($link === null || !$this->shouldBindHighLevelComponentLinkToText($link)) {
+            return $text;
+        }
+
+        if (is_string($text)) {
+            return [new TextSegment($text, link: $link)];
+        }
+
+        return array_map(
+            static fn (TextSegment $segment): TextSegment => $segment->link !== null
+                ? $segment
+                : new TextSegment(
+                    $segment->text,
+                    $segment->color,
+                    $segment->opacity,
+                    $link,
+                    $segment->bold,
+                    $segment->italic,
+                    $segment->underline,
+                    $segment->strikethrough,
+                ),
+            $text,
+        );
+    }
+
+    private function shouldBindHighLevelComponentLinkToText(?LinkTarget $link): bool
+    {
+        return $link !== null
+            && $this->document->getProfile()->requiresTaggedLinkAnnotations();
     }
 
     public function addFileAttachment(

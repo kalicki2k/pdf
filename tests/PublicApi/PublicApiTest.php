@@ -507,6 +507,38 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_binds_public_panel_links_to_visible_text_for_pdf_ua_1(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(160, 120));
+
+        $page->addPanel(
+            'Body',
+            10,
+            20,
+            100,
+            50,
+            'Title',
+            'Helvetica',
+            new PanelStyle(),
+            null,
+            LinkTarget::externalUrl('https://example.com'),
+        );
+
+        $rendered = $document->render();
+
+        self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
+        self::assertGreaterThanOrEqual(2, substr_count($rendered, '/Type /StructElem /S /Link'));
+        self::assertStringContainsString('(Title) Tj', $rendered);
+        self::assertStringContainsString('(Body) Tj', $rendered);
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_2u_document_through_the_public_api(): void
     {
         $document = new Document(
