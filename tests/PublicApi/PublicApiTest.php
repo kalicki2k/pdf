@@ -7,6 +7,9 @@ namespace Kalle\Pdf\Tests\PublicApi;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Document\Table\Style\HeaderStyle;
+use Kalle\Pdf\Document\Table\Style\RowStyle;
+use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
@@ -233,6 +236,27 @@ final class PublicApiTest extends TestCase
 
         self::assertInstanceOf(Page::class, $receivedPage);
         self::assertStringContainsString('(Layered) Tj', $internalPage->contents->render());
+    }
+
+    #[Test]
+    public function it_forwards_public_table_operations(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(200, 200));
+
+        $table = $page->createTable(new Position(10, 190), 100, [50, 50]);
+        $returnedTable = $table
+            ->font('Helvetica', 10)
+            ->style(new TableStyle())
+            ->rowStyle(new RowStyle())
+            ->headerStyle(new HeaderStyle())
+            ->addRow(['H1', 'H2'], true)
+            ->addRow(['A', 'B']);
+
+        self::assertSame($table, $returnedTable);
+        self::assertInstanceOf(Page::class, $table->getPage());
+        self::assertLessThan(190.0, $table->getCursorY());
     }
 
     private function internalDocument(Document $document): \Kalle\Pdf\Document\Document
