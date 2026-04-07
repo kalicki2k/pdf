@@ -214,6 +214,44 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_exposes_document_dates_default_pages_attachments_and_table_of_contents_through_the_public_api(): void
+    {
+        $document = new Document(
+            version: 1.4,
+            title: 'Public API Document',
+            author: 'Alice',
+            subject: 'Coverage',
+            language: 'de',
+            creator: 'Creator',
+            creatorTool: 'Tool',
+        );
+        $document->registerFont('Helvetica');
+
+        $creationDate = $document->getCreationDate();
+        $modificationDate = $document->getModificationDate();
+        $firstPage = $document->addPage();
+        $secondPage = $document->addPage(PageSize::custom(100, 100));
+
+        $document
+            ->addAttachment('guide.txt', 'Guide body', 'Guide')
+            ->addOutline('Kapitel', $secondPage);
+
+        $attachment = $document->getAttachment('guide.txt');
+        $tocPage = $document->addTableOfContents();
+        $rendered = $document->render();
+
+        self::assertInstanceOf(\DateTimeImmutable::class, $creationDate);
+        self::assertInstanceOf(\DateTimeImmutable::class, $modificationDate);
+        self::assertGreaterThanOrEqual($creationDate->getTimestamp(), $modificationDate->getTimestamp());
+        self::assertEqualsWithDelta(595.28, $firstPage->getWidth(), 0.01);
+        self::assertEqualsWithDelta(841.89, $firstPage->getHeight(), 0.01);
+        self::assertInstanceOf(FileSpecification::class, $attachment);
+        self::assertSame($this->internalDocument($document)->getAttachment('guide.txt'), $attachment);
+        self::assertInstanceOf(Page::class, $tocPage);
+        self::assertStringStartsWith('%PDF-', $rendered);
+    }
+
+    #[Test]
     public function it_forwards_basic_public_page_operations(): void
     {
         $document = new Document(version: 1.4);
