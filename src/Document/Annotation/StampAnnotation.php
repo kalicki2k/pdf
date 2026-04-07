@@ -49,7 +49,7 @@ final class StampAnnotation extends IndirectObject implements PageAnnotation
             'Name' => new NameType($this->icon),
         ]);
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresPrintableAnnotations()) {
             $dictionary->add('F', self::PRINT_FLAG);
         }
 

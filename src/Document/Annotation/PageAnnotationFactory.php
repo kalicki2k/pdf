@@ -106,7 +106,7 @@ final readonly class PageAnnotationFactory
             $open,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -180,7 +180,7 @@ final readonly class PageAnnotationFactory
             $title,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -207,7 +207,7 @@ final readonly class PageAnnotationFactory
             $title,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -234,7 +234,7 @@ final readonly class PageAnnotationFactory
             $title,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -261,7 +261,7 @@ final readonly class PageAnnotationFactory
             $title,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -288,7 +288,7 @@ final readonly class PageAnnotationFactory
             $title,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -321,7 +321,7 @@ final readonly class PageAnnotationFactory
             $title,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -352,7 +352,7 @@ final readonly class PageAnnotationFactory
             $borderStyle,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -383,7 +383,7 @@ final readonly class PageAnnotationFactory
             $borderStyle,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -415,7 +415,7 @@ final readonly class PageAnnotationFactory
             $title,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
@@ -449,7 +449,7 @@ final readonly class PageAnnotationFactory
             $borderStyle,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream(
                 abs($to->x - $from->x),
                 abs($to->y - $from->y),
@@ -485,7 +485,7 @@ final readonly class PageAnnotationFactory
             $borderStyle,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStreamForVertices($vertices));
         }
 
@@ -516,7 +516,7 @@ final readonly class PageAnnotationFactory
             $borderStyle,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStreamForVertices($vertices));
         }
 
@@ -543,7 +543,7 @@ final readonly class PageAnnotationFactory
             $symbol,
         );
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresAnnotationAppearanceStreams()) {
             $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 

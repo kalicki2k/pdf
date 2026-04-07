@@ -221,6 +221,22 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_require_printable_annotations(): void
+    {
+        self::assertFalse(Profile::pdf14()->requiresPrintableAnnotations());
+        self::assertTrue(Profile::pdfA2u()->requiresPrintableAnnotations());
+        self::assertTrue(Profile::pdfA4()->requiresPrintableAnnotations());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_require_annotation_appearance_streams(): void
+    {
+        self::assertFalse(Profile::pdf14()->requiresAnnotationAppearanceStreams());
+        self::assertTrue(Profile::pdfA2u()->requiresAnnotationAppearanceStreams());
+        self::assertTrue(Profile::pdfA4()->requiresAnnotationAppearanceStreams());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_win_ansi_encoding(): void
     {
         self::assertFalse(Profile::pdf10()->supportsWinAnsiEncoding());

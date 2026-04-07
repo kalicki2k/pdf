@@ -70,7 +70,7 @@ final class InkAnnotation extends IndirectObject implements PageAnnotation
             'InkList' => new ArrayType($inkList),
         ]);
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresPrintableAnnotations()) {
             $dictionary->add('F', self::PRINT_FLAG);
         }
 

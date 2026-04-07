@@ -53,7 +53,7 @@ final class LineAnnotation extends IndirectObject implements PageAnnotation
             'L' => new ArrayType([$this->x1, $this->y1, $this->x2, $this->y2]),
         ]);
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresPrintableAnnotations()) {
             $dictionary->add('F', self::PRINT_FLAG);
         }
 

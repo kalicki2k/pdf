@@ -58,7 +58,7 @@ final class StrikeOutAnnotation extends IndirectObject implements PageAnnotation
             ]),
         ]);
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresPrintableAnnotations()) {
             $dictionary->add('F', self::PRINT_FLAG);
         }
 

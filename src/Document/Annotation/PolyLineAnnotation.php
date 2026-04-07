@@ -69,7 +69,7 @@ final class PolyLineAnnotation extends IndirectObject implements PageAnnotation
             'Vertices' => new ArrayType($vertexValues),
         ]);
 
-        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+        if ($this->page->getDocument()->getProfile()->requiresPrintableAnnotations()) {
             $dictionary->add('F', self::PRINT_FLAG);
         }
 
