@@ -36,6 +36,7 @@ final class XmpMetadata extends IndirectObject
     {
         $creationDate = $this->document->getCreationDate()->format('Y-m-d\TH:i:sP');
         $modificationDate = $this->document->getModificationDate()->format('Y-m-d\TH:i:sP');
+        $creatorTool = $this->resolveCreatorTool();
         $title = $this->renderAltProperty('dc:title', $this->document->getTitle());
         $subject = $this->renderAltProperty('dc:description', $this->document->getSubject());
         $author = $this->renderSeqProperty('dc:creator', $this->document->getAuthor());
@@ -58,7 +59,7 @@ final class XmpMetadata extends IndirectObject
     xmlns:xmp="http://ns.adobe.com/xap/1.0/">
     <dc:format>application/pdf</dc:format>
 {$title}{$subject}{$author}{$keywords}{$language}    <pdf:Producer>{$this->escape($this->document->getProducer())}</pdf:Producer>
-{$pdfKeywords}    <xmp:CreatorTool>{$this->escape($this->document->getCreatorTool())}</xmp:CreatorTool>
+{$pdfKeywords}    <xmp:CreatorTool>{$this->escape($creatorTool)}</xmp:CreatorTool>
     <xmp:CreateDate>{$creationDate}</xmp:CreateDate>
     <xmp:ModifyDate>{$modificationDate}</xmp:ModifyDate>
     <xmp:MetadataDate>{$modificationDate}</xmp:MetadataDate>
@@ -96,6 +97,15 @@ XML;
     <pdfaid:part>{$part}</pdfaid:part>
 {$revisionXml}{$conformanceXml}  </rdf:Description>
 XML . PHP_EOL;
+    }
+
+    private function resolveCreatorTool(): string
+    {
+        if ($this->document->getProfile()->pdfaPart() === 1) {
+            return $this->document->getCreator();
+        }
+
+        return $this->document->getCreatorTool();
     }
 
     private function renderAltProperty(string $name, ?string $value): string

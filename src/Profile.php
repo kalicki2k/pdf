@@ -123,7 +123,7 @@ final readonly class Profile
 
     public function usesPdfAOutputIntent(): bool
     {
-        return in_array($this->pdfaPart(), [2, 3, 4], true);
+        return in_array($this->pdfaPart(), [1, 2, 3, 4], true);
     }
 
     public function isPdfA2u(): bool

@@ -26,8 +26,8 @@ final class InfoTest extends TestCase
         self::assertStringStartsWith("3 0 obj\n<< /Title (Spec) /Author (Kalle)", $rendered);
         self::assertStringContainsString('/Creator (' . $document->getCreator() . ')', $rendered);
         self::assertStringContainsString('/Producer (' . $document->getProducer() . ')', $rendered);
-        self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}[+-]\d{4}\)/', $rendered);
-        self::assertMatchesRegularExpression('/\/ModDate \(D:\d{14}[+-]\d{4}\)/', $rendered);
+        self::assertMatchesRegularExpression("/\\/CreationDate \\(D:\\d{14}[+-]\\d{2}'\\d{2}'\\)/", $rendered);
+        self::assertMatchesRegularExpression("/\\/ModDate \\(D:\\d{14}[+-]\\d{2}'\\d{2}'\\)/", $rendered);
         self::assertStringNotContainsString('/Subject (', $rendered);
         self::assertStringNotContainsString('/Keywords (', $rendered);
         self::assertStringNotContainsString('/Lang (', $rendered);

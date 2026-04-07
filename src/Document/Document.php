@@ -50,6 +50,7 @@ final class Document
 {
     private const string PACKAGE_NAME = 'kalle/pdf';
     private const string PDFA_SRGB_ICC_PROFILE_PATH = __DIR__ . '/../../assets/color-srgb.icc';
+    private const string PDFA1_SRGB_ICC_PROFILE_PATH = __DIR__ . '/../../assets/color-srgb-pdfa1.icc';
     private int $objectId = 0;
     private int $structParentId = -1;
     private readonly DateTimeImmutable $creationDate;
@@ -268,7 +269,9 @@ final class Document
         if ($this->pdfaOutputIntentProfile === null) {
             $this->pdfaOutputIntentProfile = IccProfileStream::fromPath(
                 $this->getUniqObjectId(),
-                self::PDFA_SRGB_ICC_PROFILE_PATH,
+                $this->profile->pdfaPart() === 1
+                    ? self::PDFA1_SRGB_ICC_PROFILE_PATH
+                    : self::PDFA_SRGB_ICC_PROFILE_PATH,
             );
         }
 

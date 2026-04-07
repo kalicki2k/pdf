@@ -22,8 +22,8 @@ final class Info extends IndirectObject
             'Author' => new StringType($this->document->getAuthor() ?? ''),
             'Creator' => new StringType($this->document->getCreator()),
             'Producer' => new StringType($this->document->getProducer()),
-            'CreationDate' => new StringType('D:' . $this->document->getCreationDate()->format('YmdHisO')),
-            'ModDate' => new StringType('D:' . $this->document->getModificationDate()->format('YmdHisO')),
+            'CreationDate' => new StringType($this->formatPdfDate($this->document->getCreationDate())),
+            'ModDate' => new StringType($this->formatPdfDate($this->document->getModificationDate())),
         ]);
 
         if (!empty($this->document->getSubject())) {
@@ -39,5 +39,13 @@ final class Info extends IndirectObject
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'endobj' . PHP_EOL;
+    }
+
+    private function formatPdfDate(\DateTimeImmutable $date): string
+    {
+        $offset = $date->format('O');
+        $normalizedOffset = substr($offset, 0, 3) . "'" . substr($offset, 3, 2) . "'";
+
+        return 'D:' . $date->format('YmdHis') . $normalizedOffset;
     }
 }

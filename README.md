@@ -117,6 +117,9 @@ Generated example PDFs are written to `var/examples`.
 For the PDF/A examples:
 
 ```bash
+composer example:pdfa1a
+composer validate:pdfa -- var/examples/pdf-a-1a_YYYY-mm-dd-HH-ii-ss.pdf
+
 composer example:pdfa2a
 composer validate:pdfa -- var/examples/pdf-a-2a_YYYY-mm-dd-HH-ii-ss.pdf
 

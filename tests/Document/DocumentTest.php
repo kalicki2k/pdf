@@ -1569,8 +1569,8 @@ final class DocumentTest extends TestCase
         self::assertStringNotContainsString('/StructTreeRoot', $output);
         self::assertStringContainsString("xref\n0 9\n", $output);
         self::assertStringContainsString("trailer\n<< /Size 9\n/Root 1 0 R\n/Info 3 0 R\n/ID [<", $output);
-        self::assertMatchesRegularExpression('/\/CreationDate \(D:\d{14}[+-]\d{4}\)/', $output);
-        self::assertMatchesRegularExpression('/\/ModDate \(D:\d{14}[+-]\d{4}\)/', $output);
+        self::assertMatchesRegularExpression("/\\/CreationDate \\(D:\\d{14}[+-]\\d{2}'\\d{2}'\\)/", $output);
+        self::assertMatchesRegularExpression("/\\/ModDate \\(D:\\d{14}[+-]\\d{2}'\\d{2}'\\)/", $output);
         self::assertStringEndsWith('%%EOF', $output);
     }
 
