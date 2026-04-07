@@ -6,12 +6,14 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentRandomBytesStub;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Encryption\EncryptionOptions;
+use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
@@ -248,6 +250,17 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_empty_attachment_filenames(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Attachment filename must not be empty.');
+
+        $document->addAttachment('', 'hello');
+    }
+
+    #[Test]
     public function it_can_add_an_attachment_from_a_file_and_look_it_up_by_filename(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf-attachment-');
@@ -285,6 +298,78 @@ final class DocumentTest extends TestCase
         $this->expectExceptionMessage("Attachment file '$path' does not exist.");
 
         $document->addAttachmentFromFile($path);
+    }
+
+    #[Test]
+    public function it_rejects_unreadable_attachment_files(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf-unreadable-');
+        self::assertNotFalse($path);
+        file_put_contents($path, 'attachment-data');
+        chmod($path, 0000);
+
+        try {
+            $document = new Document(version: 1.4);
+
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage("Attachment file '$path' could not be read.");
+
+            $document->addAttachmentFromFile($path);
+        } finally {
+            chmod($path, 0600);
+            @unlink($path);
+        }
+    }
+
+    #[Test]
+    public function it_rejects_unreadable_font_files(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf-font-');
+        self::assertNotFalse($path);
+        file_put_contents($path, 'font-data');
+        chmod($path, 0000);
+
+        try {
+            $document = new Document(version: 1.4);
+
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage("Unable to read font file '$path'.");
+
+            $document->registerFont('CustomFont', 'Type1', 'WinAnsiEncoding', false, $path);
+        } finally {
+            chmod($path, 0600);
+            @unlink($path);
+        }
+    }
+
+    #[Test]
+    public function it_creates_an_optional_font_parser_for_readable_font_files(): void
+    {
+        $document = new Document(version: 1.4);
+        $method = new \ReflectionMethod($document, 'createOptionalFontParser');
+
+        $parser = $method->invoke($document, 'assets/fonts/NotoSans-Regular.ttf');
+
+        self::assertInstanceOf(OpenTypeFontParser::class, $parser);
+    }
+
+    #[Test]
+    public function it_falls_back_to_a_deterministic_document_id_when_random_bytes_fails(): void
+    {
+        require_once __DIR__ . '/Support/DocumentRandomBytesStub.php';
+
+        DocumentRandomBytesStub::$shouldThrow = true;
+
+        try {
+            $document = new Document(version: 1.4);
+            $documentId = $document->getDocumentId();
+
+            self::assertCount(2, $documentId);
+            self::assertSame($documentId[0], $documentId[1]);
+            self::assertMatchesRegularExpression('/^[a-f0-9]{32}$/', $documentId[0]);
+        } finally {
+            DocumentRandomBytesStub::$shouldThrow = false;
+        }
     }
 
     #[Test]
@@ -352,6 +437,17 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('(Footer 1) Tj', $firstPage->contents->render());
         self::assertStringContainsString('(Header 2) Tj', $secondPage->contents->render());
         self::assertStringContainsString('(Footer 2) Tj', $secondPage->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_structured_content_on_pdf_versions_below_1_4(): void
+    {
+        $document = new Document(version: 1.3);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Structured content requires PDF version 1.4 or higher.');
+
+        $document->ensureStructureEnabled();
     }
 
     #[Test]
@@ -442,6 +538,17 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_non_positive_page_number_sizes(): void
+    {
+        $document = new Document(version: 1.4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Page number size must be greater than zero.');
+
+        $document->addPageNumbers(new Position(10, 10), size: 0);
+    }
+
+    #[Test]
     public function it_adds_a_table_of_contents_from_existing_outlines(): void
     {
         $document = new Document(version: 1.4);
@@ -462,6 +569,48 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('(Zweite Seite) Tj', $tocPage->contents->render());
         self::assertStringContainsString('(2) Tj', $tocPage->contents->render());
         self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] /toc-page-8 [8 0 R /Fit] >>', $document->render());
+    }
+
+    #[Test]
+    public function it_rejects_table_of_contents_pages_without_positive_content_width(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(100.0, 100.0);
+        $document->addOutline('Erste Seite', $page);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Table of contents content width must be greater than zero.');
+
+        $document->addTableOfContents(
+            PageSize::custom(20.0, 100.0),
+            new TableOfContentsOptions(title: 'Inhalt', baseFont: 'Helvetica', titleSize: 16, entrySize: 10, margin: 10),
+        );
+    }
+
+    #[Test]
+    public function it_skips_table_of_contents_entries_when_the_target_page_has_no_resolved_page_number(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $validPage = $document->addPage(100, 100);
+
+        $foreignDocument = new Document(version: 1.4);
+        $foreignDocument->addPage(100, 100);
+        $foreignPage = $foreignDocument->addPage(100, 100);
+
+        $document
+            ->addOutline('Erste Seite', $validPage)
+            ->addOutline('Fremde Seite', $foreignPage);
+
+        $tocPage = $document->addTableOfContents(
+            PageSize::A6(),
+            new TableOfContentsOptions(title: 'Inhalt', baseFont: 'Helvetica', titleSize: 16, entrySize: 10, margin: 10),
+        );
+
+        self::assertStringContainsString('(Erste Seite) Tj', $tocPage->contents->render());
+        self::assertStringNotContainsString('(Fremde Seite) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] >>', $document->render());
     }
 
     #[Test]
@@ -655,6 +804,58 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_truncates_table_of_contents_titles_to_an_ellipsis_when_even_the_short_form_barely_fits(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(100, 100);
+        $document->addOutline('ABCDEFGHIJKLMN', $page);
+
+        $tocPage = $document->addTableOfContents(
+            PageSize::A7(),
+            new TableOfContentsOptions(
+                title: 'Inhalt',
+                baseFont: 'Helvetica',
+                titleSize: 16,
+                entrySize: 10,
+                margin: 100,
+                placement: TableOfContentsPlacement::start(),
+            ),
+        );
+
+        $tocContents = $tocPage->contents->render();
+
+        self::assertStringContainsString('(...) Tj', $tocContents);
+        self::assertStringNotContainsString('(ABCDE...) Tj', $tocContents);
+    }
+
+    #[Test]
+    public function it_truncates_table_of_contents_titles_with_a_visible_prefix_when_space_allows(): void
+    {
+        $document = new Document(version: 1.4);
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(100, 100);
+        $document->addOutline('ABCDEFGHIJKLMN', $page);
+
+        $tocPage = $document->addTableOfContents(
+            PageSize::A7(),
+            new TableOfContentsOptions(
+                title: 'Inhalt',
+                baseFont: 'Helvetica',
+                titleSize: 16,
+                entrySize: 10,
+                margin: 80,
+                placement: TableOfContentsPlacement::start(),
+            ),
+        );
+
+        $tocContents = $tocPage->contents->render();
+
+        self::assertStringContainsString('(ABCD...) Tj', $tocContents);
+        self::assertStringNotContainsString('(ABCDEFGHIJKLMN) Tj', $tocContents);
+    }
+
+    #[Test]
     public function it_rejects_negative_table_of_contents_style_values(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -720,6 +921,18 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_empty_outline_titles(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage(100.0, 200.0);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Outline title must not be empty.');
+
+        $document->addOutline('', $page);
+    }
+
+    #[Test]
     public function it_registers_named_destinations_on_the_catalog(): void
     {
         $document = new Document(version: 1.4);
@@ -728,6 +941,18 @@ final class DocumentTest extends TestCase
         $document->addDestination('table-demo', $page);
 
         self::assertStringContainsString('/Dests << /table-demo [4 0 R /Fit] >>', $document->render());
+    }
+
+    #[Test]
+    public function it_rejects_empty_destination_names(): void
+    {
+        $document = new Document(version: 1.4);
+        $page = $document->addPage(100.0, 200.0);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Destination name must not be empty.');
+
+        $document->addDestination('', $page);
     }
 
     #[Test]

@@ -314,17 +314,11 @@ final class Document
 
     private static function resolveDefaultProducer(): string
     {
-        if (!class_exists(InstalledVersions::class)) {
-            return self::PACKAGE_NAME;
-        }
-
         $version = InstalledVersions::getPrettyVersion(self::PACKAGE_NAME);
 
-        if ($version === null || $version === '') {
-            return self::PACKAGE_NAME;
-        }
-
-        return self::PACKAGE_NAME . ' ' . $version;
+        return is_string($version) && $version !== ''
+            ? self::PACKAGE_NAME . ' ' . $version
+            : self::PACKAGE_NAME;
     }
 
     public function getXmpMetadata(): ?XmpMetadata
@@ -487,7 +481,7 @@ final class Document
         $filename ??= basename($path);
 
         /** @var string|false $contents */
-        $contents = file_get_contents($path);
+        $contents = @file_get_contents($path);
 
         if ($contents === false) {
             throw new InvalidArgumentException("Attachment file '$path' could not be read.");
@@ -568,12 +562,27 @@ final class Document
             $useLogicalPageNumbers,
         ): void {
             if ($useLogicalPageNumbers) {
-                $pageNumber = $this->resolveLogicalPageNumber($page);
-                $totalPages = $this->countLogicalPages();
+                $pageNumber = null;
+                $logicalPageNumber = 0;
 
-                if ($pageNumber === null) {
-                    return;
+                foreach ($this->pages->pages as $documentPage) {
+                    if (isset($this->excludedPageIdsFromNumbering[$documentPage->id])) {
+                        if ($documentPage === $page) {
+                            return;
+                        }
+
+                        continue;
+                    }
+
+                    $logicalPageNumber++;
+
+                    if ($documentPage === $page) {
+                        $pageNumber = $logicalPageNumber;
+                        break;
+                    }
                 }
+
+                $totalPages = $this->countLogicalPages();
             }
 
             $page->addText(
@@ -1018,7 +1027,7 @@ final class Document
         }
 
         /** @var string|false $fontData */
-        $fontData = file_get_contents($fontFilePath);
+        $fontData = @file_get_contents($fontFilePath);
 
         if ($fontData === false) {
             throw new InvalidArgumentException("Unable to read font file '$fontFilePath'.");
@@ -1203,11 +1212,8 @@ final class Document
                 continue;
             }
 
-            $documentPage = $contentPages[$contentPageIndex] ?? null;
-
-            if ($documentPage === null) {
-                continue;
-            }
+            assert(isset($contentPages[$contentPageIndex]));
+            $documentPage = $contentPages[$contentPageIndex];
 
             $contentPageIndex++;
 
@@ -1220,29 +1226,6 @@ final class Document
         }
 
         return $pageNumbersByObjectId;
-    }
-
-    private function resolveLogicalPageNumber(Page $targetPage): ?int
-    {
-        $logicalPageNumber = 0;
-
-        foreach ($this->pages->pages as $page) {
-            if (isset($this->excludedPageIdsFromNumbering[$page->id])) {
-                if ($page === $targetPage) {
-                    return null;
-                }
-
-                continue;
-            }
-
-            $logicalPageNumber++;
-
-            if ($page === $targetPage) {
-                return $logicalPageNumber;
-            }
-        }
-
-        return null;
     }
 
     private function countLogicalPages(): int
