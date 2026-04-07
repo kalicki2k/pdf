@@ -64,6 +64,18 @@ final class EncryptionVersionResolverTest extends TestCase
     }
 
     #[Test]
+    public function it_resolves_rc4_128_for_pdf_1_4_when_requested_explicitly(): void
+    {
+        $resolver = new EncryptionVersionResolver();
+        $profile = $resolver->resolve(1.4, EncryptionAlgorithm::RC4_128);
+
+        self::assertSame(EncryptionAlgorithm::RC4_128, $profile->algorithm);
+        self::assertSame(128, $profile->keyLengthInBits);
+        self::assertSame(2, $profile->dictionaryVersion);
+        self::assertSame(3, $profile->revision);
+    }
+
+    #[Test]
     public function it_rejects_rc4_40_for_pdf_1_0(): void
     {
         $resolver = new EncryptionVersionResolver();
@@ -84,6 +96,17 @@ final class EncryptionVersionResolverTest extends TestCase
         self::assertSame(256, $profile->keyLengthInBits);
         self::assertSame(5, $profile->dictionaryVersion);
         self::assertSame(5, $profile->revision);
+    }
+
+    #[Test]
+    public function it_rejects_aes_256_for_pdf_1_6(): void
+    {
+        $resolver = new EncryptionVersionResolver();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('AES 256-bit encryption requires PDF 1.7 or newer.');
+
+        $resolver->resolve(1.6, EncryptionAlgorithm::AES_256);
     }
 
     #[Test]
