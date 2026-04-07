@@ -7,8 +7,11 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page as InternalPage;
+use Kalle\Pdf\Document\Text\ParagraphOptions;
+use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 
@@ -27,9 +30,12 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 }
 
 $fixtures = [
+    $outputDir . '/pdf-a-1b-minimal.pdf' => createMinimalPdfA1bFixture(...),
     $outputDir . '/pdf-a-2u-minimal.pdf' => createMinimalPdfA2uFixture(...),
     $outputDir . '/pdf-a-2u-popup.pdf' => createPdfA2uPopupFixture(...),
     $outputDir . '/pdf-a-2u-annotation-batch.pdf' => createPdfA2uAnnotationBatchFixture(...),
+    $outputDir . '/pdf-a-3b-attachment.pdf' => createPdfA3bAttachmentFixture(...),
+    $outputDir . '/pdf-a-4f-attachment.pdf' => createPdfA4fAttachmentFixture(...),
 ];
 
 foreach ($fixtures as $path => $createFixture) {
@@ -42,6 +48,63 @@ function createMinimalPdfA2uFixture(): Document
     $document = createPdfA2uDocument('PDF/A-2u Minimal Regression');
     $page = $document->addPage(PageSize::custom(120, 120));
     $page->addText('ÄÖÜ äöü ß EUR', new Position(10, 60), 'NotoSans-Regular', 12);
+
+    return $document;
+}
+
+function createMinimalPdfA1bFixture(): Document
+{
+    $document = new Document(
+        profile: Profile::pdfA1b(),
+        title: 'PDF/A-1b Minimal Regression',
+        author: 'kalle/pdf',
+        subject: 'Minimal PDF/A-1b regression fixture',
+        language: 'de-DE',
+        creator: 'Regression Fixture',
+        creatorTool: 'bin/generate-pdfa-regression-fixtures.php',
+        fontConfig: [[
+            'baseFont' => 'NotoSans-Regular',
+            'path' => dirname(__DIR__) . '/assets/fonts/NotoSans-Regular.ttf',
+            'unicode' => true,
+            'subtype' => 'CIDFontType2',
+            'encoding' => 'Identity-H',
+        ]],
+    );
+    $document
+        ->registerFont('NotoSans-Regular')
+        ->addKeyword('PDF/A')
+        ->addKeyword('PDF/A-1b')
+        ->addKeyword('Regression');
+    $page = $document->addPage(PageSize::A4());
+    $page->addText(
+        'PDF/A-1b Regression',
+        new Position(Units::mm(20), Units::mm(270)),
+        'NotoSans-Regular',
+        18,
+        new TextOptions(color: Color::rgb(20, 40, 90)),
+    );
+    $page->createTextFrame(
+        new Position(Units::mm(20), Units::mm(245)),
+        Units::mm(170),
+        Units::mm(20),
+    )
+        ->addParagraph(
+            'Dieses Fixture bleibt nahe am bestehenden PDF/A-1b-Beispiel und sichert den validen Grundpfad ab.',
+            'NotoSans-Regular',
+            11,
+            new ParagraphOptions(
+                lineHeight: Units::mm(6),
+                spacingAfter: Units::mm(5),
+            ),
+        )
+        ->addParagraph(
+            'Es dient bewusst als stabiler Regression-Fall statt als maximal minimales Dokument.',
+            'NotoSans-Regular',
+            10,
+            new ParagraphOptions(
+                lineHeight: Units::mm(5),
+            ),
+        );
 
     return $document;
 }
@@ -76,10 +139,35 @@ function createPdfA2uAnnotationBatchFixture(): Document
     return $document;
 }
 
+function createPdfA3bAttachmentFixture(): Document
+{
+    $document = createPdfADocument(Profile::pdfA3b(), 'PDF/A-3b Attachment Regression');
+    $page = $document->addPage(PageSize::custom(120, 120));
+    $page->addText('Archive bundle', new Position(10, 60), 'NotoSans-Regular', 12);
+    $document->addAttachment('payload.txt', "payload\n", 'Regression payload', 'text/plain');
+
+    return $document;
+}
+
+function createPdfA4fAttachmentFixture(): Document
+{
+    $document = createPdfADocument(Profile::pdfA4f(), 'PDF/A-4f Attachment Regression');
+    $page = $document->addPage(PageSize::custom(120, 120));
+    $page->addText('Factur-X bundle', new Position(10, 60), 'NotoSans-Regular', 12);
+    $document->addAttachment('invoice.xml', "<invoice id=\"demo\"/>\n", 'Invoice payload', 'application/xml');
+
+    return $document;
+}
+
 function createPdfA2uDocument(string $title): Document
 {
+    return createPdfADocument(Profile::pdfA2u(), $title);
+}
+
+function createPdfADocument(Profile $profile, string $title): Document
+{
     $document = new Document(
-        profile: Profile::pdfA2u(),
+        profile: $profile,
         title: $title,
         language: 'de-DE',
         fontConfig: [[
