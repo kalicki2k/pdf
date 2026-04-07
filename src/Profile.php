@@ -21,6 +21,51 @@ final readonly class Profile
         return new self('standard', $version);
     }
 
+    public static function pdf10(): self
+    {
+        return self::standard(1.0);
+    }
+
+    public static function pdf11(): self
+    {
+        return self::standard(1.1);
+    }
+
+    public static function pdf12(): self
+    {
+        return self::standard(1.2);
+    }
+
+    public static function pdf13(): self
+    {
+        return self::standard(1.3);
+    }
+
+    public static function pdf14(): self
+    {
+        return self::standard(1.4);
+    }
+
+    public static function pdf15(): self
+    {
+        return self::standard(1.5);
+    }
+
+    public static function pdf16(): self
+    {
+        return self::standard(1.6);
+    }
+
+    public static function pdf17(): self
+    {
+        return self::standard(1.7);
+    }
+
+    public static function pdf20(): self
+    {
+        return self::standard(2.0);
+    }
+
     public static function pdfA1a(): self
     {
         return new self('PDF/A-1a', 1.4); // PDF/A-1 is based on PDF 1.4.

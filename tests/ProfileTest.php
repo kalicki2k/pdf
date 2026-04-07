@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Profile;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -17,6 +18,19 @@ final class ProfileTest extends TestCase
         self::assertSame(1.4, Profile::standard()->version());
         self::assertSame(1.7, Profile::standard(1.7)->version());
         self::assertSame(2.0, Profile::standard(2.0)->version());
+    }
+
+    #[Test]
+    #[DataProvider('namedStandardProfileProvider')]
+    public function it_creates_named_standard_profiles_for_all_supported_pdf_versions(
+        string $factory,
+        float $expectedVersion,
+    ): void {
+        $profile = Profile::{$factory}();
+
+        self::assertSame('standard', $profile->name());
+        self::assertTrue($profile->isStandard());
+        self::assertSame($expectedVersion, $profile->version());
     }
 
     #[Test]
@@ -85,5 +99,23 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA2a()->requiresTaggedPdf());
         self::assertTrue(Profile::pdfA3a()->requiresTaggedPdf());
         self::assertFalse(Profile::pdfA2u()->requiresTaggedPdf());
+    }
+
+    /**
+     * @return array<string, array{string, float}>
+     */
+    public static function namedStandardProfileProvider(): array
+    {
+        return [
+            'PDF 1.0' => ['pdf10', 1.0],
+            'PDF 1.1' => ['pdf11', 1.1],
+            'PDF 1.2' => ['pdf12', 1.2],
+            'PDF 1.3' => ['pdf13', 1.3],
+            'PDF 1.4' => ['pdf14', 1.4],
+            'PDF 1.5' => ['pdf15', 1.5],
+            'PDF 1.6' => ['pdf16', 1.6],
+            'PDF 1.7' => ['pdf17', 1.7],
+            'PDF 2.0' => ['pdf20', 2.0],
+        ];
     }
 }

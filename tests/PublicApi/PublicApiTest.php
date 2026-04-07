@@ -44,6 +44,7 @@ use Kalle\Pdf\Table;
 use Kalle\Pdf\TextFrame;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -69,6 +70,20 @@ final class PublicApiTest extends TestCase
         $page = $document->addPage(PageSize::A4());
 
         self::assertInstanceOf(Page::class, $page);
+    }
+
+    #[Test]
+    #[DataProvider('standardProfileProvider')]
+    public function it_exposes_named_standard_pdf_versions_through_the_public_api(
+        string $factory,
+        float $expectedVersion,
+        string $expectedHeader,
+    ): void {
+        $document = new Document(profile: Profile::{$factory}());
+
+        self::assertSame('standard', $document->getProfile()->name());
+        self::assertSame($expectedVersion, $document->getProfile()->version());
+        self::assertStringStartsWith($expectedHeader, $document->render());
     }
 
     #[Test]
@@ -769,6 +784,24 @@ final class PublicApiTest extends TestCase
 
         self::assertGreaterThanOrEqual(19, count($internalPage->getAnnotations()));
         self::assertNotNull($this->internalDocument($document)->acroForm);
+    }
+
+    /**
+     * @return array<string, array{string, float, string}>
+     */
+    public static function standardProfileProvider(): array
+    {
+        return [
+            'PDF 1.0' => ['pdf10', 1.0, "%PDF-1.0\n%\xE2\xE3\xCF\xD3\n"],
+            'PDF 1.1' => ['pdf11', 1.1, "%PDF-1.1\n%\xE2\xE3\xCF\xD3\n"],
+            'PDF 1.2' => ['pdf12', 1.2, "%PDF-1.2\n%\xE2\xE3\xCF\xD3\n"],
+            'PDF 1.3' => ['pdf13', 1.3, "%PDF-1.3\n%\xE2\xE3\xCF\xD3\n"],
+            'PDF 1.4' => ['pdf14', 1.4, "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"],
+            'PDF 1.5' => ['pdf15', 1.5, "%PDF-1.5\n%\xE2\xE3\xCF\xD3\n"],
+            'PDF 1.6' => ['pdf16', 1.6, "%PDF-1.6\n%\xE2\xE3\xCF\xD3\n"],
+            'PDF 1.7' => ['pdf17', 1.7, "%PDF-1.7\n%\xE2\xE3\xCF\xD3\n"],
+            'PDF 2.0' => ['pdf20', 2.0, "%PDF-2.0\n%\xE2\xE3\xCF\xD3\n"],
+        ];
     }
 
     private function internalDocument(Document $document): InternalDocument
