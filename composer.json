@@ -22,7 +22,10 @@
   "autoload-dev": {
     "psr-4": {
       "Kalle\\Pdf\\Tests\\": "tests/"
-    }
+    },
+    "files": [
+      "tests/Document/Support/DocumentRandomBytesStub.php"
+    ]
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",

@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Document;
 
 use Random\RandomException;
 
-final class DocumentRandomBytesStub
+function setDocumentRandomBytesShouldThrow(bool $shouldThrow): void
 {
-    public static bool $shouldThrow = false;
+    $GLOBALS['kalle_pdf_tests_document_random_bytes_should_throw'] = $shouldThrow;
 }
 
 /**
@@ -16,7 +16,7 @@ final class DocumentRandomBytesStub
  */
 function random_bytes(int $length): string
 {
-    if (DocumentRandomBytesStub::$shouldThrow) {
+    if (($GLOBALS['kalle_pdf_tests_document_random_bytes_should_throw'] ?? false) === true) {
         throw new RandomException('stubbed random_bytes failure');
     }
 

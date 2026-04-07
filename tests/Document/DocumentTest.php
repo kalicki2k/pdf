@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\DocumentRandomBytesStub;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
@@ -20,6 +19,7 @@ use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
+use function Kalle\Pdf\Document\setDocumentRandomBytesShouldThrow;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -356,9 +356,7 @@ final class DocumentTest extends TestCase
     #[Test]
     public function it_falls_back_to_a_deterministic_document_id_when_random_bytes_fails(): void
     {
-        require_once __DIR__ . '/Support/DocumentRandomBytesStub.php';
-
-        DocumentRandomBytesStub::$shouldThrow = true;
+        setDocumentRandomBytesShouldThrow(true);
 
         try {
             $document = new Document(version: 1.4);
@@ -368,7 +366,7 @@ final class DocumentTest extends TestCase
             self::assertSame($documentId[0], $documentId[1]);
             self::assertMatchesRegularExpression('/^[a-f0-9]{32}$/', $documentId[0]);
         } finally {
-            DocumentRandomBytesStub::$shouldThrow = false;
+            setDocumentRandomBytesShouldThrow(false);
         }
     }
 
