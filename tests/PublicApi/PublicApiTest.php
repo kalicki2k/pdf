@@ -1471,6 +1471,18 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_raw_public_page_graphics_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage(PageSize::custom(120, 140));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires lines, shapes and paths to be rendered as artifacts in the current implementation.');
+
+        $page->addRectangle(new Rect(10, 60, 20, 10), 1.0, Color::rgb(0, 0, 0), Color::rgb(1, 0, 0));
+    }
+
+    #[Test]
     public function it_rejects_win_ansi_font_registration_for_pdf_version_1_0(): void
     {
         $document = new Document(profile: Profile::pdf10());

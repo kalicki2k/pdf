@@ -320,6 +320,14 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_require_artifact_graphic_elements(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresArtifactGraphicElements());
+        self::assertFalse(Profile::pdfA2u()->requiresArtifactGraphicElements());
+        self::assertTrue(Profile::pdfUa1()->requiresArtifactGraphicElements());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_require_tagged_link_annotations(): void
     {
         self::assertFalse(Profile::pdf17()->requiresTaggedLinkAnnotations());

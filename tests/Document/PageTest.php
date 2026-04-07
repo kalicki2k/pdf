@@ -689,6 +689,18 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_raw_lines_for_pdf_ua_1(): void
+    {
+        $document = $this->createPdfUaTestDocument();
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires lines, shapes and paths to be rendered as artifacts in the current implementation.');
+
+        $page->addLine(new Position(10, 20), new Position(100, 20));
+    }
+
+    #[Test]
     public function it_wraps_layered_page_content_with_optional_content_markers(): void
     {
         $document = new Document(profile: Profile::standard(1.5));
@@ -1437,6 +1449,21 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString("1 0 0 RG\n1.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nS", $page->contents->render());
+    }
+
+    #[Test]
+    public function it_rejects_raw_paths_for_pdf_ua_1(): void
+    {
+        $document = $this->createPdfUaTestDocument();
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires lines, shapes and paths to be rendered as artifacts in the current implementation.');
+
+        $page->addPath()
+            ->moveTo(60, 240)
+            ->lineTo(100, 200)
+            ->stroke();
     }
 
     #[Test]

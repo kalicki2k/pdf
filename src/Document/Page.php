@@ -2449,6 +2449,7 @@ final class Page extends IndirectObject
             return;
         }
 
+        $this->assertAllowsGraphicElements();
         $this->contents->addElement($element);
     }
 
@@ -2464,6 +2465,20 @@ final class Page extends IndirectObject
         }
 
         $renderer();
+    }
+
+    private function assertAllowsGraphicElements(): void
+    {
+        $profile = $this->document->getProfile();
+
+        if (!$profile->requiresArtifactGraphicElements()) {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Profile %s requires lines, shapes and paths to be rendered as artifacts in the current implementation.',
+            $profile->name(),
+        ));
     }
 
     private function createImageObject(Image $image): ImageObject

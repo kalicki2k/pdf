@@ -362,6 +362,11 @@ final readonly class Profile
         return $this->isPdfUa();
     }
 
+    public function requiresArtifactGraphicElements(): bool
+    {
+        return $this->isPdfUa();
+    }
+
     public function requiresTaggedLinkAnnotations(): bool
     {
         return $this->isPdfUa();
