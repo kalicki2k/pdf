@@ -231,7 +231,7 @@ final readonly class PageAnnotationFactory
     ): UnderlineAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'Underline annotation');
 
-        return new UnderlineAnnotation(
+        $annotation = new UnderlineAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -242,6 +242,16 @@ final readonly class PageAnnotationFactory
             $contents,
             $title,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance(new TextAnnotationAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+            ));
+        }
+
+        return $annotation;
     }
 
     public function createStrikeOutAnnotation(

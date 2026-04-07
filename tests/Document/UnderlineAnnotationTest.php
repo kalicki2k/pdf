@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
@@ -65,5 +66,22 @@ final class UnderlineAnnotationTest extends TestCase
         $annotation = new UnderlineAnnotation(7, $page, 10, 20, 80, 12, Color::cmyk(0.1, 0.2, 0.3, 0.4));
 
         self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_underline_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new UnderlineAnnotation(7, $page, 10, 20, 80, 12, Color::rgb(0, 0, 255), 'Unterstrichen', 'QA');
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 12));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Underline /Rect [10 20 90 32] /P 4 0 R /QuadPoints [10 32 90 32 10 20 90 20] /F 4 /C [0 0 1] /Contents (Unterstrichen) /T (QA) /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

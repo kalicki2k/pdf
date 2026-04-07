@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\Annotation\HighlightAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotationFactory;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
 use Kalle\Pdf\Document\Annotation\TextAnnotation;
+use Kalle\Pdf\Document\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
@@ -105,6 +106,23 @@ final class PageAnnotationFactoryTest extends TestCase
         $annotation = $factory->createHighlightAnnotation(new Rect(10, 20, 80, 12), null, 'Markiert', 'QA');
 
         self::assertInstanceOf(HighlightAnnotation::class, $annotation);
+        self::assertStringContainsString('/F 4', $annotation->render());
+        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_adds_a_pdf_a_appearance_stream_to_underline_annotations(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $annotation = $factory->createUnderlineAnnotation(new Rect(10, 20, 80, 12), null, 'Unterstrichen', 'QA');
+
+        self::assertInstanceOf(UnderlineAnnotation::class, $annotation);
         self::assertStringContainsString('/F 4', $annotation->render());
         self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
         self::assertCount(1, $annotation->getRelatedObjects());
