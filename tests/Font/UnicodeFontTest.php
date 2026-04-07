@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Font;
 
 use Kalle\Pdf\Font\CidFont;
+use Kalle\Pdf\Font\FontDescriptor;
+use Kalle\Pdf\Font\FontFileStream;
 use Kalle\Pdf\Font\ToUnicodeCMap;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeGlyphMap;
@@ -19,6 +21,7 @@ final class UnicodeFontTest extends TestCase
         $glyphMap = new UnicodeGlyphMap();
         $font = new UnicodeFont(12, new CidFont(13, 'NotoSansCJKsc-Regular'), new ToUnicodeCMap(14, $glyphMap), $glyphMap);
 
+        self::assertSame(12, $font->getId());
         self::assertSame('NotoSansCJKsc-Regular', $font->getBaseFont());
     }
 
@@ -37,6 +40,30 @@ final class UnicodeFontTest extends TestCase
             ],
             $font->glyphMap->getCharacterMap(),
         );
+    }
+
+    #[Test]
+    public function it_creates_a_default_glyph_map_when_none_is_provided(): void
+    {
+        $font = new UnicodeFont(12, new CidFont(13, 'NotoSansCJKsc-Regular'), new ToUnicodeCMap(14, new UnicodeGlyphMap()));
+
+        self::assertInstanceOf(UnicodeGlyphMap::class, $font->glyphMap);
+        self::assertSame('<0001>', $font->encodeText('漢'));
+    }
+
+    #[Test]
+    public function it_reports_utf_8_support_and_exposes_the_code_point_map(): void
+    {
+        $glyphMap = new UnicodeGlyphMap();
+        $font = new UnicodeFont(12, new CidFont(13, 'NotoSansCJKsc-Regular'), new ToUnicodeCMap(14, $glyphMap), $glyphMap);
+        $font->encodeText('Ä字');
+
+        self::assertTrue($font->supportsText('Ä字'));
+        self::assertFalse($font->supportsText("\xC3\x28"));
+        self::assertSame([
+            '0001' => '00C4',
+            '0002' => '5B57',
+        ], $font->getCodePointMap());
     }
 
     #[Test]
@@ -59,6 +86,30 @@ final class UnicodeFontTest extends TestCase
         $glyphMap = new UnicodeGlyphMap();
         $font = new UnicodeFont(12, new CidFont(13, 'NotoSansCJKsc-Regular'), new ToUnicodeCMap(14, $glyphMap), $glyphMap);
 
+        self::assertSame(0.0, $font->measureTextWidth('', 10));
         self::assertSame(20.0, $font->measureTextWidth('漢字', 10));
+    }
+
+    #[Test]
+    public function it_measures_text_using_embedded_font_metrics_when_available(): void
+    {
+        $glyphMap = new UnicodeGlyphMap();
+        $font = new UnicodeFont(
+            12,
+            new CidFont(
+                13,
+                'NotoSans-Regular',
+                fontDescriptor: new FontDescriptor(
+                    15,
+                    'NotoSans-Regular',
+                    FontFileStream::fromPath(16, 'assets/fonts/NotoSans-Regular.ttf'),
+                ),
+            ),
+            new ToUnicodeCMap(14, $glyphMap),
+            $glyphMap,
+        );
+
+        self::assertGreaterThan(0.0, $font->measureTextWidth('Hello', 10));
+        self::assertNotSame(50.0, $font->measureTextWidth('Hello', 10));
     }
 }
