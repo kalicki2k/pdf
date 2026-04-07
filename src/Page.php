@@ -434,9 +434,9 @@ final readonly class Page
         return $this;
     }
 
-    public function addCheckbox(string $name, Position $position, float $size, bool $checked = false): self
+    public function addCheckbox(string $name, Position $position, float $size, bool $checked = false, ?string $accessibleName = null): self
     {
-        $this->page->addCheckbox($name, $position, $size, $checked);
+        $this->page->addCheckbox($name, $position, $size, $checked, $accessibleName);
 
         return $this;
     }

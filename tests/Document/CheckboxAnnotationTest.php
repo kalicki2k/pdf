@@ -68,4 +68,29 @@ final class CheckboxAnnotationTest extends TestCase
         );
         self::assertSame([$offAppearance, $onAppearance], $annotation->getRelatedObjects());
     }
+
+    #[Test]
+    public function it_renders_accessibility_metadata_for_checkboxes(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $annotation = new CheckboxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            12,
+            12,
+            'accept_terms',
+            true,
+            new CheckboxAppearanceStream(8, 12, 12, false),
+            new CheckboxAppearanceStream(9, 12, 12, true),
+            'Accept terms',
+        );
+        $annotation->withStructParent(1);
+
+        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/TU (Accept terms)', $annotation->render());
+    }
 }

@@ -453,7 +453,28 @@ final class PublicApiTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 does not allow AcroForm fields in the current implementation.');
 
-        $page->addCheckbox('check', new Position(10, 20), 12, true);
+        $page->addRadioButton('radio', 'yes', new Position(10, 20), 12, true);
+    }
+
+    #[Test]
+    public function it_renders_an_accessible_checkbox_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addCheckbox('check', new Position(10, 20), 12, true, 'Accept terms');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/T (check)', $rendered);
+        self::assertStringContainsString('/V /Yes', $rendered);
+        self::assertStringContainsString('/TU (Accept terms)', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Accept terms\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
 
     #[Test]

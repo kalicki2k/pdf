@@ -15,6 +15,8 @@ use Kalle\Pdf\Types\StringType;
 
 final class CheckboxAnnotation extends IndirectObject implements PageAnnotation
 {
+    private ?int $structParentId = null;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -26,8 +28,16 @@ final class CheckboxAnnotation extends IndirectObject implements PageAnnotation
         private readonly bool $checked,
         private readonly CheckboxAppearanceStream $offAppearance,
         private readonly CheckboxAppearanceStream $onAppearance,
+        private readonly ?string $tooltip = null,
     ) {
         parent::__construct($id);
+    }
+
+    public function withStructParent(int $structParentId): self
+    {
+        $this->structParentId = $structParentId;
+
+        return $this;
     }
 
     public function render(): string
@@ -56,6 +66,14 @@ final class CheckboxAnnotation extends IndirectObject implements PageAnnotation
                 ]),
             ]),
         ]);
+
+        if ($this->structParentId !== null) {
+            $dictionary->add('StructParent', $this->structParentId);
+        }
+
+        if ($this->tooltip !== null && $this->tooltip !== '') {
+            $dictionary->add('TU', new StringType($this->tooltip));
+        }
 
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL

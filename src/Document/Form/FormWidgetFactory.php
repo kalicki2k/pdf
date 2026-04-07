@@ -88,6 +88,7 @@ final readonly class FormWidgetFactory
         Position $position,
         float $size,
         bool $checked,
+        ?string $accessibleName,
     ): CheckboxAnnotation {
         if ($name === '') {
             throw new InvalidArgumentException('Checkbox name must not be empty.');
@@ -108,6 +109,7 @@ final readonly class FormWidgetFactory
             $checked,
             new CheckboxAppearanceStream($this->nextObjectId(), $size, $size, false),
             new CheckboxAppearanceStream($this->nextObjectId(), $size, $size, true),
+            $accessibleName,
         );
     }
 

@@ -70,12 +70,13 @@ final class FormWidgetFactoryTest extends TestCase
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
 
-        $annotation = $factory->createCheckbox('terms', new Position(10, 20), 12, true);
+        $annotation = $factory->createCheckbox('terms', new Position(10, 20), 12, true, 'Accept terms');
 
         self::assertInstanceOf(CheckboxAnnotation::class, $annotation);
         self::assertCount(2, $annotation->getRelatedObjects());
         self::assertStringContainsString('/T (terms)', $annotation->render());
         self::assertStringContainsString('/V /Yes', $annotation->render());
+        self::assertStringContainsString('/TU (Accept terms)', $annotation->render());
     }
 
     #[Test]
@@ -238,8 +239,8 @@ final class FormWidgetFactoryTest extends TestCase
             ['Text field width must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 0, 20), null, StandardFontName::HELVETICA, 12, false, null, null, null, null)],
             ['Text field height must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 100, 0), null, StandardFontName::HELVETICA, 12, false, null, null, null, null)],
             ['Text field font size must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 100, 20), null, StandardFontName::HELVETICA, 0, false, null, null, null, null)],
-            ['Checkbox name must not be empty.', fn (): CheckboxAnnotation => $factory->createCheckbox('', new Position(10, 20), 12, false)],
-            ['Checkbox size must be greater than zero.', fn (): CheckboxAnnotation => $factory->createCheckbox('terms', new Position(10, 20), 0, false)],
+            ['Checkbox name must not be empty.', fn (): CheckboxAnnotation => $factory->createCheckbox('', new Position(10, 20), 12, false, null)],
+            ['Checkbox size must be greater than zero.', fn (): CheckboxAnnotation => $factory->createCheckbox('terms', new Position(10, 20), 0, false, null)],
             ['Radio button name must not be empty.', fn (): array => $factory->createRadioButton('', 'yes', new Position(10, 20), 12, false)],
             ['Radio button value may contain only letters, numbers, dots, underscores and hyphens.', fn (): array => $factory->createRadioButton('delivery', 'bad value', new Position(10, 20), 12, false)],
             ['Radio button size must be greater than zero.', fn (): array => $factory->createRadioButton('delivery', 'yes', new Position(10, 20), 0, false)],

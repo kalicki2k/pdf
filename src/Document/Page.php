@@ -1555,7 +1555,7 @@ final class Page extends IndirectObject
         ?string $defaultValue = null,
         ?string $accessibleName = null,
     ): self {
-        $resolvedAccessibleName = $this->resolveTextFieldAccessibleName($name, $accessibleName);
+        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName);
         $acroForm = $this->document->ensureTextFieldAcroForm();
         $annotation = $this->formWidgetFactory()->createTextField(
             $name,
@@ -1582,10 +1582,13 @@ final class Page extends IndirectObject
         Position $position,
         float $size,
         bool $checked = false,
+        ?string $accessibleName = null,
     ): self {
-        $acroForm = $this->document->ensureAcroForm();
-        $annotation = $this->formWidgetFactory()->createCheckbox($name, $position, $size, $checked);
+        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName);
+        $acroForm = $this->document->ensureCheckboxAcroForm();
+        $annotation = $this->formWidgetFactory()->createCheckbox($name, $position, $size, $checked, $resolvedAccessibleName);
 
+        $this->bindCheckboxAccessibility($annotation, $resolvedAccessibleName);
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
 
@@ -2168,7 +2171,31 @@ final class Page extends IndirectObject
         $this->document->registerObjectStructElem($structParentId, $formStructElem);
     }
 
-    private function resolveTextFieldAccessibleName(string $name, ?string $accessibleName): ?string
+    private function bindCheckboxAccessibility(
+        Annotation\CheckboxAnnotation $annotation,
+        ?string $accessibleName,
+    ): void {
+        $profile = $this->document->getProfile();
+
+        if (!$profile->requiresTaggedFormFields()) {
+            return;
+        }
+
+        $formStructElem = $this->document->createStructElem(StructureTag::Form);
+        $formStructElem->setPage($this);
+
+        $structParentId = $this->document->getNextStructParentId();
+        $annotation->withStructParent($structParentId);
+        $formStructElem->addObjectReference($annotation, $this);
+
+        if ($profile->requiresFormFieldAlternativeDescriptions() && $accessibleName !== null && $accessibleName !== '') {
+            $formStructElem->setAltText($accessibleName);
+        }
+
+        $this->document->registerObjectStructElem($structParentId, $formStructElem);
+    }
+
+    private function resolveFormFieldAccessibleName(string $name, ?string $accessibleName): ?string
     {
         if ($accessibleName !== null && $accessibleName !== '') {
             return $accessibleName;

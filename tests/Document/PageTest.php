@@ -1836,6 +1836,24 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_an_accessible_checkbox_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage();
+
+        $result = $page->addCheckbox('accept_terms', new Position(10, 20), 12, true, 'Accept terms');
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (Accept terms)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $page->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Accept terms\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_adds_radio_buttons_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

@@ -223,6 +223,14 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_the_current_checkbox_implementation(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsCurrentCheckboxImplementation());
+        self::assertTrue(Profile::pdfUa1()->supportsCurrentCheckboxImplementation());
+        self::assertFalse(Profile::pdfA2u()->supportsCurrentCheckboxImplementation());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_write_the_info_dictionary(): void
     {
         self::assertTrue(Profile::pdf14()->writesInfoDictionary());
