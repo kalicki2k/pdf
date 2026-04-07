@@ -7,6 +7,7 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Form\FormFieldLabel;
+use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
@@ -45,6 +46,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-layout.pdf' => createPdfUa1LayoutFixture(...),
     $outputDir . '/pdf-ua-1-links.pdf' => createPdfUa1LinksFixture(...),
     $outputDir . '/pdf-ua-1-forms.pdf' => createPdfUa1FormsFixture(...),
+    $outputDir . '/pdf-ua-1-widget-appearances.pdf' => createPdfUa1WidgetAppearanceFixture(...),
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
     $outputDir . '/pdf-ua-1-mixed.pdf' => createPdfUa1MixedFixture(...),
 ];
@@ -309,6 +311,76 @@ function createPdfUa1FormsFixture(): Document
         new Rect(124, 176, 90, 16),
         'Approval signature',
         new FormFieldLabel('Approval signature', new Position(124, 196), 'NotoSans-Regular', 10),
+    );
+
+    return $document;
+}
+
+function createPdfUa1WidgetAppearanceFixture(): Document
+{
+    $document = createPdfUaDocument('PDF/UA-1 Widget Appearance Regression', 'Representative PDF/UA-1 widget appearance regression fixture');
+    $page = $document->addPage(PageSize::custom(240, 240));
+
+    $page->addText(
+        'Widget Appearance Rendering',
+        new Position(12, 220),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addText(
+        'This fixture focuses on visible appearance streams for text, choice, button and signature widgets.',
+        new Position(12, 204),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $page->addTextField(
+        'notes',
+        new Rect(12, 158, 92, 28),
+        "Ada Lovelace\nGrace Hopper",
+        'NotoSans-Regular',
+        11,
+        true,
+        accessibleName: 'Contact notes',
+        fieldLabel: new FormFieldLabel('Contact notes', new Position(12, 190), 'NotoSans-Regular', 10),
+    );
+    $page->addComboBox(
+        'country',
+        new Rect(12, 116, 92, 16),
+        ['de' => 'Germany', 'at' => 'Austria', 'ch' => 'Switzerland'],
+        'ch',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Country selection',
+        fieldLabel: new FormFieldLabel('Country', new Position(12, 136), 'NotoSans-Regular', 10),
+    );
+    $page->addListBox(
+        'topics',
+        new Rect(12, 54, 92, 42),
+        ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
+        ['pdf', 'tables'],
+        'NotoSans-Regular',
+        11,
+        flags: new FormFieldFlags(multiSelect: true),
+        accessibleName: 'Topics selection',
+        fieldLabel: new FormFieldLabel('Topics', new Position(12, 100), 'NotoSans-Regular', 10),
+    );
+    $page->addPushButton(
+        'apply_changes',
+        'Apply',
+        new Rect(128, 158, 84, 18),
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Apply changes',
+        fieldLabel: new FormFieldLabel('Primary action', new Position(128, 180), 'NotoSans-Regular', 10),
+    );
+    $page->addSignatureField(
+        'approval_signature',
+        new Rect(128, 116, 84, 18),
+        'Approval signature',
+        new FormFieldLabel('Approval signature', new Position(128, 136), 'NotoSans-Regular', 10),
     );
 
     return $document;
