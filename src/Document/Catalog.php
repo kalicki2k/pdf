@@ -65,10 +65,15 @@ final class Catalog extends IndirectObject
 
         if ($this->document->getAttachments() !== []) {
             $embeddedFileEntries = [];
+            $associatedFiles = [];
 
             foreach ($this->document->getAttachments() as $attachment) {
                 $embeddedFileEntries[] = new StringType($attachment->getFilename());
                 $embeddedFileEntries[] = new ReferenceType($attachment);
+
+                if ($attachment->hasAfRelationship()) {
+                    $associatedFiles[] = new ReferenceType($attachment);
+                }
             }
 
             $dictionary->add('Names', new DictionaryType([
@@ -76,6 +81,10 @@ final class Catalog extends IndirectObject
                     'Names' => new ArrayType($embeddedFileEntries),
                 ]),
             ]));
+
+            if ($associatedFiles !== []) {
+                $dictionary->add('AF', new ArrayType($associatedFiles));
+            }
         }
 
         if ($this->document->acroForm !== null) {

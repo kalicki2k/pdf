@@ -258,7 +258,7 @@ final class Document
 
     public function getPdfAOutputIntentProfile(): ?IccProfileStream
     {
-        if (!$this->profile->isPdfA2()) {
+        if (!$this->profile->usesPdfAOutputIntent()) {
             return null;
         }
 
@@ -502,7 +502,13 @@ final class Document
         }
 
         $embeddedFile = new EmbeddedFileStream($this->getUniqObjectId(), $contents, $mimeType);
-        $this->attachments[] = new FileSpecification($this->getUniqObjectId(), $filename, $embeddedFile, $description);
+        $this->attachments[] = new FileSpecification(
+            $this->getUniqObjectId(),
+            $filename,
+            $embeddedFile,
+            $description,
+            $this->profile->isPdfA3() ? 'Data' : null,
+        );
 
         return $this;
     }

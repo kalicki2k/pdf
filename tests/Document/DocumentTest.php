@@ -74,6 +74,24 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_accepts_a_pdf_a_3b_profile(): void
+    {
+        $document = new Document(profile: Profile::pdfA3b());
+
+        self::assertSame('PDF/A-3b', $document->getProfile()->name());
+        self::assertSame(1.7, $document->getVersion());
+    }
+
+    #[Test]
+    public function it_accepts_a_pdf_a_3u_profile(): void
+    {
+        $document = new Document(profile: Profile::pdfA3u());
+
+        self::assertSame('PDF/A-3u', $document->getProfile()->name());
+        self::assertSame(1.7, $document->getVersion());
+    }
+
+    #[Test]
     public function it_rejects_encryption_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());
@@ -155,6 +173,42 @@ final class DocumentTest extends TestCase
 
         self::assertSame([1, 2, 5, 3, 4], $objectIds);
         self::assertNotNull($document->getPdfAOutputIntentProfile());
+    }
+
+    #[Test]
+    public function it_registers_an_icc_profile_stream_for_pdf_a_3b(): void
+    {
+        $document = new Document(profile: Profile::pdfA3b());
+
+        $objectIds = array_map(
+            static fn (object $object): int => $object->id,
+            $document->getDocumentObjects(),
+        );
+
+        self::assertSame([1, 2, 5, 3, 4], $objectIds);
+        self::assertNotNull($document->getPdfAOutputIntentProfile());
+    }
+
+    #[Test]
+    public function it_allows_attachments_for_pdf_a_3b_and_marks_them_as_associated_files(): void
+    {
+        $document = new Document(profile: Profile::pdfA3b());
+
+        $document->addAttachment('data.xml', '<root/>', 'Machine-readable source', 'application/xml');
+
+        self::assertCount(1, $document->getAttachments());
+        self::assertStringContainsString('/AFRelationship /Data', $document->getAttachments()[0]->render());
+    }
+
+    #[Test]
+    public function it_allows_attachments_for_pdf_a_3u_and_marks_them_as_associated_files(): void
+    {
+        $document = new Document(profile: Profile::pdfA3u());
+
+        $document->addAttachment('data.xml', '<root/>', 'Machine-readable source', 'application/xml');
+
+        self::assertCount(1, $document->getAttachments());
+        self::assertStringContainsString('/AFRelationship /Data', $document->getAttachments()[0]->render());
     }
 
     #[Test]

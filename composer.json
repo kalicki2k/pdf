@@ -38,6 +38,8 @@
     "docs:build": "php bin/generate-docs.php",
     "example:pdfa2b": "php examples/pdf-a-2b.php",
     "example:pdfa2u": "php examples/pdf-a-2u.php",
+    "example:pdfa3b": "php examples/pdf-a-3b.php",
+    "example:pdfa3u": "php examples/pdf-a-3u.php",
     "phpstan": "phpstan analyse --debug",
     "test": "phpunit --configuration phpunit.xml.dist",
     "test:coverage": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-text",

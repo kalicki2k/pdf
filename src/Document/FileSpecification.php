@@ -17,6 +17,7 @@ final class FileSpecification extends IndirectObject
         private readonly string $filename,
         private readonly EmbeddedFileStream $embeddedFile,
         private readonly ?string $description = null,
+        private readonly ?string $afRelationship = null,
     ) {
         parent::__construct($id);
     }
@@ -29,6 +30,11 @@ final class FileSpecification extends IndirectObject
     public function getEmbeddedFile(): EmbeddedFileStream
     {
         return $this->embeddedFile;
+    }
+
+    public function hasAfRelationship(): bool
+    {
+        return $this->afRelationship !== null && $this->afRelationship !== '';
     }
 
     public function render(): string
@@ -45,6 +51,12 @@ final class FileSpecification extends IndirectObject
 
         if ($this->description !== null && $this->description !== '') {
             $dictionary->add('Desc', new StringType($this->description));
+        }
+
+        if ($this->hasAfRelationship()) {
+            /** @var string $afRelationship */
+            $afRelationship = $this->afRelationship;
+            $dictionary->add('AFRelationship', new NameType($afRelationship));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL

@@ -101,6 +101,16 @@ final readonly class Profile
         return $this->pdfaPart() === 2;
     }
 
+    public function isPdfA3(): bool
+    {
+        return $this->pdfaPart() === 3;
+    }
+
+    public function usesPdfAOutputIntent(): bool
+    {
+        return in_array($this->pdfaPart(), [2, 3], true);
+    }
+
     public function isPdfA2u(): bool
     {
         return $this->name === 'PDF/A-2u';
