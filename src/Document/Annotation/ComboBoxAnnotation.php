@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Annotation;
 
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Document\Form\FormFieldTextAppearanceStream;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
@@ -37,6 +38,7 @@ final class ComboBoxAnnotation extends IndirectObject implements PageAnnotation,
         private readonly ?Color $textColor = null,
         private readonly ?string $defaultValue = null,
         private readonly ?string $tooltip = null,
+        private readonly ?FormFieldTextAppearanceStream $appearance = null,
     ) {
         parent::__construct($id);
     }
@@ -94,6 +96,12 @@ final class ComboBoxAnnotation extends IndirectObject implements PageAnnotation,
             $dictionary->add('DV', new StringType($this->defaultValue));
         }
 
+        if ($this->appearance !== null) {
+            $dictionary->add('AP', new DictionaryType([
+                'N' => new ReferenceType($this->appearance),
+            ]));
+        }
+
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'endobj' . PHP_EOL;
@@ -101,6 +109,6 @@ final class ComboBoxAnnotation extends IndirectObject implements PageAnnotation,
 
     public function getRelatedObjects(): array
     {
-        return [];
+        return $this->appearance === null ? [] : [$this->appearance];
     }
 }

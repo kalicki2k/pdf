@@ -265,6 +265,7 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/Subtype /Widget', $rendered);
         self::assertStringContainsString('/FT /Tx', $rendered);
         self::assertStringContainsString('/TU (Customer name)', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
@@ -367,6 +368,7 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/FT /Ch', $rendered);
         self::assertStringContainsString('/T (country)', $rendered);
         self::assertStringContainsString('/TU (Country selection)', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Country selection\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
@@ -393,6 +395,7 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('/FT /Ch', $rendered);
         self::assertStringContainsString('/T (topics)', $rendered);
         self::assertStringContainsString('/TU (Topics selection)', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Topics selection\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);

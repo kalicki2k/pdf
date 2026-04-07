@@ -19,6 +19,7 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Object\IndirectObject;
 
 /**
  * Builds form widgets so Page can stay focused on the public API surface.
@@ -68,7 +69,7 @@ final readonly class FormWidgetFactory
             throw new InvalidArgumentException('Text field font size must be greater than zero.');
         }
 
-        $fontResourceName = $this->registerTextFieldAcroFormFont($baseFont);
+        [$font, $fontResourceName] = $this->prepareTextFieldAcroFormFont($baseFont);
 
         return new TextFieldAnnotation(
             $this->nextObjectId(),
@@ -86,6 +87,16 @@ final readonly class FormWidgetFactory
             $textColor,
             $defaultValue,
             $accessibleName,
+            new FormFieldTextAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+                $font,
+                $fontResourceName,
+                $size,
+                $this->resolveTextFieldAppearanceLines($value, $multiline),
+                $textColor,
+            ),
         );
     }
 
@@ -199,7 +210,7 @@ final readonly class FormWidgetFactory
             throw new InvalidArgumentException('Combo box default value must reference one of the available options.');
         }
 
-        $fontResourceName = $this->registerComboBoxAcroFormFont($baseFont);
+        [$font, $fontResourceName] = $this->prepareComboBoxAcroFormFont($baseFont);
 
         return new ComboBoxAnnotation(
             $this->nextObjectId(),
@@ -217,6 +228,16 @@ final readonly class FormWidgetFactory
             $textColor,
             $defaultValue,
             $accessibleName,
+            new FormFieldTextAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+                $font,
+                $fontResourceName,
+                $size,
+                $this->resolveComboBoxAppearanceLines($options, $value),
+                $textColor,
+            ),
         );
     }
 
@@ -251,7 +272,7 @@ final readonly class FormWidgetFactory
         $this->assertSelectionExists($value, $options, 'List box value must reference one of the available options.');
         $this->assertSelectionExists($defaultValue, $options, 'List box default value must reference one of the available options.');
 
-        $fontResourceName = $this->registerListBoxAcroFormFont($baseFont);
+        [$font, $fontResourceName] = $this->prepareListBoxAcroFormFont($baseFont);
 
         return new ListBoxAnnotation(
             $this->nextObjectId(),
@@ -269,6 +290,16 @@ final readonly class FormWidgetFactory
             $textColor,
             $defaultValue,
             $accessibleName,
+            new FormFieldTextAppearanceStream(
+                $this->nextObjectId(),
+                $box->width,
+                $box->height,
+                $font,
+                $fontResourceName,
+                $size,
+                $this->resolveListBoxAppearanceLines($options, $value),
+                $textColor,
+            ),
         );
     }
 
@@ -345,13 +376,6 @@ final readonly class FormWidgetFactory
         return ($this->ensureTextFieldAcroForm)();
     }
 
-    private function registerTextFieldAcroFormFont(string $baseFont): string
-    {
-        $font = ($this->resolveFont)($baseFont);
-
-        return $this->ensureTextFieldAcroForm()->registerFont($font);
-    }
-
     private function ensurePushButtonAcroForm(): AcroForm
     {
         return ($this->ensurePushButtonAcroForm)();
@@ -379,18 +403,46 @@ final readonly class FormWidgetFactory
         return $this->ensurePushButtonAcroForm()->registerFont($font);
     }
 
-    private function registerComboBoxAcroFormFont(string $baseFont): string
+    /**
+     * @return array{0: FontDefinition&IndirectObject, 1: string}
+     */
+    private function prepareTextFieldAcroFormFont(string $baseFont): array
     {
         $font = ($this->resolveFont)($baseFont);
 
-        return $this->ensureComboBoxAcroForm()->registerFont($font);
+        if (!$font instanceof IndirectObject) {
+            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
+        }
+
+        return [$font, $this->ensureTextFieldAcroForm()->registerFont($font)];
     }
 
-    private function registerListBoxAcroFormFont(string $baseFont): string
+    /**
+     * @return array{0: FontDefinition&IndirectObject, 1: string}
+     */
+    private function prepareComboBoxAcroFormFont(string $baseFont): array
     {
         $font = ($this->resolveFont)($baseFont);
 
-        return $this->ensureListBoxAcroForm()->registerFont($font);
+        if (!$font instanceof IndirectObject) {
+            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
+        }
+
+        return [$font, $this->ensureComboBoxAcroForm()->registerFont($font)];
+    }
+
+    /**
+     * @return array{0: FontDefinition&IndirectObject, 1: string}
+     */
+    private function prepareListBoxAcroFormFont(string $baseFont): array
+    {
+        $font = ($this->resolveFont)($baseFont);
+
+        if (!$font instanceof IndirectObject) {
+            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
+        }
+
+        return [$font, $this->ensureListBoxAcroForm()->registerFont($font)];
     }
 
     private function assertRectHasPositiveDimensions(Rect $box, string $subject): void
@@ -447,5 +499,66 @@ final readonly class FormWidgetFactory
                 throw new InvalidArgumentException($message);
             }
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolveTextFieldAppearanceLines(?string $value, bool $multiline): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        if (!$multiline) {
+            return [$value];
+        }
+
+        $lines = preg_split('/\R/u', $value) ?: [];
+
+        return $lines;
+    }
+
+    /**
+     * @param array<string, string> $options
+     * @return list<string>
+     */
+    private function resolveComboBoxAppearanceLines(array $options, ?string $value): array
+    {
+        if ($value === null) {
+            return [];
+        }
+
+        $label = $options[$value] ?? null;
+
+        return $label === null ? [] : [$label];
+    }
+
+    /**
+     * @param array<string, string> $options
+     * @param list<string>|string|null $value
+     * @return list<string>
+     */
+    private function resolveListBoxAppearanceLines(array $options, string | array | null $value): array
+    {
+        if ($value === null) {
+            return [];
+        }
+
+        if (is_string($value)) {
+            $label = $options[$value] ?? null;
+
+            return $label === null ? [] : [$label];
+        }
+
+        $labels = [];
+
+        foreach ($value as $selectedValue) {
+            if (isset($options[$selectedValue])) {
+                $labels[] = $options[$selectedValue];
+            }
+        }
+
+        return $labels;
     }
 }

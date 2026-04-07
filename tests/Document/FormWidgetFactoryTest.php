@@ -60,6 +60,8 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/DV (Grace)', $annotation->render());
         self::assertStringContainsString('/Ff 4098', $annotation->render());
         self::assertStringContainsString('/TU (Customer name)', $annotation->render());
+        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]
@@ -128,6 +130,8 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/DV (standard)', $annotation->render());
         self::assertStringContainsString('/Ff 393218', $annotation->render());
         self::assertStringContainsString('/TU (Delivery method)', $annotation->render());
+        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]
@@ -158,6 +162,8 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/DV [(b)]', $annotation->render());
         self::assertStringContainsString('/Ff 2097152', $annotation->render());
         self::assertStringContainsString('/TU (Feature selection)', $annotation->render());
+        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]
@@ -183,6 +189,8 @@ final class FormWidgetFactoryTest extends TestCase
 
         self::assertInstanceOf(ListBoxAnnotation::class, $annotation);
         self::assertStringContainsString('/V (express)', $annotation->render());
+        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 
     #[Test]
