@@ -90,6 +90,15 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_exposes_a_pdf_a_1b_profile_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::pdfA1b());
+
+        self::assertSame('PDF/A-1b', $document->getProfile()->name());
+        self::assertSame(1.4, $document->getProfile()->version());
+    }
+
+    #[Test]
     public function it_exposes_a_pdf_a_3b_profile_through_the_public_api(): void
     {
         $document = new Document(profile: Profile::pdfA3b());
@@ -180,6 +189,37 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
         self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
         self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
+        self::assertStringContainsString('<pdfaid:conformance>B</pdfaid:conformance>', $rendered);
+        self::assertStringContainsString('/Subtype /CIDFontType2', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_a_minimal_pdf_a_1b_document_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'PDF/A-1b',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+
+        $page = $document->addPage(PageSize::custom(100, 100));
+        $page->addText('Hallo PDF/A', new Position(10, 50), 'NotoSans-Regular', 12);
+
+        $rendered = $document->render();
+
+        self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $rendered);
+        self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
+        self::assertStringContainsString('<pdfaid:part>1</pdfaid:part>', $rendered);
         self::assertStringContainsString('<pdfaid:conformance>B</pdfaid:conformance>', $rendered);
         self::assertStringContainsString('/Subtype /CIDFontType2', $rendered);
     }

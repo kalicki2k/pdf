@@ -37,6 +37,7 @@
     "cs:check": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --sequential",
     "docs:build": "php bin/generate-docs.php",
     "example:pdfa1a": "php examples/pdf-a-1a.php",
+    "example:pdfa1b": "php examples/pdf-a-1b.php",
     "example:pdfa2a": "php examples/pdf-a-2a.php",
     "example:pdfa2b": "php examples/pdf-a-2b.php",
     "example:pdfa2u": "php examples/pdf-a-2u.php",
