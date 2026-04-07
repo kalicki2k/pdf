@@ -253,7 +253,25 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_acroform_fields_for_pdf_ua_1(): void
+    public function it_adds_a_text_field_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(100.0, 200.0);
+
+        $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12, accessibleName: 'Customer name');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Widget', $rendered);
+        self::assertStringContainsString('/FT /Tx', $rendered);
+        self::assertStringContainsString('/TU (Customer name)', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_rejects_non_text_acroform_fields_for_pdf_ua_1(): void
     {
         $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage(100.0, 200.0);
@@ -261,7 +279,7 @@ final class DocumentTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 does not allow AcroForm fields in the current implementation.');
 
-        $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12);
+        $page->addCheckbox('accept_terms', new Position(10, 20), 12, true);
     }
 
     #[Test]

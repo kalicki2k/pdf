@@ -16,6 +16,7 @@ enum StructureTag: string
     case Paragraph = 'P';
     case Span = 'Span';
     case Link = 'Link';
+    case Form = 'Form';
     case List = 'L';
     case ListItem = 'LI';
     case Label = 'Lbl';

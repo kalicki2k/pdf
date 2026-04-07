@@ -50,6 +50,13 @@ final class StructElem extends IndirectObject
         return $this;
     }
 
+    public function setPage(Page $page): self
+    {
+        $this->page = $page;
+
+        return $this;
+    }
+
     public function setAltText(string $altText): self
     {
         $this->altText = $altText;

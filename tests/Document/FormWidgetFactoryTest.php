@@ -49,6 +49,7 @@ final class FormWidgetFactoryTest extends TestCase
             Color::rgb(0, 0, 255),
             new FormFieldFlags(required: true),
             'Grace',
+            'Customer name',
         );
 
         self::assertInstanceOf(TextFieldAnnotation::class, $annotation);
@@ -58,6 +59,7 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/V (Ada)', $annotation->render());
         self::assertStringContainsString('/DV (Grace)', $annotation->render());
         self::assertStringContainsString('/Ff 4098', $annotation->render());
+        self::assertStringContainsString('/TU (Customer name)', $annotation->render());
     }
 
     #[Test]
@@ -232,10 +234,10 @@ final class FormWidgetFactoryTest extends TestCase
         $factory = $this->createFactory($page, $resolvedFonts);
 
         $cases = [
-            ['Text field name must not be empty.', fn (): TextFieldAnnotation => $factory->createTextField('', new Rect(10, 20, 100, 20), null, StandardFontName::HELVETICA, 12, false, null, null, null)],
-            ['Text field width must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 0, 20), null, StandardFontName::HELVETICA, 12, false, null, null, null)],
-            ['Text field height must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 100, 0), null, StandardFontName::HELVETICA, 12, false, null, null, null)],
-            ['Text field font size must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 100, 20), null, StandardFontName::HELVETICA, 0, false, null, null, null)],
+            ['Text field name must not be empty.', fn (): TextFieldAnnotation => $factory->createTextField('', new Rect(10, 20, 100, 20), null, StandardFontName::HELVETICA, 12, false, null, null, null, null)],
+            ['Text field width must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 0, 20), null, StandardFontName::HELVETICA, 12, false, null, null, null, null)],
+            ['Text field height must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 100, 0), null, StandardFontName::HELVETICA, 12, false, null, null, null, null)],
+            ['Text field font size must be greater than zero.', fn (): TextFieldAnnotation => $factory->createTextField('name', new Rect(10, 20, 100, 20), null, StandardFontName::HELVETICA, 0, false, null, null, null, null)],
             ['Checkbox name must not be empty.', fn (): CheckboxAnnotation => $factory->createCheckbox('', new Position(10, 20), 12, false)],
             ['Checkbox size must be greater than zero.', fn (): CheckboxAnnotation => $factory->createCheckbox('terms', new Position(10, 20), 0, false)],
             ['Radio button name must not be empty.', fn (): array => $factory->createRadioButton('', 'yes', new Position(10, 20), 12, false)],
@@ -292,6 +294,9 @@ final class FormWidgetFactoryTest extends TestCase
             $page,
             static function () use (&$nextObjectId): int {
                 return $nextObjectId++;
+            },
+            static function () use (&$acroForm): AcroForm {
+                return $acroForm;
             },
             static function () use (&$acroForm): AcroForm {
                 return $acroForm;

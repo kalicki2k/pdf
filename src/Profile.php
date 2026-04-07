@@ -273,6 +273,12 @@ final readonly class Profile
             && !$this->isPdfUa();
     }
 
+    public function supportsCurrentTextFieldImplementation(): bool
+    {
+        return $this->supportsAcroForms()
+            || $this->isPdfUa();
+    }
+
     public function writesInfoDictionary(): bool
     {
         return !$this->isPdfA4();
@@ -324,6 +330,21 @@ final readonly class Profile
     }
 
     public function requiresLinkAnnotationAlternativeDescriptions(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresTaggedFormFields(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresFormFieldAlternativeDescriptions(): bool
+    {
+        return $this->isPdfUa();
+    }
+
+    public function requiresPageAnnotationTabOrder(): bool
     {
         return $this->isPdfUa();
     }

@@ -420,7 +420,28 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_acroform_fields_for_pdf_ua_1_through_the_public_api(): void
+    public function it_renders_an_accessible_text_field_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $document->registerFont('Helvetica');
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $page->addTextField('field', new Rect(10, 20, 40, 15), 'value', 'Helvetica', 10, accessibleName: 'Customer name');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Widget', $rendered);
+        self::assertStringContainsString('/TU (Customer name)', $rendered);
+        self::assertStringContainsString('/Tabs /S', $rendered);
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
+    public function it_rejects_non_text_acroform_fields_for_pdf_ua_1_through_the_public_api(): void
     {
         $document = new Document(
             profile: Profile::pdfUa1(),
@@ -432,7 +453,7 @@ final class PublicApiTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 does not allow AcroForm fields in the current implementation.');
 
-        $page->addTextField('field', new Rect(10, 20, 40, 15), 'value', 'Helvetica', 10);
+        $page->addCheckbox('check', new Position(10, 20), 12, true);
     }
 
     #[Test]

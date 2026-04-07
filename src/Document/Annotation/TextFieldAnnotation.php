@@ -16,6 +16,8 @@ use Kalle\Pdf\Types\StringType;
 
 final class TextFieldAnnotation extends IndirectObject implements PageAnnotation
 {
+    private ?int $structParentId = null;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -31,8 +33,16 @@ final class TextFieldAnnotation extends IndirectObject implements PageAnnotation
         private readonly ?FormFieldFlags $flags = null,
         private readonly ?Color $textColor = null,
         private readonly ?string $defaultValue = null,
+        private readonly ?string $tooltip = null,
     ) {
         parent::__construct($id);
+    }
+
+    public function withStructParent(int $structParentId): self
+    {
+        $this->structParentId = $structParentId;
+
+        return $this;
     }
 
     public function render(): string
@@ -59,6 +69,14 @@ final class TextFieldAnnotation extends IndirectObject implements PageAnnotation
             'T' => new StringType($this->name),
             'DA' => new StringType($defaultAppearance),
         ]);
+
+        if ($this->structParentId !== null) {
+            $dictionary->add('StructParent', $this->structParentId);
+        }
+
+        if ($this->tooltip !== null && $this->tooltip !== '') {
+            $dictionary->add('TU', new StringType($this->tooltip));
+        }
 
         $fieldFlags = ($this->flags ?? new FormFieldFlags())->toPdfFlags($this->multiline);
 

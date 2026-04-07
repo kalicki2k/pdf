@@ -1801,6 +1801,25 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_adds_an_accessible_text_field_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $result = $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12, accessibleName: 'Customer name');
+
+        self::assertSame($page, $result);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/TU (Customer name)', $rendered);
+        self::assertStringContainsString('/StructParent 1', $rendered);
+        self::assertStringContainsString('/Tabs /S', $page->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
+    }
+
+    #[Test]
     public function it_adds_a_checkbox_annotation_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

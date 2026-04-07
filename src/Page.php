@@ -427,8 +427,9 @@ final readonly class Page
         ?Color $textColor = null,
         ?FormFieldFlags $flags = null,
         ?string $defaultValue = null,
+        ?string $accessibleName = null,
     ): self {
-        $this->page->addTextField($name, $box, $value, $baseFont, $size, $multiline, $textColor, $flags, $defaultValue);
+        $this->page->addTextField($name, $box, $value, $baseFont, $size, $multiline, $textColor, $flags, $defaultValue, $accessibleName);
 
         return $this;
     }

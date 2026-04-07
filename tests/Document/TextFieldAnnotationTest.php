@@ -83,4 +83,18 @@ final class TextFieldAnnotationTest extends TestCase
         self::assertStringContainsString('/V (Ada)', $annotation->render());
         self::assertStringContainsString('/DV (Grace)', $annotation->render());
     }
+
+    #[Test]
+    public function it_renders_accessibility_metadata_for_text_fields(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new TextFieldAnnotation(7, $page, 10, 20, 80, 12, 'customer_name', 'Ada', 'F1', 12, tooltip: 'Customer name');
+        $annotation->withStructParent(1);
+
+        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/TU (Customer name)', $annotation->render());
+    }
 }

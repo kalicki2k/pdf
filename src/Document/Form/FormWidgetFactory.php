@@ -28,12 +28,14 @@ final readonly class FormWidgetFactory
     /**
      * @param Closure(): int $nextObjectId
      * @param Closure(): AcroForm $ensureAcroForm
+     * @param Closure(): AcroForm $ensureTextFieldAcroForm
      * @param Closure(string): FontDefinition $resolveFont
      */
     public function __construct(
         private Page    $page,
         private Closure $nextObjectId,
         private Closure $ensureAcroForm,
+        private Closure $ensureTextFieldAcroForm,
         private Closure $resolveFont,
     ) {
     }
@@ -48,6 +50,7 @@ final readonly class FormWidgetFactory
         ?Color $textColor,
         ?FormFieldFlags $flags,
         ?string $defaultValue,
+        ?string $accessibleName,
     ): TextFieldAnnotation {
         if ($name === '') {
             throw new InvalidArgumentException('Text field name must not be empty.');
@@ -59,7 +62,7 @@ final readonly class FormWidgetFactory
             throw new InvalidArgumentException('Text field font size must be greater than zero.');
         }
 
-        $fontResourceName = $this->registerAcroFormFont($baseFont);
+        $fontResourceName = $this->registerTextFieldAcroFormFont($baseFont);
 
         return new TextFieldAnnotation(
             $this->nextObjectId(),
@@ -76,6 +79,7 @@ final readonly class FormWidgetFactory
             $flags,
             $textColor,
             $defaultValue,
+            $accessibleName,
         );
     }
 
@@ -321,11 +325,23 @@ final readonly class FormWidgetFactory
         return ($this->ensureAcroForm)();
     }
 
+    private function ensureTextFieldAcroForm(): AcroForm
+    {
+        return ($this->ensureTextFieldAcroForm)();
+    }
+
     private function registerAcroFormFont(string $baseFont): string
     {
         $font = ($this->resolveFont)($baseFont);
 
         return $this->ensureAcroForm()->registerFont($font);
+    }
+
+    private function registerTextFieldAcroFormFont(string $baseFont): string
+    {
+        $font = ($this->resolveFont)($baseFont);
+
+        return $this->ensureTextFieldAcroForm()->registerFont($font);
     }
 
     private function assertRectHasPositiveDimensions(Rect $box, string $subject): void

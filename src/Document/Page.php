@@ -1553,8 +1553,10 @@ final class Page extends IndirectObject
         ?Color $textColor = null,
         ?FormFieldFlags $flags = null,
         ?string $defaultValue = null,
+        ?string $accessibleName = null,
     ): self {
-        $acroForm = $this->document->ensureAcroForm();
+        $resolvedAccessibleName = $this->resolveTextFieldAccessibleName($name, $accessibleName);
+        $acroForm = $this->document->ensureTextFieldAcroForm();
         $annotation = $this->formWidgetFactory()->createTextField(
             $name,
             $box,
@@ -1565,8 +1567,10 @@ final class Page extends IndirectObject
             $textColor,
             $flags,
             $defaultValue,
+            $resolvedAccessibleName,
         );
 
+        $this->bindTextFieldAccessibility($annotation, $resolvedAccessibleName);
         $acroForm->addField($annotation);
         $this->annotations[] = $annotation;
 
@@ -1735,6 +1739,10 @@ final class Page extends IndirectObject
                     $this->annotations,
                 )),
             );
+
+            if ($this->document->getProfile()->requiresPageAnnotationTabOrder()) {
+                $dictionary->add('Tabs', new NameType('S'));
+            }
         }
 
         return $this->id . ' 0 obj' . PHP_EOL
@@ -2131,8 +2139,46 @@ final class Page extends IndirectObject
             $this,
             fn (): int => $this->document->getUniqObjectId(),
             fn (): AcroForm => $this->document->ensureAcroForm(),
+            fn (): AcroForm => $this->document->ensureTextFieldAcroForm(),
             fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
         );
+    }
+
+    private function bindTextFieldAccessibility(
+        Annotation\TextFieldAnnotation $annotation,
+        ?string $accessibleName,
+    ): void {
+        $profile = $this->document->getProfile();
+
+        if (!$profile->requiresTaggedFormFields()) {
+            return;
+        }
+
+        $formStructElem = $this->document->createStructElem(StructureTag::Form);
+        $formStructElem->setPage($this);
+
+        $structParentId = $this->document->getNextStructParentId();
+        $annotation->withStructParent($structParentId);
+        $formStructElem->addObjectReference($annotation, $this);
+
+        if ($profile->requiresFormFieldAlternativeDescriptions() && $accessibleName !== null && $accessibleName !== '') {
+            $formStructElem->setAltText($accessibleName);
+        }
+
+        $this->document->registerObjectStructElem($structParentId, $formStructElem);
+    }
+
+    private function resolveTextFieldAccessibleName(string $name, ?string $accessibleName): ?string
+    {
+        if ($accessibleName !== null && $accessibleName !== '') {
+            return $accessibleName;
+        }
+
+        if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
+            return $name;
+        }
+
+        return null;
     }
 
     private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string

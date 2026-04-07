@@ -215,6 +215,14 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_the_current_text_field_implementation(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsCurrentTextFieldImplementation());
+        self::assertTrue(Profile::pdfUa1()->supportsCurrentTextFieldImplementation());
+        self::assertFalse(Profile::pdfA2u()->supportsCurrentTextFieldImplementation());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_write_the_info_dictionary(): void
     {
         self::assertTrue(Profile::pdf14()->writesInfoDictionary());
@@ -275,6 +283,30 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdf17()->requiresLinkAnnotationAlternativeDescriptions());
         self::assertFalse(Profile::pdfA2u()->requiresLinkAnnotationAlternativeDescriptions());
         self::assertTrue(Profile::pdfUa1()->requiresLinkAnnotationAlternativeDescriptions());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_require_tagged_form_fields(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresTaggedFormFields());
+        self::assertFalse(Profile::pdfA2u()->requiresTaggedFormFields());
+        self::assertTrue(Profile::pdfUa1()->requiresTaggedFormFields());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_require_form_field_alternative_descriptions(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresFormFieldAlternativeDescriptions());
+        self::assertFalse(Profile::pdfA2u()->requiresFormFieldAlternativeDescriptions());
+        self::assertTrue(Profile::pdfUa1()->requiresFormFieldAlternativeDescriptions());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_require_structured_annotation_tab_order(): void
+    {
+        self::assertFalse(Profile::pdf17()->requiresPageAnnotationTabOrder());
+        self::assertFalse(Profile::pdfA2u()->requiresPageAnnotationTabOrder());
+        self::assertTrue(Profile::pdfUa1()->requiresPageAnnotationTabOrder());
     }
 
     #[Test]

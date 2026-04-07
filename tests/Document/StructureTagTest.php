@@ -24,6 +24,7 @@ final class StructureTagTest extends TestCase
             'Paragraph' => 'P',
             'Span' => 'Span',
             'Link' => 'Link',
+            'Form' => 'Form',
             'List' => 'L',
             'ListItem' => 'LI',
             'Label' => 'Lbl',
