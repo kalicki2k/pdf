@@ -76,6 +76,17 @@ final class EncryptionVersionResolverTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_rc4_128_for_pdf_1_3_when_requested_explicitly(): void
+    {
+        $resolver = new EncryptionVersionResolver();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('RC4 128-bit encryption requires PDF 1.4 or newer.');
+
+        $resolver->resolve(1.3, EncryptionAlgorithm::RC4_128);
+    }
+
+    #[Test]
     public function it_rejects_rc4_40_for_pdf_1_0(): void
     {
         $resolver = new EncryptionVersionResolver();

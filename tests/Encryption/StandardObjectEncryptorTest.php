@@ -4,16 +4,24 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Encryption;
 
+require_once __DIR__ . '/Support/StandardObjectEncryptorOpenSslStub.php';
+
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use function Kalle\Pdf\Encryption\setStandardObjectEncryptorOpenSslShouldFail;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 final class StandardObjectEncryptorTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        setStandardObjectEncryptorOpenSslShouldFail(false);
+    }
+
     #[Test]
     public function it_leaves_objects_unchanged_when_the_profile_does_not_support_object_encryption(): void
     {
@@ -54,6 +62,22 @@ final class StandardObjectEncryptorTest extends TestCase
         self::assertStringContainsString("stream\n", $encrypted);
         self::assertStringContainsString("\nendstream", $encrypted);
         self::assertDoesNotMatchRegularExpression('/\/Length 4\b/', $encrypted);
+    }
+
+    #[Test]
+    public function it_rejects_aes_object_encryption_when_openssl_encryption_fails(): void
+    {
+        setStandardObjectEncryptorOpenSslShouldFail(true);
+
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::AES_128, 128, 4, 4),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unable to encrypt PDF object payload with aes-128-cbc.');
+
+        $encryptor->encryptString(9, 'data');
     }
 
     #[Test]

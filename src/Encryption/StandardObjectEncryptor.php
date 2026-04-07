@@ -126,10 +126,6 @@ final readonly class StandardObjectEncryptor
                 $updatedObject,
                 1,
             );
-
-            if ($updatedObject === null) {
-                throw new RuntimeException('Unable to update encrypted stream length.');
-            }
         }
 
         return $updatedObject;
