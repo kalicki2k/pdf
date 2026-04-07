@@ -53,9 +53,12 @@ final class StandardFontNameTest extends TestCase
     public function it_resolves_courier_helvetica_and_times_variants(): void
     {
         self::assertSame('Courier-BoldOblique', StandardFontName::resolveVariant('Courier', true, true));
+        self::assertSame('Courier-Bold', StandardFontName::resolveVariant('Courier', true, false));
+        self::assertSame('Courier-Oblique', StandardFontName::resolveVariant('Courier', false, true));
         self::assertSame('Helvetica-Bold', StandardFontName::resolveVariant('Helvetica', true, false));
         self::assertSame('Helvetica-Oblique', StandardFontName::resolveVariant('Helvetica', false, true));
         self::assertSame('Times-BoldItalic', StandardFontName::resolveVariant('Times-Roman', true, true));
+        self::assertSame('Times-Bold', StandardFontName::resolveVariant('Times-Roman', true, false));
         self::assertSame('Times-Italic', StandardFontName::resolveVariant('Times-Bold', false, true));
     }
 
