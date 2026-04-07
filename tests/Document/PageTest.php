@@ -137,6 +137,41 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_file_attachment_annotations_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+        $page = $document->addPage();
+        $file = new \Kalle\Pdf\Document\FileSpecification(
+            8,
+            'demo.txt',
+            new \Kalle\Pdf\Document\EmbeddedFileStream(7, 'hello'),
+            'Demo attachment',
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments.');
+
+        $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Anhang');
+    }
+
+    #[Test]
+    public function it_allows_file_attachment_annotations_for_pdf_a_3b(): void
+    {
+        $document = new Document(profile: Profile::pdfA3b());
+        $document->addAttachment('data.xml', '<root/>', 'Machine-readable source', 'application/xml');
+        $page = $document->addPage();
+        $file = $document->getAttachment('data.xml');
+
+        self::assertNotNull($file);
+
+        $result = $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Anhang');
+
+        self::assertSame($page, $result);
+        self::assertStringContainsString('/Subtype /FileAttachment', $document->render());
+        self::assertStringContainsString('/AFRelationship /Data', $document->render());
+    }
+
+    #[Test]
     public function it_adds_a_text_annotation_to_the_page_and_document(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

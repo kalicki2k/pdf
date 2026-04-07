@@ -378,6 +378,19 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_pdf_a_2u_file_attachment_annotations_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::pdfA2u());
+        $page = $document->addPage(PageSize::custom(100, 100));
+        $file = new FileSpecification(8, 'demo.txt', new EmbeddedFileStream(7, 'hello'), 'Demo attachment');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments.');
+
+        $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Anhang');
+    }
+
+    #[Test]
     public function it_renders_pdf_a_2u_text_annotations_with_flags_and_appearance_through_the_public_api(): void
     {
         $document = new Document(

@@ -869,7 +869,7 @@ final class Document
         }
     }
 
-    private function assertAllowsAttachments(): void
+    public function assertAllowsAttachments(): void
     {
         if ($this->profile->isPdfA3() || $this->profile->isPdfA4f()) {
             return;

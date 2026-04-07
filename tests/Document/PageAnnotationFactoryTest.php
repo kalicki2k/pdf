@@ -290,6 +290,22 @@ final class PageAnnotationFactoryTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_file_attachment_annotations_for_pdf_a_2u(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+        $file = new FileSpecification(8, 'demo.txt', new EmbeddedFileStream(7, 'hello'), 'Demo');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments.');
+
+        $factory->createFileAttachmentAnnotation(new Rect(10, 20, 12, 14), $file, 'Graph', null);
+    }
+
+    #[Test]
     public function it_rejects_empty_text_annotation_contents(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));

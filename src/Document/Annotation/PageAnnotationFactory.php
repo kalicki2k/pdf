@@ -57,6 +57,7 @@ final readonly class PageAnnotationFactory
         ?string $contents,
     ): FileAttachmentAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'File attachment');
+        $this->page->getDocument()->assertAllowsAttachments();
 
         if ($icon === '') {
             throw new InvalidArgumentException('File attachment icon must not be empty.');
