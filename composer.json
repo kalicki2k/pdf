@@ -36,10 +36,12 @@
     "cs": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --sequential",
     "cs:check": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --sequential",
     "docs:build": "php bin/generate-docs.php",
+    "example:pdfa2u": "php examples/pdf-a-2u.php",
     "phpstan": "phpstan analyse --debug",
     "test": "phpunit --configuration phpunit.xml.dist",
     "test:coverage": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-text",
-    "test:coverage-html": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-html var/coverage"
+    "test:coverage-html": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-html var/coverage",
+    "validate:pdfa": "bash bin/validate-pdfa.sh"
   },
   "require": {
     "php": "^8.4",

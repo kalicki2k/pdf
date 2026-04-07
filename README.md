@@ -108,6 +108,15 @@ php examples/rechnung.php
 
 Generated example PDFs are written to `var/examples`.
 
+For the PDF/A-2u example:
+
+```bash
+composer example:pdfa2u
+composer validate:pdfa -- var/examples/pdf-a-2u_YYYY-mm-dd-HH-ii-ss.pdf
+```
+
+The PDF/A validation command uses the official Docker image `verapdf/cli:v1.28.2`.
+
 ## Metadata
 
 The library supports both metadata layers that are relevant for normal PDF generation:

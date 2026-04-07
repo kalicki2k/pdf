@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\PdfRenderer;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +16,7 @@ final class PdfRendererTest extends TestCase
     public function it_writes_cross_reference_entries_with_the_actual_object_offsets(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.0),
+            profile: Profile::standard(1.0),
             title: 'Minimal',
         );
         $renderer = new PdfRenderer();
@@ -39,9 +40,20 @@ final class PdfRendererTest extends TestCase
     }
 
     #[Test]
+    public function it_writes_a_binary_comment_after_the_pdf_header(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+        $renderer = new PdfRenderer();
+
+        $output = $renderer->render($document);
+
+        self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $output);
+    }
+
+    #[Test]
     public function it_marks_missing_object_ids_as_free_entries_in_the_cross_reference_table(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->getUniqObjectId();
         $document->registerFont('Helvetica');
 

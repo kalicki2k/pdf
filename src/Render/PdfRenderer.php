@@ -10,9 +10,12 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 
 class PdfRenderer
 {
+    private const string BINARY_HEADER_COMMENT = "%\xE2\xE3\xCF\xD3";
+
     public function render(Document $document): string
     {
-        $output = "%PDF-{$document->getVersion()}" . PHP_EOL;
+        $output = "%PDF-{$document->getVersion()}" . PHP_EOL
+            . self::BINARY_HEADER_COMMENT . PHP_EOL;
         $offsets = [];
         $objectEncryptor = $this->buildObjectEncryptor($document);
         RenderContext::setObjectEncryptor($objectEncryptor);
