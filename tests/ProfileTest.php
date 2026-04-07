@@ -77,4 +77,12 @@ final class ProfileTest extends TestCase
     {
         self::assertSame(2.0, Profile::pdfA4e()->version());
     }
+
+    #[Test]
+    public function it_detects_profiles_that_require_tagged_pdf(): void
+    {
+        self::assertTrue(Profile::pdfA2a()->requiresTaggedPdf());
+        self::assertTrue(Profile::pdfA3a()->requiresTaggedPdf());
+        self::assertFalse(Profile::pdfA2u()->requiresTaggedPdf());
+    }
 }

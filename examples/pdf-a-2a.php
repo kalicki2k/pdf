@@ -107,6 +107,19 @@ $frame
         ),
     );
 
+$table = $page->createTable(
+    new Position(Units::mm(20), Units::mm(190)),
+    Units::mm(170),
+    [Units::mm(85), Units::mm(85)],
+);
+
+$table
+    ->font('NotoSans-Regular', 10)
+    ->addRow(['Merkmal', 'Status'], header: true)
+    ->addRow(['Strukturierte Ueberschrift', 'H1'])
+    ->addRow(['Strukturierte Liste', 'L / LI / Lbl / LBody'])
+    ->addRow(['Strukturierte Tabelle', 'Table / TR / TH / TD']);
+
 $targetPath = $outputDir . '/pdf-a-2a_' . date('Y-m-d-H-i-s') . '.pdf';
 file_put_contents($targetPath, $document->render());
 

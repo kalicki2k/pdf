@@ -34,6 +34,10 @@ final class StructureTagTest extends TestCase
             'Section' => 'Sect',
             'Article' => 'Art',
             'Division' => 'Div',
+            'Table' => 'Table',
+            'TableRow' => 'TR',
+            'TableHeaderCell' => 'TH',
+            'TableDataCell' => 'TD',
         ], array_column(StructureTag::cases(), 'value', 'name'));
     }
 }

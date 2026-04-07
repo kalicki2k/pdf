@@ -13,7 +13,9 @@ use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
+use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Structure\StructElem;
 
 final readonly class PreparedCellRenderer
 {
@@ -41,6 +43,7 @@ final readonly class PreparedCellRenderer
         ?HeaderStyle $headerStyle,
         string $baseFont,
         int $fontSize,
+        ?StructElem $parentStructElem = null,
     ): Page {
         return $this->renderResolved(
             $page,
@@ -53,6 +56,7 @@ final readonly class PreparedCellRenderer
             $baseFont,
             $fontSize,
             $tableStyle,
+            parentStructElem: $parentStructElem,
         )->page;
     }
 
@@ -71,6 +75,7 @@ final readonly class PreparedCellRenderer
         int $fontSize,
         TableStyle $tableStyle,
         ?CellRenderOptions $options = null,
+        ?StructElem $parentStructElem = null,
     ): CellRenderResult {
         $options ??= new CellRenderOptions();
 
@@ -86,6 +91,7 @@ final readonly class PreparedCellRenderer
             $fontSize,
             $tableStyle,
             $options,
+            $parentStructElem,
         );
     }
 
@@ -104,6 +110,7 @@ final readonly class PreparedCellRenderer
         int $fontSize,
         TableStyle $tableStyle,
         CellRenderOptions $options = new CellRenderOptions(),
+        ?StructElem $parentStructElem = null,
     ): CellRenderResult {
         $visibleRowspan = $options->visibleRowspan ?? $preparedCell->cell->rowspan;
         $layout = $this->cellLayoutResolver->resolve(
@@ -166,8 +173,8 @@ final readonly class PreparedCellRenderer
                 $layout->textWidth,
                 $baseFont,
                 $fontSize,
-                null,
-                null,
+                $parentStructElem !== null ? StructureTag::Paragraph : null,
+                $parentStructElem,
                 $lineHeight,
                 $layout->bottomLimitY,
                 $resolvedStyle->horizontalAlign,
@@ -185,8 +192,8 @@ final readonly class PreparedCellRenderer
             $layout->textWidth,
             $baseFont,
             $fontSize,
-            null,
-            null,
+            $parentStructElem !== null ? StructureTag::Paragraph : null,
+            $parentStructElem,
             $lineHeight,
             $layout->bottomLimitY,
             $resolvedStyle->horizontalAlign,

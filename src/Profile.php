@@ -116,6 +116,11 @@ final readonly class Profile
         return $this->name === 'PDF/A-4f';
     }
 
+    public function requiresTaggedPdf(): bool
+    {
+        return $this->pdfaConformance() === 'A';
+    }
+
     public function usesPdfAOutputIntent(): bool
     {
         return in_array($this->pdfaPart(), [2, 3, 4], true);

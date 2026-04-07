@@ -42,8 +42,17 @@ final class StructElemTest extends TestCase
     public function it_rejects_unknown_structure_tags(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Tag 'Table' is not allowed.");
+        $this->expectExceptionMessage("Tag 'UnknownTag' is not allowed.");
 
-        new StructElem(12, 'Table');
+        new StructElem(12, 'UnknownTag');
+    }
+
+    #[Test]
+    public function it_accepts_table_structure_tags(): void
+    {
+        self::assertStringContainsString('/S /Table', (new StructElem(12, 'Table'))->render());
+        self::assertStringContainsString('/S /TR', (new StructElem(13, 'TR'))->render());
+        self::assertStringContainsString('/S /TH', (new StructElem(14, 'TH'))->render());
+        self::assertStringContainsString('/S /TD', (new StructElem(15, 'TD'))->render());
     }
 }

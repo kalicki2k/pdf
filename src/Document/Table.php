@@ -24,9 +24,11 @@ use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Table\TableGroupPageFit;
+use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Structure\StructElem;
 
 final class Table
 {
@@ -55,6 +57,7 @@ final class Table
     private readonly TableTextMetrics $textMetrics;
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
+    private readonly ?StructElem $tableStructElem;
 
     /**
      * @param list<float|int> $columnWidths
@@ -105,6 +108,9 @@ final class Table
             new \Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer($this->styleResolver),
             $this->textMetrics,
         );
+        $this->tableStructElem = $page->getDocument()->getProfile()->requiresTaggedPdf()
+            ? $page->getDocument()->createStructElem(StructureTag::Table)
+            : null;
         $this->style = new TableStyle(
             padding: TablePadding::all(6.0),
             border: TableBorder::all(color: Color::gray(0.75)),
@@ -292,9 +298,19 @@ final class Table
 
         for ($rowIndex = 0; $rowIndex < $rowCount; $rowIndex++) {
             $preparedRow = $preparedRows[$rowIndex];
+            $rowStructElem = $this->createTableRowStructElem();
 
             foreach ($preparedRow->cells as $preparedCell) {
-                $result = $this->renderPreparedCellSegment($preparedCell, $preparedRow->header, $rowIndex, $rowCount, $segmentRowHeights, $rowTopY, $lineHeight);
+                $result = $this->renderPreparedCellSegment(
+                    $preparedCell,
+                    $preparedRow->header,
+                    $rowIndex,
+                    $rowCount,
+                    $segmentRowHeights,
+                    $rowTopY,
+                    $lineHeight,
+                    $this->createTableCellStructElem($preparedRow->header, $rowStructElem),
+                );
                 $this->page = $result->page;
                 $continuationLines[] = $result->remainingLines;
             }
@@ -315,6 +331,7 @@ final class Table
         array $rowHeights,
         float $rowTopY,
         float $lineHeight,
+        ?StructElem $cellStructElem = null,
     ): CellRenderResult {
         $visibleRowspan = min($pendingRowspanCell->remainingRows, $rowCount);
 
@@ -349,6 +366,7 @@ final class Table
         array $rowHeights,
         float $rowTopY,
         float $lineHeight,
+        ?StructElem $cellStructElem = null,
     ): CellRenderResult {
         $visibleRowspan = min($preparedCell->cell->rowspan, $rowCount - $rowIndex);
 
@@ -366,6 +384,7 @@ final class Table
             new CellRenderOptions(
                 visibleRowspan: $visibleRowspan,
             ),
+            $cellStructElem,
         );
     }
 
@@ -522,6 +541,8 @@ final class Table
         $rowTopY = $this->cursorY;
 
         foreach ($preparedRows as $rowIndex => $preparedRow) {
+            $rowStructElem = $this->createTableRowStructElem();
+
             foreach ($preparedRow->cells as $preparedCell) {
                 $this->page = $this->preparedCellRenderer->render(
                     $this->page,
@@ -536,6 +557,7 @@ final class Table
                     $this->headerStyle,
                     $this->baseFont,
                     $this->fontSize,
+                    $this->createTableCellStructElem($preparedRow->header, $rowStructElem),
                 );
             }
 
@@ -578,6 +600,27 @@ final class Table
             $this->headerStyle,
             $this->styleResolver,
             $this->textMetrics,
+        );
+    }
+
+    private function createTableRowStructElem(): ?StructElem
+    {
+        if ($this->tableStructElem === null) {
+            return null;
+        }
+
+        return $this->page->getDocument()->createStructElem(StructureTag::TableRow, parent: $this->tableStructElem);
+    }
+
+    private function createTableCellStructElem(bool $header, ?StructElem $rowStructElem): ?StructElem
+    {
+        if ($rowStructElem === null) {
+            return null;
+        }
+
+        return $this->page->getDocument()->createStructElem(
+            $header ? StructureTag::TableHeaderCell : StructureTag::TableDataCell,
+            parent: $rowStructElem,
         );
     }
 }

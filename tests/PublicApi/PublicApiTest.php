@@ -208,6 +208,12 @@ final class PublicApiTest extends TestCase
             ->addParagraph('Paragraph', 'NotoSans-Regular', 10, new ParagraphOptions(structureTag: StructureTag::Paragraph))
             ->addBulletList(['One item'], 'NotoSans-Regular', 10, options: new ListOptions(structureTag: StructureTag::List));
 
+        $table = $page->createTable(new Position(10, 110), 100, [50, 50]);
+        $table
+            ->font('NotoSans-Regular', 10)
+            ->addRow(['Spalte A', 'Spalte B'], header: true)
+            ->addRow(['Wert A', 'Wert B']);
+
         $rendered = $document->render();
 
         self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
@@ -220,6 +226,10 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /L', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Lbl', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /LBody', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /Table', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /TR', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /TH', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /TD', $rendered);
     }
 
     #[Test]
