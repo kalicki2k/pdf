@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Font;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\StandardFont;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -74,6 +75,25 @@ final class StandardFontTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_encoding_text_that_the_font_cannot_represent(): void
+    {
+        $font = new StandardFont(6, 'Helvetica', 'Type1', 'StandardEncoding', 1.0);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Text cannot be encoded with font 'Helvetica'.");
+
+        $font->encodeText('Straße');
+    }
+
+    #[Test]
+    public function it_keeps_plain_ascii_text_unchanged_when_no_php_encoding_mapping_is_used(): void
+    {
+        $font = new StandardFont(6, 'Helvetica', 'Type1', 'StandardEncoding', 1.0);
+
+        self::assertSame('(Plain ASCII)', $font->encodeText('Plain ASCII'));
+    }
+
+    #[Test]
     public function it_encodes_western_characters_with_a_custom_standard_encoding_dictionary(): void
     {
         $font = new StandardFont(
@@ -101,6 +121,28 @@ final class StandardFontTest extends TestCase
 
         self::assertTrue($font->supportsText('ÄäÖöÜüßàáçèé'));
         self::assertSame("(\x80\x8A\x85\x9A\x86\x9F\xA7\x88\x87\x8D\x8F\x8E)", $font->encodeText('ÄäÖöÜüßàáçèé'));
+    }
+
+    #[Test]
+    public function it_rejects_unmapped_non_ascii_characters_in_the_byte_map_encoder(): void
+    {
+        $font = new StandardFont(
+            6,
+            'Helvetica',
+            'Type1',
+            'StandardEncoding',
+            1.0,
+            encodingDictionary: new \Kalle\Pdf\Font\EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis']),
+            byteMap: [
+                'Ä' => "\x80",
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Text cannot be encoded with font 'Helvetica'.");
+
+        $method = new \ReflectionMethod($font, 'encodeWithByteMap');
+        $method->invoke($font, 'Äß');
     }
 
     #[Test]
@@ -158,5 +200,29 @@ final class StandardFontTest extends TestCase
         $font = new StandardFont(6, 'Helvetica', 'Type1', 'WinAnsiEncoding', 1.4);
 
         self::assertSame(22.78, $font->measureTextWidth('Hello', 10));
+    }
+
+    #[Test]
+    public function it_measures_plain_ascii_text_without_php_encoding_conversion_when_no_mapping_is_used(): void
+    {
+        $font = new StandardFont(6, 'Helvetica', 'Type1', 'StandardEncoding', 1.0);
+
+        self::assertSame(22.78, $font->measureTextWidth('Hello', 10));
+    }
+
+    #[Test]
+    public function it_measures_text_with_embedded_font_metrics_when_a_font_parser_is_available(): void
+    {
+        $font = new StandardFont(
+            6,
+            'NotoSans-Regular',
+            'TrueType',
+            'WinAnsiEncoding',
+            1.4,
+            new OpenTypeFontParser(file_get_contents('assets/fonts/NotoSans-Regular.ttf')),
+        );
+
+        self::assertGreaterThan(0.0, $font->measureTextWidth('Hello', 10));
+        self::assertNotSame(30.0, $font->measureTextWidth('Hello', 10));
     }
 }

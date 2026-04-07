@@ -22,7 +22,7 @@ final class FontFileStream extends IndirectObject
 
     public static function fromPath(int $id, string $path): self
     {
-        $data = file_get_contents($path);
+        $data = @file_get_contents($path);
 
         if ($data === false) {
             throw new InvalidArgumentException("Unable to read font file '$path'.");

@@ -87,4 +87,15 @@ final class FontFileStreamTest extends TestCase
             unlink($woffPath);
         }
     }
+
+    #[Test]
+    public function it_rejects_unreadable_font_files(): void
+    {
+        $missingPath = sys_get_temp_dir() . '/missing-font-' . uniqid('', true) . '.ttf';
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unable to read font file '$missingPath'.");
+
+        FontFileStream::fromPath(24, $missingPath);
+    }
 }
