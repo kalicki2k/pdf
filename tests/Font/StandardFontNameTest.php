@@ -41,4 +41,28 @@ final class StandardFontNameTest extends TestCase
         self::assertTrue(StandardFontName::isValid('Times-Roman'));
         self::assertFalse(StandardFontName::isValid('NotoSans-Regular'));
     }
+
+    #[Test]
+    public function it_resolves_standard_font_variants_for_plain_requests(): void
+    {
+        self::assertSame('Helvetica', StandardFontName::resolveVariant('Helvetica', false, false));
+        self::assertSame('Symbol', StandardFontName::resolveVariant('Symbol', false, false));
+    }
+
+    #[Test]
+    public function it_resolves_courier_helvetica_and_times_variants(): void
+    {
+        self::assertSame('Courier-BoldOblique', StandardFontName::resolveVariant('Courier', true, true));
+        self::assertSame('Helvetica-Bold', StandardFontName::resolveVariant('Helvetica', true, false));
+        self::assertSame('Helvetica-Oblique', StandardFontName::resolveVariant('Helvetica', false, true));
+        self::assertSame('Times-BoldItalic', StandardFontName::resolveVariant('Times-Roman', true, true));
+        self::assertSame('Times-Italic', StandardFontName::resolveVariant('Times-Bold', false, true));
+    }
+
+    #[Test]
+    public function it_returns_null_for_standard_fonts_without_style_variants(): void
+    {
+        self::assertNull(StandardFontName::resolveVariant('Symbol', true, false));
+        self::assertNull(StandardFontName::resolveVariant('ZapfDingbats', false, true));
+    }
 }

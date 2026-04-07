@@ -76,8 +76,6 @@ final class StandardFontName
         if ($italic) {
             return self::COURIER_OBLIQUE;
         }
-
-        return self::COURIER;
     }
 
     private static function resolveHelveticaVariant(bool $bold, bool $italic): string
@@ -93,8 +91,6 @@ final class StandardFontName
         if ($italic) {
             return self::HELVETICA_OBLIQUE;
         }
-
-        return self::HELVETICA;
     }
 
     private static function resolveTimesVariant(bool $bold, bool $italic): string
@@ -110,7 +106,5 @@ final class StandardFontName
         if ($italic) {
             return self::TIMES_ITALIC;
         }
-
-        return self::TIMES_ROMAN;
     }
 }
