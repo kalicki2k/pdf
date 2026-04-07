@@ -118,6 +118,22 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_the_current_transparency_implementation(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsCurrentTransparencyImplementation());
+        self::assertTrue(Profile::pdfA2u()->supportsCurrentTransparencyImplementation());
+        self::assertFalse(Profile::pdfA1b()->supportsCurrentTransparencyImplementation());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_support_the_current_optional_content_group_implementation(): void
+    {
+        self::assertTrue(Profile::pdf15()->supportsCurrentOptionalContentGroupImplementation());
+        self::assertTrue(Profile::pdf14()->supportsCurrentOptionalContentGroupImplementation());
+        self::assertFalse(Profile::pdfA2u()->supportsCurrentOptionalContentGroupImplementation());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_aes_128_encryption(): void
     {
         self::assertFalse(Profile::pdf15()->supportsAes128Encryption());

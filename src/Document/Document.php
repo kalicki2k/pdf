@@ -875,9 +875,7 @@ final class Document
             return;
         }
 
-        if ($this->profile->isPdfA()) {
-            throw new InvalidArgumentException(sprintf('Profile %s does not allow embedded file attachments.', $this->profile->name()));
-        }
+        throw new InvalidArgumentException(sprintf('Profile %s does not allow embedded file attachments.', $this->profile->name()));
     }
 
     private function assertAllowsAssociatedFiles(): void
@@ -894,7 +892,7 @@ final class Document
 
     public function assertAllowsOptionalContentGroups(): void
     {
-        if ($this->profile->isPdfA()) {
+        if (!$this->profile->supportsCurrentOptionalContentGroupImplementation()) {
             throw new InvalidArgumentException(sprintf('Profile %s does not allow optional content groups (layers).', $this->profile->name()));
         }
 
@@ -908,7 +906,7 @@ final class Document
 
     public function assertAllowsTransparency(): void
     {
-        if ($this->profile->isPdfA1()) {
+        if (!$this->profile->supportsCurrentTransparencyImplementation()) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s does not allow transparency in the current implementation.',
                 $this->profile->name(),

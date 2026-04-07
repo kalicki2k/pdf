@@ -196,6 +196,16 @@ final readonly class Profile
         return $this->version >= PdfVersion::V1_4 && !$this->isPdfA1();
     }
 
+    public function supportsCurrentTransparencyImplementation(): bool
+    {
+        return !$this->isPdfA1();
+    }
+
+    public function supportsCurrentOptionalContentGroupImplementation(): bool
+    {
+        return !$this->isPdfA();
+    }
+
     public function supportsEncryption(): bool
     {
         return !$this->isPdfA();
