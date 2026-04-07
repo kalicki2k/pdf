@@ -144,6 +144,32 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_embedded_file_attachments(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsEmbeddedFileAttachments());
+        self::assertFalse(Profile::pdfA2u()->supportsEmbeddedFileAttachments());
+        self::assertTrue(Profile::pdfA3b()->supportsEmbeddedFileAttachments());
+        self::assertTrue(Profile::pdfA4f()->supportsEmbeddedFileAttachments());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_default_attachment_relationships_to_data(): void
+    {
+        self::assertFalse(Profile::pdf20()->defaultsAttachmentRelationshipToData());
+        self::assertFalse(Profile::pdfA2u()->defaultsAttachmentRelationshipToData());
+        self::assertTrue(Profile::pdfA3b()->defaultsAttachmentRelationshipToData());
+        self::assertTrue(Profile::pdfA4f()->defaultsAttachmentRelationshipToData());
+    }
+
+    #[Test]
+    public function it_detects_profiles_that_require_embedded_unicode_fonts(): void
+    {
+        self::assertFalse(Profile::pdf14()->requiresEmbeddedUnicodeFonts());
+        self::assertTrue(Profile::pdfA2u()->requiresEmbeddedUnicodeFonts());
+        self::assertTrue(Profile::pdfA3b()->requiresEmbeddedUnicodeFonts());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_win_ansi_encoding(): void
     {
         self::assertFalse(Profile::pdf10()->supportsWinAnsiEncoding());

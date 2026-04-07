@@ -510,7 +510,7 @@ final class Document
             throw new InvalidArgumentException('Attachment filename must not be empty.');
         }
 
-        $afRelationship ??= $this->profile->isPdfA3() || $this->profile->isPdfA4f()
+        $afRelationship ??= $this->profile->defaultsAttachmentRelationshipToData()
             ? AssociatedFileRelationship::DATA
             : null;
 
@@ -871,7 +871,7 @@ final class Document
 
     public function assertAllowsAttachments(): void
     {
-        if ($this->profile->isPdfA3() || $this->profile->isPdfA4f()) {
+        if ($this->profile->supportsEmbeddedFileAttachments()) {
             return;
         }
 
@@ -951,7 +951,7 @@ final class Document
             ));
         }
 
-        if (!$this->profile->isPdfA()) {
+        if (!$this->profile->requiresEmbeddedUnicodeFonts()) {
             return;
         }
 

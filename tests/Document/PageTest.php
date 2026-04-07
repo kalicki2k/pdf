@@ -2326,6 +2326,18 @@ final class PageTest extends TestCase
     }
 
     #[Test]
+    public function it_reports_pdf_a_3b_font_requirements_for_unregistered_text_fonts(): void
+    {
+        $document = new Document(profile: Profile::pdfA3b());
+        $page = $document->addPage();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Profile PDF/A-3b requires embedded Unicode fonts in the current implementation. Font 'Helvetica' is not registered.");
+
+        $page->addText('Hallo', new Position(10, 20), 'Helvetica', 12);
+    }
+
+    #[Test]
     public function it_adds_text_to_contents_and_registers_the_font_resource(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
