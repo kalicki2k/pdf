@@ -498,6 +498,110 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_pdf_a_2u_strike_out_annotations_with_flags_and_appearance_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            title: 'PDF/A-2u StrikeOut',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+
+        $page = $document->addPage(PageSize::custom(100, 100));
+        $page->addText('Hallo StrikeOut', new Position(10, 70), 'NotoSans-Regular', 12);
+        $page->addStrikeOutAnnotation(new Rect(10, 65, 20, 8), Color::rgb(1, 0, 0), 'Durchgestrichen', 'QA');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /StrikeOut', $rendered);
+        self::assertStringContainsString('/F 4', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_pdf_a_2u_squiggly_annotations_with_flags_and_appearance_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            title: 'PDF/A-2u Squiggly',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+
+        $page = $document->addPage(PageSize::custom(100, 100));
+        $page->addText('Hallo Squiggly', new Position(10, 70), 'NotoSans-Regular', 12);
+        $page->addSquigglyAnnotation(new Rect(10, 65, 20, 8), Color::rgb(1, 0, 1), 'Wellig', 'QA');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Squiggly', $rendered);
+        self::assertStringContainsString('/F 4', $rendered);
+        self::assertStringContainsString('/AP << /N ', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_remaining_pdf_a_2u_non_widget_annotations_with_flags_and_appearances_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            title: 'PDF/A-2u Remaining Annotations',
+            language: 'de-DE',
+            fontConfig: [
+                [
+                    'baseFont' => 'NotoSans-Regular',
+                    'path' => __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf',
+                    'unicode' => true,
+                    'subtype' => 'CIDFontType2',
+                    'encoding' => 'Identity-H',
+                ],
+            ],
+        );
+        $document->registerFont('NotoSans-Regular');
+
+        $page = $document->addPage(PageSize::custom(200, 120));
+        $page->addText('Hallo Rest', new Position(10, 100), 'NotoSans-Regular', 12);
+        $page->addStampAnnotation(new Rect(10, 80, 20, 10), 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
+        $page->addSquareAnnotation(new Rect(35, 75, 20, 20), Color::rgb(1, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
+        $page->addCircleAnnotation(new Rect(60, 75, 20, 20), Color::rgb(0, 0, 1), Color::gray(0.9), 'Kreis', 'QA');
+        $page->addInkAnnotation(new Rect(85, 75, 20, 20), [[[85.0, 75.0], [95.0, 85.0]]], Color::rgb(0, 0, 0), 'Ink', 'QA');
+        $page->addLineAnnotation(new Position(110, 75), new Position(140, 95), Color::rgb(0, 0, 0), 'Linie', 'QA');
+        $page->addPolyLineAnnotation([[145, 75], [155, 95], [165, 80]], Color::rgb(0, 0, 1), 'PolyLine', 'QA');
+        $page->addPolygonAnnotation([[170, 75], [180, 95], [190, 80]], Color::rgb(1, 0, 0), Color::gray(0.9), 'Polygon', 'QA');
+        $page->addCaretAnnotation(new Rect(10, 55, 10, 10), 'Einfuegen', 'QA', 'P');
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Subtype /Stamp', $rendered);
+        self::assertStringContainsString('/Subtype /Square', $rendered);
+        self::assertStringContainsString('/Subtype /Circle', $rendered);
+        self::assertStringContainsString('/Subtype /Ink', $rendered);
+        self::assertStringContainsString('/Subtype /Line', $rendered);
+        self::assertStringContainsString('/Subtype /PolyLine', $rendered);
+        self::assertStringContainsString('/Subtype /Polygon', $rendered);
+        self::assertStringContainsString('/Subtype /Caret', $rendered);
+        self::assertGreaterThanOrEqual(8, substr_count($rendered, '/F 4'));
+        self::assertGreaterThanOrEqual(8, substr_count($rendered, '/AP << /N '));
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_3a_document_through_the_public_api(): void
     {
         $document = new Document(

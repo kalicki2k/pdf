@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Annotation\CaretAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -53,5 +54,22 @@ final class CaretAnnotationTest extends TestCase
             $annotation->render(),
         );
         self::assertSame([], $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_caret_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new CaretAnnotation(7, $page, 10, 20, 16, 18, 'Einfuegen', 'QA', 'P');
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 16, 18));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Caret /Rect [10 20 26 38] /P 4 0 R /Sy /P /F 4 /Contents (Einfuegen) /T (QA) /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

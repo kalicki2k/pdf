@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Annotation\PolyLineAnnotation;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
@@ -127,5 +128,22 @@ final class PolyLineAnnotationTest extends TestCase
         $this->expectExceptionMessage('PolyLine annotation requires at least two vertices.');
 
         new PolyLineAnnotation(7, $page, [[10.0, 20.0]]);
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_polyline_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new PolyLineAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(0, 0, 255), 'PolyLine', 'QA');
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 30));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /PolyLine /Rect [10 20 90 50] /P 4 0 R /Vertices [10 20 40 50 90 32] /F 4 /C [0 0 1] /Contents (PolyLine) /T (QA) /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

@@ -15,6 +15,10 @@ use Kalle\Pdf\Types\StringType;
 
 final class CaretAnnotation extends IndirectObject implements PageAnnotation
 {
+    private const int PRINT_FLAG = 4;
+
+    private ?TextAnnotationAppearanceStream $appearance = null;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -48,12 +52,22 @@ final class CaretAnnotation extends IndirectObject implements PageAnnotation
             'Sy' => new NameType($this->symbol),
         ]);
 
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $dictionary->add('F', self::PRINT_FLAG);
+        }
+
         if ($this->contents !== null && $this->contents !== '') {
             $dictionary->add('Contents', new StringType($this->contents));
         }
 
         if ($this->title !== null && $this->title !== '') {
             $dictionary->add('T', new StringType($this->title));
+        }
+
+        if ($this->appearance !== null) {
+            $dictionary->add('AP', new DictionaryType([
+                'N' => new ReferenceType($this->appearance),
+            ]));
         }
 
         return $this->id . ' 0 obj' . PHP_EOL
@@ -63,6 +77,13 @@ final class CaretAnnotation extends IndirectObject implements PageAnnotation
 
     public function getRelatedObjects(): array
     {
-        return [];
+        return $this->appearance !== null ? [$this->appearance] : [];
+    }
+
+    public function withAppearance(TextAnnotationAppearanceStream $appearance): self
+    {
+        $this->appearance = $appearance;
+
+        return $this;
     }
 }

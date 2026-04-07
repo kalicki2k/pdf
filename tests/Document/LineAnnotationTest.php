@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineAnnotation;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
@@ -116,5 +117,22 @@ final class LineAnnotationTest extends TestCase
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, Color::cmyk(0.1, 0.2, 0.3, 0.4));
 
         self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_line_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, Color::rgb(255, 0, 0), 'Linie', 'QA');
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 12));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Line /Rect [10 20 90 32] /P 4 0 R /L [10 20 90 32] /F 4 /C [1 0 0] /Contents (Linie) /T (QA) /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

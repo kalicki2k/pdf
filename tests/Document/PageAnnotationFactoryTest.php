@@ -5,15 +5,26 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Annotation\CaretAnnotation;
+use Kalle\Pdf\Document\Annotation\CircleAnnotation;
 use Kalle\Pdf\Document\Annotation\FreeTextAnnotation;
 use Kalle\Pdf\Document\Annotation\HighlightAnnotation;
+use Kalle\Pdf\Document\Annotation\InkAnnotation;
+use Kalle\Pdf\Document\Annotation\LineAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotationFactory;
+use Kalle\Pdf\Document\Annotation\PolygonAnnotation;
+use Kalle\Pdf\Document\Annotation\PolyLineAnnotation;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\SquareAnnotation;
+use Kalle\Pdf\Document\Annotation\SquigglyAnnotation;
+use Kalle\Pdf\Document\Annotation\StampAnnotation;
+use Kalle\Pdf\Document\Annotation\StrikeOutAnnotation;
 use Kalle\Pdf\Document\Annotation\TextAnnotation;
 use Kalle\Pdf\Document\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
+use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Font\FontDefinition;
@@ -126,6 +137,110 @@ final class PageAnnotationFactoryTest extends TestCase
         self::assertStringContainsString('/F 4', $annotation->render());
         self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
         self::assertCount(1, $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_adds_a_pdf_a_appearance_stream_to_strike_out_annotations(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $annotation = $factory->createStrikeOutAnnotation(new Rect(10, 20, 80, 12), null, 'Durchgestrichen', 'QA');
+
+        self::assertInstanceOf(StrikeOutAnnotation::class, $annotation);
+        self::assertStringContainsString('/F 4', $annotation->render());
+        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_adds_a_pdf_a_appearance_stream_to_squiggly_annotations(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $annotation = $factory->createSquigglyAnnotation(new Rect(10, 20, 80, 12), null, 'Wellig', 'QA');
+
+        self::assertInstanceOf(SquigglyAnnotation::class, $annotation);
+        self::assertStringContainsString('/F 4', $annotation->render());
+        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertCount(1, $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_adds_pdf_a_appearance_streams_to_remaining_rect_based_annotations(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $stamp = $factory->createStampAnnotation(new Rect(10, 20, 80, 24), 'Approved', null, 'Freigegeben', 'QA');
+        $square = $factory->createSquareAnnotation(new Rect(10, 20, 80, 24), null, null, 'Kasten', 'QA', null);
+        $circle = $factory->createCircleAnnotation(new Rect(10, 20, 80, 24), null, null, 'Kreis', 'QA', null);
+        $ink = $factory->createInkAnnotation(new Rect(10, 20, 80, 24), [[[10.0, 20.0], [20.0, 30.0]]], null, 'Ink', 'QA');
+        $caret = $factory->createCaretAnnotation(new Rect(10, 20, 16, 18), 'Einfuegen', 'QA', 'P');
+
+        self::assertInstanceOf(StampAnnotation::class, $stamp);
+        self::assertStringContainsString('/F 4', $stamp->render());
+        self::assertStringContainsString('/AP << /N 101 0 R >>', $stamp->render());
+        self::assertCount(1, $stamp->getRelatedObjects());
+
+        self::assertInstanceOf(SquareAnnotation::class, $square);
+        self::assertStringContainsString('/F 4', $square->render());
+        self::assertStringContainsString('/AP << /N 103 0 R >>', $square->render());
+        self::assertCount(1, $square->getRelatedObjects());
+
+        self::assertInstanceOf(CircleAnnotation::class, $circle);
+        self::assertStringContainsString('/F 4', $circle->render());
+        self::assertStringContainsString('/AP << /N 105 0 R >>', $circle->render());
+        self::assertCount(1, $circle->getRelatedObjects());
+
+        self::assertInstanceOf(InkAnnotation::class, $ink);
+        self::assertStringContainsString('/F 4', $ink->render());
+        self::assertStringContainsString('/AP << /N 107 0 R >>', $ink->render());
+        self::assertCount(1, $ink->getRelatedObjects());
+
+        self::assertInstanceOf(CaretAnnotation::class, $caret);
+        self::assertStringContainsString('/F 4', $caret->render());
+        self::assertStringContainsString('/AP << /N 109 0 R >>', $caret->render());
+        self::assertCount(1, $caret->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_adds_pdf_a_appearance_streams_to_remaining_geometric_annotations(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $resolvedFonts = [];
+        $registeredFonts = [];
+        $factory = $this->createFactory($page, $resolvedFonts, $registeredFonts);
+
+        $line = $factory->createLineAnnotation(new Position(10, 20), new Position(90, 32), null, 'Linie', 'QA', null, null, null, null);
+        $polyLine = $factory->createPolyLineAnnotation([[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], null, 'PolyLine', 'QA', null, null, null, null);
+        $polygon = $factory->createPolygonAnnotation([[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], null, null, 'Polygon', 'QA', null, null);
+
+        self::assertInstanceOf(LineAnnotation::class, $line);
+        self::assertStringContainsString('/F 4', $line->render());
+        self::assertStringContainsString('/AP << /N 101 0 R >>', $line->render());
+        self::assertCount(1, $line->getRelatedObjects());
+
+        self::assertInstanceOf(PolyLineAnnotation::class, $polyLine);
+        self::assertStringContainsString('/F 4', $polyLine->render());
+        self::assertStringContainsString('/AP << /N 103 0 R >>', $polyLine->render());
+        self::assertCount(1, $polyLine->getRelatedObjects());
+
+        self::assertInstanceOf(PolygonAnnotation::class, $polygon);
+        self::assertStringContainsString('/F 4', $polygon->render());
+        self::assertStringContainsString('/AP << /N 105 0 R >>', $polygon->render());
+        self::assertCount(1, $polygon->getRelatedObjects());
     }
 
     #[Test]

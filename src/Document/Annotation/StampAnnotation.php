@@ -15,6 +15,10 @@ use Kalle\Pdf\Types\StringType;
 
 final class StampAnnotation extends IndirectObject implements PageAnnotation
 {
+    private const int PRINT_FLAG = 4;
+
+    private ?TextAnnotationAppearanceStream $appearance = null;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -45,6 +49,10 @@ final class StampAnnotation extends IndirectObject implements PageAnnotation
             'Name' => new NameType($this->icon),
         ]);
 
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $dictionary->add('F', self::PRINT_FLAG);
+        }
+
         if ($this->color !== null) {
             $dictionary->add('C', new ArrayType($this->colorComponents($this->color)));
         }
@@ -57,6 +65,12 @@ final class StampAnnotation extends IndirectObject implements PageAnnotation
             $dictionary->add('T', new StringType($this->title));
         }
 
+        if ($this->appearance !== null) {
+            $dictionary->add('AP', new DictionaryType([
+                'N' => new ReferenceType($this->appearance),
+            ]));
+        }
+
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'endobj' . PHP_EOL;
@@ -64,7 +78,14 @@ final class StampAnnotation extends IndirectObject implements PageAnnotation
 
     public function getRelatedObjects(): array
     {
-        return [];
+        return $this->appearance !== null ? [$this->appearance] : [];
+    }
+
+    public function withAppearance(TextAnnotationAppearanceStream $appearance): self
+    {
+        $this->appearance = $appearance;
+
+        return $this;
     }
 
     /**

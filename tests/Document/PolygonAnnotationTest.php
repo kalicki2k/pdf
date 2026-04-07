@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\PolygonAnnotation;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
@@ -97,5 +98,22 @@ final class PolygonAnnotationTest extends TestCase
         $this->expectExceptionMessage('Polygon annotation requires at least three vertices.');
 
         new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0]]);
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_polygon_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(255, 0, 0), Color::gray(0.9), 'Polygon', 'QA');
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 30));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Polygon /Rect [10 20 90 50] /P 4 0 R /Vertices [10 20 40 50 90 32] /F 4 /C [1 0 0] /IC [0.9] /Contents (Polygon) /T (QA) /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

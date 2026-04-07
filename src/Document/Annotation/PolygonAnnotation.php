@@ -16,6 +16,9 @@ use Kalle\Pdf\Types\StringType;
 
 final class PolygonAnnotation extends IndirectObject implements PageAnnotation
 {
+    private const int PRINT_FLAG = 4;
+
+    private ?TextAnnotationAppearanceStream $appearance = null;
     private ?PopupAnnotation $popup = null;
 
     /**
@@ -65,6 +68,10 @@ final class PolygonAnnotation extends IndirectObject implements PageAnnotation
             'Vertices' => new ArrayType($vertexValues),
         ]);
 
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $dictionary->add('F', self::PRINT_FLAG);
+        }
+
         if ($this->borderColor !== null) {
             $dictionary->add('C', new ArrayType($this->colorComponents($this->borderColor)));
         }
@@ -89,6 +96,12 @@ final class PolygonAnnotation extends IndirectObject implements PageAnnotation
             $dictionary->add('BS', $this->borderStyle->toPdfDictionary());
         }
 
+        if ($this->appearance !== null) {
+            $dictionary->add('AP', new DictionaryType([
+                'N' => new ReferenceType($this->appearance),
+            ]));
+        }
+
         if ($this->popup !== null) {
             $dictionary->add('Popup', new ReferenceType($this->popup));
         }
@@ -100,12 +113,22 @@ final class PolygonAnnotation extends IndirectObject implements PageAnnotation
 
     public function getRelatedObjects(): array
     {
-        return $this->popup !== null ? [$this->popup] : [];
+        return array_values(array_filter([
+            $this->popup,
+            $this->appearance,
+        ]));
     }
 
     public function withPopup(PopupAnnotation $popup): self
     {
         $this->popup = $popup;
+
+        return $this;
+    }
+
+    public function withAppearance(TextAnnotationAppearanceStream $appearance): self
+    {
+        $this->appearance = $appearance;
 
         return $this;
     }

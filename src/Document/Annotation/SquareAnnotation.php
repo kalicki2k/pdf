@@ -15,6 +15,10 @@ use Kalle\Pdf\Types\StringType;
 
 final class SquareAnnotation extends IndirectObject implements PageAnnotation
 {
+    private const int PRINT_FLAG = 4;
+
+    private ?TextAnnotationAppearanceStream $appearance = null;
+
     public function __construct(
         int $id,
         private readonly Page $page,
@@ -45,6 +49,10 @@ final class SquareAnnotation extends IndirectObject implements PageAnnotation
             'P' => new ReferenceType($this->page),
         ]);
 
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $dictionary->add('F', self::PRINT_FLAG);
+        }
+
         if ($this->borderColor !== null) {
             $dictionary->add('C', new ArrayType($this->colorComponents($this->borderColor)));
         }
@@ -65,6 +73,12 @@ final class SquareAnnotation extends IndirectObject implements PageAnnotation
             $dictionary->add('BS', $this->borderStyle->toPdfDictionary());
         }
 
+        if ($this->appearance !== null) {
+            $dictionary->add('AP', new DictionaryType([
+                'N' => new ReferenceType($this->appearance),
+            ]));
+        }
+
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'endobj' . PHP_EOL;
@@ -72,7 +86,14 @@ final class SquareAnnotation extends IndirectObject implements PageAnnotation
 
     public function getRelatedObjects(): array
     {
-        return [];
+        return $this->appearance !== null ? [$this->appearance] : [];
+    }
+
+    public function withAppearance(TextAnnotationAppearanceStream $appearance): self
+    {
+        $this->appearance = $appearance;
+
+        return $this;
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Annotation\InkAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
@@ -98,5 +99,35 @@ final class InkAnnotationTest extends TestCase
         $this->expectExceptionMessage('Ink annotation requires at least one path.');
 
         new InkAnnotation(7, $page, 10, 20, 80, 24, []);
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_ink_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new InkAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            24,
+            [
+                [[10.0, 20.0], [20.0, 30.0], [30.0, 20.0]],
+            ],
+            Color::rgb(0, 0, 0),
+            'Ink',
+            'QA',
+        );
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 24));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Ink /Rect [10 20 90 44] /P 4 0 R /InkList [[10 20 20 30 30 20]] /F 4 /C [0 0 0] /Contents (Ink) /T (QA) /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

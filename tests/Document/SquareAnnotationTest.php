@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\SquareAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
@@ -72,5 +73,22 @@ final class SquareAnnotationTest extends TestCase
 
         self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
         self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', $annotation->render());
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_square_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new SquareAnnotation(7, $page, 10, 20, 80, 24, Color::rgb(255, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 24));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Square /Rect [10 20 90 44] /P 4 0 R /F 4 /C [1 0 0] /IC [0.9] /Contents (Kasten) /T (QA) /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

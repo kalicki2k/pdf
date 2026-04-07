@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\CircleAnnotation;
+use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
 use PHPUnit\Framework\Attributes\Test;
@@ -72,5 +73,22 @@ final class CircleAnnotationTest extends TestCase
 
         self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
         self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', $annotation->render());
+    }
+
+    #[Test]
+    public function it_renders_a_pdf_a_circle_annotation_with_print_flag_and_appearance(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $page = $document->addPage();
+        $annotation = new CircleAnnotation(7, $page, 10, 20, 80, 24, Color::rgb(0, 0, 255), Color::gray(0.9), 'Kreis', 'QA');
+        $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 24));
+
+        self::assertSame(
+            "7 0 obj\n"
+            . "<< /Type /Annot /Subtype /Circle /Rect [10 20 90 44] /P 4 0 R /F 4 /C [0 0 1] /IC [0.9] /Contents (Kreis) /T (QA) /AP << /N 8 0 R >> >>\n"
+            . "endobj\n",
+            $annotation->render(),
+        );
+        self::assertCount(1, $annotation->getRelatedObjects());
     }
 }

@@ -20,6 +20,8 @@ use Kalle\Pdf\Object\IndirectObject;
  */
 final readonly class PageAnnotationFactory
 {
+    private const MINIMUM_APPEARANCE_DIMENSION = 0.0001;
+
     /**
      * @param Closure(): int $nextObjectId
      * @param Closure(string): FontDefinition $resolveFont
@@ -104,11 +106,7 @@ final readonly class PageAnnotationFactory
         );
 
         if ($this->page->getDocument()->getProfile()->isPdfA()) {
-            $annotation->withAppearance(new TextAnnotationAppearanceStream(
-                $this->nextObjectId(),
-                $box->width,
-                $box->height,
-            ));
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
         return $annotation;
@@ -182,11 +180,7 @@ final readonly class PageAnnotationFactory
         );
 
         if ($this->page->getDocument()->getProfile()->isPdfA()) {
-            $annotation->withAppearance(new TextAnnotationAppearanceStream(
-                $this->nextObjectId(),
-                $box->width,
-                $box->height,
-            ));
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
         return $annotation;
@@ -213,11 +207,7 @@ final readonly class PageAnnotationFactory
         );
 
         if ($this->page->getDocument()->getProfile()->isPdfA()) {
-            $annotation->withAppearance(new TextAnnotationAppearanceStream(
-                $this->nextObjectId(),
-                $box->width,
-                $box->height,
-            ));
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
         return $annotation;
@@ -244,11 +234,7 @@ final readonly class PageAnnotationFactory
         );
 
         if ($this->page->getDocument()->getProfile()->isPdfA()) {
-            $annotation->withAppearance(new TextAnnotationAppearanceStream(
-                $this->nextObjectId(),
-                $box->width,
-                $box->height,
-            ));
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
         }
 
         return $annotation;
@@ -262,7 +248,7 @@ final readonly class PageAnnotationFactory
     ): StrikeOutAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'StrikeOut annotation');
 
-        return new StrikeOutAnnotation(
+        $annotation = new StrikeOutAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -273,6 +259,12 @@ final readonly class PageAnnotationFactory
             $contents,
             $title,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
+        }
+
+        return $annotation;
     }
 
     public function createSquigglyAnnotation(
@@ -283,7 +275,7 @@ final readonly class PageAnnotationFactory
     ): SquigglyAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'Squiggly annotation');
 
-        return new SquigglyAnnotation(
+        $annotation = new SquigglyAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -294,6 +286,12 @@ final readonly class PageAnnotationFactory
             $contents,
             $title,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
+        }
+
+        return $annotation;
     }
 
     public function createStampAnnotation(
@@ -309,7 +307,7 @@ final readonly class PageAnnotationFactory
             throw new InvalidArgumentException('Stamp annotation icon must not be empty.');
         }
 
-        return new StampAnnotation(
+        $annotation = new StampAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -321,6 +319,12 @@ final readonly class PageAnnotationFactory
             $contents,
             $title,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
+        }
+
+        return $annotation;
     }
 
     public function createSquareAnnotation(
@@ -333,7 +337,7 @@ final readonly class PageAnnotationFactory
     ): SquareAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'Square annotation');
 
-        return new SquareAnnotation(
+        $annotation = new SquareAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -346,6 +350,12 @@ final readonly class PageAnnotationFactory
             $title,
             $borderStyle,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
+        }
+
+        return $annotation;
     }
 
     public function createCircleAnnotation(
@@ -358,7 +368,7 @@ final readonly class PageAnnotationFactory
     ): CircleAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'Circle annotation');
 
-        return new CircleAnnotation(
+        $annotation = new CircleAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -371,6 +381,12 @@ final readonly class PageAnnotationFactory
             $title,
             $borderStyle,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
+        }
+
+        return $annotation;
     }
 
     /**
@@ -385,7 +401,7 @@ final readonly class PageAnnotationFactory
     ): InkAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'Ink annotation');
 
-        return new InkAnnotation(
+        $annotation = new InkAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -397,6 +413,12 @@ final readonly class PageAnnotationFactory
             $contents,
             $title,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
+        }
+
+        return $annotation;
     }
 
     public function createLineAnnotation(
@@ -410,7 +432,7 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): LineAnnotation {
-        return new LineAnnotation(
+        $annotation = new LineAnnotation(
             $this->nextObjectId(),
             $this->page,
             $from->x,
@@ -425,6 +447,15 @@ final readonly class PageAnnotationFactory
             $subject,
             $borderStyle,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStream(
+                abs($to->x - $from->x),
+                abs($to->y - $from->y),
+            ));
+        }
+
+        return $annotation;
     }
 
     /**
@@ -440,7 +471,7 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): PolyLineAnnotation {
-        return new PolyLineAnnotation(
+        $annotation = new PolyLineAnnotation(
             $this->nextObjectId(),
             $this->page,
             $vertices,
@@ -452,6 +483,12 @@ final readonly class PageAnnotationFactory
             $subject,
             $borderStyle,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStreamForVertices($vertices));
+        }
+
+        return $annotation;
     }
 
     /**
@@ -466,7 +503,7 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): PolygonAnnotation {
-        return new PolygonAnnotation(
+        $annotation = new PolygonAnnotation(
             $this->nextObjectId(),
             $this->page,
             $vertices,
@@ -477,6 +514,12 @@ final readonly class PageAnnotationFactory
             $subject,
             $borderStyle,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStreamForVertices($vertices));
+        }
+
+        return $annotation;
     }
 
     public function createCaretAnnotation(
@@ -487,7 +530,7 @@ final readonly class PageAnnotationFactory
     ): CaretAnnotation {
         $this->assertRectHasPositiveDimensions($box, 'Caret annotation');
 
-        return new CaretAnnotation(
+        $annotation = new CaretAnnotation(
             $this->nextObjectId(),
             $this->page,
             $box->x,
@@ -498,11 +541,42 @@ final readonly class PageAnnotationFactory
             $title,
             $symbol,
         );
+
+        if ($this->page->getDocument()->getProfile()->isPdfA()) {
+            $annotation->withAppearance($this->createAppearanceStream($box->width, $box->height));
+        }
+
+        return $annotation;
     }
 
     private function nextObjectId(): int
     {
         return ($this->nextObjectId)();
+    }
+
+    private function createAppearanceStream(float $width, float $height): TextAnnotationAppearanceStream
+    {
+        return new TextAnnotationAppearanceStream(
+            $this->nextObjectId(),
+            max(self::MINIMUM_APPEARANCE_DIMENSION, $width),
+            max(self::MINIMUM_APPEARANCE_DIMENSION, $height),
+        );
+    }
+
+    /**
+     * @param list<array{0: float, 1: float}> $vertices
+     */
+    private function createAppearanceStreamForVertices(array $vertices): TextAnnotationAppearanceStream
+    {
+        $xValues = array_map(static fn (array $vertex): float => $vertex[0], $vertices);
+        $yValues = array_map(static fn (array $vertex): float => $vertex[1], $vertices);
+        assert($xValues !== []);
+        assert($yValues !== []);
+
+        return $this->createAppearanceStream(
+            max($xValues) - min($xValues),
+            max($yValues) - min($yValues),
+        );
     }
 
     private function assertRectHasPositiveDimensions(Rect $box, string $subject): void
