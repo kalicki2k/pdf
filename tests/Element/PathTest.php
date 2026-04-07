@@ -65,4 +65,26 @@ final class PathTest extends TestCase
             $path->render(),
         );
     }
+
+    #[Test]
+    public function it_renders_a_path_with_a_graphics_state_only(): void
+    {
+        $path = new Path(['10 10 m', '20 20 l'], null, null, null, 'GS1');
+
+        self::assertSame(
+            "q\n"
+            . "/GS1 gs\n"
+            . "10 10 m\n"
+            . "20 20 l\n"
+            . "S\n"
+            . 'Q',
+            $path->render(),
+        );
+    }
+
+    #[Test]
+    public function it_formats_zero_without_a_decimal_point(): void
+    {
+        self::assertSame('0', Path::formatNumber(0.0));
+    }
 }
