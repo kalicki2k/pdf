@@ -1634,6 +1634,13 @@ final class Page extends IndirectObject
             }
         }
 
+        if ($this->document->getProfile()->isPdfA2u()) {
+            throw new InvalidArgumentException(sprintf(
+                "Profile PDF/A-2u requires embedded Unicode fonts. Font '%s' is not registered.",
+                $baseFont,
+            ));
+        }
+
         throw new InvalidArgumentException("Font '$baseFont' is not registered.");
     }
 
