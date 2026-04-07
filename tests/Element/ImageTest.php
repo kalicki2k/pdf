@@ -159,7 +159,54 @@ final class ImageTest extends TestCase
     }
 
     #[Test]
-    public function it_creates_jpeg_images_with_grayscale_and_cmyk_color_spaces(): void
+    public function it_creates_an_image_from_an_rgb_png_file(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf-image-rgb-');
+
+        if ($path === false) {
+            self::fail('Unable to create temporary file.');
+        }
+
+        file_put_contents($path, $this->createRgbPng(width: 1, height: 1, red: 255, green: 0, blue: 127));
+
+        try {
+            $image = Image::fromFile($path);
+
+            self::assertSame(1, $image->getWidth());
+            self::assertSame(1, $image->getHeight());
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $image->render());
+            self::assertNull($image->getSoftMask());
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    #[Test]
+    public function it_creates_an_image_from_a_grayscale_alpha_png_file(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf-image-gray-alpha-');
+
+        if ($path === false) {
+            self::fail('Unable to create temporary file.');
+        }
+
+        file_put_contents($path, $this->createGrayscaleAlphaPng(width: 1, height: 1, gray: 127, alpha: 200));
+
+        try {
+            $image = Image::fromFile($path);
+            $softMask = $image->getSoftMask();
+
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $image->render(9));
+            self::assertStringContainsString('/SMask 9 0 R', $image->render(9));
+            self::assertNotNull($softMask);
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $softMask->render());
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    #[Test]
+    public function it_creates_jpeg_images_with_grayscale_rgb_and_cmyk_color_spaces(): void
     {
         $method = new \ReflectionMethod(Image::class, 'fromJpegData');
 
@@ -169,6 +216,12 @@ final class ImageTest extends TestCase
             'jpeg-data',
             [0 => 10, 1 => 20, 'channels' => 1, 'bits' => 8],
         );
+        $rgb = $method->invoke(
+            null,
+            'rgb.jpg',
+            'jpeg-data',
+            [0 => 20, 1 => 30, 'channels' => 3, 'bits' => 8],
+        );
         $cmyk = $method->invoke(
             null,
             'cmyk.jpg',
@@ -177,6 +230,7 @@ final class ImageTest extends TestCase
         );
 
         self::assertStringContainsString('/ColorSpace /DeviceGray', $gray->render());
+        self::assertStringContainsString('/ColorSpace /DeviceRGB', $rgb->render());
         self::assertStringContainsString('/ColorSpace /DeviceCMYK', $cmyk->render());
     }
 
@@ -205,6 +259,18 @@ final class ImageTest extends TestCase
         $this->expectExceptionMessage("Invalid PNG file 'broken.png'.");
 
         $method->invoke(null, 'broken.png', 'not-a-png');
+    }
+
+    #[Test]
+    public function it_rejects_png_files_without_an_ihdr_chunk(): void
+    {
+        $method = new \ReflectionMethod(Image::class, 'fromPngData');
+        $pngWithoutHeader = "\x89PNG\x0D\x0A\x1A\x0A" . $this->createPngChunk('IEND', '');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid PNG file 'missing-ihdr.png'.");
+
+        $method->invoke(null, 'missing-ihdr.png', $pngWithoutHeader);
     }
 
     #[Test]
@@ -324,6 +390,31 @@ final class ImageTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_invalid_png_chunk_headers_and_invalid_alpha_payload_compression(): void
+    {
+        $readUint32 = new \ReflectionMethod(Image::class, 'readUint32');
+        $splitPngAlphaChannels = new \ReflectionMethod(Image::class, 'splitPngAlphaChannels');
+
+        try {
+            $readUint32->invoke(null, 'abc', 0);
+            self::fail('Expected exception for invalid PNG chunk header.');
+        } catch (\ReflectionException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            self::assertSame('Unable to read PNG chunk data.', $exception->getMessage());
+        }
+
+        try {
+            $splitPngAlphaChannels->invoke(null, 'alpha.png', 'not-compressed', 1, 1, 3);
+            self::fail('Expected exception for invalid compressed alpha data.');
+        } catch (\ReflectionException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            self::assertSame("Unable to decompress PNG image data for 'alpha.png'.", $exception->getMessage());
+        }
+    }
+
+    #[Test]
     public function it_unfilters_png_scanlines_for_all_supported_filter_types_and_rejects_unknown_ones(): void
     {
         $method = new \ReflectionMethod(Image::class, 'unfilterPngScanline');
@@ -388,6 +479,38 @@ final class ImageTest extends TestCase
 
         return "\x89PNG\x0D\x0A\x1A\x0A"
             . $this->createPngChunk('IHDR', pack('NNC5', $width, $height, 8, 6, 0, 0, 0))
+            . $this->createPngChunk('IDAT', $compressed)
+            . $this->createPngChunk('IEND', '');
+    }
+
+    private function createRgbPng(int $width, int $height, int $red, int $green, int $blue): string
+    {
+        $scanline = chr(0) . str_repeat(chr($red) . chr($green) . chr($blue), $width);
+        $pixelData = str_repeat($scanline, $height);
+        $compressed = gzcompress($pixelData);
+
+        if ($compressed === false) {
+            self::fail('Unable to compress RGB PNG test data.');
+        }
+
+        return "\x89PNG\x0D\x0A\x1A\x0A"
+            . $this->createPngChunk('IHDR', pack('NNC5', $width, $height, 8, 2, 0, 0, 0))
+            . $this->createPngChunk('IDAT', $compressed)
+            . $this->createPngChunk('IEND', '');
+    }
+
+    private function createGrayscaleAlphaPng(int $width, int $height, int $gray, int $alpha): string
+    {
+        $scanline = chr(0) . str_repeat(chr($gray) . chr($alpha), $width);
+        $pixelData = str_repeat($scanline, $height);
+        $compressed = gzcompress($pixelData);
+
+        if ($compressed === false) {
+            self::fail('Unable to compress grayscale alpha PNG test data.');
+        }
+
+        return "\x89PNG\x0D\x0A\x1A\x0A"
+            . $this->createPngChunk('IHDR', pack('NNC5', $width, $height, 8, 4, 0, 0, 0))
             . $this->createPngChunk('IDAT', $compressed)
             . $this->createPngChunk('IEND', '');
     }

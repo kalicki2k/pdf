@@ -249,7 +249,7 @@ class Image extends Element
 
     private static function readUint32(string $data, int $offset): int
     {
-        $value = unpack('N', substr($data, $offset, 4));
+        $value = @unpack('N', substr($data, $offset, 4));
 
         if ($value === false || !isset($value[1]) || !is_int($value[1])) {
             throw new InvalidArgumentException('Unable to read PNG chunk data.');
@@ -263,7 +263,7 @@ class Image extends Element
      */
     private static function splitPngAlphaChannels(string $path, string $compressedData, int $width, int $height, int $colors): array
     {
-        $decompressedData = gzuncompress($compressedData);
+        $decompressedData = @gzuncompress($compressedData);
 
         if ($decompressedData === false) {
             throw new InvalidArgumentException("Unable to decompress PNG image data for '$path'.");
@@ -304,10 +304,6 @@ class Image extends Element
 
         $compressedColorOutput = gzcompress($colorOutput);
         $compressedAlphaOutput = gzcompress($alphaOutput);
-
-        if ($compressedColorOutput === false || $compressedAlphaOutput === false) {
-            throw new InvalidArgumentException("Unable to compress PNG alpha image data for '$path'.");
-        }
 
         return [$compressedColorOutput, $compressedAlphaOutput];
     }
