@@ -269,7 +269,8 @@ final readonly class Profile
 
     public function supportsAcroForms(): bool
     {
-        return !$this->isPdfA();
+        return !$this->isPdfA()
+            && !$this->isPdfUa();
     }
 
     public function writesInfoDictionary(): bool

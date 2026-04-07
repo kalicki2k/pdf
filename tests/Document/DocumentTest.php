@@ -253,6 +253,18 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_acroform_fields_for_pdf_ua_1(): void
+    {
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $page = $document->addPage(100.0, 200.0);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 does not allow AcroForm fields in the current implementation.');
+
+        $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12);
+    }
+
+    #[Test]
     public function it_registers_an_icc_profile_stream_for_pdf_a_2u(): void
     {
         $document = new Document(profile: Profile::pdfA2u());

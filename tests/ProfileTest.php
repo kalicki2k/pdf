@@ -209,6 +209,7 @@ final class ProfileTest extends TestCase
     {
         self::assertTrue(Profile::pdf14()->supportsAcroForms());
         self::assertTrue(Profile::pdf20()->supportsAcroForms());
+        self::assertFalse(Profile::pdfUa1()->supportsAcroForms());
         self::assertFalse(Profile::pdfA2u()->supportsAcroForms());
         self::assertFalse(Profile::pdfA4f()->supportsAcroForms());
     }

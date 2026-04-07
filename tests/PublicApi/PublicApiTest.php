@@ -419,6 +419,22 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_acroform_fields_for_pdf_ua_1_through_the_public_api(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'PDF/UA-1',
+            language: 'de-DE',
+        );
+        $page = $document->addPage(PageSize::custom(100, 100));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 does not allow AcroForm fields in the current implementation.');
+
+        $page->addTextField('field', new Rect(10, 20, 40, 15), 'value', 'Helvetica', 10);
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_2u_document_through_the_public_api(): void
     {
         $document = new Document(
