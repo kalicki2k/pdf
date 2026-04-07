@@ -200,6 +200,12 @@ final class PublicApiTest extends TestCase
         );
         $document->registerFont('NotoSans-Regular');
         $document->registerFont('NotoSans-Bold');
+        $document->addHeader(static function (Page $page, int $pageNumber): void {
+            $page->addText("Header $pageNumber", new Position(10, 170), 'NotoSans-Regular', 8);
+        });
+        $document->addFooter(static function (Page $page, int $pageNumber): void {
+            $page->addText("Footer $pageNumber", new Position(10, 10), 'NotoSans-Regular', 8);
+        });
 
         $page = $document->addPage(PageSize::custom(150, 180));
         $frame = $page->createTextFrame(new Position(10, 160), 120, 120);
@@ -222,6 +228,7 @@ final class PublicApiTest extends TestCase
         self::assertStringContainsString('/StructTreeRoot', $rendered);
         self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
         self::assertStringContainsString('<pdfaid:conformance>A</pdfaid:conformance>', $rendered);
+        self::assertStringContainsString('/Artifact BMC', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /H1', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /L', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Lbl', $rendered);

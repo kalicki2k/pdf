@@ -87,6 +87,13 @@ final class Page extends IndirectObject
         int $size = 12,
         TextOptions $options = new TextOptions(),
     ): self {
+        $artifactTag = $options->structureTag === null && $this->document->isRenderingArtifactContext()
+            ? 'Artifact'
+            : null;
+        $contentTag = $options->structureTag !== null
+            ? $options->structureTag->value
+            : $artifactTag;
+
         if ($options->structureTag !== null) {
             $this->document->ensureStructureEnabled();
         }
@@ -114,7 +121,7 @@ final class Page extends IndirectObject
             $graphicsStateName,
             $options->underline,
             $options->strikethrough,
-            $options->structureTag?->value,
+            $contentTag,
             $leadingDecorationInset,
             $trailingDecorationInset,
         ));

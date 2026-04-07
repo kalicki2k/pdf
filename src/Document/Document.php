@@ -85,6 +85,7 @@ final class Document
 
     /** @var StructElem[]  */
     private array $structElems = [];
+    private bool $renderingArtifactContext = false;
     public Catalog $catalog;
     public ?AcroForm $acroForm = null;
     public ?EncryptDictionary $encryptDictionary = null;
@@ -780,8 +781,15 @@ final class Document
      */
     private function runDeferredPageDecorators(array $renderers, Page $page, int $pageNumber, int $totalPages): void
     {
-        foreach ($renderers as $renderer) {
-            $renderer($page, $pageNumber, $totalPages);
+        $previousArtifactContext = $this->renderingArtifactContext;
+        $this->renderingArtifactContext = true;
+
+        try {
+            foreach ($renderers as $renderer) {
+                $renderer($page, $pageNumber, $totalPages);
+            }
+        } finally {
+            $this->renderingArtifactContext = $previousArtifactContext;
         }
     }
 
@@ -806,6 +814,11 @@ final class Document
     public function hasStructure(): bool
     {
         return $this->structTreeRoot !== null;
+    }
+
+    public function isRenderingArtifactContext(): bool
+    {
+        return $this->renderingArtifactContext;
     }
 
     private function assertAllowsEncryption(): void

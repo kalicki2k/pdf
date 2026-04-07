@@ -68,11 +68,13 @@ class Text extends Element
 
         if ($this->tag !== null && $this->markedContentId !== null) {
             $output .= "/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL;
+        } elseif ($this->tag !== null) {
+            $output .= "/$this->tag BMC" . PHP_EOL;
         }
 
         $output .= $this->content . ' Tj' . PHP_EOL;
 
-        if ($this->tag !== null && $this->markedContentId !== null) {
+        if ($this->tag !== null) {
             $output .= 'EMC' . PHP_EOL;
         }
 

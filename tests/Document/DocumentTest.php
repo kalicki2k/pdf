@@ -669,6 +669,25 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_marks_deferred_page_decorators_as_artifacts(): void
+    {
+        $document = new Document(profile: Profile::pdfA2a());
+        $document->registerFont('NotoSans-Regular', 'CIDFontType2', 'Identity-H', true, __DIR__ . '/../../assets/fonts/NotoSans-Regular.ttf');
+        $document->addHeader(static function (Page $page, int $pageNumber): void {
+            $page->addText("Header $pageNumber", new Position(10, 90), 'NotoSans-Regular', 10);
+        });
+        $document->addFooter(static function (Page $page, int $pageNumber): void {
+            $page->addText("Footer $pageNumber", new Position(10, 10), 'NotoSans-Regular', 10);
+        });
+
+        $document->addPage(100, 100);
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Artifact BMC', $rendered);
+        self::assertStringNotContainsString('/Type /StructElem /S /Artifact', $rendered);
+    }
+
+    #[Test]
     public function it_rejects_structured_content_on_pdf_versions_below_1_4(): void
     {
         $document = new Document(profile: Profile::standard(1.3));

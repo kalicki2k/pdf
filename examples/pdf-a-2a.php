@@ -52,7 +52,13 @@ $document = new Document(
     ->addKeyword('PDF/A-2a')
     ->addKeyword('Tagged PDF')
     ->registerFont('NotoSans-Regular')
-    ->registerFont('NotoSans-Bold');
+    ->registerFont('NotoSans-Bold')
+    ->addHeader(static function (\Kalle\Pdf\Page $page, int $pageNumber): void {
+        $page->addText("Archivkopf $pageNumber", new Position(Units::mm(20), Units::mm(287)), 'NotoSans-Regular', 9);
+    })
+    ->addFooter(static function (\Kalle\Pdf\Page $page, int $pageNumber): void {
+        $page->addText("Seite $pageNumber", new Position(Units::mm(20), Units::mm(12)), 'NotoSans-Regular', 9);
+    });
 
 $page = $document->addPage(PageSize::A4());
 
