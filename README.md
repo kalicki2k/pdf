@@ -94,6 +94,7 @@ Example scripts live in [examples](examples/):
 - [pdf-a-3b.php](examples/pdf-a-3b.php)
 - [pdf-a-3u.php](examples/pdf-a-3u.php)
 - [pdf-a-4.php](examples/pdf-a-4.php)
+- [pdf-a-4e.php](examples/pdf-a-4e.php)
 - [pdf-a-4f.php](examples/pdf-a-4f.php)
 - [table.php](examples/table.php)
 - [table-of-contents.php](examples/table-of-contents.php)
@@ -130,6 +131,9 @@ composer validate:pdfa -- var/examples/pdf-a-3u_YYYY-mm-dd-HH-ii-ss.pdf
 
 composer example:pdfa4
 composer validate:pdfa -- var/examples/pdf-a-4_YYYY-mm-dd-HH-ii-ss.pdf
+
+composer example:pdfa4e
+composer validate:pdfa -- var/examples/pdf-a-4e_YYYY-mm-dd-HH-ii-ss.pdf
 
 composer example:pdfa4f
 composer validate:pdfa -- var/examples/pdf-a-4f_YYYY-mm-dd-HH-ii-ss.pdf

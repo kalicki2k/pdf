@@ -41,6 +41,7 @@
     "example:pdfa3b": "php examples/pdf-a-3b.php",
     "example:pdfa3u": "php examples/pdf-a-3u.php",
     "example:pdfa4": "php examples/pdf-a-4.php",
+    "example:pdfa4e": "php examples/pdf-a-4e.php",
     "example:pdfa4f": "php examples/pdf-a-4f.php",
     "phpstan": "phpstan analyse --debug",
     "test": "phpunit --configuration phpunit.xml.dist",

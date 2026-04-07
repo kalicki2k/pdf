@@ -69,4 +69,10 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA4f()->isPdfA4f());
         self::assertFalse(Profile::pdfA4()->isPdfA4f());
     }
+
+    #[Test]
+    public function it_exposes_the_base_version_for_pdf_a_4e(): void
+    {
+        self::assertSame(2.0, Profile::pdfA4e()->version());
+    }
 }
