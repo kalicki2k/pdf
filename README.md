@@ -93,6 +93,7 @@ Example scripts live in [examples](examples/):
 - [pdf-a-2u.php](examples/pdf-a-2u.php)
 - [pdf-a-3b.php](examples/pdf-a-3b.php)
 - [pdf-a-3u.php](examples/pdf-a-3u.php)
+- [pdf-a-4.php](examples/pdf-a-4.php)
 - [table.php](examples/table.php)
 - [table-of-contents.php](examples/table-of-contents.php)
 - [table-of-contents-after-cover.php](examples/table-of-contents-after-cover.php)
@@ -125,6 +126,9 @@ composer validate:pdfa -- var/examples/pdf-a-3b_YYYY-mm-dd-HH-ii-ss.pdf
 
 composer example:pdfa3u
 composer validate:pdfa -- var/examples/pdf-a-3u_YYYY-mm-dd-HH-ii-ss.pdf
+
+composer example:pdfa4
+composer validate:pdfa -- var/examples/pdf-a-4_YYYY-mm-dd-HH-ii-ss.pdf
 ```
 
 The PDF/A validation command uses the official Docker image `verapdf/cli:v1.28.2`.

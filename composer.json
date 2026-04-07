@@ -40,6 +40,7 @@
     "example:pdfa2u": "php examples/pdf-a-2u.php",
     "example:pdfa3b": "php examples/pdf-a-3b.php",
     "example:pdfa3u": "php examples/pdf-a-3u.php",
+    "example:pdfa4": "php examples/pdf-a-4.php",
     "phpstan": "phpstan analyse --debug",
     "test": "phpunit --configuration phpunit.xml.dist",
     "test:coverage": "XDEBUG_MODE=coverage phpunit --configuration phpunit.xml.dist --coverage-text",

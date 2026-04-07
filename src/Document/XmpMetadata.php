@@ -82,6 +82,10 @@ XML;
             return '';
         }
 
+        $revisionXml = $part === 4
+            ? '    <pdfaid:rev>2020</pdfaid:rev>' . PHP_EOL
+            : '';
+
         $conformanceXml = $conformance !== null
             ? '    <pdfaid:conformance>' . $this->escape($conformance) . '</pdfaid:conformance>' . PHP_EOL
             : '';
@@ -90,7 +94,7 @@ XML;
   <rdf:Description rdf:about=""
     xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
     <pdfaid:part>{$part}</pdfaid:part>
-{$conformanceXml}  </rdf:Description>
+{$revisionXml}{$conformanceXml}  </rdf:Description>
 XML . PHP_EOL;
     }
 

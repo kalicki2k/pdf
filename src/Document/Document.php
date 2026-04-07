@@ -195,7 +195,9 @@ final class Document
             $objects[] = $attachment->getEmbeddedFile();
         }
 
-        $objects[] = $this->info;
+        if (!$this->profile->isPdfA4()) {
+            $objects[] = $this->info;
+        }
 
         foreach ($this->fonts as $font) {
             if ($font instanceof UnicodeFont) {
@@ -1008,6 +1010,11 @@ final class Document
     public function getKeywords(): array
     {
         return $this->keywords;
+    }
+
+    public function shouldWriteInfoDictionary(): bool
+    {
+        return !$this->profile->isPdfA4();
     }
 
     public function render(): string

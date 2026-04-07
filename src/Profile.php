@@ -106,9 +106,14 @@ final readonly class Profile
         return $this->pdfaPart() === 3;
     }
 
+    public function isPdfA4(): bool
+    {
+        return $this->pdfaPart() === 4;
+    }
+
     public function usesPdfAOutputIntent(): bool
     {
-        return in_array($this->pdfaPart(), [2, 3], true);
+        return in_array($this->pdfaPart(), [2, 3, 4], true);
     }
 
     public function isPdfA2u(): bool

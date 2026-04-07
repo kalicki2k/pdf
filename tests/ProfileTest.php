@@ -53,4 +53,13 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA3u()->isPdfA3());
         self::assertFalse(Profile::pdfA2u()->isPdfA3());
     }
+
+    #[Test]
+    public function it_detects_pdf_a_part_4_profiles(): void
+    {
+        self::assertTrue(Profile::pdfA4()->isPdfA4());
+        self::assertTrue(Profile::pdfA4e()->isPdfA4());
+        self::assertTrue(Profile::pdfA4f()->isPdfA4());
+        self::assertFalse(Profile::pdfA3u()->isPdfA4());
+    }
 }

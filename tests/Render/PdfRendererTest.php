@@ -51,6 +51,18 @@ final class PdfRendererTest extends TestCase
     }
 
     #[Test]
+    public function it_writes_the_pdf_2_0_header_for_pdf_a_4_documents(): void
+    {
+        $document = new Document(profile: Profile::pdfA4());
+        $renderer = new PdfRenderer();
+
+        $output = $renderer->render($document);
+
+        self::assertStringStartsWith("%PDF-2.0\n%\xE2\xE3\xCF\xD3\n", $output);
+        self::assertStringNotContainsString('/Info 3 0 R', $output);
+    }
+
+    #[Test]
     public function it_marks_missing_object_ids_as_free_entries_in_the_cross_reference_table(): void
     {
         $document = new Document(profile: Profile::standard(1.4));

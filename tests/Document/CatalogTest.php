@@ -189,4 +189,18 @@ final class CatalogTest extends TestCase
         self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.xml) 5 0 R] >> >>', $rendered);
         self::assertStringContainsString('/AF [5 0 R]', $rendered);
     }
+
+    #[Test]
+    public function it_renders_a_pdf_a_output_intent_for_pdf_a_4(): void
+    {
+        $document = new Document(profile: Profile::pdfA4());
+        $catalog = new Catalog(1, $document);
+
+        $rendered = $catalog->render();
+
+        self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
+        self::assertStringContainsString('/S /GTS_PDFA1', $rendered);
+        self::assertStringContainsString('/OutputConditionIdentifier (sRGB IEC61966-2.1)', $rendered);
+        self::assertStringContainsString('/DestOutputProfile 5 0 R', $rendered);
+    }
 }

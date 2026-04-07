@@ -14,7 +14,7 @@ class PdfRenderer
 
     public function render(Document $document): string
     {
-        $output = "%PDF-{$document->getVersion()}" . PHP_EOL
+        $output = '%PDF-' . $this->formatVersion($document->getVersion()) . PHP_EOL
             . self::BINARY_HEADER_COMMENT . PHP_EOL;
         $offsets = [];
         $objectEncryptor = $this->buildObjectEncryptor($document);
@@ -49,13 +49,18 @@ class PdfRenderer
         $output .= $this->generateTrailer(
             $maxObjectId + 1,
             $document->catalog->id,
-            $document->info->id,
+            $document->shouldWriteInfoDictionary() ? $document->info->id : null,
             $document->encryptDictionary?->id,
             $document->getDocumentId(),
         );
         $output .= 'startxref' . PHP_EOL . $startxref . PHP_EOL . '%%EOF';
 
         return $output;
+    }
+
+    private function formatVersion(float $version): string
+    {
+        return number_format($version, 1, '.', '');
     }
 
     private function buildObjectEncryptor(Document $document): ?StandardObjectEncryptor
@@ -100,12 +105,15 @@ class PdfRenderer
     /**
      * @param array{string, string} $documentId
      */
-    private function generateTrailer(int $size, int $rootId, int $infoId, ?int $encryptId, array $documentId): string
+    private function generateTrailer(int $size, int $rootId, ?int $infoId, ?int $encryptId, array $documentId): string
     {
         $trailer = 'trailer' . PHP_EOL
             . "<< /Size $size" . PHP_EOL
-            . "/Root $rootId 0 R" . PHP_EOL
-            . "/Info $infoId 0 R";
+            . "/Root $rootId 0 R";
+
+        if ($infoId !== null) {
+            $trailer .= PHP_EOL . "/Info $infoId 0 R";
+        }
 
         if ($encryptId !== null) {
             $trailer .= PHP_EOL . "/Encrypt $encryptId 0 R";
