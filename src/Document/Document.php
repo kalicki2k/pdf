@@ -838,7 +838,7 @@ final class Document
 
     private function assertAllowsEncryption(): void
     {
-        if ($this->profile->isPdfA()) {
+        if (!$this->profile->supportsEncryption()) {
             throw new InvalidArgumentException(sprintf('Profile %s does not allow encryption.', $this->profile->name()));
         }
     }

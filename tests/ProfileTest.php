@@ -126,6 +126,15 @@ final class ProfileTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_profiles_that_support_encryption(): void
+    {
+        self::assertTrue(Profile::pdf14()->supportsEncryption());
+        self::assertTrue(Profile::pdf20()->supportsEncryption());
+        self::assertFalse(Profile::pdfA2u()->supportsEncryption());
+        self::assertFalse(Profile::pdfA4f()->supportsEncryption());
+    }
+
+    #[Test]
     public function it_detects_profiles_that_support_aes_256_encryption(): void
     {
         self::assertFalse(Profile::pdf16()->supportsAes256Encryption());
