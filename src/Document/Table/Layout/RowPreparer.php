@@ -127,6 +127,7 @@ final readonly class RowPreparer
                 $cell->colspan,
                 $cell->rowspan,
                 $style,
+                $cell->headerScope,
             );
         }
 

@@ -17,6 +17,7 @@ final readonly class TableCell
         public int $colspan = 1,
         public int $rowspan = 1,
         public ?CellStyle $style = null,
+        public ?TableHeaderScope $headerScope = null,
     ) {
     }
 }

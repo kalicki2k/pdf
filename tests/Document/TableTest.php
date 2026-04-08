@@ -14,6 +14,7 @@ use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\TableCell;
+use Kalle\Pdf\Document\Table\TableHeaderScope;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -111,6 +112,52 @@ final class TableTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /TH', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /TD', $rendered);
         self::assertStringContainsString('/Scope /Column', $rendered);
+    }
+
+    #[Test]
+    public function it_supports_row_header_cells_for_pdf_ua_1(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Row Header Table');
+        $page = $document->addPage();
+
+        $page->createTable(new Position(20, 260), 170, [70, 100])
+            ->font(self::pdfUaRegularFont(), 10)
+            ->addRow(['Metric', 'Value'], header: true)
+            ->addRow([
+                new TableCell('Weight', headerScope: TableHeaderScope::Row),
+                '12 kg',
+            ]);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Type /StructElem /S /TH', $rendered);
+        self::assertStringContainsString('/Scope /Row', $rendered);
+        self::assertStringContainsString('/Type /StructElem /S /TD', $rendered);
+    }
+
+    #[Test]
+    public function it_supports_both_scope_header_cells_for_pdf_ua_1(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Matrix Table');
+        $page = $document->addPage();
+
+        $page->createTable(new Position(20, 260), 170, [55, 55, 60])
+            ->font(self::pdfUaRegularFont(), 10)
+            ->addRow([
+                new TableCell('Area', headerScope: TableHeaderScope::Both),
+                'Open',
+                'Closed',
+            ], header: true)
+            ->addRow([
+                new TableCell('North', headerScope: TableHeaderScope::Row),
+                '5',
+                '1',
+            ]);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Scope /Both', $rendered);
+        self::assertStringContainsString('/Scope /Row', $rendered);
     }
 
     #[Test]

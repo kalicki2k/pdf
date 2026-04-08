@@ -24,6 +24,7 @@ use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Table\TableGroupPageFit;
+use Kalle\Pdf\Document\Table\TableHeaderScope;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
@@ -309,7 +310,7 @@ final class Table
                     $segmentRowHeights,
                     $rowTopY,
                     $lineHeight,
-                    $this->createTableCellStructElem($preparedRow->header, $rowStructElem),
+                    $this->createTableCellStructElem($preparedCell->cell, $preparedRow->header, $rowStructElem),
                 );
                 $this->page = $result->page;
                 $continuationLines[] = $result->remainingLines;
@@ -557,7 +558,7 @@ final class Table
                     $this->headerStyle,
                     $this->baseFont,
                     $this->fontSize,
-                    $this->createTableCellStructElem($preparedRow->header, $rowStructElem),
+                    $this->createTableCellStructElem($preparedCell->cell, $preparedRow->header, $rowStructElem),
                 );
             }
 
@@ -612,21 +613,32 @@ final class Table
         return $this->page->getDocument()->createStructElem(StructureTag::TableRow, parent: $this->tableStructElem);
     }
 
-    private function createTableCellStructElem(bool $header, ?StructElem $rowStructElem): ?StructElem
+    private function createTableCellStructElem(TableCell $cell, bool $header, ?StructElem $rowStructElem): ?StructElem
     {
         if ($rowStructElem === null) {
             return null;
         }
 
+        $headerScope = $this->resolveTableCellHeaderScope($cell, $header);
+
         $structElem = $this->page->getDocument()->createStructElem(
-            $header ? StructureTag::TableHeaderCell : StructureTag::TableDataCell,
+            $headerScope === null ? StructureTag::TableDataCell : StructureTag::TableHeaderCell,
             parent: $rowStructElem,
         );
 
-        if ($header) {
-            $structElem->setScope('Column');
+        if ($headerScope !== null) {
+            $structElem->setScope($headerScope->value);
         }
 
         return $structElem;
+    }
+
+    private function resolveTableCellHeaderScope(TableCell $cell, bool $header): ?TableHeaderScope
+    {
+        if ($cell->headerScope !== null) {
+            return $cell->headerScope;
+        }
+
+        return $header ? TableHeaderScope::Column : null;
     }
 }
