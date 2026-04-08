@@ -70,6 +70,34 @@ final class FormFieldTextAppearanceStreamTest extends TestCase
         self::assertStringContainsString('(Apply) Tj', $rendered);
     }
 
+    #[Test]
+    public function it_can_render_a_dropdown_indicator_for_choice_widgets(): void
+    {
+        $font = new StandardFont(9, StandardFontName::HELVETICA, 'Type1', 'WinAnsiEncoding', 1.4);
+        $stream = new FormFieldTextAppearanceStream(
+            7,
+            80,
+            20,
+            $font,
+            'F1',
+            12,
+            ['Germany'],
+            null,
+            HorizontalAlign::LEFT,
+            VerticalAlign::MIDDLE,
+            true,
+        );
+
+        $rendered = $stream->render();
+
+        self::assertStringContainsString('66 2.5 m', $rendered);
+        self::assertStringContainsString('66 17.5 l', $rendered);
+        self::assertStringContainsString('70.2 11.6 m', $rendered);
+        self::assertStringContainsString('73 8.4 l', $rendered);
+        self::assertStringContainsString('75.8 11.6 l', $rendered);
+        self::assertStringContainsString('(Germany) Tj', $rendered);
+    }
+
     private function format(float $value): string
     {
         $formatted = rtrim(rtrim(sprintf('%.4F', $value), '0'), '.');

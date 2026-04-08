@@ -243,6 +243,7 @@ final readonly class FormWidgetFactory
                 $textColor,
                 HorizontalAlign::LEFT,
                 VerticalAlign::MIDDLE,
+                true,
             ),
         );
     }

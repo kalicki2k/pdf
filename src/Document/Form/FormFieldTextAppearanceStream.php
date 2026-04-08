@@ -38,6 +38,7 @@ final class FormFieldTextAppearanceStream extends IndirectObject
         private readonly ?Color $textColor = null,
         private readonly HorizontalAlign $horizontalAlign = HorizontalAlign::LEFT,
         private readonly VerticalAlign $verticalAlign = VerticalAlign::TOP,
+        private readonly bool $showsDropdownIndicator = false,
     ) {
         parent::__construct($id);
 
@@ -101,6 +102,7 @@ final class FormFieldTextAppearanceStream extends IndirectObject
 
         $paddingX = 2.5;
         $paddingY = 2.5;
+        $indicatorWidth = $this->showsDropdownIndicator ? min(14.0, max(10.0, $this->height - 4.0)) : 0.0;
         $leading = max($this->fontSize * 1.2, $this->fontSize + 1.0);
         $availableHeight = max(0.0, $this->height - (2 * $paddingY));
         $contentHeight = $this->fontSize + ($leading * (count($this->encodedLines) - 1));
@@ -110,7 +112,44 @@ final class FormFieldTextAppearanceStream extends IndirectObject
             VerticalAlign::BOTTOM => $paddingY,
         };
         $startY = $bottomY + $contentHeight - $this->fontSize;
-        $availableWidth = max(0.0, $this->width - (2 * $paddingX));
+        $availableWidth = max(0.0, $this->width - (2 * $paddingX) - $indicatorWidth);
+
+        if ($this->showsDropdownIndicator) {
+            $separatorX = $this->width - $indicatorWidth;
+            $arrowCenterX = $separatorX + ($indicatorWidth / 2);
+            $arrowCenterY = $this->height / 2;
+            $arrowHalfWidth = min(3.5, max(2.5, $indicatorWidth * 0.2));
+            $arrowHalfHeight = min(2.5, max(1.5, $this->height * 0.08));
+
+            $lines[] = sprintf(
+                '%s %s m',
+                $this->format($separatorX),
+                $this->format($paddingY),
+            );
+            $lines[] = sprintf(
+                '%s %s l',
+                $this->format($separatorX),
+                $this->format($this->height - $paddingY),
+            );
+            $lines[] = 'S';
+            $lines[] = '0 g';
+            $lines[] = sprintf(
+                '%s %s m',
+                $this->format($arrowCenterX - $arrowHalfWidth),
+                $this->format($arrowCenterY + $arrowHalfHeight),
+            );
+            $lines[] = sprintf(
+                '%s %s l',
+                $this->format($arrowCenterX),
+                $this->format($arrowCenterY - $arrowHalfHeight),
+            );
+            $lines[] = sprintf(
+                '%s %s l',
+                $this->format($arrowCenterX + $arrowHalfWidth),
+                $this->format($arrowCenterY + $arrowHalfHeight),
+            );
+            $lines[] = 'f';
+        }
 
         $lines[] = 'BT';
         $lines[] = sprintf('/%s %d Tf', $this->fontResourceName, $this->fontSize);

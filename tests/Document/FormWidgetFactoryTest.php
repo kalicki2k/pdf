@@ -132,6 +132,7 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/TU (Delivery method)', $annotation->render());
         self::assertStringContainsString('/AP << /N ', $annotation->render());
         self::assertCount(1, $annotation->getRelatedObjects());
+        self::assertStringContainsString('86 2.5 m', $annotation->getRelatedObjects()[0]->render());
     }
 
     #[Test]
