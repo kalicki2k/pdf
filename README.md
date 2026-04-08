@@ -108,6 +108,7 @@ Example scripts live in [examples](examples/):
 - [table-caption-pagination.php](examples/table-caption-pagination.php)
 - [table-caption-spans-pagination.php](examples/table-caption-spans-pagination.php)
 - [table-header-matrix-pagination.php](examples/table-header-matrix-pagination.php)
+- [table-header-matrix-breaks.php](examples/table-header-matrix-breaks.php)
 - [table.php](examples/table.php)
 - [table-of-contents.php](examples/table-of-contents.php)
 - [table-of-contents-after-cover.php](examples/table-of-contents-after-cover.php)
@@ -174,7 +175,7 @@ For an automated PDF/A regression run with representative fixtures for `PDF/A-1a
 composer test:pdfa-regression
 ```
 
-For PDF/UA-1 there is a matching automated veraPDF regression run with representative fixtures for the supported baseline, layout/decorative graphics, link, form widget, widget appearance, widget state, annotation, multipage table-caption pagination, multipage table span pagination, multipage table header matrices, mixed, and deep mixed integration paths:
+For PDF/UA-1 there is a matching automated veraPDF regression run with representative fixtures for the supported baseline, layout/decorative graphics, link, form widget, widget appearance, widget state, annotation, multipage table-caption pagination, multipage table span pagination, multipage table header matrices, stressed multipage table header matrices, mixed, and deep mixed integration paths:
 
 ```bash
 composer test:pdfua-regression

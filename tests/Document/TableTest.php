@@ -384,6 +384,111 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_pdf_ua_table_header_matrices_stable_with_long_content_and_early_page_breaks(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Header Matrix Break Table', registerBold: true);
+        $firstPage = $document->addPage(364, 260);
+
+        $table = $firstPage->createTable(new Position(12, 200), 340, [46, 44, 80, 66, 104], 14)
+            ->font(self::pdfUaRegularFont(), 9)
+            ->caption(new TableCaption(
+                'Regional issue review matrix',
+                fontName: self::pdfUaBoldFont(),
+                size: 12,
+                spacingAfter: 4.0,
+            ))
+            ->addRow([
+                new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
+                new TableCell('Operations', colspan: 2, headerScope: TableHeaderScope::Column),
+                new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
+            ], header: true)
+            ->addRow([
+                'Status',
+                'Assessment',
+                'Owner',
+                'Next step',
+            ], header: true);
+
+        foreach ([
+            [
+                'North',
+                'Stable',
+                'A longer assessment note confirms that availability stayed high while two edge locations still need manual monitoring during the morning handover.',
+                'Regional ops lead',
+                'Confirm the revised handover checklist, collect one additional day of evidence and send the final note back to the service desk lead.',
+            ],
+            [
+                'South',
+                'Review',
+                'The service recovered after a routing issue, but the branch rollout still needs another validation round before the region can close the incident.',
+                'Field coordination',
+                'Review the remaining branch exceptions, update the communication pack and schedule the final rollback window with the network team.',
+            ],
+            [
+                'West',
+                'Stable',
+                'The quarterly review is positive, although one escalation requires a written explanation because the response-time target was missed on a single weekend.',
+                'Incident manager',
+                'Attach the retrospective summary, publish the corrected service note and validate the revised escalation rota with the on-call team.',
+            ],
+            [
+                'East',
+                'Watch',
+                'The region meets the main targets, but repeated staffing changes created inconsistent follow-up notes and an incomplete ownership handover.',
+                'Regional support',
+                'Document the ownership changes, align the handover template and review the open actions with the regional support lead.',
+            ],
+            [
+                'Central',
+                'Escalated',
+                'This region still shows the highest risk because the branch deployment, response backlog and vendor coordination all remain open in parallel.',
+                'Programme office',
+                'Consolidate the vendor timeline, close the oldest backlog items and escalate unresolved blockers to the steering round this week.',
+            ],
+            [
+                'Coastal',
+                'Stable',
+                'Coastal performance is strong overall, but the offshore sites need a clearer fallback plan for short-notice weather interruptions.',
+                'Site operations',
+                'Validate the weather fallback checklist, refresh the standby contacts and publish the updated fallback instructions to local teams.',
+            ],
+            [
+                'Mountain',
+                'Review',
+                'Monitoring remained stable, yet one remote site produced delayed acknowledgements and therefore a misleading escalation trail in the weekly report.',
+                'Monitoring lead',
+                'Correct the weekly report, explain the delayed acknowledgements and keep the remote-site checks active for another reporting cycle.',
+            ],
+            [
+                'Metro',
+                'Stable',
+                'Metro closed all urgent incidents, but the final documentation pass still needs to confirm that the temporary workaround is fully removed.',
+                'Service owner',
+                'Confirm the workaround removal, archive the temporary instructions and publish the final closeout note to stakeholders.',
+            ],
+        ] as [$region, $status, $assessment, $owner, $nextStep]) {
+            $table->addRow([
+                new TableCell($region, headerScope: TableHeaderScope::Row),
+                $status,
+                $assessment,
+                $owner,
+                $nextStep,
+            ]);
+        }
+
+        $rendered = $document->render();
+
+        self::assertGreaterThan(2, count($document->pages->pages));
+        self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
+        self::assertGreaterThanOrEqual(3, substr_count($rendered, '/RowSpan 2'));
+        self::assertGreaterThanOrEqual(3, substr_count($rendered, '/ColSpan 2'));
+        self::assertGreaterThan(15, substr_count($rendered, '/Scope /Column'));
+        self::assertGreaterThan(7, substr_count($rendered, '/Scope /Row'));
+        self::assertGreaterThan(1, substr_count($rendered, '/Scope /Both'));
+        self::assertNotSame($firstPage, $table->getPage());
+    }
+
+    #[Test]
     public function it_renders_cells_with_colspan(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
