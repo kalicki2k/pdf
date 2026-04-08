@@ -489,6 +489,54 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_pdf_ua_tables_stable_with_narrow_columns_empty_cells_and_unbreakable_tokens(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Narrow Column Table', registerBold: true);
+        $firstPage = $document->addPage(240, 220);
+
+        $table = $firstPage->createTable(new Position(12, 162), 216, [28, 32, 48, 34, 74], 12)
+            ->font(self::pdfUaRegularFont(), 9)
+            ->caption(new TableCaption(
+                'Compact issue constraint log',
+                fontName: self::pdfUaBoldFont(),
+                size: 11,
+                spacingAfter: 4.0,
+            ))
+            ->addRow([
+                'Area',
+                'Queue',
+                'Constraint token',
+                'Owner',
+                'Action',
+            ], header: true);
+
+        foreach ([
+            ['North', '', 'INC2026ALPHAOMEGA0004711', 'Ops', 'Escalate owner handover and capture the aftercare notes before Friday.'],
+            ['South', 'Review', '', '', 'Keep the branch note open until the external approval arrives.'],
+            ['West', 'Backlog', 'REGIONALHANDOVERALPHA2026040801', 'Team', 'Consolidate duplicated notes and publish the shortened exception list.'],
+            ['East', '', 'SUPPLIERCHAINBLOCKER202604081245', 'Vendor', 'Align the contingency owners and archive the obsolete workaround memo.'],
+            ['Central', 'Stable', '', 'Office', ''],
+            ['Coastal', 'Watch', 'REMOTESITEFOLLOWUPTOKEN20260408Z', '', 'Refresh the fallback roster and confirm the weather escalation path.'],
+        ] as [$area, $queue, $constraintToken, $owner, $action]) {
+            $table->addRow([
+                new TableCell($area, headerScope: TableHeaderScope::Row),
+                $queue,
+                $constraintToken,
+                $owner,
+                $action,
+            ]);
+        }
+
+        $rendered = $document->render();
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
+        self::assertGreaterThan(4, substr_count($rendered, '/Scope /Column'));
+        self::assertGreaterThan(5, substr_count($rendered, '/Scope /Row'));
+        self::assertNotSame($firstPage, $table->getPage());
+    }
+
+    #[Test]
     public function it_renders_cells_with_colspan(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));

@@ -56,6 +56,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-table-caption-spans.pdf' => createPdfUa1TableCaptionSpansFixture(...),
     $outputDir . '/pdf-ua-1-table-header-matrix.pdf' => createPdfUa1TableHeaderMatrixFixture(...),
     $outputDir . '/pdf-ua-1-table-header-matrix-breaks.pdf' => createPdfUa1TableHeaderMatrixBreaksFixture(...),
+    $outputDir . '/pdf-ua-1-table-narrow-columns.pdf' => createPdfUa1TableNarrowColumnFixture(...),
     $outputDir . '/pdf-ua-1-mixed.pdf' => createPdfUa1MixedFixture(...),
     $outputDir . '/pdf-ua-1-mixed-deep.pdf' => createPdfUa1DeepMixedFixture(...),
 ];
@@ -891,6 +892,67 @@ function createPdfUa1TableHeaderMatrixBreaksFixture(): Document
             $assessment,
             $owner,
             $nextStep,
+        ]);
+    }
+
+    return $document;
+}
+
+function createPdfUa1TableNarrowColumnFixture(): Document
+{
+    $document = createPdfUaDocument(
+        'PDF/UA-1 Narrow Column Table Regression',
+        'Representative PDF/UA-1 regression fixture for narrow columns, empty cells and hard unbreakable tokens',
+    );
+    $page = $document->addPage(PageSize::custom(240, 220));
+
+    $page->addText(
+        'Accessible Narrow Column Stress Table',
+        new Position(12, 202),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addText(
+        'This fixture keeps compact columns, empty cells and hard tokens stable without dropping table semantics.',
+        new Position(12, 186),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $table = $page->createTable(new Position(12, 162), 216, [28, 32, 48, 34, 74], 12);
+    $table
+        ->font('NotoSans-Regular', 9)
+        ->caption(new TableCaption(
+            'Compact issue constraint log',
+            fontName: 'NotoSans-Bold',
+            size: 11,
+            color: Color::rgb(20, 40, 90),
+            spacingAfter: 4.0,
+        ))
+        ->addRow([
+            'Area',
+            'Queue',
+            'Constraint token',
+            'Owner',
+            'Action',
+        ], header: true);
+
+    foreach ([
+        ['North', '', 'INC2026ALPHAOMEGA0004711', 'Ops', 'Escalate owner handover and capture the aftercare notes before Friday.'],
+        ['South', 'Review', '', '', 'Keep the branch note open until the external approval arrives.'],
+        ['West', 'Backlog', 'REGIONALHANDOVERALPHA2026040801', 'Team', 'Consolidate duplicated notes and publish the shortened exception list.'],
+        ['East', '', 'SUPPLIERCHAINBLOCKER202604081245', 'Vendor', 'Align the contingency owners and archive the obsolete workaround memo.'],
+        ['Central', 'Stable', '', 'Office', ''],
+        ['Coastal', 'Watch', 'REMOTESITEFOLLOWUPTOKEN20260408Z', '', 'Refresh the fallback roster and confirm the weather escalation path.'],
+    ] as [$area, $queue, $constraintToken, $owner, $action]) {
+        $table->addRow([
+            new TableCell($area, headerScope: TableHeaderScope::Row),
+            $queue,
+            $constraintToken,
+            $owner,
+            $action,
         ]);
     }
 
