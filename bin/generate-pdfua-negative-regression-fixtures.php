@@ -36,6 +36,12 @@ $fixtures = [
             ...blankPdfLiteral('/Lang ', 'en-US'),
         ],
     ),
+    $outputDir . '/pdf-ua-1-negative-missing-parent-tree.pdf' => fn (): string => mutatePdf(
+        createPdfUaBaselineFixture()->render(),
+        [
+            '/ParentTree 20 0 R' => '/ParentTrex 20 0 R',
+        ],
+    ),
     $outputDir . '/pdf-ua-1-negative-missing-display-title.pdf' => fn (): string => mutatePdf(
         createPdfUaBaselineFixture()->render(),
         [
@@ -52,6 +58,12 @@ $fixtures = [
         createPdfUaLinksFixture()->render(),
         [
             '/StructParent 1' => '/StrvctParent 1',
+        ],
+    ),
+    $outputDir . '/pdf-ua-1-negative-standalone-link-tag.pdf' => fn (): string => mutatePdf(
+        createPdfUaLinksFixture()->render(),
+        [
+            '/Type /StructElem /S /Link /P 21 0 R /Pg 16 0 R /Alt (Open standalone guide)' => '/Type /StructElem /S /Llnk /P 21 0 R /Pg 16 0 R /Alt (Open standalone guide)',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-form-field-without-structure.pdf' => fn (): string => mutatePdf(
@@ -82,6 +94,24 @@ $fixtures = [
         createPdfUaAnnotationsFixture()->render(),
         [
             '/StructParent 1' => '/StrvctParent 1',
+        ],
+    ),
+    $outputDir . '/pdf-ua-1-negative-annotation-tag.pdf' => fn (): string => mutatePdf(
+        createPdfUaAnnotationsFixture()->render(),
+        [
+            '/Type /StructElem /S /Annot /P 21 0 R /Pg 16 0 R /Alt (Review note)' => '/Type /StructElem /S /Anotx /P 21 0 R /Pg 16 0 R /Alt (Review note)',
+        ],
+    ),
+    $outputDir . '/pdf-ua-1-negative-table-tag.pdf' => fn (): string => mutatePdf(
+        createPdfUaLayoutFixture()->render(),
+        [
+            '/Type /StructElem /S /Table /P 21 0 R /K [24 0 R 27 0 R]' => '/Type /StructElem /S /Tblex /P 21 0 R /K [24 0 R 27 0 R]',
+        ],
+    ),
+    $outputDir . '/pdf-ua-1-negative-table-row-tag.pdf' => fn (): string => mutatePdf(
+        createPdfUaLayoutFixture()->render(),
+        [
+            '/Type /StructElem /S /TR /P 23 0 R /K [25 0 R]' => '/Type /StructElem /S /Tz /P 23 0 R /K [25 0 R]',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-table-header-without-scope.pdf' => fn (): string => mutatePdf(

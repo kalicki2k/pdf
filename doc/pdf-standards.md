@@ -144,7 +144,7 @@ composer test:pdfua-regression
 composer test:pdfua-negative-regression
 ```
 
-Die Regression prueft aktuell acht reprasentative PDF/UA-1-Fixtures:
+Die Regression prueft aktuell neun reprasentative PDF/UA-1-Fixtures:
 
 - minimaler Tagged-PDF-Basispfad
 - Layout-/Decorative-Graphics-Pfad
@@ -154,18 +154,24 @@ Die Regression prueft aktuell acht reprasentative PDF/UA-1-Fixtures:
 - Widget-State-Pfad fuer Checkbox-, Radio- und Choice-Auswahlen
 - Annotation-Batch
 - Mixed-Integrationspfad ueber mehrere Seiten
+- tieferer Mixed-Integrationspfad mit internen Zielen, Listen, Formularen, Annotationen und Attachment ueber mehrere Seiten
 
-Zusaetzlich gibt es aktuell elf gezielte Negativ-Fixtures, die bei veraPDF fehlschlagen muessen:
+Zusaetzlich gibt es aktuell sechzehn gezielte Negativ-Fixtures, die bei veraPDF fehlschlagen muessen:
 
 - fehlende Dokumentsprache
+- fehlender `ParentTree`
 - fehlendes `DisplayDocTitle`
 - `Figure` ohne `Alt`
 - standalone Link ohne Struktur-Anbindung
+- standalone Link mit ungueltigem `Link`-Tag
 - Formular-Widget ohne Struktur-Anbindung
 - Widget-Seite ohne `Tabs /S`
 - Form-Strukturelement ohne gueltigen `Form`-Tag
 - Formular-Label-Container ohne gueltigen `Div`-Tag
 - Nicht-Link-Annotation ohne Struktur-Anbindung
+- Nicht-Link-Annotation mit ungueltigem `Annot`-Tag
+- Tabelle mit ungueltigem `Table`-Tag
+- Tabellenzeile mit ungueltigem `TR`-Tag
 - Tabellenkopf ohne `Scope`
 - Listen-Label ohne `Lbl`-Semantik
 

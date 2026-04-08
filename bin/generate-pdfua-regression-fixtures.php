@@ -50,6 +50,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-widget-states.pdf' => createPdfUa1WidgetStateFixture(...),
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
     $outputDir . '/pdf-ua-1-mixed.pdf' => createPdfUa1MixedFixture(...),
+    $outputDir . '/pdf-ua-1-mixed-deep.pdf' => createPdfUa1DeepMixedFixture(...),
 ];
 
 foreach ($fixtures as $path => $createFixture) {
@@ -760,6 +761,239 @@ function createPdfUa1MixedFixture(): Document
     }
 
     $annotationPage->addFileAttachment(new Rect(180, 118, 14, 16), $attachment, 'PushPin', 'Source data attachment');
+
+    return $document;
+}
+
+function createPdfUa1DeepMixedFixture(): Document
+{
+    $document = createPdfUaDocument('PDF/UA-1 Deep Mixed Regression', 'Representative PDF/UA-1 deep mixed regression fixture');
+    $document->addAttachment('review.xml', '<review status="ok"/>', 'Review data attachment', 'application/xml');
+
+    $summaryPage = $document->addPage(PageSize::custom(220, 260));
+    $reviewPage = $document->addPage(PageSize::custom(220, 260));
+    $formPage = $document->addPage(PageSize::custom(220, 260));
+    $notesPage = $document->addPage(PageSize::custom(220, 220));
+
+    $document
+        ->addDestination('deep-summary', $summaryPage)
+        ->addDestination('deep-review', $reviewPage)
+        ->addDestination('deep-form-review', $formPage)
+        ->addDestination('deep-notes', $notesPage);
+
+    $summaryPage->addText(
+        'Accessible Review Packet',
+        new Position(12, 242),
+        'NotoSans-Bold',
+        15,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $summaryPage->addText(
+        'This deep integration fixture combines internal destinations, tagged lists, tables, linked layout blocks, forms, annotations, attachments and figures across multiple pages.',
+        new Position(12, 226),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+    $summaryPage->addText(
+        'Jump to review table',
+        new Position(12, 210),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(
+            structureTag: StructureTag::Paragraph,
+            link: LinkTarget::namedDestination('deep-review'),
+        ),
+    );
+    $summaryPage->addInternalLink(new Rect(12, 192, 86, 12), 'deep-form-review', 'Jump to form review');
+    $summaryPage->addBadge(
+        'Deep check',
+        new Position(12, 176),
+        'NotoSans-Regular',
+        10,
+        new BadgeStyle(
+            fillColor: Color::rgb(229, 238, 254),
+            textColor: Color::rgb(28, 56, 118),
+        ),
+    );
+    $summaryPage->addPanel(
+        'Status panel body with visible linked text.',
+        116,
+        142,
+        92,
+        54,
+        'Status panel',
+        'NotoSans-Regular',
+        new PanelStyle(),
+        null,
+        LinkTarget::externalUrl('https://example.com/deep-status'),
+    );
+    $summaryPage->createTextFrame(
+        new Position(12, 160),
+        92,
+        74,
+    )
+        ->addBulletList(
+            [
+                'Summary page exposes internal and external navigation.',
+                'Review page validates list and table semantics together.',
+                'Form and notes pages keep widgets, annotations and attachments in one tagged document.',
+            ],
+            'NotoSans-Regular',
+            10,
+            options: new ListOptions(
+                structureTag: StructureTag::List,
+                lineHeight: 14,
+                itemSpacing: 6,
+            ),
+        );
+
+    $reviewPage->addText(
+        'Review Matrix',
+        new Position(12, 242),
+        'NotoSans-Bold',
+        15,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $reviewPage->addText(
+        'Continue to the notes page',
+        new Position(12, 226),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(
+            structureTag: StructureTag::Paragraph,
+            link: LinkTarget::namedDestination('deep-notes'),
+        ),
+    );
+
+    $reviewTable = $reviewPage->createTable(new Position(12, 192), 196, [62, 62, 72]);
+    $reviewTable
+        ->font('NotoSans-Regular', 10)
+        ->addRow(['Area', 'Check', 'Result'], header: true)
+        ->addRow(['Links', 'Internal destinations', 'Summary and notes links stay tagged.'])
+        ->addRow(['Forms', 'Visible labels', 'Widgets share a common form block with labels.'])
+        ->addRow(['Annotations', 'OBJR mapping', 'Notes and attachments keep structure references.']);
+
+    $reviewPage->addImage(
+        new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"),
+        new Position(188, 24),
+        12,
+        12,
+        new ImageOptions(
+            structureTag: StructureTag::Figure,
+            altText: 'Small review matrix marker image',
+        ),
+    );
+
+    $formPage->addText(
+        'Accessible Form Review',
+        new Position(12, 242),
+        'NotoSans-Bold',
+        15,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $formPage->addTextField(
+        'reviewer_name',
+        new Rect(12, 204, 92, 16),
+        'Ada Lovelace',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Reviewer name',
+        fieldLabel: new FormFieldLabel('Reviewer name', new Position(12, 224), 'NotoSans-Regular', 10),
+    );
+    $formPage->addCheckbox(
+        'accept_findings',
+        new Position(12, 178),
+        12,
+        true,
+        'Accept findings',
+        new FormFieldLabel('Accept findings', new Position(30, 180), 'NotoSans-Regular', 10),
+    );
+    $formPage->addRadioButton(
+        'priority',
+        'standard',
+        new Position(12, 152),
+        12,
+        true,
+        'Standard priority',
+        new FormFieldLabel('Standard priority', new Position(30, 154), 'NotoSans-Regular', 10),
+    );
+    $formPage->addRadioButton(
+        'priority',
+        'expedited',
+        new Position(116, 152),
+        12,
+        false,
+        'Expedited priority',
+        new FormFieldLabel('Expedited priority', new Position(134, 154), 'NotoSans-Regular', 10),
+    );
+    $formPage->addComboBox(
+        'region',
+        new Rect(12, 118, 92, 16),
+        ['emea' => 'EMEA', 'apac' => 'APAC', 'na' => 'North America'],
+        'emea',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Region selection',
+        fieldLabel: new FormFieldLabel('Region', new Position(12, 138), 'NotoSans-Regular', 10),
+    );
+    $formPage->addListBox(
+        'topics',
+        new Rect(12, 46, 92, 56),
+        ['pdf' => 'PDF', 'ua' => 'PDF/UA', 'forms' => 'Forms', 'tables' => 'Tables'],
+        ['ua', 'forms'],
+        'NotoSans-Regular',
+        11,
+        flags: new FormFieldFlags(multiSelect: true),
+        accessibleName: 'Topics selection',
+        fieldLabel: new FormFieldLabel('Topics', new Position(12, 106), 'NotoSans-Regular', 10),
+    );
+    $formPage->addPushButton(
+        'submit_review',
+        'Submit',
+        new Rect(116, 204, 72, 16),
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Submit review',
+        fieldLabel: new FormFieldLabel('Submit action', new Position(116, 224), 'NotoSans-Regular', 10),
+    );
+    $formPage->addSignatureField(
+        'review_signature',
+        new Rect(116, 118, 92, 16),
+        'Review signature',
+        new FormFieldLabel('Review signature', new Position(116, 138), 'NotoSans-Regular', 10),
+    );
+
+    $notesPage->addText(
+        'Accessible Notes',
+        new Position(12, 202),
+        'NotoSans-Bold',
+        15,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $notesPage->addText(
+        'Return to summary',
+        new Position(12, 186),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(
+            structureTag: StructureTag::Paragraph,
+            link: LinkTarget::namedDestination('deep-summary'),
+        ),
+    );
+    $notesPage->addTextAnnotation(new Rect(12, 154, 12, 12), 'Review note', 'QA');
+    $popupParent = internalPage($notesPage)->getAnnotations()[0];
+    $notesPage->addPopupAnnotation($popupParent, new Rect(28, 144, 36, 20), true);
+    $notesPage->addHighlightAnnotation(new Rect(12, 126, 72, 12), Color::rgb(255, 230, 0), 'Highlight note', 'QA');
+    $notesPage->addFreeTextAnnotation(new Rect(96, 118, 88, 24), 'Deep integration note', 'NotoSans-Regular', 11);
+
+    $attachment = $document->getAttachment('review.xml');
+
+    if ($attachment === null) {
+        throw new RuntimeException('Expected deep mixed regression attachment to exist.');
+    }
+
+    $notesPage->addFileAttachment(new Rect(188, 118, 14, 16), $attachment, 'PushPin', 'Review data attachment');
 
     return $document;
 }
