@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
@@ -30,10 +29,6 @@ use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Raw;
 use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Font\FontRegistry;
-use Kalle\Pdf\Font\OpenTypeFontParser;
-use Kalle\Pdf\Font\StandardFontName;
-use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -54,6 +49,7 @@ final class Page extends IndirectObject
 
     private int $markedContentId = 0;
     private ?PageComponents $pageComponents = null;
+    private ?PageFonts $pageFonts = null;
     private ?PageGraphics $pageGraphics = null;
     private ?PageImages $pageImages = null;
     private ?PageLinks $pageLinks = null;
@@ -865,54 +861,6 @@ final class Page extends IndirectObject
         return $this->pageAnnotations?->all() ?? [];
     }
 
-    private function resolveFont(string $baseFont): FontDefinition
-    {
-        foreach ($this->document->getFonts() as $registeredFont) {
-            if ($registeredFont->getBaseFont() === $baseFont) {
-                return $registeredFont;
-            }
-        }
-
-        if ($this->document->getProfile()->requiresEmbeddedUnicodeFonts()) {
-            throw new InvalidArgumentException(sprintf(
-                "Profile %s requires embedded Unicode fonts in the current implementation. Font '%s' is not registered.",
-                $this->document->getProfile()->name(),
-                $baseFont,
-            ));
-        }
-
-        throw new InvalidArgumentException("Font '$baseFont' is not registered.");
-    }
-
-    private function registerFontResource(FontDefinition $font): string
-    {
-        return $this->resources->addFont($font);
-    }
-
-    private function updateUnicodeFontWidths(FontDefinition $font): void
-    {
-        if (
-            !$font instanceof UnicodeFont
-            || $font->descendantFont->cidToGidMap === null
-            || $font->descendantFont->fontDescriptor === null
-        ) {
-            return;
-        }
-
-        $fontParser = new OpenTypeFontParser($font->descendantFont->fontDescriptor->fontFile->data);
-        $widths = [];
-
-        foreach ($font->getCodePointMap() as $cid => $codePointHex) {
-            $utf16 = hex2bin($codePointHex);
-            /** @var string $utf16 */
-            $character = mb_convert_encoding($utf16, 'UTF-8', 'UTF-16BE');
-            $glyphId = $fontParser->getGlyphIdForCharacter($character);
-            $widths[$cid] = $fontParser->getAdvanceWidthForGlyphId($glyphId);
-        }
-
-        $font->descendantFont->setWidths($widths);
-    }
-
     /**
      * @return list<string>
      */
@@ -932,11 +880,12 @@ final class Page extends IndirectObject
 
     public function measureTextWidth(string $text, string $baseFont, int $size): float
     {
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Text size must be greater than zero.');
-        }
+        return $this->pageFonts()->measureTextWidth($text, $baseFont, $size);
+    }
 
-        return $this->resolveFont($baseFont)->measureTextWidth($text, $size);
+    private function pageFonts(): PageFonts
+    {
+        return $this->pageFonts ??= new PageFonts($this);
     }
 
     private function pageGraphics(): PageGraphics
@@ -958,8 +907,8 @@ final class Page extends IndirectObject
     {
         return $this->pageAnnotations ??= new PageAnnotations(
             $this,
-            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
-            fn (FontDefinition $font): string => $this->registerFontResource($font),
+            fn (string $baseFont): FontDefinition => $this->pageFonts()->resolveFont($baseFont),
+            fn (FontDefinition $font): string => $this->pageFonts()->registerFontResource($font),
         );
     }
 
@@ -985,7 +934,7 @@ final class Page extends IndirectObject
         return $this->pageForms ??= new PageForms(
             $this,
             $this->pageAnnotations(),
-            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
+            fn (string $baseFont): FontDefinition => $this->pageFonts()->resolveFont($baseFont),
         );
     }
 
@@ -993,10 +942,10 @@ final class Page extends IndirectObject
     {
         return $this->pageTextRenderer ??= new PageTextRenderer(
             $this,
-            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
-            fn (FontDefinition $font): string => $this->registerFontResource($font),
+            fn (string $baseFont): FontDefinition => $this->pageFonts()->resolveFont($baseFont),
+            fn (FontDefinition $font): string => $this->pageFonts()->registerFontResource($font),
             function (FontDefinition $font): void {
-                $this->updateUnicodeFontWidths($font);
+                $this->pageFonts()->updateUnicodeFontWidths($font);
             },
             fn (TextOptions $options): ?StructureTag => $this->pageLinks()->resolveMarkedContentStructureTag($options),
             fn (TextOptions $options, StructureTag $tag, int $markedContentId, string $text): StructElem => $this->pageLinks()->attachTextToStructure($options, $tag, $markedContentId, $text),
@@ -1006,86 +955,8 @@ final class Page extends IndirectObject
             },
             fn (?Opacity $opacity): ?string => $this->resolveGraphicsStateName($opacity),
             fn (): int => $this->markedContentId++,
-            fn (string $baseFont, TextSegment $segment): string => $this->resolveStyledBaseFont($baseFont, $segment),
+            fn (string $baseFont, TextSegment $segment): string => $this->pageFonts()->resolveStyledBaseFont($baseFont, $segment),
         );
-    }
-
-    private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string
-    {
-        if (!$segment->bold && !$segment->italic) {
-            return $baseFont;
-        }
-
-        $standardVariant = StandardFontName::resolveVariant($baseFont, $segment->bold, $segment->italic);
-
-        if ($standardVariant !== null) {
-            $this->registerFontIfNeeded($standardVariant);
-
-            return $standardVariant;
-        }
-
-        foreach ($this->buildVariantCandidates($baseFont, $segment->bold, $segment->italic) as $candidate) {
-            if ($this->hasRegisteredFont($candidate) || FontRegistry::has($candidate, $this->document->getFontConfig())) {
-                $this->registerFontIfNeeded($candidate);
-
-                return $candidate;
-            }
-        }
-
-        return $baseFont;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function buildVariantCandidates(string $baseFont, bool $bold, bool $italic): array
-    {
-        if (!$bold && !$italic) {
-            return [$baseFont];
-        }
-
-        if ($bold && $italic) {
-            $suffix = ['BoldItalic', 'BoldOblique'];
-        } elseif ($bold) {
-            $suffix = ['Bold'];
-        } else {
-            $suffix = ['Italic', 'Oblique'];
-        }
-
-        $candidates = [];
-
-        foreach ($suffix as $variantSuffix) {
-            if (str_ends_with($baseFont, '-Regular')) {
-                $candidates[] = substr($baseFont, 0, -strlen('-Regular')) . '-' . $variantSuffix;
-                continue;
-            }
-
-            if (str_ends_with($baseFont, '-Roman')) {
-                $candidates[] = substr($baseFont, 0, -strlen('-Roman')) . '-' . $variantSuffix;
-                continue;
-            }
-
-            $candidates[] = $baseFont . '-' . $variantSuffix;
-        }
-
-        return array_values(array_unique($candidates));
-    }
-
-    private function hasRegisteredFont(string $baseFont): bool
-    {
-        return array_any(
-            $this->document->getFonts(),
-            static fn (FontDefinition $registeredFont): bool => $registeredFont->getBaseFont() === $baseFont,
-        );
-    }
-
-    private function registerFontIfNeeded(string $baseFont): void
-    {
-        if ($this->hasRegisteredFont($baseFont)) {
-            return;
-        }
-
-        $this->document->registerFont($baseFont);
     }
 
     public function resolveGraphicsStateName(?Opacity $opacity): ?string

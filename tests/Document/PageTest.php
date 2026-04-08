@@ -29,6 +29,7 @@ use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Document\PageGraphics;
 use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Style\BadgeStyle;
@@ -2639,6 +2640,7 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
+        $fonts = new PageFonts($page);
         $glyphMap = new UnicodeGlyphMap();
         $font = new UnicodeFont(
             12,
@@ -2651,9 +2653,9 @@ final class PageTest extends TestCase
             $glyphMap,
         );
 
-        $method = new \ReflectionMethod($page, 'updateUnicodeFontWidths');
+        $method = new \ReflectionMethod($fonts, 'updateUnicodeFontWidths');
 
-        self::assertNull($method->invoke($page, $font));
+        self::assertNull($method->invoke($fonts, $font));
     }
 
     #[Test]
@@ -2661,6 +2663,7 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
+        $fonts = new PageFonts($page);
         $glyphMap = new UnicodeGlyphMap();
         $glyphMap->encodeText('漢字');
         $fontData = file_get_contents('assets/fonts/NotoSansCJKsc-Regular.otf');
@@ -2686,8 +2689,7 @@ final class PageTest extends TestCase
             $glyphMap,
         );
 
-        $method = new \ReflectionMethod($page, 'updateUnicodeFontWidths');
-        $method->invoke($page, $font);
+        $fonts->updateUnicodeFontWidths($font);
 
         $renderedCidFont = $font->descendantFont->render();
 
@@ -3610,11 +3612,12 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
-        $method = new \ReflectionMethod($page, 'buildVariantCandidates');
+        $fonts = new PageFonts($page);
+        $method = new \ReflectionMethod($fonts, 'buildVariantCandidates');
 
-        self::assertSame(['CustomSans-Regular'], $method->invoke($page, 'CustomSans-Regular', false, false));
-        self::assertSame(['CustomSans-BoldItalic', 'CustomSans-BoldOblique'], $method->invoke($page, 'CustomSans-Regular', true, true));
-        self::assertSame(['CustomSans-Italic', 'CustomSans-Oblique'], $method->invoke($page, 'CustomSans-Regular', false, true));
+        self::assertSame(['CustomSans-Regular'], $method->invoke($fonts, 'CustomSans-Regular', false, false));
+        self::assertSame(['CustomSans-BoldItalic', 'CustomSans-BoldOblique'], $method->invoke($fonts, 'CustomSans-Regular', true, true));
+        self::assertSame(['CustomSans-Italic', 'CustomSans-Oblique'], $method->invoke($fonts, 'CustomSans-Regular', false, true));
     }
 
     #[Test]
@@ -3622,9 +3625,10 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
-        $method = new \ReflectionMethod($page, 'buildVariantCandidates');
+        $fonts = new PageFonts($page);
+        $method = new \ReflectionMethod($fonts, 'buildVariantCandidates');
 
-        self::assertSame(['CustomSans-Bold'], $method->invoke($page, 'CustomSans-Regular', true, false));
+        self::assertSame(['CustomSans-Bold'], $method->invoke($fonts, 'CustomSans-Regular', true, false));
     }
 
     #[Test]
@@ -3632,9 +3636,10 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
-        $method = new \ReflectionMethod($page, 'buildVariantCandidates');
+        $fonts = new PageFonts($page);
+        $method = new \ReflectionMethod($fonts, 'buildVariantCandidates');
 
-        self::assertSame(['Times-Italic', 'Times-Oblique'], $method->invoke($page, 'Times-Roman', false, true));
+        self::assertSame(['Times-Italic', 'Times-Oblique'], $method->invoke($fonts, 'Times-Roman', false, true));
     }
 
     #[Test]
@@ -3642,9 +3647,10 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
-        $method = new \ReflectionMethod($page, 'buildVariantCandidates');
+        $fonts = new PageFonts($page);
+        $method = new \ReflectionMethod($fonts, 'buildVariantCandidates');
 
-        self::assertSame(['MyFont-Bold'], $method->invoke($page, 'MyFont', true, false));
+        self::assertSame(['MyFont-Bold'], $method->invoke($fonts, 'MyFont', true, false));
     }
 
     #[Test]
