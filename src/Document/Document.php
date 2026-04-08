@@ -75,6 +75,7 @@ final class Document
     /** @var StructElem[]  */
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
+    private ?DocumentAcroFormManager $documentAcroFormManager = null;
     private ?DocumentProfileGuard $documentProfileGuard = null;
     private ?DocumentFontFactory $documentFontFactory = null;
     public Catalog $catalog;
@@ -611,125 +612,42 @@ final class Document
 
     public function ensureAcroForm(): AcroForm
     {
-        $this->assertAllowsForms();
-
-        if ($this->acroForm === null) {
-            $this->acroForm = new AcroForm(++$this->objectId);
-        }
-
-        return $this->acroForm;
+        return $this->documentAcroFormManager()->ensureAcroForm();
     }
 
     public function ensureTextFieldAcroForm(): AcroForm
     {
-        if (!$this->profile->supportsCurrentTextFieldImplementation()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow AcroForm fields in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
-
-        if ($this->acroForm === null) {
-            $this->acroForm = new AcroForm(++$this->objectId);
-        }
-
-        return $this->acroForm;
+        return $this->documentAcroFormManager()->ensureTextFieldAcroForm();
     }
 
     public function ensureCheckboxAcroForm(): AcroForm
     {
-        if (!$this->profile->supportsCurrentCheckboxImplementation()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow AcroForm fields in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
-
-        if ($this->acroForm === null) {
-            $this->acroForm = new AcroForm(++$this->objectId);
-        }
-
-        return $this->acroForm;
+        return $this->documentAcroFormManager()->ensureCheckboxAcroForm();
     }
 
     public function ensurePushButtonAcroForm(): AcroForm
     {
-        if (!$this->profile->supportsCurrentPushButtonImplementation()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow AcroForm fields in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
-
-        if ($this->acroForm === null) {
-            $this->acroForm = new AcroForm(++$this->objectId);
-        }
-
-        return $this->acroForm;
+        return $this->documentAcroFormManager()->ensurePushButtonAcroForm();
     }
 
     public function ensureRadioButtonAcroForm(): AcroForm
     {
-        if (!$this->profile->supportsCurrentRadioButtonImplementation()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow AcroForm fields in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
-
-        if ($this->acroForm === null) {
-            $this->acroForm = new AcroForm(++$this->objectId);
-        }
-
-        return $this->acroForm;
+        return $this->documentAcroFormManager()->ensureRadioButtonAcroForm();
     }
 
     public function ensureComboBoxAcroForm(): AcroForm
     {
-        if (!$this->profile->supportsCurrentComboBoxImplementation()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow AcroForm fields in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
-
-        if ($this->acroForm === null) {
-            $this->acroForm = new AcroForm(++$this->objectId);
-        }
-
-        return $this->acroForm;
+        return $this->documentAcroFormManager()->ensureComboBoxAcroForm();
     }
 
     public function ensureListBoxAcroForm(): AcroForm
     {
-        if (!$this->profile->supportsCurrentListBoxImplementation()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow AcroForm fields in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
-
-        if ($this->acroForm === null) {
-            $this->acroForm = new AcroForm(++$this->objectId);
-        }
-
-        return $this->acroForm;
+        return $this->documentAcroFormManager()->ensureListBoxAcroForm();
     }
 
     public function ensureSignatureFieldAcroForm(): AcroForm
     {
-        if (!$this->profile->supportsCurrentSignatureFieldImplementation()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow AcroForm fields in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
-
-        if ($this->acroForm === null) {
-            $this->acroForm = new AcroForm(++$this->objectId);
-        }
-
-        return $this->acroForm;
+        return $this->documentAcroFormManager()->ensureSignatureFieldAcroForm();
     }
 
     /**
@@ -875,11 +793,6 @@ final class Document
         $this->documentProfileGuard()->assertAllowsTransparency();
     }
 
-    private function assertAllowsForms(): void
-    {
-        $this->documentProfileGuard()->assertAllowsForms();
-    }
-
     /**
      * @param array{
      *     baseFont: string,
@@ -949,6 +862,11 @@ final class Document
     private function documentProfileGuard(): DocumentProfileGuard
     {
         return $this->documentProfileGuard ??= new DocumentProfileGuard($this);
+    }
+
+    private function documentAcroFormManager(): DocumentAcroFormManager
+    {
+        return $this->documentAcroFormManager ??= new DocumentAcroFormManager($this);
     }
 
     private function documentFontFactory(): DocumentFontFactory
