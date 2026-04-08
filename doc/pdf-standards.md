@@ -154,7 +154,7 @@ Die Regression prueft aktuell sieben reprasentative PDF/UA-1-Fixtures:
 - Annotation-Batch
 - Mixed-Integrationspfad ueber mehrere Seiten
 
-Zusaetzlich gibt es aktuell neun gezielte Negativ-Fixtures, die bei veraPDF fehlschlagen muessen:
+Zusaetzlich gibt es aktuell elf gezielte Negativ-Fixtures, die bei veraPDF fehlschlagen muessen:
 
 - fehlende Dokumentsprache
 - fehlendes `DisplayDocTitle`
@@ -162,6 +162,8 @@ Zusaetzlich gibt es aktuell neun gezielte Negativ-Fixtures, die bei veraPDF fehl
 - standalone Link ohne Struktur-Anbindung
 - Formular-Widget ohne Struktur-Anbindung
 - Widget-Seite ohne `Tabs /S`
+- Form-Strukturelement ohne gueltigen `Form`-Tag
+- Formular-Label-Container ohne gueltigen `Div`-Tag
 - Nicht-Link-Annotation ohne Struktur-Anbindung
 - Tabellenkopf ohne `Scope`
 - Listen-Label ohne `Lbl`-Semantik

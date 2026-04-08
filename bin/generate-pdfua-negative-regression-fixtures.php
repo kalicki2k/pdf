@@ -66,6 +66,18 @@ $fixtures = [
             '/Tabs /S' => '/Tabx /S',
         ],
     ),
+    $outputDir . '/pdf-ua-1-negative-form-struct-tag.pdf' => fn (): string => mutatePdf(
+        createPdfUaFormLabelFixture()->render(),
+        [
+            '/Type /StructElem /S /Form' => '/Type /StructElem /S /From',
+        ],
+    ),
+    $outputDir . '/pdf-ua-1-negative-form-label-container-tag.pdf' => fn (): string => mutatePdf(
+        createPdfUaFormLabelFixture()->render(),
+        [
+            '/Type /StructElem /S /Div' => '/Type /StructElem /S /Dlv',
+        ],
+    ),
     $outputDir . '/pdf-ua-1-negative-annotation-without-structure.pdf' => fn (): string => mutatePdf(
         createPdfUaAnnotationsFixture()->render(),
         [
@@ -190,6 +202,31 @@ function createPdfUaAnnotationsFixture(): Document
         new TextOptions(structureTag: StructureTag::Heading1),
     );
     $page->addTextAnnotation(new Rect(12, 128, 12, 12), 'Review note', 'QA');
+
+    return $document;
+}
+
+function createPdfUaFormLabelFixture(): Document
+{
+    $document = createPdfUaDocument('PDF/UA-1 Negative Form Labels', 'Source for PDF/UA negative form label semantics validation');
+    $page = $document->addPage(PageSize::custom(200, 180));
+
+    $page->addText(
+        'Negative Form Labels',
+        new Position(12, 160),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addTextField(
+        'customer_name',
+        new Rect(12, 112, 90, 16),
+        'Ada Lovelace',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Customer name',
+        fieldLabel: new FormFieldLabel('Customer name', new Position(12, 132), 'NotoSans-Regular', 10),
+    );
 
     return $document;
 }
