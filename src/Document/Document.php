@@ -76,6 +76,7 @@ final class Document
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
     private ?DocumentAcroFormManager $documentAcroFormManager = null;
+    private ?DocumentOptionalContentManager $documentOptionalContentManager = null;
     private ?DocumentAttachmentManager $documentAttachmentManager = null;
     private ?DocumentPageDecoratorManager $documentPageDecoratorManager = null;
     private ?DocumentStructureManager $documentStructureManager = null;
@@ -374,20 +375,7 @@ final class Document
 
     public function ensureOptionalContentGroup(string $name, bool $visibleByDefault = true): OptionalContentGroup
     {
-        $this->assertAllowsOptionalContentGroups();
-
-        if ($name === '') {
-            throw new InvalidArgumentException('Optional content group name must not be empty.');
-        }
-
-        if (isset($this->optionalContentGroups[$name])) {
-            return $this->optionalContentGroups[$name];
-        }
-
-        $group = new OptionalContentGroup($this->getUniqObjectId(), $name, $visibleByDefault);
-        $this->optionalContentGroups[$name] = $group;
-
-        return $group;
+        return $this->documentOptionalContentManager()->ensureOptionalContentGroup($name, $visibleByDefault);
     }
 
     public function addLayer(string $name, bool $visibleByDefault = true): OptionalContentGroup
@@ -449,7 +437,7 @@ final class Document
      */
     public function getOptionalContentGroups(): array
     {
-        return array_values($this->optionalContentGroups);
+        return $this->documentOptionalContentManager()->getOptionalContentGroups();
     }
 
     /**
@@ -753,6 +741,14 @@ final class Document
     private function documentAcroFormManager(): DocumentAcroFormManager
     {
         return $this->documentAcroFormManager ??= new DocumentAcroFormManager($this);
+    }
+
+    private function documentOptionalContentManager(): DocumentOptionalContentManager
+    {
+        return $this->documentOptionalContentManager ??= new DocumentOptionalContentManager(
+            $this,
+            $this->optionalContentGroups,
+        );
     }
 
     private function documentAttachmentManager(): DocumentAttachmentManager
