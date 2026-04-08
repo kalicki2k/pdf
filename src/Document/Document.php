@@ -76,6 +76,7 @@ final class Document
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
     private ?DocumentAcroFormManager $documentAcroFormManager = null;
+    private ?DocumentPageDecoratorManager $documentPageDecoratorManager = null;
     private ?DocumentStructureManager $documentStructureManager = null;
     private ?DocumentProfileGuard $documentProfileGuard = null;
     private ?DocumentFontFactory $documentFontFactory = null;
@@ -478,9 +479,7 @@ final class Document
      */
     public function addHeader(callable $renderer): self
     {
-        $this->deferredHeaderRenderers[] = static function (Page $page, int $pageNumber) use ($renderer): void {
-            $renderer($page, $pageNumber);
-        };
+        $this->documentPageDecoratorManager()->addHeader($renderer);
 
         return $this;
     }
@@ -490,9 +489,7 @@ final class Document
      */
     public function addFooter(callable $renderer): self
     {
-        $this->deferredFooterRenderers[] = static function (Page $page, int $pageNumber) use ($renderer): void {
-            $renderer($page, $pageNumber);
-        };
+        $this->documentPageDecoratorManager()->addFooter($renderer);
 
         return $this;
     }
@@ -505,69 +502,21 @@ final class Document
         bool $footer = true,
         bool $useLogicalPageNumbers = false,
     ): self {
-        if ($template === '') {
-            throw new InvalidArgumentException('Page number template must not be empty.');
-        }
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Page number size must be greater than zero.');
-        }
-
-        $renderer = function (Page $page, int $pageNumber, int $totalPages) use (
+        $this->documentPageDecoratorManager()->addPageNumbers(
             $position,
             $baseFont,
             $size,
             $template,
+            $footer,
             $useLogicalPageNumbers,
-        ): void {
-            if ($useLogicalPageNumbers) {
-                $pageNumber = null;
-                $logicalPageNumber = 0;
-
-                foreach ($this->pages->pages as $documentPage) {
-                    if (isset($this->excludedPageIdsFromNumbering[$documentPage->id])) {
-                        if ($documentPage === $page) {
-                            return;
-                        }
-
-                        continue;
-                    }
-
-                    $logicalPageNumber++;
-
-                    if ($documentPage === $page) {
-                        $pageNumber = $logicalPageNumber;
-                        break;
-                    }
-                }
-
-                $totalPages = $this->countLogicalPages();
-            }
-
-            $page->addText(
-                str_replace(
-                    ['{{page}}', '{{pages}}'],
-                    [(string) $pageNumber, (string) $totalPages],
-                    $template,
-                ),
-                $position,
-                $baseFont,
-                $size,
-            );
-        };
-
-        if ($footer) {
-            $this->deferredFooterRenderers[] = $renderer;
-        } else {
-            $this->deferredHeaderRenderers[] = $renderer;
-        }
+        );
 
         return $this;
     }
 
     public function excludePageFromNumbering(Page $page): self
     {
-        $this->excludedPageIdsFromNumbering[$page->id] = true;
+        $this->documentPageDecoratorManager()->excludePageFromNumbering($page);
 
         return $this;
     }
@@ -833,6 +782,16 @@ final class Document
         return $this->documentAcroFormManager ??= new DocumentAcroFormManager($this);
     }
 
+    private function documentPageDecoratorManager(): DocumentPageDecoratorManager
+    {
+        return $this->documentPageDecoratorManager ??= new DocumentPageDecoratorManager(
+            $this,
+            $this->deferredHeaderRenderers,
+            $this->deferredFooterRenderers,
+            $this->excludedPageIdsFromNumbering,
+        );
+    }
+
     private function documentStructureManager(): DocumentStructureManager
     {
         return $this->documentStructureManager ??= new DocumentStructureManager($this, $this->structElems);
@@ -841,21 +800,6 @@ final class Document
     private function documentFontFactory(): DocumentFontFactory
     {
         return $this->documentFontFactory ??= new DocumentFontFactory($this);
-    }
-
-    private function countLogicalPages(): int
-    {
-        $logicalPageCount = 0;
-
-        foreach ($this->pages->pages as $page) {
-            if (isset($this->excludedPageIdsFromNumbering[$page->id])) {
-                continue;
-            }
-
-            $logicalPageCount++;
-        }
-
-        return $logicalPageCount;
     }
 
     /**
