@@ -54,6 +54,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
     $outputDir . '/pdf-ua-1-table-caption-pagination.pdf' => createPdfUa1TableCaptionPaginationFixture(...),
     $outputDir . '/pdf-ua-1-table-caption-spans.pdf' => createPdfUa1TableCaptionSpansFixture(...),
+    $outputDir . '/pdf-ua-1-table-header-matrix.pdf' => createPdfUa1TableHeaderMatrixFixture(...),
     $outputDir . '/pdf-ua-1-mixed.pdf' => createPdfUa1MixedFixture(...),
     $outputDir . '/pdf-ua-1-mixed-deep.pdf' => createPdfUa1DeepMixedFixture(...),
 ];
@@ -703,6 +704,77 @@ function createPdfUa1TableCaptionSpansFixture(): Document
                 'Stable service quality with a dedicated follow-up note across all reported months.',
                 colspan: 4,
             ),
+        ]);
+    }
+
+    return $document;
+}
+
+function createPdfUa1TableHeaderMatrixFixture(): Document
+{
+    $document = createPdfUaDocument(
+        'PDF/UA-1 Table Header Matrix Regression',
+        'Representative PDF/UA-1 regression fixture for multipage table header matrices with grouped column headers',
+    );
+    $page = $document->addPage(PageSize::custom(220, 190));
+
+    $page->addText(
+        'Accessible Multipage Header Matrix',
+        new Position(12, 172),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addText(
+        'This fixture combines a table caption, two repeated header rows, grouped column headers and row headers across multiple pages.',
+        new Position(12, 156),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $table = $page->createTable(new Position(12, 132), 196, [36, 40, 40, 40, 40], 18);
+    $table
+        ->font('NotoSans-Regular', 10)
+        ->caption(new TableCaption(
+            'Regional service review matrix',
+            fontName: 'NotoSans-Bold',
+            size: 12,
+            color: Color::rgb(20, 40, 90),
+            spacingAfter: 5.0,
+        ))
+        ->addRow([
+            new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
+            new TableCell('Service quality', colspan: 2, headerScope: TableHeaderScope::Column),
+            new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
+        ], header: true)
+        ->addRow([
+            'Availability',
+            'Response time',
+            'Escalations',
+            'Resolved',
+        ], header: true);
+
+    foreach ([
+        ['North', '98 %', '1.2 h', '2', '18'],
+        ['South', '94 %', '1.8 h', '4', '14'],
+        ['West', '99 %', '0.9 h', '1', '20'],
+        ['East', '96 %', '1.4 h', '3', '16'],
+        ['Central', '93 %', '2.1 h', '5', '12'],
+        ['Coastal', '97 %', '1.0 h', '2', '19'],
+        ['Mountain', '95 %', '1.5 h', '3', '15'],
+        ['Metro', '99 %', '0.8 h', '1', '21'],
+        ['Rural', '92 %', '2.3 h', '6', '11'],
+        ['Delta', '96 %', '1.3 h', '2', '17'],
+        ['Harbor', '98 %', '1.1 h', '1', '20'],
+        ['Valley', '94 %', '1.9 h', '4', '13'],
+    ] as [$region, $availability, $responseTime, $escalations, $resolved]) {
+        $table->addRow([
+            new TableCell($region, headerScope: TableHeaderScope::Row),
+            $availability,
+            $responseTime,
+            $escalations,
+            $resolved,
         ]);
     }
 

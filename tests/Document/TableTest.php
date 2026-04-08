@@ -323,6 +323,67 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_pdf_ua_table_header_matrices_stable_across_multiple_pages(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Header Matrix Table', registerBold: true);
+        $firstPage = $document->addPage(220, 190);
+
+        $table = $firstPage->createTable(new Position(12, 132), 196, [36, 40, 40, 40, 40], 18)
+            ->font(self::pdfUaRegularFont(), 10)
+            ->caption(new TableCaption(
+                'Regional service review matrix',
+                fontName: self::pdfUaBoldFont(),
+                size: 12,
+                spacingAfter: 5.0,
+            ))
+            ->addRow([
+                new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
+                new TableCell('Service quality', colspan: 2, headerScope: TableHeaderScope::Column),
+                new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
+            ], header: true)
+            ->addRow([
+                'Availability',
+                'Response time',
+                'Escalations',
+                'Resolved',
+            ], header: true);
+
+        foreach ([
+            ['North', '98 %', '1.2 h', '2', '18'],
+            ['South', '94 %', '1.8 h', '4', '14'],
+            ['West', '99 %', '0.9 h', '1', '20'],
+            ['East', '96 %', '1.4 h', '3', '16'],
+            ['Central', '93 %', '2.1 h', '5', '12'],
+            ['Coastal', '97 %', '1.0 h', '2', '19'],
+            ['Mountain', '95 %', '1.5 h', '3', '15'],
+            ['Metro', '99 %', '0.8 h', '1', '21'],
+            ['Rural', '92 %', '2.3 h', '6', '11'],
+            ['Delta', '96 %', '1.3 h', '2', '17'],
+            ['Harbor', '98 %', '1.1 h', '1', '20'],
+            ['Valley', '94 %', '1.9 h', '4', '13'],
+        ] as [$region, $availability, $responseTime, $escalations, $resolved]) {
+            $table->addRow([
+                new TableCell($region, headerScope: TableHeaderScope::Row),
+                $availability,
+                $responseTime,
+                $escalations,
+                $resolved,
+            ]);
+        }
+
+        $rendered = $document->render();
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
+        self::assertGreaterThanOrEqual(2, substr_count($rendered, '/RowSpan 2'));
+        self::assertGreaterThanOrEqual(2, substr_count($rendered, '/ColSpan 2'));
+        self::assertGreaterThan(10, substr_count($rendered, '/Scope /Column'));
+        self::assertGreaterThan(10, substr_count($rendered, '/Scope /Row'));
+        self::assertGreaterThan(1, substr_count($rendered, '/Scope /Both'));
+        self::assertNotSame($firstPage, $table->getPage());
+    }
+
+    #[Test]
     public function it_renders_cells_with_colspan(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
