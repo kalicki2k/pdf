@@ -39,7 +39,6 @@ use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\PdfVersion;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Structure\ParentTree;
@@ -91,6 +90,7 @@ final class Document
     /** @var StructElem[]  */
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
+    private ?DocumentProfileGuard $documentProfileGuard = null;
     public Catalog $catalog;
     public ?AcroForm $acroForm = null;
     public ?EncryptDictionary $encryptDictionary = null;
@@ -860,99 +860,34 @@ final class Document
         }
     }
 
-    private function assertAllowsEncryption(): void
-    {
-        if (!$this->profile->supportsEncryption()) {
-            throw new InvalidArgumentException(sprintf('Profile %s does not allow encryption.', $this->profile->name()));
-        }
-    }
-
     public function assertAllowsEncryptionAlgorithm(EncryptionAlgorithm $algorithm): void
     {
-        $this->assertAllowsEncryption();
-
-        if ($algorithm === EncryptionAlgorithm::RC4_40 && !$this->profile->supportsRc440Encryption()) {
-            throw new InvalidArgumentException(sprintf(
-                'PDF version %s does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.',
-                PdfVersion::format($this->getVersion()),
-            ));
-        }
-
-        if ($algorithm === EncryptionAlgorithm::AES_128 && !$this->profile->supportsAes128Encryption()) {
-            throw new InvalidArgumentException(sprintf(
-                'PDF version %s does not allow AES-128 encryption. PDF 1.6 or higher is required.',
-                PdfVersion::format($this->getVersion()),
-            ));
-        }
-
-        if ($algorithm === EncryptionAlgorithm::AES_256 && !$this->profile->supportsAes256Encryption()) {
-            throw new InvalidArgumentException(sprintf(
-                'PDF version %s does not allow AES-256 encryption. PDF 1.7 or higher is required.',
-                PdfVersion::format($this->getVersion()),
-            ));
-        }
+        $this->documentProfileGuard()->assertAllowsEncryptionAlgorithm($algorithm);
     }
 
     public function assertAllowsAttachments(): void
     {
-        if ($this->profile->supportsEmbeddedFileAttachments()) {
-            return;
-        }
-
-        throw new InvalidArgumentException(sprintf('Profile %s does not allow embedded file attachments.', $this->profile->name()));
+        $this->documentProfileGuard()->assertAllowsAttachments();
     }
 
     private function assertAllowsAssociatedFiles(): void
     {
-        if ($this->profile->supportsAssociatedFiles()) {
-            return;
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            'PDF version %s does not allow associated files. PDF 2.0 or a supporting archival profile is required.',
-            PdfVersion::format($this->getVersion()),
-        ));
+        $this->documentProfileGuard()->assertAllowsAssociatedFiles();
     }
 
     public function assertAllowsOptionalContentGroups(): void
     {
-        if (!$this->profile->supportsCurrentOptionalContentGroupImplementation()) {
-            throw new InvalidArgumentException(sprintf('Profile %s does not allow optional content groups (layers).', $this->profile->name()));
-        }
-
-        if (!$this->profile->supportsOptionalContentGroups()) {
-            throw new InvalidArgumentException(sprintf(
-                'PDF version %s does not allow optional content groups (layers). PDF 1.5 or higher is required.',
-                PdfVersion::format($this->getVersion()),
-            ));
-        }
+        $this->documentProfileGuard()->assertAllowsOptionalContentGroups();
     }
 
     public function assertAllowsTransparency(): void
     {
-        if (!$this->profile->supportsCurrentTransparencyImplementation()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow transparency in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
-
-        if (!$this->profile->supportsTransparency()) {
-            throw new InvalidArgumentException(sprintf(
-                'PDF version %s does not allow transparency. PDF 1.4 or higher is required.',
-                PdfVersion::format($this->getVersion()),
-            ));
-        }
+        $this->documentProfileGuard()->assertAllowsTransparency();
     }
 
     private function assertAllowsForms(): void
     {
-        if (!$this->profile->supportsAcroForms()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s does not allow AcroForm fields in the current implementation.',
-                $this->profile->name(),
-            ));
-        }
+        $this->documentProfileGuard()->assertAllowsForms();
     }
 
     /**
@@ -966,32 +901,7 @@ final class Document
      */
     private function assertAllowsFontRegistration(array $options): void
     {
-        if (!$options['unicode'] && $options['encoding'] === 'WinAnsiEncoding' && !$this->profile->supportsWinAnsiEncoding()) {
-            throw new InvalidArgumentException(sprintf(
-                'PDF version %s does not allow WinAnsiEncoding for standard fonts. PDF 1.1 or higher is required.',
-                PdfVersion::format($this->getVersion()),
-            ));
-        }
-
-        if (!$this->profile->requiresEmbeddedUnicodeFonts()) {
-            return;
-        }
-
-        if (StandardFontName::isValid($options['baseFont']) && $options['fontFilePath'] === null) {
-            throw new InvalidArgumentException(sprintf(
-                "Profile %s does not allow PDF standard fonts like '%s'. Register an embedded Unicode font instead.",
-                $this->profile->name(),
-                $options['baseFont'],
-            ));
-        }
-
-        if ($options['fontFilePath'] === null || !$options['unicode']) {
-            throw new InvalidArgumentException(sprintf(
-                "Profile %s requires embedded Unicode fonts in the current implementation. Font '%s' must provide an embedded font file and Unicode mapping.",
-                $this->profile->name(),
-                $options['baseFont'],
-            ));
-        }
+        $this->documentProfileGuard()->assertAllowsFontRegistration($options);
     }
 
     public function addTableOfContents(
@@ -1173,6 +1083,11 @@ final class Document
         $renderer = new PdfRenderer();
 
         return $renderer->render($this);
+    }
+
+    private function documentProfileGuard(): DocumentProfileGuard
+    {
+        return $this->documentProfileGuard ??= new DocumentProfileGuard($this);
     }
 
     /**
