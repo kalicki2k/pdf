@@ -8,7 +8,7 @@ final class StringListNormalizer
 {
     /**
      * @param string[] $values
-     * @return string[]
+     * @return list<string>
      */
     public static function unique(array $values): array
     {

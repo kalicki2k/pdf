@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Composer\InstalledVersions;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\AcroForm;
@@ -26,14 +25,11 @@ use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Structure\ParentTree;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructTreeRoot;
-use Kalle\Pdf\Utilities\StringListNormalizer;
 use Random\RandomException;
 
 final class Document
 {
     private const string PACKAGE_NAME = 'kalle/pdf';
-    private const string PDFA_SRGB_ICC_PROFILE_PATH = __DIR__ . '/../../assets/color-srgb.icc';
-    private const string PDFA1_SRGB_ICC_PROFILE_PATH = __DIR__ . '/../../assets/color-srgb-pdfa1.icc';
     private int $objectId = 0;
     private int $structParentId = -1;
     private readonly DateTimeImmutable $creationDate;
@@ -56,7 +52,7 @@ final class Document
     /** @var array<int, FontDefinition&IndirectObject> */
     private array $fonts = [];
 
-    /** @var string[] */
+    /** @var list<string> */
     private array $keywords = [];
     /** @var array<int, true> */
     private array $excludedPageIdsFromNumbering = [];
@@ -73,6 +69,7 @@ final class Document
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
     private ?DocumentAcroFormManager $documentAcroFormManager = null;
+    private ?DocumentMetadataManager $documentMetadataManager = null;
     private ?DocumentNavigationManager $documentNavigationManager = null;
     private ?DocumentOptionalContentManager $documentOptionalContentManager = null;
     private ?DocumentAttachmentManager $documentAttachmentManager = null;
@@ -118,7 +115,7 @@ final class Document
         $this->modificationDate = $this->creationDate;
         $this->creator = $creator !== null && $creator !== '' ? $creator : self::PACKAGE_NAME;
         $this->creatorTool = $creatorTool !== null && $creatorTool !== '' ? $creatorTool : self::PACKAGE_NAME;
-        $this->producer = self::resolveDefaultProducer();
+        $this->producer = DocumentMetadataManager::resolveDefaultProducer(self::PACKAGE_NAME);
         $this->documentId = $this->generateDocumentId();
     }
 
@@ -157,20 +154,7 @@ final class Document
 
     public function getPdfAOutputIntentProfile(): ?IccProfileStream
     {
-        if (!$this->profile->usesPdfAOutputIntent()) {
-            return null;
-        }
-
-        if ($this->pdfaOutputIntentProfile === null) {
-            $this->pdfaOutputIntentProfile = IccProfileStream::fromPath(
-                $this->getUniqObjectId(),
-                $this->profile->pdfaPart() === 1
-                    ? self::PDFA1_SRGB_ICC_PROFILE_PATH
-                    : self::PDFA_SRGB_ICC_PROFILE_PATH,
-            );
-        }
-
-        return $this->pdfaOutputIntentProfile;
+        return $this->documentMetadataManager()->getPdfAOutputIntentProfile();
     }
 
     public function getTitle(): ?string
@@ -200,72 +184,43 @@ final class Document
 
     public function getCreator(): string
     {
-        return $this->creator;
+        return $this->documentMetadataManager()->getCreator();
     }
 
     public function setCreator(string $creator): self
     {
-        if ($creator === '') {
-            throw new InvalidArgumentException('Creator must not be empty.');
-        }
-
-        $this->creator = $creator;
+        $this->documentMetadataManager()->setCreator($creator);
 
         return $this;
     }
 
     public function getProducer(): string
     {
-        return $this->producer;
+        return $this->documentMetadataManager()->getProducer();
     }
 
     public function setProducer(string $producer): self
     {
-        if ($producer === '') {
-            throw new InvalidArgumentException('Producer must not be empty.');
-        }
-
-        $this->producer = $producer;
+        $this->documentMetadataManager()->setProducer($producer);
 
         return $this;
     }
 
     public function getCreatorTool(): string
     {
-        return $this->creatorTool;
+        return $this->documentMetadataManager()->getCreatorTool();
     }
 
     public function setCreatorTool(string $creatorTool): self
     {
-        if ($creatorTool === '') {
-            throw new InvalidArgumentException('Creator tool must not be empty.');
-        }
-
-        $this->creatorTool = $creatorTool;
+        $this->documentMetadataManager()->setCreatorTool($creatorTool);
 
         return $this;
     }
 
-    private static function resolveDefaultProducer(): string
-    {
-        $version = InstalledVersions::getPrettyVersion(self::PACKAGE_NAME);
-
-        return is_string($version) && $version !== ''
-            ? self::PACKAGE_NAME . ' ' . $version
-            : self::PACKAGE_NAME;
-    }
-
     public function getXmpMetadata(): ?XmpMetadata
     {
-        if (!$this->profile->supportsXmpMetadata()) {
-            return null;
-        }
-
-        if ($this->xmpMetadata === null) {
-            $this->xmpMetadata = new XmpMetadata($this->getUniqObjectId(), $this);
-        }
-
-        return $this->xmpMetadata;
+        return $this->documentMetadataManager()->getXmpMetadata();
     }
 
     public function addPage(PageSize | float $width = 595.2755905511812, ?float $height = null): Page
@@ -659,7 +614,7 @@ final class Document
 
     public function addKeyword(string $keyword): self
     {
-        $this->keywords = StringListNormalizer::unique([...$this->keywords, $keyword]);
+        $this->documentMetadataManager()->addKeyword($keyword);
 
         return $this;
     }
@@ -669,7 +624,7 @@ final class Document
      */
     public function getKeywords(): array
     {
-        return $this->keywords;
+        return $this->documentMetadataManager()->getKeywords();
     }
 
     public function shouldWriteInfoDictionary(): bool
@@ -709,6 +664,19 @@ final class Document
     private function documentAcroFormManager(): DocumentAcroFormManager
     {
         return $this->documentAcroFormManager ??= new DocumentAcroFormManager($this);
+    }
+
+    private function documentMetadataManager(): DocumentMetadataManager
+    {
+        return $this->documentMetadataManager ??= new DocumentMetadataManager(
+            $this,
+            $this->creator,
+            $this->creatorTool,
+            $this->producer,
+            $this->pdfaOutputIntentProfile,
+            $this->xmpMetadata,
+            $this->keywords,
+        );
     }
 
     private function documentNavigationManager(): DocumentNavigationManager
