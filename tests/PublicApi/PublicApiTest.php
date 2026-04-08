@@ -260,6 +260,27 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_the_existing_target_file_when_file_output_fails(): void
+    {
+        $targetPath = sys_get_temp_dir() . '/pdf-public-api-' . uniqid('', true) . '.pdf';
+        file_put_contents($targetPath, 'existing-content');
+
+        $document = new Document(profile: Profile::pdfUa1());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires a document title.');
+
+        try {
+            $document->writeToFile($targetPath);
+        } finally {
+            $writtenOutput = file_get_contents($targetPath);
+
+            self::assertNotFalse($writtenOutput);
+            self::assertSame('existing-content', $writtenOutput);
+        }
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_1b_document_through_the_public_api(): void
     {
         $document = new Document(

@@ -19,6 +19,7 @@ use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Render\AtomicFilePdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\StreamPdfOutput;
@@ -631,20 +632,15 @@ final class Document
 
     public function writeToFile(string $path): void
     {
-        if ($path === '') {
-            throw new InvalidArgumentException('PDF output path must not be empty.');
-        }
-
-        $stream = @fopen($path, 'wb');
-
-        if ($stream === false) {
-            throw new RuntimeException("Unable to open PDF output file '$path' for writing.");
-        }
+        $output = new AtomicFilePdfOutput($path);
 
         try {
-            $this->writeToStream($stream);
-        } finally {
-            fclose($stream);
+            $this->writeToOutput($output);
+            $output->commit();
+        } catch (\Throwable $exception) {
+            $output->discard();
+
+            throw $exception;
         }
     }
 
