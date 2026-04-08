@@ -1,0 +1,99 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Document;
+
+use InvalidArgumentException;
+
+/**
+ * @internal Manages document attachments and associated-file validation.
+ */
+final class DocumentAttachmentManager
+{
+    /** @var list<FileSpecification> */
+    private array $attachments;
+
+    /**
+     * @param list<FileSpecification> $attachments
+     */
+    public function __construct(
+        private readonly Document $document,
+        array &$attachments,
+    ) {
+        $this->attachments = & $attachments;
+    }
+
+    public function addAttachment(
+        string $filename,
+        string $contents,
+        ?string $description = null,
+        ?string $mimeType = null,
+        ?AssociatedFileRelationship $afRelationship = null,
+    ): void {
+        $this->document->assertAllowsAttachments();
+
+        if ($filename === '') {
+            throw new InvalidArgumentException('Attachment filename must not be empty.');
+        }
+
+        $afRelationship ??= $this->document->getProfile()->defaultsAttachmentRelationshipToData()
+            ? AssociatedFileRelationship::DATA
+            : null;
+
+        if ($afRelationship !== null) {
+            (new DocumentProfileGuard($this->document))->assertAllowsAssociatedFiles();
+        }
+
+        $embeddedFile = new EmbeddedFileStream($this->document->getUniqObjectId(), $contents, $mimeType);
+        $this->attachments = [
+            ...$this->attachments,
+            new FileSpecification(
+                $this->document->getUniqObjectId(),
+                $filename,
+                $embeddedFile,
+                $description,
+                $afRelationship,
+            ),
+        ];
+    }
+
+    public function addAttachmentFromFile(
+        string $path,
+        ?string $filename = null,
+        ?string $description = null,
+        ?string $mimeType = null,
+        ?AssociatedFileRelationship $afRelationship = null,
+    ): void {
+        if (!is_file($path)) {
+            throw new InvalidArgumentException("Attachment file '$path' does not exist.");
+        }
+
+        $filename ??= basename($path);
+
+        /** @var string|false $contents */
+        $contents = @file_get_contents($path);
+
+        if ($contents === false) {
+            throw new InvalidArgumentException("Attachment file '$path' could not be read.");
+        }
+
+        $this->addAttachment($filename, $contents, $description, $mimeType, $afRelationship);
+    }
+
+    /**
+     * @return list<FileSpecification>
+     */
+    public function getAttachments(): array
+    {
+        return $this->attachments;
+    }
+
+    public function getAttachment(string $filename): ?FileSpecification
+    {
+        return array_find(
+            $this->attachments,
+            static fn (FileSpecification $attachment): bool => $attachment->getFilename() === $filename,
+        );
+    }
+}

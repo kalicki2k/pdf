@@ -76,6 +76,7 @@ final class Document
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
     private ?DocumentAcroFormManager $documentAcroFormManager = null;
+    private ?DocumentAttachmentManager $documentAttachmentManager = null;
     private ?DocumentPageDecoratorManager $documentPageDecoratorManager = null;
     private ?DocumentStructureManager $documentStructureManager = null;
     private ?DocumentProfileGuard $documentProfileGuard = null;
@@ -401,26 +402,11 @@ final class Document
         ?string $mimeType = null,
         ?AssociatedFileRelationship $afRelationship = null,
     ): self {
-        $this->assertAllowsAttachments();
-
-        if ($filename === '') {
-            throw new InvalidArgumentException('Attachment filename must not be empty.');
-        }
-
-        $afRelationship ??= $this->profile->defaultsAttachmentRelationshipToData()
-            ? AssociatedFileRelationship::DATA
-            : null;
-
-        if ($afRelationship !== null) {
-            $this->assertAllowsAssociatedFiles();
-        }
-
-        $embeddedFile = new EmbeddedFileStream($this->getUniqObjectId(), $contents, $mimeType);
-        $this->attachments[] = new FileSpecification(
-            $this->getUniqObjectId(),
+        $this->documentAttachmentManager()->addAttachment(
             $filename,
-            $embeddedFile,
+            $contents,
             $description,
+            $mimeType,
             $afRelationship,
         );
 
@@ -434,20 +420,15 @@ final class Document
         ?string $mimeType = null,
         ?AssociatedFileRelationship $afRelationship = null,
     ): self {
-        if (!is_file($path)) {
-            throw new InvalidArgumentException("Attachment file '$path' does not exist.");
-        }
+        $this->documentAttachmentManager()->addAttachmentFromFile(
+            $path,
+            $filename,
+            $description,
+            $mimeType,
+            $afRelationship,
+        );
 
-        $filename ??= basename($path);
-
-        /** @var string|false $contents */
-        $contents = @file_get_contents($path);
-
-        if ($contents === false) {
-            throw new InvalidArgumentException("Attachment file '$path' could not be read.");
-        }
-
-        return $this->addAttachment($filename, $contents, $description, $mimeType, $afRelationship);
+        return $this;
     }
 
     /**
@@ -455,15 +436,12 @@ final class Document
      */
     public function getAttachments(): array
     {
-        return $this->attachments;
+        return $this->documentAttachmentManager()->getAttachments();
     }
 
     public function getAttachment(string $filename): ?FileSpecification
     {
-        return array_find(
-            $this->attachments,
-            static fn (FileSpecification $attachment): bool => $attachment->getFilename() === $filename,
-        );
+        return $this->documentAttachmentManager()->getAttachment($filename);
     }
 
     /**
@@ -691,11 +669,6 @@ final class Document
         $this->documentProfileGuard()->assertAllowsAttachments();
     }
 
-    private function assertAllowsAssociatedFiles(): void
-    {
-        $this->documentProfileGuard()->assertAllowsAssociatedFiles();
-    }
-
     public function assertAllowsOptionalContentGroups(): void
     {
         $this->documentProfileGuard()->assertAllowsOptionalContentGroups();
@@ -780,6 +753,11 @@ final class Document
     private function documentAcroFormManager(): DocumentAcroFormManager
     {
         return $this->documentAcroFormManager ??= new DocumentAcroFormManager($this);
+    }
+
+    private function documentAttachmentManager(): DocumentAttachmentManager
+    {
+        return $this->documentAttachmentManager ??= new DocumentAttachmentManager($this, $this->attachments);
     }
 
     private function documentPageDecoratorManager(): DocumentPageDecoratorManager
