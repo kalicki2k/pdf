@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Element;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\BinaryData;
+use RuntimeException;
 
 class Image extends Element
 {
@@ -12,7 +14,7 @@ class Image extends Element
     private int $height;
     private string $colorSpace;
     private string $filter;
-    private string $data;
+    private readonly BinaryData $data;
     private int $bitsPerComponent;
     private ?string $decodeParameters;
     private ?self $softMask;
@@ -22,7 +24,7 @@ class Image extends Element
         int $height,
         string $colorSpace,
         string $filter,
-        string $data,
+        string | BinaryData $data,
         int $bitsPerComponent = 8,
         ?string $decodeParameters = null,
         ?self $softMask = null,
@@ -31,7 +33,7 @@ class Image extends Element
         $this->height = $height;
         $this->colorSpace = $colorSpace;
         $this->filter = $filter;
-        $this->data = $data;
+        $this->data = is_string($data) ? BinaryData::fromString($data) : $data;
         $this->bitsPerComponent = $bitsPerComponent;
         $this->decodeParameters = $decodeParameters;
         $this->softMask = $softMask;
@@ -39,21 +41,17 @@ class Image extends Element
 
     public static function fromFile(string $path): self
     {
-        $data = @file_get_contents($path);
-
-        if ($data === false) {
-            throw new InvalidArgumentException("Unable to read image file '$path'.");
-        }
-
         $imageInfo = @getimagesize($path);
 
         if ($imageInfo === false) {
+            self::assertReadableImageFile($path);
+
             throw new InvalidArgumentException("Unsupported or invalid image file '$path'.");
         }
 
         return match ($imageInfo[2]) {
-            IMAGETYPE_JPEG => self::fromJpegData($path, $data, $imageInfo),
-            IMAGETYPE_PNG => self::fromPngData($path, $data),
+            IMAGETYPE_JPEG => self::fromJpegData($path, self::readBinaryImageFile($path), $imageInfo),
+            IMAGETYPE_PNG => self::fromPngData($path, self::readImageFileContents($path)),
             default => throw new InvalidArgumentException(sprintf(
                 "Unsupported image type '%s'.",
                 $imageInfo['mime'],
@@ -94,9 +92,9 @@ class Image extends Element
             $output .= "/SMask {$softMaskObjectId} 0 R" . PHP_EOL;
         }
 
-        $output .= '/Length ' . strlen($this->data) . ' >>' . PHP_EOL;
+        $output .= '/Length ' . $this->data->length() . ' >>' . PHP_EOL;
         $output .= 'stream' . PHP_EOL;
-        $output .= $this->data . PHP_EOL;
+        $output .= $this->data->contents() . PHP_EOL;
         $output .= 'endstream' . PHP_EOL;
 
         return $output;
@@ -105,7 +103,7 @@ class Image extends Element
     /**
      * @param array{0:int,1:int,2?:int,channels?:int,bits?:int,mime?:string} $imageInfo
      */
-    private static function fromJpegData(string $path, string $data, array $imageInfo): self
+    private static function fromJpegData(string $path, string | BinaryData $data, array $imageInfo): self
     {
         $channels = (int) ($imageInfo['channels'] ?? 3);
         $colorSpace = match ($channels) {
@@ -245,6 +243,35 @@ class Image extends Element
                 $width,
             ),
         );
+    }
+
+    private static function readImageFileContents(string $path): string
+    {
+        $data = @file_get_contents($path);
+
+        if ($data === false) {
+            throw new InvalidArgumentException("Unable to read image file '$path'.");
+        }
+
+        return $data;
+    }
+
+    private static function readBinaryImageFile(string $path): BinaryData
+    {
+        try {
+            return BinaryData::fromFile($path);
+        } catch (RuntimeException $exception) {
+            throw new InvalidArgumentException("Unable to read image file '$path'.");
+        }
+    }
+
+    private static function assertReadableImageFile(string $path): void
+    {
+        if (@file_get_contents($path) !== false) {
+            return;
+        }
+
+        throw new InvalidArgumentException("Unable to read image file '$path'.");
     }
 
     private static function readUint32(string $data, int $offset): int

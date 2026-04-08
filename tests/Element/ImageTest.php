@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Element;
 
 require_once __DIR__ . '/Support/ImageGzcompressStub.php';
 
+use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Element\Image;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -16,6 +17,27 @@ final class ImageTest extends TestCase
     public function it_renders_an_image_xobject_stream(): void
     {
         $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
+
+        self::assertSame(
+            "<< /Type /XObject\n"
+            . "/Subtype /Image\n"
+            . "/Width 320\n"
+            . "/Height 200\n"
+            . "/ColorSpace /DeviceRGB\n"
+            . "/BitsPerComponent 8\n"
+            . "/Filter /DCTDecode\n"
+            . "/Length 6 >>\n"
+            . "stream\n"
+            . "abc123\n"
+            . "endstream\n",
+            $image->render(),
+        );
+    }
+
+    #[Test]
+    public function it_renders_an_image_xobject_stream_from_binary_data(): void
+    {
+        $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', BinaryData::fromString('abc123'));
 
         self::assertSame(
             "<< /Type /XObject\n"
