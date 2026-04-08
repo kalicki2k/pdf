@@ -227,6 +227,39 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_can_write_the_public_document_to_a_stream(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4), title: 'Stream output');
+        $expectedOutput = $document->render();
+        $stream = fopen('php://temp', 'w+b');
+
+        self::assertNotFalse($stream);
+
+        $document->writeToStream($stream);
+        rewind($stream);
+
+        $writtenOutput = stream_get_contents($stream);
+
+        fclose($stream);
+
+        self::assertSame($expectedOutput, $writtenOutput);
+    }
+
+    #[Test]
+    public function it_can_write_the_public_document_directly_to_a_file(): void
+    {
+        $targetPath = sys_get_temp_dir() . '/pdf-public-api-' . uniqid('', true) . '.pdf';
+        $document = new Document(profile: Profile::standard(1.4), title: 'File output');
+        $expectedOutput = $document->render();
+        $document->writeToFile($targetPath);
+
+        $writtenOutput = file_get_contents($targetPath);
+
+        self::assertNotFalse($writtenOutput);
+        self::assertSame($expectedOutput, $writtenOutput);
+    }
+
+    #[Test]
     public function it_renders_a_minimal_pdf_a_1b_document_through_the_public_api(): void
     {
         $document = new Document(

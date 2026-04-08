@@ -14,8 +14,16 @@ class PdfRenderer
 
     public function render(Document $document): string
     {
-        $output = '%PDF-' . $this->formatVersion($document->getVersion()) . PHP_EOL
-            . self::BINARY_HEADER_COMMENT . PHP_EOL;
+        $output = new StringPdfOutput();
+        $this->write($document, $output);
+
+        return $output->contents();
+    }
+
+    public function write(Document $document, PdfOutput $output): void
+    {
+        $output->write('%PDF-' . $this->formatVersion($document->getVersion()) . PHP_EOL);
+        $output->write(self::BINARY_HEADER_COMMENT . PHP_EOL);
         $offsets = [];
         $objectEncryptor = $this->buildObjectEncryptor($document);
         RenderContext::setObjectEncryptor($objectEncryptor);
@@ -23,7 +31,7 @@ class PdfRenderer
         try {
             foreach ($document->getDocumentObjects() as $object) {
                 RenderContext::enterObject($object->id);
-                $offsets[$object->id] = mb_strlen($output, '8bit');
+                $offsets[$object->id] = $output->offset();
                 $renderedObject = $object->render();
 
                 if (
@@ -33,7 +41,7 @@ class PdfRenderer
                     $renderedObject = $objectEncryptor->encryptStreamObject($renderedObject, $object->id);
                 }
 
-                $output .= $renderedObject;
+                $output->write($renderedObject);
                 RenderContext::leaveObject();
             }
         } finally {
@@ -41,21 +49,19 @@ class PdfRenderer
             RenderContext::setObjectEncryptor(null);
         }
 
-        $startxref = mb_strlen($output, '8bit');
-        $output .= $this->generateCrossReferenceTable($offsets);
+        $startxref = $output->offset();
+        $output->write($this->generateCrossReferenceTable($offsets));
         $objectIds = array_keys($offsets);
         $maxObjectId = max($objectIds ?: [0]);
 
-        $output .= $this->generateTrailer(
+        $output->write($this->generateTrailer(
             $maxObjectId + 1,
             $document->catalog->id,
             $document->shouldWriteInfoDictionary() ? $document->info->id : null,
             $document->encryptDictionary?->id,
             $document->getDocumentId(),
-        );
-        $output .= 'startxref' . PHP_EOL . $startxref . PHP_EOL . '%%EOF';
-
-        return $output;
+        ));
+        $output->write('startxref' . PHP_EOL . $startxref . PHP_EOL . '%%EOF');
     }
 
     private function formatVersion(float $version): string

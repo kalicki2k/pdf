@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Render;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\PdfRenderer;
+use Kalle\Pdf\Render\StreamPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -97,5 +98,28 @@ final class PdfRendererTest extends TestCase
         );
         self::assertStringContainsString("trailer\n<< /Size 7\n/Root 1 0 R\n/Info 3 0 R\n", $output);
         self::assertMatchesRegularExpression('/\/ID \[<[^>]+> <[^>]+>]/', $output);
+    }
+
+    #[Test]
+    public function it_can_write_pdf_bytes_to_a_stream_output(): void
+    {
+        $document = new Document(
+            profile: Profile::standard(1.4),
+            title: 'Minimal',
+        );
+        $renderer = new PdfRenderer();
+        $expectedOutput = $renderer->render($document);
+        $stream = fopen('php://temp', 'w+b');
+
+        self::assertNotFalse($stream);
+
+        $renderer->write($document, new StreamPdfOutput($stream));
+        rewind($stream);
+
+        $writtenOutput = stream_get_contents($stream);
+
+        fclose($stream);
+
+        self::assertSame($expectedOutput, $writtenOutput);
     }
 }

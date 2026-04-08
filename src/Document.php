@@ -290,6 +290,19 @@ final readonly class Document
         return $this->document->render();
     }
 
+    /**
+     * @param resource $stream
+     */
+    public function writeToStream($stream): void
+    {
+        $this->document->writeToStream($stream);
+    }
+
+    public function writeToFile(string $path): void
+    {
+        $this->document->writeToFile($path);
+    }
+
     private function toInternalPage(Page $page): \Kalle\Pdf\Document\Page
     {
         return PageRegistry::resolve($page);

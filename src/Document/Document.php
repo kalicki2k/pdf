@@ -9,9 +9,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Outline\OutlineRoot;
-use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
@@ -21,11 +19,15 @@ use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\PdfRenderer;
+use Kalle\Pdf\Render\StreamPdfOutput;
+use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Structure\ParentTree;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructTreeRoot;
 use Random\RandomException;
+use RuntimeException;
 
 final class Document
 {
@@ -613,26 +615,37 @@ final class Document
 
     public function render(): string
     {
-        $renderLifecycle = new DocumentRenderLifecycle();
-        $renderLifecycle->applyDeferredRenderFinalizers($this->deferredRenderFinalizers);
-        $renderLifecycle->applyDeferredPageDecorators(
-            $this->deferredHeaderRenderers,
-            $this->deferredFooterRenderers,
-            array_values($this->pages->pages),
-            function (callable $renderer): void {
-                $this->renderInArtifactContext($renderer);
-            },
-        );
-        $renderLifecycle->assertRenderRequirements(
-            $this->profile,
-            $this->title,
-            $this->language,
-            $this->structTreeRoot !== null,
-        );
+        $output = new StringPdfOutput();
+        $this->writeToOutput($output);
 
-        $renderer = new PdfRenderer();
+        return $output->contents();
+    }
 
-        return $renderer->render($this);
+    /**
+     * @param resource $stream
+     */
+    public function writeToStream($stream): void
+    {
+        $this->writeToOutput(new StreamPdfOutput($stream));
+    }
+
+    public function writeToFile(string $path): void
+    {
+        if ($path === '') {
+            throw new InvalidArgumentException('PDF output path must not be empty.');
+        }
+
+        $stream = @fopen($path, 'wb');
+
+        if ($stream === false) {
+            throw new RuntimeException("Unable to open PDF output file '$path' for writing.");
+        }
+
+        try {
+            $this->writeToStream($stream);
+        } finally {
+            fclose($stream);
+        }
     }
 
     private function documentProfileGuard(): DocumentProfileGuard
@@ -727,5 +740,27 @@ final class Document
         }
 
         return [$value, $value];
+    }
+
+    private function writeToOutput(PdfOutput $output): void
+    {
+        $renderLifecycle = new DocumentRenderLifecycle();
+        $renderLifecycle->applyDeferredRenderFinalizers($this->deferredRenderFinalizers);
+        $renderLifecycle->applyDeferredPageDecorators(
+            $this->deferredHeaderRenderers,
+            $this->deferredFooterRenderers,
+            array_values($this->pages->pages),
+            function (callable $renderer): void {
+                $this->renderInArtifactContext($renderer);
+            },
+        );
+        $renderLifecycle->assertRenderRequirements(
+            $this->profile,
+            $this->title,
+            $this->language,
+            $this->structTreeRoot !== null,
+        );
+
+        (new PdfRenderer())->write($this, $output);
     }
 }
