@@ -14,7 +14,6 @@ use Kalle\Pdf\Document\Form\FormFieldLabel;
 use Kalle\Pdf\Document\Form\PageForms;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;

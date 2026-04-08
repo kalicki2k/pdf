@@ -68,6 +68,7 @@ $page->addTextBox(
     size: 9,
     options: new TextBoxOptions(
         lineHeight: Units::mm(4),
+        align: HorizontalAlign::RIGHT,
     ),
 );
 
@@ -145,7 +146,7 @@ $page->createTable(
         fillColor: Color::gray(0.94),
         textColor: Color::gray(0.15),
     ))
-    ->addRow(['Pos.', 'Beschreibung', 'Menge', 'Einzelpreis netto', 'Gesamt netto'], header: true)
+    ->addHeaderRow(['Pos.', 'Beschreibung', 'Menge', 'Einzelpreis netto', 'Gesamt netto'])
     ->addRow([
         new TableCell('1', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
         'Erstellung einer Unternehmenswebseite',
@@ -191,7 +192,8 @@ $page->createTextFrame($totalsPosition, Units::mm(70), Units::mm(35))
         ),
     );
 
-$targetPath = $outputDir . '/rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
+//$targetPath = $outputDir . '/rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
+$targetPath = $outputDir . '/rechnung.pdf';
 file_put_contents($targetPath, $document->render());
 
 printf(

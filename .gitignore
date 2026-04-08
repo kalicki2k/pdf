@@ -4,6 +4,6 @@
 /.phpunit.cache/
 /.php-cs-fixer.cache
 output_*.pdf
-AGENTS.md
+AGENTS_test.md
 Note.md
 Plan.md

@@ -12,14 +12,14 @@ use Kalle\Pdf\Structure\StructElem;
 /**
  * @internal Collects the indirect objects that make up a rendered PDF document.
  */
-final class DocumentObjectCollector
+final readonly class DocumentObjectCollector
 {
     /**
      * @param list<StructElem> $structElems
      */
     public function __construct(
-        private readonly Document $document,
-        private readonly array $structElems,
+        private Document $document,
+        private array    $structElems,
     ) {
     }
 
