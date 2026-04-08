@@ -29,6 +29,7 @@ use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\PageGraphics;
 use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
@@ -3651,14 +3652,14 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
-        $method = new \ReflectionMethod($page, 'finishClosedPath');
+        $graphics = new PageGraphics($page);
         $path = new PathBuilder($page);
         $path->moveTo(10, 10)->lineTo(20, 10)->lineTo(20, 20)->close();
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Closed path requires either a stroke or a fill.');
 
-        $method->invoke($page, $path, null, null, null, null);
+        $graphics->finishClosedPath($path, null, null, null, null);
     }
 
     #[Test]
@@ -3666,11 +3667,11 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
-        $method = new \ReflectionMethod($page, 'finishClosedPath');
+        $graphics = new PageGraphics($page);
         $path = new PathBuilder($page);
         $path->moveTo(10, 10)->lineTo(20, 10)->lineTo(20, 20)->close();
 
-        $result = $method->invoke($page, $path, null, null, Color::gray(0.5), null);
+        $result = $graphics->finishClosedPath($path, null, null, Color::gray(0.5), null);
 
         self::assertSame($page, $result);
         self::assertStringContainsString("0.5 g\n10 10 m", $page->contents->render());

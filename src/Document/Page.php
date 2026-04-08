@@ -20,19 +20,16 @@ use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
 use Kalle\Pdf\Document\Text\FlowTextOptions;
+use Kalle\Pdf\Document\Text\PageTextRenderer;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextFrame;
-use Kalle\Pdf\Document\Text\TextLayoutEngine;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Element\Image;
-use Kalle\Pdf\Element\Line;
 use Kalle\Pdf\Element\Raw;
-use Kalle\Pdf\Element\Rectangle;
-use Kalle\Pdf\Element\Text;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontRegistry;
 use Kalle\Pdf\Font\OpenTypeFontParser;
@@ -42,7 +39,6 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
-use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Types\ArrayType;
@@ -59,9 +55,10 @@ final class Page extends IndirectObject
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
     private int $markedContentId = 0;
+    private ?PageGraphics $pageGraphics = null;
     private ?PageAnnotations $pageAnnotations = null;
     private ?PageForms $pageForms = null;
-    private ?TextLayoutEngine $textLayoutEngine = null;
+    private ?PageTextRenderer $pageTextRenderer = null;
     public Contents $contents;
     public Resources $resources;
 
@@ -87,68 +84,7 @@ final class Page extends IndirectObject
         int $size = 12,
         TextOptions $options = new TextOptions(),
     ): self {
-        $structureTag = $this->resolveMarkedContentStructureTag($options);
-
-        $artifactTag = $structureTag === null && $this->document->isRenderingArtifactContext()
-            ? 'Artifact'
-            : null;
-        $contentTag = $structureTag !== null
-            ? $structureTag->value
-            : $artifactTag;
-
-        if ($structureTag !== null) {
-            $this->document->ensureStructureEnabled();
-        }
-
-        $font = $this->resolveFont($fontName);
-        $markedContentId = $structureTag !== null ? $this->markedContentId++ : null;
-        $encodedText = $this->encodeText($font, $fontName, $text);
-        $resourceFontName = $this->registerFontResource($font);
-        $textWidth = $font->measureTextWidth($text, $size);
-        [$leadingDecorationInset, $trailingDecorationInset] = $this->resolveDecorationInsets($font, $text, $size);
-        $colorOperator = $options->color?->renderNonStrokingOperator();
-        $graphicsStateName = $this->resolveGraphicsStateName($options->opacity);
-
-        $this->updateUnicodeFontWidths($font);
-
-        $this->contents->addElement(new Text(
-            $markedContentId,
-            $encodedText,
-            $position->x,
-            $position->y,
-            $resourceFontName,
-            $size,
-            $textWidth,
-            $colorOperator,
-            $graphicsStateName,
-            $options->underline,
-            $options->strikethrough,
-            $contentTag,
-            $leadingDecorationInset,
-            $trailingDecorationInset,
-        ));
-
-        $textStructElem = null;
-
-        if ($structureTag !== null && $markedContentId !== null) {
-            $textStructElem = $this->attachTextToStructure($options, $structureTag, $markedContentId, $text);
-        }
-
-        if ($options->link !== null && $textWidth > 0.0) {
-            $this->addLinkTarget(
-                new Rect(
-                    $position->x,
-                    $position->y - ($size * 0.2),
-                    $textWidth,
-                    $size,
-                ),
-                $options->link,
-                $textStructElem,
-                $this->resolveLinkAlternativeDescription($text),
-            );
-        }
-
-        return $this;
+        return $this->pageTextRenderer()->addText($text, $position, $fontName, $size, $options);
     }
 
     /**
@@ -466,45 +402,7 @@ final class Page extends IndirectObject
         int $size = 12,
         FlowTextOptions $options = new FlowTextOptions(),
     ): self {
-        $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-        $bottomMargin = $options->bottomMargin ?? self::DEFAULT_BOTTOM_MARGIN;
-
-        if ($maxWidth <= 0) {
-            throw new InvalidArgumentException('Paragraph width must be greater than zero.');
-        }
-
-        if ($lineHeight <= 0) {
-            throw new InvalidArgumentException('Line height must be greater than zero.');
-        }
-
-        if ($options->maxLines !== null && $options->maxLines <= 0) {
-            throw new InvalidArgumentException('Max lines must be greater than zero.');
-        }
-
-        $lines = $this->layoutParagraphLines(
-            $text,
-            $fontName,
-            $size,
-            $maxWidth,
-            $options->color,
-            $options->opacity,
-            $options->maxLines,
-            $options->overflow,
-        );
-
-        return $this->renderParagraphLines(
-            $lines,
-            $position->x,
-            $position->y,
-            $maxWidth,
-            $fontName,
-            $size,
-            $options->structureTag,
-            $options->parentStructElem,
-            $lineHeight,
-            $bottomMargin,
-            $options->align,
-        );
+        return $this->pageTextRenderer()->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
     }
 
     /**
@@ -517,84 +415,7 @@ final class Page extends IndirectObject
         int $size = 12,
         TextBoxOptions $options = new TextBoxOptions(),
     ): self {
-        $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-
-        if ($box->width <= 0) {
-            throw new InvalidArgumentException('Text box width must be greater than zero.');
-        }
-
-        if ($box->height <= 0) {
-            throw new InvalidArgumentException('Text box height must be greater than zero.');
-        }
-
-        if ($lineHeight <= 0) {
-            throw new InvalidArgumentException('Line height must be greater than zero.');
-        }
-
-        if ($options->maxLines !== null && $options->maxLines <= 0) {
-            throw new InvalidArgumentException('Max lines must be greater than zero.');
-        }
-
-        if (
-            $options->padding->top < 0
-            || $options->padding->right < 0
-            || $options->padding->bottom < 0
-            || $options->padding->left < 0
-        ) {
-            throw new InvalidArgumentException('Text box padding must not be negative.');
-        }
-
-        $contentWidth = $box->width - $options->padding->left - $options->padding->right;
-
-        if ($contentWidth <= 0) {
-            throw new InvalidArgumentException('Text box content width must be greater than zero.');
-        }
-
-        $contentHeight = $box->height - $options->padding->top - $options->padding->bottom;
-
-        if ($contentHeight < $size) {
-            throw new InvalidArgumentException('Text box content height must be at least the font size.');
-        }
-
-        $visibleLineCapacity = max(1, (int) floor($contentHeight / $lineHeight));
-        $maxLines = $options->maxLines === null
-            ? $visibleLineCapacity
-            : min($options->maxLines, $visibleLineCapacity);
-
-        $lines = $this->layoutParagraphLines(
-            $text,
-            $fontName,
-            $size,
-            $contentWidth,
-            $options->color,
-            $options->opacity,
-            $maxLines,
-            $options->overflow,
-        );
-
-        $startY = $this->resolveTextBoxStartY(
-            $box->y,
-            $box->height,
-            $size,
-            $lineHeight,
-            count($lines),
-            $options->verticalAlign,
-            $options->padding->top,
-            $options->padding->bottom,
-        );
-
-        return $this->renderTextLines(
-            $lines,
-            $box->x + $options->padding->left,
-            $startY,
-            $contentWidth,
-            $fontName,
-            $size,
-            $options->structureTag,
-            $options->parentStructElem,
-            $lineHeight,
-            $options->align,
-        );
+        return $this->pageTextRenderer()->addTextBox($text, $box, $fontName, $size, $options);
     }
 
     /**
@@ -611,7 +432,7 @@ final class Page extends IndirectObject
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): array {
-        return $this->textLayoutEngine()->layoutParagraphLines(
+        return $this->pageTextRenderer()->layoutParagraphLines(
             $text,
             $baseFont,
             $size,
@@ -639,118 +460,19 @@ final class Page extends IndirectObject
         ?float $bottomMargin = null,
         HorizontalAlign $align = HorizontalAlign::LEFT,
     ): self {
-        $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-        $bottomMargin ??= self::DEFAULT_BOTTOM_MARGIN;
-
-        if ($maxWidth <= 0) {
-            throw new InvalidArgumentException('Paragraph width must be greater than zero.');
-        }
-
-        if ($lineHeight <= 0) {
-            throw new InvalidArgumentException('Line height must be greater than zero.');
-        }
-
-        $page = $this;
-        $currentY = $y;
-        $topMargin = $this->height - $y;
-
-        foreach ($lines as $line) {
-            if ($currentY < $bottomMargin) {
-                $page = $this->document->addPage($this->width, $this->height);
-                $currentY = $this->height - $topMargin;
-            }
-
-            $this->renderTextLine(
-                $page,
-                $line,
-                $x,
-                $currentY,
-                $maxWidth,
-                $baseFont,
-                $size,
-                $tag,
-                $parentStructElem,
-                $align,
-            );
-            $currentY -= $lineHeight;
-        }
-
-        return $page;
-    }
-
-    /**
-     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $lines
-     */
-    private function renderTextLines(
-        array $lines,
-        float $x,
-        float $y,
-        float $maxWidth,
-        string $baseFont,
-        int $size,
-        ?StructureTag $tag,
-        ?StructElem $parentStructElem,
-        float $lineHeight,
-        HorizontalAlign $align,
-    ): self {
-        $currentY = $y;
-
-        foreach ($lines as $line) {
-            $this->renderTextLine($this, $line, $x, $currentY, $maxWidth, $baseFont, $size, $tag, $parentStructElem, $align);
-            $currentY -= $lineHeight;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param array{segments: array<int, TextSegment>, justify: bool} $line
-     */
-    private function renderTextLine(
-        self $page,
-        array $line,
-        float $x,
-        float $y,
-        float $maxWidth,
-        string $baseFont,
-        int $size,
-        ?StructureTag $tag,
-        ?StructElem $parentStructElem,
-        HorizontalAlign $align,
-    ): void {
-        if ($line['segments'] === []) {
-            return;
-        }
-
-        $cursorX = $x + $this->calculateAlignedOffset($line['segments'], $baseFont, $size, $maxWidth, $align);
-
-        if ($align === HorizontalAlign::JUSTIFY && $line['justify']) {
-            $this->renderJustifiedLine($page, $line['segments'], $cursorX, $y, $baseFont, $size, $tag, $maxWidth, $parentStructElem);
-
-            return;
-        }
-
-        foreach ($line['segments'] as $segment) {
-            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
-            $segmentFont = $this->resolveFont($segmentFontName);
-
-            $page->addText(
-                $segment->text,
-                new Position($cursorX, $y),
-                $segmentFontName,
-                $size,
-                new TextOptions(
-                    structureTag: $tag,
-                    parentStructElem: $parentStructElem,
-                    color: $segment->color,
-                    opacity: $segment->opacity,
-                    underline: $segment->underline,
-                    strikethrough: $segment->strikethrough,
-                    link: $segment->link,
-                ),
-            );
-            $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
-        }
+        return $this->pageTextRenderer()->renderParagraphLines(
+            $lines,
+            $x,
+            $y,
+            $maxWidth,
+            $baseFont,
+            $size,
+            $tag,
+            $parentStructElem,
+            $lineHeight,
+            $bottomMargin,
+            $align,
+        );
     }
 
     public function createTextFrame(
@@ -775,7 +497,7 @@ final class Page extends IndirectObject
 
     public function addPath(): PathBuilder
     {
-        return new PathBuilder($this);
+        return $this->pageGraphics()->addPath();
     }
 
     public function addLine(
@@ -785,24 +507,7 @@ final class Page extends IndirectObject
         ?Color $color = null,
         ?Opacity $opacity = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Line width must be greater than zero.');
-        }
-
-        $colorOperator = $color?->renderStrokingOperator();
-        $graphicsStateName = $this->resolveGraphicsStateName($opacity);
-
-        $this->addGraphicElement(new Line(
-            $from->x,
-            $from->y,
-            $to->x,
-            $to->y,
-            $width,
-            $colorOperator,
-            $graphicsStateName,
-        ));
-
-        return $this;
+        return $this->pageGraphics()->addLine($from, $to, $width, $color, $opacity);
     }
 
     public function addRectangle(
@@ -812,36 +517,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        if ($box->width <= 0) {
-            throw new InvalidArgumentException('Rectangle width must be greater than zero.');
-        }
-
-        if ($box->height <= 0) {
-            throw new InvalidArgumentException('Rectangle height must be greater than zero.');
-        }
-
-        if ($strokeWidth !== null && $strokeWidth <= 0) {
-            throw new InvalidArgumentException('Rectangle stroke width must be greater than zero.');
-        }
-
-        if ($strokeWidth === null && $fillColor === null) {
-            throw new InvalidArgumentException('Rectangle requires either a stroke or a fill.');
-        }
-
-        $graphicsStateName = $this->resolveGraphicsStateName($opacity);
-
-        $this->addGraphicElement(new Rectangle(
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $strokeWidth,
-            $strokeColor?->renderStrokingOperator(),
-            $fillColor?->renderNonStrokingOperator(),
-            $graphicsStateName,
-        ));
-
-        return $this;
+        return $this->pageGraphics()->addRectangle($box, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addRoundedRectangle(
@@ -852,77 +528,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        if ($box->width <= 0) {
-            throw new InvalidArgumentException('Rounded rectangle width must be greater than zero.');
-        }
-
-        if ($box->height <= 0) {
-            throw new InvalidArgumentException('Rounded rectangle height must be greater than zero.');
-        }
-
-        if ($radius <= 0) {
-            throw new InvalidArgumentException('Rounded rectangle radius must be greater than zero.');
-        }
-
-        if ($radius > ($box->width / 2) || $radius > ($box->height / 2)) {
-            throw new InvalidArgumentException('Rounded rectangle radius must not exceed half the width or height.');
-        }
-
-        if ($strokeWidth !== null && $strokeWidth <= 0) {
-            throw new InvalidArgumentException('Rounded rectangle stroke width must be greater than zero.');
-        }
-
-        if ($strokeWidth === null && $fillColor === null) {
-            throw new InvalidArgumentException('Rounded rectangle requires either a stroke or a fill.');
-        }
-
-        $controlOffset = $radius * 0.5522847498307936;
-        $left = $box->x;
-        $right = $box->x + $box->width;
-        $bottom = $box->y;
-        $top = $box->y + $box->height;
-
-        $path = $this->addPath()
-            ->moveTo($left + $radius, $top)
-            ->lineTo($right - $radius, $top)
-            ->curveTo(
-                $right - $radius + $controlOffset,
-                $top,
-                $right,
-                $top - $radius + $controlOffset,
-                $right,
-                $top - $radius,
-            )
-            ->lineTo($right, $bottom + $radius)
-            ->curveTo(
-                $right,
-                $bottom + $radius - $controlOffset,
-                $right - $radius + $controlOffset,
-                $bottom,
-                $right - $radius,
-                $bottom,
-            )
-            ->lineTo($left + $radius, $bottom)
-            ->curveTo(
-                $left + $radius - $controlOffset,
-                $bottom,
-                $left,
-                $bottom + $radius - $controlOffset,
-                $left,
-                $bottom + $radius,
-            )
-            ->lineTo($left, $top - $radius)
-            ->curveTo(
-                $left,
-                $top - $radius + $controlOffset,
-                $left + $radius - $controlOffset,
-                $top,
-                $left + $radius,
-                $top,
-            )
-            ->close();
-
-        return $this->finishClosedPath($path, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        return $this->pageGraphics()->addRoundedRectangle($box, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addCircle(
@@ -934,25 +540,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        if ($radius <= 0) {
-            throw new InvalidArgumentException('Circle radius must be greater than zero.');
-        }
-
-        if ($strokeWidth !== null && $strokeWidth <= 0) {
-            throw new InvalidArgumentException('Circle stroke width must be greater than zero.');
-        }
-
-        if ($strokeWidth === null && $fillColor === null) {
-            throw new InvalidArgumentException('Circle requires either a stroke or a fill.');
-        }
-
-        return $this->finishClosedPath(
-            $this->buildEllipsePath($centerX, $centerY, $radius, $radius),
-            $strokeWidth,
-            $strokeColor,
-            $fillColor,
-            $opacity,
-        );
+        return $this->pageGraphics()->addCircle($centerX, $centerY, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addEllipse(
@@ -965,29 +553,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        if ($radiusX <= 0) {
-            throw new InvalidArgumentException('Ellipse radiusX must be greater than zero.');
-        }
-
-        if ($radiusY <= 0) {
-            throw new InvalidArgumentException('Ellipse radiusY must be greater than zero.');
-        }
-
-        if ($strokeWidth !== null && $strokeWidth <= 0) {
-            throw new InvalidArgumentException('Ellipse stroke width must be greater than zero.');
-        }
-
-        if ($strokeWidth === null && $fillColor === null) {
-            throw new InvalidArgumentException('Ellipse requires either a stroke or a fill.');
-        }
-
-        return $this->finishClosedPath(
-            $this->buildEllipsePath($centerX, $centerY, $radiusX, $radiusY),
-            $strokeWidth,
-            $strokeColor,
-            $fillColor,
-            $opacity,
-        );
+        return $this->pageGraphics()->addEllipse($centerX, $centerY, $radiusX, $radiusY, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     /**
@@ -1000,27 +566,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        if (count($points) < 3) {
-            throw new InvalidArgumentException('Polygon requires at least three points.');
-        }
-
-        if ($strokeWidth !== null && $strokeWidth <= 0) {
-            throw new InvalidArgumentException('Polygon stroke width must be greater than zero.');
-        }
-
-        if ($strokeWidth === null && $fillColor === null) {
-            throw new InvalidArgumentException('Polygon requires either a stroke or a fill.');
-        }
-
-        $path = $this->addPath()->moveTo((float) $points[0][0], (float) $points[0][1]);
-
-        foreach (array_slice($points, 1) as $point) {
-            $path->lineTo((float) $point[0], (float) $point[1]);
-        }
-
-        $path->close();
-
-        return $this->finishClosedPath($path, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        return $this->pageGraphics()->addPolygon($points, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addArrow(
@@ -1032,53 +578,7 @@ final class Page extends IndirectObject
         float $headLength = 10.0,
         float $headWidth = 8.0,
     ): self {
-        if ($strokeWidth <= 0) {
-            throw new InvalidArgumentException('Arrow stroke width must be greater than zero.');
-        }
-
-        if ($headLength <= 0) {
-            throw new InvalidArgumentException('Arrow head length must be greater than zero.');
-        }
-
-        if ($headWidth <= 0) {
-            throw new InvalidArgumentException('Arrow head width must be greater than zero.');
-        }
-
-        $dx = $to->x - $from->x;
-        $dy = $to->y - $from->y;
-        $length = hypot($dx, $dy);
-
-        if ($length <= 0.0) {
-            throw new InvalidArgumentException('Arrow requires distinct start and end points.');
-        }
-
-        $usableHeadLength = min($headLength, $length);
-        $ux = $dx / $length;
-        $uy = $dy / $length;
-        $baseX = $to->x - ($ux * $usableHeadLength);
-        $baseY = $to->y - ($uy * $usableHeadLength);
-        $perpX = -$uy;
-        $perpY = $ux;
-        $halfHeadWidth = $headWidth / 2;
-        $leftX = $baseX + ($perpX * $halfHeadWidth);
-        $leftY = $baseY + ($perpY * $halfHeadWidth);
-        $rightX = $baseX - ($perpX * $halfHeadWidth);
-        $rightY = $baseY - ($perpY * $halfHeadWidth);
-
-        $this->addLine($from, new Position($baseX, $baseY), $strokeWidth, $color, $opacity);
-        $this->addPolygon(
-            [
-                [$to->x, $to->y],
-                [$leftX, $leftY],
-                [$rightX, $rightY],
-            ],
-            null,
-            null,
-            $color,
-            $opacity,
-        );
-
-        return $this;
+        return $this->pageGraphics()->addArrow($from, $to, $strokeWidth, $color, $opacity, $headLength, $headWidth);
     }
 
     public function addStar(
@@ -1092,36 +592,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        if ($points < 3) {
-            throw new InvalidArgumentException('Star requires at least three points.');
-        }
-
-        if ($outerRadius <= 0) {
-            throw new InvalidArgumentException('Star outer radius must be greater than zero.');
-        }
-
-        if ($innerRadius <= 0) {
-            throw new InvalidArgumentException('Star inner radius must be greater than zero.');
-        }
-
-        if ($innerRadius >= $outerRadius) {
-            throw new InvalidArgumentException('Star inner radius must be smaller than the outer radius.');
-        }
-
-        $starPoints = [];
-        $step = M_PI / $points;
-        $startAngle = -M_PI / 2;
-
-        for ($index = 0; $index < $points * 2; $index++) {
-            $radius = $index % 2 === 0 ? $outerRadius : $innerRadius;
-            $angle = $startAngle + ($index * $step);
-            $starPoints[] = [
-                $centerX + (cos($angle) * $radius),
-                $centerY + (sin($angle) * $radius),
-            ];
-        }
-
-        return $this->addPolygon($starPoints, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        return $this->pageGraphics()->addStar($centerX, $centerY, $points, $outerRadius, $innerRadius, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addLink(
@@ -1809,15 +1280,6 @@ final class Page extends IndirectObject
         throw new InvalidArgumentException("Font '$baseFont' is not registered.");
     }
 
-    private function encodeText(FontDefinition $font, string $baseFont, string $text): string
-    {
-        if (!$font->supportsText($text)) {
-            throw new InvalidArgumentException("Font '$baseFont' does not support the provided text.");
-        }
-
-        return $font->encodeText($text);
-    }
-
     private function resolveMarkedContentStructureTag(TextOptions $options): ?StructureTag
     {
         $profile = $this->document->getProfile();
@@ -1919,7 +1381,7 @@ final class Page extends IndirectObject
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): int {
-        return $this->textLayoutEngine()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
+        return $this->pageTextRenderer()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
     }
 
     public function measureTextWidth(string $text, string $baseFont, int $size): float
@@ -1931,214 +1393,9 @@ final class Page extends IndirectObject
         return $this->resolveFont($baseFont)->measureTextWidth($text, $size);
     }
 
-    /**
-     * @param array<int, TextSegment> $line
-     */
-    private function calculateAlignedOffset(
-        array $line,
-        string $baseFont,
-        int $size,
-        float $maxWidth,
-        HorizontalAlign $align,
-    ): float {
-        if ($align === HorizontalAlign::LEFT || $align === HorizontalAlign::JUSTIFY) {
-            return 0.0;
-        }
-
-        $line = $this->textLayoutEngine()->trimTrailingWhitespaceFromLine($line);
-
-        $lineWidth = 0.0;
-
-        foreach ($line as $segment) {
-            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
-            $segmentFont = $this->resolveFont($segmentFontName);
-            $lineWidth += $segmentFont->measureTextWidth($segment->text, $size);
-        }
-
-        $remainingWidth = max(0.0, $maxWidth - $lineWidth);
-
-        if ($align === HorizontalAlign::CENTER) {
-            return $remainingWidth / 2;
-        }
-
-        return $remainingWidth;
-    }
-
-    /**
-     * @param array<int, TextSegment> $line
-     */
-    private function calculateJustifiedWordSpacing(
-        array $line,
-        string $baseFont,
-        int $size,
-        float $maxWidth,
-    ): float {
-        $lineWidth = 0.0;
-        $spaceCount = 0;
-        $pieces = $this->splitSegmentsIntoWordPieces($line);
-
-        foreach ($line as $segment) {
-            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
-            $segmentFont = $this->resolveFont($segmentFontName);
-            $lineWidth += $segmentFont->measureTextWidth($segment->text, $size);
-        }
-
-        foreach ($pieces as $index => $piece) {
-            if ($index === 0) {
-                continue;
-            }
-
-            $spaceCount += $piece['leadingSpaces'];
-        }
-
-        if ($spaceCount <= 0) {
-            return 0.0;
-        }
-
-        return max(0.0, $maxWidth - $lineWidth) / $spaceCount;
-    }
-
-    /**
-     * @param array<int, TextSegment> $line
-     */
-    private function renderJustifiedLine(
-        self $page,
-        array $line,
-        float $x,
-        float $y,
-        string $baseFont,
-        int $size,
-        ?StructureTag $tag,
-        float $maxWidth,
-        ?StructElem $parentStructElem,
-    ): void {
-        $pieces = $this->splitSegmentsIntoWordPieces($line);
-        $extraWordSpacing = $this->calculateJustifiedWordSpacing($line, $baseFont, $size, $maxWidth);
-        $cursorX = $x;
-        $isFirstWord = true;
-
-        foreach ($pieces as $piece) {
-            $segment = $piece['segment'];
-            $segmentFontName = $this->resolveStyledBaseFont($baseFont, $segment);
-            $segmentFont = $this->resolveFont($segmentFontName);
-
-            if (!$isFirstWord) {
-                $spaceWidth = $segmentFont->measureTextWidth(str_repeat(' ', $piece['leadingSpaces']), $size);
-                $cursorX += $spaceWidth + ($extraWordSpacing * $piece['leadingSpaces']);
-            }
-
-            $page->addText(
-                $segment->text,
-                new Position($cursorX, $y),
-                $segmentFontName,
-                $size,
-                new TextOptions(
-                    structureTag: $tag,
-                    parentStructElem: $parentStructElem,
-                    color: $segment->color,
-                    opacity: $segment->opacity,
-                    underline: $segment->underline,
-                    strikethrough: $segment->strikethrough,
-                    link: $segment->link,
-                ),
-            );
-
-            $cursorX += $segmentFont->measureTextWidth($segment->text, $size);
-            $isFirstWord = false;
-        }
-    }
-
-    private function resolveTextBoxStartY(
-        float $y,
-        float $height,
-        int $size,
-        float $lineHeight,
-        int $lineCount,
-        VerticalAlign $verticalAlign,
-        float $paddingTop,
-        float $paddingBottom,
-    ): float {
-        $availableHeight = $height - $paddingTop - $paddingBottom;
-        $lineOffset = max(0, $lineCount - 1) * $lineHeight;
-        $blockHeight = $size + $lineOffset;
-
-        return match ($verticalAlign) {
-            VerticalAlign::TOP => $y + $paddingBottom + $availableHeight - $size,
-            VerticalAlign::MIDDLE => $y + $paddingBottom + (($availableHeight - $blockHeight) / 2) + $lineOffset,
-            VerticalAlign::BOTTOM => $y + $paddingBottom + $lineOffset,
-        };
-    }
-
-    /**
-     * @param array<int, TextSegment> $segments
-     * @return list<array{segment: TextSegment, leadingSpaces: int}>
-     */
-    private function splitSegmentsIntoWordPieces(array $segments): array
+    private function pageGraphics(): PageGraphics
     {
-        $pieces = [];
-
-        foreach ($segments as $segment) {
-            $leadingSpaces = 0;
-
-            foreach (preg_split('/( +)/', $segment->text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [] as $part) {
-                if (trim($part) === '') {
-                    $leadingSpaces += strlen($part);
-                    continue;
-                }
-
-                $pieces[] = [
-                    'segment' => new TextSegment(
-                        $part,
-                        $segment->color,
-                        $segment->opacity,
-                        $segment->link,
-                        $segment->bold,
-                        $segment->italic,
-                        $segment->underline,
-                        $segment->strikethrough,
-                    ),
-                    'leadingSpaces' => $leadingSpaces,
-                ];
-
-                $leadingSpaces = 0;
-            }
-        }
-
-        return $pieces;
-    }
-
-    /**
-     * @return array{0: float, 1: float}
-     */
-    private function resolveDecorationInsets(FontDefinition $font, string $text, int $size): array
-    {
-        if ($text === '') {
-            return [0.0, 0.0];
-        }
-
-        $leadingSpaces = strspn($text, ' ');
-        $trailingSpaces = strlen($text) - strlen(rtrim($text, ' '));
-
-        $leadingInset = $leadingSpaces > 0
-            ? $font->measureTextWidth(str_repeat(' ', $leadingSpaces), $size)
-            : 0.0;
-
-        $trailingInset = $trailingSpaces > 0
-            ? $font->measureTextWidth(str_repeat(' ', $trailingSpaces), $size)
-            : 0.0;
-
-        return [$leadingInset, $trailingInset];
-    }
-
-    /**
-     * Lazily builds the internal text layout helper.
-     */
-    private function textLayoutEngine(): TextLayoutEngine
-    {
-        return $this->textLayoutEngine ??= new TextLayoutEngine(
-            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
-            fn (string $baseFont, TextSegment $segment): string => $this->resolveStyledBaseFont($baseFont, $segment),
-        );
+        return $this->pageGraphics ??= new PageGraphics($this);
     }
 
     private function pageAnnotations(): PageAnnotations
@@ -2156,6 +1413,27 @@ final class Page extends IndirectObject
             $this,
             $this->pageAnnotations(),
             fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
+        );
+    }
+
+    private function pageTextRenderer(): PageTextRenderer
+    {
+        return $this->pageTextRenderer ??= new PageTextRenderer(
+            $this,
+            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
+            fn (FontDefinition $font): string => $this->registerFontResource($font),
+            function (FontDefinition $font): void {
+                $this->updateUnicodeFontWidths($font);
+            },
+            fn (TextOptions $options): ?StructureTag => $this->resolveMarkedContentStructureTag($options),
+            fn (TextOptions $options, StructureTag $tag, int $markedContentId, string $text): StructElem => $this->attachTextToStructure($options, $tag, $markedContentId, $text),
+            fn (string $text): ?string => $this->resolveLinkAlternativeDescription($text),
+            function (Rect $box, LinkTarget $target, ?StructElem $linkStructElem = null, ?string $alternativeDescription = null): void {
+                $this->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
+            },
+            fn (?Opacity $opacity): ?string => $this->resolveGraphicsStateName($opacity),
+            fn (): int => $this->markedContentId++,
+            fn (string $baseFont, TextSegment $segment): string => $this->resolveStyledBaseFont($baseFont, $segment),
         );
     }
 
@@ -2237,99 +1515,14 @@ final class Page extends IndirectObject
         $this->document->registerFont($baseFont);
     }
 
-    private function buildEllipsePath(float $centerX, float $centerY, float $radiusX, float $radiusY): PathBuilder
-    {
-        $controlOffsetX = $radiusX * 0.5522847498307936;
-        $controlOffsetY = $radiusY * 0.5522847498307936;
-
-        return $this->addPath()
-            ->moveTo($centerX, $centerY + $radiusY)
-            ->curveTo(
-                $centerX + $controlOffsetX,
-                $centerY + $radiusY,
-                $centerX + $radiusX,
-                $centerY + $controlOffsetY,
-                $centerX + $radiusX,
-                $centerY,
-            )
-            ->curveTo(
-                $centerX + $radiusX,
-                $centerY - $controlOffsetY,
-                $centerX + $controlOffsetX,
-                $centerY - $radiusY,
-                $centerX,
-                $centerY - $radiusY,
-            )
-            ->curveTo(
-                $centerX - $controlOffsetX,
-                $centerY - $radiusY,
-                $centerX - $radiusX,
-                $centerY - $controlOffsetY,
-                $centerX - $radiusX,
-                $centerY,
-            )
-            ->curveTo(
-                $centerX - $radiusX,
-                $centerY + $controlOffsetY,
-                $centerX - $controlOffsetX,
-                $centerY + $radiusY,
-                $centerX,
-                $centerY + $radiusY,
-            )
-            ->close();
-    }
-
-    private function finishClosedPath(
-        PathBuilder $path,
-        ?float $strokeWidth,
-        ?Color $strokeColor,
-        ?Color $fillColor,
-        ?Opacity $opacity,
-    ): self {
-        if ($strokeWidth !== null && $fillColor !== null) {
-            $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
-
-            return $this;
-        }
-
-        if ($fillColor !== null) {
-            $path->fill($fillColor, $opacity);
-
-            return $this;
-        }
-
-        if ($strokeWidth === null) {
-            throw new InvalidArgumentException('Closed path requires either a stroke or a fill.');
-        }
-
-        $path->stroke($strokeWidth, $strokeColor, $opacity);
-
-        return $this;
-    }
-
     public function resolveGraphicsStateName(?Opacity $opacity): ?string
     {
-        if ($opacity === null) {
-            return null;
-        }
-
-        $this->document->assertAllowsTransparency();
-
-        return $this->resources->addOpacity($opacity);
+        return $this->pageGraphics()->resolveGraphicsStateName($opacity);
     }
 
     public function addGraphicElement(Element $element): void
     {
-        if ($this->document->isRenderingArtifactContext()) {
-            $this->contents->addElement(new Raw('/Artifact BMC'));
-            $this->contents->addElement($element);
-            $this->contents->addElement(new Raw('EMC'));
-
-            return;
-        }
-
-        $this->assertAllowsGraphicElements();
-        $this->contents->addElement($element);
+        $this->pageGraphics()->addGraphicElement($element);
     }
 
     /**
@@ -2337,13 +1530,7 @@ final class Page extends IndirectObject
      */
     public function renderDecorativeContent(callable $renderer): void
     {
-        if ($this->document->getProfile()->requiresTaggedPdf()) {
-            $this->document->renderInArtifactContext($renderer);
-
-            return;
-        }
-
-        $renderer();
+        $this->pageGraphics()->renderDecorativeContent($renderer);
     }
 
     private function resolveComponentTextStructureTag(): ?StructureTag
@@ -2353,20 +1540,6 @@ final class Page extends IndirectObject
         }
 
         return StructureTag::Paragraph;
-    }
-
-    private function assertAllowsGraphicElements(): void
-    {
-        $profile = $this->document->getProfile();
-
-        if (!$profile->requiresArtifactGraphicElements()) {
-            return;
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            'Profile %s requires lines, shapes and paths to be rendered as artifacts in the current implementation.',
-            $profile->name(),
-        ));
     }
 
     private function createImageObject(Image $image): ImageObject
