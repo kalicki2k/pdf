@@ -297,17 +297,16 @@ final readonly class FormWidgetFactory
             $textColor,
             $defaultValue,
             $accessibleName,
-            new FormFieldTextAppearanceStream(
+            new FormFieldListBoxAppearanceStream(
                 $this->nextObjectId(),
                 $box->width,
                 $box->height,
                 $font,
                 $fontResourceName,
                 $size,
-                $this->resolveListBoxAppearanceLines($options, $value),
+                $options,
+                $this->resolveSelectedValues($value),
                 $textColor,
-                HorizontalAlign::LEFT,
-                VerticalAlign::TOP,
             ),
         );
     }
@@ -568,30 +567,19 @@ final readonly class FormWidgetFactory
     }
 
     /**
-     * @param array<string, string> $options
      * @param list<string>|string|null $value
      * @return list<string>
      */
-    private function resolveListBoxAppearanceLines(array $options, string | array | null $value): array
+    private function resolveSelectedValues(string | array | null $value): array
     {
         if ($value === null) {
             return [];
         }
 
         if (is_string($value)) {
-            $label = $options[$value] ?? null;
-
-            return $label === null ? [] : [$label];
+            return [$value];
         }
 
-        $labels = [];
-
-        foreach ($value as $selectedValue) {
-            if (isset($options[$selectedValue])) {
-                $labels[] = $options[$selectedValue];
-            }
-        }
-
-        return $labels;
+        return $value;
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Annotation;
 
 use Kalle\Pdf\Document\Form\FormFieldFlags;
-use Kalle\Pdf\Document\Form\FormFieldTextAppearanceStream;
+use Kalle\Pdf\Document\Form\FormFieldListBoxAppearanceStream;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
@@ -40,7 +40,7 @@ final class ListBoxAnnotation extends IndirectObject implements PageAnnotation, 
         private readonly ?Color $textColor = null,
         private readonly string | array | null $defaultValue = null,
         private readonly ?string $tooltip = null,
-        private readonly ?FormFieldTextAppearanceStream $appearance = null,
+        private readonly ?FormFieldListBoxAppearanceStream $appearance = null,
     ) {
         parent::__construct($id);
     }

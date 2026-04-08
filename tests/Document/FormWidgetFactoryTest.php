@@ -165,6 +165,10 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/TU (Feature selection)', $annotation->render());
         self::assertStringContainsString('/AP << /N ', $annotation->render());
         self::assertCount(1, $annotation->getRelatedObjects());
+        self::assertStringContainsString('(Alpha) Tj', $annotation->getRelatedObjects()[0]->render());
+        self::assertStringContainsString('(Beta) Tj', $annotation->getRelatedObjects()[0]->render());
+        self::assertStringNotContainsString('(Gamma) Tj', $annotation->getRelatedObjects()[0]->render());
+        self::assertStringContainsString('0.219608 0.458824 0.843137 rg', $annotation->getRelatedObjects()[0]->render());
     }
 
     #[Test]
@@ -192,6 +196,8 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertStringContainsString('/V (express)', $annotation->render());
         self::assertStringContainsString('/AP << /N ', $annotation->render());
         self::assertCount(1, $annotation->getRelatedObjects());
+        self::assertStringContainsString('(Standard) Tj', $annotation->getRelatedObjects()[0]->render());
+        self::assertStringContainsString('(Express) Tj', $annotation->getRelatedObjects()[0]->render());
     }
 
     #[Test]
