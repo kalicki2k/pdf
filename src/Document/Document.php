@@ -816,54 +816,6 @@ final class Document
         $this->deferredRenderFinalizers[] = $finalizer;
     }
 
-    private function applyDeferredRenderFinalizers(): void
-    {
-        if ($this->deferredRenderFinalizers === []) {
-            return;
-        }
-
-        foreach ($this->deferredRenderFinalizers as $finalizer) {
-            $finalizer();
-        }
-
-        $this->deferredRenderFinalizers = [];
-    }
-
-    private function applyDeferredPageDecorators(): void
-    {
-        if ($this->deferredHeaderRenderers === [] && $this->deferredFooterRenderers === []) {
-            return;
-        }
-
-        $totalPages = count($this->pages->pages);
-
-        foreach ($this->pages->pages as $index => $page) {
-            $pageNumber = $index + 1;
-            $this->runDeferredPageDecorators($this->deferredHeaderRenderers, $page, $pageNumber, $totalPages);
-            $this->runDeferredPageDecorators($this->deferredFooterRenderers, $page, $pageNumber, $totalPages);
-        }
-
-        $this->deferredHeaderRenderers = [];
-        $this->deferredFooterRenderers = [];
-    }
-
-    /**
-     * @param list<callable(Page, int, int): void> $renderers
-     */
-    private function runDeferredPageDecorators(array $renderers, Page $page, int $pageNumber, int $totalPages): void
-    {
-        $previousArtifactContext = $this->renderingArtifactContext;
-        $this->renderingArtifactContext = true;
-
-        try {
-            foreach ($renderers as $renderer) {
-                $renderer($page, $pageNumber, $totalPages);
-            }
-        } finally {
-            $this->renderingArtifactContext = $previousArtifactContext;
-        }
-    }
-
     public function ensureStructureEnabled(): void
     {
         if (!$this->profile->supportsStructure()) {
@@ -1042,55 +994,6 @@ final class Document
         }
     }
 
-    private function assertRenderRequirements(): void
-    {
-        $this->assertRequiredDocumentTitle();
-        $this->assertRequiredDocumentLanguage();
-        $this->assertRequiredDocumentStructure();
-    }
-
-    private function assertRequiredDocumentTitle(): void
-    {
-        if (!$this->profile->requiresDocumentTitle()) {
-            return;
-        }
-
-        if ($this->title !== null && $this->title !== '') {
-            return;
-        }
-
-        throw new InvalidArgumentException(sprintf('Profile %s requires a document title.', $this->profile->name()));
-    }
-
-    private function assertRequiredDocumentLanguage(): void
-    {
-        if (!$this->profile->requiresDocumentLanguage()) {
-            return;
-        }
-
-        if ($this->language !== null && $this->language !== '') {
-            return;
-        }
-
-        throw new InvalidArgumentException(sprintf('Profile %s requires a document language.', $this->profile->name()));
-    }
-
-    private function assertRequiredDocumentStructure(): void
-    {
-        if (!$this->profile->requiresDocumentStructure()) {
-            return;
-        }
-
-        if ($this->structTreeRoot !== null) {
-            return;
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            'Profile %s requires tagged content in the current implementation.',
-            $this->profile->name(),
-        ));
-    }
-
     public function addTableOfContents(
         ?PageSize $size = null,
         ?TableOfContentsOptions $options = null,
@@ -1250,9 +1153,22 @@ final class Document
 
     public function render(): string
     {
-        $this->applyDeferredRenderFinalizers();
-        $this->applyDeferredPageDecorators();
-        $this->assertRenderRequirements();
+        $renderLifecycle = new DocumentRenderLifecycle();
+        $renderLifecycle->applyDeferredRenderFinalizers($this->deferredRenderFinalizers);
+        $renderLifecycle->applyDeferredPageDecorators(
+            $this->deferredHeaderRenderers,
+            $this->deferredFooterRenderers,
+            array_values($this->pages->pages),
+            function (callable $renderer): void {
+                $this->renderInArtifactContext($renderer);
+            },
+        );
+        $renderLifecycle->assertRenderRequirements(
+            $this->profile,
+            $this->title,
+            $this->language,
+            $this->structTreeRoot !== null,
+        );
 
         $renderer = new PdfRenderer();
 
