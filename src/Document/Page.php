@@ -10,7 +10,7 @@ use Kalle\Pdf\Document\Action\SetOcgStateAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
-use Kalle\Pdf\Document\Annotation\PageAnnotationFactory;
+use Kalle\Pdf\Document\Annotation\PageAnnotations;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Form\FormFieldLabel;
@@ -61,9 +61,7 @@ final class Page extends IndirectObject
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
     private int $markedContentId = 0;
-    /** @var list<IndirectObject&PageAnnotation> */
-    private array $annotations = [];
-    private ?PageAnnotationFactory $annotationFactory = null;
+    private ?PageAnnotations $pageAnnotations = null;
     private ?FormWidgetFactory $formWidgetFactory = null;
     private ?TextLayoutEngine $textLayoutEngine = null;
     public Contents $contents;
@@ -1176,7 +1174,7 @@ final class Page extends IndirectObject
             $linkStructElem->setPage($this);
         }
 
-        $this->annotations[] = $this->annotationFactory()->createLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
+        $this->pageAnnotations()->addLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
 
         return $this;
     }
@@ -1224,7 +1222,7 @@ final class Page extends IndirectObject
         string $icon = 'PushPin',
         ?string $contents = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createFileAttachmentAnnotation($box, $file, $icon, $contents);
+        $this->pageAnnotations()->addFileAttachmentAnnotation($box, $file, $icon, $contents);
 
         return $this;
     }
@@ -1236,7 +1234,7 @@ final class Page extends IndirectObject
         string $icon = 'Note',
         bool $open = false,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createTextAnnotation($box, $contents, $title, $icon, $open);
+        $this->pageAnnotations()->addTextAnnotation($box, $contents, $title, $icon, $open);
 
         return $this;
     }
@@ -1246,7 +1244,7 @@ final class Page extends IndirectObject
         Rect $box,
         bool $open = false,
     ): self {
-        $this->annotationFactory()->createPopupAnnotation($parent, $box, $open);
+        $this->pageAnnotations()->addPopupAnnotation($parent, $box, $open);
 
         return $this;
     }
@@ -1261,7 +1259,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?string $title = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createFreeTextAnnotation(
+        $this->pageAnnotations()->addFreeTextAnnotation(
             $box,
             $contents,
             $baseFont,
@@ -1281,7 +1279,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createHighlightAnnotation($box, $color, $contents, $title);
+        $this->pageAnnotations()->addHighlightAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -1292,7 +1290,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createUnderlineAnnotation($box, $color, $contents, $title);
+        $this->pageAnnotations()->addUnderlineAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -1303,7 +1301,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createStrikeOutAnnotation($box, $color, $contents, $title);
+        $this->pageAnnotations()->addStrikeOutAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -1314,7 +1312,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createSquigglyAnnotation($box, $color, $contents, $title);
+        $this->pageAnnotations()->addSquigglyAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -1326,7 +1324,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createStampAnnotation($box, $icon, $color, $contents, $title);
+        $this->pageAnnotations()->addStampAnnotation($box, $icon, $color, $contents, $title);
 
         return $this;
     }
@@ -1339,7 +1337,7 @@ final class Page extends IndirectObject
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createSquareAnnotation(
+        $this->pageAnnotations()->addSquareAnnotation(
             $box,
             $borderColor,
             $fillColor,
@@ -1359,7 +1357,7 @@ final class Page extends IndirectObject
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createCircleAnnotation(
+        $this->pageAnnotations()->addCircleAnnotation(
             $box,
             $borderColor,
             $fillColor,
@@ -1381,7 +1379,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createInkAnnotation($box, $paths, $color, $contents, $title);
+        $this->pageAnnotations()->addInkAnnotation($box, $paths, $color, $contents, $title);
 
         return $this;
     }
@@ -1397,7 +1395,7 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createLineAnnotation(
+        $this->pageAnnotations()->addLineAnnotation(
             $from,
             $to,
             $color,
@@ -1425,7 +1423,7 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createPolyLineAnnotation(
+        $this->pageAnnotations()->addPolyLineAnnotation(
             $vertices,
             $color,
             $contents,
@@ -1451,7 +1449,7 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createPolygonAnnotation(
+        $this->pageAnnotations()->addPolygonAnnotation(
             $vertices,
             $borderColor,
             $fillColor,
@@ -1470,7 +1468,7 @@ final class Page extends IndirectObject
         ?string $title = null,
         string $symbol = 'None',
     ): self {
-        $this->annotations[] = $this->annotationFactory()->createCaretAnnotation($box, $contents, $title, $symbol);
+        $this->pageAnnotations()->addCaretAnnotation($box, $contents, $title, $symbol);
 
         return $this;
     }
@@ -1605,7 +1603,7 @@ final class Page extends IndirectObject
         $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
-        $this->annotations[] = $annotation;
+        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1625,7 +1623,7 @@ final class Page extends IndirectObject
         $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
-        $this->annotations[] = $annotation;
+        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1650,7 +1648,7 @@ final class Page extends IndirectObject
         $group->addWidget($annotation, $value, $checked);
         $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
-        $this->annotations[] = $annotation;
+        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1689,7 +1687,7 @@ final class Page extends IndirectObject
         $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
-        $this->annotations[] = $annotation;
+        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1730,7 +1728,7 @@ final class Page extends IndirectObject
         $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
-        $this->annotations[] = $annotation;
+        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1748,7 +1746,7 @@ final class Page extends IndirectObject
         $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
-        $this->annotations[] = $annotation;
+        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1784,7 +1782,7 @@ final class Page extends IndirectObject
         $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
-        $this->annotations[] = $annotation;
+        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1803,12 +1801,14 @@ final class Page extends IndirectObject
             $dictionary->add('StructParents', $this->structParentId);
         }
 
-        if ($this->annotations !== []) {
+        $annotations = $this->getAnnotations();
+
+        if ($annotations !== []) {
             $dictionary->add(
                 'Annots',
                 new ArrayType(array_map(
                     static fn (IndirectObject $annotation): ReferenceType => new ReferenceType($annotation),
-                    $this->annotations,
+                    $annotations,
                 )),
             );
 
@@ -1842,7 +1842,7 @@ final class Page extends IndirectObject
      */
     public function getAnnotations(): array
     {
-        return $this->annotations;
+        return $this->pageAnnotations?->all() ?? [];
     }
 
     private function resolveFont(string $baseFont): FontDefinition
@@ -2196,14 +2196,10 @@ final class Page extends IndirectObject
         );
     }
 
-    /**
-     * Lazily builds the internal annotation factory.
-     */
-    private function annotationFactory(): PageAnnotationFactory
+    private function pageAnnotations(): PageAnnotations
     {
-        return $this->annotationFactory ??= new PageAnnotationFactory(
+        return $this->pageAnnotations ??= new PageAnnotations(
             $this,
-            fn (): int => $this->document->getUniqObjectId(),
             fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
             fn (FontDefinition $font): string => $this->registerFontResource($font),
         );
