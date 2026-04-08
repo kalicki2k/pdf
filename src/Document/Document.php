@@ -9,7 +9,6 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Outline\OutlineItem;
 use Kalle\Pdf\Document\Outline\OutlineRoot;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
@@ -74,6 +73,7 @@ final class Document
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
     private ?DocumentAcroFormManager $documentAcroFormManager = null;
+    private ?DocumentNavigationManager $documentNavigationManager = null;
     private ?DocumentOptionalContentManager $documentOptionalContentManager = null;
     private ?DocumentAttachmentManager $documentAttachmentManager = null;
     private ?DocumentEncryptionManager $documentEncryptionManager = null;
@@ -291,27 +291,14 @@ final class Document
 
     public function addOutline(string $title, Page $page): self
     {
-        if ($title === '') {
-            throw new InvalidArgumentException('Outline title must not be empty.');
-        }
-
-        $this->outlineRoot ??= new OutlineRoot(++$this->objectId);
-        $this->outlineRoot->addItem(new OutlineItem(++$this->objectId, $this->outlineRoot, $title, $page));
+        $this->documentNavigationManager()->addOutline($title, $page);
 
         return $this;
     }
 
     public function addDestination(string $name, Page $page): self
     {
-        if ($name === '') {
-            throw new InvalidArgumentException('Destination name must not be empty.');
-        }
-
-        if (!preg_match('/^[A-Za-z0-9._-]+$/', $name)) {
-            throw new InvalidArgumentException('Destination name may contain only letters, numbers, dots, underscores and hyphens.');
-        }
-
-        $this->destinations[$name] = $page;
+        $this->documentNavigationManager()->addDestination($name, $page);
 
         return $this;
     }
@@ -351,7 +338,7 @@ final class Document
      */
     public function getDestinations(): array
     {
-        return $this->destinations;
+        return $this->documentNavigationManager()->getDestinations();
     }
 
     public function ensureOptionalContentGroup(string $name, bool $visibleByDefault = true): OptionalContentGroup
@@ -722,6 +709,11 @@ final class Document
     private function documentAcroFormManager(): DocumentAcroFormManager
     {
         return $this->documentAcroFormManager ??= new DocumentAcroFormManager($this);
+    }
+
+    private function documentNavigationManager(): DocumentNavigationManager
+    {
+        return $this->documentNavigationManager ??= new DocumentNavigationManager($this, $this->destinations);
     }
 
     private function documentOptionalContentManager(): DocumentOptionalContentManager
