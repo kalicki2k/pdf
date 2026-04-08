@@ -27,6 +27,8 @@ final class StructElem extends IndirectObject
     private ?Page $page = null;
     private ?string $altText = null;
     private ?string $scope = null;
+    private ?int $rowSpan = null;
+    private ?int $colSpan = null;
 
     public function __construct(
         int                     $id,
@@ -89,6 +91,28 @@ final class StructElem extends IndirectObject
         return $this;
     }
 
+    public function setRowSpan(int $rowSpan): self
+    {
+        if ($rowSpan <= 1) {
+            throw new InvalidArgumentException('RowSpan must be greater than one.');
+        }
+
+        $this->rowSpan = $rowSpan;
+
+        return $this;
+    }
+
+    public function setColSpan(int $colSpan): self
+    {
+        if ($colSpan <= 1) {
+            throw new InvalidArgumentException('ColSpan must be greater than one.');
+        }
+
+        $this->colSpan = $colSpan;
+
+        return $this;
+    }
+
     public function addObjectReference(IndirectObject $object, Page $page): self
     {
         $this->objectReferences[] = new RawType(sprintf(
@@ -119,11 +143,24 @@ final class StructElem extends IndirectObject
             $dictionary->add('Alt', new StringType($this->altText));
         }
 
-        if ($this->scope !== null) {
-            $dictionary->add('A', new DictionaryType([
+        if ($this->scope !== null || $this->rowSpan !== null || $this->colSpan !== null) {
+            $attributes = new DictionaryType([
                 'O' => new NameType('Table'),
-                'Scope' => new NameType($this->scope),
-            ]));
+            ]);
+
+            if ($this->scope !== null) {
+                $attributes->add('Scope', new NameType($this->scope));
+            }
+
+            if ($this->rowSpan !== null) {
+                $attributes->add('RowSpan', $this->rowSpan);
+            }
+
+            if ($this->colSpan !== null) {
+                $attributes->add('ColSpan', $this->colSpan);
+            }
+
+            $dictionary->add('A', $attributes);
         }
 
         if (count($this->markedContentIds) === 1 && $this->kids === [] && $this->objectReferences === []) {

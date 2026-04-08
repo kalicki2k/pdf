@@ -53,6 +53,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-widget-states.pdf' => createPdfUa1WidgetStateFixture(...),
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
     $outputDir . '/pdf-ua-1-table-caption-pagination.pdf' => createPdfUa1TableCaptionPaginationFixture(...),
+    $outputDir . '/pdf-ua-1-table-caption-spans.pdf' => createPdfUa1TableCaptionSpansFixture(...),
     $outputDir . '/pdf-ua-1-mixed.pdf' => createPdfUa1MixedFixture(...),
     $outputDir . '/pdf-ua-1-mixed-deep.pdf' => createPdfUa1DeepMixedFixture(...),
 ];
@@ -628,6 +629,80 @@ function createPdfUa1TableCaptionPaginationFixture(): Document
             $january,
             $february,
             $march,
+        ]);
+    }
+
+    return $document;
+}
+
+function createPdfUa1TableCaptionSpansFixture(): Document
+{
+    $document = createPdfUaDocument(
+        'PDF/UA-1 Table Span Regression',
+        'Representative PDF/UA-1 regression fixture for multipage table captions with row headers, rowspan and colspan',
+    );
+    $page = $document->addPage(PageSize::custom(220, 190));
+
+    $page->addText(
+        'Accessible Multipage Table With Spans',
+        new Position(12, 172),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addText(
+        'This fixture combines a caption, repeated headers, row headers, rowspan groups and summary rows with colspan across multiple pages.',
+        new Position(12, 156),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $table = $page->createTable(new Position(12, 132), 196, [34, 36, 42, 42, 42], 18);
+    $table
+        ->font('NotoSans-Regular', 10)
+        ->caption(new TableCaption(
+            'Regional service quality and follow-up metrics',
+            fontName: 'NotoSans-Bold',
+            size: 12,
+            color: Color::rgb(20, 40, 90),
+            spacingAfter: 5.0,
+        ))
+        ->addRow([
+            new TableCell('Region', headerScope: TableHeaderScope::Both),
+            'Metric',
+            'January',
+            'February',
+            'March',
+        ], header: true);
+
+    foreach ([
+        ['North', '98 %', '97 %', '99 %', '1.2 h', '1.1 h', '1.0 h'],
+        ['South', '94 %', '95 %', '96 %', '1.8 h', '1.6 h', '1.5 h'],
+        ['West', '99 %', '98 %', '97 %', '0.9 h', '1.0 h', '1.1 h'],
+        ['East', '96 %', '97 %', '95 %', '1.4 h', '1.3 h', '1.4 h'],
+        ['Central', '93 %', '94 %', '95 %', '2.1 h', '1.9 h', '1.8 h'],
+        ['Coastal', '97 %', '96 %', '98 %', '1.0 h', '1.1 h', '1.0 h'],
+    ] as [$region, $janAvailability, $febAvailability, $marAvailability, $janResponse, $febResponse, $marResponse]) {
+        $table->addRow([
+            new TableCell($region, rowspan: 2, headerScope: TableHeaderScope::Row),
+            'Availability',
+            $janAvailability,
+            $febAvailability,
+            $marAvailability,
+        ]);
+        $table->addRow([
+            'Response time',
+            $janResponse,
+            $febResponse,
+            $marResponse,
+        ]);
+        $table->addRow([
+            new TableCell($region . ' summary', headerScope: TableHeaderScope::Row),
+            new TableCell(
+                'Stable service quality with a dedicated follow-up note across all reported months.',
+                colspan: 4,
+            ),
         ]);
     }
 

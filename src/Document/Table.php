@@ -648,6 +648,14 @@ final class Table
             $structElem->setScope($headerScope->value);
         }
 
+        if ($cell->rowspan > 1) {
+            $structElem->setRowSpan($cell->rowspan);
+        }
+
+        if ($cell->colspan > 1) {
+            $structElem->setColSpan($cell->colspan);
+        }
+
         return $structElem;
     }
 

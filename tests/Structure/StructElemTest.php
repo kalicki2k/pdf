@@ -70,6 +70,18 @@ final class StructElemTest extends TestCase
     }
 
     #[Test]
+    public function it_renders_table_scope_and_span_attributes(): void
+    {
+        $structElem = new StructElem(12, 'TH');
+        $structElem
+            ->setScope('Row')
+            ->setRowSpan(2)
+            ->setColSpan(3);
+
+        self::assertStringContainsString('/A << /O /Table /Scope /Row /RowSpan 2 /ColSpan 3 >>', $structElem->render());
+    }
+
+    #[Test]
     public function it_renders_object_references_alongside_marked_content(): void
     {
         $document = new Document(profile: Profile::standard(1.7));

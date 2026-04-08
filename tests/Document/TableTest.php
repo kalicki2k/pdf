@@ -259,6 +259,70 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_pdf_ua_table_captions_and_header_scopes_stable_for_multipage_tables_with_spans(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Multipage Table With Spans', registerBold: true);
+        $firstPage = $document->addPage(220, 190);
+
+        $table = $firstPage->createTable(new Position(12, 132), 196, [34, 36, 42, 42, 42], 18)
+            ->font(self::pdfUaRegularFont(), 10)
+            ->caption(new TableCaption(
+                'Regional service quality and follow-up metrics',
+                fontName: self::pdfUaBoldFont(),
+                size: 12,
+                spacingAfter: 5.0,
+            ))
+            ->addRow([
+                new TableCell('Region', headerScope: TableHeaderScope::Both),
+                'Metric',
+                'January',
+                'February',
+                'March',
+            ], header: true);
+
+        foreach ([
+            ['North', '98 %', '97 %', '99 %', '1.2 h', '1.1 h', '1.0 h'],
+            ['South', '94 %', '95 %', '96 %', '1.8 h', '1.6 h', '1.5 h'],
+            ['West', '99 %', '98 %', '97 %', '0.9 h', '1.0 h', '1.1 h'],
+            ['East', '96 %', '97 %', '95 %', '1.4 h', '1.3 h', '1.4 h'],
+            ['Central', '93 %', '94 %', '95 %', '2.1 h', '1.9 h', '1.8 h'],
+            ['Coastal', '97 %', '96 %', '98 %', '1.0 h', '1.1 h', '1.0 h'],
+        ] as [$region, $janAvailability, $febAvailability, $marAvailability, $janResponse, $febResponse, $marResponse]) {
+            $table->addRow([
+                new TableCell($region, rowspan: 2, headerScope: TableHeaderScope::Row),
+                'Availability',
+                $janAvailability,
+                $febAvailability,
+                $marAvailability,
+            ]);
+            $table->addRow([
+                'Response time',
+                $janResponse,
+                $febResponse,
+                $marResponse,
+            ]);
+            $table->addRow([
+                new TableCell($region . ' summary', headerScope: TableHeaderScope::Row),
+                new TableCell(
+                    'Stable service quality with a dedicated follow-up note across all reported months.',
+                    colspan: 4,
+                ),
+            ]);
+        }
+
+        $rendered = $document->render();
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
+        self::assertGreaterThan(1, substr_count($rendered, '/Scope /Both'));
+        self::assertGreaterThanOrEqual(12, substr_count($rendered, '/Scope /Row'));
+        self::assertStringContainsString('/RowSpan 2', $rendered);
+        self::assertStringContainsString('/ColSpan 4', $rendered);
+        self::assertGreaterThan(20, substr_count($rendered, '/Type /StructElem /S /TD'));
+        self::assertNotSame($firstPage, $table->getPage());
+    }
+
+    #[Test]
     public function it_renders_cells_with_colspan(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
