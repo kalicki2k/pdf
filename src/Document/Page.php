@@ -51,10 +51,10 @@ use Kalle\Pdf\Types\ReferenceType;
  */
 final class Page extends IndirectObject
 {
-    private const float DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
     private int $markedContentId = 0;
+    private ?PageComponents $pageComponents = null;
     private ?PageGraphics $pageGraphics = null;
     private ?PageAnnotations $pageAnnotations = null;
     private ?PageForms $pageForms = null;
@@ -116,63 +116,7 @@ final class Page extends IndirectObject
         ?BadgeStyle $style = null,
         ?LinkTarget $link = null,
     ): self {
-        if ($text === '') {
-            throw new InvalidArgumentException('Badge text must not be empty.');
-        }
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Badge font size must be greater than zero.');
-        }
-
-        $style ??= new BadgeStyle(
-            fillColor: Color::gray(0.9),
-        );
-
-        $font = $this->resolveFont($baseFont);
-        $textWidth = $font->measureTextWidth($text, $size);
-        $badgeWidth = $textWidth + ($style->paddingHorizontal * 2);
-        $badgeHeight = $size + ($style->paddingVertical * 2);
-
-        $this->renderDecorativeContent(function () use ($position, $badgeWidth, $badgeHeight, $style): void {
-            if ($style->cornerRadius > 0) {
-                $this->addRoundedRectangle(
-                    new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
-                    $style->cornerRadius,
-                    $style->borderWidth,
-                    $style->borderColor,
-                    $style->fillColor,
-                    $style->opacity,
-                );
-
-                return;
-            }
-
-            $this->addRectangle(
-                new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
-                $style->borderWidth,
-                $style->borderColor,
-                $style->fillColor,
-                $style->opacity,
-            );
-        });
-
-        $this->addText(
-            $text,
-            new Position(
-                $position->x + $style->paddingHorizontal,
-                $position->y + $style->paddingVertical + ($size * 0.2),
-            ),
-            $baseFont,
-            $size,
-            new TextOptions(
-                structureTag: $this->resolveComponentTextStructureTag(),
-                color: $style->textColor,
-                opacity: $style->opacity,
-                link: $link,
-            ),
-        );
-
-        return $this;
+        return $this->pageComponents()->addBadge($text, $position, $baseFont, $size, $style, $link);
     }
 
     /**
@@ -190,111 +134,7 @@ final class Page extends IndirectObject
         ?string $titleFont = null,
         ?LinkTarget $link = null,
     ): self {
-        if ($width <= 0) {
-            throw new InvalidArgumentException('Panel width must be greater than zero.');
-        }
-
-        if ($height <= 0) {
-            throw new InvalidArgumentException('Panel height must be greater than zero.');
-        }
-
-        if ($title === null && $body === '') {
-            throw new InvalidArgumentException('Panel requires a title or body.');
-        }
-
-        $style ??= new PanelStyle(
-            fillColor: Color::gray(0.96),
-            borderColor: Color::gray(0.75),
-        );
-        $titleFont ??= $bodyFont;
-        $bindLinkToText = $this->shouldBindHighLevelComponentLinkToText($link);
-
-        $this->renderDecorativeContent(function () use ($style, $x, $y, $width, $height): void {
-            if ($style->cornerRadius > 0) {
-                $this->addRoundedRectangle(
-                    new Rect($x, $y, $width, $height),
-                    $style->cornerRadius,
-                    $style->borderWidth,
-                    $style->borderColor,
-                    $style->fillColor,
-                    $style->opacity,
-                );
-
-                return;
-            }
-
-            $this->addRectangle(
-                new Rect($x, $y, $width, $height),
-                $style->borderWidth,
-                $style->borderColor,
-                $style->fillColor,
-                $style->opacity,
-            );
-        });
-
-        $contentWidth = $width - ($style->paddingHorizontal * 2);
-
-        if ($contentWidth <= 0) {
-            throw new InvalidArgumentException('Panel content width must be greater than zero.');
-        }
-
-        $bodyTopOffset = $style->paddingVertical;
-
-        if ($title !== null && $title !== '') {
-            $this->addText(
-                $title,
-                new Position(
-                    $x + $style->paddingHorizontal,
-                    $y + $height - $style->paddingVertical - $style->titleSize,
-                ),
-                $titleFont,
-                $style->titleSize,
-                new TextOptions(
-                    structureTag: $this->resolveComponentTextStructureTag(),
-                    color: $style->titleColor,
-                    opacity: $style->opacity,
-                    link: $bindLinkToText ? $link : null,
-                ),
-            );
-            $bodyTopOffset += $style->titleSize + $style->titleSpacing;
-        }
-
-        if ($body !== '' && $body !== []) {
-            $bodyLineHeight = $style->bodySize * self::DEFAULT_LINE_HEIGHT_FACTOR;
-            $availableBodyHeight = $height - $bodyTopOffset - $style->paddingVertical;
-            $maxLines = (int) floor($availableBodyHeight / $bodyLineHeight);
-
-            if ($maxLines < 1) {
-                throw new InvalidArgumentException('Panel height is too small for its content.');
-            }
-
-            $this->addTextBox(
-                text: $this->bindLinkToTextContent($body, $link),
-                box: new Rect(
-                    $x + $style->paddingHorizontal,
-                    $y + $style->paddingVertical,
-                    $contentWidth,
-                    $availableBodyHeight,
-                ),
-                fontName: $bodyFont,
-                size: $style->bodySize,
-                options: new TextBoxOptions(
-                    structureTag: $this->resolveComponentTextStructureTag(),
-                    lineHeight: $bodyLineHeight,
-                    color: $style->bodyColor,
-                    opacity: $style->opacity,
-                    align: $style->bodyAlign,
-                    maxLines: $maxLines,
-                    overflow: TextOverflow::ELLIPSIS,
-                ),
-            );
-        }
-
-        if ($link !== null && !$bindLinkToText) {
-            $this->addLinkTarget(new Rect($x, $y, $width, $height), $link);
-        }
-
-        return $this;
+        return $this->pageComponents()->addPanel($body, $x, $y, $width, $height, $title, $bodyFont, $style, $titleFont, $link);
     }
 
     /**
@@ -314,81 +154,7 @@ final class Page extends IndirectObject
         ?string $titleFont = null,
         ?LinkTarget $link = null,
     ): self {
-        $style ??= new CalloutStyle(
-            panelStyle: new PanelStyle(
-                fillColor: Color::gray(0.96),
-                borderColor: Color::gray(0.75),
-            ),
-        );
-        $panelStyle = $style->panelStyle ?? new PanelStyle(
-            fillColor: Color::gray(0.96),
-            borderColor: Color::gray(0.75),
-        );
-
-        $this->addPanel(
-            $body,
-            $x,
-            $y,
-            $width,
-            $height,
-            $title,
-            $bodyFont,
-            $panelStyle,
-            $titleFont,
-            $link,
-        );
-
-        $pointerStrokeWidth = $style->pointerStrokeWidth ?? $panelStyle->borderWidth;
-        $pointerStrokeColor = $style->pointerStrokeColor ?? $panelStyle->borderColor;
-        $pointerFillColor = $style->pointerFillColor ?? $panelStyle->fillColor;
-        $pointerOpacity = $style->pointerOpacity ?? $panelStyle->opacity;
-        $halfBaseWidth = $style->pointerBaseWidth / 2;
-
-        if ($pointerY <= $y) {
-            $baseCenterX = max($x + $halfBaseWidth, min($x + $width - $halfBaseWidth, $pointerX));
-            $baseY = $y;
-            $points = [
-                [$baseCenterX - $halfBaseWidth, $baseY],
-                [$baseCenterX + $halfBaseWidth, $baseY],
-                [$pointerX, $pointerY],
-            ];
-        } elseif ($pointerY >= $y + $height) {
-            $baseCenterX = max($x + $halfBaseWidth, min($x + $width - $halfBaseWidth, $pointerX));
-            $baseY = $y + $height;
-            $points = [
-                [$baseCenterX - $halfBaseWidth, $baseY],
-                [$pointerX, $pointerY],
-                [$baseCenterX + $halfBaseWidth, $baseY],
-            ];
-        } elseif ($pointerX <= $x) {
-            $baseCenterY = max($y + $halfBaseWidth, min($y + $height - $halfBaseWidth, $pointerY));
-            $baseX = $x;
-            $points = [
-                [$baseX, $baseCenterY - $halfBaseWidth],
-                [$baseX, $baseCenterY + $halfBaseWidth],
-                [$pointerX, $pointerY],
-            ];
-        } else {
-            $baseCenterY = max($y + $halfBaseWidth, min($y + $height - $halfBaseWidth, $pointerY));
-            $baseX = $x + $width;
-            $points = [
-                [$baseX, $baseCenterY - $halfBaseWidth],
-                [$pointerX, $pointerY],
-                [$baseX, $baseCenterY + $halfBaseWidth],
-            ];
-        }
-
-        $this->renderDecorativeContent(function () use ($points, $pointerStrokeWidth, $pointerStrokeColor, $pointerFillColor, $pointerOpacity): void {
-            $this->addPolygon(
-                $points,
-                $pointerStrokeWidth,
-                $pointerStrokeColor,
-                $pointerFillColor,
-                $pointerOpacity,
-            );
-        });
-
-        return $this;
+        return $this->pageComponents()->addCallout($body, $x, $y, $width, $height, $pointerX, $pointerY, $title, $bodyFont, $style, $titleFont, $link);
     }
 
     /**
@@ -646,43 +412,6 @@ final class Page extends IndirectObject
         $this->pageAnnotations()->addLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
 
         return $this;
-    }
-
-    /**
-     * @param string|list<TextSegment> $text
-     * @return string|list<TextSegment>
-     */
-    private function bindLinkToTextContent(string | array $text, ?LinkTarget $link): string | array
-    {
-        if ($link === null || !$this->shouldBindHighLevelComponentLinkToText($link)) {
-            return $text;
-        }
-
-        if (is_string($text)) {
-            return [new TextSegment($text, link: $link)];
-        }
-
-        return array_map(
-            static fn (TextSegment $segment): TextSegment => $segment->link !== null
-                ? $segment
-                : new TextSegment(
-                    $segment->text,
-                    $segment->color,
-                    $segment->opacity,
-                    $link,
-                    $segment->bold,
-                    $segment->italic,
-                    $segment->underline,
-                    $segment->strikethrough,
-                ),
-            $text,
-        );
-    }
-
-    private function shouldBindHighLevelComponentLinkToText(?LinkTarget $link): bool
-    {
-        return $link !== null
-            && $this->document->getProfile()->requiresTaggedLinkAnnotations();
     }
 
     public function addFileAttachment(
@@ -1398,6 +1127,16 @@ final class Page extends IndirectObject
         return $this->pageGraphics ??= new PageGraphics($this);
     }
 
+    private function pageComponents(): PageComponents
+    {
+        return $this->pageComponents ??= new PageComponents(
+            $this,
+            function (Rect $box, LinkTarget $target, ?StructElem $linkStructElem = null, ?string $alternativeDescription = null): void {
+                $this->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
+            },
+        );
+    }
+
     private function pageAnnotations(): PageAnnotations
     {
         return $this->pageAnnotations ??= new PageAnnotations(
@@ -1531,15 +1270,6 @@ final class Page extends IndirectObject
     public function renderDecorativeContent(callable $renderer): void
     {
         $this->pageGraphics()->renderDecorativeContent($renderer);
-    }
-
-    private function resolveComponentTextStructureTag(): ?StructureTag
-    {
-        if (!$this->document->getProfile()->requiresTaggedPdf()) {
-            return null;
-        }
-
-        return StructureTag::Paragraph;
     }
 
     private function createImageObject(Image $image): ImageObject
