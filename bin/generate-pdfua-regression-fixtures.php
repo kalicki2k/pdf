@@ -47,6 +47,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-links.pdf' => createPdfUa1LinksFixture(...),
     $outputDir . '/pdf-ua-1-forms.pdf' => createPdfUa1FormsFixture(...),
     $outputDir . '/pdf-ua-1-widget-appearances.pdf' => createPdfUa1WidgetAppearanceFixture(...),
+    $outputDir . '/pdf-ua-1-widget-states.pdf' => createPdfUa1WidgetStateFixture(...),
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
     $outputDir . '/pdf-ua-1-mixed.pdf' => createPdfUa1MixedFixture(...),
 ];
@@ -381,6 +382,85 @@ function createPdfUa1WidgetAppearanceFixture(): Document
         new Rect(128, 116, 84, 18),
         'Approval signature',
         new FormFieldLabel('Approval signature', new Position(128, 136), 'NotoSans-Regular', 10),
+    );
+
+    return $document;
+}
+
+function createPdfUa1WidgetStateFixture(): Document
+{
+    $document = createPdfUaDocument('PDF/UA-1 Widget State Regression', 'Representative PDF/UA-1 widget state regression fixture');
+    $page = $document->addPage(PageSize::custom(240, 240));
+
+    $page->addText(
+        'Widget State Rendering',
+        new Position(12, 220),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addText(
+        'This fixture focuses on checked, unchecked, selected and multi-selected widget states with visible labels.',
+        new Position(12, 204),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $page->addCheckbox(
+        'accepted',
+        new Position(12, 174),
+        12,
+        true,
+        'Accepted',
+        new FormFieldLabel('Accepted', new Position(30, 176), 'NotoSans-Regular', 10),
+    );
+    $page->addCheckbox(
+        'archived',
+        new Position(12, 152),
+        12,
+        false,
+        'Archived',
+        new FormFieldLabel('Archived', new Position(30, 154), 'NotoSans-Regular', 10),
+    );
+    $page->addRadioButton(
+        'delivery',
+        'standard',
+        new Position(12, 124),
+        12,
+        true,
+        'Standard delivery',
+        new FormFieldLabel('Standard delivery', new Position(30, 126), 'NotoSans-Regular', 10),
+    );
+    $page->addRadioButton(
+        'delivery',
+        'express',
+        new Position(120, 124),
+        12,
+        false,
+        'Express delivery',
+        new FormFieldLabel('Express delivery', new Position(138, 126), 'NotoSans-Regular', 10),
+    );
+    $page->addComboBox(
+        'country',
+        new Rect(12, 84, 92, 16),
+        ['de' => 'Germany', 'at' => 'Austria', 'ch' => 'Switzerland'],
+        'at',
+        'NotoSans-Regular',
+        11,
+        accessibleName: 'Country selection',
+        fieldLabel: new FormFieldLabel('Country', new Position(12, 104), 'NotoSans-Regular', 10),
+    );
+    $page->addListBox(
+        'topics',
+        new Rect(120, 52, 92, 48),
+        ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
+        ['pdf', 'forms'],
+        'NotoSans-Regular',
+        11,
+        flags: new FormFieldFlags(multiSelect: true),
+        accessibleName: 'Topics selection',
+        fieldLabel: new FormFieldLabel('Topics', new Position(120, 104), 'NotoSans-Regular', 10),
     );
 
     return $document;
