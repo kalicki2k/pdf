@@ -78,6 +78,7 @@ final class Document
     private ?DocumentStructureManager $documentStructureManager = null;
     private ?DocumentProfileGuard $documentProfileGuard = null;
     private ?DocumentFontFactory $documentFontFactory = null;
+    private ?DocumentFontRegistry $documentFontRegistry = null;
     public Catalog $catalog;
     public ?AcroForm $acroForm = null;
     public ?EncryptDictionary $encryptDictionary = null;
@@ -417,28 +418,20 @@ final class Document
         bool $unicode = false,
         ?string $fontFilePath = null,
     ): self {
-        $options = $this->documentFontFactory()->resolveRegistrationOptions(
+        $this->documentFontRegistry()->registerFont(
             $fontName,
             $subtype,
             $encoding,
             $unicode,
             $fontFilePath,
         );
-        $this->assertAllowsFontRegistration($options);
-        $this->fonts = [
-            ...$this->fonts,
-            $this->documentFontFactory()->createFont($options),
-        ];
 
         return $this;
     }
 
     public function getFontByBaseFont(string $baseFont): ?FontDefinition
     {
-        return array_find(
-            $this->fonts,
-            static fn (FontDefinition $font): bool => $font->getBaseFont() === $baseFont,
-        );
+        return $this->documentFontRegistry()->getFontByBaseFont($baseFont);
     }
 
     /**
@@ -446,7 +439,7 @@ final class Document
      */
     public function getFonts(): array
     {
-        return $this->fonts;
+        return $this->documentFontRegistry()->getFonts();
     }
 
     public function ensureAcroForm(): AcroForm
@@ -590,20 +583,6 @@ final class Document
         $this->documentProfileGuard()->assertAllowsTransparency();
     }
 
-    /**
-     * @param array{
-     *     baseFont: string,
-     *     subtype: string,
-     *     encoding: string,
-     *     unicode: bool,
-     *     fontFilePath: ?string
-     * } $options
-     */
-    private function assertAllowsFontRegistration(array $options): void
-    {
-        $this->documentProfileGuard()->assertAllowsFontRegistration($options);
-    }
-
     public function addTableOfContents(
         ?PageSize $size = null,
         ?TableOfContentsOptions $options = null,
@@ -725,6 +704,15 @@ final class Document
     private function documentFontFactory(): DocumentFontFactory
     {
         return $this->documentFontFactory ??= new DocumentFontFactory($this);
+    }
+
+    private function documentFontRegistry(): DocumentFontRegistry
+    {
+        return $this->documentFontRegistry ??= new DocumentFontRegistry(
+            $this->fonts,
+            $this->documentFontFactory(),
+            $this->documentProfileGuard(),
+        );
     }
 
     /**
