@@ -26,6 +26,7 @@ use Kalle\Pdf\Document\Style\PanelStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\TableCaption;
 use Kalle\Pdf\Document\Text\FlowTextOptions;
 use Kalle\Pdf\Document\Text\ListOptions;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
@@ -1231,6 +1232,26 @@ final class PublicApiTest extends TestCase
         self::assertInstanceOf(Table::class, $table);
         self::assertInstanceOf(Page::class, $textFrame->getPage());
         self::assertInstanceOf(Page::class, $table->getPage());
+    }
+
+    #[Test]
+    public function it_exposes_table_captions_through_the_public_api(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $page = $document->addPage(PageSize::custom(200, 200));
+
+        $page->createTable(new Position(10, 190), 100, [50, 50])
+            ->caption(new TableCaption('Uebersicht', size: 11))
+            ->addRow(['Name', 'Wert'], header: true)
+            ->addRow(['A', '1']);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('(Uebersicht) Tj', $rendered);
+        self::assertStringContainsString('(Name) Tj', $rendered);
     }
 
     #[Test]

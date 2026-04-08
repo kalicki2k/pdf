@@ -29,6 +29,7 @@ enum StructureTag: string
     case Article = 'Art';
     case Division = 'Div';
     case Table = 'Table';
+    case Caption = 'Caption';
     case TableRow = 'TR';
     case TableHeaderCell = 'TH';
     case TableDataCell = 'TD';

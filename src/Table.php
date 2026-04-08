@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\Table as InternalTable;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\TableCaption;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Text\TextSegment;
 
@@ -47,6 +48,13 @@ final readonly class Table
     public function headerStyle(HeaderStyle $style): self
     {
         $this->table->headerStyle($style);
+
+        return $this;
+    }
+
+    public function caption(TableCaption $caption): self
+    {
+        $this->table->caption($caption);
 
         return $this;
     }

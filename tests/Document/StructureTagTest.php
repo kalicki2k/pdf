@@ -37,6 +37,7 @@ final class StructureTagTest extends TestCase
             'Article' => 'Art',
             'Division' => 'Div',
             'Table' => 'Table',
+            'Caption' => 'Caption',
             'TableRow' => 'TR',
             'TableHeaderCell' => 'TH',
             'TableDataCell' => 'TD',

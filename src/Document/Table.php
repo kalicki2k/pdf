@@ -22,6 +22,7 @@ use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
+use Kalle\Pdf\Document\Table\TableCaption;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Table\TableGroupPageFit;
 use Kalle\Pdf\Document\Table\TableHeaderScope;
@@ -59,6 +60,9 @@ final class Table
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
     private readonly ?StructElem $tableStructElem;
+    private ?TableCaption $caption = null;
+    private bool $captionRendered = false;
+    private bool $rowsAdded = false;
 
     /**
      * @param list<float|int> $columnWidths
@@ -67,11 +71,11 @@ final class Table
         Page $page,
         private readonly float $x,
         float $y,
-        float $width,
+        private readonly float $width,
         private readonly array $columnWidths,
         private readonly float $bottomMargin = 20.0,
     ) {
-        if ($width <= 0) {
+        if ($this->width <= 0) {
             throw new InvalidArgumentException('Table width must be greater than zero.');
         }
 
@@ -87,7 +91,7 @@ final class Table
 
         $totalColumnWidth = array_sum(array_map(static fn (float | int $value): float => (float) $value, $columnWidths));
 
-        if (abs($totalColumnWidth - $width) > 0.001) {
+        if (abs($totalColumnWidth - $this->width) > 0.001) {
             throw new InvalidArgumentException('Table column widths must add up to the table width.');
         }
 
@@ -157,11 +161,24 @@ final class Table
         return $this;
     }
 
+    public function caption(TableCaption $caption): self
+    {
+        if ($this->captionRendered || $this->rowsAdded) {
+            throw new InvalidArgumentException('Table caption must be configured before rows are added.');
+        }
+
+        $this->caption = $caption;
+
+        return $this;
+    }
+
     /**
      * @param list<string|list<TextSegment>|TableCell> $cells
      */
     public function addRow(array $cells, bool $header = false): self
     {
+        $this->rowsAdded = true;
+
         if ($header) {
             $this->headerRows[] = $cells;
         }
@@ -191,6 +208,7 @@ final class Table
     {
         $pendingGroupRows = $this->pendingGroupRows;
         $rowHeights = $this->rowGroupHeightResolver->resolve($pendingGroupRows);
+        $this->renderCaptionIfNeeded($rowHeights);
         $isBodyGroup = array_any(
             $pendingGroupRows,
             static fn (PreparedTableRow $row): bool => $row->header === false,
@@ -640,5 +658,86 @@ final class Table
         }
 
         return $header ? TableHeaderScope::Column : null;
+    }
+
+    /**
+     * @param list<float> $rowHeights
+     */
+    private function renderCaptionIfNeeded(array $rowHeights): void
+    {
+        $caption = $this->caption;
+
+        if ($caption === null || $this->captionRendered) {
+            return;
+        }
+
+        [$captionLines, $captionFont, $captionSize, $captionLineHeight] = $this->resolveCaptionLayout();
+        $captionHeight = (count($captionLines) * $captionLineHeight) + $caption->spacingAfter;
+        $availableHeight = $this->cursorY - $this->bottomMargin;
+        $firstRowHeight = $rowHeights[0] ?? 0.0;
+
+        if ($captionHeight > $availableHeight || ($captionHeight + $firstRowHeight) > $availableHeight) {
+            $this->moveToNextPageForCaption();
+        }
+
+        $captionStructElem = $this->createCaptionStructElem();
+        $this->page = $this->page->renderParagraphLines(
+            $captionLines,
+            $this->x,
+            $this->cursorY,
+            $this->width,
+            $captionFont,
+            $captionSize,
+            $captionStructElem !== null ? StructureTag::Paragraph : null,
+            $captionStructElem,
+            $captionLineHeight,
+            $this->bottomMargin,
+        );
+        $this->cursorY -= (count($captionLines) * $captionLineHeight) + $caption->spacingAfter;
+        $this->captionRendered = true;
+    }
+
+    /**
+     * @return array{0: list<array{segments: array<int, TextSegment>, justify: bool}>, 1: string, 2: int, 3: float}
+     */
+    private function resolveCaptionLayout(): array
+    {
+        $caption = $this->caption;
+
+        if ($caption === null) {
+            throw new InvalidArgumentException('Table caption is not configured.');
+        }
+
+        $captionFont = $caption->fontName ?? $this->baseFont;
+        $captionSize = $caption->size ?? $this->fontSize;
+        $captionLineHeight = $captionSize * $this->lineHeightFactor;
+
+        return [
+            $this->page->layoutParagraphLines(
+                $caption->text,
+                $captionFont,
+                $captionSize,
+                $this->width,
+                $caption->color,
+            ),
+            $captionFont,
+            $captionSize,
+            $captionLineHeight,
+        ];
+    }
+
+    private function createCaptionStructElem(): ?StructElem
+    {
+        if ($this->tableStructElem === null) {
+            return null;
+        }
+
+        return $this->page->getDocument()->createStructElem(StructureTag::Caption, parent: $this->tableStructElem);
+    }
+
+    private function moveToNextPageForCaption(): void
+    {
+        $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
+        $this->cursorY = $this->page->getHeight() - $this->topMargin;
     }
 }

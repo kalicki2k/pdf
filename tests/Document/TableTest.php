@@ -13,6 +13,7 @@ use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Document\Table\TableCaption;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Table\TableHeaderScope;
 use Kalle\Pdf\Document\Text\TextSegment;
@@ -59,6 +60,30 @@ final class TableTest extends TestCase
         self::assertSame($table, $result);
         self::assertStringContainsString('(A) Tj', $page->contents->render());
         self::assertStringContainsString('(1) Tj', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_renders_a_caption_above_the_table(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $page = $document->addPage();
+
+        $table = $page->createTable(new Position(20, 260), 170, [85, 85])
+            ->caption(new TableCaption('Artikeluebersicht', size: 12, spacingAfter: 4.0))
+            ->addRow(['Artikel', 'Preis'], header: true)
+            ->addRow(['Produkt A', '19,99 EUR']);
+
+        $contents = $page->contents->render();
+
+        self::assertSame(193.6, $table->getCursorY());
+        self::assertStringContainsString('(Artikeluebersicht) Tj', $contents);
+        self::assertLessThan(
+            strpos($contents, '(Artikel) Tj'),
+            strpos($contents, '(Artikeluebersicht) Tj'),
+        );
     }
 
     #[Test]
@@ -158,6 +183,27 @@ final class TableTest extends TestCase
 
         self::assertStringContainsString('/Scope /Both', $rendered);
         self::assertStringContainsString('/Scope /Row', $rendered);
+    }
+
+    #[Test]
+    public function it_renders_table_captions_as_structured_caption_elements_for_pdf_ua_1(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Captioned Table');
+        $page = $document->addPage();
+
+        $page->createTable(new Position(20, 260), 170, [85, 85])
+            ->font(self::pdfUaRegularFont(), 10)
+            ->caption(new TableCaption('Quartalszahlen'))
+            ->addRow(['Q1', 'Q2'], header: true)
+            ->addRow(['10', '12']);
+
+        $rendered = $document->render();
+
+        self::assertStringContainsString('/Type /StructElem /S /Caption', $rendered);
+        self::assertLessThan(
+            strpos($rendered, '/Type /StructElem /S /TR'),
+            strpos($rendered, '/Type /StructElem /S /Caption'),
+        );
     }
 
     #[Test]
@@ -460,6 +506,22 @@ final class TableTest extends TestCase
         $this->expectExceptionMessage('Table row spans must match the number of columns.');
 
         $table->addRow(['nur eine Zelle']);
+    }
+
+    #[Test]
+    public function it_rejects_captions_after_rows_have_been_added(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+        $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
+
+        $table->addRow(['A', 'B']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Table caption must be configured before rows are added.');
+
+        $table->caption(new TableCaption('Zu spaet'));
     }
 
     #[Test]
