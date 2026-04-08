@@ -26,7 +26,6 @@ use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextFrame;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
-use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Raw;
@@ -56,6 +55,7 @@ final class Page extends IndirectObject
     private int $markedContentId = 0;
     private ?PageComponents $pageComponents = null;
     private ?PageGraphics $pageGraphics = null;
+    private ?PageImages $pageImages = null;
     private ?PageAnnotations $pageAnnotations = null;
     private ?PageForms $pageForms = null;
     private ?PageTextRenderer $pageTextRenderer = null;
@@ -678,96 +678,7 @@ final class Page extends IndirectObject
         ?float $height = null,
         ImageOptions $options = new ImageOptions(),
     ): self {
-        if ($width !== null && $width <= 0) {
-            throw new InvalidArgumentException('Image width must be greater than zero.');
-        }
-
-        if ($height !== null && $height <= 0) {
-            throw new InvalidArgumentException('Image height must be greater than zero.');
-        }
-
-        if ($options->structureTag !== null) {
-            $this->document->ensureStructureEnabled();
-        }
-
-        $width ??= $image->getWidth();
-        $height ??= $image->getHeight();
-
-        if ($width <= 0 || $height <= 0) {
-            throw new InvalidArgumentException('Image dimensions must be greater than zero.');
-        }
-
-        if ($image->getSoftMask() !== null) {
-            $this->document->assertAllowsTransparency();
-        }
-
-        $imageObject = $this->createImageObject($image);
-        $resourceName = $this->resources->addImage($imageObject);
-        $artifactContext = $options->structureTag === null && $this->document->isRenderingArtifactContext();
-        $this->assertAllowsImageAccessibility($options, $artifactContext);
-        $artifactTag = $artifactContext ? 'Artifact' : null;
-        $contentTag = $options->structureTag !== null
-            ? $options->structureTag->value
-            : $artifactTag;
-        $markedContentId = $options->structureTag !== null ? $this->markedContentId++ : null;
-
-        $this->contents->addElement(new DrawImage(
-            $resourceName,
-            $position->x,
-            $position->y,
-            $width,
-            $height,
-            $markedContentId,
-            $contentTag,
-        ));
-
-        if ($options->structureTag !== null && $markedContentId !== null) {
-            $structElem = $this->document->createStructElem(
-                $options->structureTag,
-                $markedContentId,
-                $this,
-                $options->parentStructElem,
-            );
-
-            if ($options->altText !== null && $options->altText !== '') {
-                $structElem->setAltText($options->altText);
-            }
-        }
-
-        return $this;
-    }
-
-    private function assertAllowsImageAccessibility(ImageOptions $options, bool $artifactContext): void
-    {
-        $profile = $this->document->getProfile();
-
-        if (!$profile->requiresTaggedImages()) {
-            return;
-        }
-
-        if ($artifactContext) {
-            return;
-        }
-
-        if ($options->structureTag !== StructureTag::Figure) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s requires images to be tagged as Figure or rendered as artifacts in the current implementation.',
-                $profile->name(),
-            ));
-        }
-
-        if (!$profile->requiresFigureAltText()) {
-            return;
-        }
-
-        if ($options->altText !== null && $options->altText !== '') {
-            return;
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            'Profile %s requires alt text for Figure images in the current implementation.',
-            $profile->name(),
-        ));
+        return $this->pageImages()->addImage($image, $position, $width, $height, $options);
     }
 
     public function addTextField(
@@ -1146,6 +1057,14 @@ final class Page extends IndirectObject
         );
     }
 
+    private function pageImages(): PageImages
+    {
+        return $this->pageImages ??= new PageImages(
+            $this,
+            fn (): int => $this->markedContentId++,
+        );
+    }
+
     private function pageForms(): PageForms
     {
         return $this->pageForms ??= new PageForms(
@@ -1270,16 +1189,5 @@ final class Page extends IndirectObject
     public function renderDecorativeContent(callable $renderer): void
     {
         $this->pageGraphics()->renderDecorativeContent($renderer);
-    }
-
-    private function createImageObject(Image $image): ImageObject
-    {
-        $softMask = $image->getSoftMask();
-
-        return new ImageObject(
-            $this->document->getUniqObjectId(),
-            $image,
-            $softMask !== null ? $this->createImageObject($softMask) : null,
-        );
     }
 }

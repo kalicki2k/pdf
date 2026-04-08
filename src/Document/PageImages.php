@@ -1,0 +1,142 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Document;
+
+use Closure;
+use InvalidArgumentException;
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Text\StructureTag;
+use Kalle\Pdf\Element\DrawImage;
+use Kalle\Pdf\Element\Image;
+
+/**
+ * @internal Coordinates image rendering for a page.
+ */
+final class PageImages
+{
+    /**
+     * @param Closure(): int $nextMarkedContentId
+     */
+    public function __construct(
+        private readonly Page $page,
+        private readonly Closure $nextMarkedContentId,
+    ) {
+    }
+
+    public function addImage(
+        Image $image,
+        Position $position,
+        ?float $width = null,
+        ?float $height = null,
+        ImageOptions $options = new ImageOptions(),
+    ): Page {
+        if ($width !== null && $width <= 0) {
+            throw new InvalidArgumentException('Image width must be greater than zero.');
+        }
+
+        if ($height !== null && $height <= 0) {
+            throw new InvalidArgumentException('Image height must be greater than zero.');
+        }
+
+        if ($options->structureTag !== null) {
+            $this->page->getDocument()->ensureStructureEnabled();
+        }
+
+        $width ??= $image->getWidth();
+        $height ??= $image->getHeight();
+
+        if ($width <= 0 || $height <= 0) {
+            throw new InvalidArgumentException('Image dimensions must be greater than zero.');
+        }
+
+        if ($image->getSoftMask() !== null) {
+            $this->page->getDocument()->assertAllowsTransparency();
+        }
+
+        $imageObject = $this->createImageObject($image);
+        $resourceName = $this->page->resources->addImage($imageObject);
+        $artifactContext = $options->structureTag === null && $this->page->getDocument()->isRenderingArtifactContext();
+        $this->assertAllowsImageAccessibility($options, $artifactContext);
+        $artifactTag = $artifactContext ? 'Artifact' : null;
+        $contentTag = $options->structureTag !== null
+            ? $options->structureTag->value
+            : $artifactTag;
+        $markedContentId = $options->structureTag !== null ? $this->nextMarkedContentId() : null;
+
+        $this->page->contents->addElement(new DrawImage(
+            $resourceName,
+            $position->x,
+            $position->y,
+            $width,
+            $height,
+            $markedContentId,
+            $contentTag,
+        ));
+
+        if ($options->structureTag !== null && $markedContentId !== null) {
+            $structElem = $this->page->getDocument()->createStructElem(
+                $options->structureTag,
+                $markedContentId,
+                $this->page,
+                $options->parentStructElem,
+            );
+
+            if ($options->altText !== null && $options->altText !== '') {
+                $structElem->setAltText($options->altText);
+            }
+        }
+
+        return $this->page;
+    }
+
+    private function assertAllowsImageAccessibility(ImageOptions $options, bool $artifactContext): void
+    {
+        $profile = $this->page->getDocument()->getProfile();
+
+        if (!$profile->requiresTaggedImages()) {
+            return;
+        }
+
+        if ($artifactContext) {
+            return;
+        }
+
+        if ($options->structureTag !== StructureTag::Figure) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s requires images to be tagged as Figure or rendered as artifacts in the current implementation.',
+                $profile->name(),
+            ));
+        }
+
+        if (!$profile->requiresFigureAltText()) {
+            return;
+        }
+
+        if ($options->altText !== null && $options->altText !== '') {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Profile %s requires alt text for Figure images in the current implementation.',
+            $profile->name(),
+        ));
+    }
+
+    private function createImageObject(Image $image): ImageObject
+    {
+        $softMask = $image->getSoftMask();
+
+        return new ImageObject(
+            $this->page->getDocument()->getUniqObjectId(),
+            $image,
+            $softMask !== null ? $this->createImageObject($softMask) : null,
+        );
+    }
+
+    private function nextMarkedContentId(): int
+    {
+        return ($this->nextMarkedContentId)();
+    }
+}
