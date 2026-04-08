@@ -35,10 +35,6 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
-use Kalle\Pdf\Types\ArrayType;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
-use Kalle\Pdf\Types\ReferenceType;
 
 /**
  * @internal Internal page implementation. Use Kalle\Pdf\Page from the public API.
@@ -53,6 +49,7 @@ final class Page extends IndirectObject
     private ?PageGraphics $pageGraphics = null;
     private ?PageImages $pageImages = null;
     private ?PageLinks $pageLinks = null;
+    private ?PageObjectRenderer $pageObjectRenderer = null;
     private ?PageAnnotations $pageAnnotations = null;
     private ?PageForms $pageForms = null;
     private ?PageTextRenderer $pageTextRenderer = null;
@@ -805,37 +802,7 @@ final class Page extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new DictionaryType([
-            'Type' => new NameType('Page'),
-            'Parent' => new ReferenceType($this->document->pages),
-            'MediaBox' => new ArrayType([0, 0, $this->width, $this->height]),
-            'Resources' => new ReferenceType($this->resources),
-            'Contents' => new ReferenceType($this->contents),
-        ]);
-
-        if ($this->markedContentId > 0 && $this->document->hasStructure()) {
-            $dictionary->add('StructParents', $this->structParentId);
-        }
-
-        $annotations = $this->getAnnotations();
-
-        if ($annotations !== []) {
-            $dictionary->add(
-                'Annots',
-                new ArrayType(array_map(
-                    static fn (IndirectObject $annotation): ReferenceType => new ReferenceType($annotation),
-                    $annotations,
-                )),
-            );
-
-            if ($this->document->getProfile()->requiresPageAnnotationTabOrder()) {
-                $dictionary->add('Tabs', new NameType('S'));
-            }
-        }
-
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->pageObjectRenderer()->render($this->markedContentId > 0);
     }
 
     public function getWidth(): float
@@ -886,6 +853,11 @@ final class Page extends IndirectObject
     private function pageFonts(): PageFonts
     {
         return $this->pageFonts ??= new PageFonts($this);
+    }
+
+    private function pageObjectRenderer(): PageObjectRenderer
+    {
+        return $this->pageObjectRenderer ??= new PageObjectRenderer($this);
     }
 
     private function pageGraphics(): PageGraphics
