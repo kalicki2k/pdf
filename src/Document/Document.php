@@ -76,6 +76,7 @@ final class Document
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
     private ?DocumentAcroFormManager $documentAcroFormManager = null;
+    private ?DocumentStructureManager $documentStructureManager = null;
     private ?DocumentProfileGuard $documentProfileGuard = null;
     private ?DocumentFontFactory $documentFontFactory = null;
     public Catalog $catalog;
@@ -672,7 +673,7 @@ final class Document
      */
     public function addStructElem(StructureTag $tag, int $markedContentId, ?Page $page = null): self
     {
-        $this->createStructElem($tag, $markedContentId, $page);
+        $this->documentStructureManager()->addStructElem($tag, $markedContentId, $page);
 
         return $this;
     }
@@ -683,40 +684,17 @@ final class Document
         ?Page $page = null,
         ?StructElem $parent = null,
     ): StructElem {
-        $this->ensureStructureEnabled();
-
-        $structElem = new StructElem(++$this->objectId, $tag->value);
-        ($parent ?? $this->structElems['document'])->addKid($structElem);
-
-        $this->structElems[] = $structElem;
-
-        if ($markedContentId !== null && $page !== null) {
-            $structElem->setMarkedContent($markedContentId, $page);
-        }
-
-        if ($markedContentId !== null && $page !== null && $this->parentTree !== null) {
-            $this->parentTree->add($page->structParentId, $structElem);
-        }
-
-        return $structElem;
+        return $this->documentStructureManager()->createStructElem($tag, $markedContentId, $page, $parent);
     }
 
     public function registerObjectStructElem(int $structParentId, StructElem $structElem): void
     {
-        if ($this->parentTree === null) {
-            return;
-        }
-
-        $this->parentTree->addObject($structParentId, $structElem);
+        $this->documentStructureManager()->registerObjectStructElem($structParentId, $structElem);
     }
 
     public function registerMarkedContentStructElem(int $structParentId, StructElem $structElem): void
     {
-        if ($this->parentTree === null) {
-            return;
-        }
-
-        $this->parentTree->add($structParentId, $structElem);
+        $this->documentStructureManager()->registerMarkedContentStructElem($structParentId, $structElem);
     }
 
     public function registerDeferredRenderFinalizer(callable $finalizer): void
@@ -726,21 +704,7 @@ final class Document
 
     public function ensureStructureEnabled(): void
     {
-        if (!$this->profile->supportsStructure()) {
-            throw new InvalidArgumentException('Structured content requires PDF version 1.4 or higher.');
-        }
-
-        if ($this->structTreeRoot !== null) {
-            return;
-        }
-
-        $this->structTreeRoot = new StructTreeRoot(++$this->objectId);
-        $this->parentTree = new ParentTree(++$this->objectId);
-        $this->structTreeRoot->parentTree = $this->parentTree;
-        $structElem = new StructElem(++$this->objectId, StructureTag::Document->value);
-        $structElem->setParent($this->structTreeRoot);
-        $this->structTreeRoot->addKid($structElem->id);
-        $this->structElems['document'] = $structElem;
+        $this->documentStructureManager()->ensureStructureEnabled();
     }
 
     public function hasStructure(): bool
@@ -867,6 +831,11 @@ final class Document
     private function documentAcroFormManager(): DocumentAcroFormManager
     {
         return $this->documentAcroFormManager ??= new DocumentAcroFormManager($this);
+    }
+
+    private function documentStructureManager(): DocumentStructureManager
+    {
+        return $this->documentStructureManager ??= new DocumentStructureManager($this, $this->structElems);
     }
 
     private function documentFontFactory(): DocumentFontFactory
