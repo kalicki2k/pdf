@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Document\Table\Rendering;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
@@ -44,11 +45,21 @@ final readonly class PreparedCellRenderer
         string $baseFont,
         int $fontSize,
         ?StructElem $parentStructElem = null,
+        ?FooterStyle $footerStyle = null,
+        bool $footer = false,
     ): Page {
         return $this->renderResolved(
             $page,
             $preparedCell,
-            $this->styleResolver->resolveCellStyle($tableStyle, $rowStyle, $headerStyle, $preparedCell->cell, $header),
+            $this->styleResolver->resolveCellStyle(
+                $tableStyle,
+                $rowStyle,
+                $headerStyle,
+                $preparedCell->cell,
+                $header,
+                $footerStyle,
+                $footer,
+            ),
             $rowIndex,
             $rowHeights,
             $rowTopY,

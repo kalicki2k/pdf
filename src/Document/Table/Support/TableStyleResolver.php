@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Table\Support;
 
 use Kalle\Pdf\Document\Table\Style\CellStyle;
+use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
@@ -42,14 +43,26 @@ final class TableStyleResolver
         return $merged;
     }
 
+    public function mergeFooterStyle(?FooterStyle $base, FooterStyle $override): FooterStyle
+    {
+        /** @var FooterStyle $merged */
+        $merged = $this->buildMergedRowStyle(FooterStyle::class, $base, $override);
+
+        return $merged;
+    }
+
     public function resolveCellStyle(
         TableStyle $tableStyle,
         ?RowStyle $rowStyle,
         ?HeaderStyle $headerStyle,
         TableCell $cell,
         bool $header,
+        ?FooterStyle $footerStyle = null,
+        bool $footer = false,
     ): ResolvedTableCellStyle {
-        $resolvedRowStyle = $header ? $headerStyle : $rowStyle;
+        $resolvedRowStyle = $header
+            ? $headerStyle
+            : ($footer ? $footerStyle : $rowStyle);
         $cellStyle = $cell->style ?? new CellStyle();
         $rowPadding = $resolvedRowStyle?->padding;
         $rowFillColor = $resolvedRowStyle?->fillColor;

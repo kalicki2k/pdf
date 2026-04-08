@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Document\Table\Layout;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Table\Style\CellStyle;
+use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
@@ -31,6 +32,7 @@ final readonly class RowPreparer
         private ?HeaderStyle $headerStyle,
         private TableStyleResolver $styleResolver,
         private TableTextMetrics $textMetrics,
+        private ?FooterStyle $footerStyle = null,
     ) {
     }
 
@@ -39,7 +41,7 @@ final readonly class RowPreparer
      * @param list<int> $activeRowspans
      * @return array{cells: list<PreparedTableCell>, nextRowspans: list<int>}
      */
-    public function prepareRow(array $cells, array $activeRowspans, bool $header): array
+    public function prepareRow(array $cells, array $activeRowspans, bool $header, bool $footer = false): array
     {
         $preparedCells = [];
         $lineHeight = $this->fontSize * $this->lineHeightFactor;
@@ -61,6 +63,8 @@ final readonly class RowPreparer
                 $this->headerStyle,
                 $preparedCell,
                 $header,
+                $this->footerStyle,
+                $footer,
             );
             $padding = $resolvedStyle->padding;
             $columnWidth = $this->resolveColumnSpanWidth($columnIndex, $preparedCell->colspan, $activeRowspans);

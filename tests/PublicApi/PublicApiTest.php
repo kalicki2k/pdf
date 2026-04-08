@@ -23,6 +23,7 @@ use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
+use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
@@ -1559,6 +1560,7 @@ final class PublicApiTest extends TestCase
             ->style(new TableStyle())
             ->rowStyle(new RowStyle())
             ->headerStyle(new HeaderStyle())
+            ->footerStyle(new FooterStyle())
             ->addHeaderRow(['H1', 'H2'], repeat: false)
             ->addRow(['A', 'B'])
             ->addFooterRow(['F1', 'F2']);

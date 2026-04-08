@@ -12,6 +12,7 @@ final readonly class PreparedTableRow
     public function __construct(
         public array $cells,
         public bool $header,
+        public bool $footer = false,
     ) {
     }
 }

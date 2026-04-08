@@ -14,6 +14,7 @@ use Kalle\Pdf\Document\Table\PendingRowspanCell;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderOptions;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
+use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
@@ -57,6 +58,7 @@ final class Table
     private TableStyle $style;
     private ?RowStyle $rowStyle = null;
     private ?HeaderStyle $headerStyle = null;
+    private ?FooterStyle $footerStyle = null;
     private readonly TableStyleResolver $styleResolver;
     private readonly TableTextMetrics $textMetrics;
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
@@ -163,6 +165,13 @@ final class Table
     public function headerStyle(HeaderStyle $style): self
     {
         $this->headerStyle = $this->styleResolver->mergeHeaderStyle($this->headerStyle, $style);
+
+        return $this;
+    }
+
+    public function footerStyle(FooterStyle $style): self
+    {
+        $this->footerStyle = $this->styleResolver->mergeFooterStyle($this->footerStyle, $style);
 
         return $this;
     }
@@ -313,6 +322,7 @@ final class Table
             $preparedHeaderRows = $this->prepareRowGroup(
                 $this->repeatingHeaderRows,
                 true,
+                false,
                 'Header rowspans must be completed within the repeated header rows.',
             );
             $headerRepeatHeight = array_sum($this->rowGroupHeightResolver->resolve($preparedHeaderRows));
@@ -336,6 +346,7 @@ final class Table
         $preparedHeaderRows = $this->prepareRowGroup(
             $this->repeatingHeaderRows,
             true,
+            false,
             'Header rowspans must be completed within the repeated header rows.',
         );
         $headerHeights = $this->rowGroupHeightResolver->resolve($preparedHeaderRows);
@@ -368,6 +379,7 @@ final class Table
                 $result = $this->renderPreparedCellSegment(
                     $preparedCell,
                     $preparedRow->header,
+                    $preparedRow->footer,
                     $rowIndex,
                     $rowCount,
                     $segmentRowHeights,
@@ -425,6 +437,7 @@ final class Table
     private function renderPreparedCellSegment(
         PreparedTableCell $preparedCell,
         bool $header,
+        bool $footer,
         int $rowIndex,
         int $rowCount,
         array $rowHeights,
@@ -437,7 +450,7 @@ final class Table
         return $this->preparedCellRenderer->renderSegment(
             $this->page,
             $preparedCell,
-            $this->resolveEffectiveCellStyle($preparedCell->cell, $header),
+            $this->resolveEffectiveCellStyle($preparedCell->cell, $header, $footer),
             $rowIndex,
             $rowHeights,
             $rowTopY,
@@ -494,7 +507,7 @@ final class Table
 
                 $continuations[] = new PendingRowspanCell(
                     $preparedCell,
-                    $this->resolveEffectiveCellStyle($preparedCell->cell, $preparedRow->header),
+                    $this->resolveEffectiveCellStyle($preparedCell->cell, $preparedRow->header, $preparedRow->footer),
                     $remainingRows,
                     $remainingLines,
                 );
@@ -559,15 +572,15 @@ final class Table
      * @param list<list<string|list<TextSegment>|TableCell>> $rows
      * @return list<PreparedTableRow>
      */
-    private function prepareRowGroup(array $rows, bool $header, string $rowspanErrorMessage): array
+    private function prepareRowGroup(array $rows, bool $header, bool $footer, string $rowspanErrorMessage): array
     {
         $previousRowspans = $this->activeRowspans;
         $this->activeRowspans = array_fill(0, count($this->columnWidths), 0);
         $preparedRows = [];
 
         foreach ($rows as $row) {
-            $preparedRow = $this->prepareRow($row, $header);
-            $preparedRows[] = new PreparedTableRow($preparedRow['cells'], $header);
+            $preparedRow = $this->prepareRow($row, $header, $footer);
+            $preparedRows[] = new PreparedTableRow($preparedRow['cells'], $header, $footer);
             $this->activeRowspans = $preparedRow['nextRowspans'];
         }
 
@@ -607,6 +620,8 @@ final class Table
                     $this->baseFont,
                     $this->fontSize,
                     $this->createTableCellStructElem($preparedCell->cell, $preparedRow->header, $rowStructElem),
+                    $this->footerStyle,
+                    $preparedRow->footer,
                 );
             }
 
@@ -629,6 +644,7 @@ final class Table
         $preparedFooterRows = $this->prepareRowGroup(
             $this->footerRows,
             false,
+            true,
             'Footer rowspans must be completed within the footer rows.',
         );
         $footerHeights = $this->rowGroupHeightResolver->resolve($preparedFooterRows);
@@ -648,7 +664,7 @@ final class Table
         $this->footersRendered = true;
     }
 
-    private function resolveEffectiveCellStyle(TableCell $cell, bool $header): ResolvedTableCellStyle
+    private function resolveEffectiveCellStyle(TableCell $cell, bool $header, bool $footer = false): ResolvedTableCellStyle
     {
         return $this->styleResolver->resolveCellStyle(
             $this->style,
@@ -656,6 +672,8 @@ final class Table
             $this->headerStyle,
             $cell,
             $header,
+            $this->footerStyle,
+            $footer,
         );
     }
 
@@ -663,9 +681,9 @@ final class Table
      * @param list<string|list<TextSegment>|TableCell> $cells
      * @return array{cells: list<PreparedTableCell>, nextRowspans: list<int>}
      */
-    private function prepareRow(array $cells, bool $header): array
+    private function prepareRow(array $cells, bool $header, bool $footer = false): array
     {
-        return $this->createRowPreparer()->prepareRow($cells, $this->activeRowspans, $header);
+        return $this->createRowPreparer()->prepareRow($cells, $this->activeRowspans, $header, $footer);
     }
 
     private function createRowPreparer(): RowPreparer
@@ -681,6 +699,7 @@ final class Table
             $this->headerStyle,
             $this->styleResolver,
             $this->textMetrics,
+            $this->footerStyle,
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf;
 
 use Kalle\Pdf\Document\Table as InternalTable;
+use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
@@ -48,6 +49,13 @@ final readonly class Table
     public function headerStyle(HeaderStyle $style): self
     {
         $this->table->headerStyle($style);
+
+        return $this;
+    }
+
+    public function footerStyle(FooterStyle $style): self
+    {
+        $this->table->footerStyle($style);
 
         return $this;
     }

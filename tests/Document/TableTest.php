@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Table\Style\CellStyle;
+use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
@@ -60,6 +61,32 @@ final class TableTest extends TestCase
         self::assertSame($table, $result);
         self::assertStringContainsString('(A) Tj', $page->contents->render());
         self::assertStringContainsString('(1) Tj', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_applies_footer_styles_to_footer_rows(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $page = $document->addPage();
+
+        $page->createTable(new Position(20, 260), 170, [85, 85])
+            ->footerStyle(new FooterStyle(
+                fillColor: Color::gray(0.85),
+                textColor: Color::rgb(255, 0, 0),
+            ))
+            ->addHeaderRow(['Name', 'Wert'])
+            ->addRow(['Produkt A', '19,99 EUR'])
+            ->addFooterRow(['Summe', '19,99 EUR']);
+
+        $contents = $document->render();
+
+        self::assertStringContainsString("20 188 85 24 re\nf", $contents);
+        self::assertStringContainsString("105 188 85 24 re\nf", $contents);
+        self::assertStringContainsString('1 0 0 rg', $contents);
+        self::assertStringContainsString('(Summe) Tj', $contents);
     }
 
     #[Test]
