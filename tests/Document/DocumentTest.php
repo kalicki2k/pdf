@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentFontFactory;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
@@ -888,9 +889,9 @@ final class DocumentTest extends TestCase
     public function it_creates_an_optional_font_parser_for_readable_font_files(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
-        $method = new \ReflectionMethod($document, 'createOptionalFontParser');
+        $method = new \ReflectionMethod(DocumentFontFactory::class, 'createOptionalFontParser');
 
-        $parser = $method->invoke($document, 'assets/fonts/NotoSans-Regular.ttf');
+        $parser = $method->invoke(new DocumentFontFactory($document), 'assets/fonts/NotoSans-Regular.ttf');
 
         self::assertInstanceOf(OpenTypeFontParser::class, $parser);
     }
