@@ -122,17 +122,17 @@ $table
         fillColor: Color::rgb(232, 238, 250),
         textColor: Color::gray(0.15),
     ))
-    ->addRow([
+    ->addHeaderRow([
         new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
         new TableCell('Service quality', colspan: 2, headerScope: TableHeaderScope::Column),
         new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
-    ], header: true)
-    ->addRow([
+    ])
+    ->addHeaderRow([
         'Availability',
         'Response time',
         'Escalations',
         'Resolved',
-    ], header: true);
+    ]);
 
 foreach ([
     ['North', '98 %', '1.2 h', '2', '18'],

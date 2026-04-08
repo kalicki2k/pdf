@@ -137,7 +137,7 @@ $page->createTable(
     ->rowStyle(new RowStyle(
         textColor: Color::gray(0.2),
     ))
-    ->addRow(['Gruppe', 'Beschreibung', 'Status', 'Menge', 'Betrag'], header: true)
+    ->addHeaderRow(['Gruppe', 'Beschreibung', 'Status', 'Menge', 'Betrag'])
     ->addRow([
         new TableCell(
             'A',
@@ -227,7 +227,7 @@ $page->createTable(
     ->headerStyle(new HeaderStyle(
         fillColor: Color::rgb(241, 246, 250),
     ))
-    ->addRow(['Align', 'Referenztext', 'Kurztext', 'Border / Padding'], header: true)
+    ->addHeaderRow(['Align', 'Referenztext', 'Kurztext', 'Border / Padding'])
     ->addRow([
         new TableCell('Top', style: new CellStyle(verticalAlign: VerticalAlign::TOP)),
         "Mehrzeiliger Inhalt\nerhoeht die Zeilenhoehe\nund dient als Referenz.",
@@ -301,7 +301,7 @@ $stylePage->createTable(
     ->headerStyle(new HeaderStyle(
         fillColor: Color::rgb(243, 246, 249),
     ))
-    ->addRow(['Fall', 'Padding', 'Textbild', 'Erwartung'], header: true)
+    ->addHeaderRow(['Fall', 'Padding', 'Textbild', 'Erwartung'])
     ->addRow([
         'A',
         new TableCell(
@@ -370,7 +370,7 @@ $stylePage->createTable(
     ->headerStyle(new HeaderStyle(
         fillColor: Color::gray(0.92),
     ))
-    ->addRow(['Scope', 'Border', 'Fill', 'Lesart'], header: true)
+    ->addHeaderRow(['Scope', 'Border', 'Fill', 'Lesart'])
     ->addRow([
         'Table',
         'nur Standard',
@@ -434,7 +434,7 @@ $stylePage->createTable(
     ->headerStyle(new HeaderStyle(
         fillColor: Color::rgb(242, 244, 247),
     ))
-    ->addRow(['Pos.', 'Kurztext', 'Menge', 'Preis', 'Kommentar'], header: true)
+    ->addHeaderRow(['Pos.', 'Kurztext', 'Menge', 'Preis', 'Kommentar'])
     ->addRow([
         '1',
         'Schmale Spalten mit Zahlen rechts.',
@@ -506,7 +506,7 @@ $paginationTable = $paginationPage->createTable(
     ->headerStyle(new HeaderStyle(
         fillColor: Color::gray(0.9),
     ))
-    ->addRow(['Pos.', 'Beschreibung', 'Status', 'Wert'], header: true)
+    ->addHeaderRow(['Pos.', 'Beschreibung', 'Status', 'Wert'])
     ->addRow(['1', 'Kurze Zeile vor dem Split-Test.', 'ok', '10'])
     ->addRow(['2', 'Noch eine kurze Zeile, damit die Gruppe nicht direkt am Anfang startet.', 'ok', '20'])
     ->addRow(['3', 'Schmale Tabellen auf kleinen Seiten sind fuer Pagination besonders empfindlich.', 'ok', '30'])

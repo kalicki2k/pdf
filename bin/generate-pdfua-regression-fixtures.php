@@ -223,7 +223,7 @@ function createPdfUa1LayoutFixture(): Document
     $table = $page->createTable(new Position(12, 96), 194, [96, 98]);
     $table
         ->font('NotoSans-Regular', 10)
-        ->addRow(['Area', 'State'], header: true)
+        ->addHeaderRow(['Area', 'State'])
         ->addRow(['Badge', 'Artifact background with tagged text'])
         ->addRow(['Panel', 'Artifact frame with tagged body content']);
 
@@ -605,12 +605,12 @@ function createPdfUa1TableCaptionPaginationFixture(): Document
             color: Color::rgb(20, 40, 90),
             spacingAfter: 5.0,
         ))
-        ->addRow([
+        ->addHeaderRow([
             new TableCell('Region', headerScope: TableHeaderScope::Both),
             'January',
             'February',
             'March',
-        ], header: true);
+        ]);
 
     $rows = [
         ['North', '98 %', '97 %', '99 %'],
@@ -672,13 +672,13 @@ function createPdfUa1TableCaptionSpansFixture(): Document
             color: Color::rgb(20, 40, 90),
             spacingAfter: 5.0,
         ))
-        ->addRow([
+        ->addHeaderRow([
             new TableCell('Region', headerScope: TableHeaderScope::Both),
             'Metric',
             'January',
             'February',
             'March',
-        ], header: true);
+        ]);
 
     foreach ([
         ['North', '98 %', '97 %', '99 %', '1.2 h', '1.1 h', '1.0 h'],
@@ -746,13 +746,13 @@ function createPdfUa1TableSpanBreaksFixture(): Document
             color: Color::rgb(20, 40, 90),
             spacingAfter: 4.0,
         ))
-        ->addRow([
+        ->addHeaderRow([
             new TableCell('Region', headerScope: TableHeaderScope::Both),
             'Metric',
             'January',
             'February',
             'March',
-        ], header: true);
+        ]);
 
     foreach ([
         [
@@ -875,17 +875,17 @@ function createPdfUa1TableHeaderMatrixFixture(): Document
             color: Color::rgb(20, 40, 90),
             spacingAfter: 5.0,
         ))
-        ->addRow([
+        ->addHeaderRow([
             new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
             new TableCell('Service quality', colspan: 2, headerScope: TableHeaderScope::Column),
             new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
-        ], header: true)
-        ->addRow([
+        ])
+        ->addHeaderRow([
             'Availability',
             'Response time',
             'Escalations',
             'Resolved',
-        ], header: true);
+        ]);
 
     foreach ([
         ['North', '98 %', '1.2 h', '2', '18'],
@@ -946,17 +946,17 @@ function createPdfUa1TableHeaderMatrixBreaksFixture(): Document
             color: Color::rgb(20, 40, 90),
             spacingAfter: 4.0,
         ))
-        ->addRow([
+        ->addHeaderRow([
             new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
             new TableCell('Operations', colspan: 2, headerScope: TableHeaderScope::Column),
             new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
-        ], header: true)
-        ->addRow([
+        ])
+        ->addHeaderRow([
             'Status',
             'Assessment',
             'Owner',
             'Next step',
-        ], header: true);
+        ]);
 
     foreach ([
         [
@@ -1061,13 +1061,13 @@ function createPdfUa1TableNarrowColumnFixture(): Document
             color: Color::rgb(20, 40, 90),
             spacingAfter: 4.0,
         ))
-        ->addRow([
+        ->addHeaderRow([
             'Area',
             'Queue',
             'Constraint token',
             'Owner',
             'Action',
-        ], header: true);
+        ]);
 
     foreach ([
         ['North', '', 'INC2026ALPHAOMEGA0004711', 'Ops', 'Escalate owner handover and capture the aftercare notes before Friday.'],
@@ -1163,7 +1163,7 @@ function createPdfUa1MixedFixture(): Document
     $table = $overviewPage->createTable(new Position(12, 96), 196, [92, 104]);
     $table
         ->font('NotoSans-Regular', 10)
-        ->addRow(['Area', 'Result'], header: true)
+        ->addHeaderRow(['Area', 'Result'])
         ->addRow(['Layout', 'Decorative frames are artifacts and visible text is tagged.'])
         ->addRow(['Links', 'Text and standalone links carry accessible descriptions.']);
 
@@ -1395,7 +1395,7 @@ function createPdfUa1DeepMixedFixture(): Document
     $reviewTable = $reviewPage->createTable(new Position(12, 192), 196, [62, 62, 72]);
     $reviewTable
         ->font('NotoSans-Regular', 10)
-        ->addRow(['Area', 'Check', 'Result'], header: true)
+        ->addHeaderRow(['Area', 'Check', 'Result'])
         ->addRow(['Links', 'Internal destinations', 'Summary and notes links stay tagged.'])
         ->addRow(['Forms', 'Visible labels', 'Widgets share a common form block with labels.'])
         ->addRow(['Annotations', 'OBJR mapping', 'Notes and attachments keep structure references.']);

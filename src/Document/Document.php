@@ -69,6 +69,8 @@ final class Document
     private array $deferredHeaderRenderers = [];
     /** @var list<callable(Page, int, int): void> */
     private array $deferredFooterRenderers = [];
+    /** @var list<callable(): void> */
+    private array $deferredRenderFinalizers = [];
 
     /** @var array<int, FontDefinition&IndirectObject> */
     private array $fonts = [];
@@ -908,6 +910,24 @@ final class Document
         $this->parentTree->add($structParentId, $structElem);
     }
 
+    public function registerDeferredRenderFinalizer(callable $finalizer): void
+    {
+        $this->deferredRenderFinalizers[] = $finalizer;
+    }
+
+    private function applyDeferredRenderFinalizers(): void
+    {
+        if ($this->deferredRenderFinalizers === []) {
+            return;
+        }
+
+        foreach ($this->deferredRenderFinalizers as $finalizer) {
+            $finalizer();
+        }
+
+        $this->deferredRenderFinalizers = [];
+    }
+
     private function applyDeferredPageDecorators(): void
     {
         if ($this->deferredHeaderRenderers === [] && $this->deferredFooterRenderers === []) {
@@ -1329,6 +1349,7 @@ final class Document
 
     public function render(): string
     {
+        $this->applyDeferredRenderFinalizers();
         $this->applyDeferredPageDecorators();
         $this->assertRenderRequirements();
 

@@ -295,7 +295,7 @@ function createPdfUaLayoutFixture(): Document
     $table = $page->createTable(new Position(12, 120), 120, [120]);
     $table
         ->font('NotoSans-Regular', 10)
-        ->addRow(['Area'], header: true)
+        ->addHeaderRow(['Area'])
         ->addRow(['Valid before mutation']);
 
     return $document;

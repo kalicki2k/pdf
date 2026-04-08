@@ -54,7 +54,7 @@ final class TableTest extends TestCase
             ->style(new TableStyle(border: TableBorder::none()))
             ->rowStyle(new RowStyle(textColor: Color::rgb(255, 0, 0)))
             ->headerStyle(new HeaderStyle(fillColor: Color::gray(0.9)))
-            ->addRow(['A', 'B'], header: true)
+            ->addHeaderRow(['A', 'B'])
             ->addRow(['1', '2']);
 
         self::assertSame($table, $result);
@@ -73,7 +73,7 @@ final class TableTest extends TestCase
 
         $table = $page->createTable(new Position(20, 260), 170, [85, 85])
             ->caption(new TableCaption('Artikeluebersicht', size: 12, spacingAfter: 4.0))
-            ->addRow(['Artikel', 'Preis'], header: true)
+            ->addHeaderRow(['Artikel', 'Preis'])
             ->addRow(['Produkt A', '19,99 EUR']);
 
         $contents = $page->contents->render();
@@ -103,7 +103,7 @@ final class TableTest extends TestCase
             ->rowStyle(new RowStyle(
                 textColor: Color::gray(0.2),
             ))
-            ->addRow(['ID', 'Titel', 'Preis'], header: true)
+            ->addHeaderRow(['ID', 'Titel', 'Preis'])
             ->addRow([
                 '1',
                 new TableCell('Produkt A', style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
@@ -127,7 +127,7 @@ final class TableTest extends TestCase
 
         $page->createTable(new Position(20, 260), 170, [85, 85])
             ->font(self::pdfUaRegularFont(), 10)
-            ->addRow(['Column A', 'Column B'], header: true)
+            ->addHeaderRow(['Column A', 'Column B'])
             ->addRow(['Value A', 'Value B']);
 
         $rendered = $document->render();
@@ -147,7 +147,7 @@ final class TableTest extends TestCase
 
         $page->createTable(new Position(20, 260), 170, [70, 100])
             ->font(self::pdfUaRegularFont(), 10)
-            ->addRow(['Metric', 'Value'], header: true)
+            ->addHeaderRow(['Metric', 'Value'])
             ->addRow([
                 new TableCell('Weight', headerScope: TableHeaderScope::Row),
                 '12 kg',
@@ -168,11 +168,11 @@ final class TableTest extends TestCase
 
         $page->createTable(new Position(20, 260), 170, [55, 55, 60])
             ->font(self::pdfUaRegularFont(), 10)
-            ->addRow([
+            ->addHeaderRow([
                 new TableCell('Area', headerScope: TableHeaderScope::Both),
                 'Open',
                 'Closed',
-            ], header: true)
+            ])
             ->addRow([
                 new TableCell('North', headerScope: TableHeaderScope::Row),
                 '5',
@@ -194,7 +194,7 @@ final class TableTest extends TestCase
         $page->createTable(new Position(20, 260), 170, [85, 85])
             ->font(self::pdfUaRegularFont(), 10)
             ->caption(new TableCaption('Quartalszahlen'))
-            ->addRow(['Q1', 'Q2'], header: true)
+            ->addHeaderRow(['Q1', 'Q2'])
             ->addRow(['10', '12']);
 
         $rendered = $document->render();
@@ -220,12 +220,12 @@ final class TableTest extends TestCase
                 size: 12,
                 spacingAfter: 5.0,
             ))
-            ->addRow([
+            ->addHeaderRow([
                 new TableCell('Region', headerScope: TableHeaderScope::Both),
                 'January',
                 'February',
                 'March',
-            ], header: true);
+            ]);
 
         foreach ([
             ['North', '98 %', '97 %', '99 %'],
@@ -272,13 +272,13 @@ final class TableTest extends TestCase
                 size: 12,
                 spacingAfter: 5.0,
             ))
-            ->addRow([
+            ->addHeaderRow([
                 new TableCell('Region', headerScope: TableHeaderScope::Both),
                 'Metric',
                 'January',
                 'February',
                 'March',
-            ], header: true);
+            ]);
 
         foreach ([
             ['North', '98 %', '97 %', '99 %', '1.2 h', '1.1 h', '1.0 h'],
@@ -336,17 +336,17 @@ final class TableTest extends TestCase
                 size: 12,
                 spacingAfter: 5.0,
             ))
-            ->addRow([
+            ->addHeaderRow([
                 new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
                 new TableCell('Service quality', colspan: 2, headerScope: TableHeaderScope::Column),
                 new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
-            ], header: true)
-            ->addRow([
+            ])
+            ->addHeaderRow([
                 'Availability',
                 'Response time',
                 'Escalations',
                 'Resolved',
-            ], header: true);
+            ]);
 
         foreach ([
             ['North', '98 %', '1.2 h', '2', '18'],
@@ -397,13 +397,13 @@ final class TableTest extends TestCase
                 size: 12,
                 spacingAfter: 4.0,
             ))
-            ->addRow([
+            ->addHeaderRow([
                 new TableCell('Region', headerScope: TableHeaderScope::Both),
                 'Metric',
                 'January',
                 'February',
                 'March',
-            ], header: true);
+            ]);
 
         foreach ([
             [
@@ -516,17 +516,17 @@ final class TableTest extends TestCase
                 size: 12,
                 spacingAfter: 4.0,
             ))
-            ->addRow([
+            ->addHeaderRow([
                 new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
                 new TableCell('Operations', colspan: 2, headerScope: TableHeaderScope::Column),
                 new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
-            ], header: true)
-            ->addRow([
+            ])
+            ->addHeaderRow([
                 'Status',
                 'Assessment',
                 'Owner',
                 'Next step',
-            ], header: true);
+            ]);
 
         foreach ([
             [
@@ -621,13 +621,13 @@ final class TableTest extends TestCase
                 size: 11,
                 spacingAfter: 4.0,
             ))
-            ->addRow([
+            ->addHeaderRow([
                 'Area',
                 'Queue',
                 'Constraint token',
                 'Owner',
                 'Action',
-            ], header: true);
+            ]);
 
         foreach ([
             ['North', '', 'INC2026ALPHAOMEGA0004711', 'Ops', 'Escalate owner handover and capture the aftercare notes before Friday.'],
@@ -665,7 +665,7 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $page->createTable(new Position(20, 260), 170, [30, 50, 40, 50])
-            ->addRow(['#', 'Titel', 'Status', 'Preis'], header: true)
+            ->addHeaderRow(['#', 'Titel', 'Status', 'Preis'])
             ->addRow([
                 '1',
                 new TableCell(
@@ -691,7 +691,7 @@ final class TableTest extends TestCase
         $page = $document->addPage();
 
         $page->createTable(new Position(20, 260), 170, [40, 60, 70])
-            ->addRow(['Gruppe', 'Titel', 'Status'], header: true)
+            ->addHeaderRow(['Gruppe', 'Titel', 'Status'])
             ->addRow([
                 new TableCell('A', rowspan: 2, style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
                 'Eintrag 1',
@@ -707,6 +707,87 @@ final class TableTest extends TestCase
         self::assertStringContainsString('(Eintrag) Tj', $page->contents->render());
         self::assertSame(2, substr_count($page->contents->render(), '(Eintrag) Tj'));
         self::assertStringContainsString('(Aktiv) Tj', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_renders_footer_rows_after_body_rows(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $page = $document->addPage();
+
+        $page->createTable(new Position(20, 260), 170, [85, 85])
+            ->addHeaderRow(['Name', 'Wert'])
+            ->addRow(['Produkt A', '19,99 EUR'])
+            ->addFooterRow(['Summe', '19,99 EUR']);
+
+        $contents = $document->render();
+        $headerPosition = strpos($contents, '(Name) Tj');
+        $bodyPosition = strpos($contents, '(Produkt A) Tj');
+        $footerPosition = strrpos($contents, '(Summe) Tj');
+
+        self::assertNotFalse($headerPosition);
+        self::assertNotFalse($bodyPosition);
+        self::assertNotFalse($footerPosition);
+        self::assertLessThan($bodyPosition, $headerPosition);
+        self::assertLessThan($footerPosition, $bodyPosition);
+    }
+
+    #[Test]
+    public function it_repeats_only_repeatable_header_rows_across_pages(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $firstPage = $document->addPage(200, 160);
+
+        $table = $firstPage->createTable(new Position(20, 115), 160, [80, 80], 20)
+            ->font('Helvetica', 12)
+            ->addHeaderRow(['Bereich', 'Wert'])
+            ->addHeaderRow(['Nur1', 'Legende'], repeat: false);
+
+        foreach (range(1, 8) as $index) {
+            $table->addRow(['Eintrag ' . $index, 'Wert ' . $index]);
+        }
+
+        $rendered = $document->render();
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertGreaterThan(1, substr_count($rendered, '(Bereich) Tj'));
+        self::assertSame(1, substr_count($rendered, '(Nur1) Tj'));
+    }
+
+    #[Test]
+    public function it_renders_footer_rows_when_they_are_configured_before_body_rows(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $firstPage = $document->addPage(200, 160);
+
+        $table = $firstPage->createTable(new Position(20, 115), 160, [80, 80], 20)
+            ->font('Helvetica', 12)
+            ->addHeaderRow(['Bereich', 'Wert'])
+            ->addFooterRow(['Summe', 'fortlaufend']);
+
+        foreach (range(1, 8) as $index) {
+            $table->addRow(['Eintrag ' . $index, 'Wert ' . $index]);
+        }
+
+        $rendered = $document->render();
+        $bodyPosition = strrpos($rendered, '(Eintrag 8) Tj');
+        $footerPosition = strrpos($rendered, '(Summe) Tj');
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertSame(1, substr_count($rendered, '(Summe) Tj'));
+        self::assertNotFalse($bodyPosition);
+        self::assertNotFalse($footerPosition);
+        self::assertLessThan($footerPosition, $bodyPosition);
+        self::assertStringContainsString('(Summe) Tj', $table->getPage()->contents->render());
     }
 
     #[Test]
@@ -930,7 +1011,7 @@ final class TableTest extends TestCase
         $page = $document->addPage(200, 200);
 
         $table = $page->createTable(new Position(20, 120), 160, [80, 80], 20)
-            ->addRow(['Kopf', 'Wert'], header: true)
+            ->addHeaderRow(['Kopf', 'Wert'])
             ->addRow(['A', '1'])
             ->addRow(['B', '2'])
             ->addRow(['C', '3'])
@@ -974,6 +1055,38 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_header_rows_after_body_rows(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+        $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
+
+        $table->addRow(['A', 'B']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Header rows must be added before body or footer rows.');
+
+        $table->addHeaderRow(['Kopf A', 'Kopf B']);
+    }
+
+    #[Test]
+    public function it_rejects_header_rows_after_footer_rows(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+        $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
+
+        $table->addFooterRow(['Summe', '19,99 EUR']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Header rows must be added before body or footer rows.');
+
+        $table->addHeaderRow(['Kopf A', 'Kopf B']);
+    }
+
+    #[Test]
     public function it_rejects_cells_with_invalid_colspan(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
@@ -1008,6 +1121,30 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_rendering_footer_rows_when_a_body_rowspan_group_is_still_open(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document
+            ->registerFont('Helvetica')
+            ->registerFont('Helvetica-Bold');
+        $page = $document->addPage();
+        $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
+
+        $table
+            ->addHeaderRow(['Gruppe', 'Wert'])
+            ->addRow([
+                new TableCell('A', rowspan: 2),
+                'Eintrag 1',
+            ])
+            ->addFooterRow(['Summe', '19,99 EUR']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Rowspan groups must be completed before footer rows are rendered.');
+
+        $document->render();
+    }
+
+    #[Test]
     public function it_renders_rowspan_groups_across_page_boundaries(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
@@ -1018,7 +1155,7 @@ final class TableTest extends TestCase
 
         $table = $page->createTable(new Position(20, 90), 160, [80, 80], 20)
             ->font('Helvetica', 12)
-            ->addRow(['Gruppe', 'Wert'], header: true)
+            ->addHeaderRow(['Gruppe', 'Wert'])
             ->addRow([
                 new TableCell('A', rowspan: 3, style: new CellStyle(horizontalAlign: HorizontalAlign::CENTER)),
                 'Eintrag 1',
@@ -1048,7 +1185,7 @@ final class TableTest extends TestCase
 
         $page->createTable(new Position(20, 118), 160, [70, 90], 20)
             ->font('Helvetica', 12)
-            ->addRow(['Beschreibung', 'Wert'], header: true)
+            ->addHeaderRow(['Beschreibung', 'Wert'])
             ->addRow([
                 new TableCell(
                     'Alpha Beta Gamma Delta Epsilon Zeta Eta Theta Iota',
@@ -1080,7 +1217,7 @@ final class TableTest extends TestCase
 
         $table = $firstPage->createTable(new Position(20, 58), 160, [80, 80], 20)
             ->font('Helvetica', 12)
-            ->addRow(['H1', 'H2'], header: true)
+            ->addHeaderRow(['H1', 'H2'])
             ->addRow([
                 new TableCell('Alpha Beta Gamma Delta', rowspan: 2),
                 'B',
@@ -1111,7 +1248,7 @@ final class TableTest extends TestCase
 
         $firstPage->createTable(new Position(20, 90), 160, [40, 120], 20)
             ->font('Helvetica', 12)
-            ->addRow(['Gruppe', 'Wert'], header: true)
+            ->addHeaderRow(['Gruppe', 'Wert'])
             ->addRow([
                 new TableCell(
                     'G4',
@@ -1234,7 +1371,7 @@ final class TableTest extends TestCase
 
         $table = $page->createTable(new Position(20, 30), 160, [80, 80], 20)
             ->font('Helvetica', 12)
-            ->addRow(['Header 1', 'Header 2'], header: true);
+            ->addHeaderRow(['Header 1', 'Header 2']);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Table rows must fit on a fresh page.');
@@ -1256,13 +1393,13 @@ final class TableTest extends TestCase
 
         $table = $page->createTable(new Position(20, 90), 160, [80, 80], 20)
             ->font('Helvetica', 12)
-            ->addRow([
+            ->addHeaderRow([
                 new TableCell('Header A', rowspan: 2),
                 'Header B',
-            ], header: true);
+            ]);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Header rowspans must be completed within the header rows.');
+        $this->expectExceptionMessage('Header rowspans must be completed within the repeated header rows.');
 
         $table
             ->addRow(['Body 1'])

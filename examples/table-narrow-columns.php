@@ -123,13 +123,13 @@ $table
         fillColor: Color::rgb(232, 238, 250),
         textColor: Color::gray(0.15),
     ))
-    ->addRow([
+    ->addHeaderRow([
         'Area',
         'Queue',
         'Constraint token',
         'Owner',
         'Action',
-    ], header: true);
+    ]);
 
 foreach ([
     ['North', '', 'INC2026ALPHAOMEGA0004711', 'Ops', 'Escalate owner handover and capture the aftercare notes before Friday.'],

@@ -123,17 +123,17 @@ $table
         fillColor: Color::rgb(232, 238, 250),
         textColor: Color::gray(0.15),
     ))
-    ->addRow([
+    ->addHeaderRow([
         new TableCell('Region', rowspan: 2, headerScope: TableHeaderScope::Both),
         new TableCell('Operations', colspan: 2, headerScope: TableHeaderScope::Column),
         new TableCell('Follow-up', colspan: 2, headerScope: TableHeaderScope::Column),
-    ], header: true)
-    ->addRow([
+    ])
+    ->addHeaderRow([
         'Status',
         'Assessment',
         'Owner',
         'Next step',
-    ], header: true);
+    ]);
 
 foreach ([
     [

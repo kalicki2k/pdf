@@ -122,7 +122,7 @@ $table = $page->createTable(
 
 $table
     ->font('NotoSans-Regular', 10)
-    ->addRow(['Merkmal', 'Status'], header: true)
+    ->addHeaderRow(['Merkmal', 'Status'])
     ->addRow(['Strukturierter Inhalt', 'aktiv'])
     ->addRow(['Associated File', 'source-data.xml'])
     ->addRow(['PDF/A-Profil', 'PDF/A-3a']);

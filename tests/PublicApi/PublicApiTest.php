@@ -299,7 +299,7 @@ final class PublicApiTest extends TestCase
         $table = $page->createTable(new Position(10, 110), 100, [50, 50]);
         $table
             ->font('NotoSans-Regular', 10)
-            ->addRow(['Spalte A', 'Spalte B'], header: true)
+            ->addHeaderRow(['Spalte A', 'Spalte B'])
             ->addRow(['Wert A', 'Wert B']);
 
         $page->addImage(
@@ -1135,7 +1135,7 @@ final class PublicApiTest extends TestCase
         $table = $page->createTable(new Position(10, 110), 100, [50, 50]);
         $table
             ->font('NotoSans-Regular', 10)
-            ->addRow(['Spalte A', 'Spalte B'], header: true)
+            ->addHeaderRow(['Spalte A', 'Spalte B'])
             ->addRow(['Wert A', 'Wert B']);
 
         $page->addImage(
@@ -1245,7 +1245,7 @@ final class PublicApiTest extends TestCase
 
         $page->createTable(new Position(10, 190), 100, [50, 50])
             ->caption(new TableCaption('Uebersicht', size: 11))
-            ->addRow(['Name', 'Wert'], header: true)
+            ->addHeaderRow(['Name', 'Wert'])
             ->addRow(['A', '1']);
 
         $rendered = $document->render();
@@ -1559,8 +1559,9 @@ final class PublicApiTest extends TestCase
             ->style(new TableStyle())
             ->rowStyle(new RowStyle())
             ->headerStyle(new HeaderStyle())
-            ->addRow(['H1', 'H2'], true)
-            ->addRow(['A', 'B']);
+            ->addHeaderRow(['H1', 'H2'], repeat: false)
+            ->addRow(['A', 'B'])
+            ->addFooterRow(['F1', 'F2']);
 
         self::assertSame($table, $returnedTable);
         self::assertInstanceOf(Page::class, $table->getPage());

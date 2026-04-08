@@ -123,13 +123,13 @@ $table
         fillColor: Color::rgb(232, 238, 250),
         textColor: Color::gray(0.15),
     ))
-    ->addRow([
+    ->addHeaderRow([
         new TableCell('Region', headerScope: TableHeaderScope::Both),
         'Metric',
         'January',
         'February',
         'March',
-    ], header: true);
+    ]);
 
 foreach ([
     ['North', '98 %', '97 %', '99 %', '1.2 h', '1.1 h', '1.0 h'],

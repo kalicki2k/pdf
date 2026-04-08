@@ -123,7 +123,7 @@ $table = $page->createTable(
 
 $table
     ->font('NotoSans-Regular', 10)
-    ->addRow(['Merkmal', 'Status'], header: true)
+    ->addHeaderRow(['Merkmal', 'Status'])
     ->addRow(['Strukturierte Ueberschrift', 'H1'])
     ->addRow(['Strukturierte Liste', 'L / LI / Lbl / LBody'])
     ->addRow(['Strukturierte Tabelle', 'Table / TR / TH / TD']);

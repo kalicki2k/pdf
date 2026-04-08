@@ -62,9 +62,29 @@ final readonly class Table
     /**
      * @param list<string|list<TextSegment>|TableCell> $cells
      */
-    public function addRow(array $cells, bool $header = false): self
+    public function addRow(array $cells): self
     {
-        $this->table->addRow($cells, $header);
+        $this->table->addRow($cells);
+
+        return $this;
+    }
+
+    /**
+     * @param list<string|list<TextSegment>|TableCell> $cells
+     */
+    public function addHeaderRow(array $cells, bool $repeat = true): self
+    {
+        $this->table->addHeaderRow($cells, $repeat);
+
+        return $this;
+    }
+
+    /**
+     * @param list<string|list<TextSegment>|TableCell> $cells
+     */
+    public function addFooterRow(array $cells): self
+    {
+        $this->table->addFooterRow($cells);
 
         return $this;
     }

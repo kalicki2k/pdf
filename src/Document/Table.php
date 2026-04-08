@@ -38,7 +38,9 @@ final class Table
     private const DEFAULT_CONTINUATION_TOP_MARGIN = 40.0;
 
     /** @var list<list<string|list<TextSegment>|TableCell>> */
-    private array $headerRows = [];
+    private array $repeatingHeaderRows = [];
+    /** @var list<list<string|list<TextSegment>|TableCell>> */
+    private array $footerRows = [];
     /** @var list<int> */
     private array $activeRowspans = [];
     /** @var list<PreparedTableRow> */
@@ -62,7 +64,10 @@ final class Table
     private readonly ?StructElem $tableStructElem;
     private ?TableCaption $caption = null;
     private bool $captionRendered = false;
+    private bool $footersRendered = false;
     private bool $rowsAdded = false;
+    private bool $bodyRowsAdded = false;
+    private bool $footerRowsAdded = false;
 
     /**
      * @param list<float|int> $columnWidths
@@ -122,6 +127,7 @@ final class Table
             verticalAlign: VerticalAlign::TOP,
         );
         $this->headerStyle = new HeaderStyle(fillColor: Color::gray(0.92));
+        $page->getDocument()->registerDeferredRenderFinalizer($this->finalize(...));
     }
 
     public function font(string $baseFont, int $size): self
@@ -175,13 +181,47 @@ final class Table
     /**
      * @param list<string|list<TextSegment>|TableCell> $cells
      */
-    public function addRow(array $cells, bool $header = false): self
+    public function addRow(array $cells): self
+    {
+        $this->bodyRowsAdded = true;
+
+        return $this->addTypedRow($cells, false);
+    }
+
+    /**
+     * @param list<string|list<TextSegment>|TableCell> $cells
+     */
+    public function addHeaderRow(array $cells, bool $repeat = true): self
+    {
+        if ($this->bodyRowsAdded || $this->footerRowsAdded) {
+            throw new InvalidArgumentException('Header rows must be added before body or footer rows.');
+        }
+
+        if ($repeat) {
+            $this->repeatingHeaderRows[] = $cells;
+        }
+
+        return $this->addTypedRow($cells, true);
+    }
+
+    /**
+     * @param list<string|list<TextSegment>|TableCell> $cells
+     */
+    public function addFooterRow(array $cells): self
     {
         $this->rowsAdded = true;
+        $this->footerRowsAdded = true;
+        $this->footerRows[] = $cells;
 
-        if ($header) {
-            $this->headerRows[] = $cells;
-        }
+        return $this;
+    }
+
+    /**
+     * @param list<string|list<TextSegment>|TableCell> $cells
+     */
+    private function addTypedRow(array $cells, bool $header): self
+    {
+        $this->rowsAdded = true;
 
         $preparedRow = $this->prepareRow($cells, $header);
         $this->pendingGroupRows[] = new PreparedTableRow($preparedRow['cells'], $header);
@@ -213,12 +253,13 @@ final class Table
             $pendingGroupRows,
             static fn (PreparedTableRow $row): bool => $row->header === false,
         );
+        $repeatHeaders = $isBodyGroup && $this->repeatingHeaderRows !== [];
         $remainingRows = $pendingGroupRows;
         $remainingRowHeights = $rowHeights;
         $deferredLeadingSplit = false;
 
         while ($remainingRows !== []) {
-            $pageFit = $this->resolvePendingGroupPageFit($remainingRowHeights, $isBodyGroup);
+            $pageFit = $this->resolvePendingGroupPageFit($remainingRowHeights, $repeatHeaders);
             $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
 
             if ($fittingRowCount === 0) {
@@ -235,7 +276,7 @@ final class Table
                 !$deferredLeadingSplit
                 && $this->shouldDeferLeadingSplitToNextPage($remainingRows, $remainingRowHeights, $fittingRowCount)
             ) {
-                $this->moveToNextPageForPendingGroup(new TableGroupPageFit($isBodyGroup && $this->headerRows !== [], 0));
+                $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0));
                 $deferredLeadingSplit = true;
                 continue;
             }
@@ -253,7 +294,7 @@ final class Table
 
             $remainingRows = array_slice($remainingRows, $fittingRowCount);
             $remainingRowHeights = array_slice($remainingRowHeights, $fittingRowCount);
-            $this->moveToNextPageForPendingGroup(new TableGroupPageFit($isBodyGroup && $this->headerRows !== [], 0));
+            $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0));
         }
 
         $this->pendingGroupRows = [];
@@ -265,20 +306,20 @@ final class Table
      */
     private function resolvePendingGroupPageFit(array $rowHeights, bool $repeatHeaders): TableGroupPageFit
     {
-        $groupHeight = array_sum($rowHeights);
         $remainingCurrentPageHeight = $this->cursorY - $this->bottomMargin;
-        $fullPageAvailableHeight = $this->page->getHeight() - $this->topMargin - $this->bottomMargin;
         $headerRepeatHeight = 0.0;
 
-        if ($repeatHeaders && $this->headerRows !== []) {
-            $preparedHeaderRows = $this->prepareRowGroup($this->headerRows, true);
+        if ($repeatHeaders && $this->repeatingHeaderRows !== []) {
+            $preparedHeaderRows = $this->prepareRowGroup(
+                $this->repeatingHeaderRows,
+                true,
+                'Header rowspans must be completed within the repeated header rows.',
+            );
             $headerRepeatHeight = array_sum($this->rowGroupHeightResolver->resolve($preparedHeaderRows));
         }
 
-        $availableFreshPageHeight = $fullPageAvailableHeight - $headerRepeatHeight;
-
         return new TableGroupPageFit(
-            repeatHeaders: $repeatHeaders && $this->headerRows !== [],
+            repeatHeaders: $repeatHeaders && $this->repeatingHeaderRows !== [],
             fittingRowCountOnCurrentPage: $this->countFittingRows($rowHeights, $remainingCurrentPageHeight),
         );
     }
@@ -292,7 +333,11 @@ final class Table
             return;
         }
 
-        $preparedHeaderRows = $this->prepareRowGroup($this->headerRows, true);
+        $preparedHeaderRows = $this->prepareRowGroup(
+            $this->repeatingHeaderRows,
+            true,
+            'Header rowspans must be completed within the repeated header rows.',
+        );
         $headerHeights = $this->rowGroupHeightResolver->resolve($preparedHeaderRows);
         $this->renderPendingGroup($preparedHeaderRows, $headerHeights);
     }
@@ -514,7 +559,7 @@ final class Table
      * @param list<list<string|list<TextSegment>|TableCell>> $rows
      * @return list<PreparedTableRow>
      */
-    private function prepareRowGroup(array $rows, bool $header): array
+    private function prepareRowGroup(array $rows, bool $header, string $rowspanErrorMessage): array
     {
         $previousRowspans = $this->activeRowspans;
         $this->activeRowspans = array_fill(0, count($this->columnWidths), 0);
@@ -527,7 +572,7 @@ final class Table
         }
 
         if ($this->hasActiveRowspans()) {
-            throw new InvalidArgumentException('Header rowspans must be completed within the header rows.');
+            throw new InvalidArgumentException($rowspanErrorMessage);
         }
 
         $this->activeRowspans = $previousRowspans;
@@ -569,6 +614,38 @@ final class Table
         }
 
         $this->cursorY = $rowTopY;
+    }
+
+    private function finalize(): void
+    {
+        if ($this->footersRendered || $this->footerRows === []) {
+            return;
+        }
+
+        if ($this->hasActiveRowspans()) {
+            throw new InvalidArgumentException('Rowspan groups must be completed before footer rows are rendered.');
+        }
+
+        $preparedFooterRows = $this->prepareRowGroup(
+            $this->footerRows,
+            false,
+            'Footer rowspans must be completed within the footer rows.',
+        );
+        $footerHeights = $this->rowGroupHeightResolver->resolve($preparedFooterRows);
+        $footerHeight = array_sum($footerHeights);
+        $availableHeight = $this->cursorY - $this->bottomMargin;
+
+        if ($footerHeight > $availableHeight) {
+            $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
+            $this->cursorY = $this->page->getHeight() - $this->continuationTopMargin;
+
+            if ($footerHeight > ($this->cursorY - $this->bottomMargin)) {
+                throw new InvalidArgumentException('Table footer rows must fit on a fresh page.');
+            }
+        }
+
+        $this->renderPendingGroup($preparedFooterRows, $footerHeights);
+        $this->footersRendered = true;
     }
 
     private function resolveEffectiveCellStyle(TableCell $cell, bool $header): ResolvedTableCellStyle
