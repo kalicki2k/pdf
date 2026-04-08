@@ -17,8 +17,6 @@ use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Encryption\EncryptionVersionResolver;
-use Kalle\Pdf\Encryption\StandardSecurityHandler;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\PageSize;
@@ -78,6 +76,7 @@ final class Document
     private ?DocumentAcroFormManager $documentAcroFormManager = null;
     private ?DocumentOptionalContentManager $documentOptionalContentManager = null;
     private ?DocumentAttachmentManager $documentAttachmentManager = null;
+    private ?DocumentEncryptionManager $documentEncryptionManager = null;
     private ?DocumentPageDecoratorManager $documentPageDecoratorManager = null;
     private ?DocumentStructureManager $documentStructureManager = null;
     private ?DocumentProfileGuard $documentProfileGuard = null;
@@ -319,42 +318,24 @@ final class Document
 
     public function encrypt(EncryptionOptions $options): self
     {
-        $this->assertAllowsEncryptionAlgorithm($options->algorithm);
-
-        $resolver = new EncryptionVersionResolver();
-        $this->encryptionOptions = $options;
-        $this->encryptionProfile = $resolver->resolve($this->getVersion(), $options->algorithm);
-        $this->securityHandlerData = null;
-        $this->encryptDictionary = new EncryptDictionary(++$this->objectId, $this, $this->encryptionProfile);
+        $this->documentEncryptionManager()->encrypt($options);
 
         return $this;
     }
 
     public function getEncryptionProfile(): ?EncryptionProfile
     {
-        return $this->encryptionProfile;
+        return $this->documentEncryptionManager()->getEncryptionProfile();
     }
 
     public function getEncryptionOptions(): ?EncryptionOptions
     {
-        return $this->encryptionOptions;
+        return $this->documentEncryptionManager()->getEncryptionOptions();
     }
 
     public function getSecurityHandlerData(): ?StandardSecurityHandlerData
     {
-        if ($this->encryptionProfile === null || $this->encryptionOptions === null) {
-            return null;
-        }
-
-        if ($this->securityHandlerData === null) {
-            $this->securityHandlerData = new StandardSecurityHandler()->build(
-                $this->encryptionOptions,
-                $this->encryptionProfile,
-                $this->documentId[0],
-            );
-        }
-
-        return $this->securityHandlerData;
+        return $this->documentEncryptionManager()->getSecurityHandlerData();
     }
 
     /**
@@ -754,6 +735,16 @@ final class Document
     private function documentAttachmentManager(): DocumentAttachmentManager
     {
         return $this->documentAttachmentManager ??= new DocumentAttachmentManager($this, $this->attachments);
+    }
+
+    private function documentEncryptionManager(): DocumentEncryptionManager
+    {
+        return $this->documentEncryptionManager ??= new DocumentEncryptionManager(
+            $this,
+            $this->encryptionProfile,
+            $this->encryptionOptions,
+            $this->securityHandlerData,
+        );
     }
 
     private function documentPageDecoratorManager(): DocumentPageDecoratorManager
