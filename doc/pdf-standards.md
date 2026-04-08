@@ -144,7 +144,7 @@ composer test:pdfua-regression
 composer test:pdfua-negative-regression
 ```
 
-Die Regression prueft aktuell neun reprasentative PDF/UA-1-Fixtures:
+Die Regression prueft aktuell zehn reprasentative PDF/UA-1-Fixtures:
 
 - minimaler Tagged-PDF-Basispfad
 - Layout-/Decorative-Graphics-Pfad
@@ -153,6 +153,7 @@ Die Regression prueft aktuell neun reprasentative PDF/UA-1-Fixtures:
 - Widget-Appearance-Pfad fuer Text-, Choice-, Button- und Signature-Felder
 - Widget-State-Pfad fuer Checkbox-, Radio- und Choice-Auswahlen
 - Annotation-Batch
+- mehrseitiger Tabellenpfad mit Caption, wiederholter Header-Zeile und Row-Headern
 - Mixed-Integrationspfad ueber mehrere Seiten
 - tieferer Mixed-Integrationspfad mit internen Zielen, Listen, Formularen, Annotationen und Attachment ueber mehrere Seiten
 

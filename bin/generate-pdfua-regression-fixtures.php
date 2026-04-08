@@ -16,6 +16,9 @@ use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
+use Kalle\Pdf\Document\Table\TableCaption;
+use Kalle\Pdf\Document\Table\TableCell;
+use Kalle\Pdf\Document\Table\TableHeaderScope;
 use Kalle\Pdf\Document\Text\ListOptions;
 use Kalle\Pdf\Document\Text\ParagraphOptions;
 use Kalle\Pdf\Document\Text\StructureTag;
@@ -49,6 +52,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-widget-appearances.pdf' => createPdfUa1WidgetAppearanceFixture(...),
     $outputDir . '/pdf-ua-1-widget-states.pdf' => createPdfUa1WidgetStateFixture(...),
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
+    $outputDir . '/pdf-ua-1-table-caption-pagination.pdf' => createPdfUa1TableCaptionPaginationFixture(...),
     $outputDir . '/pdf-ua-1-mixed.pdf' => createPdfUa1MixedFixture(...),
     $outputDir . '/pdf-ua-1-mixed-deep.pdf' => createPdfUa1DeepMixedFixture(...),
 ];
@@ -559,6 +563,73 @@ function createPdfUa1AnnotationBatchFixture(): Document
     }
 
     $page->addFileAttachment(new Rect(220, 84, 14, 16), $file, 'Graph', 'Regression attachment');
+
+    return $document;
+}
+
+function createPdfUa1TableCaptionPaginationFixture(): Document
+{
+    $document = createPdfUaDocument(
+        'PDF/UA-1 Multipage Table Regression',
+        'Representative PDF/UA-1 regression fixture for table captions, repeated headers and row headers across multiple pages',
+    );
+    $page = $document->addPage(PageSize::custom(220, 190));
+
+    $page->addText(
+        'Accessible Multipage Table',
+        new Position(12, 172),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addText(
+        'This fixture keeps the caption on the first page while the header row repeats and the first body column stays tagged as row headers across following pages.',
+        new Position(12, 156),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $table = $page->createTable(new Position(12, 132), 196, [46, 50, 50, 50], 18);
+    $table
+        ->font('NotoSans-Regular', 10)
+        ->caption(new TableCaption(
+            'Regional service quality by quarter',
+            fontName: 'NotoSans-Bold',
+            size: 12,
+            color: Color::rgb(20, 40, 90),
+            spacingAfter: 5.0,
+        ))
+        ->addRow([
+            new TableCell('Region', headerScope: TableHeaderScope::Both),
+            'January',
+            'February',
+            'March',
+        ], header: true);
+
+    $rows = [
+        ['North', '98 %', '97 %', '99 %'],
+        ['South', '94 %', '95 %', '96 %'],
+        ['West', '99 %', '98 %', '97 %'],
+        ['East', '96 %', '97 %', '95 %'],
+        ['Central', '93 %', '94 %', '95 %'],
+        ['Coastal', '97 %', '96 %', '98 %'],
+        ['Mountain', '95 %', '94 %', '96 %'],
+        ['Metro', '99 %', '99 %', '98 %'],
+        ['Rural', '92 %', '93 %', '94 %'],
+        ['Delta', '96 %', '95 %', '97 %'],
+        ['Harbor', '98 %', '97 %', '99 %'],
+        ['Valley', '94 %', '95 %', '95 %'],
+    ];
+
+    foreach ($rows as [$region, $january, $february, $march]) {
+        $table->addRow([
+            new TableCell($region, headerScope: TableHeaderScope::Row),
+            $january,
+            $february,
+            $march,
+        ]);
+    }
 
     return $document;
 }

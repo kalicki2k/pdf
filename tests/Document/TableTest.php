@@ -207,6 +207,58 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_pdf_ua_table_captions_on_the_first_page_while_headers_repeat_across_pages(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Multipage Table', registerBold: true);
+        $firstPage = $document->addPage(220, 180);
+
+        $table = $firstPage->createTable(new Position(12, 132), 196, [46, 50, 50, 50], 18)
+            ->font(self::pdfUaRegularFont(), 10)
+            ->caption(new TableCaption(
+                'Regional service quality by quarter',
+                fontName: self::pdfUaBoldFont(),
+                size: 12,
+                spacingAfter: 5.0,
+            ))
+            ->addRow([
+                new TableCell('Region', headerScope: TableHeaderScope::Both),
+                'January',
+                'February',
+                'March',
+            ], header: true);
+
+        foreach ([
+            ['North', '98 %', '97 %', '99 %'],
+            ['South', '94 %', '95 %', '96 %'],
+            ['West', '99 %', '98 %', '97 %'],
+            ['East', '96 %', '97 %', '95 %'],
+            ['Central', '93 %', '94 %', '95 %'],
+            ['Coastal', '97 %', '96 %', '98 %'],
+            ['Mountain', '95 %', '94 %', '96 %'],
+            ['Metro', '99 %', '99 %', '98 %'],
+            ['Rural', '92 %', '93 %', '94 %'],
+            ['Delta', '96 %', '95 %', '97 %'],
+            ['Harbor', '98 %', '97 %', '99 %'],
+            ['Valley', '94 %', '95 %', '95 %'],
+        ] as [$region, $january, $february, $march]) {
+            $table->addRow([
+                new TableCell($region, headerScope: TableHeaderScope::Row),
+                $january,
+                $february,
+                $march,
+            ]);
+        }
+
+        $rendered = $document->render();
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
+        self::assertGreaterThan(1, substr_count($rendered, '/Scope /Both'));
+        self::assertGreaterThan(10, substr_count($rendered, '/Scope /Row'));
+        self::assertNotSame($firstPage, $table->getPage());
+    }
+
+    #[Test]
     public function it_renders_cells_with_colspan(): void
     {
         $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
