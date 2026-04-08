@@ -8,6 +8,8 @@ use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
@@ -18,6 +20,9 @@ final class FormFieldTextAppearanceStream extends IndirectObject
 {
     /** @var list<string> */
     private array $encodedLines;
+
+    /** @var list<float> */
+    private array $lineWidths;
 
     /**
      * @param list<string> $lines
@@ -31,12 +36,20 @@ final class FormFieldTextAppearanceStream extends IndirectObject
         private readonly int $fontSize,
         private readonly array $lines,
         private readonly ?Color $textColor = null,
+        private readonly HorizontalAlign $horizontalAlign = HorizontalAlign::LEFT,
+        private readonly VerticalAlign $verticalAlign = VerticalAlign::TOP,
     ) {
         parent::__construct($id);
 
+        $visibleLines = $this->visibleLines();
+
         $this->encodedLines = array_map(
             fn (string $line): string => $this->font->encodeText($line),
-            $this->visibleLines(),
+            $visibleLines,
+        );
+        $this->lineWidths = array_map(
+            fn (string $line): float => $this->font->measureTextWidth($line, $this->fontSize),
+            $visibleLines,
         );
         $this->updateUnicodeFontWidths();
     }
@@ -89,19 +102,34 @@ final class FormFieldTextAppearanceStream extends IndirectObject
         $paddingX = 2.5;
         $paddingY = 2.5;
         $leading = max($this->fontSize * 1.2, $this->fontSize + 1.0);
-        $startY = max($paddingY, $this->height - $paddingY - $this->fontSize);
+        $availableHeight = max(0.0, $this->height - (2 * $paddingY));
+        $contentHeight = $this->fontSize + ($leading * (count($this->encodedLines) - 1));
+        $bottomY = match ($this->verticalAlign) {
+            VerticalAlign::TOP => max($paddingY, $this->height - $paddingY - $contentHeight),
+            VerticalAlign::MIDDLE => $paddingY + max(0.0, ($availableHeight - $contentHeight) / 2),
+            VerticalAlign::BOTTOM => $paddingY,
+        };
+        $startY = $bottomY + $contentHeight - $this->fontSize;
+        $availableWidth = max(0.0, $this->width - (2 * $paddingX));
 
         $lines[] = 'BT';
         $lines[] = sprintf('/%s %d Tf', $this->fontResourceName, $this->fontSize);
         $lines[] = $this->textColor?->renderNonStrokingOperator() ?? '0 g';
-        $lines[] = sprintf('%s TL', $this->format($leading));
-        $lines[] = sprintf('%s %s Td', $this->format($paddingX), $this->format($startY));
 
         foreach ($this->encodedLines as $index => $line) {
-            if ($index > 0) {
-                $lines[] = 'T*';
-            }
+            $lineWidth = $this->lineWidths[$index] ?? 0.0;
+            $x = match ($this->horizontalAlign) {
+                HorizontalAlign::LEFT, HorizontalAlign::JUSTIFY => $paddingX,
+                HorizontalAlign::CENTER => $paddingX + max(0.0, ($availableWidth - $lineWidth) / 2),
+                HorizontalAlign::RIGHT => max($paddingX, $this->width - $paddingX - $lineWidth),
+            };
+            $y = $startY - ($index * $leading);
 
+            $lines[] = sprintf(
+                '1 0 0 1 %s %s Tm',
+                $this->format($x),
+                $this->format($y),
+            );
             $lines[] = $line . ' Tj';
         }
 

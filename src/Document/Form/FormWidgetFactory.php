@@ -19,6 +19,8 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Object\IndirectObject;
 
 /**
@@ -96,6 +98,8 @@ final readonly class FormWidgetFactory
                 $size,
                 $this->resolveTextFieldAppearanceLines($value, $multiline),
                 $textColor,
+                HorizontalAlign::LEFT,
+                $multiline ? VerticalAlign::TOP : VerticalAlign::MIDDLE,
             ),
         );
     }
@@ -237,6 +241,8 @@ final readonly class FormWidgetFactory
                 $size,
                 $this->resolveComboBoxAppearanceLines($options, $value),
                 $textColor,
+                HorizontalAlign::LEFT,
+                VerticalAlign::MIDDLE,
             ),
         );
     }
@@ -299,6 +305,8 @@ final readonly class FormWidgetFactory
                 $size,
                 $this->resolveListBoxAppearanceLines($options, $value),
                 $textColor,
+                HorizontalAlign::LEFT,
+                VerticalAlign::TOP,
             ),
         );
     }
@@ -377,6 +385,8 @@ final readonly class FormWidgetFactory
                 $size,
                 [$label],
                 $textColor,
+                HorizontalAlign::CENTER,
+                VerticalAlign::MIDDLE,
             ),
         );
     }
