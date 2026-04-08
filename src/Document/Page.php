@@ -6,15 +6,13 @@ namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Action\ButtonAction;
-use Kalle\Pdf\Document\Action\SetOcgStateAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotations;
-use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Form\FormFieldLabel;
-use Kalle\Pdf\Document\Form\FormWidgetFactory;
+use Kalle\Pdf\Document\Form\PageForms;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
@@ -62,7 +60,7 @@ final class Page extends IndirectObject
 
     private int $markedContentId = 0;
     private ?PageAnnotations $pageAnnotations = null;
-    private ?FormWidgetFactory $formWidgetFactory = null;
+    private ?PageForms $pageForms = null;
     private ?TextLayoutEngine $textLayoutEngine = null;
     public Contents $contents;
     public Resources $resources;
@@ -1585,9 +1583,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
-        $acroForm = $this->document->ensureTextFieldAcroForm();
-        $annotation = $this->formWidgetFactory()->createTextField(
+        $this->pageForms()->addTextField(
             $name,
             $box,
             $value,
@@ -1597,13 +1593,9 @@ final class Page extends IndirectObject
             $textColor,
             $flags,
             $defaultValue,
-            $resolvedAccessibleName,
+            $accessibleName,
+            $fieldLabel,
         );
-
-        $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
-        $this->renderFormFieldLabel($fieldLabel, $formStructElem);
-        $acroForm->addField($annotation);
-        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1616,14 +1608,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
-        $acroForm = $this->document->ensureCheckboxAcroForm();
-        $annotation = $this->formWidgetFactory()->createCheckbox($name, $position, $size, $checked, $resolvedAccessibleName);
-
-        $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
-        $this->renderFormFieldLabel($fieldLabel, $formStructElem);
-        $acroForm->addField($annotation);
-        $this->pageAnnotations()->add($annotation);
+        $this->pageForms()->addCheckbox($name, $position, $size, $checked, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -1637,18 +1622,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $resolvedAccessibleName = $this->resolveRadioButtonAccessibleName($value, $accessibleName, $fieldLabel);
-        [$group, $annotation] = $this->formWidgetFactory()->createRadioButton($name, $value, $position, $size, $checked, $resolvedAccessibleName);
-        $groupAccessibleName = $this->resolveRadioButtonGroupAccessibleName($name);
-
-        if ($groupAccessibleName !== null) {
-            $group->withTooltip($groupAccessibleName);
-        }
-
-        $group->addWidget($annotation, $value, $checked);
-        $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
-        $this->renderFormFieldLabel($fieldLabel, $formStructElem);
-        $this->pageAnnotations()->add($annotation);
+        $this->pageForms()->addRadioButton($name, $value, $position, $size, $checked, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -1669,9 +1643,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
-        $acroForm = $this->document->ensureComboBoxAcroForm();
-        $annotation = $this->formWidgetFactory()->createComboBox(
+        $this->pageForms()->addComboBox(
             $name,
             $box,
             $options,
@@ -1681,13 +1653,9 @@ final class Page extends IndirectObject
             $textColor,
             $flags,
             $defaultValue,
-            $resolvedAccessibleName,
+            $accessibleName,
+            $fieldLabel,
         );
-
-        $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
-        $this->renderFormFieldLabel($fieldLabel, $formStructElem);
-        $acroForm->addField($annotation);
-        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1710,9 +1678,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
-        $acroForm = $this->document->ensureListBoxAcroForm();
-        $annotation = $this->formWidgetFactory()->createListBox(
+        $this->pageForms()->addListBox(
             $name,
             $box,
             $options,
@@ -1722,13 +1688,9 @@ final class Page extends IndirectObject
             $textColor,
             $flags,
             $defaultValue,
-            $resolvedAccessibleName,
+            $accessibleName,
+            $fieldLabel,
         );
-
-        $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
-        $this->renderFormFieldLabel($fieldLabel, $formStructElem);
-        $acroForm->addField($annotation);
-        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -1739,14 +1701,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
-        $acroForm = $this->document->ensureSignatureFieldAcroForm();
-        $annotation = $this->formWidgetFactory()->createSignatureField($name, $box, $resolvedAccessibleName);
-
-        $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
-        $this->renderFormFieldLabel($fieldLabel, $formStructElem);
-        $acroForm->addField($annotation);
-        $this->pageAnnotations()->add($annotation);
+        $this->pageForms()->addSignatureField($name, $box, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -1762,13 +1717,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        if ($action instanceof SetOcgStateAction) {
-            $this->document->assertAllowsOptionalContentGroups();
-        }
-
-        $resolvedAccessibleName = $this->resolvePushButtonAccessibleName($name, $label, $accessibleName, $fieldLabel);
-        $acroForm = $this->document->ensurePushButtonAcroForm();
-        $annotation = $this->formWidgetFactory()->createPushButton(
+        $this->pageForms()->addPushButton(
             $name,
             $label,
             $box,
@@ -1776,13 +1725,9 @@ final class Page extends IndirectObject
             $size,
             $textColor,
             $action,
-            $resolvedAccessibleName,
+            $accessibleName,
+            $fieldLabel,
         );
-
-        $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
-        $this->renderFormFieldLabel($fieldLabel, $formStructElem);
-        $acroForm->addField($annotation);
-        $this->pageAnnotations()->add($annotation);
 
         return $this;
     }
@@ -2205,129 +2150,13 @@ final class Page extends IndirectObject
         );
     }
 
-    /**
-     * Lazily builds the internal form widget factory.
-     */
-    private function formWidgetFactory(): FormWidgetFactory
+    private function pageForms(): PageForms
     {
-        return $this->formWidgetFactory ??= new FormWidgetFactory(
+        return $this->pageForms ??= new PageForms(
             $this,
-            fn (): int => $this->document->getUniqObjectId(),
-            fn (): AcroForm => $this->document->ensureTextFieldAcroForm(),
-            fn (): AcroForm => $this->document->ensurePushButtonAcroForm(),
-            fn (): AcroForm => $this->document->ensureRadioButtonAcroForm(),
-            fn (): AcroForm => $this->document->ensureComboBoxAcroForm(),
-            fn (): AcroForm => $this->document->ensureListBoxAcroForm(),
+            $this->pageAnnotations(),
             fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
         );
-    }
-
-    private function bindAccessibleFormField(
-        Annotation\TextFieldAnnotation | Annotation\CheckboxAnnotation | Annotation\PushButtonAnnotation | Annotation\RadioButtonWidgetAnnotation | Annotation\ComboBoxAnnotation | Annotation\ListBoxAnnotation | Annotation\SignatureFieldAnnotation $annotation,
-        ?string $accessibleName,
-        bool $hasVisibleLabel = false,
-    ): ?StructElem {
-        $profile = $this->document->getProfile();
-
-        if (!$profile->requiresTaggedFormFields()) {
-            return null;
-        }
-
-        $labelParentStructElem = null;
-
-        if ($hasVisibleLabel) {
-            $labelParentStructElem = $this->document->createStructElem(StructureTag::Division);
-            $labelParentStructElem->setPage($this);
-        }
-
-        $formStructElem = $this->document->createStructElem(
-            StructureTag::Form,
-            parent: $labelParentStructElem,
-        );
-        $formStructElem->setPage($this);
-
-        $structParentId = $this->document->getNextStructParentId();
-        $annotation->withStructParent($structParentId);
-        $formStructElem->addObjectReference($annotation, $this);
-
-        if ($profile->requiresFormFieldAlternativeDescriptions() && $accessibleName !== null && $accessibleName !== '') {
-            $formStructElem->setAltText($accessibleName);
-        }
-
-        $this->document->registerObjectStructElem($structParentId, $formStructElem);
-
-        return $labelParentStructElem;
-    }
-
-    private function renderFormFieldLabel(?FormFieldLabel $fieldLabel, ?StructElem $formStructElem): void
-    {
-        if ($fieldLabel === null) {
-            return;
-        }
-
-        $this->addText(
-            $fieldLabel->text,
-            $fieldLabel->position,
-            $fieldLabel->fontName,
-            $fieldLabel->size,
-            new TextOptions(
-                structureTag: $formStructElem !== null ? StructureTag::Paragraph : null,
-                parentStructElem: $formStructElem,
-                color: $fieldLabel->color,
-            ),
-        );
-    }
-
-    private function resolveFormFieldAccessibleName(string $name, ?string $accessibleName, ?FormFieldLabel $fieldLabel = null): ?string
-    {
-        if ($accessibleName !== null && $accessibleName !== '') {
-            return $accessibleName;
-        }
-
-        if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
-            return $fieldLabel !== null ? $fieldLabel->text : $name;
-        }
-
-        return null;
-    }
-
-    private function resolvePushButtonAccessibleName(string $name, string $label, ?string $accessibleName, ?FormFieldLabel $fieldLabel = null): ?string
-    {
-        if ($accessibleName !== null && $accessibleName !== '') {
-            return $accessibleName;
-        }
-
-        if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
-            if ($fieldLabel !== null) {
-                return $fieldLabel->text;
-            }
-
-            return $label !== '' ? $label : $name;
-        }
-
-        return null;
-    }
-
-    private function resolveRadioButtonAccessibleName(string $value, ?string $accessibleName, ?FormFieldLabel $fieldLabel = null): ?string
-    {
-        if ($accessibleName !== null && $accessibleName !== '') {
-            return $accessibleName;
-        }
-
-        if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
-            return $fieldLabel !== null ? $fieldLabel->text : $value;
-        }
-
-        return null;
-    }
-
-    private function resolveRadioButtonGroupAccessibleName(string $name): ?string
-    {
-        if ($this->document->getProfile()->requiresFormFieldAlternativeDescriptions()) {
-            return $name;
-        }
-
-        return null;
     }
 
     private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string
