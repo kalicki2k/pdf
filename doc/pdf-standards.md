@@ -144,7 +144,7 @@ composer test:pdfua-regression
 composer test:pdfua-negative-regression
 ```
 
-Die Regression prueft aktuell vierzehn reprasentative PDF/UA-1-Fixtures:
+Die Regression prueft aktuell fuenfzehn reprasentative PDF/UA-1-Fixtures:
 
 - minimaler Tagged-PDF-Basispfad
 - Layout-/Decorative-Graphics-Pfad
@@ -155,6 +155,7 @@ Die Regression prueft aktuell vierzehn reprasentative PDF/UA-1-Fixtures:
 - Annotation-Batch
 - mehrseitiger Tabellenpfad mit Caption, wiederholter Header-Zeile und Row-Headern
 - mehrseitiger Tabellenpfad mit Caption, Row-Headern sowie `rowspan` und `colspan`
+- mehrseitiger Tabellenpfad mit `rowspan`-/`colspan`-Gruppen, langen Monatsinhalten und wiederholten Headern
 - mehrseitiger Tabellenpfad mit zwei Header-Zeilen und gruppierten Spalten-Headern
 - mehrseitiger Tabellenpfad mit Header-Matrix, langen Zellinhalten und aggressiveren Seitenumbruechen
 - kompakter Tabellenpfad mit schmalen Spalten, leeren Zellen und untrennbaren Tokens

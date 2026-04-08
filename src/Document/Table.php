@@ -489,7 +489,6 @@ final class Table
             return false;
         }
 
-        $lineHeight = $this->fontSize * $this->lineHeightFactor;
         $firstRow = $preparedRows[0];
 
         foreach ($firstRow->cells as $preparedCell) {
@@ -497,21 +496,7 @@ final class Table
                 continue;
             }
 
-            $resolvedStyle = $this->resolveEffectiveCellStyle($preparedCell->cell, $firstRow->header);
-            $availableTextHeight = $rowHeights[0] - $resolvedStyle->padding->vertical();
-            $maxLines = $this->textMetrics->resolveFittingLineCount($availableTextHeight, $lineHeight, $this->fontSize);
-            $lineCount = count($this->page->layoutParagraphLines(
-                $preparedCell->cell->text,
-                $this->baseFont,
-                $this->fontSize,
-                $preparedCell->width - $resolvedStyle->padding->horizontal(),
-                $resolvedStyle->textColor,
-                $resolvedStyle->opacity,
-            ));
-
-            if ($lineCount > 1 && $maxLines < 2) {
-                return true;
-            }
+            return true;
         }
 
         return false;

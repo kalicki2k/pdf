@@ -384,6 +384,125 @@ final class TableTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_pdf_ua_table_spans_stable_with_long_content_and_page_breaks(): void
+    {
+        $document = $this->createPdfUaTestDocument(title: 'Accessible Span Break Table', registerBold: true);
+        $firstPage = $document->addPage(364, 320);
+
+        $table = $firstPage->createTable(new Position(12, 260), 340, [42, 46, 84, 84, 84], 14)
+            ->font(self::pdfUaRegularFont(), 9)
+            ->caption(new TableCaption(
+                'Regional monthly service span review',
+                fontName: self::pdfUaBoldFont(),
+                size: 12,
+                spacingAfter: 4.0,
+            ))
+            ->addRow([
+                new TableCell('Region', headerScope: TableHeaderScope::Both),
+                'Metric',
+                'January',
+                'February',
+                'March',
+            ], header: true);
+
+        foreach ([
+            [
+                'North',
+                'Availability review',
+                '98 %',
+                '97 %',
+                '99 %',
+                'Follow-up action',
+                '1.2 h',
+                '1.1 h',
+                '1.0 h',
+                'North summary',
+                'North remains stable overall, but the reconciled figures, closeout note and owner handover all need to stay tied to the same monthly evidence set before archival.',
+            ],
+            [
+                'South',
+                'Availability review',
+                '94 %',
+                '95 %',
+                '96 %',
+                'Follow-up action',
+                '1.8 h',
+                '1.6 h',
+                '1.5 h',
+                'South summary',
+                'South is close to completion, but the rollout history, remote branch notes and final acknowledgements still need one consistent summary across all three months.',
+            ],
+            [
+                'West',
+                'Availability review',
+                '99 %',
+                '98 %',
+                '97 %',
+                'Follow-up action',
+                '0.9 h',
+                '1.0 h',
+                '1.1 h',
+                'West summary',
+                'West remains within tolerance, but the corrected timeline, merged evidence pack and vendor follow-up still need to remain traceable as one combined record.',
+            ],
+            [
+                'East',
+                'Availability review',
+                '96 %',
+                '97 %',
+                '95 %',
+                'Follow-up action',
+                '1.4 h',
+                '1.3 h',
+                '1.4 h',
+                'East summary',
+                'East is structurally stable, but the handover acknowledgements, branch cross references and ownership map still need to stay linked in one archive packet.',
+            ],
+        ] as [
+            $region,
+            $firstMetric,
+            $janFirst,
+            $febFirst,
+            $marFirst,
+            $secondMetric,
+            $janSecond,
+            $febSecond,
+            $marSecond,
+            $summaryLabel,
+            $summaryText,
+        ]) {
+            $table->addRow([
+                new TableCell($region, rowspan: 2, headerScope: TableHeaderScope::Row),
+                $firstMetric,
+                $janFirst,
+                $febFirst,
+                $marFirst,
+            ]);
+            $table->addRow([
+                $secondMetric,
+                $janSecond,
+                $febSecond,
+                $marSecond,
+            ]);
+            $table->addRow([
+                new TableCell($summaryLabel, headerScope: TableHeaderScope::Row),
+                new TableCell($summaryText, colspan: 4),
+            ]);
+        }
+
+        $rendered = $document->render();
+
+        self::assertGreaterThan(1, count($document->pages->pages));
+        self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
+        self::assertGreaterThanOrEqual(4, substr_count($rendered, '/RowSpan 2'));
+        self::assertGreaterThanOrEqual(4, substr_count($rendered, '/ColSpan 4'));
+        self::assertGreaterThan(4, substr_count($rendered, '/Scope /Column'));
+        self::assertGreaterThan(7, substr_count($rendered, '/Scope /Row'));
+        self::assertGreaterThan(1, substr_count($rendered, '/Scope /Both'));
+        self::assertNotSame($firstPage, $table->getPage());
+    }
+
+    #[Test]
     public function it_keeps_pdf_ua_table_header_matrices_stable_with_long_content_and_early_page_breaks(): void
     {
         $document = $this->createPdfUaTestDocument(title: 'Accessible Header Matrix Break Table', registerBold: true);
@@ -910,7 +1029,7 @@ final class TableTest extends TestCase
         $renderedDocument = $document->render();
 
         self::assertNotSame($page, $table->getPage());
-        self::assertStringContainsString('/Count 3', $renderedDocument);
+        self::assertStringContainsString('/Count 4', $renderedDocument);
         self::assertSame(1, substr_count($renderedDocument, '(A) Tj'));
         self::assertStringContainsString('(Eintrag 1) Tj', $renderedDocument);
         self::assertStringContainsString('(Eintrag 2) Tj', $renderedDocument);
@@ -1010,7 +1129,7 @@ final class TableTest extends TestCase
             ->addRow(['Eintrag 4']);
 
         self::assertSame(1, substr_count($document->render(), '(G4) Tj'));
-        self::assertCount(4, $document->pages->pages);
+        self::assertCount(5, $document->pages->pages);
 
         foreach (array_slice($document->pages->pages, 1) as $page) {
             $contents = $page->contents->render();
@@ -1020,7 +1139,7 @@ final class TableTest extends TestCase
             self::assertStringContainsString("20 25.2 40 24 re\nS", $contents);
         }
 
-        self::assertStringContainsString('(Eintrag 4) Tj', $document->pages->pages[3]->contents->render());
+        self::assertStringContainsString('(Eintrag 4) Tj', $document->pages->pages[4]->contents->render());
     }
 
     #[Test]

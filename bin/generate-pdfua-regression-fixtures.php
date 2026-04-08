@@ -54,6 +54,7 @@ $fixtures = [
     $outputDir . '/pdf-ua-1-annotation-batch.pdf' => createPdfUa1AnnotationBatchFixture(...),
     $outputDir . '/pdf-ua-1-table-caption-pagination.pdf' => createPdfUa1TableCaptionPaginationFixture(...),
     $outputDir . '/pdf-ua-1-table-caption-spans.pdf' => createPdfUa1TableCaptionSpansFixture(...),
+    $outputDir . '/pdf-ua-1-table-span-breaks.pdf' => createPdfUa1TableSpanBreaksFixture(...),
     $outputDir . '/pdf-ua-1-table-header-matrix.pdf' => createPdfUa1TableHeaderMatrixFixture(...),
     $outputDir . '/pdf-ua-1-table-header-matrix-breaks.pdf' => createPdfUa1TableHeaderMatrixBreaksFixture(...),
     $outputDir . '/pdf-ua-1-table-narrow-columns.pdf' => createPdfUa1TableNarrowColumnFixture(...),
@@ -169,7 +170,7 @@ function createPdfUa1LinksFixture(): Document
 function createPdfUa1LayoutFixture(): Document
 {
     $document = createPdfUaDocument('PDF/UA-1 Layout Regression', 'Representative PDF/UA-1 layout and graphics regression fixture');
-    $page = $document->addPage(PageSize::custom(364, 260));
+    $page = $document->addPage(PageSize::custom(364, 320));
 
     $page->addText(
         'Accessible Layout',
@@ -706,6 +707,135 @@ function createPdfUa1TableCaptionSpansFixture(): Document
                 'Stable service quality with a dedicated follow-up note across all reported months.',
                 colspan: 4,
             ),
+        ]);
+    }
+
+    return $document;
+}
+
+function createPdfUa1TableSpanBreaksFixture(): Document
+{
+    $document = createPdfUaDocument(
+        'PDF/UA-1 Table Span Break Regression',
+        'Representative PDF/UA-1 regression fixture for multipage rowspan and colspan groups with long content',
+    );
+    $page = $document->addPage(PageSize::custom(364, 260));
+
+    $page->addText(
+        'Accessible Span Groups Under Break Pressure',
+        new Position(12, 302),
+        'NotoSans-Bold',
+        14,
+        new TextOptions(structureTag: StructureTag::Heading1),
+    );
+    $page->addText(
+        'This fixture combines repeated headers, rowspan groups, colspan summaries and longer cell content across multiple pages.',
+        new Position(12, 286),
+        'NotoSans-Regular',
+        10,
+        new TextOptions(structureTag: StructureTag::Paragraph),
+    );
+
+    $table = $page->createTable(new Position(12, 260), 340, [42, 46, 84, 84, 84], 14);
+    $table
+        ->font('NotoSans-Regular', 9)
+        ->caption(new TableCaption(
+            'Regional monthly service span review',
+            fontName: 'NotoSans-Bold',
+            size: 12,
+            color: Color::rgb(20, 40, 90),
+            spacingAfter: 4.0,
+        ))
+        ->addRow([
+            new TableCell('Region', headerScope: TableHeaderScope::Both),
+            'Metric',
+            'January',
+            'February',
+            'March',
+        ], header: true);
+
+    foreach ([
+        [
+            'North',
+            'Availability review',
+            '98 %',
+            '97 %',
+            '99 %',
+            'Follow-up action',
+            '1.2 h',
+            '1.1 h',
+            '1.0 h',
+            'North summary',
+            'North remains stable overall, but the reconciled figures, closeout note and owner handover all need to stay tied to the same monthly evidence set before archival.',
+        ],
+        [
+            'South',
+            'Availability review',
+            '94 %',
+            '95 %',
+            '96 %',
+            'Follow-up action',
+            '1.8 h',
+            '1.6 h',
+            '1.5 h',
+            'South summary',
+            'South is close to completion, but the rollout history, remote branch notes and final acknowledgements still need one consistent summary across all three months.',
+        ],
+        [
+            'West',
+            'Availability review',
+            '99 %',
+            '98 %',
+            '97 %',
+            'Follow-up action',
+            '0.9 h',
+            '1.0 h',
+            '1.1 h',
+            'West summary',
+            'West remains within tolerance, but the corrected timeline, merged evidence pack and vendor follow-up still need to remain traceable as one combined record.',
+        ],
+        [
+            'East',
+            'Availability review',
+            '96 %',
+            '97 %',
+            '95 %',
+            'Follow-up action',
+            '1.4 h',
+            '1.3 h',
+            '1.4 h',
+            'East summary',
+            'East is structurally stable, but the handover acknowledgements, branch cross references and ownership map still need to stay linked in one archive packet.',
+        ],
+    ] as [
+        $region,
+        $firstMetric,
+        $janFirst,
+        $febFirst,
+        $marFirst,
+        $secondMetric,
+        $janSecond,
+        $febSecond,
+        $marSecond,
+        $summaryLabel,
+        $summaryText,
+    ]) {
+        $table->addRow([
+            new TableCell($region, rowspan: 2, headerScope: TableHeaderScope::Row),
+            $firstMetric,
+            $janFirst,
+            $febFirst,
+            $marFirst,
+        ]);
+        $table->addRow([
+            $secondMetric,
+            $janSecond,
+            $febSecond,
+            $marSecond,
+        ]);
+        $table->addRow([
+            new TableCell($summaryLabel, headerScope: TableHeaderScope::Row),
+            new TableCell($summaryText, colspan: 4),
         ]);
     }
 

@@ -107,6 +107,7 @@ Example scripts live in [examples](examples/):
 - [table-caption.php](examples/table-caption.php)
 - [table-caption-pagination.php](examples/table-caption-pagination.php)
 - [table-caption-spans-pagination.php](examples/table-caption-spans-pagination.php)
+- [table-span-breaks.php](examples/table-span-breaks.php)
 - [table-header-matrix-pagination.php](examples/table-header-matrix-pagination.php)
 - [table-header-matrix-breaks.php](examples/table-header-matrix-breaks.php)
 - [table-narrow-columns.php](examples/table-narrow-columns.php)
