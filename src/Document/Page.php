@@ -56,6 +56,7 @@ final class Page extends IndirectObject
     private ?PageComponents $pageComponents = null;
     private ?PageGraphics $pageGraphics = null;
     private ?PageImages $pageImages = null;
+    private ?PageLinks $pageLinks = null;
     private ?PageAnnotations $pageAnnotations = null;
     private ?PageForms $pageForms = null;
     private ?PageTextRenderer $pageTextRenderer = null;
@@ -366,15 +367,7 @@ final class Page extends IndirectObject
         string $url,
         ?string $accessibleName = null,
     ): self {
-        if (str_starts_with($url, '#')) {
-            return $this->addInternalLink($box, substr($url, 1), $accessibleName);
-        }
-
-        if ($url === '') {
-            throw new InvalidArgumentException('Link URL must not be empty.');
-        }
-
-        return $this->addLinkTarget($box, LinkTarget::externalUrl($url), alternativeDescription: $accessibleName);
+        return $this->pageLinks()->addLink($box, $url, $accessibleName);
     }
 
     public function addInternalLink(
@@ -382,36 +375,7 @@ final class Page extends IndirectObject
         string $destination,
         ?string $accessibleName = null,
     ): self {
-        if ($destination === '') {
-            throw new InvalidArgumentException('Link destination must not be empty.');
-        }
-
-        return $this->addLinkTarget($box, LinkTarget::namedDestination($destination), alternativeDescription: $accessibleName);
-    }
-
-    private function addLinkTarget(
-        Rect $box,
-        LinkTarget $target,
-        ?StructElem $linkStructElem = null,
-        ?string $alternativeDescription = null,
-    ): self {
-        $profile = $this->document->getProfile();
-
-        if ($profile->requiresTaggedLinkAnnotations() && $linkStructElem === null) {
-            if ($alternativeDescription === null || $alternativeDescription === '') {
-                throw new InvalidArgumentException(sprintf(
-                    'Profile %s requires an accessible name for standalone link annotations.',
-                    $profile->name(),
-                ));
-            }
-
-            $linkStructElem = $this->document->createStructElem(StructureTag::Link);
-            $linkStructElem->setPage($this);
-        }
-
-        $this->pageAnnotations()->addLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
-
-        return $this;
+        return $this->pageLinks()->addInternalLink($box, $destination, $accessibleName);
     }
 
     public function addFileAttachment(
@@ -920,64 +884,6 @@ final class Page extends IndirectObject
         throw new InvalidArgumentException("Font '$baseFont' is not registered.");
     }
 
-    private function resolveMarkedContentStructureTag(TextOptions $options): ?StructureTag
-    {
-        $profile = $this->document->getProfile();
-
-        if ($options->link === null || !$profile->requiresTaggedLinkAnnotations()) {
-            return $options->structureTag;
-        }
-
-        return StructureTag::Link;
-    }
-
-    private function attachTextToStructure(TextOptions $options, StructureTag $tag, int $markedContentId, string $text): StructElem
-    {
-        $profile = $this->document->getProfile();
-
-        if ($options->link === null || !$profile->requiresTaggedLinkAnnotations()) {
-            if ($options->parentStructElem !== null && $options->parentStructElem->tag() === $tag->value) {
-                $options->parentStructElem->setMarkedContent($markedContentId, $this);
-                $this->document->registerMarkedContentStructElem($this->structParentId, $options->parentStructElem);
-
-                return $options->parentStructElem;
-            }
-
-            return $this->document->createStructElem($tag, $markedContentId, $this, $options->parentStructElem);
-        }
-
-        if ($options->structureTag === null || $options->structureTag === StructureTag::Link) {
-            $linkStructElem = $this->document->createStructElem(StructureTag::Link, $markedContentId, $this, $options->parentStructElem);
-
-            return $this->applyLinkAlternativeDescription($linkStructElem, $text);
-        }
-
-        $containerStructElem = $this->document->createStructElem($options->structureTag, parent: $options->parentStructElem);
-        $linkStructElem = $this->document->createStructElem(StructureTag::Link, $markedContentId, $this, $containerStructElem);
-
-        return $this->applyLinkAlternativeDescription($linkStructElem, $text);
-    }
-
-    private function resolveLinkAlternativeDescription(string $text): ?string
-    {
-        if (!$this->document->getProfile()->requiresLinkAnnotationAlternativeDescriptions()) {
-            return null;
-        }
-
-        return $text !== '' ? $text : null;
-    }
-
-    private function applyLinkAlternativeDescription(StructElem $linkStructElem, string $text): StructElem
-    {
-        $alternativeDescription = $this->resolveLinkAlternativeDescription($text);
-
-        if ($alternativeDescription !== null) {
-            $linkStructElem->setAltText($alternativeDescription);
-        }
-
-        return $linkStructElem;
-    }
-
     private function registerFontResource(FontDefinition $font): string
     {
         return $this->resources->addFont($font);
@@ -1043,7 +949,7 @@ final class Page extends IndirectObject
         return $this->pageComponents ??= new PageComponents(
             $this,
             function (Rect $box, LinkTarget $target, ?StructElem $linkStructElem = null, ?string $alternativeDescription = null): void {
-                $this->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
+                $this->pageLinks()->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
             },
         );
     }
@@ -1065,6 +971,15 @@ final class Page extends IndirectObject
         );
     }
 
+    private function pageLinks(): PageLinks
+    {
+        return $this->pageLinks ??= new PageLinks(
+            $this,
+            $this->pageAnnotations(),
+            $this->structParentId,
+        );
+    }
+
     private function pageForms(): PageForms
     {
         return $this->pageForms ??= new PageForms(
@@ -1083,11 +998,11 @@ final class Page extends IndirectObject
             function (FontDefinition $font): void {
                 $this->updateUnicodeFontWidths($font);
             },
-            fn (TextOptions $options): ?StructureTag => $this->resolveMarkedContentStructureTag($options),
-            fn (TextOptions $options, StructureTag $tag, int $markedContentId, string $text): StructElem => $this->attachTextToStructure($options, $tag, $markedContentId, $text),
-            fn (string $text): ?string => $this->resolveLinkAlternativeDescription($text),
+            fn (TextOptions $options): ?StructureTag => $this->pageLinks()->resolveMarkedContentStructureTag($options),
+            fn (TextOptions $options, StructureTag $tag, int $markedContentId, string $text): StructElem => $this->pageLinks()->attachTextToStructure($options, $tag, $markedContentId, $text),
+            fn (string $text): ?string => $this->pageLinks()->resolveLinkAlternativeDescription($text),
             function (Rect $box, LinkTarget $target, ?StructElem $linkStructElem = null, ?string $alternativeDescription = null): void {
-                $this->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
+                $this->pageLinks()->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
             },
             fn (?Opacity $opacity): ?string => $this->resolveGraphicsStateName($opacity),
             fn (): int => $this->markedContentId++,
