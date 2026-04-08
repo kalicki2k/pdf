@@ -42,10 +42,22 @@ $fixtures = [
             '/ParentTree 20 0 R' => '/ParentTrex 20 0 R',
         ],
     ),
+    $outputDir . '/pdf-ua-1-negative-missing-mark-info.pdf' => fn (): string => mutatePdf(
+        createPdfUaBaselineFixture()->render(),
+        [
+            '/MarkInfo << /Marked true >>' => '/MarkInfo << /Markex true >>',
+        ],
+    ),
     $outputDir . '/pdf-ua-1-negative-missing-display-title.pdf' => fn (): string => mutatePdf(
         createPdfUaBaselineFixture()->render(),
         [
             '/DisplayDocTitle true' => '/DisplayDocTitle null',
+        ],
+    ),
+    $outputDir . '/pdf-ua-1-negative-document-tag.pdf' => fn (): string => mutatePdf(
+        createPdfUaBaselineFixture()->render(),
+        [
+            '/Type /StructElem /S /Document' => '/Type /StructElem /S /Documxnt',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-figure-without-alt.pdf' => fn (): string => mutatePdf(
@@ -76,6 +88,12 @@ $fixtures = [
         createPdfUaFormsFixture()->render(),
         [
             '/Tabs /S' => '/Tabx /S',
+        ],
+    ),
+    $outputDir . '/pdf-ua-1-negative-page-without-struct-parents.pdf' => fn (): string => mutatePdf(
+        createPdfUaBaselineFixture()->render(),
+        [
+            '/StructParents 0' => '/StructParentx 0',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-form-struct-tag.pdf' => fn (): string => mutatePdf(

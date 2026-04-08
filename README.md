@@ -182,7 +182,7 @@ There is also a negative regression run with targeted invalid fixtures that must
 composer test:pdfua-negative-regression
 ```
 
-The negative PDF/UA run currently covers document metadata, parent tree integrity, figure alt text, list and table semantics, link and annotation structure, widget tab order/structure, and form label semantics.
+The negative PDF/UA run currently covers document metadata, marked-content and structure root integrity, parent tree and page structure references, figure alt text, list and table semantics, link and annotation structure, widget tab order/structure, and form label semantics.
 
 Further detail on supported profiles, active guards and current limits lives in [doc/pdf-standards.md](doc/pdf-standards.md).
 
