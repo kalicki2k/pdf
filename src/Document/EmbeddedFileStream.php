@@ -11,19 +11,22 @@ final class EmbeddedFileStream extends IndirectObject
 {
     public function __construct(
         int $id,
-        private readonly string $contents,
+        string | BinaryData $contents,
         private readonly ?string $mimeType = null,
     ) {
         parent::__construct($id);
+        $this->contents = is_string($contents) ? BinaryData::fromString($contents) : $contents;
     }
+
+    private readonly BinaryData $contents;
 
     public function render(): string
     {
         $dictionary = new DictionaryType([
             'Type' => '/EmbeddedFile',
-            'Length' => strlen($this->contents),
+            'Length' => $this->contents->length(),
             'Params' => new DictionaryType([
-                'Size' => strlen($this->contents),
+                'Size' => $this->contents->length(),
             ]),
         ]);
 
@@ -34,7 +37,7 @@ final class EmbeddedFileStream extends IndirectObject
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'stream' . PHP_EOL
-            . $this->contents . PHP_EOL
+            . $this->contents->contents() . PHP_EOL
             . 'endstream' . PHP_EOL
             . 'endobj' . PHP_EOL;
     }

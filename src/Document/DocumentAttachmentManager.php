@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * @internal Manages document attachments and associated-file validation.
@@ -31,6 +32,60 @@ final class DocumentAttachmentManager
         ?string $mimeType = null,
         ?AssociatedFileRelationship $afRelationship = null,
     ): void {
+        $this->storeAttachment(
+            $filename,
+            BinaryData::fromString($contents),
+            $description,
+            $mimeType,
+            $afRelationship,
+        );
+    }
+
+    public function addAttachmentFromFile(
+        string $path,
+        ?string $filename = null,
+        ?string $description = null,
+        ?string $mimeType = null,
+        ?AssociatedFileRelationship $afRelationship = null,
+    ): void {
+        if (!is_file($path)) {
+            throw new InvalidArgumentException("Attachment file '$path' does not exist.");
+        }
+
+        $filename ??= basename($path);
+
+        try {
+            $contents = BinaryData::fromFile($path);
+        } catch (RuntimeException $exception) {
+            throw new InvalidArgumentException("Attachment file '$path' could not be read.");
+        }
+
+        $this->storeAttachment($filename, $contents, $description, $mimeType, $afRelationship);
+    }
+
+    /**
+     * @return list<FileSpecification>
+     */
+    public function getAttachments(): array
+    {
+        return $this->attachments;
+    }
+
+    public function getAttachment(string $filename): ?FileSpecification
+    {
+        return array_find(
+            $this->attachments,
+            static fn (FileSpecification $attachment): bool => $attachment->getFilename() === $filename,
+        );
+    }
+
+    private function storeAttachment(
+        string $filename,
+        BinaryData $contents,
+        ?string $description,
+        ?string $mimeType,
+        ?AssociatedFileRelationship $afRelationship,
+    ): void {
         $this->document->assertAllowsAttachments();
 
         if ($filename === '') {
@@ -56,44 +111,5 @@ final class DocumentAttachmentManager
                 $afRelationship,
             ),
         ];
-    }
-
-    public function addAttachmentFromFile(
-        string $path,
-        ?string $filename = null,
-        ?string $description = null,
-        ?string $mimeType = null,
-        ?AssociatedFileRelationship $afRelationship = null,
-    ): void {
-        if (!is_file($path)) {
-            throw new InvalidArgumentException("Attachment file '$path' does not exist.");
-        }
-
-        $filename ??= basename($path);
-
-        /** @var string|false $contents */
-        $contents = @file_get_contents($path);
-
-        if ($contents === false) {
-            throw new InvalidArgumentException("Attachment file '$path' could not be read.");
-        }
-
-        $this->addAttachment($filename, $contents, $description, $mimeType, $afRelationship);
-    }
-
-    /**
-     * @return list<FileSpecification>
-     */
-    public function getAttachments(): array
-    {
-        return $this->attachments;
-    }
-
-    public function getAttachment(string $filename): ?FileSpecification
-    {
-        return array_find(
-            $this->attachments,
-            static fn (FileSpecification $attachment): bool => $attachment->getFilename() === $filename,
-        );
     }
 }
