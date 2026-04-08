@@ -45,6 +45,25 @@ final class ContentsTest extends TestCase
         );
     }
 
+    #[Test]
+    public function it_can_append_more_elements_after_the_stream_was_rendered_once(): void
+    {
+        $contents = new Contents(12);
+        $contents->addElement($this->createElement('BT'));
+
+        self::assertSame(
+            "12 0 obj\n<< /Length 2 >>\nstream\nBT\nendstream\nendobj\n",
+            $contents->render(),
+        );
+
+        $contents->addElement($this->createElement('ET'));
+
+        self::assertSame(
+            "12 0 obj\n<< /Length 5 >>\nstream\nBT\nET\nendstream\nendobj\n",
+            $contents->render(),
+        );
+    }
+
     private function createElement(string $renderedValue): Element
     {
         return new class ($renderedValue) extends Element {
