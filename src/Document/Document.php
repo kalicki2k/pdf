@@ -44,12 +44,7 @@ final class Document
     private ?StandardSecurityHandlerData $securityHandlerData = null;
     private ?IccProfileStream $pdfaOutputIntentProfile = null;
     private ?XmpMetadata $xmpMetadata = null;
-    /** @var list<callable(Page, int, int): void> */
-    private array $deferredHeaderRenderers = [];
-    /** @var list<callable(Page, int, int): void> */
-    private array $deferredFooterRenderers = [];
-    /** @var list<callable(): void> */
-    private array $deferredRenderFinalizers = [];
+    private DocumentDeferredRendering $deferredRendering;
 
     /** @var array<int, FontDefinition&IndirectObject> */
     private array $fonts = [];
@@ -112,6 +107,7 @@ final class Document
         $this->profile = $profile;
         $this->catalog = new Catalog(++$this->objectId, $this);
         $this->pages = new Pages(++$this->objectId, $this);
+        $this->deferredRendering = new DocumentDeferredRendering();
 
         $this->info = new Info(++$this->objectId, $this);
         $this->creationDate = new DateTimeImmutable();
@@ -532,7 +528,7 @@ final class Document
 
     public function registerDeferredRenderFinalizer(callable $finalizer): void
     {
-        $this->deferredRenderFinalizers[] = $finalizer;
+        $this->deferredRendering->registerRenderFinalizer($finalizer);
     }
 
     public function ensureStructureEnabled(): void
@@ -698,8 +694,7 @@ final class Document
     {
         return $this->documentPageDecoratorManager ??= new DocumentPageDecoratorManager(
             $this,
-            $this->deferredHeaderRenderers,
-            $this->deferredFooterRenderers,
+            $this->deferredRendering,
             $this->excludedPageIdsFromNumbering,
         );
     }
@@ -747,10 +742,9 @@ final class Document
     private function applyRenderLifecycle(): void
     {
         $renderLifecycle = new DocumentRenderLifecycle();
-        $renderLifecycle->applyDeferredRenderFinalizers($this->deferredRenderFinalizers);
+        $renderLifecycle->applyDeferredRenderFinalizers($this->deferredRendering);
         $renderLifecycle->applyDeferredPageDecorators(
-            $this->deferredHeaderRenderers,
-            $this->deferredFooterRenderers,
+            $this->deferredRendering,
             array_values($this->pages->pages),
             function (callable $renderer): void {
                 $this->renderInArtifactContext($renderer);

@@ -12,28 +12,17 @@ use Kalle\Pdf\Document\Geometry\Position;
  */
 final class DocumentPageDecoratorManager
 {
-    /** @var list<callable(Page, int, int): void> */
-    private array $headerRenderers;
-
-    /** @var list<callable(Page, int, int): void> */
-    private array $footerRenderers;
-
     /** @var array<int, true> */
     private array $excludedPageIdsFromNumbering;
 
     /**
-     * @param list<callable(Page, int, int): void> $headerRenderers
-     * @param list<callable(Page, int, int): void> $footerRenderers
      * @param array<int, true> $excludedPageIdsFromNumbering
      */
     public function __construct(
         private readonly Document $document,
-        array &$headerRenderers,
-        array &$footerRenderers,
+        private readonly DocumentDeferredRendering $deferredRendering,
         array &$excludedPageIdsFromNumbering,
     ) {
-        $this->headerRenderers = & $headerRenderers;
-        $this->footerRenderers = & $footerRenderers;
         $this->excludedPageIdsFromNumbering = & $excludedPageIdsFromNumbering;
     }
 
@@ -42,12 +31,11 @@ final class DocumentPageDecoratorManager
      */
     public function addHeader(callable $renderer): void
     {
-        $this->headerRenderers = [
-            ...$this->headerRenderers,
+        $this->deferredRendering->addHeaderRenderer(
             static function (Page $page, int $pageNumber) use ($renderer): void {
                 $renderer($page, $pageNumber);
             },
-        ];
+        );
     }
 
     /**
@@ -55,12 +43,11 @@ final class DocumentPageDecoratorManager
      */
     public function addFooter(callable $renderer): void
     {
-        $this->footerRenderers = [
-            ...$this->footerRenderers,
+        $this->deferredRendering->addFooterRenderer(
             static function (Page $page, int $pageNumber) use ($renderer): void {
                 $renderer($page, $pageNumber);
             },
-        ];
+        );
     }
 
     public function addPageNumbers(
@@ -109,12 +96,12 @@ final class DocumentPageDecoratorManager
         };
 
         if ($footer) {
-            $this->footerRenderers = [...$this->footerRenderers, $renderer];
+            $this->deferredRendering->addFooterRenderer($renderer);
 
             return;
         }
 
-        $this->headerRenderers = [...$this->headerRenderers, $renderer];
+        $this->deferredRendering->addHeaderRenderer($renderer);
     }
 
     public function excludePageFromNumbering(Page $page): void

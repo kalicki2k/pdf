@@ -12,11 +12,10 @@ use Kalle\Pdf\Profile;
  */
 final class DocumentRenderLifecycle
 {
-    /**
-     * @param list<callable(): void> $finalizers
-     */
-    public function applyDeferredRenderFinalizers(array &$finalizers): void
+    public function applyDeferredRenderFinalizers(DocumentDeferredRendering $deferredRendering): void
     {
+        $finalizers = $deferredRendering->releaseRenderFinalizers();
+
         if ($finalizers === []) {
             return;
         }
@@ -24,22 +23,20 @@ final class DocumentRenderLifecycle
         foreach ($finalizers as $finalizer) {
             $finalizer();
         }
-
-        $finalizers = [];
     }
 
     /**
-     * @param list<callable(Page, int, int): void> $headerRenderers
-     * @param list<callable(Page, int, int): void> $footerRenderers
      * @param list<Page> $pages
      * @param callable(callable(): void): void $renderInArtifactContext
      */
     public function applyDeferredPageDecorators(
-        array &$headerRenderers,
-        array &$footerRenderers,
+        DocumentDeferredRendering $deferredRendering,
         array $pages,
         callable $renderInArtifactContext,
     ): void {
+        $headerRenderers = $deferredRendering->releaseHeaderRenderers();
+        $footerRenderers = $deferredRendering->releaseFooterRenderers();
+
         if ($headerRenderers === [] && $footerRenderers === []) {
             return;
         }
@@ -51,9 +48,6 @@ final class DocumentRenderLifecycle
             $this->runDeferredPageDecorators($headerRenderers, $page, $pageNumber, $totalPages, $renderInArtifactContext);
             $this->runDeferredPageDecorators($footerRenderers, $page, $pageNumber, $totalPages, $renderInArtifactContext);
         }
-
-        $headerRenderers = [];
-        $footerRenderers = [];
     }
 
     public function assertRenderRequirements(
