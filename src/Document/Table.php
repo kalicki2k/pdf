@@ -18,6 +18,7 @@ use Kalle\Pdf\Document\Table\Rendering\TableCaptionRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableFooterRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupSegmentRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TablePendingGroupFlow;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingGroupPaginator;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingRenderState;
 use Kalle\Pdf\Document\Table\Rendering\TableRenderContext;
@@ -32,7 +33,6 @@ use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\TableCaption;
 use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Document\Table\TableGroupPageFit;
 use Kalle\Pdf\Document\Table\TableSections;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextSegment;
@@ -64,11 +64,8 @@ final class Table
     private readonly PreparedCellRenderer $preparedCellRenderer;
     private readonly TableCaptionRenderer $captionRenderer;
     private readonly TableFooterRenderer $footerRenderer;
-    private readonly TableGroupRenderer $groupRenderer;
-    private readonly TableGroupSegmentRenderer $groupSegmentRenderer;
-    private readonly TablePendingGroupPaginator $pendingGroupPaginator;
+    private readonly TablePendingGroupFlow $pendingGroupFlow;
     private readonly TablePendingRenderState $pendingRenderState;
-    private readonly TableStructElemFactory $structElemFactory;
     private readonly TableSections $sections;
     private readonly ?StructElem $tableStructElem;
     private ?TableCaption $caption = null;
@@ -124,13 +121,18 @@ final class Table
         );
         $this->captionRenderer = new TableCaptionRenderer();
         $this->footerRenderer = new TableFooterRenderer();
-        $this->structElemFactory = new TableStructElemFactory();
-        $this->groupRenderer = new TableGroupRenderer();
-        $this->groupSegmentRenderer = new TableGroupSegmentRenderer(
+        $structElemFactory = new TableStructElemFactory();
+        $groupRenderer = new TableGroupRenderer();
+        $groupSegmentRenderer = new TableGroupSegmentRenderer(
             $this->styleResolver,
-            $this->structElemFactory,
+            $structElemFactory,
         );
-        $this->pendingGroupPaginator = new TablePendingGroupPaginator();
+        $pendingGroupPaginator = new TablePendingGroupPaginator();
+        $this->pendingGroupFlow = new TablePendingGroupFlow(
+            $pendingGroupPaginator,
+            $groupRenderer,
+            $groupSegmentRenderer,
+        );
         $this->pendingRenderState = new TablePendingRenderState();
         $this->sections = new TableSections();
         $this->tableStructElem = $page->getDocument()->getProfile()->requiresTaggedPdf()
@@ -276,77 +278,20 @@ final class Table
         );
         $repeatHeaders = $isBodyGroup && $this->sections->hasRepeatingHeaderRows();
         $repeatingHeaderGroup = $repeatHeaders ? $this->prepareRepeatingHeaderGroup() : null;
-        $remainingGroup = $pendingGroup;
-        $deferredLeadingSplit = false;
-
-        while (!$remainingGroup->isEmpty()) {
-            $pageFit = $this->resolvePendingGroupPageFit($remainingGroup, $repeatingHeaderGroup);
-            $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
-
-            if ($fittingRowCount === 0) {
-                $this->moveToNextPageForPendingGroup($pageFit, $repeatingHeaderGroup);
-                $pageFit = $this->resolvePendingGroupPageFit($remainingGroup, null);
-                $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
-
-                if ($fittingRowCount === 0) {
-                    throw new InvalidArgumentException('Table rows must fit on a fresh page.');
-                }
-            }
-
-            if (
-                !$deferredLeadingSplit
-                && $this->pendingGroupPaginator->shouldDeferLeadingSplit(
-                    $remainingGroup->rows,
-                    $this->pendingRenderState->hasPendingRowspanCells(),
-                    $fittingRowCount,
-                )
-            ) {
-                $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0), $repeatingHeaderGroup);
-                $deferredLeadingSplit = true;
-                continue;
-            }
-
-            if ($fittingRowCount >= $remainingGroup->count() && !$this->pendingRenderState->hasPendingRowspanCells()) {
-                $this->renderPendingGroup($remainingGroup);
-                break;
-            }
-
-            $this->renderPendingGroupSegment($remainingGroup, $fittingRowCount);
-
-            if ($fittingRowCount >= $remainingGroup->count()) {
-                break;
-            }
-
-            $remainingGroup = $remainingGroup->slice($fittingRowCount);
-            $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0), $repeatingHeaderGroup);
-        }
+        $result = $this->pendingGroupFlow->render(
+            $this->page,
+            $this->cursorY,
+            $pendingGroup,
+            $repeatingHeaderGroup,
+            $this->pendingRenderState,
+            $this->renderContext(),
+            $this->bottomMargin,
+            $this->continuationTopMargin,
+        );
+        $this->page = $result->page;
+        $this->cursorY = $result->cursorY;
 
         $this->pendingRenderState->clear();
-    }
-
-    private function resolvePendingGroupPageFit(
-        PreparedTableRowGroup $rowGroup,
-        ?PreparedTableRowGroup $repeatingHeaderGroup,
-    ): TableGroupPageFit {
-        return $this->pendingGroupPaginator->resolvePageFit(
-            $rowGroup->rowHeights,
-            $this->cursorY - $this->bottomMargin,
-            $repeatingHeaderGroup !== null,
-        );
-    }
-
-    private function moveToNextPageForPendingGroup(
-        TableGroupPageFit $pageFit,
-        ?PreparedTableRowGroup $repeatingHeaderGroup,
-    ): void {
-        $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
-        $this->cursorY = $this->page->getHeight() - $this->continuationTopMargin;
-
-        if (!$pageFit->repeatHeaders || $repeatingHeaderGroup === null) {
-            return;
-        }
-
-        $this->renderPendingGroup($repeatingHeaderGroup);
     }
 
     private function prepareRepeatingHeaderGroup(): PreparedTableRowGroup
@@ -362,22 +307,6 @@ final class Table
             $preparedHeaderRows,
             $this->rowGroupHeightResolver->resolve($preparedHeaderRows),
         );
-    }
-
-    private function renderPendingGroupSegment(PreparedTableRowGroup $rowGroup, int $rowCount): void
-    {
-        $result = $this->groupSegmentRenderer->render(
-            $this->page,
-            $rowGroup->rows,
-            $rowGroup->rowHeights,
-            $rowCount,
-            $this->cursorY,
-            $this->pendingRenderState->pendingRowspanCells(),
-            $this->renderContext(),
-        );
-        $this->page = $result->page;
-        $this->cursorY = $result->cursorY;
-        $this->pendingRenderState->replacePendingRowspanCells($result->pendingRowspanCells);
     }
 
     private function hasActiveRowspans(): bool
@@ -477,18 +406,6 @@ final class Table
         $this->page = $result->page;
         $this->cursorY = $result->cursorY;
         $this->sections->markCaptionRendered();
-    }
-
-    private function renderPendingGroup(PreparedTableRowGroup $rowGroup): void
-    {
-        $result = $this->groupRenderer->render(
-            $this->page,
-            $rowGroup,
-            $this->cursorY,
-            $this->renderContext(),
-        );
-        $this->page = $result->page;
-        $this->cursorY = $result->cursorY;
     }
 
     private function renderContext(): TableRenderContext
