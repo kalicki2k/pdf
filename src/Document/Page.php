@@ -18,7 +18,8 @@ use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
 use Kalle\Pdf\Document\Text\FlowTextOptions;
-use Kalle\Pdf\Document\Text\PageTextRenderer;
+use Kalle\Pdf\Document\Text\PageParagraphRenderer;
+use Kalle\Pdf\Document\Text\PageTextElementRenderer;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextFrame;
@@ -49,7 +50,8 @@ final class Page extends IndirectObject
     private ?PageObjectRenderer $pageObjectRenderer = null;
     private ?PageAnnotations $pageAnnotations = null;
     private ?PageForms $pageForms = null;
-    private ?PageTextRenderer $pageTextRenderer = null;
+    private ?PageTextElementRenderer $pageTextElementRenderer = null;
+    private ?PageParagraphRenderer $pageParagraphRenderer = null;
     private PageMarkedContentIds $pageMarkedContentIds;
     public Contents $contents;
     public Resources $resources;
@@ -77,7 +79,7 @@ final class Page extends IndirectObject
         int $size = 12,
         TextOptions $options = new TextOptions(),
     ): self {
-        return $this->pageTextRenderer()->addText($text, $position, $fontName, $size, $options);
+        return $this->pageTextElementRenderer()->render($text, $position, $fontName, $size, $options);
     }
 
     /**
@@ -161,7 +163,7 @@ final class Page extends IndirectObject
         int $size = 12,
         FlowTextOptions $options = new FlowTextOptions(),
     ): self {
-        return $this->pageTextRenderer()->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
+        return $this->pageParagraphRenderer()->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
     }
 
     /**
@@ -174,7 +176,7 @@ final class Page extends IndirectObject
         int $size = 12,
         TextBoxOptions $options = new TextBoxOptions(),
     ): self {
-        return $this->pageTextRenderer()->addTextBox($text, $box, $fontName, $size, $options);
+        return $this->pageParagraphRenderer()->addTextBox($text, $box, $fontName, $size, $options);
     }
 
     /**
@@ -191,7 +193,7 @@ final class Page extends IndirectObject
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): array {
-        return $this->pageTextRenderer()->layoutParagraphLines(
+        return $this->pageParagraphRenderer()->layoutParagraphLines(
             $text,
             $baseFont,
             $size,
@@ -219,7 +221,7 @@ final class Page extends IndirectObject
         ?float $bottomMargin = null,
         HorizontalAlign $align = HorizontalAlign::LEFT,
     ): self {
-        return $this->pageTextRenderer()->renderParagraphLines(
+        return $this->pageParagraphRenderer()->renderParagraphLines(
             $lines,
             $x,
             $y,
@@ -841,7 +843,7 @@ final class Page extends IndirectObject
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): int {
-        return $this->pageTextRenderer()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
+        return $this->pageParagraphRenderer()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
     }
 
     public function measureTextWidth(string $text, string $baseFont, int $size): float
@@ -889,15 +891,20 @@ final class Page extends IndirectObject
         return $this->pageForms ??= PageForms::forPage($this, $this->pageAnnotations(), $this->pageFonts());
     }
 
-    private function pageTextRenderer(): PageTextRenderer
+    private function pageTextElementRenderer(): PageTextElementRenderer
     {
-        return $this->pageTextRenderer ??= PageTextRenderer::forPage(
+        return $this->pageTextElementRenderer ??= PageTextElementRenderer::forPage(
             $this,
             $this->pageFonts(),
             $this->pageLinks(),
             $this->pageGraphics(),
             $this->pageMarkedContentIds,
         );
+    }
+
+    private function pageParagraphRenderer(): PageParagraphRenderer
+    {
+        return $this->pageParagraphRenderer ??= PageParagraphRenderer::forPage($this, $this->pageFonts());
     }
 
     public function resolveGraphicsStateName(?Opacity $opacity): ?string

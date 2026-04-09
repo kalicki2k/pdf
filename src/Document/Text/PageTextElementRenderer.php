@@ -32,6 +32,16 @@ final class PageTextElementRenderer
     ) {
     }
 
+    public static function forPage(
+        Page $page,
+        PageFonts $pageFonts,
+        PageLinks $pageLinks,
+        PageGraphics $pageGraphics,
+        PageMarkedContentIds $pageMarkedContentIds,
+    ): self {
+        return new self($page, $pageFonts, $pageLinks, $pageGraphics, $pageMarkedContentIds);
+    }
+
     public function render(
         string $text,
         Position $position,

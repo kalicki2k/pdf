@@ -57,7 +57,7 @@ final class PageTextElementRendererTest extends TestCase
     {
         $pageFonts = PageFonts::forPage($page);
 
-        return new PageTextElementRenderer(
+        return PageTextElementRenderer::forPage(
             $page,
             $pageFonts,
             PageLinks::forPage($page, PageAnnotations::forPage($page, $pageFonts)),
