@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Element;
 
+use Kalle\Pdf\Render\PdfOutput;
+
 abstract class Element
 {
     public float $x;
@@ -15,6 +17,11 @@ abstract class Element
         $this->y = $y;
 
         return $this;
+    }
+
+    public function write(PdfOutput $output): void
+    {
+        $output->write($this->render());
     }
 
     abstract public function render(): string;
