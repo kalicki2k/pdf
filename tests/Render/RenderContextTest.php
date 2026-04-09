@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\RenderContext;
@@ -27,21 +28,27 @@ final class RenderContextTest extends TestCase
             static fn (): string => RenderContext::runInObject(
                 7,
                 static function (): string {
-                    $beforeNestedCall = RenderContext::encryptString('Hello');
-                    self::assertNotNull($beforeNestedCall);
+                    $beforeNestedCall = RenderContext::currentStringEncryptor();
+                    self::assertInstanceOf(ObjectStringEncryptor::class, $beforeNestedCall);
 
-                    RenderContext::runInObject(9, static fn (): ?string => RenderContext::encryptString('Hello'));
+                    RenderContext::runInObject(
+                        9,
+                        static fn (): ?ObjectStringEncryptor => RenderContext::currentStringEncryptor(),
+                    );
 
-                    $afterNestedCall = RenderContext::encryptString('Hello');
-                    self::assertNotNull($afterNestedCall);
-                    self::assertSame($beforeNestedCall, $afterNestedCall);
+                    $afterNestedCall = RenderContext::currentStringEncryptor();
+                    self::assertInstanceOf(ObjectStringEncryptor::class, $afterNestedCall);
+                    self::assertSame(
+                        $beforeNestedCall->encrypt('Hello'),
+                        $afterNestedCall->encrypt('Hello'),
+                    );
 
-                    return $afterNestedCall;
+                    return $afterNestedCall->encrypt('Hello');
                 },
             ),
         );
 
         self::assertNotNull($outerEncrypted);
-        self::assertNull(RenderContext::encryptString('Hello'));
+        self::assertNull(RenderContext::currentStringEncryptor());
     }
 }

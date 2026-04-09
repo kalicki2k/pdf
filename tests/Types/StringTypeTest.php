@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Types;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\RenderContext;
@@ -59,5 +60,23 @@ final class StringTypeTest extends TestCase
 
         self::assertMatchesRegularExpression('/^<[0-9A-F]+>$/', $rendered);
         self::assertNotSame('<FEFF6F22>', $rendered);
+    }
+
+    #[Test]
+    public function it_can_render_encrypted_strings_with_an_explicit_object_string_encryptor(): void
+    {
+        $rendered = (new StringType(
+            'Hello',
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        ))->render();
+
+        self::assertMatchesRegularExpression('/^<[0-9A-F]+>$/', $rendered);
+        self::assertNotSame('<48656C6C6F>', $rendered);
     }
 }

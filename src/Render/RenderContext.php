@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 
 final class RenderContext
 {
     private static ?self $current = null;
 
-    private ?int $currentObjectId = null;
+    private ?ObjectStringEncryptor $currentStringEncryptor = null;
 
     private function __construct(private readonly ?StandardObjectEncryptor $objectEncryptor)
     {
@@ -44,26 +45,20 @@ final class RenderContext
             return $callback();
         }
 
-        $previousObjectId = self::$current->currentObjectId;
-        self::$current->currentObjectId = $objectId;
+        $previousStringEncryptor = self::$current->currentStringEncryptor;
+        self::$current->currentStringEncryptor = self::$current->objectEncryptor === null
+            ? null
+            : new ObjectStringEncryptor(self::$current->objectEncryptor, $objectId);
 
         try {
             return $callback();
         } finally {
-            self::$current->currentObjectId = $previousObjectId;
+            self::$current->currentStringEncryptor = $previousStringEncryptor;
         }
     }
 
-    public static function encryptString(string $value): ?string
+    public static function currentStringEncryptor(): ?ObjectStringEncryptor
     {
-        if (
-            self::$current === null
-            || self::$current->objectEncryptor === null
-            || self::$current->currentObjectId === null
-        ) {
-            return null;
-        }
-
-        return self::$current->objectEncryptor->encryptString(self::$current->currentObjectId, $value);
+        return self::$current?->currentStringEncryptor;
     }
 }

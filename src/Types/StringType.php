@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Render\RenderContext;
 use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 final class StringType implements Type
 {
-    public function __construct(private readonly string $value)
-    {
+    public function __construct(
+        private readonly string $value,
+        private readonly ?ObjectStringEncryptor $encryptor = null,
+    ) {
     }
 
     public function render(): string
     {
+        $encryptor = $this->encryptor ?? RenderContext::currentStringEncryptor();
+
         if ($this->canBeEncodedAsWindows1252($this->value)) {
             $encoded = mb_convert_encoding($this->value, 'Windows-1252', 'UTF-8');
-            $encrypted = RenderContext::encryptString($encoded);
+            $encrypted = $encryptor?->encrypt($encoded);
 
             if ($encrypted !== null) {
                 return '<' . strtoupper(bin2hex($encrypted)) . '>';
@@ -27,7 +32,7 @@ final class StringType implements Type
         }
 
         $utf16be = mb_convert_encoding($this->value, 'UTF-16BE', 'UTF-8');
-        $encrypted = RenderContext::encryptString("\xFE\xFF" . $utf16be);
+        $encrypted = $encryptor?->encrypt("\xFE\xFF" . $utf16be);
 
         if ($encrypted !== null) {
             return '<' . strtoupper(bin2hex($encrypted)) . '>';
