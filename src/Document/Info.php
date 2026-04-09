@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\StringType;
@@ -16,6 +17,11 @@ final class Info extends IndirectObject
     }
 
     public function render(): string
+    {
+        return $this->renderWithStringEncryptor();
+    }
+
+    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
     {
         $dictionary = new DictionaryType([
             'Title' => new StringType($this->document->getTitle() ?? ''),
@@ -37,7 +43,7 @@ final class Info extends IndirectObject
         }
 
         return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
+            . $dictionary->render($encryptor) . PHP_EOL
             . 'endobj' . PHP_EOL;
     }
 

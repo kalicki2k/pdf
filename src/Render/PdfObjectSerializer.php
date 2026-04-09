@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Render;
 
 use Kalle\Pdf\Document\EncryptDictionary;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
@@ -48,6 +49,15 @@ final class PdfObjectSerializer
                     && $object instanceof EncryptableIndirectObject
                 ) {
                     $object->writeEncrypted($output, $objectEncryptor);
+
+                    return;
+                }
+
+                if ($objectEncryptor !== null && !$object instanceof EncryptDictionary) {
+                    $object->writeWithStringEncryptor(
+                        $output,
+                        new ObjectStringEncryptor($objectEncryptor, $object->id),
+                    );
 
                     return;
                 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+
 final readonly class ArrayType implements Type
 {
     /**
@@ -13,18 +15,20 @@ final readonly class ArrayType implements Type
     {
     }
 
-    public function render(): string
+    public function render(?ObjectStringEncryptor $encryptor = null): string
     {
         $items = array_map(
-            static fn (Type | int | float $value): string => self::renderValue($value),
+            static fn (Type | int | float $value): string => self::renderValue($value, $encryptor),
             $this->values,
         );
 
         return '[' . implode(' ', $items) . ']';
     }
 
-    private static function renderValue(Type | int | float $value): string
-    {
-        return $value instanceof Type ? $value->render() : (string) $value;
+    private static function renderValue(
+        Type | int | float $value,
+        ?ObjectStringEncryptor $encryptor,
+    ): string {
+        return $value instanceof Type ? $value->render($encryptor) : (string) $value;
     }
 }

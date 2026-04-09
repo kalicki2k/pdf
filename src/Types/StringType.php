@@ -16,9 +16,9 @@ final class StringType implements Type
     ) {
     }
 
-    public function render(): string
+    public function render(?ObjectStringEncryptor $encryptor = null): string
     {
-        $encryptor = $this->encryptor ?? RenderContext::currentStringEncryptor();
+        $encryptor ??= $this->encryptor ?? RenderContext::currentStringEncryptor();
 
         if ($this->canBeEncodedAsWindows1252($this->value)) {
             $encoded = mb_convert_encoding($this->value, 'Windows-1252', 'UTF-8');

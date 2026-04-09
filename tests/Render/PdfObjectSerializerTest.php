@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\EncryptDictionary;
+use Kalle\Pdf\Document\Info;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
@@ -145,6 +146,29 @@ final class PdfObjectSerializerTest extends TestCase
         self::assertStringStartsWith("17 0 obj\n<< /Length ", $output->contents);
         self::assertStringContainsString("\nendstream\nendobj\n", $output->contents);
         self::assertStringNotContainsString('abc', $output->contents);
+    }
+
+    #[Test]
+    public function it_can_write_non_stream_objects_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(
+            profile: Profile::standard(1.4),
+            title: 'Spec',
+            author: 'Kalle',
+        );
+        $serializer = new PdfObjectSerializer(
+            new StandardObjectEncryptor(
+                new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+            ),
+        );
+        $output = new StringPdfOutput();
+
+        $serializer->writeObjects([new Info(7, $document)], $output);
+
+        self::assertStringStartsWith("7 0 obj\n<< /Title ", $output->contents());
+        self::assertStringNotContainsString('(Spec)', $output->contents());
+        self::assertStringNotContainsString('(Kalle)', $output->contents());
     }
 
     #[Test]

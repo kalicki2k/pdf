@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+
 final class DictionaryType implements Type
 {
     /**
@@ -20,19 +22,21 @@ final class DictionaryType implements Type
         return $this;
     }
 
-    public function render(): string
+    public function render(?ObjectStringEncryptor $encryptor = null): string
     {
         $parts = [];
 
         foreach ($this->entries as $key => $value) {
-            $parts[] = '/' . $key . ' ' . self::renderValue($value);
+            $parts[] = '/' . $key . ' ' . self::renderValue($value, $encryptor);
         }
 
         return '<< ' . implode(' ', $parts) . ' >>';
     }
 
-    private static function renderValue(Type | string | int | float $value): string
-    {
-        return $value instanceof Type ? $value->render() : (string) $value;
+    private static function renderValue(
+        Type | string | int | float $value,
+        ?ObjectStringEncryptor $encryptor,
+    ): string {
+        return $value instanceof Type ? $value->render($encryptor) : (string) $value;
     }
 }
