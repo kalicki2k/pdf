@@ -88,8 +88,10 @@ $page->createTextFrame(new Position(20, 760), 300)
         11,
     );
 
-file_put_contents('hello.pdf', $document->render());
+$document->writeToFile('hello.pdf');
 ```
+
+`render()` is still available when you explicitly need the PDF bytes in memory, but `writeToFile()` and `writeToStream()` avoid the extra in-memory copy.
 
 ## Examples
 
@@ -129,6 +131,14 @@ php examples/rechnung.php
 ```
 
 `stream-to-file.php` shows how to write the generated PDF into a writable file resource via `Document::writeToStream()`.
+
+To stream directly to another writable resource, for example `php://output`, use the same API:
+
+```php
+$stream = fopen('php://output', 'wb');
+$document->writeToStream($stream);
+fclose($stream);
+```
 
 Generated example PDFs are written to `var/examples`.
 

@@ -8,7 +8,6 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Render\CountingPdfOutput;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 
 abstract class StreamIndirectObject extends IndirectObject implements EncryptableIndirectObject
@@ -45,15 +44,6 @@ abstract class StreamIndirectObject extends IndirectObject implements Encryptabl
 
         return $counter->offset();
     }
-
-    protected function streamContents(): string
-    {
-        $buffer = new StringPdfOutput();
-        $this->writeStreamContents($buffer);
-
-        return $buffer->contents();
-    }
-
     /**
      * @param list<string> $lines
      */
