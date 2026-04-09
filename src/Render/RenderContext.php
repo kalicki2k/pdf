@@ -8,30 +8,62 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 
 final class RenderContext
 {
-    private static ?StandardObjectEncryptor $objectEncryptor = null;
-    private static ?int $currentObjectId = null;
+    private static ?self $current = null;
 
-    public static function setObjectEncryptor(?StandardObjectEncryptor $objectEncryptor): void
+    private ?int $currentObjectId = null;
+
+    private function __construct(private readonly ?StandardObjectEncryptor $objectEncryptor)
     {
-        self::$objectEncryptor = $objectEncryptor;
     }
 
-    public static function enterObject(int $objectId): void
+    /**
+     * @template T
+     * @param callable(): T $callback
+     * @return T
+     */
+    public static function runWith(?StandardObjectEncryptor $objectEncryptor, callable $callback): mixed
     {
-        self::$currentObjectId = $objectId;
+        $previousContext = self::$current;
+        self::$current = new self($objectEncryptor);
+
+        try {
+            return $callback();
+        } finally {
+            self::$current = $previousContext;
+        }
     }
 
-    public static function leaveObject(): void
+    /**
+     * @template T
+     * @param callable(): T $callback
+     * @return T
+     */
+    public static function runInObject(int $objectId, callable $callback): mixed
     {
-        self::$currentObjectId = null;
+        if (self::$current === null) {
+            return $callback();
+        }
+
+        $previousObjectId = self::$current->currentObjectId;
+        self::$current->currentObjectId = $objectId;
+
+        try {
+            return $callback();
+        } finally {
+            self::$current->currentObjectId = $previousObjectId;
+        }
     }
 
     public static function encryptString(string $value): ?string
     {
-        if (self::$objectEncryptor === null || self::$currentObjectId === null) {
+        if (
+            self::$current === null
+            || self::$current->objectEncryptor === null
+            || self::$current->currentObjectId === null
+        ) {
             return null;
         }
 
-        return self::$objectEncryptor->encryptString(self::$currentObjectId, $value);
+        return self::$current->objectEncryptor->encryptString(self::$current->currentObjectId, $value);
     }
 }

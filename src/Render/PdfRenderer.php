@@ -26,28 +26,28 @@ class PdfRenderer
         $output->write(self::BINARY_HEADER_COMMENT . PHP_EOL);
         $offsets = [];
         $objectEncryptor = $this->buildObjectEncryptor($document);
-        RenderContext::setObjectEncryptor($objectEncryptor);
 
-        try {
-            foreach ($document->getDocumentObjects() as $object) {
-                RenderContext::enterObject($object->id);
-                $offsets[$object->id] = $output->offset();
-                $renderedObject = $object->render();
+        RenderContext::runWith(
+            $objectEncryptor,
+            function () use ($document, $output, &$offsets, $objectEncryptor): void {
+                foreach ($document->getDocumentObjects() as $object) {
+                    $offsets[$object->id] = $output->offset();
+                    $renderedObject = RenderContext::runInObject(
+                        $object->id,
+                        static fn (): string => $object->render(),
+                    );
 
-                if (
-                    $objectEncryptor !== null
-                    && !$object instanceof EncryptDictionary
-                ) {
-                    $renderedObject = $objectEncryptor->encryptStreamObject($renderedObject, $object->id);
+                    if (
+                        $objectEncryptor !== null
+                        && !$object instanceof EncryptDictionary
+                    ) {
+                        $renderedObject = $objectEncryptor->encryptStreamObject($renderedObject, $object->id);
+                    }
+
+                    $output->write($renderedObject);
                 }
-
-                $output->write($renderedObject);
-                RenderContext::leaveObject();
-            }
-        } finally {
-            RenderContext::leaveObject();
-            RenderContext::setObjectEncryptor(null);
-        }
+            },
+        );
 
         $startxref = $output->offset();
         $output->write($this->generateCrossReferenceTable($offsets));
