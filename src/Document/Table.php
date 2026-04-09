@@ -9,6 +9,7 @@ use Kalle\Pdf\Document\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
 use Kalle\Pdf\Document\Table\Layout\RowGroupHeightResolver;
+use Kalle\Pdf\Document\Table\Layout\RowGroupPreparer;
 use Kalle\Pdf\Document\Table\Layout\RowPreparer;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableCaptionRenderer;
@@ -327,7 +328,7 @@ final class Table
     private function resolvePendingGroupPageFit(array $rowHeights, bool $repeatHeaders): TableGroupPageFit
     {
         if ($repeatHeaders && $this->sections->hasRepeatingHeaderRows()) {
-            $preparedHeaderRows = $this->prepareRowGroup(
+            $preparedHeaderRows = $this->createRowGroupPreparer()->prepareGroup(
                 $this->sections->repeatingHeaderRows(),
                 true,
                 false,
@@ -352,7 +353,7 @@ final class Table
             return;
         }
 
-        $preparedHeaderRows = $this->prepareRowGroup(
+        $preparedHeaderRows = $this->createRowGroupPreparer()->prepareGroup(
             $this->sections->repeatingHeaderRows(),
             true,
             false,
@@ -397,56 +398,6 @@ final class Table
         );
     }
 
-    /**
-     * @param list<list<string|list<TextSegment>|TableCell>> $rows
-     * @return list<PreparedTableRow>
-     */
-    private function prepareRowGroup(array $rows, bool $header, bool $footer, string $rowspanErrorMessage): array
-    {
-        $previousRowspans = $this->activeRowspans;
-        $this->activeRowspans = array_fill(0, count($this->columnWidths), 0);
-        $preparedRows = [];
-
-        foreach ($rows as $row) {
-            $preparedRow = $this->prepareRow($row, $header, $footer);
-            $preparedRows[] = new PreparedTableRow($preparedRow['cells'], $header, $footer);
-            $this->activeRowspans = $preparedRow['nextRowspans'];
-        }
-
-        if ($this->hasActiveRowspans()) {
-            throw new InvalidArgumentException($rowspanErrorMessage);
-        }
-
-        $this->activeRowspans = $previousRowspans;
-
-        return $preparedRows;
-    }
-
-    /**
-     * @param list<PreparedTableRow> $preparedRows
-     * @param list<float> $rowHeights
-     */
-    private function renderPendingGroup(array $preparedRows, array $rowHeights): void
-    {
-        $result = $this->groupRenderer->render(
-            $this->page,
-            $preparedRows,
-            $rowHeights,
-            $this->cursorY,
-            $this->preparedCellRenderer,
-            $this->style,
-            $this->rowStyle,
-            $this->headerStyle,
-            $this->footerStyle,
-            $this->baseFont,
-            $this->fontSize,
-            $this->lineHeightFactor,
-            $this->tableStructElem,
-        );
-        $this->page = $result->page;
-        $this->cursorY = $result->cursorY;
-    }
-
     private function finalize(): void
     {
         if ($this->sections->areFootersRendered() || !$this->sections->hasFooterRows()) {
@@ -457,7 +408,7 @@ final class Table
             throw new InvalidArgumentException('Rowspan groups must be completed before footer rows are rendered.');
         }
 
-        $preparedFooterRows = $this->prepareRowGroup(
+        $preparedFooterRows = $this->createRowGroupPreparer()->prepareGroup(
             $this->sections->footerRows(),
             false,
             true,
@@ -512,6 +463,11 @@ final class Table
         );
     }
 
+    private function createRowGroupPreparer(): RowGroupPreparer
+    {
+        return new RowGroupPreparer($this->createRowPreparer(), count($this->columnWidths));
+    }
+
     /**
      * @param list<float> $rowHeights
      */
@@ -540,5 +496,30 @@ final class Table
         $this->page = $result->page;
         $this->cursorY = $result->cursorY;
         $this->sections->markCaptionRendered();
+    }
+
+    /**
+     * @param list<PreparedTableRow> $preparedRows
+     * @param list<float> $rowHeights
+     */
+    private function renderPendingGroup(array $preparedRows, array $rowHeights): void
+    {
+        $result = $this->groupRenderer->render(
+            $this->page,
+            $preparedRows,
+            $rowHeights,
+            $this->cursorY,
+            $this->preparedCellRenderer,
+            $this->style,
+            $this->rowStyle,
+            $this->headerStyle,
+            $this->footerStyle,
+            $this->baseFont,
+            $this->fontSize,
+            $this->lineHeightFactor,
+            $this->tableStructElem,
+        );
+        $this->page = $result->page;
+        $this->cursorY = $result->cursorY;
     }
 }
