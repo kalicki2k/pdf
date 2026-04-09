@@ -10,11 +10,11 @@ final class PdfObjectEncryptorFactory
 {
     public function create(PdfSerializationPlan $plan): ?StandardObjectEncryptor
     {
-        if ($plan->encryptionProfile === null || $plan->securityHandlerData === null) {
+        if ($plan->encryption === null) {
             return null;
         }
 
-        $objectEncryptor = new StandardObjectEncryptor($plan->encryptionProfile, $plan->securityHandlerData);
+        $objectEncryptor = new StandardObjectEncryptor($plan->encryption->profile, $plan->encryption->securityHandlerData);
 
         return $objectEncryptor->supportsObjectEncryption() ? $objectEncryptor : null;
     }

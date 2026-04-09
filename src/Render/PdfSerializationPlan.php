@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Object\IndirectObject;
 
 final readonly class PdfSerializationPlan
@@ -17,8 +15,7 @@ final readonly class PdfSerializationPlan
         public float $version,
         public array $objects,
         public PdfTrailer $trailer,
-        public ?EncryptionProfile $encryptionProfile = null,
-        public ?StandardSecurityHandlerData $securityHandlerData = null,
+        public ?PdfEncryption $encryption = null,
     ) {
     }
 }

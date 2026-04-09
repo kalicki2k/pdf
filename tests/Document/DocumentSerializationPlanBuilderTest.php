@@ -50,7 +50,8 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $plan = (new DocumentSerializationPlanBuilder())->build($document);
 
         self::assertNotNull($plan->trailer->encryptObjectId);
-        self::assertNotNull($plan->encryptionProfile);
-        self::assertNotNull($plan->securityHandlerData);
+        self::assertNotNull($plan->encryption);
+        self::assertNotNull($plan->encryption->profile);
+        self::assertNotNull($plan->encryption->securityHandlerData);
     }
 }
