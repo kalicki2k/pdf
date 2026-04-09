@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Form;
 
-use Closure;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Action\SetOcgStateAction;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
@@ -13,6 +12,7 @@ use Kalle\Pdf\Document\Annotation\StructParentAwareAnnotation;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Font\FontDefinition;
@@ -27,13 +27,10 @@ final class PageForms
 {
     private ?FormWidgetFactory $factory = null;
 
-    /**
-     * @param Closure(string): FontDefinition $resolveFont
-     */
     public function __construct(
         private readonly Page $page,
         private readonly PageAnnotations $pageAnnotations,
-        private readonly Closure $resolveFont,
+        private readonly PageFonts $pageFonts,
     ) {
     }
 
@@ -248,7 +245,7 @@ final class PageForms
             fn (): AcroForm => $this->page->getDocument()->ensureRadioButtonAcroForm(),
             fn (): AcroForm => $this->page->getDocument()->ensureComboBoxAcroForm(),
             fn (): AcroForm => $this->page->getDocument()->ensureListBoxAcroForm(),
-            $this->resolveFont,
+            fn (string $baseFont): FontDefinition => $this->pageFonts->resolveFont($baseFont),
         );
     }
 

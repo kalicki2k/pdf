@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Annotation;
 
-use Closure;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
@@ -24,14 +24,9 @@ final class PageAnnotations
     private array $annotations = [];
     private ?PageAnnotationFactory $factory = null;
 
-    /**
-     * @param Closure(string): FontDefinition $resolveFont
-     * @param Closure(FontDefinition): string $registerFontResource
-     */
     public function __construct(
         private readonly Page $page,
-        private readonly Closure $resolveFont,
-        private readonly Closure $registerFontResource,
+        private readonly PageFonts $pageFonts,
     ) {
     }
 
@@ -287,8 +282,8 @@ final class PageAnnotations
         return $this->factory ??= new PageAnnotationFactory(
             $this->page,
             fn (): int => $this->page->getDocument()->getUniqObjectId(),
-            $this->resolveFont,
-            $this->registerFontResource,
+            fn (string $baseFont): FontDefinition => $this->pageFonts->resolveFont($baseFont),
+            fn (FontDefinition $font): string => $this->pageFonts->registerFontResource($font),
         );
     }
 }

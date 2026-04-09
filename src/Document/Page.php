@@ -27,7 +27,6 @@ use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Raw;
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -866,21 +865,12 @@ final class Page extends IndirectObject
 
     private function pageComponents(): PageComponents
     {
-        return $this->pageComponents ??= new PageComponents(
-            $this,
-            function (Rect $box, LinkTarget $target, ?StructElem $linkStructElem = null, ?string $alternativeDescription = null): void {
-                $this->pageLinks()->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
-            },
-        );
+        return $this->pageComponents ??= new PageComponents($this, $this->pageLinks());
     }
 
     private function pageAnnotations(): PageAnnotations
     {
-        return $this->pageAnnotations ??= new PageAnnotations(
-            $this,
-            fn (string $baseFont): FontDefinition => $this->pageFonts()->resolveFont($baseFont),
-            fn (FontDefinition $font): string => $this->pageFonts()->registerFontResource($font),
-        );
+        return $this->pageAnnotations ??= new PageAnnotations($this, $this->pageFonts());
     }
 
     private function pageImages(): PageImages
@@ -905,7 +895,7 @@ final class Page extends IndirectObject
         return $this->pageForms ??= new PageForms(
             $this,
             $this->pageAnnotations(),
-            fn (string $baseFont): FontDefinition => $this->pageFonts()->resolveFont($baseFont),
+            $this->pageFonts(),
         );
     }
 

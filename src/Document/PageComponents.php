@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Closure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
@@ -25,12 +24,9 @@ final class PageComponents
 {
     private const float DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
 
-    /**
-     * @param Closure(Rect, LinkTarget, ?\Kalle\Pdf\Structure\StructElem, ?string): void $addLinkTarget
-     */
     public function __construct(
         private readonly Page $page,
-        private readonly Closure $addLinkTarget,
+        private readonly PageLinks $pageLinks,
     ) {
     }
 
@@ -216,7 +212,7 @@ final class PageComponents
         }
 
         if ($link !== null && !$bindLinkToText) {
-            ($this->addLinkTarget)(new Rect($x, $y, $width, $height), $link, null, null);
+            $this->pageLinks->addLinkTarget(new Rect($x, $y, $width, $height), $link, null, null);
         }
 
         return $this->page;
