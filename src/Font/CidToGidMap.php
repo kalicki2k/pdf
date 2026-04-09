@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 
 final class CidToGidMap extends IndirectObject
@@ -19,33 +21,32 @@ final class CidToGidMap extends IndirectObject
 
     public function render(): string
     {
-        $data = $this->buildMapData();
-        $dictionary = new DictionaryType([
-            'Length' => strlen($data),
-        ]);
+        $buffer = new StringPdfOutput();
+        $this->write($buffer);
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'stream' . PHP_EOL
-            . $data . PHP_EOL
-            . 'endstream' . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $buffer->contents();
     }
 
-    private function buildMapData(): string
+    public function write(PdfOutput $output): void
+    {
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary()->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $this->writeMapDataTo($output);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+    }
+
+    private function writeMapDataTo(PdfOutput $output): void
     {
         $codeMap = $this->glyphMap->getCodeMap();
 
         if ($codeMap === []) {
-            return "\x00\x00";
+            $output->write("\x00\x00");
+
+            return;
         }
 
-        $maxCid = max(array_map(
-            static fn (string $code): int => (int) hexdec($code),
-            array_keys($codeMap),
-        ));
-
-        $data = '';
+        $maxCid = $this->maxCid($codeMap);
 
         for ($cid = 0; $cid <= $maxCid; $cid++) {
             $code = strtoupper(sprintf('%04X', $cid));
@@ -53,9 +54,39 @@ final class CidToGidMap extends IndirectObject
                 ? $this->fontParser->getGlyphIdForCharacter($codeMap[$code])
                 : 0;
 
-            $data .= pack('n', $glyphId);
+            $output->write(pack('n', $glyphId));
+        }
+    }
+
+    /**
+     * @param array<string, string> $codeMap
+     */
+    private function maxCid(array $codeMap): int
+    {
+        $maxCid = 0;
+
+        foreach (array_keys($codeMap) as $code) {
+            $maxCid = max($maxCid, (int) hexdec($code));
         }
 
-        return $data;
+        return $maxCid;
+    }
+
+    private function dictionary(): DictionaryType
+    {
+        return new DictionaryType([
+            'Length' => $this->mapLength(),
+        ]);
+    }
+
+    private function mapLength(): int
+    {
+        $codeMap = $this->glyphMap->getCodeMap();
+
+        if ($codeMap === []) {
+            return 2;
+        }
+
+        return ($this->maxCid($codeMap) + 1) * 2;
     }
 }
