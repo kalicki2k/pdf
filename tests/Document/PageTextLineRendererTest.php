@@ -42,7 +42,7 @@ final class PageTextLineRendererTest extends TestCase
 
         self::assertStringContainsString(
             sprintf("%s 50 Td\n(Hello) Tj", $this->format($expectedX)),
-            $page->contents->render(),
+            $page->getContents()->render(),
         );
     }
 
@@ -75,10 +75,10 @@ final class PageTextLineRendererTest extends TestCase
             HorizontalAlign::JUSTIFY,
         );
 
-        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->getContents()->render());
         self::assertStringContainsString(
             sprintf("%s 50 Td\n(world) Tj", $this->format($expectedSecondX)),
-            $page->contents->render(),
+            $page->getContents()->render(),
         );
     }
 

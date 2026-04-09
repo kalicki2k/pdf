@@ -50,7 +50,7 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertSame($page, $resultPage);
-        self::assertStringContainsString('(Hello world) Tj', $page->contents->render());
+        self::assertStringContainsString('(Hello world) Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -82,7 +82,7 @@ final class PreparedCellRendererTest extends TestCase
 
         self::assertSame($page, $result->page);
         self::assertSame($remainingLines, $result->remainingLines);
-        self::assertStringNotContainsString('Tj', $page->contents->render());
+        self::assertStringNotContainsString('Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -121,7 +121,7 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertSame($remainingLines, $result->remainingLines);
-        self::assertStringNotContainsString('Tj', $page->contents->render());
+        self::assertStringNotContainsString('Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -155,7 +155,7 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertSame([], $result->remainingLines);
-        self::assertStringNotContainsString('Tj', $page->contents->render());
+        self::assertStringNotContainsString('Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -190,7 +190,7 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertGreaterThan(1, count($result->remainingLines));
-        self::assertStringNotContainsString('Tj', $page->contents->render());
+        self::assertStringNotContainsString('Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -223,8 +223,8 @@ final class PreparedCellRendererTest extends TestCase
 
         self::assertCount(1, $result->remainingLines);
         self::assertSame('Line 3', $result->remainingLines[0]['segments'][0]->text);
-        self::assertStringContainsString('(Line 1) Tj', $page->contents->render());
-        self::assertStringContainsString('(Line 2) Tj', $page->contents->render());
+        self::assertStringContainsString('(Line 1) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Line 2) Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -255,8 +255,8 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertSame([], $result->remainingLines);
-        self::assertStringContainsString('(Line 1) Tj', $page->contents->render());
-        self::assertStringContainsString('(Line 2) Tj', $page->contents->render());
+        self::assertStringContainsString('(Line 1) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Line 2) Tj', $page->getContents()->render());
     }
 
     private function createRenderer(): PreparedCellRenderer

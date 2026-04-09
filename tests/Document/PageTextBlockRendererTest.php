@@ -46,7 +46,7 @@ final class PageTextBlockRendererTest extends TestCase
 
         self::assertCount(2, $document->getPages());
         self::assertNotSame($firstPage, $lastPage);
-        self::assertStringContainsString("10 50 Td\n(First) Tj", $firstPage->contents->render());
-        self::assertStringContainsString("10 50 Td\n(Second) Tj", $lastPage->contents->render());
+        self::assertStringContainsString("10 50 Td\n(First) Tj", $firstPage->getContents()->render());
+        self::assertStringContainsString("10 50 Td\n(Second) Tj", $lastPage->getContents()->render());
     }
 }

@@ -97,8 +97,8 @@ final class PageTest extends TestCase
         $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
 
         self::assertSame($page, $page->addImage($image, new Position(10, 20), 160, 100));
-        self::assertStringContainsString('/XObject << /Im1 7 0 R >>', $page->resources->render());
-        self::assertStringContainsString("160 0 0 100 10 20 cm\n/Im1 Do", $page->contents->render());
+        self::assertStringContainsString('/XObject << /Im1 7 0 R >>', $page->getResources()->render());
+        self::assertStringContainsString("160 0 0 100 10 20 cm\n/Im1 Do", $page->getContents()->render());
         self::assertStringContainsString("7 0 obj\n<< /Type /XObject\n/Subtype /Image", $document->render());
     }
 
@@ -119,7 +119,7 @@ final class PageTest extends TestCase
 
         $rendered = $document->render();
 
-        self::assertStringContainsString('/Figure << /MCID 0 >> BDC', $page->contents->render());
+        self::assertStringContainsString('/Figure << /MCID 0 >> BDC', $page->getContents()->render());
         self::assertStringContainsString('/Type /StructElem /S /Figure', $rendered);
         self::assertStringContainsString('/Alt (Schwarzes Pixel)', $rendered);
     }
@@ -637,7 +637,7 @@ final class PageTest extends TestCase
 
         $page->addImage($image, new Position(10, 20));
 
-        self::assertStringContainsString("320 0 0 200 10 20 cm\n/Im1 Do", $page->contents->render());
+        self::assertStringContainsString("320 0 0 200 10 20 cm\n/Im1 Do", $page->getContents()->render());
     }
 
     #[Test]
@@ -688,7 +688,7 @@ final class PageTest extends TestCase
         $result = $page->addLine(new Position(10, 20), new Position(100, 20));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 w\n10 20 m\n100 20 l\nS", $page->contents->render());
+        self::assertStringContainsString("1 w\n10 20 m\n100 20 l\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -715,9 +715,9 @@ final class PageTest extends TestCase
         });
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Properties << /OC1 8 0 R >>', $page->resources->render());
-        self::assertStringContainsString("/OC /OC1 BDC\nq\nBT", $page->contents->render());
-        self::assertStringContainsString('EMC', $page->contents->render());
+        self::assertStringContainsString('/Properties << /OC1 8 0 R >>', $page->getResources()->render());
+        self::assertStringContainsString("/OC /OC1 BDC\nq\nBT", $page->getContents()->render());
+        self::assertStringContainsString('EMC', $page->getContents()->render());
     }
 
     #[Test]
@@ -732,7 +732,7 @@ final class PageTest extends TestCase
             $page->addText('Layered', new Position(10, 20), 'Helvetica', 12);
         });
 
-        self::assertStringContainsString('/Properties << /OC1 5 0 R >>', $page->resources->render());
+        self::assertStringContainsString('/Properties << /OC1 5 0 R >>', $page->getResources()->render());
     }
 
     #[Test]
@@ -758,8 +758,8 @@ final class PageTest extends TestCase
 
         $page->addLine(new Position(10, 20), new Position(100, 20), 2.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /CA 0.25 >> >>', $page->resources->render());
-        self::assertStringContainsString("1 0 0 RG\n/GS1 gs\n2.5 w\n10 20 m\n100 20 l\nS", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /CA 0.25 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("1 0 0 RG\n/GS1 gs\n2.5 w\n10 20 m\n100 20 l\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -783,7 +783,7 @@ final class PageTest extends TestCase
         $result = $page->addRectangle(new Rect(10, 20, 100, 40));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 w\n10 20 100 40 re\nS", $page->contents->render());
+        self::assertStringContainsString("1 w\n10 20 100 40 re\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -794,7 +794,7 @@ final class PageTest extends TestCase
 
         $page->addRectangle(new Rect(10, 20, 100, 40), null, null, Color::gray(0.5));
 
-        self::assertStringContainsString("0.5 g\n10 20 100 40 re\nf", $page->contents->render());
+        self::assertStringContainsString("0.5 g\n10 20 100 40 re\nf", $page->getContents()->render());
     }
 
     #[Test]
@@ -805,8 +805,8 @@ final class PageTest extends TestCase
 
         $page->addRectangle(new Rect(10, 20, 100, 40), 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n10 20 100 40 re\nB", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n10 20 100 40 re\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -866,9 +866,9 @@ final class PageTest extends TestCase
         $result = $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 8, 1.5, Color::rgb(255, 0, 0));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 0 0 RG\n1.5 w\n18 60 m", $page->contents->render());
-        self::assertStringContainsString('110 52 c', $page->contents->render());
-        self::assertStringContainsString("\nh\nS", $page->contents->render());
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n18 60 m", $page->getContents()->render());
+        self::assertStringContainsString('110 52 c', $page->getContents()->render());
+        self::assertStringContainsString("\nh\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -879,9 +879,9 @@ final class PageTest extends TestCase
 
         $page->addRoundedRectangle(new Rect(10, 20, 100, 40), 8, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n18 60 m", $page->contents->render());
-        self::assertStringContainsString("\nh\nB", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n18 60 m", $page->getContents()->render());
+        self::assertStringContainsString("\nh\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -966,8 +966,8 @@ final class PageTest extends TestCase
         $result = $page->addBadge('Beta', new Position(10, 20));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('0.9 g', $page->contents->render());
-        self::assertStringContainsString('(Beta) Tj', $page->contents->render());
+        self::assertStringContainsString('0.9 g', $page->getContents()->render());
+        self::assertStringContainsString('(Beta) Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -994,9 +994,9 @@ final class PageTest extends TestCase
             LinkTarget::externalUrl('https://example.com'),
         );
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString("0 0 1 RG\n0.8 g\n/GS1 gs\n1.5 w", $page->contents->render());
-        self::assertStringContainsString('(Aktiv) Tj', $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("0 0 1 RG\n0.8 g\n/GS1 gs\n1.5 w", $page->getContents()->render());
+        self::assertStringContainsString('(Aktiv) Tj', $page->getContents()->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
     }
 
@@ -1020,8 +1020,8 @@ final class PageTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString("1 0 0 RG\n0.8 g\n1 w\n14 38 m", $page->contents->render());
-        self::assertStringContainsString('(Rounded) Tj', $page->contents->render());
+        self::assertStringContainsString("1 0 0 RG\n0.8 g\n1 w\n14 38 m", $page->getContents()->render());
+        self::assertStringContainsString('(Rounded) Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -1067,9 +1067,9 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('0.96 g', $page->contents->render());
-        self::assertStringContainsString('(Hinweis) Tj', $page->contents->render());
-        self::assertStringContainsString('(Kurzinfo zum Stand.) Tj', $page->contents->render());
+        self::assertStringContainsString('0.96 g', $page->getContents()->render());
+        self::assertStringContainsString('(Hinweis) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Kurzinfo zum Stand.) Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -1093,7 +1093,7 @@ final class PageTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString("10 20 160 70 re\nB", $page->contents->render());
+        self::assertStringContainsString("10 20 160 70 re\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -1123,8 +1123,8 @@ final class PageTest extends TestCase
             link: LinkTarget::externalUrl('https://example.com'),
         );
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString('(Details) Tj', $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString('(Details) Tj', $page->getContents()->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
     }
 
@@ -1154,7 +1154,7 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/Contents (Kurzinfo zum Stand.)', $rendered);
         self::assertStringContainsString('/Alt (Hinweis)', $rendered);
         self::assertStringContainsString('/Alt (Kurzinfo zum Stand.)', $rendered);
-        self::assertSame(2, substr_count($page->contents->render(), 'BT'));
+        self::assertSame(2, substr_count($page->getContents()->render(), 'BT'));
     }
 
     #[Test]
@@ -1322,9 +1322,9 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('(Achtung) Tj', $page->contents->render());
-        self::assertStringContainsString('(Hinweis.) Tj', $page->contents->render());
-        self::assertStringContainsString("72 40 m\n88 40 l\n80 20 l\nh\nB", $page->contents->render());
+        self::assertStringContainsString('(Achtung) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Hinweis.) Tj', $page->getContents()->render());
+        self::assertStringContainsString("72 40 m\n88 40 l\n80 20 l\nh\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -1358,8 +1358,8 @@ final class PageTest extends TestCase
             link: LinkTarget::externalUrl('https://example.com'),
         );
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString('(Info) Tj', $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString('(Info) Tj', $page->getContents()->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
     }
 
@@ -1391,7 +1391,7 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/Contents (Interner Hinweis.)', $rendered);
         self::assertStringContainsString('/Alt (Info)', $rendered);
         self::assertStringContainsString('/Alt (Interner Hinweis.)', $rendered);
-        self::assertSame(2, substr_count($page->contents->render(), 'BT'));
+        self::assertSame(2, substr_count($page->getContents()->render(), 'BT'));
     }
 
     #[Test]
@@ -1412,7 +1412,7 @@ final class PageTest extends TestCase
             'Achtung',
         );
 
-        self::assertStringContainsString("72 90 m\n80 100 l\n88 90 l\nh\nB", $page->contents->render());
+        self::assertStringContainsString("72 90 m\n80 100 l\n88 90 l\nh\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -1433,7 +1433,7 @@ final class PageTest extends TestCase
             'Achtung',
         );
 
-        self::assertStringContainsString("20 57 m\n20 73 l\n10 65 l\nh\nB", $page->contents->render());
+        self::assertStringContainsString("20 57 m\n20 73 l\n10 65 l\nh\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -1451,7 +1451,7 @@ final class PageTest extends TestCase
             ->stroke(1.5, Color::rgb(255, 0, 0));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 0 0 RG\n1.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nS", $page->contents->render());
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -1483,8 +1483,8 @@ final class PageTest extends TestCase
             ->close()
             ->fillAndStroke(2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nB", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -1496,9 +1496,9 @@ final class PageTest extends TestCase
         $result = $page->addCircle(100, 100, 30, 1.5, Color::rgb(255, 0, 0));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 130 m", $page->contents->render());
-        self::assertStringContainsString('130 100 c', $page->contents->render());
-        self::assertStringContainsString("\nh\nS", $page->contents->render());
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 130 m", $page->getContents()->render());
+        self::assertStringContainsString('130 100 c', $page->getContents()->render());
+        self::assertStringContainsString("\nh\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -1509,9 +1509,9 @@ final class PageTest extends TestCase
 
         $page->addCircle(100, 100, 30, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 130 m", $page->contents->render());
-        self::assertStringContainsString("\nh\nB", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 130 m", $page->getContents()->render());
+        self::assertStringContainsString("\nh\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -1522,8 +1522,8 @@ final class PageTest extends TestCase
 
         $page->addCircle(100, 100, 30, null, null, Color::gray(0.5));
 
-        self::assertStringContainsString("0.5 g\n100 130 m", $page->contents->render());
-        self::assertStringContainsString("\nh\nf", $page->contents->render());
+        self::assertStringContainsString("0.5 g\n100 130 m", $page->getContents()->render());
+        self::assertStringContainsString("\nh\nf", $page->getContents()->render());
     }
 
     #[Test]
@@ -1571,9 +1571,9 @@ final class PageTest extends TestCase
         $result = $page->addEllipse(100, 100, 40, 20, 1.5, Color::rgb(255, 0, 0));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 120 m", $page->contents->render());
-        self::assertStringContainsString('140 100 c', $page->contents->render());
-        self::assertStringContainsString("\nh\nS", $page->contents->render());
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 120 m", $page->getContents()->render());
+        self::assertStringContainsString('140 100 c', $page->getContents()->render());
+        self::assertStringContainsString("\nh\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -1584,9 +1584,9 @@ final class PageTest extends TestCase
 
         $page->addEllipse(100, 100, 40, 20, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 120 m", $page->contents->render());
-        self::assertStringContainsString("\nh\nB", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 120 m", $page->getContents()->render());
+        self::assertStringContainsString("\nh\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -1646,7 +1646,7 @@ final class PageTest extends TestCase
         $result = $page->addPolygon([[60, 240], [100, 200], [60, 160], [20, 200]], 1.5, Color::rgb(255, 0, 0));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 0 0 RG\n1.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nS", $page->contents->render());
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n60 240 m\n100 200 l\n60 160 l\n20 200 l\nh\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -1694,9 +1694,9 @@ final class PageTest extends TestCase
         $result = $page->addArrow(new Position(20, 200), new Position(100, 200), 2.0, Color::rgb(255, 0, 0), Opacity::both(0.4), 12, 10);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString("1 0 0 RG\n/GS1 gs\n2 w\n20 200 m\n88 200 l\nS", $page->contents->render());
-        self::assertStringContainsString("1 0 0 rg\n/GS1 gs\n100 200 m\n88 205 l\n88 195 l\nh\nf", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("1 0 0 RG\n/GS1 gs\n2 w\n20 200 m\n88 200 l\nS", $page->getContents()->render());
+        self::assertStringContainsString("1 0 0 rg\n/GS1 gs\n100 200 m\n88 205 l\n88 195 l\nh\nf", $page->getContents()->render());
     }
 
     #[Test]
@@ -1756,8 +1756,8 @@ final class PageTest extends TestCase
         $result = $page->addStar(100, 100, 5, 30, 15, 1.5, Color::rgb(255, 0, 0));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 70 m", $page->contents->render());
-        self::assertStringContainsString("\nh\nS", $page->contents->render());
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n100 70 m", $page->getContents()->render());
+        self::assertStringContainsString("\nh\nS", $page->getContents()->render());
     }
 
     #[Test]
@@ -1768,9 +1768,9 @@ final class PageTest extends TestCase
 
         $page->addStar(100, 100, 5, 30, 15, 2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->resources->render());
-        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 70 m", $page->contents->render());
-        self::assertStringContainsString("\nh\nB", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n100 70 m", $page->getContents()->render());
+        self::assertStringContainsString("\nh\nB", $page->getContents()->render());
     }
 
     #[Test]
@@ -1948,7 +1948,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString('/TU (Customer name)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
-        self::assertSame(1, substr_count($page->contents->render(), '/P << /MCID'));
+        self::assertSame(1, substr_count($page->getContents()->render(), '/P << /MCID'));
         self::assertStringContainsString('/Type /StructElem /S /Div', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
@@ -2705,7 +2705,7 @@ final class PageTest extends TestCase
 
         $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(link: LinkTarget::externalUrl('https://example.com')));
 
-        self::assertStringContainsString('(Hello) Tj', $page->contents->render());
+        self::assertStringContainsString('(Hello) Tj', $page->getContents()->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
         self::assertStringContainsString('/URI (https://example.com)', $document->render());
     }
@@ -2825,9 +2825,9 @@ final class PageTest extends TestCase
         $result = $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Font << /F1 4 0 R >>', $page->resources->render());
-        self::assertStringContainsString("/P << /MCID 0 >> BDC\nBT", $page->contents->render());
-        self::assertStringContainsString('(Hello) Tj', $page->contents->render());
+        self::assertStringContainsString('/Font << /F1 4 0 R >>', $page->getResources()->render());
+        self::assertStringContainsString("/P << /MCID 0 >> BDC\nBT", $page->getContents()->render());
+        self::assertStringContainsString('(Hello) Tj', $page->getContents()->render());
         self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /StructElem /S /Document /P 8 0 R /K [11 0 R] >>', $document->render());
         self::assertStringContainsString('11 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 10 0 R /Pg 5 0 R /K 0 >>', $document->render());
     }
@@ -2849,7 +2849,7 @@ final class PageTest extends TestCase
             new PanelStyle(),
         );
 
-        $rendered = $page->contents->render();
+        $rendered = $page->getContents()->render();
 
         self::assertStringContainsString('/Artifact BMC', $rendered);
         self::assertStringContainsString('EMC', $rendered);
@@ -2873,7 +2873,7 @@ final class PageTest extends TestCase
             new PanelStyle(),
         );
 
-        self::assertGreaterThanOrEqual(3, substr_count($page->contents->render(), '/P << /MCID'));
+        self::assertGreaterThanOrEqual(3, substr_count($page->getContents()->render(), '/P << /MCID'));
     }
 
     #[Test]
@@ -2886,8 +2886,8 @@ final class PageTest extends TestCase
         $result = $page->addText('Hello', new Position(10, 20), 'Helvetica', 12);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('(Hello) Tj', $page->contents->render());
-        self::assertStringNotContainsString('BDC', $page->contents->render());
+        self::assertStringContainsString('(Hello) Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('BDC', $page->getContents()->render());
         self::assertStringNotContainsString('/Type /StructElem /S /P', $document->render());
     }
 
@@ -2911,9 +2911,9 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("/F1 12 Tf\n10 20 Td", $page->contents->render());
-        self::assertStringContainsString("1 0 0 rg\n/GS1 gs\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString(' re f', $page->contents->render());
+        self::assertStringContainsString("/F1 12 Tf\n10 20 Td", $page->getContents()->render());
+        self::assertStringContainsString("1 0 0 rg\n/GS1 gs\n(Hello) Tj", $page->getContents()->render());
+        self::assertStringContainsString(' re f', $page->getContents()->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
         self::assertStringContainsString('/URI (https://example.com)', $document->render());
     }
@@ -2927,7 +2927,7 @@ final class PageTest extends TestCase
 
         $page->addText('Hello', new Position(10, 20), options: new TextOptions(structureTag: StructureTag::Paragraph));
 
-        self::assertStringContainsString('/P << /MCID 0 >> BDC', $page->contents->render());
+        self::assertStringContainsString('/P << /MCID 0 >> BDC', $page->getContents()->render());
         self::assertStringContainsString('/Type /StructElem /S /P', $document->render());
     }
 
@@ -2941,8 +2941,8 @@ final class PageTest extends TestCase
         $result = $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(opacity: Opacity::fill(0.5)));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
-        self::assertStringContainsString("/GS1 gs\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("/GS1 gs\n(Hello) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -2955,7 +2955,7 @@ final class PageTest extends TestCase
         $result = $page->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(color: Color::rgb(255, 0, 0)));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("1 0 0 rg\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("1 0 0 rg\n(Hello) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -2968,7 +2968,7 @@ final class PageTest extends TestCase
         $page->addText('Red', new Position(10, 40), 'Helvetica', 12, new TextOptions(color: Color::rgb(255, 0, 0)));
         $page->addText('Default', new Position(10, 20), 'Helvetica', 12);
 
-        self::assertStringContainsString("1 0 0 rg\n(Red) Tj\nET\nQ\nq\nBT\n/F1 12 Tf\n10 20 Td\n(Default) Tj", $page->contents->render());
+        self::assertStringContainsString("1 0 0 rg\n(Red) Tj\nET\nQ\nq\nBT\n/F1 12 Tf\n10 20 Td\n(Default) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -2993,7 +2993,7 @@ final class PageTest extends TestCase
 
         $page->addText('Straße', new Position(10, 20), 'Helvetica', 12);
 
-        self::assertStringContainsString("(Stra\xA7e) Tj", $page->contents->render());
+        self::assertStringContainsString("(Stra\xA7e) Tj", $page->getContents()->render());
         self::assertStringContainsString('/BaseEncoding /StandardEncoding', $document->render());
     }
 
@@ -3006,7 +3006,7 @@ final class PageTest extends TestCase
 
         $page->addText('ÄäÖöÜüßàáçèé', new Position(10, 20), 'Helvetica', 12);
 
-        self::assertStringContainsString("(\x80\x8A\x85\x9A\x86\x9F\xA7\x88\x87\x8D\x8F\x8E) Tj", $page->contents->render());
+        self::assertStringContainsString("(\x80\x8A\x85\x9A\x86\x9F\xA7\x88\x87\x8D\x8F\x8E) Tj", $page->getContents()->render());
         self::assertStringContainsString('/Adieresis', $document->render());
         self::assertStringContainsString('/adieresis', $document->render());
         self::assertStringContainsString('/Odieresis', $document->render());
@@ -3026,7 +3026,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString(
             "(\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F\xA0\xA1\xA2\xA3\xA4\xA5\xA6\xA7\xA8\xA9\xAA\xAB\xAC\xAE\xAF\xB1\xB4\xB5\xBB\xBC\xBE\xBF) Tj",
-            $page->contents->render(),
+            $page->getContents()->render(),
         );
     }
 
@@ -3042,7 +3042,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString(
             "(\xC4\xD6\xDC\xE4\xF6\xFC\xDF\xE0\xE1\xE2\xE3\xE5\xE7\xE8\xE9\xEA\xEB\xED\xEC\xEE\xEF\xF1\xF3\xF2\xF4\xF5\xFA\xF9\xFB\xFC\x80\x8C\x9C\x8A\x9A\x8E\x9E\x9F\x84\x93\x94\x91\x92\x85\x96\x97\x95\x99) Tj",
-            $page->contents->render(),
+            $page->getContents()->render(),
         );
         self::assertStringContainsString('/Encoding /WinAnsiEncoding', $document->render());
     }
@@ -3070,10 +3070,10 @@ final class PageTest extends TestCase
         $result = $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(structureTag: StructureTag::Paragraph, lineHeight: 12.0, bottomMargin: 0.0));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("/P << /MCID 0 >> BDC\nBT\n/F1 10 Tf\n10 50 Td\n(Hello) Tj\nET\nEMC", $page->contents->render());
-        self::assertStringContainsString("/P << /MCID 1 >> BDC\nBT\n/F1 10 Tf\n10 38 Td\n(world) Tj\nET\nEMC", $page->contents->render());
-        self::assertStringContainsString("/P << /MCID 2 >> BDC\nBT\n/F1 10 Tf\n10 26 Td\n(from) Tj\nET\nEMC", $page->contents->render());
-        self::assertStringContainsString("/P << /MCID 3 >> BDC\nBT\n/F1 10 Tf\n10 14 Td\n(PDF) Tj\nET\nEMC", $page->contents->render());
+        self::assertStringContainsString("/P << /MCID 0 >> BDC\nBT\n/F1 10 Tf\n10 50 Td\n(Hello) Tj\nET\nEMC", $page->getContents()->render());
+        self::assertStringContainsString("/P << /MCID 1 >> BDC\nBT\n/F1 10 Tf\n10 38 Td\n(world) Tj\nET\nEMC", $page->getContents()->render());
+        self::assertStringContainsString("/P << /MCID 2 >> BDC\nBT\n/F1 10 Tf\n10 26 Td\n(from) Tj\nET\nEMC", $page->getContents()->render());
+        self::assertStringContainsString("/P << /MCID 3 >> BDC\nBT\n/F1 10 Tf\n10 14 Td\n(PDF) Tj\nET\nEMC", $page->getContents()->render());
     }
 
     #[Test]
@@ -3085,8 +3085,8 @@ final class PageTest extends TestCase
 
         $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0));
 
-        self::assertStringContainsString('(Hello) Tj', $page->contents->render());
-        self::assertStringNotContainsString('BDC', $page->contents->render());
+        self::assertStringContainsString('(Hello) Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('BDC', $page->getContents()->render());
         self::assertStringNotContainsString('/Type /StructElem /S /P', $document->render());
     }
 
@@ -3100,8 +3100,8 @@ final class PageTest extends TestCase
         $result = $page->addTextBox('Hello world from PDF', new Rect(10, 20, 40, 40), 'Helvetica', 10);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n(world) Tj", $page->contents->render());
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->getContents()->render());
+        self::assertStringContainsString("10 38 Td\n(world) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3114,8 +3114,8 @@ final class PageTest extends TestCase
         $page->addTextBox('Hello', new Rect(10, 20, 80, 30), 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::MIDDLE));
         $page->addTextBox('World', new Rect(10, 60, 80, 30), 'Helvetica', 10, new TextBoxOptions(verticalAlign: VerticalAlign::BOTTOM));
 
-        self::assertStringContainsString("10 30 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("10 60 Td\n(World) Tj", $page->contents->render());
+        self::assertStringContainsString("10 30 Td\n(Hello) Tj", $page->getContents()->render());
+        self::assertStringContainsString("10 60 Td\n(World) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3133,7 +3133,7 @@ final class PageTest extends TestCase
             new TextBoxOptions(align: HorizontalAlign::RIGHT),
         );
 
-        self::assertStringContainsString("27.22 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("27.22 50 Td\n(Hello) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3155,7 +3155,7 @@ final class PageTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString("15 32 Td\n(Hello\x85) Tj", $page->contents->render());
+        self::assertStringContainsString("15 32 Td\n(Hello\x85) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3258,8 +3258,8 @@ final class PageTest extends TestCase
 
         $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0, opacity: Opacity::fill(0.5)));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->resources->render());
-        self::assertSame(4, substr_count($page->contents->render(), '/GS1 gs'));
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->getResources()->render());
+        self::assertSame(4, substr_count($page->getContents()->render(), '/GS1 gs'));
     }
 
     #[Test]
@@ -3271,7 +3271,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText('Hello world from PDF', new Position(10, 50), 40, 'Helvetica', 10, new FlowTextOptions(lineHeight: 12.0, bottomMargin: 0.0, color: Color::gray(0.5)));
 
-        self::assertSame(4, substr_count($page->contents->render(), '0.5 g'));
+        self::assertSame(4, substr_count($page->getContents()->render(), '0.5 g'));
     }
 
     #[Test]
@@ -3290,10 +3290,10 @@ final class PageTest extends TestCase
             options: new FlowTextOptions(maxLines: 2),
         );
 
-        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n(world) Tj", $page->contents->render());
-        self::assertStringNotContainsString('(from) Tj', $page->contents->render());
-        self::assertStringNotContainsString('(PDF) Tj', $page->contents->render());
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->getContents()->render());
+        self::assertStringContainsString("10 38 Td\n(world) Tj", $page->getContents()->render());
+        self::assertStringNotContainsString('(from) Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('(PDF) Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -3312,10 +3312,10 @@ final class PageTest extends TestCase
             options: new FlowTextOptions(maxLines: 2, overflow: TextOverflow::ELLIPSIS),
         );
 
-        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n(world\x85) Tj", $page->contents->render());
-        self::assertStringNotContainsString('(from) Tj', $page->contents->render());
-        self::assertStringNotContainsString('(PDF) Tj', $page->contents->render());
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->getContents()->render());
+        self::assertStringContainsString("10 38 Td\n(world\x85) Tj", $page->getContents()->render());
+        self::assertStringNotContainsString('(from) Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('(PDF) Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -3337,9 +3337,9 @@ final class PageTest extends TestCase
             options: new FlowTextOptions(maxLines: 2, overflow: TextOverflow::ELLIPSIS),
         );
 
-        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
-        self::assertStringContainsString("/F2 10 Tf\n10 38 Td\n(Hello worl\x85) Tj", $page->contents->render());
-        self::assertStringNotContainsString('(world) Tj', $page->contents->render());
+        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->getContents()->render());
+        self::assertStringContainsString("/F2 10 Tf\n10 38 Td\n(Hello worl\x85) Tj", $page->getContents()->render());
+        self::assertStringNotContainsString('(world) Tj', $page->getContents()->render());
     }
 
     #[Test]
@@ -3360,9 +3360,9 @@ final class PageTest extends TestCase
             10,
         );
 
-        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
-        self::assertStringContainsString('(abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ) Tj', $page->contents->render());
-        self::assertStringContainsString("(0123456789.:,;\\(\\)*!?'@#<>$%&^+-=~) Tj", $page->contents->render());
+        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->getContents()->render());
+        self::assertStringContainsString('(abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ) Tj', $page->getContents()->render());
+        self::assertStringContainsString("(0123456789.:,;\\(\\)*!?'@#<>$%&^+-=~) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3383,9 +3383,9 @@ final class PageTest extends TestCase
             10,
         );
 
-        self::assertStringContainsString("10 50 Td\n1 0 0 rg\n(Achtung:) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n(Hello world) Tj", $page->contents->render());
-        self::assertStringContainsString("10 26 Td\n(from PDF) Tj", $page->contents->render());
+        self::assertStringContainsString("10 50 Td\n1 0 0 rg\n(Achtung:) Tj", $page->getContents()->render());
+        self::assertStringContainsString("10 38 Td\n(Hello world) Tj", $page->getContents()->render());
+        self::assertStringContainsString("10 26 Td\n(from PDF) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3502,7 +3502,7 @@ final class PageTest extends TestCase
             align: HorizontalAlign::JUSTIFY,
         );
 
-        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3680,8 +3680,8 @@ final class PageTest extends TestCase
         $result = $graphics->finishClosedPath($path, null, null, Color::gray(0.5), null);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("0.5 g\n10 10 m", $page->contents->render());
-        self::assertStringContainsString("\nh\nf", $page->contents->render());
+        self::assertStringContainsString("0.5 g\n10 10 m", $page->getContents()->render());
+        self::assertStringContainsString("\nh\nf", $page->getContents()->render());
     }
 
     #[Test]
@@ -3783,8 +3783,8 @@ final class PageTest extends TestCase
             10,
         );
 
-        self::assertStringContainsString('re f', $page->contents->render());
-        self::assertSame(2, substr_count($page->contents->render(), 're f'));
+        self::assertStringContainsString('re f', $page->getContents()->render());
+        self::assertSame(2, substr_count($page->getContents()->render(), 're f'));
     }
 
     #[Test]
@@ -3796,8 +3796,8 @@ final class PageTest extends TestCase
 
         $page->addText('', new Position(10, 50), 'Helvetica', 10, new TextOptions(underline: true, strikethrough: true));
 
-        self::assertStringContainsString('() Tj', $page->contents->render());
-        self::assertStringNotContainsString('re f', $page->contents->render());
+        self::assertStringContainsString('() Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('re f', $page->getContents()->render());
     }
 
     #[Test]
@@ -3818,9 +3818,9 @@ final class PageTest extends TestCase
             10,
         );
 
-        self::assertStringContainsString('(Link:) Tj', $page->contents->render());
-        self::assertStringContainsString('( example) Tj', $page->contents->render());
-        self::assertStringContainsString('33.9 48.2 37.79 0.5 re f', $page->contents->render());
+        self::assertStringContainsString('(Link:) Tj', $page->getContents()->render());
+        self::assertStringContainsString('( example) Tj', $page->getContents()->render());
+        self::assertStringContainsString('33.9 48.2 37.79 0.5 re f', $page->getContents()->render());
     }
 
     #[Test]
@@ -3835,8 +3835,8 @@ final class PageTest extends TestCase
         $expectedUnderlineWidth = $page->measureTextWidth('example', 'Helvetica', 10);
         $formattedWidth = rtrim(rtrim(sprintf('%.6F', $expectedUnderlineWidth), '0'), '.');
 
-        self::assertStringContainsString('(example ) Tj', $page->contents->render());
-        self::assertStringContainsString("10 48.2 $formattedWidth 0.5 re f", $page->contents->render());
+        self::assertStringContainsString('(example ) Tj', $page->getContents()->render());
+        self::assertStringContainsString("10 48.2 $formattedWidth 0.5 re f", $page->getContents()->render());
     }
 
     #[Test]
@@ -3848,7 +3848,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText('Hello', new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::CENTER));
 
-        self::assertStringContainsString("48.61 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("48.61 50 Td\n(Hello) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3860,7 +3860,7 @@ final class PageTest extends TestCase
 
         $page->addFlowText('Hello', new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::RIGHT));
 
-        self::assertStringContainsString("87.22 50 Td\n(Hello) Tj", $page->contents->render());
+        self::assertStringContainsString("87.22 50 Td\n(Hello) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3872,8 +3872,8 @@ final class PageTest extends TestCase
 
         $page->addFlowText('Hello world from PDF', new Position(10, 50), 70, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::JUSTIFY));
 
-        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->contents->render());
-        self::assertStringContainsString("56.11 50 Td\n(world) Tj", $page->contents->render());
+        self::assertStringContainsString("10 50 Td\n(Hello) Tj", $page->getContents()->render());
+        self::assertStringContainsString("56.11 50 Td\n(world) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3885,8 +3885,8 @@ final class PageTest extends TestCase
 
         $page->addFlowText("Hello world\nfrom PDF", new Position(10, 50), 100, 'Helvetica', 10, new FlowTextOptions(align: HorizontalAlign::JUSTIFY));
 
-        self::assertStringContainsString("10 50 Td\n(Hello world) Tj", $page->contents->render());
-        self::assertStringContainsString("10 38 Td\n(from PDF) Tj", $page->contents->render());
+        self::assertStringContainsString("10 50 Td\n(Hello world) Tj", $page->getContents()->render());
+        self::assertStringContainsString("10 38 Td\n(from PDF) Tj", $page->getContents()->render());
     }
 
     #[Test]
@@ -3907,9 +3907,9 @@ final class PageTest extends TestCase
 
         self::assertCount(2, $document->pages->pages);
         self::assertSame($document->pages->pages[1], $lastPage);
-        self::assertStringContainsString('(Hello)', $firstPage->contents->render());
-        self::assertStringContainsString('(world)', $firstPage->contents->render());
-        self::assertStringContainsString('(from)', $lastPage->contents->render());
-        self::assertStringContainsString('(PDF)', $lastPage->contents->render());
+        self::assertStringContainsString('(Hello)', $firstPage->getContents()->render());
+        self::assertStringContainsString('(world)', $firstPage->getContents()->render());
+        self::assertStringContainsString('(from)', $lastPage->getContents()->render());
+        self::assertStringContainsString('(PDF)', $lastPage->getContents()->render());
     }
 }

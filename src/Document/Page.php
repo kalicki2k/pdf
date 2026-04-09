@@ -54,8 +54,8 @@ final class Page extends IndirectObject
     private ?PageTextElementRenderer $pageTextElementRenderer = null;
     private ?PageParagraphRenderer $pageParagraphRenderer = null;
     private PageMarkedContentIds $pageMarkedContentIds;
-    public Contents $contents;
-    public Resources $resources;
+    private readonly Contents $contents;
+    private readonly Resources $resources;
 
     public function __construct(
         public int                $id,

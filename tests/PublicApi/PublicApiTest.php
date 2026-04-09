@@ -519,7 +519,7 @@ final class PublicApiTest extends TestCase
 
         self::assertStringContainsString('/TU (Customer name)', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
-        self::assertSame(1, substr_count($page->contents->render(), '/P << /MCID'));
+        self::assertSame(1, substr_count($page->getContents()->render(), '/P << /MCID'));
         self::assertStringContainsString('/Type /StructElem /S /Div', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
@@ -1527,7 +1527,7 @@ final class PublicApiTest extends TestCase
         self::assertSame($page, $returnedPage);
         self::assertSame(120.0, $page->getWidth());
         self::assertSame(140.0, $page->getHeight());
-        self::assertStringContainsString('(Hello) Tj', $internalPage->contents->render());
+        self::assertStringContainsString('(Hello) Tj', $internalPage->getContents()->render());
         self::assertCount(2, $internalPage->getAnnotations());
     }
 
@@ -1547,7 +1547,7 @@ final class PublicApiTest extends TestCase
         $internalPage = $this->internalPage($page);
 
         self::assertInstanceOf(Page::class, $receivedPage);
-        self::assertStringContainsString('(Layered) Tj', $internalPage->contents->render());
+        self::assertStringContainsString('(Layered) Tj', $internalPage->getContents()->render());
     }
 
     #[Test]
@@ -1644,7 +1644,7 @@ final class PublicApiTest extends TestCase
         self::assertInstanceOf(Page::class, $frame->getPage());
         self::assertLessThan(190.0, $frame->getCursorY());
 
-        $rendered = $this->internalPage($page)->contents->render();
+        $rendered = $this->internalPage($page)->getContents()->render();
 
         self::assertStringContainsString('(Intro) Tj', $rendered);
         self::assertStringContainsString('(Paragraph) Tj', $rendered);
@@ -1682,7 +1682,7 @@ final class PublicApiTest extends TestCase
         self::assertGreaterThan(0, $page->countParagraphLines('Hello world', 'Helvetica', 10, 40));
         self::assertSame(22.78, $page->measureTextWidth('Hello', 'Helvetica', 10));
 
-        $rendered = $this->internalPage($page)->contents->render();
+        $rendered = $this->internalPage($page)->getContents()->render();
 
         self::assertStringContainsString('(Badge) Tj', $rendered);
         self::assertStringContainsString('(Title) Tj', $rendered);

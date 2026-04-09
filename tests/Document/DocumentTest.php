@@ -598,8 +598,8 @@ final class DocumentTest extends TestCase
         self::assertCount(1, $document->getFonts());
         self::assertSame(4, $document->getFonts()[0]->id);
         self::assertSame(5, $page->id);
-        self::assertSame(6, $page->contents->id);
-        self::assertSame(7, $page->resources->id);
+        self::assertSame(6, $page->getContents()->id);
+        self::assertSame(7, $page->getResources()->id);
         self::assertSame([1, 2, 3, 4, 5, 7, 6, 8], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
@@ -977,10 +977,10 @@ final class DocumentTest extends TestCase
         $secondPage = $document->addPage(100, 100);
         $document->render();
 
-        self::assertStringContainsString('(Header 1) Tj', $firstPage->contents->render());
-        self::assertStringContainsString('(Footer 1) Tj', $firstPage->contents->render());
-        self::assertStringContainsString('(Header 2) Tj', $secondPage->contents->render());
-        self::assertStringContainsString('(Footer 2) Tj', $secondPage->contents->render());
+        self::assertStringContainsString('(Header 1) Tj', $firstPage->getContents()->render());
+        self::assertStringContainsString('(Footer 1) Tj', $firstPage->getContents()->render());
+        self::assertStringContainsString('(Header 2) Tj', $secondPage->getContents()->render());
+        self::assertStringContainsString('(Footer 2) Tj', $secondPage->getContents()->render());
     }
 
     #[Test]
@@ -1053,10 +1053,10 @@ final class DocumentTest extends TestCase
         $document->render();
 
         self::assertGreaterThan(1, count($document->pages->pages));
-        self::assertStringContainsString('(Header 1) Tj', $firstPage->contents->render());
-        self::assertStringContainsString('(Footer 1) Tj', $firstPage->contents->render());
-        self::assertStringContainsString("(Header $lastPageNumber) Tj", $lastPage->contents->render());
-        self::assertStringContainsString("(Footer $lastPageNumber) Tj", $lastPage->contents->render());
+        self::assertStringContainsString('(Header 1) Tj', $firstPage->getContents()->render());
+        self::assertStringContainsString('(Footer 1) Tj', $firstPage->getContents()->render());
+        self::assertStringContainsString("(Header $lastPageNumber) Tj", $lastPage->getContents()->render());
+        self::assertStringContainsString("(Footer $lastPageNumber) Tj", $lastPage->getContents()->render());
     }
 
     #[Test]
@@ -1070,8 +1070,8 @@ final class DocumentTest extends TestCase
         $document->addPageNumbers(new Position(10, 10));
         $document->render();
 
-        self::assertStringContainsString('(Seite 1 von 2) Tj', $document->pages->pages[0]->contents->render());
-        self::assertStringContainsString('(Seite 2 von 2) Tj', $document->pages->pages[1]->contents->render());
+        self::assertStringContainsString('(Seite 1 von 2) Tj', $document->pages->pages[0]->getContents()->render());
+        self::assertStringContainsString('(Seite 2 von 2) Tj', $document->pages->pages[1]->getContents()->render());
     }
 
     #[Test]
@@ -1086,8 +1086,8 @@ final class DocumentTest extends TestCase
         $document->addPageNumbers(new Position(10, 90), 'Helvetica', 10, 'Seite {{page}} / {{pages}}', false);
         $document->render();
 
-        self::assertStringContainsString('(Seite 1 / 3) Tj', $document->pages->pages[0]->contents->render());
-        self::assertStringContainsString('(Seite 3 / 3) Tj', $document->pages->pages[2]->contents->render());
+        self::assertStringContainsString('(Seite 1 / 3) Tj', $document->pages->pages[0]->getContents()->render());
+        self::assertStringContainsString('(Seite 3 / 3) Tj', $document->pages->pages[2]->getContents()->render());
     }
 
     #[Test]
@@ -1103,9 +1103,9 @@ final class DocumentTest extends TestCase
         $document->addPageNumbers(new Position(10, 10), useLogicalPageNumbers: true);
         $document->render();
 
-        self::assertStringNotContainsString('(Seite', $coverPage->contents->render());
-        self::assertStringContainsString('(Seite 1 von 2) Tj', $firstPage->contents->render());
-        self::assertStringContainsString('(Seite 2 von 2) Tj', $secondPage->contents->render());
+        self::assertStringNotContainsString('(Seite', $coverPage->getContents()->render());
+        self::assertStringContainsString('(Seite 1 von 2) Tj', $firstPage->getContents()->render());
+        self::assertStringContainsString('(Seite 2 von 2) Tj', $secondPage->getContents()->render());
     }
 
     #[Test]
@@ -1145,11 +1145,11 @@ final class DocumentTest extends TestCase
         $tocPage = $document->addTableOfContents(PageSize::A6(), new TableOfContentsOptions(title: 'Inhalt', baseFont: 'Helvetica', titleSize: 16, entrySize: 10, margin: 10));
 
         self::assertSame($document->pages->pages[array_key_last($document->pages->pages)], $tocPage);
-        self::assertStringContainsString('(Inhalt) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(Erste Seite) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(1) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(Zweite Seite) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(2) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(Inhalt) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(Erste Seite) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(1) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(Zweite Seite) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(2) Tj', $tocPage->getContents()->render());
         self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] /toc-page-8 [8 0 R /Fit] >>', $document->render());
     }
 
@@ -1190,8 +1190,8 @@ final class DocumentTest extends TestCase
             new TableOfContentsOptions(title: 'Inhalt', baseFont: 'Helvetica', titleSize: 16, entrySize: 10, margin: 10),
         );
 
-        self::assertStringContainsString('(Erste Seite) Tj', $tocPage->contents->render());
-        self::assertStringNotContainsString('(Fremde Seite) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(Erste Seite) Tj', $tocPage->getContents()->render());
+        self::assertStringNotContainsString('(Fremde Seite) Tj', $tocPage->getContents()->render());
         self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] >>', $document->render());
     }
 
@@ -1235,7 +1235,7 @@ final class DocumentTest extends TestCase
 
         $tocPages = array_slice($document->pages->pages, 0, $firstContentPageIndex);
         $tocContents = implode('', array_map(
-            static fn (Page $page): string => $page->contents->render(),
+            static fn (Page $page): string => $page->getContents()->render(),
             $tocPages,
         ));
 
@@ -1264,9 +1264,9 @@ final class DocumentTest extends TestCase
         $tocPage = $document->addTableOfContents(PageSize::A6(), new TableOfContentsOptions(title: 'Inhalt', baseFont: 'Helvetica', titleSize: 16, entrySize: 10, margin: 10, placement: TableOfContentsPlacement::start()));
         $document->render();
 
-        self::assertStringContainsString('(Header 1) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(Header 2) Tj', $firstPage->contents->render());
-        self::assertStringContainsString('(Header 3) Tj', $secondPage->contents->render());
+        self::assertStringContainsString('(Header 1) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(Header 2) Tj', $firstPage->getContents()->render());
+        self::assertStringContainsString('(Header 3) Tj', $secondPage->getContents()->render());
     }
 
     #[Test]
@@ -1298,8 +1298,8 @@ final class DocumentTest extends TestCase
         self::assertSame($tocPage, $document->pages->pages[1]);
         self::assertSame($firstPage, $document->pages->pages[2]);
         self::assertSame($secondPage, $document->pages->pages[3]);
-        self::assertStringContainsString('(3) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(4) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(3) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(4) Tj', $tocPage->getContents()->render());
     }
 
     #[Test]
@@ -1328,8 +1328,8 @@ final class DocumentTest extends TestCase
         self::assertSame($firstPage, $document->pages->pages[0]);
         self::assertSame($secondPage, $document->pages->pages[1]);
         self::assertSame($tocPage, $document->pages->pages[2]);
-        self::assertStringContainsString('(1) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(2) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(1) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(2) Tj', $tocPage->getContents()->render());
     }
 
     #[Test]
@@ -1364,9 +1364,9 @@ final class DocumentTest extends TestCase
         self::assertSame($secondPage, $document->pages->pages[2]);
         self::assertSame($thirdPage, $document->pages->pages[3]);
         self::assertSame($tocPage, $document->pages->pages[4]);
-        self::assertStringContainsString('(2) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(3) Tj', $tocPage->contents->render());
-        self::assertStringContainsString('(4) Tj', $tocPage->contents->render());
+        self::assertStringContainsString('(2) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(3) Tj', $tocPage->getContents()->render());
+        self::assertStringContainsString('(4) Tj', $tocPage->getContents()->render());
     }
 
     #[Test]
@@ -1398,7 +1398,7 @@ final class DocumentTest extends TestCase
             ),
         );
 
-        $tocContents = $tocPage->contents->render();
+        $tocContents = $tocPage->getContents()->render();
 
         self::assertStringContainsString('(2) Tj', $tocContents);
         self::assertStringContainsString('(3) Tj', $tocContents);
@@ -1426,7 +1426,7 @@ final class DocumentTest extends TestCase
             ),
         );
 
-        self::assertStringNotContainsString('(....', $tocPage->contents->render());
+        self::assertStringNotContainsString('(....', $tocPage->getContents()->render());
     }
 
     #[Test]
@@ -1449,7 +1449,7 @@ final class DocumentTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString('(---', $tocPage->contents->render());
+        self::assertStringContainsString('(---', $tocPage->getContents()->render());
     }
 
     #[Test]
@@ -1472,7 +1472,7 @@ final class DocumentTest extends TestCase
             ),
         );
 
-        $tocContents = $tocPage->contents->render();
+        $tocContents = $tocPage->getContents()->render();
 
         self::assertStringContainsString('(...) Tj', $tocContents);
         self::assertStringNotContainsString('(ABCDE...) Tj', $tocContents);
@@ -1498,7 +1498,7 @@ final class DocumentTest extends TestCase
             ),
         );
 
-        $tocContents = $tocPage->contents->render();
+        $tocContents = $tocPage->getContents()->render();
 
         self::assertStringContainsString('(ABCD...) Tj', $tocContents);
         self::assertStringNotContainsString('(ABCDEFGHIJKLMN) Tj', $tocContents);
