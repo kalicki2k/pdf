@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Font;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Font\FontFileStream;
+use Kalle\Pdf\Font\OpenTypeFontParser;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -37,6 +39,22 @@ final class FontFileStreamTest extends TestCase
             . "<< /Length 7 /Length1 7 /Subtype /OpenType >>\n"
             . "stream\n"
             . "OTFDATA\n"
+            . "endstream\n"
+            . "endobj\n",
+            $stream->render(),
+        );
+    }
+
+    #[Test]
+    public function it_renders_a_font_stream_from_binary_data(): void
+    {
+        $stream = new FontFileStream(20, BinaryData::fromString('FONTDATA'));
+
+        self::assertSame(
+            "20 0 obj\n"
+            . "<< /Length 8 /Length1 8 >>\n"
+            . "stream\n"
+            . "FONTDATA\n"
             . "endstream\n"
             . "endobj\n",
             $stream->render(),
@@ -97,5 +115,18 @@ final class FontFileStreamTest extends TestCase
         $this->expectExceptionMessage("Unable to read font file '$missingPath'.");
 
         FontFileStream::fromPath(24, $missingPath);
+    }
+
+    #[Test]
+    public function it_reuses_the_same_font_parser_instance(): void
+    {
+        $stream = FontFileStream::fromPath(25, 'assets/fonts/NotoSans-Regular.ttf');
+
+        $firstParser = $stream->parser();
+        $secondParser = $stream->parser();
+
+        self::assertInstanceOf(OpenTypeFontParser::class, $firstParser);
+        self::assertSame($firstParser, $secondParser);
+        self::assertGreaterThan(0, $firstParser->getUnitsPerEm());
     }
 }

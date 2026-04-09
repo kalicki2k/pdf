@@ -5,26 +5,32 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
+use RuntimeException;
 
 final class FontFileStream extends IndirectObject
 {
+    private readonly BinaryData $data;
+    private ?OpenTypeFontParser $parser = null;
+
     public function __construct(
         int $id,
-        public readonly string $data,
+        string | BinaryData $data,
         private readonly string $streamType = 'FontFile2',
         private readonly ?string $subtype = null,
     ) {
         parent::__construct($id);
+        $this->data = is_string($data) ? BinaryData::fromString($data) : $data;
     }
 
     public static function fromPath(int $id, string $path): self
     {
-        $data = @file_get_contents($path);
-
-        if ($data === false) {
+        try {
+            $data = BinaryData::fromFile($path);
+        } catch (RuntimeException $exception) {
             throw new InvalidArgumentException("Unable to read font file '$path'.");
         }
 
@@ -42,11 +48,21 @@ final class FontFileStream extends IndirectObject
         return $this->streamType;
     }
 
+    public function contents(): string
+    {
+        return $this->data->contents();
+    }
+
+    public function parser(): OpenTypeFontParser
+    {
+        return $this->parser ??= new OpenTypeFontParser($this->contents());
+    }
+
     public function render(): string
     {
         $dictionary = new DictionaryType([
-            'Length' => strlen($this->data),
-            'Length1' => strlen($this->data),
+            'Length' => $this->data->length(),
+            'Length1' => $this->data->length(),
         ]);
 
         if ($this->subtype !== null) {
@@ -56,7 +72,7 @@ final class FontFileStream extends IndirectObject
         return $this->id . ' 0 obj' . PHP_EOL
             . $dictionary->render() . PHP_EOL
             . 'stream' . PHP_EOL
-            . $this->data . PHP_EOL
+            . $this->data->contents() . PHP_EOL
             . 'endstream' . PHP_EOL
             . 'endobj' . PHP_EOL;
     }

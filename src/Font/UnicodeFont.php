@@ -57,7 +57,7 @@ final class UnicodeFont extends IndirectObject implements FontDefinition
             return mb_strlen($text, 'UTF-8') * $size;
         }
 
-        $fontParser = new OpenTypeFontParser($this->descendantFont->fontDescriptor->fontFile->data);
+        $fontParser = $this->descendantFont->fontDescriptor->fontFile->parser();
         $unitsPerEm = $fontParser->getUnitsPerEm();
         $width = 0;
 

@@ -8,7 +8,6 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontRegistry;
-use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFont;
 
@@ -55,7 +54,7 @@ final class PageFonts
             return;
         }
 
-        $fontParser = new OpenTypeFontParser($font->descendantFont->fontDescriptor->fontFile->data);
+        $fontParser = $font->descendantFont->fontDescriptor->fontFile->parser();
         $widths = [];
 
         foreach ($font->getCodePointMap() as $cid => $codePointHex) {

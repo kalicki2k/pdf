@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Form;
 
 use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -206,7 +205,7 @@ final class FormFieldTextAppearanceStream extends IndirectObject
             return;
         }
 
-        $fontParser = new OpenTypeFontParser($this->font->descendantFont->fontDescriptor->fontFile->data);
+        $fontParser = $this->font->descendantFont->fontDescriptor->fontFile->parser();
         $widths = [];
 
         foreach ($this->font->getCodePointMap() as $cid => $codePointHex) {

@@ -104,7 +104,7 @@ final readonly class DocumentFontFactory
         if ($fontFilePath !== null) {
             $fontFile = FontFileStream::fromPath($this->document->getUniqObjectId(), $fontFilePath);
             $fontDescriptor = new FontDescriptor($this->document->getUniqObjectId(), $baseFont, $fontFile);
-            $fontParser = new OpenTypeFontParser($fontFile->data);
+            $fontParser = $fontFile->parser();
 
             if ($fontParser->hasCffOutlines()) {
                 $subtype = 'CIDFontType0';
