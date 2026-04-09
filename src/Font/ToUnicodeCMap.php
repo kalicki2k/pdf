@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 
 final class ToUnicodeCMap extends IndirectObject
@@ -18,17 +20,21 @@ final class ToUnicodeCMap extends IndirectObject
 
     public function render(): string
     {
-        $cmap = $this->buildCMap();
-        $dictionary = new DictionaryType([
-            'Length' => strlen($cmap),
-        ]);
+        $buffer = new StringPdfOutput();
+        $this->write($buffer);
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'stream' . PHP_EOL
-            . $cmap . PHP_EOL
-            . 'endstream' . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $buffer->contents();
+    }
+
+    public function write(PdfOutput $output): void
+    {
+        $cmap = $this->buildCMap();
+
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary(strlen($cmap))->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $output->write($cmap);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
     private function buildCMap(): string
@@ -64,5 +70,12 @@ final class ToUnicodeCMap extends IndirectObject
         $lines[] = 'end';
 
         return implode(PHP_EOL, $lines);
+    }
+
+    private function dictionary(int $length): DictionaryType
+    {
+        return new DictionaryType([
+            'Length' => $length,
+        ]);
     }
 }
