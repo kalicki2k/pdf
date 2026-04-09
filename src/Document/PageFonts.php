@@ -17,8 +17,10 @@ use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
  */
 final class PageFonts
 {
-    public function __construct(private readonly Page $page)
-    {
+    public function __construct(
+        private readonly Page $page,
+        private readonly UnicodeFontWidthUpdater $unicodeFontWidthUpdater,
+    ) {
     }
 
     public function resolveFont(string $baseFont): FontDefinition
@@ -47,7 +49,7 @@ final class PageFonts
 
     public function updateUnicodeFontWidths(FontDefinition $font): void
     {
-        (new UnicodeFontWidthUpdater())->update($font);
+        $this->unicodeFontWidthUpdater->update($font);
     }
 
     public function measureTextWidth(string $text, string $baseFont, int $size): float
