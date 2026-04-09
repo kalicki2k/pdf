@@ -28,6 +28,7 @@ use Kalle\Pdf\Document\Table\TableCaption;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Table\TableGroupPageFit;
 use Kalle\Pdf\Document\Table\TableHeaderScope;
+use Kalle\Pdf\Document\Table\TableSections;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
@@ -39,10 +40,6 @@ final class Table
     private const DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
     private const DEFAULT_CONTINUATION_TOP_MARGIN = 40.0;
 
-    /** @var list<list<string|list<TextSegment>|TableCell>> */
-    private array $repeatingHeaderRows = [];
-    /** @var list<list<string|list<TextSegment>|TableCell>> */
-    private array $footerRows = [];
     /** @var list<int> */
     private array $activeRowspans = [];
     private readonly float $topMargin;
@@ -61,13 +58,9 @@ final class Table
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
     private readonly TablePendingRenderState $pendingRenderState;
+    private readonly TableSections $sections;
     private readonly ?StructElem $tableStructElem;
     private ?TableCaption $caption = null;
-    private bool $captionRendered = false;
-    private bool $footersRendered = false;
-    private bool $rowsAdded = false;
-    private bool $bodyRowsAdded = false;
-    private bool $footerRowsAdded = false;
 
     /**
      * @param list<float|int> $columnWidths
@@ -119,6 +112,7 @@ final class Table
             $this->textMetrics,
         );
         $this->pendingRenderState = new TablePendingRenderState();
+        $this->sections = new TableSections();
         $this->tableStructElem = $page->getDocument()->getProfile()->requiresTaggedPdf()
             ? $page->getDocument()->createStructElem(StructureTag::Table)
             : null;
@@ -177,7 +171,7 @@ final class Table
 
     public function caption(TableCaption $caption): self
     {
-        if ($this->captionRendered || $this->rowsAdded) {
+        if (!$this->sections->canConfigureCaption()) {
             throw new InvalidArgumentException('Table caption must be configured before rows are added.');
         }
 
@@ -191,7 +185,7 @@ final class Table
      */
     public function addRow(array $cells): self
     {
-        $this->bodyRowsAdded = true;
+        $this->sections->markBodyRowsAdded();
 
         return $this->addTypedRow($cells, false);
     }
@@ -201,12 +195,12 @@ final class Table
      */
     public function addHeaderRow(array $cells, bool $repeat = true): self
     {
-        if ($this->bodyRowsAdded || $this->footerRowsAdded) {
+        if (!$this->sections->canAddHeaderRows()) {
             throw new InvalidArgumentException('Header rows must be added before body or footer rows.');
         }
 
         if ($repeat) {
-            $this->repeatingHeaderRows[] = $cells;
+            $this->sections->addRepeatingHeaderRow($cells);
         }
 
         return $this->addTypedRow($cells, true);
@@ -217,9 +211,7 @@ final class Table
      */
     public function addFooterRow(array $cells): self
     {
-        $this->rowsAdded = true;
-        $this->footerRowsAdded = true;
-        $this->footerRows[] = $cells;
+        $this->sections->addFooterRow($cells);
 
         return $this;
     }
@@ -229,7 +221,7 @@ final class Table
      */
     private function addTypedRow(array $cells, bool $header): self
     {
-        $this->rowsAdded = true;
+        $this->sections->markRowsAdded();
 
         $preparedRow = $this->prepareRow($cells, $header);
         $this->pendingRenderState->addRow(new PreparedTableRow($preparedRow['cells'], $header));
@@ -261,7 +253,7 @@ final class Table
             $pendingGroupRows,
             static fn (PreparedTableRow $row): bool => $row->header === false,
         );
-        $repeatHeaders = $isBodyGroup && $this->repeatingHeaderRows !== [];
+        $repeatHeaders = $isBodyGroup && $this->sections->hasRepeatingHeaderRows();
         $remainingRows = $pendingGroupRows;
         $remainingRowHeights = $rowHeights;
         $deferredLeadingSplit = false;
@@ -316,9 +308,9 @@ final class Table
         $remainingCurrentPageHeight = $this->cursorY - $this->bottomMargin;
         $headerRepeatHeight = 0.0;
 
-        if ($repeatHeaders && $this->repeatingHeaderRows !== []) {
+        if ($repeatHeaders && $this->sections->hasRepeatingHeaderRows()) {
             $preparedHeaderRows = $this->prepareRowGroup(
-                $this->repeatingHeaderRows,
+                $this->sections->repeatingHeaderRows(),
                 true,
                 false,
                 'Header rowspans must be completed within the repeated header rows.',
@@ -327,7 +319,7 @@ final class Table
         }
 
         return new TableGroupPageFit(
-            repeatHeaders: $repeatHeaders && $this->repeatingHeaderRows !== [],
+            repeatHeaders: $repeatHeaders && $this->sections->hasRepeatingHeaderRows(),
             fittingRowCountOnCurrentPage: $this->countFittingRows($rowHeights, $remainingCurrentPageHeight),
         );
     }
@@ -342,7 +334,7 @@ final class Table
         }
 
         $preparedHeaderRows = $this->prepareRowGroup(
-            $this->repeatingHeaderRows,
+            $this->sections->repeatingHeaderRows(),
             true,
             false,
             'Header rowspans must be completed within the repeated header rows.',
@@ -633,7 +625,7 @@ final class Table
 
     private function finalize(): void
     {
-        if ($this->footersRendered || $this->footerRows === []) {
+        if ($this->sections->areFootersRendered() || !$this->sections->hasFooterRows()) {
             return;
         }
 
@@ -642,7 +634,7 @@ final class Table
         }
 
         $preparedFooterRows = $this->prepareRowGroup(
-            $this->footerRows,
+            $this->sections->footerRows(),
             false,
             true,
             'Footer rowspans must be completed within the footer rows.',
@@ -661,7 +653,7 @@ final class Table
         }
 
         $this->renderPendingGroup($preparedFooterRows, $footerHeights);
-        $this->footersRendered = true;
+        $this->sections->markFootersRendered();
     }
 
     private function resolveEffectiveCellStyle(TableCell $cell, bool $header, bool $footer = false): ResolvedTableCellStyle
@@ -756,7 +748,7 @@ final class Table
     {
         $caption = $this->caption;
 
-        if ($caption === null || $this->captionRendered) {
+        if ($caption === null || $this->sections->isCaptionRendered()) {
             return;
         }
 
@@ -783,7 +775,7 @@ final class Table
             $this->bottomMargin,
         );
         $this->cursorY -= (count($captionLines) * $captionLineHeight) + $caption->spacingAfter;
-        $this->captionRendered = true;
+        $this->sections->markCaptionRendered();
     }
 
     /**
