@@ -9,13 +9,10 @@ namespace Kalle\Pdf\Document;
  */
 final class PageObjectRenderer
 {
-    private readonly PageDictionaryBuilder $dictionaryBuilder;
-
     public function __construct(
         private readonly Page $page,
-        ?PageDictionaryBuilder $dictionaryBuilder = null,
+        private readonly PageDictionaryBuilder $dictionaryBuilder,
     ) {
-        $this->dictionaryBuilder = $dictionaryBuilder ?? new PageDictionaryBuilder();
     }
 
     public function render(bool $hasMarkedContent): string

@@ -856,7 +856,10 @@ final class Page extends IndirectObject
 
     private function pageObjectRenderer(): PageObjectRenderer
     {
-        return $this->pageObjectRenderer ??= new PageObjectRenderer($this);
+        return $this->pageObjectRenderer ??= new PageObjectRenderer(
+            $this,
+            new PageDictionaryBuilder(),
+        );
     }
 
     private function pageGraphics(): PageGraphics
