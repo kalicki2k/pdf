@@ -6,7 +6,12 @@ namespace Kalle\Pdf\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Kalle\Pdf\Application\Document\DocumentEncryptionManager as ApplicationDocumentEncryptionManager;
+use Kalle\Pdf\Application\Document\DocumentMetadataManager as ApplicationDocumentMetadataManager;
+use Kalle\Pdf\Application\Document\DocumentNavigationManager as ApplicationDocumentNavigationManager;
 use Kalle\Pdf\Application\Document\DocumentObjectCollector as ApplicationDocumentObjectCollector;
+use Kalle\Pdf\Application\Document\DocumentOptionalContentManager as ApplicationDocumentOptionalContentManager;
+use Kalle\Pdf\Application\Document\DocumentPageDecoratorManager as ApplicationDocumentPageDecoratorManager;
 use Kalle\Pdf\Application\Document\DocumentPdfWriter as ApplicationDocumentPdfWriter;
 use Kalle\Pdf\Application\Document\DocumentTableOfContentsBuilder as ApplicationDocumentTableOfContentsBuilder;
 use Kalle\Pdf\Document\Form\AcroForm;
@@ -70,12 +75,12 @@ class Document
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
     private ?DocumentAcroFormManager $documentAcroFormManager = null;
-    private ?DocumentMetadataManager $documentMetadataManager = null;
-    private ?DocumentNavigationManager $documentNavigationManager = null;
-    private ?DocumentOptionalContentManager $documentOptionalContentManager = null;
+    private ?ApplicationDocumentMetadataManager $documentMetadataManager = null;
+    private ?ApplicationDocumentNavigationManager $documentNavigationManager = null;
+    private ?ApplicationDocumentOptionalContentManager $documentOptionalContentManager = null;
     private ?DocumentAttachmentManager $documentAttachmentManager = null;
-    private ?DocumentEncryptionManager $documentEncryptionManager = null;
-    private ?DocumentPageDecoratorManager $documentPageDecoratorManager = null;
+    private ?ApplicationDocumentEncryptionManager $documentEncryptionManager = null;
+    private ?ApplicationDocumentPageDecoratorManager $documentPageDecoratorManager = null;
     private ?DocumentStructureManager $documentStructureManager = null;
     private ?DocumentProfileGuard $documentProfileGuard = null;
     private ?DocumentFontFactory $documentFontFactory = null;
@@ -681,9 +686,9 @@ class Document
         return $this->documentAcroFormManager ??= new DocumentAcroFormManager($this);
     }
 
-    private function documentMetadataManager(): DocumentMetadataManager
+    private function documentMetadataManager(): ApplicationDocumentMetadataManager
     {
-        return $this->documentMetadataManager ??= new DocumentMetadataManager(
+        return $this->documentMetadataManager ??= new ApplicationDocumentMetadataManager(
             $this,
             $this->creator,
             $this->creatorTool,
@@ -694,14 +699,14 @@ class Document
         );
     }
 
-    private function documentNavigationManager(): DocumentNavigationManager
+    private function documentNavigationManager(): ApplicationDocumentNavigationManager
     {
-        return $this->documentNavigationManager ??= new DocumentNavigationManager($this, $this->destinations);
+        return $this->documentNavigationManager ??= new ApplicationDocumentNavigationManager($this, $this->destinations);
     }
 
-    private function documentOptionalContentManager(): DocumentOptionalContentManager
+    private function documentOptionalContentManager(): ApplicationDocumentOptionalContentManager
     {
-        return $this->documentOptionalContentManager ??= new DocumentOptionalContentManager(
+        return $this->documentOptionalContentManager ??= new ApplicationDocumentOptionalContentManager(
             $this,
             $this->optionalContentGroups,
         );
@@ -712,9 +717,9 @@ class Document
         return $this->documentAttachmentManager ??= new DocumentAttachmentManager($this, $this->attachments);
     }
 
-    private function documentEncryptionManager(): DocumentEncryptionManager
+    private function documentEncryptionManager(): ApplicationDocumentEncryptionManager
     {
-        return $this->documentEncryptionManager ??= new DocumentEncryptionManager(
+        return $this->documentEncryptionManager ??= new ApplicationDocumentEncryptionManager(
             $this,
             $this->encryptionProfile,
             $this->encryptionOptions,
@@ -722,9 +727,9 @@ class Document
         );
     }
 
-    private function documentPageDecoratorManager(): DocumentPageDecoratorManager
+    private function documentPageDecoratorManager(): ApplicationDocumentPageDecoratorManager
     {
-        return $this->documentPageDecoratorManager ??= new DocumentPageDecoratorManager(
+        return $this->documentPageDecoratorManager ??= new ApplicationDocumentPageDecoratorManager(
             $this,
             $this->deferredRendering,
             $this->excludedPageIdsFromNumbering,
