@@ -118,16 +118,6 @@ final class FontRegistry
      */
     private static function loadDefaultDefinitions(): array
     {
-        /** @var list<array{
-         *     baseFont: string,
-         *     path: string,
-         *     unicode: bool,
-         *     subtype?: string,
-         *     encoding?: string
-         * }> $definitions
-         */
-        $definitions = require dirname(__DIR__, 2) . '/config/fonts.php';
-
-        return $definitions;
+        return DefaultFontPresetDefinitions::all();
     }
 }

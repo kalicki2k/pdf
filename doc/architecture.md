@@ -812,7 +812,7 @@ Das Font-System ist zweistufig aufgebaut.
 
 ### FontRegistry
 
-`FontRegistry` liest die eingebetteten Fontdefinitionen aus `config/fonts.php`.
+`FontRegistry` liest die eingebetteten Fontdefinitionen aus `DefaultFontPresetDefinitions`.
 
 Sie arbeitet mit echten Fontnamen als Schluessel, zum Beispiel:
 
