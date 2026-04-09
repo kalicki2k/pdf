@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use Kalle\Pdf\Application\Document\DocumentObjectCollector as ApplicationDocumentObjectCollector;
 use Kalle\Pdf\Application\Document\DocumentPdfWriter as ApplicationDocumentPdfWriter;
+use Kalle\Pdf\Application\Document\DocumentTableOfContentsBuilder as ApplicationDocumentTableOfContentsBuilder;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Outline\OutlineRoot;
@@ -616,7 +617,7 @@ class Document
         ?PageSize $size = null,
         ?TableOfContentsOptions $options = null,
     ): Page {
-        return (new DocumentTableOfContentsBuilder($this, $this->excludedPageIdsFromNumbering))
+        return (new ApplicationDocumentTableOfContentsBuilder($this, $this->excludedPageIdsFromNumbering))
             ->addTableOfContents($size, $options);
     }
 
