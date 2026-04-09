@@ -31,6 +31,10 @@ use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
+use Kalle\Pdf\Model\Document\Catalog as ModelCatalog;
+use Kalle\Pdf\Model\Document\EncryptDictionary as ModelEncryptDictionary;
+use Kalle\Pdf\Model\Document\Info as ModelInfo;
+use Kalle\Pdf\Model\Document\Pages as ModelPages;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\AtomicFilePdfOutput;
@@ -91,13 +95,13 @@ class Document
     private ?ApplicationDocumentProfileGuard $documentProfileGuard = null;
     private ?ApplicationDocumentFontFactory $documentFontFactory = null;
     private ?ApplicationDocumentFontRegistry $documentFontRegistry = null;
-    public Catalog $catalog;
+    public ModelCatalog $catalog;
     public ?AcroForm $acroForm = null;
-    public ?EncryptDictionary $encryptDictionary = null;
-    public Info $info;
+    public ?ModelEncryptDictionary $encryptDictionary = null;
+    public ModelInfo $info;
     public ?OutlineRoot $outlineRoot = null;
     public ?ParentTree $parentTree = null;
-    public Pages $pages;
+    public ModelPages $pages;
     public ?StructTreeRoot $structTreeRoot = null;
 
     /**
@@ -120,11 +124,11 @@ class Document
         private readonly ?array $fontConfig = null,
     ) {
         $this->profile = $profile;
-        $this->catalog = new Catalog(++$this->objectId, $this);
-        $this->pages = new Pages(++$this->objectId, $this);
+        $this->catalog = new ModelCatalog(++$this->objectId, $this);
+        $this->pages = new ModelPages(++$this->objectId, $this);
         $this->deferredRendering = new DocumentDeferredRendering();
 
-        $this->info = new Info(++$this->objectId, $this);
+        $this->info = new ModelInfo(++$this->objectId, $this);
         $this->creationDate = new DateTimeImmutable();
         $this->modificationDate = $this->creationDate;
         $this->creator = $creator !== null && $creator !== '' ? $creator : self::PACKAGE_NAME;

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Application\Document;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\EncryptDictionary;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\EncryptionVersionResolver;
 use Kalle\Pdf\Encryption\StandardSecurityHandler;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Model\Document\EncryptDictionary;
 
 /**
  * @internal Manages document encryption state and lazy security handler data creation.
