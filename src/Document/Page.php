@@ -27,7 +27,6 @@ use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Element\Image;
-use Kalle\Pdf\Element\Raw;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -51,6 +50,7 @@ final class Page extends IndirectObject
     private ?PageObjectRenderer $pageObjectRenderer = null;
     private ?PageAnnotations $pageAnnotations = null;
     private ?PageForms $pageForms = null;
+    private ?PageLayers $pageLayers = null;
     private ?PageTextElementRenderer $pageTextElementRenderer = null;
     private ?PageParagraphRenderer $pageParagraphRenderer = null;
     private PageMarkedContentIds $pageMarkedContentIds;
@@ -88,20 +88,7 @@ final class Page extends IndirectObject
      */
     public function layer(string | OptionalContentGroup $layer, callable $renderer, bool $visibleByDefault = true): self
     {
-        $group = is_string($layer)
-            ? $this->document->addLayer($layer, $visibleByDefault)
-            : $this->document->addLayer($layer->getName(), $layer->isVisibleByDefault());
-        $resourceName = $this->addPropertyResource($group);
-
-        $this->addContentElement(new Raw("/OC /$resourceName BDC"));
-
-        try {
-            $renderer($this);
-        } finally {
-            $this->addContentElement(new Raw('EMC'));
-        }
-
-        return $this;
+        return $this->pageLayers()->layer($layer, $renderer, $visibleByDefault);
     }
 
     public function addBadge(
@@ -879,6 +866,11 @@ final class Page extends IndirectObject
     private function pageForms(): PageForms
     {
         return $this->pageForms ??= PageForms::forPage($this, $this->pageAnnotations(), $this->pageFonts());
+    }
+
+    private function pageLayers(): PageLayers
+    {
+        return $this->pageLayers ??= PageLayers::forPage($this);
     }
 
     private function pageTextElementRenderer(): PageTextElementRenderer
