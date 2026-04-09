@@ -62,7 +62,7 @@ final class PageImages
         }
 
         $imageObject = $this->imageObjectFactory->create($image);
-        $resourceName = $this->page->resources->addImage($imageObject);
+        $resourceName = $this->page->addImageResource($imageObject);
         $artifactContext = $options->structureTag === null && $this->page->getDocument()->isRenderingArtifactContext();
         $this->assertAllowsImageAccessibility($options, $artifactContext);
         $artifactTag = $artifactContext ? 'Artifact' : null;
@@ -71,7 +71,7 @@ final class PageImages
             : $artifactTag;
         $markedContentId = $options->structureTag !== null ? $this->nextMarkedContentId() : null;
 
-        $this->page->contents->addElement(new DrawImage(
+        $this->page->addContentElement(new DrawImage(
             $resourceName,
             $position->x,
             $position->y,

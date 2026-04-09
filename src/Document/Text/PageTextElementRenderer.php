@@ -72,7 +72,7 @@ final class PageTextElementRenderer
 
         $this->updateUnicodeFontWidths($font);
 
-        $this->page->contents->addElement(new TextElement(
+        $this->page->addContentElement(new TextElement(
             $markedContentId,
             $encodedText,
             $position->x,

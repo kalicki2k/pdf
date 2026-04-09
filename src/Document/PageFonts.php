@@ -52,7 +52,7 @@ final class PageFonts
 
     public function registerFontResource(FontDefinition $font): string
     {
-        return $this->page->resources->addFont($font);
+        return $this->page->addFontResource($font);
     }
 
     public function updateUnicodeFontWidths(FontDefinition $font): void

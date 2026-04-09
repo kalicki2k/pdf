@@ -28,6 +28,7 @@ use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Raw;
+use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -90,14 +91,14 @@ final class Page extends IndirectObject
         $group = is_string($layer)
             ? $this->document->addLayer($layer, $visibleByDefault)
             : $this->document->addLayer($layer->getName(), $layer->isVisibleByDefault());
-        $resourceName = $this->resources->addProperty($group);
+        $resourceName = $this->addPropertyResource($group);
 
-        $this->contents->addElement(new Raw("/OC /$resourceName BDC"));
+        $this->addContentElement(new Raw("/OC /$resourceName BDC"));
 
         try {
             $renderer($this);
         } finally {
-            $this->contents->addElement(new Raw('EMC'));
+            $this->addContentElement(new Raw('EMC'));
         }
 
         return $this;
@@ -773,6 +774,26 @@ final class Page extends IndirectObject
     public function getDocument(): Document
     {
         return $this->document;
+    }
+
+    public function addContentElement(Element $element): void
+    {
+        $this->contents->addElement($element);
+    }
+
+    public function addFontResource(FontDefinition $font): string
+    {
+        return $this->resources->addFont($font);
+    }
+
+    public function addImageResource(ImageObject $image): string
+    {
+        return $this->resources->addImage($image);
+    }
+
+    public function addPropertyResource(OptionalContentGroup $group): string
+    {
+        return $this->resources->addProperty($group);
     }
 
     /**
