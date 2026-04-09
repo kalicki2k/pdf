@@ -23,12 +23,10 @@ class PdfRenderer
 
         $startxref = $output->offset();
         $fileStructureSerializer->writeCrossReferenceTable($offsets, $output);
-        $objectIds = array_keys($offsets);
-        $maxObjectId = max($objectIds ?: [0]);
 
         $fileStructureSerializer->writeTrailer(
             $output,
-            $maxObjectId + 1,
+            $offsets->size(),
             $plan->rootObjectId,
             $plan->infoObjectId,
             $plan->encryptObjectId,

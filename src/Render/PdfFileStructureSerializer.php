@@ -14,12 +14,9 @@ final class PdfFileStructureSerializer
         $output->write(self::BINARY_HEADER_COMMENT . PHP_EOL);
     }
 
-    /**
-     * @param array<int, int> $offsetsByObjectId
-     */
-    public function writeCrossReferenceTable(array $offsetsByObjectId, PdfOutput $output): void
+    public function writeCrossReferenceTable(PdfObjectOffsets $offsets, PdfOutput $output): void
     {
-        $output->write($this->generateCrossReferenceTable($offsetsByObjectId));
+        $output->write($this->generateCrossReferenceTable($offsets));
     }
 
     /**
@@ -41,13 +38,10 @@ final class PdfFileStructureSerializer
         $output->write('startxref' . PHP_EOL . $startXref . PHP_EOL . '%%EOF');
     }
 
-    /**
-     * @param array<int, int> $offsetsByObjectId
-     */
-    private function generateCrossReferenceTable(array $offsetsByObjectId): string
+    private function generateCrossReferenceTable(PdfObjectOffsets $offsets): string
     {
-        ksort($offsetsByObjectId);
-        $maxObjectId = count($offsetsByObjectId) === 0 ? 0 : max(array_keys($offsetsByObjectId));
+        $offsetsByObjectId = $offsets->entries();
+        $maxObjectId = $offsets->highestObjectId();
 
         $xref = 'xref' . PHP_EOL;
         $xref .= '0 ' . ($maxObjectId + 1) . PHP_EOL;

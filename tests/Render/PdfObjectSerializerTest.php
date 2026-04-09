@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfObjectOffsets;
 use Kalle\Pdf\Render\PdfObjectSerializer;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
@@ -33,8 +34,9 @@ final class PdfObjectSerializerTest extends TestCase
         $offsets = $serializer->writeObjects([$firstObject, $secondObject], $output);
         $contents = $output->contents();
 
-        self::assertSame(0, $offsets[1]);
-        self::assertSame(strpos($contents, "3 0 obj\n"), $offsets[3]);
+        self::assertInstanceOf(PdfObjectOffsets::class, $offsets);
+        self::assertSame(0, $offsets->entries()[1]);
+        self::assertSame(strpos($contents, "3 0 obj\n"), $offsets->entries()[3]);
         self::assertStringContainsString("1 0 obj\nalpha\nendobj\n3 0 obj\nbeta\nendobj\n", $contents);
     }
 }

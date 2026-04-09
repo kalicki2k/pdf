@@ -16,9 +16,8 @@ final class PdfObjectSerializer
 
     /**
      * @param iterable<IndirectObject> $objects
-     * @return array<int, int>
      */
-    public function writeObjects(iterable $objects, PdfOutput $output): array
+    public function writeObjects(iterable $objects, PdfOutput $output): PdfObjectOffsets
     {
         $offsets = [];
 
@@ -32,7 +31,7 @@ final class PdfObjectSerializer
             },
         );
 
-        return $offsets;
+        return new PdfObjectOffsets($offsets);
     }
 
     public function serializeObject(IndirectObject $object): string
