@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Annotation\PageAnnotations;
 use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Feature\Annotation\PageAnnotations;
+use Kalle\Pdf\Feature\Text\StructureTag;
+use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Structure\StructElem;
 
 /**

@@ -4,15 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Action;
 
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Feature\Action\ResetFormAction;
 
-final readonly class ResetFormAction implements ButtonAction
-{
-    public function toPdfDictionary(): DictionaryType
-    {
-        return new DictionaryType([
-            'S' => new NameType('ResetForm'),
-        ]);
-    }
-}
+class_alias(ResetFormAction::class, __NAMESPACE__ . '\ResetFormAction');

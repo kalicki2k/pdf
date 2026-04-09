@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Annotation\PopupAnnotation;
-use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
-use Kalle\Pdf\Document\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Feature\Annotation\PopupAnnotation;
+use Kalle\Pdf\Feature\Annotation\TextAnnotationAppearanceStream;
+use Kalle\Pdf\Feature\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

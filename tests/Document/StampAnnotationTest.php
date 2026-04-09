@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Annotation\StampAnnotation;
-use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Feature\Annotation\StampAnnotation;
+use Kalle\Pdf\Feature\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document\Action;
 
-use Kalle\Pdf\Document\Action\SubmitFormAction;
+use Kalle\Pdf\Feature\Action\SubmitFormAction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

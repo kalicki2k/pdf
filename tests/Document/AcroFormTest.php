@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Feature\Annotation\TextFieldAnnotation;
+use Kalle\Pdf\Feature\Form\AcroForm;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;

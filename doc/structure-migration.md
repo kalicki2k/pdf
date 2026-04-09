@@ -29,13 +29,13 @@ Diese Migrationsphase ist nach den ersten zwanzig Schritten in diesem Zustand:
 - die dokumentweite Orchestrierung liegt jetzt unter `Application/Document`
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
 - `Feature/Action`, `Feature/Annotation`, `Feature/Form`, `Feature/OptionalContent`, `Feature/Outline`, `Feature/Table` und `Feature/Text` existieren bereits als Ziel-Namespaces
-- die Feature-Pakete sind im Moment noch bewusst ueber Namespace-Bridges an die bestehenden `Document`-Implementierungen gekoppelt
+- die eigentlichen Implementierungen fuer diese Feature-Familien liegen jetzt in `Feature`
+- die alten `Document`-Namespaces sind fuer diese Familien nur noch eine Rueckwaertskompatibilitaetsschicht
 
-Das ist absichtlich kein Endzustand.
+Das ist ein deutlich saubererer Zwischenstand, aber noch nicht das Ende der Migration.
 
-Die Bridges schaffen zuerst eine lesbare Zielstruktur und halten das Verhalten stabil.
-Erst danach werden die eigentlichen Implementierungen schrittweise aus `Document`
-in `Feature` und `Model` ueberfuehrt.
+Als naechster Schritt kann `Document` weiter von verbliebenen Zustands- und Glue-Klassen bereinigt werden,
+ohne dass die Feature-Pakete erneut umgeschnitten werden muessen.
 
 ## Zielbild
 

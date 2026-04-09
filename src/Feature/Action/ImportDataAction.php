@@ -4,6 +4,26 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Action;
 
-use Kalle\Pdf\Document\Action\ImportDataAction;
+use InvalidArgumentException;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\StringType;
 
-class_alias(ImportDataAction::class, __NAMESPACE__ . '\\ImportDataAction');
+final readonly class ImportDataAction implements ButtonAction
+{
+    public function __construct(
+        private string $file,
+    ) {
+        if ($this->file === '') {
+            throw new InvalidArgumentException('Import data action file must not be empty.');
+        }
+    }
+
+    public function toPdfDictionary(): DictionaryType
+    {
+        return new DictionaryType([
+            'S' => new NameType('ImportData'),
+            'F' => new StringType($this->file),
+        ]);
+    }
+}

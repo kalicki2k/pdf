@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Action;
 
-use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Feature\Action\ButtonAction;
 
-interface ButtonAction
-{
-    public function toPdfDictionary(): DictionaryType;
-}
+class_alias(ButtonAction::class, __NAMESPACE__ . '\ButtonAction');

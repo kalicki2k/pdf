@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Model\Document;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\OptionalContentGroup;
+use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;

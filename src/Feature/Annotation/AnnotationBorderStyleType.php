@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Annotation;
 
-use Kalle\Pdf\Document\Annotation\AnnotationBorderStyleType;
-
-class_alias(AnnotationBorderStyleType::class, __NAMESPACE__ . '\\AnnotationBorderStyleType');
+enum AnnotationBorderStyleType: string
+{
+    case SOLID = 'S';
+    case DASHED = 'D';
+    case BEVELED = 'B';
+    case INSET = 'I';
+    case UNDERLINE = 'U';
+}

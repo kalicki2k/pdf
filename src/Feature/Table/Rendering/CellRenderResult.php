@@ -4,6 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table\Rendering;
 
-use Kalle\Pdf\Document\Table\Rendering\CellRenderResult;
+use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Feature\Text\TextSegment;
 
-class_alias(CellRenderResult::class, __NAMESPACE__ . '\\CellRenderResult');
+final readonly class CellRenderResult
+{
+    /**
+     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $remainingLines
+     */
+    public function __construct(
+        public Page $page,
+        public array $remainingLines = [],
+    ) {
+    }
+}

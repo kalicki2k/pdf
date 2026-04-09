@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Feature\Text\StructureTag;
 
 /**
  * @internal Coordinates image rendering for a page.

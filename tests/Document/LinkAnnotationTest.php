@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Annotation\LinkAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
@@ -12,6 +11,7 @@ use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Feature\Annotation\LinkAnnotation;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

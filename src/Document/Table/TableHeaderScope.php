@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Table;
 
-enum TableHeaderScope: string
-{
-    case Column = 'Column';
-    case Row = 'Row';
-    case Both = 'Both';
-}
+use Kalle\Pdf\Feature\Table\TableHeaderScope;
+
+class_alias(TableHeaderScope::class, __NAMESPACE__ . '\TableHeaderScope');

@@ -4,6 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table\Style;
 
-use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Layout\VerticalAlign;
 
-class_alias(TableStyle::class, __NAMESPACE__ . '\\TableStyle');
+final readonly class TableStyle
+{
+    public function __construct(
+        public ?TablePadding $padding = null,
+        public ?TableBorder $border = null,
+        public ?VerticalAlign $verticalAlign = null,
+        public ?Color $fillColor = null,
+        public ?Color $textColor = null,
+    ) {
+    }
+}

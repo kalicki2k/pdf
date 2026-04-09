@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Form\FormFieldLabel;
 use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Feature\Form\FormFieldLabel;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

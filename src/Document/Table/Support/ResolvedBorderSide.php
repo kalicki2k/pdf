@@ -4,15 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Table\Support;
 
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Feature\Table\Support\ResolvedBorderSide;
 
-final readonly class ResolvedBorderSide
-{
-    public function __construct(
-        public float $width,
-        public ?Color $color,
-        public ?Opacity $opacity,
-    ) {
-    }
-}
+class_alias(ResolvedBorderSide::class, __NAMESPACE__ . '\ResolvedBorderSide');

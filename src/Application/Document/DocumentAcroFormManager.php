@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Application\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Form\AcroForm;
+use Kalle\Pdf\Feature\Form\AcroForm;
 
 /**
  * @internal Creates and reuses the document-wide AcroForm while guarding feature support.

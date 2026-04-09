@@ -4,6 +4,32 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table\Rendering;
 
-use Kalle\Pdf\Document\Table\Rendering\TableRenderContext;
+use Kalle\Pdf\Feature\Table\Style\FooterStyle;
+use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
+use Kalle\Pdf\Feature\Table\Style\RowStyle;
+use Kalle\Pdf\Feature\Table\Style\TableStyle;
+use Kalle\Pdf\Structure\StructElem;
 
-class_alias(TableRenderContext::class, __NAMESPACE__ . '\\TableRenderContext');
+/**
+ * @internal Bundles shared table render dependencies for prepared row-group rendering.
+ */
+final readonly class TableRenderContext
+{
+    public function __construct(
+        public PreparedCellRenderer $preparedCellRenderer,
+        public TableStyle $style,
+        public ?RowStyle $rowStyle,
+        public ?HeaderStyle $headerStyle,
+        public ?FooterStyle $footerStyle,
+        public string $baseFont,
+        public int $fontSize,
+        public float $lineHeightFactor,
+        public ?StructElem $tableStructElem,
+    ) {
+    }
+
+    public function lineHeight(): float
+    {
+        return $this->fontSize * $this->lineHeightFactor;
+    }
+}

@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\ImageObject;
-use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Document\Resources;
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Graphics\Opacity;

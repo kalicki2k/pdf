@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Table\Rendering;
 
-use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Feature\Table\Rendering\TableCaptionRenderResult;
 
-final readonly class TableCaptionRenderResult
-{
-    public function __construct(
-        public Page $page,
-        public float $cursorY,
-    ) {
-    }
-}
+class_alias(TableCaptionRenderResult::class, __NAMESPACE__ . '\TableCaptionRenderResult');

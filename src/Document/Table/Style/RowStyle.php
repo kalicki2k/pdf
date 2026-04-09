@@ -4,21 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Table\Style;
 
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Feature\Table\Style\RowStyle;
 
-readonly class RowStyle
-{
-    public function __construct(
-        public ?HorizontalAlign $horizontalAlign = null,
-        public ?VerticalAlign $verticalAlign = null,
-        public ?TablePadding $padding = null,
-        public ?Color $fillColor = null,
-        public ?Color $textColor = null,
-        public ?Opacity $opacity = null,
-        public ?TableBorder $border = null,
-    ) {
-    }
-}
+class_alias(RowStyle::class, __NAMESPACE__ . '\RowStyle');

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Table\Style\CellStyle;
-use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Feature\Table\Style\CellStyle;
+use Kalle\Pdf\Feature\Table\TableCell;
+use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

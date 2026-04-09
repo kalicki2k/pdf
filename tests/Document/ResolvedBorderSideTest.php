@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Table\Support\ResolvedBorderSide;
+use Kalle\Pdf\Feature\Table\Support\ResolvedBorderSide;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;

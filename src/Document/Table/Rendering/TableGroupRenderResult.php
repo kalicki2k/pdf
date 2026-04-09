@@ -4,16 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Table\Rendering;
 
-use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Feature\Table\Rendering\TableGroupRenderResult;
 
-/**
- * @internal Carries the updated page state after rendering a prepared table row group.
- */
-final class TableGroupRenderResult
-{
-    public function __construct(
-        public readonly Page $page,
-        public readonly float $cursorY,
-    ) {
-    }
-}
+class_alias(TableGroupRenderResult::class, __NAMESPACE__ . '\TableGroupRenderResult');

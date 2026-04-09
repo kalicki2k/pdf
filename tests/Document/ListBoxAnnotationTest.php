@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Annotation\ListBoxAnnotation;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Feature\Annotation\ListBoxAnnotation;
+use Kalle\Pdf\Feature\Form\FormFieldFlags;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;

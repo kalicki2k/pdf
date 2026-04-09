@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Table\Style\TableBorder;
+use Kalle\Pdf\Feature\Table\Style\TableBorder;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use PHPUnit\Framework\Attributes\Test;

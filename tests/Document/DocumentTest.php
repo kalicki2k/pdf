@@ -14,10 +14,10 @@ use Kalle\Pdf\Document\Page;
 
 use function Kalle\Pdf\Document\setDocumentRandomBytesShouldThrow;
 
-use Kalle\Pdf\Document\Text\ParagraphOptions;
-use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Document\Text\TextOptions;
 use Kalle\Pdf\Encryption\EncryptionOptions;
+use Kalle\Pdf\Feature\Text\ParagraphOptions;
+use Kalle\Pdf\Feature\Text\StructureTag;
+use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Layout\PageSize;

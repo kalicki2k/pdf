@@ -4,29 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Form;
 
-use InvalidArgumentException;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Feature\Form\FormFieldLabel;
 
-final readonly class FormFieldLabel
-{
-    public function __construct(
-        public string $text,
-        public Position $position,
-        public string $fontName,
-        public int $size = 10,
-        public ?Color $color = null,
-    ) {
-        if ($this->text === '') {
-            throw new InvalidArgumentException('Form field label text must not be empty.');
-        }
-
-        if ($this->fontName === '') {
-            throw new InvalidArgumentException('Form field label font name must not be empty.');
-        }
-
-        if ($this->size <= 0) {
-            throw new InvalidArgumentException('Form field label font size must be greater than zero.');
-        }
-    }
-}
+class_alias(FormFieldLabel::class, __NAMESPACE__ . '\FormFieldLabel');

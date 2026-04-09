@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
-use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
-use Kalle\Pdf\Document\Table\Layout\RowGroupHeightResolver;
-use Kalle\Pdf\Document\Table\Style\TablePadding;
-use Kalle\Pdf\Document\Table\TableCell;
+use Kalle\Pdf\Feature\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Feature\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Feature\Table\Layout\RowGroupHeightResolver;
+use Kalle\Pdf\Feature\Table\Style\TablePadding;
+use Kalle\Pdf\Feature\Table\TableCell;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

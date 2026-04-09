@@ -4,6 +4,36 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table;
 
-use Kalle\Pdf\Document\Table\TableCaption;
+use InvalidArgumentException;
+use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Graphics\Color;
 
-class_alias(TableCaption::class, __NAMESPACE__ . '\\TableCaption');
+final readonly class TableCaption
+{
+    /**
+     * @param string|list<TextSegment> $text
+     */
+    public function __construct(
+        public string | array $text,
+        public ?string $fontName = null,
+        public ?int $size = null,
+        public ?Color $color = null,
+        public float $spacingAfter = 6.0,
+    ) {
+        if ($this->text === '' || $this->text === []) {
+            throw new InvalidArgumentException('Table caption text must not be empty.');
+        }
+
+        if ($this->fontName !== null && $this->fontName === '') {
+            throw new InvalidArgumentException('Table caption font name must not be empty.');
+        }
+
+        if ($this->size !== null && $this->size <= 0) {
+            throw new InvalidArgumentException('Table caption font size must be greater than zero.');
+        }
+
+        if ($this->spacingAfter < 0) {
+            throw new InvalidArgumentException('Table caption spacing must be zero or greater.');
+        }
+    }
+}

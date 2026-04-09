@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
-use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
-use Kalle\Pdf\Document\Table\PendingRowspanCell;
-use Kalle\Pdf\Document\Table\Rendering\TablePendingRenderState;
-use Kalle\Pdf\Document\Table\Style\TablePadding;
-use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
-use Kalle\Pdf\Document\Table\TableCell;
+use Kalle\Pdf\Feature\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Feature\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Feature\Table\PendingRowspanCell;
+use Kalle\Pdf\Feature\Table\Rendering\TablePendingRenderState;
+use Kalle\Pdf\Feature\Table\Style\TablePadding;
+use Kalle\Pdf\Feature\Table\Support\ResolvedTableCellStyle;
+use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 use PHPUnit\Framework\Attributes\Test;

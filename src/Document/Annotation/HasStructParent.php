@@ -4,23 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Annotation;
 
-use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Feature\Annotation\HasStructParent;
 
-trait HasStructParent
-{
-    private ?int $structParentId = null;
-
-    public function withStructParent(int $structParentId): self
-    {
-        $this->structParentId = $structParentId;
-
-        return $this;
-    }
-
-    private function addStructParentEntry(DictionaryType $dictionary): void
-    {
-        if ($this->structParentId !== null) {
-            $dictionary->add('StructParent', $this->structParentId);
-        }
-    }
-}
+class_alias(HasStructParent::class, __NAMESPACE__ . '\HasStructParent');

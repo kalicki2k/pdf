@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table\Rendering;
 
-use Kalle\Pdf\Document\Table\Rendering\TablePendingGroupFlowResult;
+use Kalle\Pdf\Document\Page;
 
-class_alias(TablePendingGroupFlowResult::class, __NAMESPACE__ . '\\TablePendingGroupFlowResult');
+/**
+ * @internal Carries the updated page state after rendering a pending table row group flow.
+ */
+final readonly class TablePendingGroupFlowResult
+{
+    public function __construct(
+        public Page $page,
+        public float $cursorY,
+    ) {
+    }
+}

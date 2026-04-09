@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontRegistry;
 use Kalle\Pdf\Font\StandardFontName;

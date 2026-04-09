@@ -7,13 +7,13 @@ namespace Kalle\Pdf;
 use Kalle\Pdf\Document\Page as BaseInternalPage;
 use Kalle\Pdf\Document\PdfPage as InternalPage;
 use Kalle\Pdf\Document\PdfTable as InternalTable;
-use Kalle\Pdf\Document\Table\Style\FooterStyle;
-use Kalle\Pdf\Document\Table\Style\HeaderStyle;
-use Kalle\Pdf\Document\Table\Style\RowStyle;
-use Kalle\Pdf\Document\Table\Style\TableStyle;
-use Kalle\Pdf\Document\Table\TableCaption;
-use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Feature\Table\Style\FooterStyle;
+use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
+use Kalle\Pdf\Feature\Table\Style\RowStyle;
+use Kalle\Pdf\Feature\Table\Style\TableStyle;
+use Kalle\Pdf\Feature\Table\TableCaption;
+use Kalle\Pdf\Feature\Table\TableCell;
+use Kalle\Pdf\Feature\Text\TextSegment;
 use LogicException;
 
 /**

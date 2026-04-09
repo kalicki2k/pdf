@@ -20,14 +20,15 @@ use Kalle\Pdf\Application\Document\DocumentPdfWriter as ApplicationDocumentPdfWr
 use Kalle\Pdf\Application\Document\DocumentProfileGuard as ApplicationDocumentProfileGuard;
 use Kalle\Pdf\Application\Document\DocumentStructureManager as ApplicationDocumentStructureManager;
 use Kalle\Pdf\Application\Document\DocumentTableOfContentsBuilder as ApplicationDocumentTableOfContentsBuilder;
-use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Outline\OutlineRoot;
-use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Feature\Form\AcroForm;
+use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Feature\Outline\OutlineRoot;
+use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;

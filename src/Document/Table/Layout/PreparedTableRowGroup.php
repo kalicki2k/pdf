@@ -4,36 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Table\Layout;
 
-/**
- * @internal Bundles prepared table rows with their resolved heights.
- */
-final readonly class PreparedTableRowGroup
-{
-    /**
-     * @param list<PreparedTableRow> $rows
-     * @param list<float> $rowHeights
-     */
-    public function __construct(
-        public array $rows,
-        public array $rowHeights,
-    ) {
-    }
+use Kalle\Pdf\Feature\Table\Layout\PreparedTableRowGroup;
 
-    public function isEmpty(): bool
-    {
-        return $this->rows === [];
-    }
-
-    public function count(): int
-    {
-        return count($this->rows);
-    }
-
-    public function slice(int $offset): self
-    {
-        return new self(
-            array_slice($this->rows, $offset),
-            array_slice($this->rowHeights, $offset),
-        );
-    }
-}
+class_alias(PreparedTableRowGroup::class, __NAMESPACE__ . '\PreparedTableRowGroup');

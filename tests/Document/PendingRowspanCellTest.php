@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
-use Kalle\Pdf\Document\Table\PendingRowspanCell;
-use Kalle\Pdf\Document\Table\Style\TablePadding;
-use Kalle\Pdf\Document\Table\Support\ResolvedTableCellStyle;
-use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Feature\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Feature\Table\PendingRowspanCell;
+use Kalle\Pdf\Feature\Table\Style\TablePadding;
+use Kalle\Pdf\Feature\Table\Support\ResolvedTableCellStyle;
+use Kalle\Pdf\Feature\Table\TableCell;
+use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;

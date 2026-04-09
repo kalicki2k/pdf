@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Application\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Outline\OutlineItem;
-use Kalle\Pdf\Document\Outline\OutlineRoot;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Feature\Outline\OutlineItem;
+use Kalle\Pdf\Feature\Outline\OutlineRoot;
 
 /**
  * @internal Manages document outlines and named destinations.

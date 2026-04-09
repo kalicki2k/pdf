@@ -10,12 +10,12 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
-use Kalle\Pdf\Document\Text\PageParagraphRenderer;
-use Kalle\Pdf\Document\Text\PageTextElementRenderer;
-use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Document\Text\TextBoxOptions;
-use Kalle\Pdf\Document\Text\TextOptions;
-use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Feature\Text\PageParagraphRenderer;
+use Kalle\Pdf\Feature\Text\PageTextElementRenderer;
+use Kalle\Pdf\Feature\Text\StructureTag;
+use Kalle\Pdf\Feature\Text\TextBoxOptions;
+use Kalle\Pdf\Feature\Text\TextOptions;
+use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\TextOverflow;
 

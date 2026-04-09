@@ -4,6 +4,26 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Action;
 
-use Kalle\Pdf\Document\Action\JavaScriptAction;
+use InvalidArgumentException;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\StringType;
 
-class_alias(JavaScriptAction::class, __NAMESPACE__ . '\\JavaScriptAction');
+final readonly class JavaScriptAction implements ButtonAction
+{
+    public function __construct(
+        private string $script,
+    ) {
+        if ($script === '') {
+            throw new InvalidArgumentException('JavaScript action script must not be empty.');
+        }
+    }
+
+    public function toPdfDictionary(): DictionaryType
+    {
+        return new DictionaryType([
+            'S' => new NameType('JavaScript'),
+            'JS' => new StringType($this->script),
+        ]);
+    }
+}

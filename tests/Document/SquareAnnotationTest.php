@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Document\Annotation\SquareAnnotation;
-use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Feature\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Feature\Annotation\SquareAnnotation;
+use Kalle\Pdf\Feature\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

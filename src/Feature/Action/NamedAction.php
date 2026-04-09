@@ -4,6 +4,32 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Action;
 
-use Kalle\Pdf\Document\Action\NamedAction;
+use InvalidArgumentException;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\NameType;
 
-class_alias(NamedAction::class, __NAMESPACE__ . '\\NamedAction');
+final readonly class NamedAction implements ButtonAction
+{
+    private const ALLOWED_NAMES = [
+        'NextPage',
+        'PrevPage',
+        'FirstPage',
+        'LastPage',
+    ];
+
+    public function __construct(
+        private string $name,
+    ) {
+        if (!in_array($this->name, self::ALLOWED_NAMES, true)) {
+            throw new InvalidArgumentException('Named action must be one of: NextPage, PrevPage, FirstPage, LastPage.');
+        }
+    }
+
+    public function toPdfDictionary(): DictionaryType
+    {
+        return new DictionaryType([
+            'S' => new NameType('Named'),
+            'N' => new NameType($this->name),
+        ]);
+    }
+}

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Table\Style\TableBorder;
-use Kalle\Pdf\Document\Table\Style\TablePadding;
-use Kalle\Pdf\Document\Table\Style\TableStyle;
+use Kalle\Pdf\Feature\Table\Style\TableBorder;
+use Kalle\Pdf\Feature\Table\Style\TablePadding;
+use Kalle\Pdf\Feature\Table\Style\TableStyle;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\VerticalAlign;
 use PHPUnit\Framework\Attributes\Test;

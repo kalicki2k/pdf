@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\PageFonts;
-use Kalle\Pdf\Document\Text\PageTextLineRenderer;
-use Kalle\Pdf\Document\Text\TextLayoutEngine;
-use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Feature\Text\PageTextLineRenderer;
+use Kalle\Pdf\Feature\Text\TextLayoutEngine;
+use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

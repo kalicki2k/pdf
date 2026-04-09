@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Table\Style\CellStyle;
-use Kalle\Pdf\Document\Table\Style\HeaderStyle;
-use Kalle\Pdf\Document\Table\Style\RowStyle;
-use Kalle\Pdf\Document\Table\Style\TableBorder;
-use Kalle\Pdf\Document\Table\Style\TablePadding;
-use Kalle\Pdf\Document\Table\Style\TableStyle;
-use Kalle\Pdf\Document\Table\Support\ResolvedBorderSide;
-use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
-use Kalle\Pdf\Document\Table\TableCell;
+use Kalle\Pdf\Feature\Table\Style\CellStyle;
+use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
+use Kalle\Pdf\Feature\Table\Style\RowStyle;
+use Kalle\Pdf\Feature\Table\Style\TableBorder;
+use Kalle\Pdf\Feature\Table\Style\TablePadding;
+use Kalle\Pdf\Feature\Table\Style\TableStyle;
+use Kalle\Pdf\Feature\Table\Support\ResolvedBorderSide;
+use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
+use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;

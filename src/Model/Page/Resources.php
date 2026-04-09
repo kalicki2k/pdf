@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Model\Page;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\OptionalContentGroup;
+use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Object\DictionaryIndirectObject;

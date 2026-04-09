@@ -4,15 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Table\Layout;
 
-final readonly class PreparedTableRow
-{
-    /**
-     * @param list<PreparedTableCell> $cells
-     */
-    public function __construct(
-        public array $cells,
-        public bool $header,
-        public bool $footer = false,
-    ) {
-    }
-}
+use Kalle\Pdf\Feature\Table\Layout\PreparedTableRow;
+
+class_alias(PreparedTableRow::class, __NAMESPACE__ . '\PreparedTableRow');

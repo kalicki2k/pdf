@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Structure;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\Text\StructureTag;
+use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;

@@ -6,11 +6,11 @@ namespace Kalle\Pdf;
 
 use Kalle\Pdf\Document\Page as BaseInternalPage;
 use Kalle\Pdf\Document\PdfPage as InternalPage;
-use Kalle\Pdf\Document\Text\ListOptions;
-use Kalle\Pdf\Document\Text\ParagraphOptions;
-use Kalle\Pdf\Document\Text\TextFrame as InternalTextFrame;
-use Kalle\Pdf\Document\Text\TextOptions;
-use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Feature\Text\ListOptions;
+use Kalle\Pdf\Feature\Text\ParagraphOptions;
+use Kalle\Pdf\Feature\Text\TextFrame as InternalTextFrame;
+use Kalle\Pdf\Feature\Text\TextOptions;
+use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Layout\BulletType;
 use LogicException;
 

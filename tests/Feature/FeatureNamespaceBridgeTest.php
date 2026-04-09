@@ -16,11 +16,11 @@ final class FeatureNamespaceBridgeTest extends TestCase
 {
     #[Test]
     #[DataProvider('featureBridgeProvider')]
-    public function it_resolves_feature_namespace_bridges_to_the_legacy_document_implementation(
-        string $featureClass,
+    public function it_resolves_legacy_document_feature_namespaces_to_the_new_feature_implementation(
         string $legacyClass,
+        string $featureClass,
     ): void {
-        self::assertSame($legacyClass, (new ReflectionClass($featureClass))->getName());
+        self::assertSame($featureClass, (new ReflectionClass($legacyClass))->getName());
     }
 
     /**
@@ -28,8 +28,8 @@ final class FeatureNamespaceBridgeTest extends TestCase
      */
     public static function featureBridgeProvider(): iterable
     {
-        foreach (self::featureBridgeClasses() as $featureClass => $legacyClass) {
-            yield $featureClass => [$featureClass, $legacyClass];
+        foreach (self::featureBridgeClasses() as $legacyClass => $featureClass) {
+            yield $legacyClass => [$legacyClass, $featureClass];
         }
     }
 
@@ -40,9 +40,9 @@ final class FeatureNamespaceBridgeTest extends TestCase
     {
         $bridges = [];
 
-        foreach (self::featureBridgePaths() as $relativePath) {
-            $featureClass = self::classNameFromRelativePath($relativePath);
-            $bridges[$featureClass] = self::legacyClassFromFeaturePath($relativePath);
+        foreach (self::legacyBridgePaths() as $relativePath) {
+            $legacyClass = self::classNameFromRelativePath($relativePath);
+            $bridges[$legacyClass] = self::featureClassFromLegacyPath($relativePath);
         }
 
         ksort($bridges);
@@ -53,10 +53,10 @@ final class FeatureNamespaceBridgeTest extends TestCase
     /**
      * @return list<string>
      */
-    private static function featureBridgePaths(): array
+    private static function legacyBridgePaths(): array
     {
-        $featureRoot = dirname(__DIR__, 2) . '/src/Feature';
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($featureRoot));
+        $documentRoot = dirname(__DIR__, 2) . '/src/Document';
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($documentRoot));
         $paths = [];
 
         foreach ($iterator as $file) {
@@ -64,8 +64,22 @@ final class FeatureNamespaceBridgeTest extends TestCase
                 continue;
             }
 
-            $relativePath = substr($file->getPathname(), strlen($featureRoot) + 1);
-            $paths[] = 'Feature/' . str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
+            $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', substr($file->getPathname(), strlen($documentRoot) + 1));
+
+            if (
+                !str_starts_with($relativePath, 'Action/')
+                && !str_starts_with($relativePath, 'Annotation/')
+                && !str_starts_with($relativePath, 'Form/')
+                && !str_starts_with($relativePath, 'Outline/')
+                && !str_starts_with($relativePath, 'Text/')
+                && !str_starts_with($relativePath, 'Table/')
+                && $relativePath !== 'Table.php'
+                && $relativePath !== 'OptionalContentGroup.php'
+            ) {
+                continue;
+            }
+
+            $paths[] = 'Document/' . $relativePath;
         }
 
         sort($paths);
@@ -78,22 +92,22 @@ final class FeatureNamespaceBridgeTest extends TestCase
         return 'Kalle\\Pdf\\' . str_replace(['/', '.php'], ['\\', ''], $relativePath);
     }
 
-    private static function legacyClassFromFeaturePath(string $relativePath): string
+    private static function featureClassFromLegacyPath(string $relativePath): string
     {
         return match (true) {
-            $relativePath === 'Feature/Table.php' => 'Kalle\\Pdf\\Document\\Table',
-            str_starts_with($relativePath, 'Feature/Table/') => 'Kalle\\Pdf\\Document\\Table\\' . self::suffixFromFeaturePath($relativePath, 'Feature/Table/'),
-            str_starts_with($relativePath, 'Feature/Text/') => 'Kalle\\Pdf\\Document\\Text\\' . self::suffixFromFeaturePath($relativePath, 'Feature/Text/'),
-            str_starts_with($relativePath, 'Feature/Action/') => 'Kalle\\Pdf\\Document\\Action\\' . self::suffixFromFeaturePath($relativePath, 'Feature/Action/'),
-            str_starts_with($relativePath, 'Feature/Annotation/') => 'Kalle\\Pdf\\Document\\Annotation\\' . self::suffixFromFeaturePath($relativePath, 'Feature/Annotation/'),
-            str_starts_with($relativePath, 'Feature/Form/') => 'Kalle\\Pdf\\Document\\Form\\' . self::suffixFromFeaturePath($relativePath, 'Feature/Form/'),
-            str_starts_with($relativePath, 'Feature/Outline/') => 'Kalle\\Pdf\\Document\\Outline\\' . self::suffixFromFeaturePath($relativePath, 'Feature/Outline/'),
-            $relativePath === 'Feature/OptionalContent/OptionalContentGroup.php' => 'Kalle\\Pdf\\Document\\OptionalContentGroup',
-            default => throw new InvalidArgumentException(sprintf('Unsupported feature bridge path: %s', $relativePath)),
+            $relativePath === 'Document/Table.php' => 'Kalle\\Pdf\\Feature\\Table',
+            str_starts_with($relativePath, 'Document/Table/') => 'Kalle\\Pdf\\Feature\\Table\\' . self::suffixFromPath($relativePath, 'Document/Table/'),
+            str_starts_with($relativePath, 'Document/Text/') => 'Kalle\\Pdf\\Feature\\Text\\' . self::suffixFromPath($relativePath, 'Document/Text/'),
+            str_starts_with($relativePath, 'Document/Action/') => 'Kalle\\Pdf\\Feature\\Action\\' . self::suffixFromPath($relativePath, 'Document/Action/'),
+            str_starts_with($relativePath, 'Document/Annotation/') => 'Kalle\\Pdf\\Feature\\Annotation\\' . self::suffixFromPath($relativePath, 'Document/Annotation/'),
+            str_starts_with($relativePath, 'Document/Form/') => 'Kalle\\Pdf\\Feature\\Form\\' . self::suffixFromPath($relativePath, 'Document/Form/'),
+            str_starts_with($relativePath, 'Document/Outline/') => 'Kalle\\Pdf\\Feature\\Outline\\' . self::suffixFromPath($relativePath, 'Document/Outline/'),
+            $relativePath === 'Document/OptionalContentGroup.php' => 'Kalle\\Pdf\\Feature\\OptionalContent\\OptionalContentGroup',
+            default => throw new InvalidArgumentException(sprintf('Unsupported legacy bridge path: %s', $relativePath)),
         };
     }
 
-    private static function suffixFromFeaturePath(string $relativePath, string $prefix): string
+    private static function suffixFromPath(string $relativePath, string $prefix): string
     {
         return str_replace(['/', '.php'], ['\\', ''], substr($relativePath, strlen($prefix)));
     }
