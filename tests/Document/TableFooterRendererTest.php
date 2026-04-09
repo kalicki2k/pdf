@@ -9,6 +9,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableFooterRenderer;
@@ -37,8 +38,10 @@ final class TableFooterRendererTest extends TestCase
         $result = $renderer->render(
             $page,
             80.0,
-            [new PreparedTableRow([$this->createPreparedCell('Summe')], false, true)],
-            [24.0],
+            new PreparedTableRowGroup(
+                [new PreparedTableRow([$this->createPreparedCell('Summe')], false, true)],
+                [24.0],
+            ),
             20.0,
             40.0,
             $this->createPreparedCellRenderer(),
@@ -68,8 +71,10 @@ final class TableFooterRendererTest extends TestCase
         $result = $renderer->render(
             $page,
             30.0,
-            [new PreparedTableRow([$this->createPreparedCell('Summe')], false, true)],
-            [24.0],
+            new PreparedTableRowGroup(
+                [new PreparedTableRow([$this->createPreparedCell('Summe')], false, true)],
+                [24.0],
+            ),
             20.0,
             40.0,
             $this->createPreparedCellRenderer(),
@@ -102,8 +107,10 @@ final class TableFooterRendererTest extends TestCase
         $renderer->render(
             $page,
             30.0,
-            [new PreparedTableRow([$this->createPreparedCell('Summe')], false, true)],
-            [80.0],
+            new PreparedTableRowGroup(
+                [new PreparedTableRow([$this->createPreparedCell('Summe')], false, true)],
+                [80.0],
+            ),
             20.0,
             40.0,
             $this->createPreparedCellRenderer(),

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Table\Rendering;
 
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
@@ -22,14 +22,9 @@ final class TableGroupRenderer
     ) {
     }
 
-    /**
-     * @param list<PreparedTableRow> $preparedRows
-     * @param list<float> $rowHeights
-     */
     public function render(
         Page $page,
-        array $preparedRows,
-        array $rowHeights,
+        PreparedTableRowGroup $rowGroup,
         float $cursorY,
         PreparedCellRenderer $preparedCellRenderer,
         TableStyle $style,
@@ -44,7 +39,7 @@ final class TableGroupRenderer
         $lineHeight = $fontSize * $lineHeightFactor;
         $rowTopY = $cursorY;
 
-        foreach ($preparedRows as $rowIndex => $preparedRow) {
+        foreach ($rowGroup->rows as $rowIndex => $preparedRow) {
             $rowStructElem = $this->structElemFactory->createRow($page, $tableStructElem);
 
             foreach ($preparedRow->cells as $preparedCell) {
@@ -53,7 +48,7 @@ final class TableGroupRenderer
                     $preparedCell,
                     $preparedRow->header,
                     $rowIndex,
-                    $rowHeights,
+                    $rowGroup->rowHeights,
                     $rowTopY,
                     $lineHeight,
                     $style,
@@ -67,7 +62,7 @@ final class TableGroupRenderer
                 );
             }
 
-            $rowTopY -= $rowHeights[$rowIndex];
+            $rowTopY -= $rowGroup->rowHeights[$rowIndex];
         }
 
         return new TableGroupRenderResult($page, $rowTopY);

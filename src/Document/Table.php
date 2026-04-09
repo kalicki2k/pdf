@@ -306,7 +306,7 @@ final class Table
             }
 
             if ($fittingRowCount >= count($remainingRows) && !$this->pendingRenderState->hasPendingRowspanCells()) {
-                $this->renderPendingGroup($remainingRows, $remainingRowHeights);
+                $this->renderPendingGroup(new PreparedTableRowGroup($remainingRows, $remainingRowHeights));
                 break;
             }
 
@@ -349,7 +349,7 @@ final class Table
             return;
         }
 
-        $this->renderPendingGroup($repeatingHeaderGroup->rows, $repeatingHeaderGroup->rowHeights);
+        $this->renderPendingGroup($repeatingHeaderGroup);
     }
 
     private function prepareRepeatingHeaderGroup(): PreparedTableRowGroup
@@ -422,8 +422,7 @@ final class Table
         $result = $this->footerRenderer->render(
             $this->page,
             $this->cursorY,
-            $preparedFooterRows,
-            $footerHeights,
+            new PreparedTableRowGroup($preparedFooterRows, $footerHeights),
             $this->bottomMargin,
             $this->continuationTopMargin,
             $this->preparedCellRenderer,
@@ -502,16 +501,11 @@ final class Table
         $this->sections->markCaptionRendered();
     }
 
-    /**
-     * @param list<PreparedTableRow> $preparedRows
-     * @param list<float> $rowHeights
-     */
-    private function renderPendingGroup(array $preparedRows, array $rowHeights): void
+    private function renderPendingGroup(PreparedTableRowGroup $rowGroup): void
     {
         $result = $this->groupRenderer->render(
             $this->page,
-            $preparedRows,
-            $rowHeights,
+            $rowGroup,
             $this->cursorY,
             $this->preparedCellRenderer,
             $this->style,

@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Document\Table\Rendering;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
@@ -23,15 +23,10 @@ final class TableFooterRenderer
     ) {
     }
 
-    /**
-     * @param list<PreparedTableRow> $preparedFooterRows
-     * @param list<float> $footerHeights
-     */
     public function render(
         Page $page,
         float $cursorY,
-        array $preparedFooterRows,
-        array $footerHeights,
+        PreparedTableRowGroup $footerGroup,
         float $bottomMargin,
         float $continuationTopMargin,
         PreparedCellRenderer $preparedCellRenderer,
@@ -44,7 +39,7 @@ final class TableFooterRenderer
         float $lineHeightFactor,
         ?StructElem $tableStructElem,
     ): TableGroupRenderResult {
-        $footerHeight = array_sum($footerHeights);
+        $footerHeight = array_sum($footerGroup->rowHeights);
         $availableHeight = $cursorY - $bottomMargin;
 
         if ($footerHeight > $availableHeight) {
@@ -58,8 +53,7 @@ final class TableFooterRenderer
 
         return $this->groupRenderer->render(
             $page,
-            $preparedFooterRows,
-            $footerHeights,
+            $footerGroup,
             $cursorY,
             $preparedCellRenderer,
             $style,

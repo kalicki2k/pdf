@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupRenderer;
@@ -39,8 +40,10 @@ final class TableGroupRendererTest extends TestCase
 
         $result = $renderer->render(
             $page,
-            [new PreparedTableRow([$this->createPreparedCell('Cell')], false)],
-            [24.0],
+            new PreparedTableRowGroup(
+                [new PreparedTableRow([$this->createPreparedCell('Cell')], false)],
+                [24.0],
+            ),
             160.0,
             $this->createPreparedCellRenderer(),
             $this->createTableStyle(),
@@ -68,8 +71,10 @@ final class TableGroupRendererTest extends TestCase
 
         $renderer->render(
             $page,
-            [new PreparedTableRow([$this->createPreparedCell('Header')], true)],
-            [24.0],
+            new PreparedTableRowGroup(
+                [new PreparedTableRow([$this->createPreparedCell('Header')], true)],
+                [24.0],
+            ),
             160.0,
             $this->createPreparedCellRenderer(x: 20.0, width: 160.0),
             $this->createTableStyle(),
