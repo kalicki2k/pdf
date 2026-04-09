@@ -29,7 +29,7 @@ final class Pages extends DictionaryIndirectObject
         float $width,
         float $height,
     ): Page {
-        $page = new Page(
+        $page = new PdfPage(
             $pageId,
             $contentsId,
             $resourcesId,

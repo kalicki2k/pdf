@@ -39,7 +39,7 @@ use Kalle\Pdf\Structure\StructElem;
 /**
  * @internal Internal page implementation. Use Kalle\Pdf\Page from the public API.
  */
-final class Page extends IndirectObject
+class Page extends IndirectObject
 {
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
