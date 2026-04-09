@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
-
 class PdfRenderer
 {
     public function render(PdfSerializationPlan $plan): string
@@ -20,7 +18,7 @@ class PdfRenderer
     {
         $fileStructureSerializer = new PdfFileStructureSerializer();
         $fileStructureSerializer->writeHeader($plan->version, $output);
-        $objectSerializer = new PdfObjectSerializer($this->buildObjectEncryptor($plan));
+        $objectSerializer = new PdfObjectSerializer((new PdfObjectEncryptorFactory())->create($plan));
         $offsets = $objectSerializer->writeObjects($plan->objects, $output);
 
         $startxref = $output->offset();
@@ -37,16 +35,5 @@ class PdfRenderer
             $plan->documentId,
         );
         $fileStructureSerializer->writeFooter($output, $startxref);
-    }
-
-    private function buildObjectEncryptor(PdfSerializationPlan $plan): ?StandardObjectEncryptor
-    {
-        if ($plan->encryptionProfile === null || $plan->securityHandlerData === null) {
-            return null;
-        }
-
-        $objectEncryptor = new StandardObjectEncryptor($plan->encryptionProfile, $plan->securityHandlerData);
-
-        return $objectEncryptor->supportsObjectEncryption() ? $objectEncryptor : null;
     }
 }
