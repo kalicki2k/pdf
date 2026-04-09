@@ -262,7 +262,9 @@ final class Page extends IndirectObject
         ?Color $color = null,
         ?Opacity $opacity = null,
     ): self {
-        return $this->pageGraphics()->addLine($from, $to, $width, $color, $opacity);
+        $this->pageGraphics()->addLine($from, $to, $width, $color, $opacity);
+
+        return $this;
     }
 
     public function addRectangle(
@@ -272,7 +274,9 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        return $this->pageGraphics()->addRectangle($box, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->pageGraphics()->addRectangle($box, $strokeWidth, $strokeColor, $fillColor, $opacity);
+
+        return $this;
     }
 
     public function addRoundedRectangle(
@@ -283,7 +287,9 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        return $this->pageGraphics()->addRoundedRectangle($box, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->pageGraphics()->addRoundedRectangle($box, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+
+        return $this;
     }
 
     public function addCircle(
@@ -295,7 +301,9 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        return $this->pageGraphics()->addCircle($centerX, $centerY, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->pageGraphics()->addCircle($centerX, $centerY, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+
+        return $this;
     }
 
     public function addEllipse(
@@ -308,7 +316,9 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        return $this->pageGraphics()->addEllipse($centerX, $centerY, $radiusX, $radiusY, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->pageGraphics()->addEllipse($centerX, $centerY, $radiusX, $radiusY, $strokeWidth, $strokeColor, $fillColor, $opacity);
+
+        return $this;
     }
 
     /**
@@ -321,7 +331,9 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        return $this->pageGraphics()->addPolygon($points, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->pageGraphics()->addPolygon($points, $strokeWidth, $strokeColor, $fillColor, $opacity);
+
+        return $this;
     }
 
     public function addArrow(
@@ -333,7 +345,9 @@ final class Page extends IndirectObject
         float $headLength = 10.0,
         float $headWidth = 8.0,
     ): self {
-        return $this->pageGraphics()->addArrow($from, $to, $strokeWidth, $color, $opacity, $headLength, $headWidth);
+        $this->pageGraphics()->addArrow($from, $to, $strokeWidth, $color, $opacity, $headLength, $headWidth);
+
+        return $this;
     }
 
     public function addStar(
@@ -347,7 +361,9 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        return $this->pageGraphics()->addStar($centerX, $centerY, $points, $outerRadius, $innerRadius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->pageGraphics()->addStar($centerX, $centerY, $points, $outerRadius, $innerRadius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+
+        return $this;
     }
 
     public function addLink(

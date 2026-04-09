@@ -39,7 +39,7 @@ final class PageGraphics
         float $width = 1.0,
         ?Color $color = null,
         ?Opacity $opacity = null,
-    ): Page {
+    ): void {
         if ($width <= 0) {
             throw new InvalidArgumentException('Line width must be greater than zero.');
         }
@@ -56,8 +56,6 @@ final class PageGraphics
             $colorOperator,
             $graphicsStateName,
         ));
-
-        return $this->page;
     }
 
     public function addRectangle(
@@ -66,7 +64,7 @@ final class PageGraphics
         ?Color $strokeColor = null,
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
-    ): Page {
+    ): void {
         if ($box->width <= 0) {
             throw new InvalidArgumentException('Rectangle width must be greater than zero.');
         }
@@ -95,8 +93,6 @@ final class PageGraphics
             $fillColor?->renderNonStrokingOperator(),
             $graphicsStateName,
         ));
-
-        return $this->page;
     }
 
     public function addRoundedRectangle(
@@ -106,7 +102,7 @@ final class PageGraphics
         ?Color $strokeColor = null,
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
-    ): Page {
+    ): void {
         if ($box->width <= 0) {
             throw new InvalidArgumentException('Rounded rectangle width must be greater than zero.');
         }
@@ -177,7 +173,7 @@ final class PageGraphics
             )
             ->close();
 
-        return $this->finishClosedPath($path, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->finishClosedPath($path, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addCircle(
@@ -188,7 +184,7 @@ final class PageGraphics
         ?Color $strokeColor = null,
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
-    ): Page {
+    ): void {
         if ($radius <= 0) {
             throw new InvalidArgumentException('Circle radius must be greater than zero.');
         }
@@ -201,7 +197,7 @@ final class PageGraphics
             throw new InvalidArgumentException('Circle requires either a stroke or a fill.');
         }
 
-        return $this->finishClosedPath(
+        $this->finishClosedPath(
             $this->buildEllipsePath($centerX, $centerY, $radius, $radius),
             $strokeWidth,
             $strokeColor,
@@ -219,7 +215,7 @@ final class PageGraphics
         ?Color $strokeColor = null,
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
-    ): Page {
+    ): void {
         if ($radiusX <= 0) {
             throw new InvalidArgumentException('Ellipse radiusX must be greater than zero.');
         }
@@ -236,7 +232,7 @@ final class PageGraphics
             throw new InvalidArgumentException('Ellipse requires either a stroke or a fill.');
         }
 
-        return $this->finishClosedPath(
+        $this->finishClosedPath(
             $this->buildEllipsePath($centerX, $centerY, $radiusX, $radiusY),
             $strokeWidth,
             $strokeColor,
@@ -254,7 +250,7 @@ final class PageGraphics
         ?Color $strokeColor = null,
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
-    ): Page {
+    ): void {
         if (count($points) < 3) {
             throw new InvalidArgumentException('Polygon requires at least three points.');
         }
@@ -275,7 +271,7 @@ final class PageGraphics
 
         $path->close();
 
-        return $this->finishClosedPath($path, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->finishClosedPath($path, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function addArrow(
@@ -286,7 +282,7 @@ final class PageGraphics
         ?Opacity $opacity = null,
         float $headLength = 10.0,
         float $headWidth = 8.0,
-    ): Page {
+    ): void {
         if ($strokeWidth <= 0) {
             throw new InvalidArgumentException('Arrow stroke width must be greater than zero.');
         }
@@ -332,8 +328,6 @@ final class PageGraphics
             $color,
             $opacity,
         );
-
-        return $this->page;
     }
 
     public function addStar(
@@ -346,7 +340,7 @@ final class PageGraphics
         ?Color $strokeColor = null,
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
-    ): Page {
+    ): void {
         if ($points < 3) {
             throw new InvalidArgumentException('Star requires at least three points.');
         }
@@ -376,7 +370,7 @@ final class PageGraphics
             ];
         }
 
-        return $this->addPolygon($starPoints, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->addPolygon($starPoints, $strokeWidth, $strokeColor, $fillColor, $opacity);
     }
 
     public function resolveGraphicsStateName(?Opacity $opacity): ?string
@@ -466,17 +460,17 @@ final class PageGraphics
         ?Color $strokeColor,
         ?Color $fillColor,
         ?Opacity $opacity,
-    ): Page {
+    ): void {
         if ($strokeWidth !== null && $fillColor !== null) {
             $path->fillAndStroke($strokeWidth, $strokeColor, $fillColor, $opacity);
 
-            return $this->page;
+            return;
         }
 
         if ($fillColor !== null) {
             $path->fill($fillColor, $opacity);
 
-            return $this->page;
+            return;
         }
 
         if ($strokeWidth === null) {
@@ -484,8 +478,6 @@ final class PageGraphics
         }
 
         $path->stroke($strokeWidth, $strokeColor, $opacity);
-
-        return $this->page;
     }
 
     private function assertAllowsGraphicElements(): void

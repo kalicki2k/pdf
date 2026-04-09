@@ -3677,9 +3677,7 @@ final class PageTest extends TestCase
         $path = new PathBuilder($page, $graphics);
         $path->moveTo(10, 10)->lineTo(20, 10)->lineTo(20, 20)->close();
 
-        $result = $graphics->finishClosedPath($path, null, null, Color::gray(0.5), null);
-
-        self::assertSame($page, $result);
+        $graphics->finishClosedPath($path, null, null, Color::gray(0.5), null);
         self::assertStringContainsString("0.5 g\n10 10 m", $page->getContents()->render());
         self::assertStringContainsString("\nh\nf", $page->getContents()->render());
     }
