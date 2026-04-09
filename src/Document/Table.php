@@ -14,6 +14,7 @@ use Kalle\Pdf\Document\Table\PendingRowspanCell;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderOptions;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TablePendingRenderState;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
@@ -44,10 +45,6 @@ final class Table
     private array $footerRows = [];
     /** @var list<int> */
     private array $activeRowspans = [];
-    /** @var list<PreparedTableRow> */
-    private array $pendingGroupRows = [];
-    /** @var list<PendingRowspanCell> */
-    private array $pendingRowspanCells = [];
     private readonly float $topMargin;
     private readonly float $continuationTopMargin;
     private Page $page;
@@ -63,6 +60,7 @@ final class Table
     private readonly TableTextMetrics $textMetrics;
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
+    private readonly TablePendingRenderState $pendingRenderState;
     private readonly ?StructElem $tableStructElem;
     private ?TableCaption $caption = null;
     private bool $captionRendered = false;
@@ -120,6 +118,7 @@ final class Table
             new \Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer($this->styleResolver),
             $this->textMetrics,
         );
+        $this->pendingRenderState = new TablePendingRenderState();
         $this->tableStructElem = $page->getDocument()->getProfile()->requiresTaggedPdf()
             ? $page->getDocument()->createStructElem(StructureTag::Table)
             : null;
@@ -233,7 +232,7 @@ final class Table
         $this->rowsAdded = true;
 
         $preparedRow = $this->prepareRow($cells, $header);
-        $this->pendingGroupRows[] = new PreparedTableRow($preparedRow['cells'], $header);
+        $this->pendingRenderState->addRow(new PreparedTableRow($preparedRow['cells'], $header));
         $this->activeRowspans = $preparedRow['nextRowspans'];
 
         if (!$this->hasActiveRowspans()) {
@@ -255,7 +254,7 @@ final class Table
 
     private function flushPendingGroup(): void
     {
-        $pendingGroupRows = $this->pendingGroupRows;
+        $pendingGroupRows = $this->pendingRenderState->rows();
         $rowHeights = $this->rowGroupHeightResolver->resolve($pendingGroupRows);
         $this->renderCaptionIfNeeded($rowHeights);
         $isBodyGroup = array_any(
@@ -290,7 +289,7 @@ final class Table
                 continue;
             }
 
-            if ($fittingRowCount >= count($remainingRows) && $this->pendingRowspanCells === []) {
+            if ($fittingRowCount >= count($remainingRows) && !$this->pendingRenderState->hasPendingRowspanCells()) {
                 $this->renderPendingGroup($remainingRows, $remainingRowHeights);
                 break;
             }
@@ -306,8 +305,7 @@ final class Table
             $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0));
         }
 
-        $this->pendingGroupRows = [];
-        $this->pendingRowspanCells = [];
+        $this->pendingRenderState->clear();
     }
 
     /**
@@ -365,7 +363,7 @@ final class Table
         /** @var list<list<array{segments: array<int, TextSegment>, justify: bool}>> $continuationLines */
         $continuationLines = [];
 
-        foreach ($this->pendingRowspanCells as $pendingRowspanCell) {
+        foreach ($this->pendingRenderState->pendingRowspanCells() as $pendingRowspanCell) {
             $result = $this->renderPendingRowspanCellSegment($pendingRowspanCell, $rowCount, $segmentRowHeights, $rowTopY, $lineHeight);
             $this->page = $result->page;
             $continuationLines[] = $result->remainingLines;
@@ -395,7 +393,9 @@ final class Table
         }
 
         $this->cursorY = $rowTopY;
-        $this->pendingRowspanCells = $this->buildPendingRowspanContinuations($preparedRows, $rowCount, $continuationLines);
+        $this->pendingRenderState->replacePendingRowspanCells(
+            $this->buildPendingRowspanContinuations($preparedRows, $rowCount, $continuationLines),
+        );
     }
 
     /**
@@ -475,7 +475,7 @@ final class Table
         $continuations = [];
         $continuationIndex = 0;
 
-        foreach ($this->pendingRowspanCells as $pendingRowspanCell) {
+        foreach ($this->pendingRenderState->pendingRowspanCells() as $pendingRowspanCell) {
             $remainingRows = $pendingRowspanCell->remainingRows - $renderedRowCount;
             $remainingLines = $continuationLines[$continuationIndex] ?? [];
             $continuationIndex++;
@@ -543,7 +543,7 @@ final class Table
      */
     private function shouldDeferLeadingSplitToNextPage(array $preparedRows, array $rowHeights, int $fittingRowCount): bool
     {
-        if ($this->pendingRowspanCells !== [] || $fittingRowCount !== 1 || $preparedRows === []) {
+        if ($this->pendingRenderState->hasPendingRowspanCells() || $fittingRowCount !== 1 || $preparedRows === []) {
             return false;
         }
 
