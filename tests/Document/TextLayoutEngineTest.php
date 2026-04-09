@@ -11,7 +11,6 @@ use Kalle\Pdf\Document\Text\TextLayoutEngine;
 use Kalle\Pdf\Document\Text\TextLayoutFontResolver;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\TextOverflow;
@@ -202,7 +201,7 @@ final class TextLayoutEngineTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $engine = TextLayoutEngine::forPageFonts(
-            new PageFonts($page, new UnicodeFontWidthUpdater()),
+            PageFonts::forPage($page),
         );
 
         $lines = $engine->layoutParagraphLines('Hello world', 'Helvetica', 12, 200.0);

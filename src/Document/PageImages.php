@@ -15,6 +15,15 @@ use Kalle\Pdf\Element\Image;
  */
 final class PageImages
 {
+    public static function forPage(Page $page, PageMarkedContentIds $pageMarkedContentIds): self
+    {
+        return new self(
+            $page,
+            $pageMarkedContentIds,
+            new PageImageObjectFactory($page->getDocument()),
+        );
+    }
+
     public function __construct(
         private readonly Page $page,
         private readonly PageMarkedContentIds $pageMarkedContentIds,

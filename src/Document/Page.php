@@ -27,7 +27,6 @@ use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Element\Raw;
-use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -852,18 +851,12 @@ final class Page extends IndirectObject
 
     private function pageFonts(): PageFonts
     {
-        return $this->pageFonts ??= new PageFonts(
-            $this,
-            new UnicodeFontWidthUpdater(),
-        );
+        return $this->pageFonts ??= PageFonts::forPage($this);
     }
 
     private function pageObjectRenderer(): PageObjectRenderer
     {
-        return $this->pageObjectRenderer ??= new PageObjectRenderer(
-            $this,
-            new PageDictionaryBuilder(),
-        );
+        return $this->pageObjectRenderer ??= PageObjectRenderer::forPage($this);
     }
 
     private function pageGraphics(): PageGraphics
@@ -883,11 +876,7 @@ final class Page extends IndirectObject
 
     private function pageImages(): PageImages
     {
-        return $this->pageImages ??= new PageImages(
-            $this,
-            $this->pageMarkedContentIds,
-            new PageImageObjectFactory($this->document),
-        );
+        return $this->pageImages ??= PageImages::forPage($this, $this->pageMarkedContentIds);
     }
 
     private function pageLinks(): PageLinks

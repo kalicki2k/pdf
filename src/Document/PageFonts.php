@@ -17,6 +17,14 @@ use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
  */
 final class PageFonts
 {
+    public static function forPage(Page $page): self
+    {
+        return new self(
+            $page,
+            new UnicodeFontWidthUpdater(),
+        );
+    }
+
     public function __construct(
         private readonly Page $page,
         private readonly UnicodeFontWidthUpdater $unicodeFontWidthUpdater,

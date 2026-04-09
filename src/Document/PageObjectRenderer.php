@@ -9,6 +9,14 @@ namespace Kalle\Pdf\Document;
  */
 final class PageObjectRenderer
 {
+    public static function forPage(Page $page): self
+    {
+        return new self(
+            $page,
+            new PageDictionaryBuilder(),
+        );
+    }
+
     public function __construct(
         private readonly Page $page,
         private readonly PageDictionaryBuilder $dictionaryBuilder,

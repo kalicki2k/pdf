@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\PageDictionaryBuilder;
 use Kalle\Pdf\Document\PageObjectRenderer;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
@@ -19,7 +18,7 @@ final class PageObjectRendererTest extends TestCase
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage(100.0, 200.0);
 
-        $renderer = new PageObjectRenderer($page, new PageDictionaryBuilder());
+        $renderer = PageObjectRenderer::forPage($page);
 
         self::assertSame(
             "4 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 6 0 R /Contents 5 0 R >>\nendobj\n",
