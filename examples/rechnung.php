@@ -194,7 +194,7 @@ $page->createTextFrame($totalsPosition, Units::mm(70), Units::mm(35))
 
 //$targetPath = $outputDir . '/rechnung_' . new DateTime()->format('Y-m-d-H-i-s') . '.pdf';
 $targetPath = $outputDir . '/rechnung.pdf';
-file_put_contents($targetPath, $document->render());
+$document->writeToFile($targetPath);
 
 printf(
     "Erstellt in %.3f Sekunden.\n",

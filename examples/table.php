@@ -579,7 +579,7 @@ for ($index = 6; $index <= 14; $index++) {
 
 $outputPath = $outputDir . '/test-table.pdf';
 
-file_put_contents($outputPath, $document->render());
+$document->writeToFile($outputPath);
 
 printf(
     "Erstellt in %.3f Sekunden: %s\n",

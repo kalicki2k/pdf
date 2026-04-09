@@ -122,6 +122,6 @@ $document->addTableOfContents(
 );
 
 $outputPath = $outputDir . '/table-of-contents-minimal.pdf';
-file_put_contents($outputPath, $document->render());
+$document->writeToFile($outputPath);
 
 printf('Generated %s%s', $outputPath, PHP_EOL);

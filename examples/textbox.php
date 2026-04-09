@@ -313,6 +313,6 @@ $renderPage(
 );
 
 $outputPath = $outputDir . '/test-textbox.pdf';
-file_put_contents($outputPath, $document->render());
+$document->writeToFile($outputPath);
 
 printf('Generated %s%s', $outputPath, PHP_EOL);

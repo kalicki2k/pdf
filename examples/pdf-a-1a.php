@@ -120,7 +120,7 @@ $page->addImage(
 );
 
 $targetPath = $outputDir . '/pdf-a-1a_' . date('Y-m-d-H-i-s') . '.pdf';
-file_put_contents($targetPath, $document->render());
+$document->writeToFile($targetPath);
 
 printf(
     "Erstellt in %.3f Sekunden: %s\n",

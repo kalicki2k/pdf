@@ -162,7 +162,7 @@ foreach ([
 }
 
 $targetPath = $outputDir . '/table-caption-spans-pagination_' . date('Y-m-d-H-i-s') . '.pdf';
-file_put_contents($targetPath, $document->render());
+$document->writeToFile($targetPath);
 
 printf(
     "Erstellt in %.3f Sekunden: %s\n",

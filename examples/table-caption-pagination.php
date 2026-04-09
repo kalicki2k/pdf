@@ -165,7 +165,7 @@ foreach ($rows as [$region, $january, $february, $march]) {
 }
 
 $targetPath = $outputDir . '/table-caption-pagination_' . date('Y-m-d-H-i-s') . '.pdf';
-file_put_contents($targetPath, $document->render());
+$document->writeToFile($targetPath);
 
 printf(
     "Erstellt in %.3f Sekunden: %s\n",
