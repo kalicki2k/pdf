@@ -17,10 +17,10 @@ class PdfRenderer
     public function write(PdfSerializationPlan $plan, PdfOutput $output): void
     {
         $fileStructureSerializer = new PdfFileStructureSerializer();
-        $fileStructureSerializer->writeHeader($plan->version, $output);
+        $fileStructureSerializer->writeHeader($plan->fileStructure, $output);
         $objectSerializer = new PdfObjectSerializer((new PdfObjectEncryptorFactory())->create($plan));
         $offsets = $objectSerializer->writeObjects($plan->objects, $output);
 
-        $fileStructureSerializer->writeCrossReferenceSection($output, $offsets, $plan->trailer);
+        $fileStructureSerializer->writeCrossReferenceSection($output, $offsets, $plan->fileStructure);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfFileStructure;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\PdfTrailer;
@@ -130,17 +131,19 @@ final class PdfRendererTest extends TestCase
     private function serializationPlan(?array $objects = null, float $version = 1.4, ?int $infoObjectId = 3): PdfSerializationPlan
     {
         return new PdfSerializationPlan(
-            version: $version,
             objects: $objects ?? [
                 $this->indirectObject(1, '<< /Type /Catalog /Pages 2 0 R >>'),
                 $this->indirectObject(2, '<< /Type /Pages /Count 0 >>'),
                 $this->indirectObject(3, '<< /Producer (kalle/pdf) >>'),
             ],
-            trailer: new PdfTrailer(
-                rootObjectId: 1,
-                infoObjectId: $infoObjectId,
-                encryptObjectId: null,
-                documentId: ['0123456789abcdef0123456789abcdef', '0123456789abcdef0123456789abcdef'],
+            fileStructure: new PdfFileStructure(
+                version: $version,
+                trailer: new PdfTrailer(
+                    rootObjectId: 1,
+                    infoObjectId: $infoObjectId,
+                    encryptObjectId: null,
+                    documentId: ['0123456789abcdef0123456789abcdef', '0123456789abcdef0123456789abcdef'],
+                ),
             ),
         );
     }

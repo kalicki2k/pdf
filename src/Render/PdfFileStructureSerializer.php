@@ -8,9 +8,9 @@ final class PdfFileStructureSerializer
 {
     private const string BINARY_HEADER_COMMENT = "%\xE2\xE3\xCF\xD3";
 
-    public function writeHeader(float $version, PdfOutput $output): void
+    public function writeHeader(PdfFileStructure $fileStructure, PdfOutput $output): void
     {
-        $output->write('%PDF-' . number_format($version, 1, '.', '') . PHP_EOL);
+        $output->write('%PDF-' . number_format($fileStructure->version, 1, '.', '') . PHP_EOL);
         $output->write(self::BINARY_HEADER_COMMENT . PHP_EOL);
     }
 
@@ -22,12 +22,12 @@ final class PdfFileStructureSerializer
     public function writeCrossReferenceSection(
         PdfOutput $output,
         PdfObjectOffsets $offsets,
-        PdfTrailer $trailer,
+        PdfFileStructure $fileStructure,
     ): void {
         $startXref = $output->offset();
 
         $this->writeCrossReferenceTable($offsets, $output);
-        $this->writeTrailer($output, $offsets, $trailer);
+        $this->writeTrailer($output, $offsets, $fileStructure->trailer);
         $this->writeFooter($output, $startXref);
     }
 

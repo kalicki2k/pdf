@@ -8,6 +8,7 @@ use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\PdfEncryption;
+use Kalle\Pdf\Render\PdfFileStructure;
 use Kalle\Pdf\Render\PdfObjectEncryptorFactory;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\PdfTrailer;
@@ -20,7 +21,10 @@ final class PdfObjectEncryptorFactoryTest extends TestCase
     public function it_returns_null_without_encryption_data(): void
     {
         $encryptor = (new PdfObjectEncryptorFactory())->create(
-            new PdfSerializationPlan(1.4, [], new PdfTrailer(1, 3, null, ['id-a', 'id-b'])),
+            new PdfSerializationPlan(
+                objects: [],
+                fileStructure: new PdfFileStructure(1.4, new PdfTrailer(1, 3, null, ['id-a', 'id-b'])),
+            ),
         );
 
         self::assertNull($encryptor);
@@ -31,10 +35,9 @@ final class PdfObjectEncryptorFactoryTest extends TestCase
     {
         $encryptor = (new PdfObjectEncryptorFactory())->create(
             new PdfSerializationPlan(
-                1.4,
-                [],
-                new PdfTrailer(1, 3, 4, ['id-a', 'id-b']),
-                new PdfEncryption(
+                objects: [],
+                fileStructure: new PdfFileStructure(1.4, new PdfTrailer(1, 3, 4, ['id-a', 'id-b'])),
+                encryption: new PdfEncryption(
                     new EncryptionProfile(EncryptionAlgorithm::AUTO, 0, 0, 0),
                     new StandardSecurityHandlerData('', '', 'secret', -4),
                 ),
@@ -49,10 +52,9 @@ final class PdfObjectEncryptorFactoryTest extends TestCase
     {
         $encryptor = (new PdfObjectEncryptorFactory())->create(
             new PdfSerializationPlan(
-                1.4,
-                [],
-                new PdfTrailer(1, 3, 4, ['id-a', 'id-b']),
-                new PdfEncryption(
+                objects: [],
+                fileStructure: new PdfFileStructure(1.4, new PdfTrailer(1, 3, 4, ['id-a', 'id-b'])),
+                encryption: new PdfEncryption(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
                     new StandardSecurityHandlerData('', '', '1234567890123456', -4),
                 ),

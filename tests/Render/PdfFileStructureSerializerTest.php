@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Render;
 
+use Kalle\Pdf\Render\PdfFileStructure;
 use Kalle\Pdf\Render\PdfFileStructureSerializer;
 use Kalle\Pdf\Render\PdfObjectOffsets;
 use Kalle\Pdf\Render\PdfTrailer;
@@ -18,12 +19,13 @@ final class PdfFileStructureSerializerTest extends TestCase
     {
         $serializer = new PdfFileStructureSerializer();
         $output = new StringPdfOutput();
+        $fileStructure = new PdfFileStructure(1.4, new PdfTrailer(1, 2, null, ['abc', 'def']));
 
-        $serializer->writeHeader(1.4, $output);
+        $serializer->writeHeader($fileStructure, $output);
         $offsets = new PdfObjectOffsets([1 => 15, 3 => 42]);
 
         $serializer->writeCrossReferenceTable($offsets, $output);
-        $serializer->writeTrailer($output, $offsets, new PdfTrailer(1, 2, null, ['abc', 'def']));
+        $serializer->writeTrailer($output, $offsets, $fileStructure->trailer);
         $serializer->writeFooter($output, 99);
 
         $contents = $output->contents();
@@ -39,12 +41,13 @@ final class PdfFileStructureSerializerTest extends TestCase
     {
         $serializer = new PdfFileStructureSerializer();
         $output = new StringPdfOutput();
+        $fileStructure = new PdfFileStructure(1.4, new PdfTrailer(1, 2, null, ['abc', 'def']));
 
-        $serializer->writeHeader(1.4, $output);
+        $serializer->writeHeader($fileStructure, $output);
         $offsets = new PdfObjectOffsets([1 => 15, 3 => 42]);
         $expectedStartXref = $output->offset();
 
-        $serializer->writeCrossReferenceSection($output, $offsets, new PdfTrailer(1, 2, null, ['abc', 'def']));
+        $serializer->writeCrossReferenceSection($output, $offsets, $fileStructure);
 
         $contents = $output->contents();
 
