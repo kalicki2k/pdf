@@ -20,7 +20,7 @@ final class DocumentSerializationPlanBuilder
         $securityHandlerData = $document->getSecurityHandlerData();
 
         return new PdfSerializationPlan(
-            objects: $document->getDocumentObjects(),
+            objects: $document->iterateDocumentObjects(),
             fileStructure: new PdfFileStructure(
                 version: $document->getVersion(),
                 trailer: new PdfTrailer(

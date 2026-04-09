@@ -8,11 +8,13 @@ use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
+use Traversable;
 
 /**
  * @internal Collects the indirect objects that make up a rendered PDF document.
+ * @implements \IteratorAggregate<int, IndirectObject>
  */
-final readonly class DocumentObjectCollector
+final readonly class DocumentObjectCollector implements \IteratorAggregate
 {
     /**
      * @param list<StructElem> $structElems
@@ -28,195 +30,198 @@ final readonly class DocumentObjectCollector
      */
     public function collect(): array
     {
-        $xmpMetadata = $this->document->getXmpMetadata();
-        $pdfaOutputIntentProfile = $this->document->getPdfAOutputIntentProfile();
-
-        /** @var list<IndirectObject> $objects */
-        $objects = [
-            $this->document->catalog,
-            $this->document->pages,
-        ];
-
-        $this->collectOutlineObjects($objects);
-        $this->collectAcroFormObjects($objects);
-        $this->collectStructureObjects($objects);
-        $this->collectEncryptionObjects($objects, $pdfaOutputIntentProfile);
-        $this->collectOptionalContentGroupObjects($objects);
-        $this->collectAttachmentObjects($objects);
-        $this->collectInfoDictionary($objects);
-        $this->collectFontObjects($objects);
-        $this->collectPageObjects($objects);
-        $this->collectMetadataObjects($objects, $xmpMetadata);
-        $this->collectPageContentLengthObjects($objects);
-
-        return $objects;
+        return iterator_to_array($this->getIterator(), false);
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return Traversable<int, IndirectObject>
      */
-    private function collectOutlineObjects(array &$objects): void
+    public function getIterator(): Traversable
+    {
+        $xmpMetadata = $this->document->getXmpMetadata();
+        $pdfaOutputIntentProfile = $this->document->getPdfAOutputIntentProfile();
+
+        yield $this->document->catalog;
+        yield $this->document->pages;
+        yield from $this->outlineObjects();
+        yield from $this->acroFormObjects();
+        yield from $this->structureObjects();
+        yield from $this->encryptionObjects($pdfaOutputIntentProfile);
+        yield from $this->optionalContentGroupObjects();
+        yield from $this->attachmentObjects();
+        yield from $this->infoDictionaryObjects();
+        yield from $this->fontObjects();
+        yield from $this->pageObjects();
+        yield from $this->metadataObjects($xmpMetadata);
+        yield from $this->pageContentLengthObjects();
+    }
+
+    /**
+     * @return iterable<int, IndirectObject>
+     */
+    private function outlineObjects(): iterable
     {
         if ($this->document->outlineRoot === null) {
             return;
         }
 
-        $objects[] = $this->document->outlineRoot;
+        yield $this->document->outlineRoot;
 
         foreach ($this->document->outlineRoot->getItems() as $outlineItem) {
-            $objects[] = $outlineItem;
+            yield $outlineItem;
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectAcroFormObjects(array &$objects): void
+    private function acroFormObjects(): iterable
     {
         if ($this->document->acroForm === null) {
             return;
         }
 
-        $objects[] = $this->document->acroForm;
+        yield $this->document->acroForm;
 
         foreach ($this->document->acroForm->getFieldObjectsForRender() as $fieldObject) {
-            $objects[] = $fieldObject;
+            yield $fieldObject;
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectStructureObjects(array &$objects): void
+    private function structureObjects(): iterable
     {
         if ($this->document->structTreeRoot !== null) {
-            $objects[] = $this->document->structTreeRoot;
+            yield $this->document->structTreeRoot;
         }
 
         if ($this->document->parentTree !== null) {
-            $objects[] = $this->document->parentTree;
+            yield $this->document->parentTree;
         }
 
         foreach ($this->structElems as $structElem) {
-            $objects[] = $structElem;
+            yield $structElem;
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectEncryptionObjects(array &$objects, ?IccProfileStream $pdfaOutputIntentProfile): void
+    private function encryptionObjects(?IccProfileStream $pdfaOutputIntentProfile): iterable
     {
         if ($this->document->encryptDictionary !== null) {
-            $objects[] = $this->document->encryptDictionary;
+            yield $this->document->encryptDictionary;
         }
 
         if ($pdfaOutputIntentProfile !== null) {
-            $objects[] = $pdfaOutputIntentProfile;
+            yield $pdfaOutputIntentProfile;
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectOptionalContentGroupObjects(array &$objects): void
+    private function optionalContentGroupObjects(): iterable
     {
         foreach ($this->document->getOptionalContentGroups() as $optionalContentGroup) {
-            $objects[] = $optionalContentGroup;
+            yield $optionalContentGroup;
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectAttachmentObjects(array &$objects): void
+    private function attachmentObjects(): iterable
     {
         foreach ($this->document->getAttachments() as $attachment) {
-            $objects[] = $attachment;
-            $objects[] = $attachment->getEmbeddedFile();
+            yield $attachment;
+            yield $attachment->getEmbeddedFile();
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectInfoDictionary(array &$objects): void
+    private function infoDictionaryObjects(): iterable
     {
         if ($this->document->shouldWriteInfoDictionary()) {
-            $objects[] = $this->document->info;
+            yield $this->document->info;
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectFontObjects(array &$objects): void
+    private function fontObjects(): iterable
     {
         foreach ($this->document->getFonts() as $font) {
             if ($font instanceof UnicodeFont) {
                 if ($font->descendantFont->fontDescriptor !== null) {
-                    $objects[] = $font->descendantFont->fontDescriptor->fontFile;
-                    $objects[] = $font->descendantFont->fontDescriptor;
+                    yield $font->descendantFont->fontDescriptor->fontFile;
+                    yield $font->descendantFont->fontDescriptor;
                 }
 
                 if ($font->descendantFont->cidToGidMap !== null) {
-                    $objects[] = $font->descendantFont->cidToGidMap;
+                    yield $font->descendantFont->cidToGidMap;
                 }
 
-                $objects[] = $font->descendantFont;
-                $objects[] = $font->toUnicode;
+                yield $font->descendantFont;
+                yield $font->toUnicode;
             }
 
             if ($font instanceof StandardFont && $font->encodingDictionary !== null) {
-                $objects[] = $font->encodingDictionary;
+                yield $font->encodingDictionary;
             }
 
-            $objects[] = $font;
+            yield $font;
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectPageObjects(array &$objects): void
+    private function pageObjects(): iterable
     {
         foreach ($this->document->pages->pages as $page) {
-            $objects[] = $page;
+            $page->prepareContentsLengthObject();
+            yield $page;
 
             foreach ($page->getAnnotations() as $annotation) {
-                $objects[] = $annotation;
+                yield $annotation;
 
                 foreach ($annotation->getRelatedObjects() as $relatedObject) {
-                    $objects[] = $relatedObject;
+                    yield $relatedObject;
                 }
             }
 
             foreach ($page->getResources()->getImages() as $image) {
-                $objects[] = $image;
+                yield $image;
             }
 
-            $objects[] = $page->getResources();
-            $objects[] = $page->getContents();
+            yield $page->getResources();
+            yield $page->getContents();
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectMetadataObjects(array &$objects, ?XmpMetadata $xmpMetadata): void
+    private function metadataObjects(?XmpMetadata $xmpMetadata): iterable
     {
         if ($xmpMetadata !== null) {
-            $objects[] = $xmpMetadata;
+            yield $xmpMetadata;
         }
     }
 
     /**
-     * @param list<IndirectObject> $objects
+     * @return iterable<int, IndirectObject>
      */
-    private function collectPageContentLengthObjects(array &$objects): void
+    private function pageContentLengthObjects(): iterable
     {
         foreach ($this->document->pages->pages as $page) {
-            $objects[] = $page->prepareContentsLengthObject();
+            yield $page->prepareContentsLengthObject();
         }
     }
 }

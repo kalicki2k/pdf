@@ -136,6 +136,14 @@ final class Document
         return new DocumentObjectCollector($this, array_values($this->structElems))->collect();
     }
 
+    /**
+     * @return iterable<IndirectObject>
+     */
+    public function iterateDocumentObjects(): iterable
+    {
+        return new DocumentObjectCollector($this, array_values($this->structElems));
+    }
+
     public function getCreationDate(): DateTimeImmutable
     {
         return $this->creationDate;

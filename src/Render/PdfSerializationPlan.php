@@ -9,10 +9,10 @@ use Kalle\Pdf\Object\IndirectObject;
 final readonly class PdfSerializationPlan
 {
     /**
-     * @param list<IndirectObject> $objects
+     * @param iterable<IndirectObject> $objects
      */
     public function __construct(
-        public array $objects,
+        public iterable $objects,
         public PdfFileStructure $fileStructure,
         public ?PdfEncryption $encryption = null,
     ) {

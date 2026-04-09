@@ -25,9 +25,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame(3, $plan->fileStructure->trailer->infoObjectId);
         self::assertNull($plan->fileStructure->trailer->encryptObjectId);
         self::assertSame($document->getDocumentId(), $plan->fileStructure->trailer->documentId);
+        $objects = is_array($plan->objects) ? $plan->objects : iterator_to_array($plan->objects, false);
         self::assertSame([1, 2, 3], array_slice(array_map(
             static fn (object $object): int => $object->id,
-            $plan->objects,
+            $objects,
         ), 0, 3));
     }
 
