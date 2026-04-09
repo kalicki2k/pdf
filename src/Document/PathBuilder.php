@@ -14,8 +14,10 @@ final class PathBuilder
     /** @var list<string> */
     private array $commands = [];
 
-    public function __construct(private readonly Page $page)
-    {
+    public function __construct(
+        private readonly Page $page,
+        private readonly PageGraphics $pageGraphics,
+    ) {
     }
 
     public function moveTo(float $x, float $y): self
@@ -113,9 +115,9 @@ final class PathBuilder
             throw new InvalidArgumentException('Path requires at least one drawing command.');
         }
 
-        $graphicsStateName = $this->page->resolveGraphicsStateName($opacity);
+        $graphicsStateName = $this->pageGraphics->resolveGraphicsStateName($opacity);
 
-        $this->page->addGraphicElement(new Path(
+        $this->pageGraphics->addGraphicElement(new Path(
             $this->commands,
             $strokeWidth,
             $strokeColorOperator,

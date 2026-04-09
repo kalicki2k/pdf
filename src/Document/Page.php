@@ -897,16 +897,6 @@ final class Page extends IndirectObject
         return $this->pageParagraphRenderer ??= PageParagraphRenderer::forPage($this, $this->pageFonts());
     }
 
-    public function resolveGraphicsStateName(?Opacity $opacity): ?string
-    {
-        return $this->pageGraphics()->resolveGraphicsStateName($opacity);
-    }
-
-    public function addGraphicElement(Element $element): void
-    {
-        $this->pageGraphics()->addGraphicElement($element);
-    }
-
     /**
      * @param callable(): void $renderer
      */

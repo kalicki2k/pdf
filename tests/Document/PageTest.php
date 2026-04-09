@@ -3659,7 +3659,7 @@ final class PageTest extends TestCase
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $graphics = new PageGraphics($page);
-        $path = new PathBuilder($page);
+        $path = new PathBuilder($page, $graphics);
         $path->moveTo(10, 10)->lineTo(20, 10)->lineTo(20, 20)->close();
 
         $this->expectException(InvalidArgumentException::class);
@@ -3674,7 +3674,7 @@ final class PageTest extends TestCase
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $graphics = new PageGraphics($page);
-        $path = new PathBuilder($page);
+        $path = new PathBuilder($page, $graphics);
         $path->moveTo(10, 10)->lineTo(20, 10)->lineTo(20, 20)->close();
 
         $result = $graphics->finishClosedPath($path, null, null, Color::gray(0.5), null);

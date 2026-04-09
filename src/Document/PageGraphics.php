@@ -30,7 +30,7 @@ final class PageGraphics
 
     public function addPath(): PathBuilder
     {
-        return new PathBuilder($this->page);
+        return new PathBuilder($this->page, $this);
     }
 
     public function addLine(
