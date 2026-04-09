@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document\Text;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\LinkTarget;
+use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
@@ -18,6 +19,11 @@ final readonly class TextLayoutEngine
 {
     public function __construct(private TextLayoutFontResolver $fontResolver)
     {
+    }
+
+    public static function forPageFonts(PageFonts $pageFonts): self
+    {
+        return new self(TextLayoutFontResolver::forPageFonts($pageFonts));
     }
 
     /**

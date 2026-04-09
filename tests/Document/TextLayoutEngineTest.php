@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\LinkTarget;
+use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Document\Text\TextLayoutEngine;
 use Kalle\Pdf\Document\Text\TextLayoutFontResolver;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -189,6 +193,22 @@ final class TextLayoutEngineTest extends TestCase
         self::assertCount(2, $lines[0]['segments']);
         self::assertSame('Hello', $lines[0]['segments'][0]->text);
         self::assertSame('World', $lines[0]['segments'][1]->text);
+    }
+
+    #[Test]
+    public function it_can_build_a_layout_engine_from_page_fonts(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+        $engine = TextLayoutEngine::forPageFonts(
+            new PageFonts($page, new UnicodeFontWidthUpdater()),
+        );
+
+        $lines = $engine->layoutParagraphLines('Hello world', 'Helvetica', 12, 200.0);
+
+        self::assertCount(1, $lines);
+        self::assertSame('Hello world', $lines[0]['segments'][0]->text);
     }
 
     private function createEngine(bool $supportsEllipsis = true): TextLayoutEngine
