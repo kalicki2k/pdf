@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Text;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
@@ -23,10 +22,8 @@ use Kalle\Pdf\Structure\StructElem;
  */
 final class PageTextRenderer
 {
-    private const float DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
-    private const float DEFAULT_BOTTOM_MARGIN = 20.0;
-    private readonly PageTextBlockRenderer $blockRenderer;
     private readonly PageTextElementRenderer $textElementRenderer;
+    private readonly PageParagraphRenderer $paragraphRenderer;
 
     public function __construct(
         Page $page,
@@ -34,7 +31,7 @@ final class PageTextRenderer
         PageLinks $pageLinks,
         PageGraphics $pageGraphics,
         PageMarkedContentIds $pageMarkedContentIds,
-        private readonly TextLayoutEngine $textLayoutEngine,
+        TextLayoutEngine $textLayoutEngine,
     ) {
         $this->textElementRenderer = new PageTextElementRenderer(
             $page,
@@ -43,9 +40,12 @@ final class PageTextRenderer
             $pageGraphics,
             $pageMarkedContentIds,
         );
-        $this->blockRenderer = new PageTextBlockRenderer(
-            $page,
-            new PageTextLineRenderer($pageFonts, $textLayoutEngine),
+        $this->paragraphRenderer = new PageParagraphRenderer(
+            $textLayoutEngine,
+            new PageTextBlockRenderer(
+                $page,
+                new PageTextLineRenderer($pageFonts, $textLayoutEngine),
+            ),
         );
     }
 
@@ -70,38 +70,7 @@ final class PageTextRenderer
         int $size = 12,
         FlowTextOptions $options = new FlowTextOptions(),
     ): Page {
-        $layout = FlowTextLayout::fromOptions(
-            $maxWidth,
-            $size,
-            $options,
-            self::DEFAULT_LINE_HEIGHT_FACTOR,
-            self::DEFAULT_BOTTOM_MARGIN,
-        );
-
-        $lines = $this->layoutParagraphLines(
-            $text,
-            $fontName,
-            $size,
-            $maxWidth,
-            $options->color,
-            $options->opacity,
-            $layout->maxLines,
-            $options->overflow,
-        );
-
-        return $this->renderParagraphLines(
-            $lines,
-            $position->x,
-            $position->y,
-            $maxWidth,
-            $fontName,
-            $size,
-            $options->structureTag,
-            $options->parentStructElem,
-            $layout->lineHeight,
-            $layout->bottomMargin,
-            $options->align,
-        );
+        return $this->paragraphRenderer->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
     }
 
     /**
@@ -114,36 +83,7 @@ final class PageTextRenderer
         int $size = 12,
         TextBoxOptions $options = new TextBoxOptions(),
     ): Page {
-        $layout = TextBoxLayout::fromOptions(
-            $box,
-            $size,
-            $options,
-            self::DEFAULT_LINE_HEIGHT_FACTOR,
-        );
-
-        $lines = $this->layoutParagraphLines(
-            $text,
-            $fontName,
-            $size,
-            $layout->contentWidth,
-            $options->color,
-            $options->opacity,
-            $layout->maxLines,
-            $options->overflow,
-        );
-
-        return $this->blockRenderer->renderTextLines(
-            $lines,
-            $layout->contentX,
-            $layout->resolveStartY($size, count($lines)),
-            $layout->contentWidth,
-            $fontName,
-            $size,
-            $options->structureTag,
-            $options->parentStructElem,
-            $layout->lineHeight,
-            $options->align,
-        );
+        return $this->paragraphRenderer->addTextBox($text, $box, $fontName, $size, $options);
     }
 
     /**
@@ -160,16 +100,7 @@ final class PageTextRenderer
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): array {
-        return $this->textLayoutEngine->layoutParagraphLines(
-            $text,
-            $baseFont,
-            $size,
-            $maxWidth,
-            $color,
-            $opacity,
-            $maxLines,
-            $overflow,
-        );
+        return $this->paragraphRenderer->layoutParagraphLines($text, $baseFont, $size, $maxWidth, $color, $opacity, $maxLines, $overflow);
     }
 
     /**
@@ -188,18 +119,7 @@ final class PageTextRenderer
         ?float $bottomMargin = null,
         HorizontalAlign $align = HorizontalAlign::LEFT,
     ): Page {
-        $lineHeight ??= $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-        $bottomMargin ??= self::DEFAULT_BOTTOM_MARGIN;
-
-        if ($maxWidth <= 0) {
-            throw new InvalidArgumentException('Paragraph width must be greater than zero.');
-        }
-
-        if ($lineHeight <= 0) {
-            throw new InvalidArgumentException('Line height must be greater than zero.');
-        }
-
-        return $this->blockRenderer->renderParagraphLines(
+        return $this->paragraphRenderer->renderParagraphLines(
             $lines,
             $x,
             $y,
@@ -225,7 +145,7 @@ final class PageTextRenderer
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): int {
-        return $this->textLayoutEngine->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
+        return $this->paragraphRenderer->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
     }
 
 }
