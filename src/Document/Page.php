@@ -815,9 +815,11 @@ final class Page extends IndirectObject
         return $this;
     }
 
-    public function render(): string
+    protected function writeObject(\Kalle\Pdf\Render\PdfOutput $output): void
     {
-        return $this->pageObjectRenderer()->render($this->pageMarkedContentIds->hasAllocatedIds());
+        $output->write(
+            $this->pageObjectRenderer()->render($this->pageMarkedContentIds->hasAllocatedIds()),
+        );
     }
 
     public function getWidth(): float

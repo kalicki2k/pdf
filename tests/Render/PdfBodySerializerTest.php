@@ -54,6 +54,11 @@ final class PdfBodySerializerTest extends TestCase
             new PdfSerializationPlan(
                 objects: [
                     new class (7) extends IndirectObject implements EncryptableIndirectObject {
+                        protected function writeObject(PdfOutput $output): void
+                        {
+                            $output->write("7 0 obj\n<< /Length 20 >>\nstream\nplain-stream-payload\nendstream\nendobj\n");
+                        }
+
                         public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
                         {
                             $encrypted = $objectEncryptor->encryptString($this->id, 'plain-stream-payload');
@@ -61,11 +66,6 @@ final class PdfBodySerializerTest extends TestCase
                             $output->write(
                                 "7 0 obj\n<< /Length " . strlen($encrypted) . " >>\nstream\n" . $encrypted . "\nendstream\nendobj\n",
                             );
-                        }
-
-                        public function render(): string
-                        {
-                            return "7 0 obj\n<< /Length 20 >>\nstream\nplain-stream-payload\nendstream\nendobj\n";
                         }
                     },
                 ],
@@ -91,9 +91,9 @@ final class PdfBodySerializerTest extends TestCase
                 parent::__construct($id);
             }
 
-            public function render(): string
+            protected function writeObject(PdfOutput $output): void
             {
-                return $this->id . " 0 obj\n" . $this->body . "\nendobj\n";
+                $output->write($this->id . " 0 obj\n" . $this->body . "\nendobj\n");
             }
         };
     }

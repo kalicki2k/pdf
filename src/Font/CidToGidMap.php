@@ -21,15 +21,7 @@ final class CidToGidMap extends IndirectObject implements EncryptableIndirectObj
         parent::__construct($id);
     }
 
-    public function render(): string
-    {
-        $buffer = new StringPdfOutput();
-        $this->write($buffer);
-
-        return $buffer->contents();
-    }
-
-    public function write(PdfOutput $output): void
+    protected function writeObject(PdfOutput $output): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
         $output->write($this->dictionary($this->mapLength())->render() . PHP_EOL);

@@ -23,19 +23,7 @@ final class EmbeddedFileStream extends IndirectObject implements EncryptableIndi
 
     private readonly BinaryData $contents;
 
-    public function render(): string
-    {
-        $contents = $this->contents->contents();
-
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $this->dictionary(strlen($contents))->render() . PHP_EOL
-            . 'stream' . PHP_EOL
-            . $contents . PHP_EOL
-            . 'endstream' . PHP_EOL
-            . 'endobj' . PHP_EOL;
-    }
-
-    public function write(PdfOutput $output): void
+    protected function writeObject(PdfOutput $output): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
         $output->write($this->dictionary($this->contents->length())->render() . PHP_EOL);

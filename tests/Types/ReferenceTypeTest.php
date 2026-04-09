@@ -15,9 +15,9 @@ final class ReferenceTypeTest extends TestCase
     public function it_renders_the_object_reference_syntax(): void
     {
         $object = new class (15) extends IndirectObject {
-            public function render(): string
+            protected function writeObject(\Kalle\Pdf\Render\PdfOutput $output): void
             {
-                return 'dummy';
+                $output->write('dummy');
             }
         };
 

@@ -9,14 +9,16 @@ use Kalle\Pdf\Types\DictionaryType;
 
 abstract class DictionaryIndirectObject extends IndirectObject
 {
-    public function render(): string
+    protected function writeObject(\Kalle\Pdf\Render\PdfOutput $output): void
     {
-        return $this->renderWithStringEncryptor();
+        $this->writeDictionaryObject($output, $this->dictionary());
     }
 
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
-    {
-        return $this->renderDictionaryObject($this->dictionary(), $encryptor);
+    protected function writeObjectWithStringEncryptor(
+        \Kalle\Pdf\Render\PdfOutput $output,
+        ObjectStringEncryptor $encryptor,
+    ): void {
+        $this->writeDictionaryObject($output, $this->dictionary(), $encryptor);
     }
 
     abstract protected function dictionary(): DictionaryType;

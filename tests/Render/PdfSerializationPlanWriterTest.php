@@ -71,9 +71,9 @@ final class PdfSerializationPlanWriterTest extends TestCase
                 parent::__construct($id);
             }
 
-            public function render(): string
+            protected function writeObject(\Kalle\Pdf\Render\PdfOutput $output): void
             {
-                return $this->id . " 0 obj\n" . $this->body . "\nendobj\n";
+                $output->write($this->id . " 0 obj\n" . $this->body . "\nendobj\n");
             }
         };
     }

@@ -8,7 +8,6 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 
 final class ToUnicodeCMap extends IndirectObject implements EncryptableIndirectObject
@@ -20,15 +19,7 @@ final class ToUnicodeCMap extends IndirectObject implements EncryptableIndirectO
         parent::__construct($id);
     }
 
-    public function render(): string
-    {
-        $buffer = new StringPdfOutput();
-        $this->write($buffer);
-
-        return $buffer->contents();
-    }
-
-    public function write(PdfOutput $output): void
+    protected function writeObject(PdfOutput $output): void
     {
         $cmap = $this->buildCMap();
 

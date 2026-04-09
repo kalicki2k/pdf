@@ -59,16 +59,15 @@ final class FormFieldListBoxAppearanceStream extends IndirectObject implements E
         $this->updateUnicodeFontWidths();
     }
 
-    public function render(): string
+    protected function writeObject(PdfOutput $output): void
     {
         $content = $this->content();
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $this->dictionary(strlen($content))->render() . PHP_EOL
-            . 'stream' . PHP_EOL
-            . $content . PHP_EOL
-            . 'endstream' . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary(strlen($content))->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $output->write($content);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
     public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void

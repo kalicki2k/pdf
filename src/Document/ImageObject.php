@@ -25,14 +25,7 @@ final class ImageObject extends IndirectObject implements EncryptableIndirectObj
         return $this->id;
     }
 
-    public function render(): string
-    {
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $this->image->render($this->softMask?->getId())
-            . 'endobj' . PHP_EOL;
-    }
-
-    public function write(PdfOutput $output): void
+    protected function writeObject(PdfOutput $output): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
         $this->image->write($output, $this->softMask?->getId());

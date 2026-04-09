@@ -36,19 +36,7 @@ final class IccProfileStream extends IndirectObject implements EncryptableIndire
         return new self($id, $data, $colorComponents);
     }
 
-    public function render(): string
-    {
-        $data = $this->data->contents();
-
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $this->dictionary(strlen($data))->render() . PHP_EOL
-            . 'stream' . PHP_EOL
-            . $data . PHP_EOL
-            . 'endstream' . PHP_EOL
-            . 'endobj' . PHP_EOL;
-    }
-
-    public function write(PdfOutput $output): void
+    protected function writeObject(PdfOutput $output): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
         $output->write($this->dictionary($this->data->length())->render() . PHP_EOL);

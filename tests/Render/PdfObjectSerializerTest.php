@@ -32,15 +32,15 @@ final class PdfObjectSerializerTest extends TestCase
         $serializer = new PdfObjectSerializer();
         $output = new StringPdfOutput();
         $firstObject = new class (1) extends IndirectObject {
-            public function render(): string
+            protected function writeObject(PdfOutput $output): void
             {
-                return "1 0 obj\nalpha\nendobj\n";
+                $output->write("1 0 obj\nalpha\nendobj\n");
             }
         };
         $secondObject = new class (3) extends IndirectObject {
-            public function render(): string
+            protected function writeObject(PdfOutput $output): void
             {
-                return "3 0 obj\nbeta\nendobj\n";
+                $output->write("3 0 obj\nbeta\nendobj\n");
             }
         };
 
@@ -77,18 +77,13 @@ final class PdfObjectSerializerTest extends TestCase
                 parent::__construct($id);
             }
 
-            public function write(PdfOutput $output): void
+            protected function writeObject(PdfOutput $output): void
             {
                 if ($output !== $this->expectedOutput) {
                     throw new \LogicException('Expected direct write to the provided output');
                 }
 
                 $output->write("11 0 obj\ndirect\nendobj\n");
-            }
-
-            public function render(): string
-            {
-                throw new \LogicException('render() should not be called');
             }
         }], $output);
 
@@ -123,7 +118,7 @@ final class PdfObjectSerializerTest extends TestCase
                 parent::__construct($id);
             }
 
-            public function write(PdfOutput $output): void
+            protected function writeObject(PdfOutput $output): void
             {
                 throw new \LogicException('write() should not be called');
             }
@@ -136,11 +131,6 @@ final class PdfObjectSerializerTest extends TestCase
 
                 $encrypted = $objectEncryptor->encryptString($this->id, 'abc');
                 $output->write("17 0 obj\n<< /Length " . strlen($encrypted) . " >>\nstream\n" . $encrypted . "\nendstream\nendobj\n");
-            }
-
-            public function render(): string
-            {
-                throw new \LogicException('render() should not be called');
             }
         }], $output);
 
@@ -184,16 +174,20 @@ final class PdfObjectSerializerTest extends TestCase
         $output = new StringPdfOutput();
 
         $serializer->writeObjects([new class (7) extends IndirectObject {
-            public function render(): string
+            protected function writeObject(PdfOutput $output): void
             {
-                return $this->id . " 0 obj\n<< /Value " . (new StringType('plain-text'))->render() . " >>\nendobj\n";
+                $output->write(
+                    $this->id . " 0 obj\n<< /Value " . (new StringType('plain-text'))->render() . " >>\nendobj\n",
+                );
             }
 
-            public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+            protected function writeObjectWithStringEncryptor(PdfOutput $output, ObjectStringEncryptor $encryptor): void
             {
-                return $this->id . " 0 obj\n<< /Value "
+                $output->write(
+                    $this->id . " 0 obj\n<< /Value "
                     . (new StringType('plain-text'))->render($encryptor)
-                    . " >>\nendobj\n";
+                    . " >>\nendobj\n",
+                );
             }
         }], $output);
 

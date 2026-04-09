@@ -6,6 +6,8 @@ namespace Kalle\Pdf\Object;
 
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Types\DictionaryType;
 
 abstract class IndirectObject
 {
@@ -19,29 +21,62 @@ abstract class IndirectObject
     {
     }
 
-    public function write(PdfOutput $output): void
+    final public function write(PdfOutput $output): void
     {
-        $output->write($this->render());
+        $this->writeObject($output);
     }
 
-    public function writeWithStringEncryptor(PdfOutput $output, ?ObjectStringEncryptor $encryptor = null): void
+    final public function writeWithStringEncryptor(PdfOutput $output, ?ObjectStringEncryptor $encryptor = null): void
     {
-        $output->write($this->renderWithStringEncryptor($encryptor));
+        if ($encryptor === null) {
+            $this->writeObject($output);
+
+            return;
+        }
+
+        $this->writeObjectWithStringEncryptor($output, $encryptor);
     }
 
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    final public function render(): string
     {
-        return $this->render();
+        $buffer = new StringPdfOutput();
+        $this->write($buffer);
+
+        return $buffer->contents();
+    }
+
+    final public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    {
+        $buffer = new StringPdfOutput();
+        $this->writeWithStringEncryptor($buffer, $encryptor);
+
+        return $buffer->contents();
+    }
+
+    protected function writeObjectWithStringEncryptor(PdfOutput $output, ObjectStringEncryptor $encryptor): void
+    {
+        $this->writeObject($output);
     }
 
     protected function renderDictionaryObject(
-        \Kalle\Pdf\Types\DictionaryType $dictionary,
+        DictionaryType $dictionary,
         ?ObjectStringEncryptor $encryptor = null,
     ): string {
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        $buffer = new StringPdfOutput();
+        $this->writeDictionaryObject($buffer, $dictionary, $encryptor);
+
+        return $buffer->contents();
     }
 
-    abstract public function render(): string;
+    protected function writeDictionaryObject(
+        PdfOutput $output,
+        DictionaryType $dictionary,
+        ?ObjectStringEncryptor $encryptor = null,
+    ): void {
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($dictionary->render($encryptor) . PHP_EOL);
+        $output->write('endobj' . PHP_EOL);
+    }
+
+    abstract protected function writeObject(PdfOutput $output): void;
 }

@@ -8,13 +8,11 @@ use Kalle\Pdf\Object\IndirectObject;
 
 final class MarkedContentReference extends IndirectObject
 {
-    public function render(): string
+    protected function writeObject(\Kalle\Pdf\Render\PdfOutput $output): void
     {
-        $output = "{$this->id} 0 obj" . PHP_EOL;
-        $output .= '<< /Type /MCR' . PHP_EOL;
-        $output .= '/MCID 0 >>' . PHP_EOL; // Todo: ContentId
-        $output .= 'endobj' . PHP_EOL;
-
-        return $output;
+        $output->write("{$this->id} 0 obj" . PHP_EOL);
+        $output->write('<< /Type /MCR' . PHP_EOL);
+        $output->write('/MCID 0 >>' . PHP_EOL); // Todo: ContentId
+        $output->write('endobj' . PHP_EOL);
     }
 }
