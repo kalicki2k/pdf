@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Closure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Text\StructureTag;
@@ -16,12 +15,9 @@ use Kalle\Pdf\Element\Image;
  */
 final class PageImages
 {
-    /**
-     * @param Closure(): int $nextMarkedContentId
-     */
     public function __construct(
         private readonly Page $page,
-        private readonly Closure $nextMarkedContentId,
+        private readonly PageMarkedContentIds $pageMarkedContentIds,
     ) {
     }
 
@@ -137,6 +133,6 @@ final class PageImages
 
     private function nextMarkedContentId(): int
     {
-        return ($this->nextMarkedContentId)();
+        return $this->pageMarkedContentIds->next();
     }
 }

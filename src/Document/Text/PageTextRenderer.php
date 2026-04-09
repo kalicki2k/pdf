@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Text;
 
-use Closure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
@@ -13,6 +12,7 @@ use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Document\PageGraphics;
 use Kalle\Pdf\Document\PageLinks;
+use Kalle\Pdf\Document\PageMarkedContentIds;
 use Kalle\Pdf\Element\Text as TextElement;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
@@ -32,15 +32,12 @@ final class PageTextRenderer
 
     private ?TextLayoutEngine $textLayoutEngine = null;
 
-    /**
-     * @param Closure(): int $nextMarkedContentId
-     */
     public function __construct(
         private readonly Page $page,
         private readonly PageFonts $pageFonts,
         private readonly PageLinks $pageLinks,
         private readonly PageGraphics $pageGraphics,
-        private readonly Closure $nextMarkedContentId,
+        private readonly PageMarkedContentIds $pageMarkedContentIds,
     ) {
     }
 
@@ -397,7 +394,7 @@ final class PageTextRenderer
 
     private function nextMarkedContentId(): int
     {
-        return ($this->nextMarkedContentId)();
+        return $this->pageMarkedContentIds->next();
     }
 
     private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string

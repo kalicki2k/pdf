@@ -41,7 +41,6 @@ final class Page extends IndirectObject
 {
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
-    private int $markedContentId = 0;
     private ?PageComponents $pageComponents = null;
     private ?PageFonts $pageFonts = null;
     private ?PageGraphics $pageGraphics = null;
@@ -51,6 +50,7 @@ final class Page extends IndirectObject
     private ?PageAnnotations $pageAnnotations = null;
     private ?PageForms $pageForms = null;
     private ?PageTextRenderer $pageTextRenderer = null;
+    private PageMarkedContentIds $pageMarkedContentIds;
     public Contents $contents;
     public Resources $resources;
 
@@ -67,6 +67,7 @@ final class Page extends IndirectObject
 
         $this->contents = new Contents($contentsId);
         $this->resources = new Resources($resourcesId);
+        $this->pageMarkedContentIds = new PageMarkedContentIds();
     }
 
     public function addText(
@@ -800,7 +801,7 @@ final class Page extends IndirectObject
 
     public function render(): string
     {
-        return $this->pageObjectRenderer()->render($this->markedContentId > 0);
+        return $this->pageObjectRenderer()->render($this->pageMarkedContentIds->hasAllocatedIds());
     }
 
     public function getWidth(): float
@@ -877,7 +878,7 @@ final class Page extends IndirectObject
     {
         return $this->pageImages ??= new PageImages(
             $this,
-            fn (): int => $this->markedContentId++,
+            $this->pageMarkedContentIds,
         );
     }
 
@@ -906,7 +907,7 @@ final class Page extends IndirectObject
             $this->pageFonts(),
             $this->pageLinks(),
             $this->pageGraphics(),
-            fn (): int => $this->markedContentId++,
+            $this->pageMarkedContentIds,
         );
     }
 
