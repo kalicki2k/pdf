@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Render;
 
 use Kalle\Pdf\Document\EncryptDictionary;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 
 final class PdfIndirectObjectWriter
@@ -23,6 +24,12 @@ final class PdfIndirectObjectWriter
                     $object->write($output);
                 },
             );
+
+            return;
+        }
+
+        if ($object instanceof EncryptableIndirectObject) {
+            $this->writeEncryptedObject($object, $output);
 
             return;
         }
@@ -48,12 +55,33 @@ final class PdfIndirectObjectWriter
 
         $renderedObject = $buffer->contents();
 
+        return $this->objectEncryptor()->encryptStreamObject($renderedObject, $object->id);
+    }
+
+    private function writeEncryptedObject(IndirectObject $object, PdfOutput $output): void
+    {
+        if (!$object instanceof EncryptableIndirectObject) {
+            throw new \LogicException('Encrypted object writing requires an encryptable indirect object.');
+        }
+
+        $objectEncryptor = $this->objectEncryptor();
+
+        RenderContext::runInObject(
+            $object->id,
+            static function () use ($object, $output, $objectEncryptor): void {
+                $object->writeEncrypted($output, $objectEncryptor);
+            },
+        );
+    }
+
+    private function objectEncryptor(): StandardObjectEncryptor
+    {
         $objectEncryptor = $this->objectEncryptor;
 
         if ($objectEncryptor === null) {
             throw new \LogicException('Encrypted object rendering requires an initialized object encryptor.');
         }
 
-        return $objectEncryptor->encryptStreamObject($renderedObject, $object->id);
+        return $objectEncryptor;
     }
 }

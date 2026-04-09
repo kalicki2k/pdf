@@ -10,6 +10,7 @@ use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\PdfIndirectObjectWriter;
@@ -133,6 +134,60 @@ final class PdfIndirectObjectWriterTest extends TestCase
         $writer->write($encryptDictionary, $output);
 
         self::assertSame($encryptDictionary->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_uses_the_encrypted_object_write_path_when_available(): void
+    {
+        $objectEncryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $writer = new PdfIndirectObjectWriter($objectEncryptor);
+        $output = new class () implements PdfOutput {
+            public string $contents = '';
+
+            public function write(string $bytes): void
+            {
+                $this->contents .= $bytes;
+            }
+
+            public function offset(): int
+            {
+                return strlen($this->contents);
+            }
+        };
+
+        $writer->write(new class (17, $output) extends IndirectObject implements EncryptableIndirectObject {
+            public function __construct(int $id, private readonly PdfOutput $expectedOutput)
+            {
+                parent::__construct($id);
+            }
+
+            public function write(PdfOutput $output): void
+            {
+                throw new \LogicException('write() should not be called');
+            }
+
+            public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+            {
+                if ($output !== $this->expectedOutput) {
+                    throw new \LogicException('Expected encrypted write to use the provided output directly');
+                }
+
+                $encrypted = $objectEncryptor->encryptString($this->id, 'abc');
+                $output->write("17 0 obj\n<< /Length " . strlen($encrypted) . " >>\nstream\n" . $encrypted . "\nendstream\nendobj\n");
+            }
+
+            public function render(): string
+            {
+                throw new \LogicException('render() should not be called');
+            }
+        }, $output);
+
+        self::assertStringStartsWith("17 0 obj\n<< /Length ", $output->contents);
+        self::assertStringContainsString("\nendstream\nendobj\n", $output->contents);
+        self::assertStringNotContainsString('abc', $output->contents);
     }
 
     private function indirectObject(int $id, string $body): IndirectObject

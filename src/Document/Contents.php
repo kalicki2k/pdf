@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Element\Element;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use RuntimeException;
 
-final class Contents extends IndirectObject
+final class Contents extends IndirectObject implements EncryptableIndirectObject
 {
     private const int READ_CHUNK_BYTES = 8192;
 
@@ -34,10 +36,12 @@ final class Contents extends IndirectObject
 
     public function render(): string
     {
+        $contents = $this->readContents();
+
         return $this->id . ' 0 obj' . PHP_EOL
-            . $this->dictionary()->render() . PHP_EOL
+            . $this->dictionary(strlen($contents))->render() . PHP_EOL
             . 'stream' . PHP_EOL
-            . $this->readContents() . PHP_EOL
+            . $contents . PHP_EOL
             . 'endstream' . PHP_EOL
             . 'endobj' . PHP_EOL;
     }
@@ -45,9 +49,20 @@ final class Contents extends IndirectObject
     public function write(PdfOutput $output): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary()->render() . PHP_EOL);
+        $output->write($this->dictionary($this->length)->render() . PHP_EOL);
         $output->write('stream' . PHP_EOL);
         $this->writeContentsTo($output);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+    }
+
+    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    {
+        $encryptedContents = $objectEncryptor->encryptString($this->id, $this->readContents());
+
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary(strlen($encryptedContents))->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $output->write($encryptedContents);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
@@ -135,10 +150,10 @@ final class Contents extends IndirectObject
         }
     }
 
-    private function dictionary(): DictionaryType
+    private function dictionary(int $length): DictionaryType
     {
         return new DictionaryType([
-            'Length' => $this->length,
+            'Length' => $length,
         ]);
     }
 

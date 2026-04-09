@@ -6,6 +6,10 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Contents;
 use Kalle\Pdf\Element\Element;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -90,6 +94,26 @@ final class ContentsTest extends TestCase
         self::assertSame(
             "12 0 obj\n<< /Length 5 >>\nstream\nBT\nET\nendstream\nendobj\n",
             $contents->render(),
+        );
+    }
+
+    #[Test]
+    public function it_writes_encrypted_contents_with_the_same_result_as_the_legacy_stream_encryption_path(): void
+    {
+        $contents = new Contents(12);
+        $contents->addElement($this->createElement('BT'));
+        $contents->addElement($this->createElement('ET'));
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $contents->writeEncrypted($output, $encryptor);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject($contents->render(), 12),
+            $output->contents(),
         );
     }
 
