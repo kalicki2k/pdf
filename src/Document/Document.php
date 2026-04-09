@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Kalle\Pdf\Application\Document\DocumentObjectCollector as ApplicationDocumentObjectCollector;
 use Kalle\Pdf\Application\Document\DocumentPdfWriter as ApplicationDocumentPdfWriter;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
@@ -135,7 +136,7 @@ class Document
      */
     public function getDocumentObjects(): array
     {
-        return new DocumentObjectCollector($this, array_values($this->structElems))->collect();
+        return new ApplicationDocumentObjectCollector($this, array_values($this->structElems))->collect();
     }
 
     /**
@@ -143,7 +144,7 @@ class Document
      */
     public function iterateDocumentObjects(): iterable
     {
-        return new DocumentObjectCollector($this, array_values($this->structElems));
+        return new ApplicationDocumentObjectCollector($this, array_values($this->structElems));
     }
 
     public function getCreationDate(): DateTimeImmutable
