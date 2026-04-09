@@ -22,6 +22,7 @@ use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\AtomicFilePdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\PdfRenderer;
+use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\StreamPdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Structure\ParentTree;
@@ -740,6 +741,11 @@ final class Document
 
     private function writeToOutput(PdfOutput $output): void
     {
+        (new PdfRenderer())->write($this->prepareForSerialization(), $output);
+    }
+
+    private function prepareForSerialization(): PdfSerializationPlan
+    {
         $renderLifecycle = new DocumentRenderLifecycle();
         $renderLifecycle->applyDeferredRenderFinalizers($this->deferredRenderFinalizers);
         $renderLifecycle->applyDeferredPageDecorators(
@@ -757,6 +763,15 @@ final class Document
             $this->structTreeRoot !== null,
         );
 
-        (new PdfRenderer())->write($this, $output);
+        return new PdfSerializationPlan(
+            version: $this->getVersion(),
+            objects: $this->getDocumentObjects(),
+            rootObjectId: $this->catalog->id,
+            infoObjectId: $this->shouldWriteInfoDictionary() ? $this->info->id : null,
+            encryptObjectId: $this->encryptDictionary?->id,
+            documentId: $this->getDocumentId(),
+            encryptionProfile: $this->getEncryptionProfile(),
+            securityHandlerData: $this->getSecurityHandlerData(),
+        );
     }
 }

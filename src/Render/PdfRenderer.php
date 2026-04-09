@@ -4,25 +4,24 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 
 class PdfRenderer
 {
-    public function render(Document $document): string
+    public function render(PdfSerializationPlan $plan): string
     {
         $output = new StringPdfOutput();
-        $this->write($document, $output);
+        $this->write($plan, $output);
 
         return $output->contents();
     }
 
-    public function write(Document $document, PdfOutput $output): void
+    public function write(PdfSerializationPlan $plan, PdfOutput $output): void
     {
         $fileStructureSerializer = new PdfFileStructureSerializer();
-        $fileStructureSerializer->writeHeader($document->getVersion(), $output);
-        $objectSerializer = new PdfObjectSerializer($this->buildObjectEncryptor($document));
-        $offsets = $objectSerializer->writeObjects($document->getDocumentObjects(), $output);
+        $fileStructureSerializer->writeHeader($plan->version, $output);
+        $objectSerializer = new PdfObjectSerializer($this->buildObjectEncryptor($plan));
+        $offsets = $objectSerializer->writeObjects($plan->objects, $output);
 
         $startxref = $output->offset();
         $fileStructureSerializer->writeCrossReferenceTable($offsets, $output);
@@ -32,24 +31,21 @@ class PdfRenderer
         $fileStructureSerializer->writeTrailer(
             $output,
             $maxObjectId + 1,
-            $document->catalog->id,
-            $document->shouldWriteInfoDictionary() ? $document->info->id : null,
-            $document->encryptDictionary?->id,
-            $document->getDocumentId(),
+            $plan->rootObjectId,
+            $plan->infoObjectId,
+            $plan->encryptObjectId,
+            $plan->documentId,
         );
         $fileStructureSerializer->writeFooter($output, $startxref);
     }
 
-    private function buildObjectEncryptor(Document $document): ?StandardObjectEncryptor
+    private function buildObjectEncryptor(PdfSerializationPlan $plan): ?StandardObjectEncryptor
     {
-        $profile = $document->getEncryptionProfile();
-        $securityHandlerData = $document->getSecurityHandlerData();
-
-        if ($profile === null || $securityHandlerData === null) {
+        if ($plan->encryptionProfile === null || $plan->securityHandlerData === null) {
             return null;
         }
 
-        $objectEncryptor = new StandardObjectEncryptor($profile, $securityHandlerData);
+        $objectEncryptor = new StandardObjectEncryptor($plan->encryptionProfile, $plan->securityHandlerData);
 
         return $objectEncryptor->supportsObjectEncryption() ? $objectEncryptor : null;
     }

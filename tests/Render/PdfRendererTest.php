@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Render;
 
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfRenderer;
+use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\StreamPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -16,13 +16,10 @@ final class PdfRendererTest extends TestCase
     #[Test]
     public function it_writes_cross_reference_entries_with_the_actual_object_offsets(): void
     {
-        $document = new Document(
-            profile: Profile::standard(1.0),
-            title: 'Minimal',
-        );
         $renderer = new PdfRenderer();
+        $plan = $this->serializationPlan(version: 1.0);
 
-        $output = $renderer->render($document);
+        $output = $renderer->render($plan);
 
         $catalogOffset = strpos($output, "1 0 obj\n");
         $pagesOffset = strpos($output, "2 0 obj\n");
@@ -43,10 +40,10 @@ final class PdfRendererTest extends TestCase
     #[Test]
     public function it_writes_a_binary_comment_after_the_pdf_header(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
         $renderer = new PdfRenderer();
+        $plan = $this->serializationPlan(version: 1.4);
 
-        $output = $renderer->render($document);
+        $output = $renderer->render($plan);
 
         self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $output);
     }
@@ -54,10 +51,10 @@ final class PdfRendererTest extends TestCase
     #[Test]
     public function it_writes_the_pdf_2_0_header_for_pdf_a_4_documents(): void
     {
-        $document = new Document(profile: Profile::pdfA4());
         $renderer = new PdfRenderer();
+        $plan = $this->serializationPlan(version: 2.0, infoObjectId: null);
 
-        $output = $renderer->render($document);
+        $output = $renderer->render($plan);
 
         self::assertStringStartsWith("%PDF-2.0\n%\xE2\xE3\xCF\xD3\n", $output);
         self::assertStringNotContainsString('/Info 3 0 R', $output);
@@ -66,12 +63,18 @@ final class PdfRendererTest extends TestCase
     #[Test]
     public function it_marks_missing_object_ids_as_free_entries_in_the_cross_reference_table(): void
     {
-        $document = new Document(profile: Profile::standard(1.4));
-        $document->getUniqObjectId();
-        $document->registerFont('Helvetica');
-
         $renderer = new PdfRenderer();
-        $output = $renderer->render($document);
+        $plan = $this->serializationPlan(
+            objects: [
+                $this->indirectObject(1, '<< /Type /Catalog >>'),
+                $this->indirectObject(2, '<< /Type /Pages /Count 0 >>'),
+                $this->indirectObject(3, '<< /Producer (kalle/pdf) >>'),
+                $this->indirectObject(5, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'),
+                $this->indirectObject(6, "<< /Type /Metadata /Subtype /XML /Length 0 >>\nstream\n\nendstream"),
+            ],
+            version: 1.4,
+        );
+        $output = $renderer->render($plan);
         $catalogOffset = strpos($output, "1 0 obj\n");
         $pagesOffset = strpos($output, "2 0 obj\n");
         $infoOffset = strpos($output, "3 0 obj\n");
@@ -103,17 +106,14 @@ final class PdfRendererTest extends TestCase
     #[Test]
     public function it_can_write_pdf_bytes_to_a_stream_output(): void
     {
-        $document = new Document(
-            profile: Profile::standard(1.4),
-            title: 'Minimal',
-        );
         $renderer = new PdfRenderer();
-        $expectedOutput = $renderer->render($document);
+        $plan = $this->serializationPlan(version: 1.4);
+        $expectedOutput = $renderer->render($plan);
         $stream = fopen('php://temp', 'w+b');
 
         self::assertNotFalse($stream);
 
-        $renderer->write($document, new StreamPdfOutput($stream));
+        $renderer->write($plan, new StreamPdfOutput($stream));
         rewind($stream);
 
         $writtenOutput = stream_get_contents($stream);
@@ -121,5 +121,39 @@ final class PdfRendererTest extends TestCase
         fclose($stream);
 
         self::assertSame($expectedOutput, $writtenOutput);
+    }
+
+    /**
+     * @param list<IndirectObject>|null $objects
+     */
+    private function serializationPlan(?array $objects = null, float $version = 1.4, ?int $infoObjectId = 3): PdfSerializationPlan
+    {
+        return new PdfSerializationPlan(
+            version: $version,
+            objects: $objects ?? [
+                $this->indirectObject(1, '<< /Type /Catalog /Pages 2 0 R >>'),
+                $this->indirectObject(2, '<< /Type /Pages /Count 0 >>'),
+                $this->indirectObject(3, '<< /Producer (kalle/pdf) >>'),
+            ],
+            rootObjectId: 1,
+            infoObjectId: $infoObjectId,
+            encryptObjectId: null,
+            documentId: ['0123456789abcdef0123456789abcdef', '0123456789abcdef0123456789abcdef'],
+        );
+    }
+
+    private function indirectObject(int $id, string $body): IndirectObject
+    {
+        return new class ($id, $body) extends IndirectObject {
+            public function __construct(int $id, private readonly string $body)
+            {
+                parent::__construct($id);
+            }
+
+            public function render(): string
+            {
+                return $this->id . " 0 obj\n" . $this->body . "\nendobj\n";
+            }
+        };
     }
 }
