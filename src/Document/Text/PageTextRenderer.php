@@ -70,20 +70,13 @@ final class PageTextRenderer
         int $size = 12,
         FlowTextOptions $options = new FlowTextOptions(),
     ): Page {
-        $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-        $bottomMargin = $options->bottomMargin ?? self::DEFAULT_BOTTOM_MARGIN;
-
-        if ($maxWidth <= 0) {
-            throw new InvalidArgumentException('Paragraph width must be greater than zero.');
-        }
-
-        if ($lineHeight <= 0) {
-            throw new InvalidArgumentException('Line height must be greater than zero.');
-        }
-
-        if ($options->maxLines !== null && $options->maxLines <= 0) {
-            throw new InvalidArgumentException('Max lines must be greater than zero.');
-        }
+        $layout = FlowTextLayout::fromOptions(
+            $maxWidth,
+            $size,
+            $options,
+            self::DEFAULT_LINE_HEIGHT_FACTOR,
+            self::DEFAULT_BOTTOM_MARGIN,
+        );
 
         $lines = $this->layoutParagraphLines(
             $text,
@@ -92,7 +85,7 @@ final class PageTextRenderer
             $maxWidth,
             $options->color,
             $options->opacity,
-            $options->maxLines,
+            $layout->maxLines,
             $options->overflow,
         );
 
@@ -105,8 +98,8 @@ final class PageTextRenderer
             $size,
             $options->structureTag,
             $options->parentStructElem,
-            $lineHeight,
-            $bottomMargin,
+            $layout->lineHeight,
+            $layout->bottomMargin,
             $options->align,
         );
     }
@@ -121,82 +114,34 @@ final class PageTextRenderer
         int $size = 12,
         TextBoxOptions $options = new TextBoxOptions(),
     ): Page {
-        $lineHeight = $options->lineHeight ?? $size * self::DEFAULT_LINE_HEIGHT_FACTOR;
-
-        if ($box->width <= 0) {
-            throw new InvalidArgumentException('Text box width must be greater than zero.');
-        }
-
-        if ($box->height <= 0) {
-            throw new InvalidArgumentException('Text box height must be greater than zero.');
-        }
-
-        if ($lineHeight <= 0) {
-            throw new InvalidArgumentException('Line height must be greater than zero.');
-        }
-
-        if ($options->maxLines !== null && $options->maxLines <= 0) {
-            throw new InvalidArgumentException('Max lines must be greater than zero.');
-        }
-
-        if (
-            $options->padding->top < 0
-            || $options->padding->right < 0
-            || $options->padding->bottom < 0
-            || $options->padding->left < 0
-        ) {
-            throw new InvalidArgumentException('Text box padding must not be negative.');
-        }
-
-        $contentWidth = $box->width - $options->padding->left - $options->padding->right;
-
-        if ($contentWidth <= 0) {
-            throw new InvalidArgumentException('Text box content width must be greater than zero.');
-        }
-
-        $contentHeight = $box->height - $options->padding->top - $options->padding->bottom;
-
-        if ($contentHeight < $size) {
-            throw new InvalidArgumentException('Text box content height must be at least the font size.');
-        }
-
-        $visibleLineCapacity = max(1, (int) floor($contentHeight / $lineHeight));
-        $maxLines = $options->maxLines === null
-            ? $visibleLineCapacity
-            : min($options->maxLines, $visibleLineCapacity);
+        $layout = TextBoxLayout::fromOptions(
+            $box,
+            $size,
+            $options,
+            self::DEFAULT_LINE_HEIGHT_FACTOR,
+        );
 
         $lines = $this->layoutParagraphLines(
             $text,
             $fontName,
             $size,
-            $contentWidth,
+            $layout->contentWidth,
             $options->color,
             $options->opacity,
-            $maxLines,
+            $layout->maxLines,
             $options->overflow,
-        );
-
-        $startY = $this->blockRenderer->resolveTextBoxStartY(
-            $box->y,
-            $box->height,
-            $size,
-            $lineHeight,
-            count($lines),
-            $options->verticalAlign,
-            $options->padding->top,
-            $options->padding->bottom,
         );
 
         return $this->blockRenderer->renderTextLines(
             $lines,
-            $box->x + $options->padding->left,
-            $startY,
-            $contentWidth,
+            $layout->contentX,
+            $layout->resolveStartY($size, count($lines)),
+            $layout->contentWidth,
             $fontName,
             $size,
             $options->structureTag,
             $options->parentStructElem,
-            $lineHeight,
+            $layout->lineHeight,
             $options->align,
         );
     }

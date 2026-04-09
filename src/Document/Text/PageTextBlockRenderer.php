@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Document\Text;
 
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Structure\StructElem;
 
 /**
@@ -78,24 +77,4 @@ final class PageTextBlockRenderer
         return $this->page;
     }
 
-    public function resolveTextBoxStartY(
-        float $y,
-        float $height,
-        int $size,
-        float $lineHeight,
-        int $lineCount,
-        VerticalAlign $verticalAlign,
-        float $paddingTop,
-        float $paddingBottom,
-    ): float {
-        $availableHeight = $height - $paddingTop - $paddingBottom;
-        $lineOffset = max(0, $lineCount - 1) * $lineHeight;
-        $blockHeight = $size + $lineOffset;
-
-        return match ($verticalAlign) {
-            VerticalAlign::TOP => $y + $paddingBottom + $availableHeight - $size,
-            VerticalAlign::MIDDLE => $y + $paddingBottom + (($availableHeight - $blockHeight) / 2) + $lineOffset,
-            VerticalAlign::BOTTOM => $y + $paddingBottom + $lineOffset,
-        };
-    }
 }
