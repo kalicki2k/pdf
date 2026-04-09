@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document\Form;
 
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
@@ -170,29 +171,6 @@ final class FormFieldListBoxAppearanceStream extends IndirectObject
 
     private function updateUnicodeFontWidths(): void
     {
-        if (
-            !$this->font instanceof UnicodeFont
-            || $this->font->descendantFont->cidToGidMap === null
-            || $this->font->descendantFont->fontDescriptor === null
-        ) {
-            return;
-        }
-
-        $fontParser = $this->font->descendantFont->fontDescriptor->fontFile->parser();
-        $widths = [];
-
-        foreach ($this->font->getCodePointMap() as $cid => $codePointHex) {
-            $utf16 = hex2bin($codePointHex);
-
-            if ($utf16 === false) {
-                continue;
-            }
-
-            $character = mb_convert_encoding($utf16, 'UTF-8', 'UTF-16BE');
-            $glyphId = $fontParser->getGlyphIdForCharacter($character);
-            $widths[$cid] = $fontParser->getAdvanceWidthForGlyphId($glyphId);
-        }
-
-        $this->font->descendantFont->setWidths($widths);
+        (new UnicodeFontWidthUpdater())->update($this->font);
     }
 }

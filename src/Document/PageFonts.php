@@ -10,6 +10,7 @@ use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontRegistry;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 
 /**
  * @internal Coordinates font resolution and font-related page resources.
@@ -46,26 +47,7 @@ final class PageFonts
 
     public function updateUnicodeFontWidths(FontDefinition $font): void
     {
-        if (
-            !$font instanceof UnicodeFont
-            || $font->descendantFont->cidToGidMap === null
-            || $font->descendantFont->fontDescriptor === null
-        ) {
-            return;
-        }
-
-        $fontParser = $font->descendantFont->fontDescriptor->fontFile->parser();
-        $widths = [];
-
-        foreach ($font->getCodePointMap() as $cid => $codePointHex) {
-            $utf16 = hex2bin($codePointHex);
-            /** @var string $utf16 */
-            $character = mb_convert_encoding($utf16, 'UTF-8', 'UTF-16BE');
-            $glyphId = $fontParser->getGlyphIdForCharacter($character);
-            $widths[$cid] = $fontParser->getAdvanceWidthForGlyphId($glyphId);
-        }
-
-        $font->descendantFont->setWidths($widths);
+        (new UnicodeFontWidthUpdater())->update($font);
     }
 
     public function measureTextWidth(string $text, string $baseFont, int $size): float
