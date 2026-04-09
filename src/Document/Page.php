@@ -882,6 +882,7 @@ final class Page extends IndirectObject
         return $this->pageImages ??= new PageImages(
             $this,
             $this->pageMarkedContentIds,
+            new PageImageObjectFactory($this->document),
         );
     }
 

@@ -18,6 +18,7 @@ final class PageImages
     public function __construct(
         private readonly Page $page,
         private readonly PageMarkedContentIds $pageMarkedContentIds,
+        private readonly PageImageObjectFactory $imageObjectFactory,
     ) {
     }
 
@@ -51,7 +52,7 @@ final class PageImages
             $this->page->getDocument()->assertAllowsTransparency();
         }
 
-        $imageObject = $this->createImageObject($image);
+        $imageObject = $this->imageObjectFactory->create($image);
         $resourceName = $this->page->resources->addImage($imageObject);
         $artifactContext = $options->structureTag === null && $this->page->getDocument()->isRenderingArtifactContext();
         $this->assertAllowsImageAccessibility($options, $artifactContext);
@@ -119,18 +120,6 @@ final class PageImages
             $profile->name(),
         ));
     }
-
-    private function createImageObject(Image $image): ImageObject
-    {
-        $softMask = $image->getSoftMask();
-
-        return new ImageObject(
-            $this->page->getDocument()->getUniqObjectId(),
-            $image,
-            $softMask !== null ? $this->createImageObject($softMask) : null,
-        );
-    }
-
     private function nextMarkedContentId(): int
     {
         return $this->pageMarkedContentIds->next();
