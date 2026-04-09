@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\RawType;
 
-final class EncryptDictionary extends IndirectObject
+final class EncryptDictionary extends DictionaryIndirectObject
 {
     public function __construct(
         int $id,
@@ -21,7 +21,7 @@ final class EncryptDictionary extends IndirectObject
         parent::__construct($id);
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $this->document->assertAllowsEncryptionAlgorithm($this->profile->algorithm);
 
@@ -68,8 +68,6 @@ final class EncryptDictionary extends IndirectObject
             $dictionary->add('StrF', new NameType('StdCF'));
         }
 
-        return "$this->id 0 obj" . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $dictionary;
     }
 }

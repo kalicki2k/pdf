@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Types\ArrayType;
+use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Types\RawType;
 
-final class EncodingDictionary extends IndirectObject
+final class EncodingDictionary extends DictionaryIndirectObject
 {
     /**
      * @param array<int, string> $differences
@@ -20,22 +23,24 @@ final class EncodingDictionary extends IndirectObject
         parent::__construct($id);
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $parts = [];
         $currentCode = null;
 
         foreach ($this->differences as $code => $glyphName) {
             if ($currentCode === null || $code !== $currentCode + 1) {
-                $parts[] = (string) $code;
+                $parts[] = new RawType((string) $code);
             }
 
-            $parts[] = (new NameType($glyphName))->render();
+            $parts[] = new NameType($glyphName);
             $currentCode = $code;
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . '<< /Type /Encoding /BaseEncoding /' . $this->baseEncoding . ' /Differences [' . implode(' ', $parts) . '] >>' . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return new DictionaryType([
+            'Type' => new NameType('Encoding'),
+            'BaseEncoding' => new NameType($this->baseEncoding),
+            'Differences' => new ArrayType($parts),
+        ]);
     }
 }
