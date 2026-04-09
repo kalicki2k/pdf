@@ -828,7 +828,7 @@ final class DocumentTest extends TestCase
             self::assertStringContainsString('/Desc (Imported attachment)', $document->getAttachments()[0]->render());
 
             file_put_contents($path, 'changed-after-import');
-            self::assertStringContainsString('attachment-data', $document->render());
+            self::assertStringContainsString('changed-after-import', $document->render());
         } finally {
             @unlink($path);
         }

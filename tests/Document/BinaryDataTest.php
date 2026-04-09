@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 final class BinaryDataTest extends TestCase
 {
     #[Test]
-    public function it_keeps_string_data_in_a_reusable_buffer(): void
+    public function it_keeps_string_data_reusable(): void
     {
         $data = BinaryData::fromString('hello');
 
@@ -22,7 +22,7 @@ final class BinaryDataTest extends TestCase
     }
 
     #[Test]
-    public function it_copies_file_data_into_its_own_buffer(): void
+    public function it_reads_file_data_from_its_source_when_requested(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf-binary-data-');
         self::assertNotFalse($path);
@@ -32,15 +32,15 @@ final class BinaryDataTest extends TestCase
             $data = BinaryData::fromFile($path);
             file_put_contents($path, 'changed');
 
-            self::assertSame(8, $data->length());
-            self::assertSame('original', $data->contents());
+            self::assertSame(7, $data->length());
+            self::assertSame('changed', $data->contents());
         } finally {
             @unlink($path);
         }
     }
 
     #[Test]
-    public function it_writes_buffered_data_to_a_pdf_output(): void
+    public function it_writes_string_data_to_a_pdf_output(): void
     {
         $data = BinaryData::fromString('hello');
         $output = new StringPdfOutput();
@@ -48,5 +48,26 @@ final class BinaryDataTest extends TestCase
         $data->writeTo($output);
 
         self::assertSame('hello', $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_stream_data_without_changing_the_caller_position(): void
+    {
+        $stream = fopen('php://temp', 'w+b');
+        self::assertNotFalse($stream);
+        fwrite($stream, 'hello');
+        fseek($stream, 2);
+
+        $data = BinaryData::fromStream($stream);
+        $output = new StringPdfOutput();
+
+        $data->writeTo($output);
+
+        self::assertSame('hello', $output->contents());
+        self::assertSame(2, ftell($stream));
+        self::assertSame('hello', $data->contents());
+        self::assertSame(2, ftell($stream));
+
+        fclose($stream);
     }
 }

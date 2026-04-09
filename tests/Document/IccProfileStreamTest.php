@@ -50,7 +50,7 @@ final class IccProfileStreamTest extends TestCase
     }
 
     #[Test]
-    public function it_reads_an_icc_profile_from_a_file_without_tracking_later_file_changes(): void
+    public function it_reads_an_icc_profile_from_a_file_source_when_rendered(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf-icc-profile-');
         self::assertNotFalse($path);
@@ -60,8 +60,8 @@ final class IccProfileStreamTest extends TestCase
             $stream = IccProfileStream::fromPath(11, $path, 3);
             file_put_contents($path, 'changed');
 
-            self::assertStringContainsString('/Length 12', $stream->render());
-            self::assertStringContainsString("stream\nprofile-data\n", $stream->render());
+            self::assertStringContainsString('/Length 7', $stream->render());
+            self::assertStringContainsString("stream\nchanged\n", $stream->render());
         } finally {
             @unlink($path);
         }
