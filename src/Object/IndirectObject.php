@@ -34,5 +34,14 @@ abstract class IndirectObject
         return $this->render();
     }
 
+    protected function renderDictionaryObject(
+        \Kalle\Pdf\Types\DictionaryType $dictionary,
+        ?ObjectStringEncryptor $encryptor = null,
+    ): string {
+        return $this->id . ' 0 obj' . PHP_EOL
+            . $dictionary->render($encryptor) . PHP_EOL
+            . 'endobj' . PHP_EOL;
+    }
+
     abstract public function render(): string;
 }

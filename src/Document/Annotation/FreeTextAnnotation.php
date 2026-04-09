@@ -92,9 +92,7 @@ final class FreeTextAnnotation extends IndirectObject implements PageAnnotation,
             $dictionary->add('IC', new ArrayType($this->colorComponents($this->fillColor)));
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 
     public function getRelatedObjects(): array

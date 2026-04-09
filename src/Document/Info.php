@@ -42,9 +42,7 @@ final class Info extends IndirectObject
             $dictionary->add('Keywords', new StringType(implode(', ', $keywords)));
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 
     private function formatPdfDate(\DateTimeImmutable $date): string

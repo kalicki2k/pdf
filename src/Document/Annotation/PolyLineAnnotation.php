@@ -120,9 +120,7 @@ final class PolyLineAnnotation extends IndirectObject implements PageAnnotation,
             $dictionary->add('Popup', new ReferenceType($this->popup));
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 
     public function getRelatedObjects(): array

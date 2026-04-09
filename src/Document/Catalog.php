@@ -149,8 +149,6 @@ final class Catalog extends IndirectObject
             $dictionary->add('StructTreeRoot', new ReferenceType($this->document->structTreeRoot));
         }
 
-        return "$this->id 0 obj" . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 }

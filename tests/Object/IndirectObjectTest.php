@@ -11,6 +11,8 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Types\StringType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -73,5 +75,40 @@ final class IndirectObjectTest extends TestCase
         );
 
         self::assertNotSame('dummy', $output->contents());
+    }
+
+    #[Test]
+    public function it_can_render_a_dictionary_object_with_an_explicit_string_encryptor(): void
+    {
+        $object = new class (42) extends IndirectObject {
+            public function render(): string
+            {
+                return $this->renderWithStringEncryptor();
+            }
+
+            public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+            {
+                return $this->renderDictionaryObject(
+                    new DictionaryType([
+                        'Value' => new StringType('plain-text'),
+                    ]),
+                    $encryptor,
+                );
+            }
+        };
+
+        $rendered = $object->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                42,
+            ),
+        );
+
+        self::assertStringContainsString('42 0 obj', $rendered);
+        self::assertStringContainsString('endobj', $rendered);
+        self::assertStringNotContainsString('(plain-text)', $rendered);
     }
 }

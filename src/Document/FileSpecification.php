@@ -65,8 +65,6 @@ final class FileSpecification extends IndirectObject
             $dictionary->add('AFRelationship', new NameType($afRelationship->value));
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 }

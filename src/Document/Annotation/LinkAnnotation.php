@@ -91,9 +91,7 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation, Str
             $dictionary->add('A', new UriAction($this->target->externalUrlValue())->toPdfDictionary());
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 
     public function getRelatedObjects(): array

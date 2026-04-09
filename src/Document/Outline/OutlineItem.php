@@ -71,8 +71,6 @@ final class OutlineItem extends IndirectObject
             $dictionary->add('Next', new ReferenceType($this->next));
         }
 
-        return "$this->id 0 obj" . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 }

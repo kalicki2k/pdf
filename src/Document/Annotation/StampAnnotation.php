@@ -81,9 +81,7 @@ final class StampAnnotation extends IndirectObject implements PageAnnotation, St
             ]));
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 
     public function getRelatedObjects(): array

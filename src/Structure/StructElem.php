@@ -189,9 +189,7 @@ final class StructElem extends IndirectObject
             $dictionary->add('K', new ArrayType($kidReferences));
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render($encryptor) . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 
     private function validate(): void
