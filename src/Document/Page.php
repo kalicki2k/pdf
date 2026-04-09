@@ -33,6 +33,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Structure\StructElem;
 
 /**
@@ -815,7 +816,7 @@ final class Page extends IndirectObject
         return $this;
     }
 
-    protected function writeObject(\Kalle\Pdf\Render\PdfOutput $output): void
+    protected function writeObject(PdfOutput $output): void
     {
         $output->write(
             $this->pageObjectRenderer()->render($this->pageMarkedContentIds->hasAllocatedIds()),

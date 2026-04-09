@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use IteratorAggregate;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Object\IndirectObject;
@@ -12,9 +13,9 @@ use Traversable;
 
 /**
  * @internal Collects the indirect objects that make up a rendered PDF document.
- * @implements \IteratorAggregate<int, IndirectObject>
+ * @implements IteratorAggregate<int, IndirectObject>
  */
-final readonly class DocumentObjectCollector implements \IteratorAggregate
+final readonly class DocumentObjectCollector implements IteratorAggregate
 {
     /**
      * @param list<StructElem> $structElems

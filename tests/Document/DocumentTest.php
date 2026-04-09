@@ -29,6 +29,7 @@ use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 final class DocumentTest extends TestCase
 {
@@ -892,7 +893,7 @@ final class DocumentTest extends TestCase
     public function it_creates_an_optional_font_parser_for_readable_font_files(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
-        $method = new \ReflectionMethod(DocumentFontFactory::class, 'createOptionalFontParser');
+        $method = new ReflectionMethod(DocumentFontFactory::class, 'createOptionalFontParser');
 
         $parser = $method->invoke(new DocumentFontFactory($document), 'assets/fonts/NotoSans-Regular.ttf');
 

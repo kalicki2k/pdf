@@ -33,6 +33,7 @@ use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -41,7 +42,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_free_text_annotation_and_registers_the_resolved_font(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -67,7 +68,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_adds_a_pdf_a_appearance_stream_to_free_text_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -95,7 +96,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_binds_text_annotations_to_structure_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -110,7 +111,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_unbound_link_annotations_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -125,7 +126,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_allows_bound_link_annotations_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -148,7 +149,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_links_a_popup_to_a_parent_annotation_when_supported(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -164,7 +165,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_links_a_popup_to_a_parent_annotation_for_pdf_ua_1(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -180,7 +181,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_adds_a_pdf_a_appearance_stream_to_highlight_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -197,7 +198,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_adds_a_pdf_a_appearance_stream_to_underline_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -214,7 +215,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_adds_a_pdf_a_appearance_stream_to_strike_out_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -231,7 +232,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_adds_a_pdf_a_appearance_stream_to_squiggly_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -248,7 +249,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_adds_pdf_a_appearance_streams_to_remaining_rect_based_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -289,7 +290,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_adds_pdf_a_appearance_streams_to_remaining_geometric_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -318,7 +319,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_rectangles_with_non_positive_width(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -333,7 +334,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_rectangles_with_non_positive_height(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -348,7 +349,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_an_empty_file_attachment_icon(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -364,7 +365,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_file_attachment_annotations_for_pdf_a_2u(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -380,7 +381,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_empty_text_annotation_contents(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -395,7 +396,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_empty_text_annotation_icons(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -410,7 +411,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_adds_a_pdf_a_appearance_stream_to_text_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -427,7 +428,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_empty_free_text_contents(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -451,7 +452,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_non_positive_free_text_font_sizes(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];
@@ -475,7 +476,7 @@ final class PageAnnotationFactoryTest extends TestCase
     #[Test]
     public function it_rejects_empty_stamp_icons(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $registeredFonts = [];

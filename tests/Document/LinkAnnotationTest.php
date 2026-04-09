@@ -12,6 +12,7 @@ use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +21,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_uri_link_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::externalUrl('https://example.com'));
 
@@ -35,7 +36,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_pdf_a_uri_link_annotation_with_the_print_flag(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::externalUrl('https://example.com'));
 
@@ -50,7 +51,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_struct_parent_for_tagged_link_annotations(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
         $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::externalUrl('https://example.com'));
         $annotation->withStructParent(1)->withContents('Example');
@@ -66,7 +67,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_internal_link_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::namedDestination('table-demo'));
 
@@ -81,7 +82,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_page_link_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $targetPage = $document->addPage();
         $annotation = new LinkAnnotation(10, $page, 10, 20, 80, 12, LinkTarget::page($targetPage));
@@ -97,7 +98,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_position_link_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $targetPage = $document->addPage();
         $annotation = new LinkAnnotation(10, $page, 10, 20, 80, 12, LinkTarget::position($targetPage, 15, 25));
@@ -114,7 +115,7 @@ final class LinkAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_contents_and_uri_targets_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::externalUrl('https://example.com'));
         $annotation->withContents('Example');

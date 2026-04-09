@@ -21,6 +21,7 @@ use Kalle\Pdf\Render\PdfObjectSerializer;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\StringType;
+use LogicException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -80,7 +81,7 @@ final class PdfObjectSerializerTest extends TestCase
             protected function writeObject(PdfOutput $output): void
             {
                 if ($output !== $this->expectedOutput) {
-                    throw new \LogicException('Expected direct write to the provided output');
+                    throw new LogicException('Expected direct write to the provided output');
                 }
 
                 $output->write("11 0 obj\ndirect\nendobj\n");
@@ -120,13 +121,13 @@ final class PdfObjectSerializerTest extends TestCase
 
             protected function writeObject(PdfOutput $output): void
             {
-                throw new \LogicException('write() should not be called');
+                throw new LogicException('write() should not be called');
             }
 
             public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
             {
                 if ($output !== $this->expectedOutput) {
-                    throw new \LogicException('Expected encrypted write to use the provided output directly');
+                    throw new LogicException('Expected encrypted write to use the provided output directly');
                 }
 
                 $encrypted = $objectEncryptor->encryptString($this->id, 'abc');

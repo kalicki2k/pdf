@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\PolygonAnnotation;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
@@ -15,6 +16,7 @@ use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -23,7 +25,7 @@ final class PolygonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_polygon_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(255, 0, 0), Color::gray(0.9), 'Polygon', 'QA');
 
@@ -38,7 +40,7 @@ final class PolygonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_subject_and_popup_reference_for_a_polygon_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], subject: 'Flaechenhinweis');
         $popup = new PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
@@ -53,7 +55,7 @@ final class PolygonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_border_style_for_a_polygon_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], borderStyle: AnnotationBorderStyle::dashed());
 
@@ -63,7 +65,7 @@ final class PolygonAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(7, $page, [[90.0, 32.0], [10.0, 20.0], [40.0, 50.0]]);
 
@@ -79,7 +81,7 @@ final class PolygonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_cmyk_border_and_fill_colors(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(
             7,
@@ -96,10 +98,10 @@ final class PolygonAnnotationTest extends TestCase
     #[Test]
     public function it_rejects_polygons_with_fewer_than_three_vertices(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Polygon annotation requires at least three vertices.');
 
         new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0]]);
@@ -108,7 +110,7 @@ final class PolygonAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_pdf_a_polygon_annotation_with_print_flag_and_appearance(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(255, 0, 0), Color::gray(0.9), 'Polygon', 'QA');
         $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 30));
@@ -125,7 +127,7 @@ final class PolygonAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new PolygonAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(255, 0, 0), Color::gray(0.9), 'Polygon', 'QA', subject: 'Flaechenhinweis');
 

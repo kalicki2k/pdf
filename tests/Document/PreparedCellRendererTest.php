@@ -20,6 +20,7 @@ use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -28,7 +29,7 @@ final class PreparedCellRendererTest extends TestCase
     #[Test]
     public function it_renders_a_full_cell_via_the_public_render_method(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $renderer = $this->createRenderer();
@@ -56,7 +57,7 @@ final class PreparedCellRendererTest extends TestCase
     #[Test]
     public function it_returns_existing_remaining_lines_when_text_rendering_is_disabled(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $renderer = $this->createRenderer();
@@ -88,7 +89,7 @@ final class PreparedCellRendererTest extends TestCase
     #[Test]
     public function it_returns_existing_remaining_lines_when_no_text_height_is_available(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $renderer = $this->createRenderer();
@@ -127,7 +128,7 @@ final class PreparedCellRendererTest extends TestCase
     #[Test]
     public function it_returns_no_remaining_lines_when_layout_produces_no_lines(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $renderer = $this->createRenderer();
@@ -161,7 +162,7 @@ final class PreparedCellRendererTest extends TestCase
     #[Test]
     public function it_returns_all_lines_when_a_partial_rowspan_segment_cannot_fit_two_lines(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $renderer = $this->createRenderer();
@@ -196,7 +197,7 @@ final class PreparedCellRendererTest extends TestCase
     #[Test]
     public function it_renders_visible_lines_and_returns_the_remaining_lines_for_segments(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $renderer = $this->createRenderer();
@@ -230,7 +231,7 @@ final class PreparedCellRendererTest extends TestCase
     #[Test]
     public function it_renders_all_provided_remaining_lines_when_they_fit_completely(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $renderer = $this->createRenderer();

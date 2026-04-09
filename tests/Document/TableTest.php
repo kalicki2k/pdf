@@ -21,6 +21,7 @@ use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +33,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_exposes_the_current_cursor_position(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
         $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
@@ -43,7 +44,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_allows_configuring_font_and_styles_fluently(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -66,7 +67,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_applies_footer_styles_to_footer_rows(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -92,7 +93,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_renders_a_caption_above_the_table(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -116,7 +117,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_renders_a_table_row_with_header_and_body_cells(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -685,7 +686,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_renders_cells_with_colspan(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -711,7 +712,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_renders_cells_with_rowspan(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -739,7 +740,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_renders_footer_rows_after_body_rows(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -765,7 +766,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_repeats_only_repeatable_header_rows_across_pages(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -790,7 +791,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_renders_footer_rows_when_they_are_configured_before_body_rows(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -820,7 +821,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_supports_partial_cell_borders(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -839,7 +840,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_merges_cell_borders_with_the_table_default_border(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -860,7 +861,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_supports_middle_vertical_alignment_as_table_default(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -881,7 +882,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_supports_table_padding_styles(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -902,7 +903,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_allows_cells_to_override_the_table_padding(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -921,7 +922,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_supports_cell_styles(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -949,7 +950,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_supports_table_styles_as_defaults(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -975,7 +976,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_supports_row_styles_between_table_and_cell_defaults(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -1011,7 +1012,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_allows_cells_to_override_the_table_vertical_alignment(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -1031,7 +1032,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_moves_the_table_to_a_new_page_when_the_next_row_does_not_fit(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -1054,7 +1055,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_rows_with_the_wrong_number_of_cells(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
@@ -1068,7 +1069,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_captions_after_rows_have_been_added(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
@@ -1084,7 +1085,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_header_rows_after_body_rows(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
@@ -1100,7 +1101,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_header_rows_after_footer_rows(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
@@ -1116,7 +1117,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_cells_with_invalid_colspan(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
@@ -1133,7 +1134,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_cells_with_invalid_rowspan(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
@@ -1150,7 +1151,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_rendering_footer_rows_when_a_body_rowspan_group_is_still_open(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -1174,7 +1175,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_renders_rowspan_groups_across_page_boundaries(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -1204,7 +1205,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_continues_rowspan_text_across_page_boundaries(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -1236,7 +1237,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_defers_a_leading_rowspan_split_to_the_next_page_when_only_one_row_would_fit(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -1267,7 +1268,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_keeps_rowspan_cell_boxes_across_page_boundaries_even_when_text_is_fully_rendered(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -1309,7 +1310,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_renders_all_lines_that_fit_exactly_within_the_cell_height(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -1330,7 +1331,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_invalid_table_dimensions_and_column_configuration(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
         try {
@@ -1370,7 +1371,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_invalid_font_configuration(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $table = $page->createTable(new Position(20, 260), 170, [85, 85]);
 
@@ -1390,7 +1391,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_row_groups_that_do_not_fit_on_a_fresh_page_after_repeating_headers(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');
@@ -1412,7 +1413,7 @@ final class TableTest extends TestCase
     #[Test]
     public function it_rejects_header_rowspans_that_extend_into_body_rows_when_headers_repeat(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document
             ->registerFont('Helvetica')
             ->registerFont('Helvetica-Bold');

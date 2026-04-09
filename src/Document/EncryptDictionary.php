@@ -10,6 +10,7 @@ use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\RawType;
+use RuntimeException;
 
 final class EncryptDictionary extends DictionaryIndirectObject
 {
@@ -28,7 +29,7 @@ final class EncryptDictionary extends DictionaryIndirectObject
         $securityHandlerData = $this->document->getSecurityHandlerData();
 
         if ($securityHandlerData === null) {
-            throw new \RuntimeException('Encryption dictionary requires initialized security handler data.');
+            throw new RuntimeException('Encryption dictionary requires initialized security handler data.');
         }
 
         $dictionary = new DictionaryType([

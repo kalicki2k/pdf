@@ -14,6 +14,7 @@ use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +23,7 @@ final class SquareAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_square_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new SquareAnnotation(7, $page, 10, 20, 80, 24, Color::rgb(255, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
 
@@ -37,7 +38,7 @@ final class SquareAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_border_style_for_a_square_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new SquareAnnotation(7, $page, 10, 20, 80, 24, borderStyle: AnnotationBorderStyle::solid(2.0));
 
@@ -47,7 +48,7 @@ final class SquareAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new SquareAnnotation(7, $page, 10, 20, 80, 24);
 
@@ -63,7 +64,7 @@ final class SquareAnnotationTest extends TestCase
     #[Test]
     public function it_renders_cmyk_border_and_fill_colors(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new SquareAnnotation(
             7,
@@ -83,7 +84,7 @@ final class SquareAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_pdf_a_square_annotation_with_print_flag_and_appearance(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $annotation = new SquareAnnotation(7, $page, 10, 20, 80, 24, Color::rgb(255, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
         $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 24));
@@ -100,7 +101,7 @@ final class SquareAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new SquareAnnotation(7, $page, 10, 20, 80, 24, Color::rgb(255, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
 

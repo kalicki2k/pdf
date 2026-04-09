@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Document\Text\TextSegment;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +16,7 @@ final class CellRenderResultTest extends TestCase
     #[Test]
     public function it_stores_cell_render_result_values(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $remainingLines = [
             [

@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\PageAnnotations;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Document\PageGraphics;
 use Kalle\Pdf\Document\PageLinks;
@@ -53,7 +54,7 @@ final class PageTextElementRendererTest extends TestCase
         self::assertStringContainsString("10 48.2 $formattedWidth 0.5 re f", $page->getContents()->render());
     }
 
-    private function createRenderer(\Kalle\Pdf\Document\Page $page): PageTextElementRenderer
+    private function createRenderer(Page $page): PageTextElementRenderer
     {
         $pageFonts = PageFonts::forPage($page);
 

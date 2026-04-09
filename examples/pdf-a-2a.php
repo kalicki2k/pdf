@@ -13,6 +13,7 @@ use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -55,10 +56,10 @@ $document = new Document(
     ->addKeyword('Tagged PDF')
     ->registerFont('NotoSans-Regular')
     ->registerFont('NotoSans-Bold')
-    ->addHeader(static function (\Kalle\Pdf\Page $page, int $pageNumber): void {
+    ->addHeader(static function (Page $page, int $pageNumber): void {
         $page->addText("Archivkopf $pageNumber", new Position(Units::mm(20), Units::mm(287)), 'NotoSans-Regular', 9);
     })
-    ->addFooter(static function (\Kalle\Pdf\Page $page, int $pageNumber): void {
+    ->addFooter(static function (Page $page, int $pageNumber): void {
         $page->addText("Seite $pageNumber", new Position(Units::mm(20), Units::mm(12)), 'NotoSans-Regular', 9);
     });
 

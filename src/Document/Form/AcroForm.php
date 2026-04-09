@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Form;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Font\FontDefinition;
@@ -35,7 +36,7 @@ final class AcroForm extends DictionaryIndirectObject
     public function registerFont(FontDefinition $font): string
     {
         if (!$font instanceof IndirectObject) {
-            throw new \InvalidArgumentException('AcroForm fonts must be indirect objects.');
+            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
         }
 
         $baseFont = $font->getBaseFont();

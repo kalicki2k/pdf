@@ -6,9 +6,11 @@ namespace Kalle\Pdf;
 
 use DateTimeImmutable;
 use Kalle\Pdf\Document\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Document as InternalDocument;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\OptionalContentGroup;
+use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Layout\PageSize;
@@ -19,7 +21,7 @@ use Kalle\Pdf\Layout\TableOfContentsOptions;
  */
 final readonly class Document
 {
-    private Document\Document $document;
+    private InternalDocument $document;
 
     /**
      * Creates a new PDF document with metadata and optional font presets.
@@ -42,7 +44,7 @@ final readonly class Document
         ?string $creatorTool = null,
         ?array $fontConfig = null,
     ) {
-        $this->document = new Document\Document(
+        $this->document = new InternalDocument(
             profile: $profile,
             title: $title,
             author: $author,
@@ -192,12 +194,12 @@ final readonly class Document
     /**
      * Adds a header renderer that runs for newly created pages.
      *
-     * @param callable(\Kalle\Pdf\Page, int): void $renderer
+     * @param callable(Page, int): void $renderer
      */
     public function addHeader(callable $renderer): self
     {
         $this->document->addHeader(
-            static function (\Kalle\Pdf\Document\Page $page, int $pageNumber) use ($renderer): void {
+            static function (InternalPage $page, int $pageNumber) use ($renderer): void {
                 $renderer(new Page($page), $pageNumber);
             },
         );
@@ -208,12 +210,12 @@ final readonly class Document
     /**
      * Adds a footer renderer that runs for newly created pages.
      *
-     * @param callable(\Kalle\Pdf\Page, int): void $renderer
+     * @param callable(Page, int): void $renderer
      */
     public function addFooter(callable $renderer): self
     {
         $this->document->addFooter(
-            static function (\Kalle\Pdf\Document\Page $page, int $pageNumber) use ($renderer): void {
+            static function (InternalPage $page, int $pageNumber) use ($renderer): void {
                 $renderer(new Page($page), $pageNumber);
             },
         );
@@ -295,7 +297,7 @@ final readonly class Document
         $this->document->writeToFile($path);
     }
 
-    private function toInternalPage(Page $page): \Kalle\Pdf\Document\Page
+    private function toInternalPage(Page $page): InternalPage
     {
         return PageRegistry::resolve($page);
     }

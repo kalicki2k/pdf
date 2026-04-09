@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Document\ImageObject;
 use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Document\Resources;
@@ -176,7 +177,7 @@ final class ResourcesTest extends TestCase
             }
         };
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Font resources must be indirect objects.');
 
         $resources->addFont($font);

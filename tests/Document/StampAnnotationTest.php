@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\Annotation\StampAnnotation;
 use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +17,7 @@ final class StampAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_stamp_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new StampAnnotation(7, $page, 10, 20, 80, 24, 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
 
@@ -31,7 +32,7 @@ final class StampAnnotationTest extends TestCase
     #[Test]
     public function it_uses_the_default_icon_and_omits_optional_fields(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new StampAnnotation(7, $page, 10, 20, 80, 24);
 
@@ -47,7 +48,7 @@ final class StampAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_cmyk_stamp_color(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new StampAnnotation(7, $page, 10, 20, 80, 24, 'Approved', Color::cmyk(0.1, 0.2, 0.3, 0.4));
 
@@ -57,7 +58,7 @@ final class StampAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_pdf_a_stamp_annotation_with_print_flag_and_appearance(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $annotation = new StampAnnotation(7, $page, 10, 20, 80, 24, 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
         $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 24));

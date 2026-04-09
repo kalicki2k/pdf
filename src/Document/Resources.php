@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
@@ -30,7 +31,7 @@ final class Resources extends DictionaryIndirectObject
     public function addFont(FontDefinition $font): string
     {
         if (!$font instanceof IndirectObject) {
-            throw new \InvalidArgumentException('Font resources must be indirect objects.');
+            throw new InvalidArgumentException('Font resources must be indirect objects.');
         }
 
         foreach ($this->fonts as $index => $registeredFont) {

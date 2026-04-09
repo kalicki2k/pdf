@@ -12,6 +12,7 @@ use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -23,7 +24,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_text_field_widget_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -40,7 +41,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_multiline_text_field_widget_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -57,7 +58,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_read_only_required_password_flags_for_text_fields(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -82,7 +83,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_default_value_for_text_fields(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 
@@ -108,7 +109,7 @@ final class TextFieldAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 

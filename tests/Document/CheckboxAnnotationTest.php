@@ -12,6 +12,7 @@ use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +21,7 @@ final class CheckboxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_checkbox_widget_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
         $annotation = new CheckboxAnnotation(
@@ -47,7 +48,7 @@ final class CheckboxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_unchecked_checkbox_and_returns_related_appearance_streams(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $offAppearance = new CheckboxAppearanceStream(8, 12, 12, false);
         $onAppearance = new CheckboxAppearanceStream(9, 12, 12, true);
@@ -77,7 +78,7 @@ final class CheckboxAnnotationTest extends TestCase
     #[Test]
     public function it_renders_accessibility_metadata_for_checkboxes(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
 
         $annotation = new CheckboxAnnotation(
@@ -102,7 +103,7 @@ final class CheckboxAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
         $annotation = new CheckboxAnnotation(

@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Info;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +16,7 @@ final class InfoTest extends TestCase
     public function it_renders_required_metadata_fields(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.0),
+            profile: Profile::standard(1.0),
             title: 'Spec',
             author: 'Kalle',
         );
@@ -38,7 +39,7 @@ final class InfoTest extends TestCase
     public function it_renders_optional_subject_keywords_and_language_metadata(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.4),
+            profile: Profile::standard(1.4),
             title: 'Spec',
             author: 'Kalle',
             subject: 'Testing',
@@ -58,7 +59,7 @@ final class InfoTest extends TestCase
     public function it_allows_custom_creator_and_producer_metadata(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.0),
+            profile: Profile::standard(1.0),
             title: 'Spec',
             author: 'Kalle',
             creator: 'Acme Invoice Service',
@@ -76,7 +77,7 @@ final class InfoTest extends TestCase
     public function it_keeps_author_and_creator_as_distinct_metadata_roles(): void
     {
         $document = new Document(
-            profile: \Kalle\Pdf\Profile::standard(1.0),
+            profile: Profile::standard(1.0),
             title: 'Spec',
             author: 'DEIN FIRMENNAME',
             creator: 'Rechnungsservice',

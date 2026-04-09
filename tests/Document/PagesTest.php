@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Pages;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -14,7 +16,7 @@ final class PagesTest extends TestCase
     #[Test]
     public function it_renders_an_empty_page_tree(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.0));
+        $document = new Document(profile: Profile::standard(1.0));
         $pages = new Pages(2, $document);
 
         self::assertSame(
@@ -26,7 +28,7 @@ final class PagesTest extends TestCase
     #[Test]
     public function it_adds_a_page_and_returns_it(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $pages = new Pages(2, $document);
 
         $page = $pages->addPage(6, 7, 8, 0, 100.0, 200.0);
@@ -42,7 +44,7 @@ final class PagesTest extends TestCase
     #[Test]
     public function it_renders_all_page_references_and_the_page_count(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $pages = new Pages(2, $document);
         $pages->addPage(6, 7, 8, 0, 100.0, 200.0);
         $pages->addPage(9, 10, 11, 1, 210.0, 297.0);
@@ -56,7 +58,7 @@ final class PagesTest extends TestCase
     #[Test]
     public function it_can_reinsert_existing_pages_at_a_specific_index(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $pages = new Pages(2, $document);
         $firstPage = $pages->addPage(6, 7, 8, 0, 100.0, 200.0);
         $secondPage = $pages->addPage(9, 10, 11, 1, 210.0, 297.0);
@@ -74,11 +76,11 @@ final class PagesTest extends TestCase
     #[Test]
     public function it_rejects_out_of_bounds_page_insertions(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $pages = new Pages(2, $document);
         $page = $pages->addPage(6, 7, 8, 0, 100.0, 200.0);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Page insertion index is out of bounds.');
 
         $pages->insertPagesAt([$page], 2);

@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\TableCell;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -58,7 +59,7 @@ final class RowGroupPreparerTest extends TestCase
         ?RowStyle $rowStyle = null,
         ?HeaderStyle $headerStyle = null,
     ): RowPreparer {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 

@@ -13,6 +13,7 @@ use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +22,7 @@ final class AcroFormTest extends TestCase
     #[Test]
     public function it_renders_an_acro_form_with_registered_fields_and_fonts(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $page->addTextField('customer_name', new Rect(10, 20, 100, 20), 'Ada', 'Helvetica', 12);
@@ -103,7 +104,7 @@ final class AcroFormTest extends TestCase
     #[Test]
     public function it_filters_page_annotations_from_field_objects_for_render(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $acroForm = new AcroForm(1);
         $radioGroup = $acroForm->getOrCreateRadioGroup('delivery', 7);

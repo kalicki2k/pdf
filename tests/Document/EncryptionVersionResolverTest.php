@@ -11,6 +11,7 @@ use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
 use Kalle\Pdf\Encryption\EncryptionVersionResolver;
 use Kalle\Pdf\Encryption\PermissionBitsResolver;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -66,7 +67,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_rejects_aes_128_via_document_encrypt_for_pdf_1_5(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdf15());
+        $document = new Document(profile: Profile::pdf15());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.5 does not allow AES-128 encryption. PDF 1.6 or higher is required.');
@@ -81,7 +82,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_rejects_aes_128_encryption_algorithms_for_pdf_1_5(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdf15());
+        $document = new Document(profile: Profile::pdf15());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.5 does not allow AES-128 encryption. PDF 1.6 or higher is required.');
@@ -126,7 +127,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_resolves_and_stores_the_rc4_40_profile_via_encrypt_options_for_pdf_1_3(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdf13());
+        $document = new Document(profile: Profile::pdf13());
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user-secret',
             ownerPassword: 'owner-secret',
@@ -140,7 +141,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_rejects_rc4_40_via_document_encrypt_for_pdf_1_2(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdf12());
+        $document = new Document(profile: Profile::pdf12());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.2 does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.');
@@ -155,7 +156,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_rejects_rc4_40_encryption_algorithms_for_pdf_1_2(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdf12());
+        $document = new Document(profile: Profile::pdf12());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.2 does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.');
@@ -189,7 +190,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_rejects_aes_256_via_document_encrypt_for_pdf_1_6(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdf16());
+        $document = new Document(profile: Profile::pdf16());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.6 does not allow AES-256 encryption. PDF 1.7 or higher is required.');
@@ -204,7 +205,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_rejects_aes_256_encryption_algorithms_for_pdf_1_6(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdf16());
+        $document = new Document(profile: Profile::pdf16());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.6 does not allow AES-256 encryption. PDF 1.7 or higher is required.');
@@ -215,7 +216,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_resolves_and_stores_the_encryption_profile_via_encrypt_options(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.6));
+        $document = new Document(profile: Profile::standard(1.6));
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user-secret',
             ownerPassword: 'owner-secret',
@@ -228,7 +229,7 @@ final class EncryptionVersionResolverTest extends TestCase
     #[Test]
     public function it_allows_documents_to_store_encryption_options_and_resolve_the_profile(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->encrypt(new EncryptionOptions(
             userPassword: 'user-secret',
             ownerPassword: 'owner-secret',

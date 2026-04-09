@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
 use Kalle\Pdf\Document\Annotation\TextAnnotation;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +16,7 @@ final class PopupAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_popup_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $parent = new TextAnnotation(7, $page, 10, 20, 8, 8, 'Kommentar');
         $annotation = new PopupAnnotation(8, $page, $parent, 20, 30, 60, 40, true);
@@ -31,7 +32,7 @@ final class PopupAnnotationTest extends TestCase
     #[Test]
     public function it_defaults_to_a_closed_popup_and_has_no_related_objects(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $parent = new TextAnnotation(7, $page, 10, 20, 8, 8, 'Kommentar');
         $annotation = new PopupAnnotation(8, $page, $parent, 20, 30, 60, 40);

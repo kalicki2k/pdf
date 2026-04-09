@@ -16,6 +16,7 @@ use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +25,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_line_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, Color::rgb(255, 0, 0), 'Linie', 'QA');
 
@@ -39,7 +40,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_line_ending_styles(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LineAnnotation(
             7,
@@ -58,7 +59,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_uses_none_for_the_missing_line_ending_style(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LineAnnotation(
             7,
@@ -76,7 +77,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_subject_and_popup_reference_for_a_line_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, subject: 'Messlinie');
         $popup = new PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, true);
@@ -91,7 +92,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_border_style_for_a_line_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, borderStyle: AnnotationBorderStyle::dashed(2.0, [4.0, 2.0]));
 
@@ -101,7 +102,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 90, 32, 10, 20);
 
@@ -117,7 +118,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_cmyk_line_color(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, Color::cmyk(0.1, 0.2, 0.3, 0.4));
 
@@ -127,7 +128,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_pdf_a_line_annotation_with_print_flag_and_appearance(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, Color::rgb(255, 0, 0), 'Linie', 'QA');
         $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 12));
@@ -144,7 +145,7 @@ final class LineAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, Color::rgb(255, 0, 0), 'Linie', 'QA', subject: 'Messlinie');
 

@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Layout\Units;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 final class UnitsTest extends TestCase
 {
@@ -15,7 +16,7 @@ final class UnitsTest extends TestCase
     #[Test]
     public function it_has_a_private_constructor_to_enforce_static_usage(): void
     {
-        $reflection = new \ReflectionClass(Units::class);
+        $reflection = new ReflectionClass(Units::class);
         $constructor = $reflection->getConstructor();
 
         self::assertNotNull($constructor);

@@ -9,6 +9,7 @@ use Kalle\Pdf\Document\Annotation\StrikeOutAnnotation;
 use Kalle\Pdf\Document\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +18,7 @@ final class StrikeOutAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_strike_out_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new StrikeOutAnnotation(7, $page, 10, 20, 80, 12, Color::rgb(255, 0, 0), 'Durchgestrichen', 'QA');
 
@@ -32,7 +33,7 @@ final class StrikeOutAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new StrikeOutAnnotation(7, $page, 10, 20, 80, 12);
 
@@ -48,7 +49,7 @@ final class StrikeOutAnnotationTest extends TestCase
     #[Test]
     public function it_can_link_a_popup_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new StrikeOutAnnotation(7, $page, 10, 20, 80, 12, contents: 'Durchgestrichen');
         $popup = new PopupAnnotation(8, $page, $annotation, 20, 40, 60, 30, true);
@@ -61,7 +62,7 @@ final class StrikeOutAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_cmyk_strike_out_color(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new StrikeOutAnnotation(7, $page, 10, 20, 80, 12, Color::cmyk(0.1, 0.2, 0.3, 0.4));
 
@@ -71,7 +72,7 @@ final class StrikeOutAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_pdf_a_strike_out_annotation_with_print_flag_and_appearance(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $annotation = new StrikeOutAnnotation(7, $page, 10, 20, 80, 12, Color::rgb(255, 0, 0), 'Durchgestrichen', 'QA');
         $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 12));

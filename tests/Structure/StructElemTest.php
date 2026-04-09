@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Structure;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Annotation\LinkAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
@@ -91,7 +92,7 @@ final class StructElemTest extends TestCase
     {
         $document = new Document(profile: Profile::standard(1.7));
         $page = $document->addPage();
-        $annotation = new \Kalle\Pdf\Document\Annotation\LinkAnnotation(
+        $annotation = new LinkAnnotation(
             12,
             $page,
             10,

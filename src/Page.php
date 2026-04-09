@@ -16,6 +16,7 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\OptionalContentGroup;
+use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Document\PathBuilder;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
@@ -39,7 +40,7 @@ final readonly class Page
     /**
      * @internal Public pages are created by Document::addPage().
      */
-    public function __construct(private Document\Page $page)
+    public function __construct(private InternalPage $page)
     {
         PageRegistry::register($this, $page);
     }
@@ -68,7 +69,7 @@ final readonly class Page
     {
         $this->page->layer(
             $layer,
-            function (Document\Page $page) use ($renderer): void {
+            function (InternalPage $page) use ($renderer): void {
                 $renderer(new self($page));
             },
             $visibleByDefault,

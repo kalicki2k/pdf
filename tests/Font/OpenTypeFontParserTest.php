@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Font;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -13,7 +14,7 @@ final class OpenTypeFontParserTest extends TestCase
     #[Test]
     public function it_rejects_truncated_table_directory_entries_when_reading_32_bit_values(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to read 32-bit unsigned integer from font data.');
 
         new OpenTypeFontParser("\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00");
@@ -24,7 +25,7 @@ final class OpenTypeFontParserTest extends TestCase
     {
         $parser = new OpenTypeFontParser("\x00\x00\x00\x00\x00\x00");
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Font is missing horizontal metrics tables.');
 
         $parser->getAdvanceWidthForGlyphId(1);
@@ -35,7 +36,7 @@ final class OpenTypeFontParserTest extends TestCase
     {
         $parser = new OpenTypeFontParser("\x00\x00\x00\x00\x00\x00");
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Font is missing head table.');
 
         $parser->getUnitsPerEm();
@@ -46,7 +47,7 @@ final class OpenTypeFontParserTest extends TestCase
     {
         $parser = new OpenTypeFontParser($this->createFontDataWithTruncatedHeadTable());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to read 16-bit unsigned integer from font data.');
 
         $parser->getUnitsPerEm();
@@ -65,7 +66,7 @@ final class OpenTypeFontParserTest extends TestCase
     {
         $parser = new OpenTypeFontParser("\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Font does not contain a cmap table.');
 
         $parser->getGlyphIdForCodePoint(0x6F22);
@@ -76,7 +77,7 @@ final class OpenTypeFontParserTest extends TestCase
     {
         $parser = new OpenTypeFontParser($this->createFontDataWithUnsupportedCmapSubtable());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('No supported Unicode cmap subtable found.');
 
         $parser->getGlyphIdForCodePoint(0x6F22);

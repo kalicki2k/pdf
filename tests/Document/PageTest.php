@@ -20,6 +20,8 @@ use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Document\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\EmbeddedFileStream;
+use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Form\FormFieldLabel;
 use Kalle\Pdf\Document\Geometry\Insets;
@@ -60,6 +62,7 @@ use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 final class PageTest extends TestCase
 {
@@ -257,10 +260,10 @@ final class PageTest extends TestCase
     {
         $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
-        $file = new \Kalle\Pdf\Document\FileSpecification(
+        $file = new FileSpecification(
             8,
             'demo.txt',
-            new \Kalle\Pdf\Document\EmbeddedFileStream(7, 'hello'),
+            new EmbeddedFileStream(7, 'hello'),
             'Demo attachment',
         );
 
@@ -2653,7 +2656,7 @@ final class PageTest extends TestCase
             $glyphMap,
         );
 
-        $method = new \ReflectionMethod($fonts, 'updateUnicodeFontWidths');
+        $method = new ReflectionMethod($fonts, 'updateUnicodeFontWidths');
 
         self::assertNull($method->invoke($fonts, $font));
     }
@@ -3401,7 +3404,7 @@ final class PageTest extends TestCase
         /** @var mixed $invalidRuns */
         $invalidRuns = ['invalid'];
 
-        $method = new \ReflectionMethod($page, 'addFlowText');
+        $method = new ReflectionMethod($page, 'addFlowText');
         $method->invoke($page, $invalidRuns, new Position(10, 50), 50, 'Helvetica', 10);
     }
 
@@ -3613,7 +3616,7 @@ final class PageTest extends TestCase
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $fonts = PageFonts::forPage($page);
-        $method = new \ReflectionMethod($fonts, 'buildVariantCandidates');
+        $method = new ReflectionMethod($fonts, 'buildVariantCandidates');
 
         self::assertSame(['CustomSans-Regular'], $method->invoke($fonts, 'CustomSans-Regular', false, false));
         self::assertSame(['CustomSans-BoldItalic', 'CustomSans-BoldOblique'], $method->invoke($fonts, 'CustomSans-Regular', true, true));
@@ -3626,7 +3629,7 @@ final class PageTest extends TestCase
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $fonts = PageFonts::forPage($page);
-        $method = new \ReflectionMethod($fonts, 'buildVariantCandidates');
+        $method = new ReflectionMethod($fonts, 'buildVariantCandidates');
 
         self::assertSame(['CustomSans-Bold'], $method->invoke($fonts, 'CustomSans-Regular', true, false));
     }
@@ -3637,7 +3640,7 @@ final class PageTest extends TestCase
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $fonts = PageFonts::forPage($page);
-        $method = new \ReflectionMethod($fonts, 'buildVariantCandidates');
+        $method = new ReflectionMethod($fonts, 'buildVariantCandidates');
 
         self::assertSame(['Times-Italic', 'Times-Oblique'], $method->invoke($fonts, 'Times-Roman', false, true));
     }
@@ -3648,7 +3651,7 @@ final class PageTest extends TestCase
         $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $fonts = PageFonts::forPage($page);
-        $method = new \ReflectionMethod($fonts, 'buildVariantCandidates');
+        $method = new ReflectionMethod($fonts, 'buildVariantCandidates');
 
         self::assertSame(['MyFont-Bold'], $method->invoke($fonts, 'MyFont', true, false));
     }

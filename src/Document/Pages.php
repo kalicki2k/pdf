@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
@@ -48,7 +49,7 @@ final class Pages extends DictionaryIndirectObject
     public function insertPagesAt(array $pages, int $index): void
     {
         if ($index < 0 || $index > count($this->pages)) {
-            throw new \InvalidArgumentException('Page insertion index is out of bounds.');
+            throw new InvalidArgumentException('Page insertion index is out of bounds.');
         }
 
         $remainingPages = array_values(array_filter(

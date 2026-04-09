@@ -12,6 +12,7 @@ use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Document\Table\Layout\RowGroupHeightResolver;
 use Kalle\Pdf\Document\Table\Layout\RowGroupPreparer;
 use Kalle\Pdf\Document\Table\Layout\RowPreparer;
+use Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableCaptionRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableFooterRenderer;
@@ -117,7 +118,7 @@ final class Table
         $this->preparedCellRenderer = new PreparedCellRenderer(
             $this->styleResolver,
             new CellLayoutResolver($this->x, $this->columnWidths),
-            new \Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer($this->styleResolver),
+            new CellBoxRenderer($this->styleResolver),
             $this->textMetrics,
         );
         $this->captionRenderer = new TableCaptionRenderer();

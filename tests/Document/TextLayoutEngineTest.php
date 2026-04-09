@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\PageFonts;
@@ -28,11 +29,11 @@ final class TextLayoutEngineTest extends TestCase
         try {
             $engine->layoutParagraphLines('Hello', 'Base', 10, 0.0);
             self::fail('Expected exception for non-positive paragraph width.');
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException $exception) {
             self::assertSame('Paragraph width must be greater than zero.', $exception->getMessage());
         }
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Max lines must be greater than zero.');
 
         $engine->layoutParagraphLines('Hello', 'Base', 10, 100.0, maxLines: 0);
@@ -43,7 +44,7 @@ final class TextLayoutEngineTest extends TestCase
     {
         $engine = $this->createEngine();
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Paragraph text arrays must contain only TextSegment instances.');
 
         /** @phpstan-ignore argument.type */

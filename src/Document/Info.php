@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use DateTimeImmutable;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\StringType;
@@ -39,7 +40,7 @@ final class Info extends DictionaryIndirectObject
         return $dictionary;
     }
 
-    private function formatPdfDate(\DateTimeImmutable $date): string
+    private function formatPdfDate(DateTimeImmutable $date): string
     {
         $offset = $date->format('O');
         $normalizedOffset = substr($offset, 0, 3) . "'" . substr($offset, 3, 2) . "'";

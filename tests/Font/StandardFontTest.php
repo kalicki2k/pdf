@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Font;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Font\EncodingDictionary;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\StandardFont;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 final class StandardFontTest extends TestCase
 {
@@ -102,7 +104,7 @@ final class StandardFontTest extends TestCase
             'Type1',
             'StandardEncoding',
             1.0,
-            encodingDictionary: new \Kalle\Pdf\Font\EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis', 138 => 'adieresis', 133 => 'Odieresis', 154 => 'odieresis', 134 => 'Udieresis', 159 => 'udieresis', 167 => 'germandbls', 136 => 'agrave', 135 => 'aacute', 141 => 'ccedilla', 143 => 'egrave', 142 => 'eacute']),
+            encodingDictionary: new EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis', 138 => 'adieresis', 133 => 'Odieresis', 154 => 'odieresis', 134 => 'Udieresis', 159 => 'udieresis', 167 => 'germandbls', 136 => 'agrave', 135 => 'aacute', 141 => 'ccedilla', 143 => 'egrave', 142 => 'eacute']),
             byteMap: [
                 'Ä' => "\x80",
                 'ä' => "\x8A",
@@ -132,7 +134,7 @@ final class StandardFontTest extends TestCase
             'Type1',
             'StandardEncoding',
             1.0,
-            encodingDictionary: new \Kalle\Pdf\Font\EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis']),
+            encodingDictionary: new EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis']),
             byteMap: [
                 'Ä' => "\x80",
             ],
@@ -141,7 +143,7 @@ final class StandardFontTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Text cannot be encoded with font 'Helvetica'.");
 
-        $method = new \ReflectionMethod($font, 'encodeWithByteMap');
+        $method = new ReflectionMethod($font, 'encodeWithByteMap');
         $method->invoke($font, 'Äß');
     }
 
@@ -154,7 +156,7 @@ final class StandardFontTest extends TestCase
             'Type1',
             'StandardEncoding',
             1.0,
-            encodingDictionary: new \Kalle\Pdf\Font\EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis', 167 => 'germandbls']),
+            encodingDictionary: new EncodingDictionary(7, 'StandardEncoding', [128 => 'Adieresis', 167 => 'germandbls']),
             byteMap: [
                 'Ä' => "\x80",
                 'ß' => "\xA7",

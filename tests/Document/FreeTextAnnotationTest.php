@@ -13,6 +13,7 @@ use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +22,7 @@ final class FreeTextAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_free_text_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new FreeTextAnnotation(
             7,
@@ -50,7 +51,7 @@ final class FreeTextAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new FreeTextAnnotation(7, $page, 10, 20, 80, 24, 'Hinweistext', 'F1', 12);
 
@@ -66,7 +67,7 @@ final class FreeTextAnnotationTest extends TestCase
     #[Test]
     public function it_renders_cmyk_border_and_fill_colors(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new FreeTextAnnotation(
             7,
@@ -90,7 +91,7 @@ final class FreeTextAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_pdf_a_free_text_annotation_with_print_flag_and_appearance(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $annotation = new FreeTextAnnotation(7, $page, 10, 20, 80, 24, 'Hinweistext', 'F1', 12);
         $annotation->withAppearance(new TextAnnotationAppearanceStream(8, 80, 24));
@@ -107,7 +108,7 @@ final class FreeTextAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new FreeTextAnnotation(
             7,

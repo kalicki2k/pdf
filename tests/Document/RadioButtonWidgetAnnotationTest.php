@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\RadioButtonAppearanceStream;
 use Kalle\Pdf\Document\Form\RadioButtonField;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +17,7 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_radio_button_widget_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $field = new RadioButtonField(7, 'delivery');
         $annotation = new RadioButtonWidgetAnnotation(
@@ -43,7 +44,7 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_unchecked_radio_button_widget_annotation_and_returns_related_objects(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $field = new RadioButtonField(7, 'delivery');
         $offAppearance = new RadioButtonAppearanceStream(9, 12, false);
@@ -74,7 +75,7 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
     #[Test]
     public function it_renders_structural_metadata_for_radio_button_widgets(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
         $field = new RadioButtonField(7, 'delivery');
         $annotation = new RadioButtonWidgetAnnotation(

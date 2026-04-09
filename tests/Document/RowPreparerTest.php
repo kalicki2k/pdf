@@ -18,6 +18,7 @@ use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -126,7 +127,7 @@ final class RowPreparerTest extends TestCase
         ?RowStyle $rowStyle = null,
         ?HeaderStyle $headerStyle = null,
     ): RowPreparer {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $document->registerFont('Helvetica');
         $page = $document->addPage();
 

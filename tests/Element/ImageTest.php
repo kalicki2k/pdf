@@ -6,8 +6,12 @@ namespace Kalle\Pdf\Tests\Element;
 
 require_once __DIR__ . '/Support/ImageGzcompressStub.php';
 
+use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Element\Image;
+
+use function Kalle\Pdf\Element\setImageGzcompressFailure;
+
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
@@ -15,6 +19,9 @@ use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use ReflectionException;
+use ReflectionMethod;
+use Throwable;
 
 final class ImageTest extends TestCase
 {
@@ -137,7 +144,7 @@ final class ImageTest extends TestCase
         file_put_contents($path, base64_decode('R0lGODdhAQABAIAAAP///////ywAAAAAAQABAAACAkQBADs=', true));
 
         try {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage("Unsupported image type 'image/gif'.");
 
             Image::fromFile($path);
@@ -159,7 +166,7 @@ final class ImageTest extends TestCase
         chmod($path, 0000);
 
         try {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage("Unable to read image file '$path'.");
 
             Image::fromFile($path);
@@ -181,7 +188,7 @@ final class ImageTest extends TestCase
         file_put_contents($path, 'not-an-image');
 
         try {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage("Unsupported or invalid image file '$path'.");
 
             Image::fromFile($path);
@@ -266,7 +273,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_creates_jpeg_images_with_grayscale_rgb_and_cmyk_color_spaces(): void
     {
-        $method = new \ReflectionMethod(Image::class, 'fromJpegData');
+        $method = new ReflectionMethod(Image::class, 'fromJpegData');
 
         $gray = $method->invoke(
             null,
@@ -295,9 +302,9 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_unsupported_jpeg_channel_counts(): void
     {
-        $method = new \ReflectionMethod(Image::class, 'fromJpegData');
+        $method = new ReflectionMethod(Image::class, 'fromJpegData');
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Unsupported JPEG channel count '2' in 'broken.jpg'.");
 
         $method->invoke(
@@ -311,9 +318,9 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_invalid_png_signatures_and_missing_headers(): void
     {
-        $method = new \ReflectionMethod(Image::class, 'fromPngData');
+        $method = new ReflectionMethod(Image::class, 'fromPngData');
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid PNG file 'broken.png'.");
 
         $method->invoke(null, 'broken.png', 'not-a-png');
@@ -322,10 +329,10 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_png_files_without_an_ihdr_chunk(): void
     {
-        $method = new \ReflectionMethod(Image::class, 'fromPngData');
+        $method = new ReflectionMethod(Image::class, 'fromPngData');
         $pngWithoutHeader = "\x89PNG\x0D\x0A\x1A\x0A" . $this->createPngChunk('IEND', '');
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid PNG file 'missing-ihdr.png'.");
 
         $method->invoke(null, 'missing-ihdr.png', $pngWithoutHeader);
@@ -334,7 +341,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_png_variants_with_unsupported_structure(): void
     {
-        $method = new \ReflectionMethod(Image::class, 'fromPngData');
+        $method = new ReflectionMethod(Image::class, 'fromPngData');
 
         $unsupportedCompression = "\x89PNG\x0D\x0A\x1A\x0A"
             . $this->createPngChunk('IHDR', pack('NNC5', 1, 1, 8, 0, 1, 0, 0))
@@ -344,9 +351,9 @@ final class ImageTest extends TestCase
         try {
             $method->invoke(null, 'compression.png', $unsupportedCompression);
             self::fail('Expected exception for unsupported compression settings.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame("Unsupported PNG compression settings in 'compression.png'.", $exception->getMessage());
         }
 
@@ -358,9 +365,9 @@ final class ImageTest extends TestCase
         try {
             $method->invoke(null, 'interlaced.png', $interlaced);
             self::fail('Expected exception for interlaced PNG.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame("Interlaced PNG images are not supported for 'interlaced.png'.", $exception->getMessage());
         }
 
@@ -372,9 +379,9 @@ final class ImageTest extends TestCase
         try {
             $method->invoke(null, 'indexed.png', $indexed);
             self::fail('Expected exception for indexed PNG.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame("Indexed PNG images are not supported for 'indexed.png'.", $exception->getMessage());
         }
 
@@ -386,9 +393,9 @@ final class ImageTest extends TestCase
         try {
             $method->invoke(null, 'color.png', $unsupportedColor);
             self::fail('Expected exception for unsupported PNG color type.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame("Unsupported PNG color type '1' in 'color.png'.", $exception->getMessage());
         }
     }
@@ -396,7 +403,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_pngs_without_image_data_and_alpha_images_with_unsupported_bit_depth(): void
     {
-        $method = new \ReflectionMethod(Image::class, 'fromPngData');
+        $method = new ReflectionMethod(Image::class, 'fromPngData');
 
         $withoutData = "\x89PNG\x0D\x0A\x1A\x0A"
             . $this->createPngChunk('IHDR', pack('NNC5', 1, 1, 8, 0, 0, 0, 0))
@@ -405,9 +412,9 @@ final class ImageTest extends TestCase
         try {
             $method->invoke(null, 'empty.png', $withoutData);
             self::fail('Expected exception for missing PNG image data.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame("PNG file 'empty.png' does not contain image data.", $exception->getMessage());
         }
 
@@ -419,9 +426,9 @@ final class ImageTest extends TestCase
         try {
             $method->invoke(null, 'alpha16.png', $alpha16Bit);
             self::fail('Expected exception for unsupported alpha bit depth.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame(
                 "PNG images with alpha channels currently require 8 bits per component for 'alpha16.png'.",
                 $exception->getMessage(),
@@ -432,7 +439,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_invalid_alpha_channel_payload_lengths(): void
     {
-        $splitPngAlphaChannels = new \ReflectionMethod(Image::class, 'splitPngAlphaChannels');
+        $splitPngAlphaChannels = new ReflectionMethod(Image::class, 'splitPngAlphaChannels');
 
         $compressed = gzcompress(chr(0) . str_repeat(chr(0), 3));
         self::assertNotFalse($compressed);
@@ -440,9 +447,9 @@ final class ImageTest extends TestCase
         try {
             $splitPngAlphaChannels->invoke(null, 'alpha-length.png', $compressed, 1, 1, 3);
             self::fail('Expected exception for unexpected alpha image length.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame("Unexpected PNG alpha image data length for 'alpha-length.png'.", $exception->getMessage());
         }
     }
@@ -450,24 +457,24 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_invalid_png_chunk_headers_and_invalid_alpha_payload_compression(): void
     {
-        $readUint32 = new \ReflectionMethod(Image::class, 'readUint32');
-        $splitPngAlphaChannels = new \ReflectionMethod(Image::class, 'splitPngAlphaChannels');
+        $readUint32 = new ReflectionMethod(Image::class, 'readUint32');
+        $splitPngAlphaChannels = new ReflectionMethod(Image::class, 'splitPngAlphaChannels');
 
         try {
             $readUint32->invoke(null, 'abc', 0);
             self::fail('Expected exception for invalid PNG chunk header.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame('Unable to read PNG chunk data.', $exception->getMessage());
         }
 
         try {
             $splitPngAlphaChannels->invoke(null, 'alpha.png', 'not-compressed', 1, 1, 3);
             self::fail('Expected exception for invalid compressed alpha data.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame("Unable to decompress PNG image data for 'alpha.png'.", $exception->getMessage());
         }
     }
@@ -475,30 +482,30 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_png_alpha_recompression_failures(): void
     {
-        $splitPngAlphaChannels = new \ReflectionMethod(Image::class, 'splitPngAlphaChannels');
+        $splitPngAlphaChannels = new ReflectionMethod(Image::class, 'splitPngAlphaChannels');
         $pixelData = chr(0) . chr(10) . chr(20) . chr(30) . chr(40);
         $compressed = gzcompress($pixelData);
 
         self::assertNotFalse($compressed);
 
-        \Kalle\Pdf\Element\setImageGzcompressFailure(true);
+        setImageGzcompressFailure(true);
 
         try {
             $splitPngAlphaChannels->invoke(null, 'alpha-recompress.png', $compressed, 1, 1, 3);
             self::fail('Expected exception for failed PNG alpha recompression.');
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             self::assertSame('Failed to recompress PNG image data.', $exception->getMessage());
         } finally {
-            \Kalle\Pdf\Element\setImageGzcompressFailure(false);
+            setImageGzcompressFailure(false);
         }
     }
 
     #[Test]
     public function it_unfilters_png_scanlines_for_all_supported_filter_types_and_rejects_unknown_ones(): void
     {
-        $method = new \ReflectionMethod(Image::class, 'unfilterPngScanline');
+        $method = new ReflectionMethod(Image::class, 'unfilterPngScanline');
 
         self::assertSame([10, 20], $method->invoke(null, [10, 20], [0, 0], 0, 1, 'row.png'));
         self::assertSame([10, 30], $method->invoke(null, [10, 20], [0, 0], 1, 1, 'row.png'));
@@ -506,7 +513,7 @@ final class ImageTest extends TestCase
         self::assertSame([12, 29], $method->invoke(null, [10, 20], [5, 6], 3, 1, 'row.png'));
         self::assertSame([15, 35], $method->invoke(null, [10, 20], [5, 6], 4, 1, 'row.png'));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Unsupported PNG filter type '9' in 'row.png'.");
 
         $method->invoke(null, [10], [0], 9, 1, 'row.png');
@@ -515,7 +522,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_uses_each_paeth_predictor_branch(): void
     {
-        $method = new \ReflectionMethod(Image::class, 'paethPredictor');
+        $method = new ReflectionMethod(Image::class, 'paethPredictor');
 
         self::assertSame(10, $method->invoke(null, 10, 20, 20));
         self::assertSame(20, $method->invoke(null, 10, 20, 10));

@@ -12,6 +12,7 @@ use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +21,7 @@ final class SignatureFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_signature_field_widget_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
         $annotation = new SignatureFieldAnnotation(7, $page, 10, 20, 100, 30, 'approval_signature');
@@ -37,7 +38,7 @@ final class SignatureFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_accessibility_entries_for_pdf_ua_signature_fields(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
+        $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage();
 
         $annotation = new SignatureFieldAnnotation(7, $page, 10, 20, 100, 30, 'approval_signature', 'Approval signature');
@@ -50,7 +51,7 @@ final class SignatureFieldAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_appearance_stream_for_signature_fields(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
         $annotation = new SignatureFieldAnnotation(
@@ -71,7 +72,7 @@ final class SignatureFieldAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
         $annotation = new SignatureFieldAnnotation(7, $page, 10, 20, 100, 30, 'approval_signature', 'Approval signature');

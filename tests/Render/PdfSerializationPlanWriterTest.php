@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfFileStructure;
+use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\PdfSerializationPlanWriter;
 use Kalle\Pdf\Render\PdfTrailer;
@@ -71,7 +72,7 @@ final class PdfSerializationPlanWriterTest extends TestCase
                 parent::__construct($id);
             }
 
-            protected function writeObject(\Kalle\Pdf\Render\PdfOutput $output): void
+            protected function writeObject(PdfOutput $output): void
             {
                 $output->write($this->id . " 0 obj\n" . $this->body . "\nendobj\n");
             }

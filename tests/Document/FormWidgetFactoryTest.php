@@ -26,6 +26,7 @@ use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Profile;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use PHPUnit\Framework\Attributes\Test;
@@ -36,7 +37,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_text_field_and_registers_the_resolved_font(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
@@ -69,7 +70,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_checkbox_with_appearance_streams(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
@@ -86,7 +87,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_creates_and_reuses_a_radio_button_group(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $acroForm = null;
@@ -107,7 +108,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_combo_box_and_registers_the_resolved_font(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
@@ -140,7 +141,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_list_box_with_multiple_selected_values(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
@@ -176,7 +177,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_list_box_with_a_single_selected_value(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
@@ -205,7 +206,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_signature_field(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
@@ -222,7 +223,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_creates_a_push_button_and_registers_the_resolved_font(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);
@@ -261,7 +262,7 @@ final class FormWidgetFactoryTest extends TestCase
     #[Test]
     public function it_rejects_invalid_widget_inputs(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $resolvedFonts = [];
         $factory = $this->createFactory($page, $resolvedFonts);

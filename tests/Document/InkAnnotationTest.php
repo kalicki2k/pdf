@@ -14,6 +14,7 @@ use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +23,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_an_ink_annotation(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new InkAnnotation(
             7,
@@ -50,7 +51,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_omits_optional_fields_when_they_are_not_provided(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new InkAnnotation(
             7,
@@ -76,7 +77,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_cmyk_ink_color(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new InkAnnotation(
             7,
@@ -97,7 +98,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_rejects_empty_paths(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
 
         $this->expectException(InvalidArgumentException::class);
@@ -109,7 +110,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_renders_a_pdf_a_ink_annotation_with_print_flag_and_appearance(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::pdfA2u());
+        $document = new Document(profile: Profile::pdfA2u());
         $page = $document->addPage();
         $annotation = new InkAnnotation(
             7,
@@ -139,7 +140,7 @@ final class InkAnnotationTest extends TestCase
     #[Test]
     public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
     {
-        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document = new Document(profile: Profile::standard(1.4));
         $page = $document->addPage();
         $annotation = new InkAnnotation(
             7,

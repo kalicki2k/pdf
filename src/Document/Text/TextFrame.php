@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Text;
 
+use Closure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Page;
@@ -201,11 +202,11 @@ final class TextFrame
 
     /**
      * @param list<string|list<TextSegment>> $items
-     * @param \Closure(int): string $markerRenderer
+     * @param Closure(int): string $markerRenderer
      */
     private function renderList(
         array $items,
-        \Closure $markerRenderer,
+        Closure $markerRenderer,
         string $fontName,
         int $size,
         ListOptions $options,

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\PublicApi;
 
+use DateTimeImmutable;
+use InvalidArgumentException;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
@@ -54,6 +56,8 @@ use Kalle\Pdf\Types\NameType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionProperty;
 
 final class PublicApiTest extends TestCase
 {
@@ -339,7 +343,7 @@ final class PublicApiTest extends TestCase
 
         $document = new Document(profile: Profile::pdfUa1());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires a document title.');
 
         try {
@@ -523,7 +527,7 @@ final class PublicApiTest extends TestCase
         );
         $page = $document->addPage(PageSize::custom(100, 100));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires images to be tagged as Figure or rendered as artifacts in the current implementation.');
 
         $page->addImage(new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"), new Position(10, 20), 10, 10);
@@ -539,7 +543,7 @@ final class PublicApiTest extends TestCase
         );
         $page = $document->addPage(PageSize::custom(100, 100));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires alt text for Figure images in the current implementation.');
 
         $page->addImage(
@@ -806,7 +810,7 @@ final class PublicApiTest extends TestCase
         );
         $page = $document->addPage(PageSize::custom(100, 100));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires an accessible name for standalone link annotations.');
 
         $page->addLink(new Rect(10, 20, 30, 10), 'https://example.com');
@@ -959,7 +963,7 @@ final class PublicApiTest extends TestCase
         $page = $document->addPage(PageSize::custom(100, 100));
         $file = new FileSpecification(8, 'demo.txt', new EmbeddedFileStream(7, 'hello'), 'Demo attachment');
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments.');
 
         $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Anhang');
@@ -1337,10 +1341,10 @@ final class PublicApiTest extends TestCase
     #[Test]
     public function it_exposes_no_public_properties_on_the_public_document_api(): void
     {
-        $reflection = new \ReflectionClass(Document::class);
+        $reflection = new ReflectionClass(Document::class);
         $publicProperties = array_filter(
-            $reflection->getProperties(\ReflectionProperty::IS_PUBLIC),
-            static fn (\ReflectionProperty $property): bool => !$property->isStatic(),
+            $reflection->getProperties(ReflectionProperty::IS_PUBLIC),
+            static fn (ReflectionProperty $property): bool => !$property->isStatic(),
         );
 
         self::assertCount(0, $publicProperties);
@@ -1461,7 +1465,7 @@ final class PublicApiTest extends TestCase
     {
         $document = new Document(profile: Profile::pdf17());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.7 does not allow associated files. PDF 2.0 or a supporting archival profile is required.');
 
         $document->addAttachment(
@@ -1478,7 +1482,7 @@ final class PublicApiTest extends TestCase
     {
         $document = new Document(profile: Profile::pdf12());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.2 does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.');
 
         $document->encrypt(new EncryptionOptions(
@@ -1494,7 +1498,7 @@ final class PublicApiTest extends TestCase
     {
         $document = new Document(profile: Profile::pdf15());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.5 does not allow AES-128 encryption. PDF 1.6 or higher is required.');
 
         $document->encrypt(new EncryptionOptions(
@@ -1510,7 +1514,7 @@ final class PublicApiTest extends TestCase
     {
         $document = new Document(profile: Profile::pdf16());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.6 does not allow AES-256 encryption. PDF 1.7 or higher is required.');
 
         $document->encrypt(new EncryptionOptions(
@@ -1569,8 +1573,8 @@ final class PublicApiTest extends TestCase
         $tocPage = $document->addTableOfContents();
         $rendered = $this->writeDocument($document);
 
-        self::assertInstanceOf(\DateTimeImmutable::class, $creationDate);
-        self::assertInstanceOf(\DateTimeImmutable::class, $modificationDate);
+        self::assertInstanceOf(DateTimeImmutable::class, $creationDate);
+        self::assertInstanceOf(DateTimeImmutable::class, $modificationDate);
         self::assertGreaterThanOrEqual($creationDate->getTimestamp(), $modificationDate->getTimestamp());
         self::assertEqualsWithDelta(595.28, $firstPage->getWidth(), 0.01);
         self::assertEqualsWithDelta(841.89, $firstPage->getHeight(), 0.01);
@@ -1629,7 +1633,7 @@ final class PublicApiTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(120, 140));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.4 does not allow optional content groups (layers). PDF 1.5 or higher is required.');
 
         $page->layer('Layer A', static function (Page $layerPage): void {
@@ -1644,7 +1648,7 @@ final class PublicApiTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage(PageSize::custom(120, 140));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.3 does not allow transparency. PDF 1.4 or higher is required.');
 
         $page->addText('Transparent', new Position(10, 100), 'Helvetica', 10, new TextOptions(opacity: Opacity::fill(0.5)));
@@ -1656,7 +1660,7 @@ final class PublicApiTest extends TestCase
         $document = new Document(profile: Profile::pdfUa1(), title: 'Accessible Spec', language: 'de-DE');
         $page = $document->addPage(PageSize::custom(120, 140));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires lines, shapes and paths to be rendered as artifacts in the current implementation.');
 
         $page->addRectangle(new Rect(10, 60, 20, 10), 1.0, Color::rgb(0, 0, 0), Color::rgb(1, 0, 0));
@@ -1667,7 +1671,7 @@ final class PublicApiTest extends TestCase
     {
         $document = new Document(profile: Profile::pdf10());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.0 does not allow WinAnsiEncoding for standard fonts. PDF 1.1 or higher is required.');
 
         $document->registerFont('Helvetica', encoding: 'WinAnsiEncoding');
@@ -1843,7 +1847,7 @@ final class PublicApiTest extends TestCase
 
     private function internalDocument(Document $document): InternalDocument
     {
-        $property = new \ReflectionProperty($document, 'document');
+        $property = new ReflectionProperty($document, 'document');
 
         /** @var InternalDocument $internalDocument */
         $internalDocument = $property->getValue($document);
@@ -1853,7 +1857,7 @@ final class PublicApiTest extends TestCase
 
     private function internalPage(Page $page): InternalPage
     {
-        $property = new \ReflectionProperty($page, 'page');
+        $property = new ReflectionProperty($page, 'page');
 
         /** @var InternalPage $internalPage */
         $internalPage = $property->getValue($page);

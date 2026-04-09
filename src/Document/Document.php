@@ -28,6 +28,7 @@ use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructTreeRoot;
 use Random\RandomException;
 use RuntimeException;
+use Throwable;
 
 final class Document
 {
@@ -660,7 +661,7 @@ final class Document
         try {
             $this->writeToOutput($output);
             $output->commit();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $output->discard();
 
             throw $exception;
