@@ -32,28 +32,30 @@ final class PageLinks
         Rect $box,
         string $url,
         ?string $accessibleName = null,
-    ): Page {
+    ): void {
         if (str_starts_with($url, '#')) {
-            return $this->addInternalLink($box, substr($url, 1), $accessibleName);
+            $this->addInternalLink($box, substr($url, 1), $accessibleName);
+
+            return;
         }
 
         if ($url === '') {
             throw new InvalidArgumentException('Link URL must not be empty.');
         }
 
-        return $this->addLinkTarget($box, LinkTarget::externalUrl($url), alternativeDescription: $accessibleName);
+        $this->addLinkTarget($box, LinkTarget::externalUrl($url), alternativeDescription: $accessibleName);
     }
 
     public function addInternalLink(
         Rect $box,
         string $destination,
         ?string $accessibleName = null,
-    ): Page {
+    ): void {
         if ($destination === '') {
             throw new InvalidArgumentException('Link destination must not be empty.');
         }
 
-        return $this->addLinkTarget($box, LinkTarget::namedDestination($destination), alternativeDescription: $accessibleName);
+        $this->addLinkTarget($box, LinkTarget::namedDestination($destination), alternativeDescription: $accessibleName);
     }
 
     public function addLinkTarget(
@@ -61,7 +63,7 @@ final class PageLinks
         LinkTarget $target,
         ?StructElem $linkStructElem = null,
         ?string $alternativeDescription = null,
-    ): Page {
+    ): void {
         $profile = $this->page->getDocument()->getProfile();
 
         if ($profile->requiresTaggedLinkAnnotations() && $linkStructElem === null) {
@@ -77,8 +79,6 @@ final class PageLinks
         }
 
         $this->pageAnnotations->addLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
-
-        return $this->page;
     }
 
     public function resolveMarkedContentStructureTag(TextOptions $options): ?StructureTag
