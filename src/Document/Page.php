@@ -899,13 +899,12 @@ final class Page extends IndirectObject
 
     private function pageTextRenderer(): PageTextRenderer
     {
-        return $this->pageTextRenderer ??= new PageTextRenderer(
+        return $this->pageTextRenderer ??= PageTextRenderer::forPage(
             $this,
             $this->pageFonts(),
             $this->pageLinks(),
             $this->pageGraphics(),
             $this->pageMarkedContentIds,
-            Text\TextLayoutEngine::forPageFonts($this->pageFonts()),
         );
     }
 

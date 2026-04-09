@@ -22,30 +22,28 @@ use Kalle\Pdf\Structure\StructElem;
  */
 final class PageTextRenderer
 {
-    private readonly PageTextElementRenderer $textElementRenderer;
-    private readonly PageParagraphRenderer $paragraphRenderer;
+    private function __construct(
+        private readonly PageTextElementRenderer $textElementRenderer,
+        private readonly PageParagraphRenderer $paragraphRenderer,
+    ) {
+    }
 
-    public function __construct(
+    public static function forPage(
         Page $page,
         PageFonts $pageFonts,
         PageLinks $pageLinks,
         PageGraphics $pageGraphics,
         PageMarkedContentIds $pageMarkedContentIds,
-        TextLayoutEngine $textLayoutEngine,
-    ) {
-        $this->textElementRenderer = new PageTextElementRenderer(
-            $page,
-            $pageFonts,
-            $pageLinks,
-            $pageGraphics,
-            $pageMarkedContentIds,
-        );
-        $this->paragraphRenderer = new PageParagraphRenderer(
-            $textLayoutEngine,
-            new PageTextBlockRenderer(
+    ): self {
+        return new self(
+            new PageTextElementRenderer(
                 $page,
-                new PageTextLineRenderer($pageFonts, $textLayoutEngine),
+                $pageFonts,
+                $pageLinks,
+                $pageGraphics,
+                $pageMarkedContentIds,
             ),
+            PageParagraphRenderer::forPage($page, $pageFonts),
         );
     }
 
@@ -147,5 +145,4 @@ final class PageTextRenderer
     ): int {
         return $this->paragraphRenderer->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
     }
-
 }

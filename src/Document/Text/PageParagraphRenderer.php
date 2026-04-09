@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -26,6 +27,19 @@ final class PageParagraphRenderer
         private readonly TextLayoutEngine $textLayoutEngine,
         private readonly PageTextBlockRenderer $blockRenderer,
     ) {
+    }
+
+    public static function forPage(Page $page, PageFonts $pageFonts): self
+    {
+        $textLayoutEngine = TextLayoutEngine::forPageFonts($pageFonts);
+
+        return new self(
+            $textLayoutEngine,
+            new PageTextBlockRenderer(
+                $page,
+                new PageTextLineRenderer($pageFonts, $textLayoutEngine),
+            ),
+        );
     }
 
     /**

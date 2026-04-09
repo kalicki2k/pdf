@@ -9,10 +9,7 @@ use Kalle\Pdf\Document\Geometry\Insets;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Document\Text\PageParagraphRenderer;
-use Kalle\Pdf\Document\Text\PageTextBlockRenderer;
-use Kalle\Pdf\Document\Text\PageTextLineRenderer;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
-use Kalle\Pdf\Document\Text\TextLayoutEngine;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
@@ -27,11 +24,7 @@ final class PageParagraphRendererTest extends TestCase
         $document->registerFont('Helvetica');
         $page = $document->addPage();
         $pageFonts = PageFonts::forPage($page);
-        $textLayoutEngine = TextLayoutEngine::forPageFonts($pageFonts);
-        $renderer = new PageParagraphRenderer(
-            $textLayoutEngine,
-            new PageTextBlockRenderer($page, new PageTextLineRenderer($pageFonts, $textLayoutEngine)),
-        );
+        $renderer = PageParagraphRenderer::forPage($page, $pageFonts);
 
         $renderer->addTextBox(
             'Hello world from PDF',
