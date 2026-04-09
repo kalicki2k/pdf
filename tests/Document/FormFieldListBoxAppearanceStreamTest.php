@@ -11,6 +11,7 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -26,6 +27,7 @@ final class FormFieldListBoxAppearanceStreamTest extends TestCase
             80,
             40,
             $font,
+            new UnicodeFontWidthUpdater(),
             'F1',
             12,
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
@@ -53,6 +55,7 @@ final class FormFieldListBoxAppearanceStreamTest extends TestCase
             80,
             40,
             $font,
+            new UnicodeFontWidthUpdater(),
             'F1',
             12,
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],

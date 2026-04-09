@@ -35,6 +35,7 @@ final class FormFieldTextAppearanceStream extends IndirectObject implements Encr
         private readonly float $width,
         private readonly float $height,
         private readonly FontDefinition & IndirectObject $font,
+        private readonly UnicodeFontWidthUpdater $unicodeFontWidthUpdater,
         private readonly string $fontResourceName,
         private readonly int $fontSize,
         private readonly array $lines,
@@ -204,7 +205,7 @@ final class FormFieldTextAppearanceStream extends IndirectObject implements Encr
 
     private function updateUnicodeFontWidths(): void
     {
-        (new UnicodeFontWidthUpdater())->update($this->font);
+        $this->unicodeFontWidthUpdater->update($this->font);
     }
 
     private function dictionary(int $length): DictionaryType

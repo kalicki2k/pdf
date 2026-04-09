@@ -24,6 +24,7 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
@@ -355,6 +356,7 @@ final class FormWidgetFactoryTest extends TestCase
                     );
                 },
             ),
+            new UnicodeFontWidthUpdater(),
         );
     }
 }

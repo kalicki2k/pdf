@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
@@ -238,7 +239,11 @@ final class PageForms
 
     private function formWidgetFactory(): FormWidgetFactory
     {
-        return $this->factory ??= new FormWidgetFactory($this->page, $this->factoryContext);
+        return $this->factory ??= new FormWidgetFactory(
+            $this->page,
+            $this->factoryContext,
+            new UnicodeFontWidthUpdater(),
+        );
     }
 
     private function bindAccessibleFormField(

@@ -26,6 +26,7 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
@@ -84,7 +85,7 @@ final class PushButtonAnnotationTest extends TestCase
             'Speichern',
             'F1',
             12,
-            appearance: new FormFieldTextAppearanceStream(8, 80, 16, $font, 'F1', 12, ['Speichern']),
+            appearance: new FormFieldTextAppearanceStream(8, 80, 16, $font, new UnicodeFontWidthUpdater(), 'F1', 12, ['Speichern']),
         );
 
         self::assertStringContainsString('/AP << /N 8 0 R >>', $annotation->render());

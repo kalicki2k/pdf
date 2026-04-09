@@ -17,6 +17,7 @@ use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
@@ -30,6 +31,7 @@ final readonly class FormWidgetFactory
     public function __construct(
         private Page $page,
         private FormWidgetFactoryContext $context,
+        private UnicodeFontWidthUpdater $unicodeFontWidthUpdater,
     ) {
     }
 
@@ -78,6 +80,7 @@ final readonly class FormWidgetFactory
                 $box->width,
                 $box->height,
                 $font,
+                $this->unicodeFontWidthUpdater,
                 $fontResourceName,
                 $size,
                 $this->resolveTextFieldAppearanceLines($value, $multiline),
@@ -221,6 +224,7 @@ final readonly class FormWidgetFactory
                 $box->width,
                 $box->height,
                 $font,
+                $this->unicodeFontWidthUpdater,
                 $fontResourceName,
                 $size,
                 $this->resolveComboBoxAppearanceLines($options, $value),
@@ -286,6 +290,7 @@ final readonly class FormWidgetFactory
                 $box->width,
                 $box->height,
                 $font,
+                $this->unicodeFontWidthUpdater,
                 $fontResourceName,
                 $size,
                 $options,
@@ -365,6 +370,7 @@ final readonly class FormWidgetFactory
                 $box->width,
                 $box->height,
                 $font,
+                $this->unicodeFontWidthUpdater,
                 $fontResourceName,
                 $size,
                 [$label],
