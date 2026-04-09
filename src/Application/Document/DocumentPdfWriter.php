@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Application\Document;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentPdfSerializer;
-use Kalle\Pdf\Document\DocumentRenderPreparer;
 use Kalle\Pdf\Render\PdfOutput;
 
 class DocumentPdfWriter

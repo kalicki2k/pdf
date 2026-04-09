@@ -4,28 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-final class DocumentRenderPreparer
-{
-    public function __construct(
-        private readonly DocumentRenderLifecycle $renderLifecycle = new DocumentRenderLifecycle(),
-    ) {
-    }
+use Kalle\Pdf\Application\Document\DocumentRenderPreparer as ApplicationDocumentRenderPreparer;
 
-    public function prepare(Document $document): void
-    {
-        $this->renderLifecycle->applyDeferredRenderFinalizers($document->getDeferredRendering());
-        $this->renderLifecycle->applyDeferredPageDecorators(
-            $document->getDeferredRendering(),
-            $document->getPages(),
-            static function (callable $renderer) use ($document): void {
-                $document->renderInArtifactContext($renderer);
-            },
-        );
-        $this->renderLifecycle->assertRenderRequirements(
-            $document->getProfile(),
-            $document->getTitle(),
-            $document->getLanguage(),
-            $document->hasStructure(),
-        );
-    }
+final class DocumentRenderPreparer extends ApplicationDocumentRenderPreparer
+{
 }
