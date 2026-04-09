@@ -19,7 +19,6 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
-use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Structure\StructElem;
 
 /**
@@ -29,7 +28,7 @@ final class PageTextRenderer
 {
     private const float DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
-    private readonly PageTextLineRenderer $lineRenderer;
+    private readonly PageTextBlockRenderer $blockRenderer;
 
     public function __construct(
         private readonly Page $page,
@@ -39,7 +38,10 @@ final class PageTextRenderer
         private readonly PageMarkedContentIds $pageMarkedContentIds,
         private readonly TextLayoutEngine $textLayoutEngine,
     ) {
-        $this->lineRenderer = new PageTextLineRenderer($pageFonts, $textLayoutEngine);
+        $this->blockRenderer = new PageTextBlockRenderer(
+            $page,
+            new PageTextLineRenderer($pageFonts, $textLayoutEngine),
+        );
     }
 
     public function addText(
@@ -229,7 +231,7 @@ final class PageTextRenderer
             $options->overflow,
         );
 
-        $startY = $this->resolveTextBoxStartY(
+        $startY = $this->blockRenderer->resolveTextBoxStartY(
             $box->y,
             $box->height,
             $size,
@@ -240,7 +242,7 @@ final class PageTextRenderer
             $options->padding->bottom,
         );
 
-        return $this->renderTextLines(
+        return $this->blockRenderer->renderTextLines(
             $lines,
             $box->x + $options->padding->left,
             $startY,
@@ -307,21 +309,19 @@ final class PageTextRenderer
             throw new InvalidArgumentException('Line height must be greater than zero.');
         }
 
-        $page = $this->page;
-        $currentY = $y;
-        $topMargin = $this->page->getHeight() - $y;
-
-        foreach ($lines as $line) {
-            if ($currentY < $bottomMargin) {
-                $page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
-                $currentY = $this->page->getHeight() - $topMargin;
-            }
-
-            $this->lineRenderer->render($page, $line, $x, $currentY, $maxWidth, $baseFont, $size, $tag, $parentStructElem, $align);
-            $currentY -= $lineHeight;
-        }
-
-        return $page;
+        return $this->blockRenderer->renderParagraphLines(
+            $lines,
+            $x,
+            $y,
+            $maxWidth,
+            $baseFont,
+            $size,
+            $tag,
+            $parentStructElem,
+            $lineHeight,
+            $bottomMargin,
+            $align,
+        );
     }
 
     /**
@@ -394,52 +394,6 @@ final class PageTextRenderer
         }
 
         return $font->encodeText($text);
-    }
-
-    /**
-     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $lines
-     */
-    private function renderTextLines(
-        array $lines,
-        float $x,
-        float $y,
-        float $maxWidth,
-        string $baseFont,
-        int $size,
-        ?StructureTag $tag,
-        ?StructElem $parentStructElem,
-        float $lineHeight,
-        HorizontalAlign $align,
-    ): Page {
-        $currentY = $y;
-
-        foreach ($lines as $line) {
-            $this->lineRenderer->render($this->page, $line, $x, $currentY, $maxWidth, $baseFont, $size, $tag, $parentStructElem, $align);
-            $currentY -= $lineHeight;
-        }
-
-        return $this->page;
-    }
-
-    private function resolveTextBoxStartY(
-        float $y,
-        float $height,
-        int $size,
-        float $lineHeight,
-        int $lineCount,
-        VerticalAlign $verticalAlign,
-        float $paddingTop,
-        float $paddingBottom,
-    ): float {
-        $availableHeight = $height - $paddingTop - $paddingBottom;
-        $lineOffset = max(0, $lineCount - 1) * $lineHeight;
-        $blockHeight = $size + $lineOffset;
-
-        return match ($verticalAlign) {
-            VerticalAlign::TOP => $y + $paddingBottom + $availableHeight - $size,
-            VerticalAlign::MIDDLE => $y + $paddingBottom + (($availableHeight - $blockHeight) / 2) + $lineOffset,
-            VerticalAlign::BOTTOM => $y + $paddingBottom + $lineOffset,
-        };
     }
 
     /**
