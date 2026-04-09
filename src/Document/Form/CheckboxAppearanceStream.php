@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Form;
 
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
-use Kalle\Pdf\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 
-final class CheckboxAppearanceStream extends IndirectObject implements EncryptableIndirectObject
+final class CheckboxAppearanceStream extends StreamIndirectObject
 {
     public function __construct(
         int $id,
@@ -23,65 +21,7 @@ final class CheckboxAppearanceStream extends IndirectObject implements Encryptab
         parent::__construct($id);
     }
 
-    protected function writeObject(PdfOutput $output): void
-    {
-        $content = $this->content();
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($content))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($content);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
-    }
-
-    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
-    {
-        $encryptedContent = $objectEncryptor->encryptString($this->id, $this->content());
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($encryptedContent))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($encryptedContent);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
-    }
-
-    private function content(): string
-    {
-        return implode(PHP_EOL, array_filter([
-            '1 g',
-            '0 G',
-            '1 w',
-            sprintf('0 0 %s %s re', $this->format($this->width), $this->format($this->height)),
-            'B',
-            $this->checked
-                ? implode(PHP_EOL, [
-                    sprintf(
-                        '%s %s m',
-                        $this->format($this->width * 0.2),
-                        $this->format($this->height * 0.55),
-                    ),
-                    sprintf(
-                        '%s %s l',
-                        $this->format($this->width * 0.42),
-                        $this->format($this->height * 0.25),
-                    ),
-                    sprintf(
-                        '%s %s m',
-                        $this->format($this->width * 0.42),
-                        $this->format($this->height * 0.25),
-                    ),
-                    sprintf(
-                        '%s %s l',
-                        $this->format($this->width * 0.8),
-                        $this->format($this->height * 0.8),
-                    ),
-                ])
-                : null,
-            $this->checked ? 'S' : null,
-        ]));
-    }
-
-    private function dictionary(int $length): DictionaryType
+    protected function streamDictionary(int $length): DictionaryType
     {
         return new DictionaryType([
             'Type' => new NameType('XObject'),
@@ -91,6 +31,43 @@ final class CheckboxAppearanceStream extends IndirectObject implements Encryptab
             'Resources' => new DictionaryType([]),
             'Length' => $length,
         ]);
+    }
+
+    protected function writeStreamContents(PdfOutput $output): void
+    {
+        $lines = [
+            '1 g',
+            '0 G',
+            '1 w',
+            sprintf('0 0 %s %s re', $this->format($this->width), $this->format($this->height)),
+            'B',
+        ];
+
+        if ($this->checked) {
+            $lines[] = sprintf(
+                '%s %s m',
+                $this->format($this->width * 0.2),
+                $this->format($this->height * 0.55),
+            );
+            $lines[] = sprintf(
+                '%s %s l',
+                $this->format($this->width * 0.42),
+                $this->format($this->height * 0.25),
+            );
+            $lines[] = sprintf(
+                '%s %s m',
+                $this->format($this->width * 0.42),
+                $this->format($this->height * 0.25),
+            );
+            $lines[] = sprintf(
+                '%s %s l',
+                $this->format($this->width * 0.8),
+                $this->format($this->height * 0.8),
+            );
+            $lines[] = 'S';
+        }
+
+        $this->writeLines($output, $lines);
     }
 
     private function format(float $value): string

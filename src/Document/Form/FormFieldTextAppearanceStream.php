@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Form;
 
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
-use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class FormFieldTextAppearanceStream extends IndirectObject implements EncryptableIndirectObject
+final class FormFieldTextAppearanceStream extends StreamIndirectObject
 {
     /** @var list<string> */
     private array $encodedLines;
@@ -59,31 +58,48 @@ final class FormFieldTextAppearanceStream extends IndirectObject implements Encr
         $this->updateUnicodeFontWidths();
     }
 
-    protected function writeObject(PdfOutput $output): void
+    protected function streamDictionary(int $length): DictionaryType
     {
-        $content = $this->content();
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($content))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($content);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        return new DictionaryType([
+            'Type' => new NameType('XObject'),
+            'Subtype' => new NameType('Form'),
+            'FormType' => 1,
+            'BBox' => new ArrayType([0, 0, $this->width, $this->height]),
+            'Resources' => new DictionaryType([
+                'Font' => new DictionaryType([
+                    $this->fontResourceName => new ReferenceType($this->font),
+                ]),
+            ]),
+            'Length' => $length,
+        ]);
     }
 
-    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    /**
+     * @return list<string>
+     */
+    private function visibleLines(): array
     {
-        $encryptedContent = $objectEncryptor->encryptString($this->id, $this->content());
+        $lineHeight = max($this->fontSize * 1.2, $this->fontSize + 1.0);
+        $maxLines = max(1, (int) floor(($this->height - 5.0) / $lineHeight));
 
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($encryptedContent))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($encryptedContent);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        return array_slice($this->lines, 0, $maxLines);
     }
 
-    private function content(): string
+    private function format(float $value): string
     {
-        return implode(PHP_EOL, $this->buildContentLines());
+        $formatted = rtrim(rtrim(sprintf('%.4F', $value), '0'), '.');
+
+        return $formatted === '' ? '0' : $formatted;
+    }
+
+    private function updateUnicodeFontWidths(): void
+    {
+        $this->unicodeFontWidthUpdater->update($this->font);
+    }
+
+    protected function writeStreamContents(PdfOutput $output): void
+    {
+        $this->writeLines($output, $this->buildContentLines());
     }
 
     /**
@@ -182,44 +198,5 @@ final class FormFieldTextAppearanceStream extends IndirectObject implements Encr
         $lines[] = 'Q';
 
         return $lines;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function visibleLines(): array
-    {
-        $lineHeight = max($this->fontSize * 1.2, $this->fontSize + 1.0);
-        $maxLines = max(1, (int) floor(($this->height - 5.0) / $lineHeight));
-
-        return array_slice($this->lines, 0, $maxLines);
-    }
-
-    private function format(float $value): string
-    {
-        $formatted = rtrim(rtrim(sprintf('%.4F', $value), '0'), '.');
-
-        return $formatted === '' ? '0' : $formatted;
-    }
-
-    private function updateUnicodeFontWidths(): void
-    {
-        $this->unicodeFontWidthUpdater->update($this->font);
-    }
-
-    private function dictionary(int $length): DictionaryType
-    {
-        return new DictionaryType([
-            'Type' => new NameType('XObject'),
-            'Subtype' => new NameType('Form'),
-            'FormType' => 1,
-            'BBox' => new ArrayType([0, 0, $this->width, $this->height]),
-            'Resources' => new DictionaryType([
-                'Font' => new DictionaryType([
-                    $this->fontResourceName => new ReferenceType($this->font),
-                ]),
-            ]),
-            'Length' => $length,
-        ]);
     }
 }

@@ -4,128 +4,136 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
-use Kalle\Pdf\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 
-final class XmpMetadata extends IndirectObject implements EncryptableIndirectObject
+final class XmpMetadata extends StreamIndirectObject
 {
     public function __construct(int $id, private readonly Document $document)
     {
         parent::__construct($id);
     }
 
-    protected function writeObject(PdfOutput $output): void
+    protected function streamDictionary(int $length): DictionaryType
     {
-        $xml = $this->buildXml();
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($xml))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($xml);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        return new DictionaryType([
+            'Type' => new NameType('Metadata'),
+            'Subtype' => new NameType('XML'),
+            'Length' => $length,
+        ]);
     }
 
-    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    protected function writeStreamContents(PdfOutput $output): void
     {
-        $encryptedXml = $objectEncryptor->encryptString($this->id, $this->buildXml());
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($encryptedXml))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($encryptedXml);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        $this->writeLines($output, $this->buildXmlLines());
     }
 
-    private function buildXml(): string
+    /**
+     * @return list<string>
+     */
+    private function buildXmlLines(): array
     {
         $creationDate = $this->document->getCreationDate()->format('Y-m-d\TH:i:sP');
         $modificationDate = $this->document->getModificationDate()->format('Y-m-d\TH:i:sP');
         $creatorTool = $this->resolveCreatorTool();
-        $title = $this->renderAltProperty('dc:title', $this->document->getTitle());
-        $subject = $this->renderAltProperty('dc:description', $this->document->getSubject());
-        $author = $this->renderSeqProperty('dc:creator', $this->document->getAuthor());
         $documentKeywords = $this->document->getKeywords();
-        $keywords = $this->renderBagProperty('dc:subject', array_values($documentKeywords));
         $languageValue = $this->document->getLanguage();
-        $language = $this->renderBagProperty('dc:language', $languageValue !== null ? [$languageValue] : []);
-        $pdfKeywords = $documentKeywords !== []
-            ? '    <pdf:Keywords>' . $this->escape(implode(', ', $documentKeywords)) . '</pdf:Keywords>' . PHP_EOL
-            : '';
-        $pdfAIdentification = $this->renderPdfAIdentification();
-        $pdfUaIdentification = $this->renderPdfUaIdentification();
+        $lines = [
+            '<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>',
+            '<x:xmpmeta xmlns:x="adobe:ns:meta/">',
+            '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">',
+            '  <rdf:Description rdf:about=""',
+            '    xmlns:dc="http://purl.org/dc/elements/1.1/"',
+            '    xmlns:pdf="http://ns.adobe.com/pdf/1.3/"',
+            '    xmlns:xmp="http://ns.adobe.com/xap/1.0/">',
+            '    <dc:format>application/pdf</dc:format>',
+            ...$this->renderAltPropertyLines('dc:title', $this->document->getTitle()),
+            ...$this->renderAltPropertyLines('dc:description', $this->document->getSubject()),
+            ...$this->renderSeqPropertyLines('dc:creator', $this->document->getAuthor()),
+            ...$this->renderBagPropertyLines('dc:subject', array_values($documentKeywords)),
+            ...$this->renderBagPropertyLines('dc:language', $languageValue !== null ? [$languageValue] : []),
+            '    <pdf:Producer>' . $this->escape($this->document->getProducer()) . '</pdf:Producer>',
+        ];
 
-        return <<<XML
-<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
-<x:xmpmeta xmlns:x="adobe:ns:meta/">
-<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-  <rdf:Description rdf:about=""
-    xmlns:dc="http://purl.org/dc/elements/1.1/"
-    xmlns:pdf="http://ns.adobe.com/pdf/1.3/"
-    xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-    <dc:format>application/pdf</dc:format>
-{$title}{$subject}{$author}{$keywords}{$language}    <pdf:Producer>{$this->escape($this->document->getProducer())}</pdf:Producer>
-{$pdfKeywords}    <xmp:CreatorTool>{$this->escape($creatorTool)}</xmp:CreatorTool>
-    <xmp:CreateDate>{$creationDate}</xmp:CreateDate>
-    <xmp:ModifyDate>{$modificationDate}</xmp:ModifyDate>
-    <xmp:MetadataDate>{$modificationDate}</xmp:MetadataDate>
-  </rdf:Description>
-{$pdfAIdentification}{$pdfUaIdentification}</rdf:RDF>
-</x:xmpmeta>
-<?xpacket end="w"?>
-XML;
+        if ($documentKeywords !== []) {
+            $lines[] = '    <pdf:Keywords>' . $this->escape(implode(', ', $documentKeywords)) . '</pdf:Keywords>';
+        }
+
+        $lines[] = '    <xmp:CreatorTool>' . $this->escape($creatorTool) . '</xmp:CreatorTool>';
+        $lines[] = '    <xmp:CreateDate>' . $creationDate . '</xmp:CreateDate>';
+        $lines[] = '    <xmp:ModifyDate>' . $modificationDate . '</xmp:ModifyDate>';
+        $lines[] = '    <xmp:MetadataDate>' . $modificationDate . '</xmp:MetadataDate>';
+        $lines[] = '  </rdf:Description>';
+        $lines = [
+            ...$lines,
+            ...$this->renderPdfAIdentificationLines(),
+            ...$this->renderPdfUaIdentificationLines(),
+            '</rdf:RDF>',
+            '</x:xmpmeta>',
+            '<?xpacket end="w"?>',
+        ];
+
+        return $lines;
     }
 
-    private function renderPdfAIdentification(): string
+    /**
+     * @return list<string>
+     */
+    private function renderPdfAIdentificationLines(): array
     {
         if (!$this->document->getProfile()->writesPdfAIdentificationMetadata()) {
-            return '';
+            return [];
         }
 
         $part = $this->document->getProfile()->pdfaPart();
         $conformance = $this->document->getProfile()->pdfaConformance();
 
         if ($part === null) {
-            return '';
+            return [];
         }
 
-        $revisionXml = $part === 4
-            ? '    <pdfaid:rev>2020</pdfaid:rev>' . PHP_EOL
-            : '';
+        $lines = [
+            '  <rdf:Description rdf:about=""',
+            '    xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">',
+            "    <pdfaid:part>{$part}</pdfaid:part>",
+        ];
 
-        $conformanceXml = $conformance !== null
-            ? '    <pdfaid:conformance>' . $this->escape($conformance) . '</pdfaid:conformance>' . PHP_EOL
-            : '';
+        if ($part === 4) {
+            $lines[] = '    <pdfaid:rev>2020</pdfaid:rev>';
+        }
 
-        return <<<XML
-  <rdf:Description rdf:about=""
-    xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
-    <pdfaid:part>{$part}</pdfaid:part>
-{$revisionXml}{$conformanceXml}  </rdf:Description>
-XML . PHP_EOL;
+        if ($conformance !== null) {
+            $lines[] = '    <pdfaid:conformance>' . $this->escape($conformance) . '</pdfaid:conformance>';
+        }
+
+        $lines[] = '  </rdf:Description>';
+
+        return $lines;
     }
 
-    private function renderPdfUaIdentification(): string
+    /**
+     * @return list<string>
+     */
+    private function renderPdfUaIdentificationLines(): array
     {
         if (!$this->document->getProfile()->writesPdfUaIdentificationMetadata()) {
-            return '';
+            return [];
         }
 
         $part = $this->document->getProfile()->pdfuaPart();
 
         if ($part === null) {
-            return '';
+            return [];
         }
 
-        return <<<XML
-  <rdf:Description rdf:about=""
-    xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">
-    <pdfuaid:part>{$part}</pdfuaid:part>
-  </rdf:Description>
-XML . PHP_EOL;
+        return [
+            '  <rdf:Description rdf:about=""',
+            '    xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">',
+            "    <pdfuaid:part>{$part}</pdfuaid:part>",
+            '  </rdf:Description>',
+        ];
     }
 
     private function resolveCreatorTool(): string
@@ -137,62 +145,68 @@ XML . PHP_EOL;
         return $this->document->getCreatorTool();
     }
 
-    private function renderAltProperty(string $name, ?string $value): string
+    /**
+     * @return list<string>
+     */
+    private function renderAltPropertyLines(string $name, ?string $value): array
     {
         if ($value === null || $value === '') {
-            return '';
+            return [];
         }
 
         $escapedValue = $this->escape($value);
 
-        return <<<XML
-    <{$name}>
-      <rdf:Alt>
-        <rdf:li xml:lang="x-default">{$escapedValue}</rdf:li>
-      </rdf:Alt>
-    </{$name}>
-XML . PHP_EOL;
+        return [
+            "    <{$name}>",
+            '      <rdf:Alt>',
+            '        <rdf:li xml:lang="x-default">' . $escapedValue . '</rdf:li>',
+            '      </rdf:Alt>',
+            "    </{$name}>",
+        ];
     }
 
-    private function renderSeqProperty(string $name, ?string $value): string
+    /**
+     * @return list<string>
+     */
+    private function renderSeqPropertyLines(string $name, ?string $value): array
     {
         if ($value === null || $value === '') {
-            return '';
+            return [];
         }
 
         $escapedValue = $this->escape($value);
 
-        return <<<XML
-    <{$name}>
-      <rdf:Seq>
-        <rdf:li>{$escapedValue}</rdf:li>
-      </rdf:Seq>
-    </{$name}>
-XML . PHP_EOL;
+        return [
+            "    <{$name}>",
+            '      <rdf:Seq>',
+            '        <rdf:li>' . $escapedValue . '</rdf:li>',
+            '      </rdf:Seq>',
+            "    </{$name}>",
+        ];
     }
 
     /**
      * @param list<string> $values
+     * @return list<string>
      */
-    private function renderBagProperty(string $name, array $values): string
+    private function renderBagPropertyLines(string $name, array $values): array
     {
         if ($values === []) {
-            return '';
+            return [];
         }
 
         $items = array_map(
             fn (string $value): string => '        <rdf:li>' . $this->escape($value) . '</rdf:li>',
             $values,
         );
-        $itemsXml = implode(PHP_EOL, $items);
 
-        return <<<XML
-    <{$name}>
-      <rdf:Bag>
-{$itemsXml}
-      </rdf:Bag>
-    </{$name}>
-XML . PHP_EOL;
+        return [
+            "    <{$name}>",
+            '      <rdf:Bag>',
+            ...$items,
+            '      </rdf:Bag>',
+            "    </{$name}>",
+        ];
     }
 
     private function escape(string $value): string
@@ -200,12 +214,4 @@ XML . PHP_EOL;
         return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_XML1, 'UTF-8');
     }
 
-    private function dictionary(int $length): DictionaryType
-    {
-        return new DictionaryType([
-            'Type' => new NameType('Metadata'),
-            'Subtype' => new NameType('XML'),
-            'Length' => $length,
-        ]);
-    }
 }

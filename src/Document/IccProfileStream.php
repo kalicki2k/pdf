@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
-use Kalle\Pdf\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use RuntimeException;
 
-final class IccProfileStream extends IndirectObject implements EncryptableIndirectObject
+final class IccProfileStream extends StreamIndirectObject
 {
     public function __construct(
         int $id,
@@ -36,31 +34,21 @@ final class IccProfileStream extends IndirectObject implements EncryptableIndire
         return new self($id, $data, $colorComponents);
     }
 
-    protected function writeObject(PdfOutput $output): void
-    {
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary($this->data->length())->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $this->data->writeTo($output);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
-    }
-
-    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
-    {
-        $encryptedData = $objectEncryptor->encryptString($this->id, $this->data->contents());
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($encryptedData))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($encryptedData);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
-    }
-
-    private function dictionary(int $length): DictionaryType
+    protected function streamDictionary(int $length): DictionaryType
     {
         return new DictionaryType([
             'N' => $this->colorComponents,
             'Length' => $length,
         ]);
+    }
+
+    protected function writeStreamContents(PdfOutput $output): void
+    {
+        $this->data->writeTo($output);
+    }
+
+    protected function streamLength(): int
+    {
+        return $this->data->length();
     }
 }

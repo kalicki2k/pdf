@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
-use Kalle\Pdf\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 
-final class CidToGidMap extends IndirectObject implements EncryptableIndirectObject
+final class CidToGidMap extends StreamIndirectObject
 {
     public function __construct(
         int $id,
@@ -21,27 +18,28 @@ final class CidToGidMap extends IndirectObject implements EncryptableIndirectObj
         parent::__construct($id);
     }
 
-    protected function writeObject(PdfOutput $output): void
+    protected function streamDictionary(int $length): DictionaryType
     {
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary($this->mapLength())->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $this->writeMapDataTo($output);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        return new DictionaryType([
+            'Length' => $length,
+        ]);
     }
 
-    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    /**
+     * @param array<string, string> $codeMap
+     */
+    private function maxCid(array $codeMap): int
     {
-        $encryptedData = $objectEncryptor->encryptString($this->id, $this->mapData());
+        $maxCid = 0;
 
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($encryptedData))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($encryptedData);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        foreach (array_keys($codeMap) as $code) {
+            $maxCid = max($maxCid, (int) hexdec($code));
+        }
+
+        return $maxCid;
     }
 
-    private function writeMapDataTo(PdfOutput $output): void
+    protected function writeStreamContents(PdfOutput $output): void
     {
         $codeMap = $this->glyphMap->getCodeMap();
 
@@ -63,33 +61,9 @@ final class CidToGidMap extends IndirectObject implements EncryptableIndirectObj
         }
     }
 
-    /**
-     * @param array<string, string> $codeMap
-     */
-    private function maxCid(array $codeMap): int
+    protected function streamLength(): int
     {
-        $maxCid = 0;
-
-        foreach (array_keys($codeMap) as $code) {
-            $maxCid = max($maxCid, (int) hexdec($code));
-        }
-
-        return $maxCid;
-    }
-
-    private function dictionary(int $length): DictionaryType
-    {
-        return new DictionaryType([
-            'Length' => $length,
-        ]);
-    }
-
-    private function mapData(): string
-    {
-        $buffer = new StringPdfOutput();
-        $this->writeMapDataTo($buffer);
-
-        return $buffer->contents();
+        return $this->mapLength();
     }
 
     private function mapLength(): int

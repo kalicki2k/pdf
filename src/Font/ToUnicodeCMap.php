@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
-use Kalle\Pdf\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 
-final class ToUnicodeCMap extends IndirectObject implements EncryptableIndirectObject
+final class ToUnicodeCMap extends StreamIndirectObject
 {
     public function __construct(
         int $id,
@@ -19,29 +17,22 @@ final class ToUnicodeCMap extends IndirectObject implements EncryptableIndirectO
         parent::__construct($id);
     }
 
-    protected function writeObject(PdfOutput $output): void
+    protected function streamDictionary(int $length): DictionaryType
     {
-        $cmap = $this->buildCMap();
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($cmap))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($cmap);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        return new DictionaryType([
+            'Length' => $length,
+        ]);
     }
 
-    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    protected function writeStreamContents(PdfOutput $output): void
     {
-        $encryptedCmap = $objectEncryptor->encryptString($this->id, $this->buildCMap());
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary(strlen($encryptedCmap))->render() . PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $output->write($encryptedCmap);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        $this->writeLines($output, $this->buildCMapLines());
     }
 
-    private function buildCMap(): string
+    /**
+     * @return list<string>
+     */
+    private function buildCMapLines(): array
     {
         $lines = [
             '/CIDInit /ProcSet findresource begin',
@@ -73,13 +64,6 @@ final class ToUnicodeCMap extends IndirectObject implements EncryptableIndirectO
         $lines[] = 'end';
         $lines[] = 'end';
 
-        return implode(PHP_EOL, $lines);
-    }
-
-    private function dictionary(int $length): DictionaryType
-    {
-        return new DictionaryType([
-            'Length' => $length,
-        ]);
+        return $lines;
     }
 }
