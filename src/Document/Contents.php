@@ -9,8 +9,8 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\CountingPdfOutput;
+use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\ReferenceType;
 
@@ -41,8 +41,7 @@ final class Contents extends IndirectObject implements EncryptableIndirectObject
 
     public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
     {
-        $encryptedContents = $objectEncryptor->encryptString($this->id, $this->renderedContents());
-        $length = strlen($encryptedContents);
+        $length = $objectEncryptor->encryptedByteLength($this->synchronizeLengthObject());
 
         if ($this->lengthObject !== null) {
             $this->lengthObject->setLength($length);
@@ -51,7 +50,12 @@ final class Contents extends IndirectObject implements EncryptableIndirectObject
         $output->write($this->id . ' 0 obj' . PHP_EOL);
         $output->write($this->dictionary($length)->render() . PHP_EOL);
         $output->write('stream' . PHP_EOL);
-        $output->write($encryptedContents);
+        $encryptedOutput = new EncryptingPdfOutput(
+            $output,
+            $objectEncryptor->createStreamEncryptor($this->id),
+        );
+        $this->writeContentsTo($encryptedOutput);
+        $encryptedOutput->finish();
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
@@ -104,17 +108,5 @@ final class Contents extends IndirectObject implements EncryptableIndirectObject
         }
 
         return $length;
-    }
-
-    private function renderedContents(): string
-    {
-        if ($this->elements === []) {
-            return '';
-        }
-
-        $buffer = new StringPdfOutput();
-        $this->writeContentsTo($buffer);
-
-        return $buffer->contents();
     }
 }

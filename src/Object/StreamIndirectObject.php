@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Object;
 
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Render\CountingPdfOutput;
+use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
@@ -23,12 +24,17 @@ abstract class StreamIndirectObject extends IndirectObject implements Encryptabl
 
     public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
     {
-        $encryptedContents = $objectEncryptor->encryptString($this->id, $this->streamContents());
+        $encryptedOutput = new EncryptingPdfOutput(
+            $output,
+            $objectEncryptor->createStreamEncryptor($this->id),
+        );
+        $encryptedLength = $objectEncryptor->encryptedByteLength($this->streamLength());
 
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->streamDictionary(strlen($encryptedContents))->render() . PHP_EOL);
+        $output->write($this->streamDictionary($encryptedLength)->render() . PHP_EOL);
         $output->write('stream' . PHP_EOL);
-        $output->write($encryptedContents);
+        $this->writeStreamContents($encryptedOutput);
+        $encryptedOutput->finish();
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 

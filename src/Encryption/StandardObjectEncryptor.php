@@ -30,19 +30,49 @@ final readonly class StandardObjectEncryptor
         return $this->encryptBytes($objectId, $value);
     }
 
-    private function encryptBytes(int $objectId, string $value): string
+    public function encryptedByteLength(int $plainLength): int
     {
         if (!$this->supportsObjectEncryption()) {
-            return $value;
+            return $plainLength;
         }
 
         return match ($this->profile->algorithm) {
             EncryptionAlgorithm::RC4_40,
-            EncryptionAlgorithm::RC4_128 => (new Rc4Cipher())->encrypt($this->deriveObjectKey($objectId), $value),
-            EncryptionAlgorithm::AES_128 => $this->encryptAes128($this->deriveObjectKey($objectId, addAesSalt: true), $value),
-            EncryptionAlgorithm::AES_256 => $this->encryptAes256($this->securityHandlerData->encryptionKey, $value),
+            EncryptionAlgorithm::RC4_128 => $plainLength,
+            EncryptionAlgorithm::AES_128,
+            EncryptionAlgorithm::AES_256 => 16 + $plainLength + (16 - ($plainLength % 16)),
             default => throw new InvalidArgumentException('Unsupported encryption algorithm for object encryption.'),
         };
+    }
+
+    public function createStreamEncryptor(int $objectId): StreamingByteEncryptor
+    {
+        if (!$this->supportsObjectEncryption()) {
+            return new PassthroughStreamingByteEncryptor();
+        }
+
+        return match ($this->profile->algorithm) {
+            EncryptionAlgorithm::RC4_40,
+            EncryptionAlgorithm::RC4_128 => new Rc4StreamingByteEncryptor($this->deriveObjectKey($objectId)),
+            EncryptionAlgorithm::AES_128 => new AesCbcStreamingByteEncryptor(
+                $this->deriveObjectKey($objectId, addAesSalt: true),
+                'aes-128-cbc',
+                'aes-128-ecb',
+            ),
+            EncryptionAlgorithm::AES_256 => new AesCbcStreamingByteEncryptor(
+                $this->securityHandlerData->encryptionKey,
+                'aes-256-cbc',
+                'aes-256-ecb',
+            ),
+            default => throw new InvalidArgumentException('Unsupported encryption algorithm for object encryption.'),
+        };
+    }
+
+    private function encryptBytes(int $objectId, string $value): string
+    {
+        $encryptor = $this->createStreamEncryptor($objectId);
+
+        return $encryptor->write($value) . $encryptor->finish();
     }
 
     private function deriveObjectKey(int $objectId, bool $addAesSalt = false): string
@@ -62,34 +92,6 @@ final readonly class StandardObjectEncryptor
             0,
             min(strlen($this->securityHandlerData->encryptionKey) + 5, 16),
         );
-    }
-
-    private function encryptAes128(string $key, string $value): string
-    {
-        return $this->encryptAesCbc($key, $value, 'aes-128-cbc');
-    }
-
-    private function encryptAes256(string $key, string $value): string
-    {
-        return $this->encryptAesCbc($key, $value, 'aes-256-cbc');
-    }
-
-    private function encryptAesCbc(string $key, string $value, string $cipher): string
-    {
-        $iv = random_bytes(16);
-        $encrypted = openssl_encrypt(
-            $value,
-            $cipher,
-            $key,
-            OPENSSL_RAW_DATA,
-            $iv,
-        );
-
-        if ($encrypted === false) {
-            throw new RuntimeException("Unable to encrypt PDF object payload with {$cipher}.");
-        }
-
-        return $iv . $encrypted;
     }
 
     public function encryptStreamObject(string $renderedObject, int $objectId): string

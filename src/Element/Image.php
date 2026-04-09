@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Element;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
@@ -98,10 +99,15 @@ class Image extends Element
         int $objectId,
         ?int $softMaskObjectId = null,
     ): void {
-        $encryptedData = $objectEncryptor->encryptString($objectId, $this->data->contents());
+        $encryptedOutput = new EncryptingPdfOutput(
+            $output,
+            $objectEncryptor->createStreamEncryptor($objectId),
+        );
+        $encryptedLength = $objectEncryptor->encryptedByteLength($this->data->length());
 
-        $output->write($this->header($softMaskObjectId, strlen($encryptedData)));
-        $output->write($encryptedData);
+        $output->write($this->header($softMaskObjectId, $encryptedLength));
+        $this->data->writeTo($encryptedOutput);
+        $encryptedOutput->finish();
         $output->write(PHP_EOL . 'endstream' . PHP_EOL);
     }
 
