@@ -21,7 +21,6 @@ use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\AtomicFilePdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\StreamPdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Structure\ParentTree;
@@ -742,7 +741,7 @@ final class Document
     {
         $this->applyRenderLifecycle();
 
-        (new PdfRenderer())->write((new DocumentSerializationPlanBuilder())->build($this), $output);
+        (new DocumentPdfWriter())->write($this, $output);
     }
 
     private function applyRenderLifecycle(): void
