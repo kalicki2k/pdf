@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Annotation;
 
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
@@ -38,6 +39,11 @@ final class TextAnnotation extends IndirectObject implements PageAnnotation, Str
     }
 
     public function render(): string
+    {
+        return $this->renderWithStringEncryptor();
+    }
+
+    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
     {
         $dictionary = new DictionaryType([
             'Type' => new NameType('Annot'),
@@ -75,7 +81,7 @@ final class TextAnnotation extends IndirectObject implements PageAnnotation, Str
         }
 
         return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
+            . $dictionary->render($encryptor) . PHP_EOL
             . 'endobj' . PHP_EOL;
     }
 

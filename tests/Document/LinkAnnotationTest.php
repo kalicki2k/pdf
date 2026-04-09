@@ -7,6 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\LinkAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\LinkTarget;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -104,5 +109,28 @@ final class LinkAnnotationTest extends TestCase
             $annotation->render(),
         );
         self::assertSame([], $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_can_render_contents_and_uri_targets_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $page = $document->addPage();
+        $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::externalUrl('https://example.com'));
+        $annotation->withContents('Example');
+
+        $rendered = $annotation->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        );
+
+        self::assertStringStartsWith("7 0 obj\n<< /Type /Annot /Subtype /Link", $rendered);
+        self::assertStringNotContainsString('(Example)', $rendered);
+        self::assertStringNotContainsString('(https://example.com)', $rendered);
     }
 }

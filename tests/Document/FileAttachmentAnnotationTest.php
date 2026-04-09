@@ -8,6 +8,11 @@ use Kalle\Pdf\Document\Annotation\FileAttachmentAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -59,5 +64,28 @@ final class FileAttachmentAnnotationTest extends TestCase
         $annotation->withStructParent(4);
 
         self::assertStringContainsString('/StructParent 4', $annotation->render());
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $page = $document->addPage();
+        $embeddedFile = new EmbeddedFileStream(7, 'hello');
+        $fileSpecification = new FileSpecification(8, 'demo.txt', $embeddedFile, 'Demo attachment');
+        $annotation = new FileAttachmentAnnotation(9, $page, 10, 20, 12, 14, $fileSpecification, 'Graph', 'Anhang');
+
+        $rendered = $annotation->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                9,
+            ),
+        );
+
+        self::assertStringStartsWith("9 0 obj\n<< /Type /Annot /Subtype /FileAttachment", $rendered);
+        self::assertStringNotContainsString('(Anhang)', $rendered);
     }
 }
