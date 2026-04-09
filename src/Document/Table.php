@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\Table\Rendering\CellRenderOptions;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableCaptionRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TablePendingGroupPaginator;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingRenderState;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
@@ -59,6 +60,7 @@ final class Table
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
     private readonly TableCaptionRenderer $captionRenderer;
+    private readonly TablePendingGroupPaginator $pendingGroupPaginator;
     private readonly TablePendingRenderState $pendingRenderState;
     private readonly TableSections $sections;
     private readonly ?StructElem $tableStructElem;
@@ -114,6 +116,7 @@ final class Table
             $this->textMetrics,
         );
         $this->captionRenderer = new TableCaptionRenderer();
+        $this->pendingGroupPaginator = new TablePendingGroupPaginator();
         $this->pendingRenderState = new TablePendingRenderState();
         $this->sections = new TableSections();
         $this->tableStructElem = $page->getDocument()->getProfile()->requiresTaggedPdf()
@@ -277,7 +280,11 @@ final class Table
 
             if (
                 !$deferredLeadingSplit
-                && $this->shouldDeferLeadingSplitToNextPage($remainingRows, $remainingRowHeights, $fittingRowCount)
+                && $this->pendingGroupPaginator->shouldDeferLeadingSplit(
+                    $remainingRows,
+                    $this->pendingRenderState->hasPendingRowspanCells(),
+                    $fittingRowCount,
+                )
             ) {
                 $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0));
                 $deferredLeadingSplit = true;
@@ -308,9 +315,6 @@ final class Table
      */
     private function resolvePendingGroupPageFit(array $rowHeights, bool $repeatHeaders): TableGroupPageFit
     {
-        $remainingCurrentPageHeight = $this->cursorY - $this->bottomMargin;
-        $headerRepeatHeight = 0.0;
-
         if ($repeatHeaders && $this->sections->hasRepeatingHeaderRows()) {
             $preparedHeaderRows = $this->prepareRowGroup(
                 $this->sections->repeatingHeaderRows(),
@@ -318,12 +322,13 @@ final class Table
                 false,
                 'Header rowspans must be completed within the repeated header rows.',
             );
-            $headerRepeatHeight = array_sum($this->rowGroupHeightResolver->resolve($preparedHeaderRows));
+            $this->rowGroupHeightResolver->resolve($preparedHeaderRows);
         }
 
-        return new TableGroupPageFit(
-            repeatHeaders: $repeatHeaders && $this->sections->hasRepeatingHeaderRows(),
-            fittingRowCountOnCurrentPage: $this->countFittingRows($rowHeights, $remainingCurrentPageHeight),
+        return $this->pendingGroupPaginator->resolvePageFit(
+            $rowHeights,
+            $this->cursorY - $this->bottomMargin,
+            $repeatHeaders && $this->sections->hasRepeatingHeaderRows(),
         );
     }
 
@@ -510,49 +515,6 @@ final class Table
         }
 
         return $continuations;
-    }
-
-    /**
-     * @param list<float> $rowHeights
-     */
-    private function countFittingRows(array $rowHeights, float $availableHeight): int
-    {
-        $usedHeight = 0.0;
-        $fittingRows = 0;
-
-        foreach ($rowHeights as $rowHeight) {
-            if (($usedHeight + $rowHeight) > $availableHeight) {
-                break;
-            }
-
-            $usedHeight += $rowHeight;
-            $fittingRows++;
-        }
-
-        return $fittingRows;
-    }
-
-    /**
-     * @param list<PreparedTableRow> $preparedRows
-     * @param list<float> $rowHeights
-     */
-    private function shouldDeferLeadingSplitToNextPage(array $preparedRows, array $rowHeights, int $fittingRowCount): bool
-    {
-        if ($this->pendingRenderState->hasPendingRowspanCells() || $fittingRowCount !== 1 || $preparedRows === []) {
-            return false;
-        }
-
-        $firstRow = $preparedRows[0];
-
-        foreach ($firstRow->cells as $preparedCell) {
-            if ($preparedCell->cell->rowspan <= 1) {
-                continue;
-            }
-
-            return true;
-        }
-
-        return false;
     }
 
     private function hasActiveRowspans(): bool
