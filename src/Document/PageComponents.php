@@ -10,6 +10,8 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
+use Kalle\Pdf\Document\Text\PageParagraphRenderer;
+use Kalle\Pdf\Document\Text\PageTextElementRenderer;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextBoxOptions;
 use Kalle\Pdf\Document\Text\TextOptions;
@@ -28,12 +30,21 @@ final class PageComponents
         private readonly Page $page,
         private readonly PageLinks $pageLinks,
         private readonly PageGraphics $pageGraphics,
+        private readonly PageFonts $pageFonts,
+        private readonly PageTextElementRenderer $pageTextElementRenderer,
+        private readonly PageParagraphRenderer $pageParagraphRenderer,
     ) {
     }
 
-    public static function forPage(Page $page, PageLinks $pageLinks, PageGraphics $pageGraphics): self
-    {
-        return new self($page, $pageLinks, $pageGraphics);
+    public static function forPage(
+        Page $page,
+        PageLinks $pageLinks,
+        PageGraphics $pageGraphics,
+        PageFonts $pageFonts,
+        PageTextElementRenderer $pageTextElementRenderer,
+        PageParagraphRenderer $pageParagraphRenderer,
+    ): self {
+        return new self($page, $pageLinks, $pageGraphics, $pageFonts, $pageTextElementRenderer, $pageParagraphRenderer);
     }
 
     public function addBadge(
@@ -56,7 +67,7 @@ final class PageComponents
             fillColor: Color::gray(0.9),
         );
 
-        $textWidth = $this->page->measureTextWidth($text, $baseFont, $size);
+        $textWidth = $this->pageFonts->measureTextWidth($text, $baseFont, $size);
         $badgeWidth = $textWidth + ($style->paddingHorizontal * 2);
         $badgeHeight = $size + ($style->paddingVertical * 2);
 
@@ -83,7 +94,7 @@ final class PageComponents
             );
         });
 
-        $this->page->addText(
+        $this->pageTextElementRenderer->render(
             $text,
             new Position(
                 $position->x + $style->paddingHorizontal,
@@ -168,7 +179,7 @@ final class PageComponents
         $bodyTopOffset = $style->paddingVertical;
 
         if ($title !== null && $title !== '') {
-            $this->page->addText(
+            $this->pageTextElementRenderer->render(
                 $title,
                 new Position(
                     $x + $style->paddingHorizontal,
@@ -195,7 +206,7 @@ final class PageComponents
                 throw new InvalidArgumentException('Panel height is too small for its content.');
             }
 
-            $this->page->addTextBox(
+            $this->pageParagraphRenderer->addTextBox(
                 text: $this->bindLinkToTextContent($body, $link),
                 box: new Rect(
                     $x + $style->paddingHorizontal,

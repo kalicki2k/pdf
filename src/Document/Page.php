@@ -845,7 +845,14 @@ final class Page extends IndirectObject
 
     private function pageComponents(): PageComponents
     {
-        return $this->pageComponents ??= PageComponents::forPage($this, $this->pageLinks(), $this->pageGraphics());
+        return $this->pageComponents ??= PageComponents::forPage(
+            $this,
+            $this->pageLinks(),
+            $this->pageGraphics(),
+            $this->pageFonts(),
+            $this->pageTextElementRenderer(),
+            $this->pageParagraphRenderer(),
+        );
     }
 
     private function pageAnnotations(): PageAnnotations
