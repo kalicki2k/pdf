@@ -3,6 +3,7 @@
 /vendor/
 /.phpunit.cache/
 /.php-cs-fixer.cache
+/.idea/
 output_*.pdf
 AGENTS.md
 AGENTS_test.md
