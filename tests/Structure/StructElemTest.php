@@ -7,6 +7,11 @@ namespace Kalle\Pdf\Tests\Structure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\LinkTarget;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructElem;
 use PHPUnit\Framework\Attributes\Test;
@@ -106,5 +111,25 @@ final class StructElemTest extends TestCase
             . "endobj\n",
             $structElem->render(),
         );
+    }
+
+    #[Test]
+    public function it_can_render_alt_text_with_an_explicit_object_string_encryptor(): void
+    {
+        $structElem = new StructElem(12, 'Figure');
+        $structElem->setAltText('Illustration');
+
+        $rendered = $structElem->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                12,
+            ),
+        );
+
+        self::assertStringStartsWith("12 0 obj\n<< /Type /StructElem /S /Figure", $rendered);
+        self::assertStringNotContainsString('(Illustration)', $rendered);
     }
 }

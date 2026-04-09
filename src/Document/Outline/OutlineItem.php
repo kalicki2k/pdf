@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Outline;
 
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
@@ -48,6 +49,11 @@ final class OutlineItem extends IndirectObject
 
     public function render(): string
     {
+        return $this->renderWithStringEncryptor();
+    }
+
+    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    {
         $dictionary = new DictionaryType([
             'Title' => new StringType($this->title),
             'Parent' => new ReferenceType($this->parent),
@@ -66,7 +72,7 @@ final class OutlineItem extends IndirectObject
         }
 
         return "$this->id 0 obj" . PHP_EOL
-            . $dictionary->render() . PHP_EOL
+            . $dictionary->render($encryptor) . PHP_EOL
             . 'endobj' . PHP_EOL;
     }
 }
