@@ -8,6 +8,11 @@ use Kalle\Pdf\Document\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\RadioButtonAppearanceStream;
 use Kalle\Pdf\Document\Form\RadioButtonField;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -68,5 +73,42 @@ final class RadioButtonFieldTest extends TestCase
         );
 
         self::assertStringContainsString('/TU (delivery)', $field->render());
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $page = $document->addPage();
+        $field = (new RadioButtonField(7, 'delivery'))->withTooltip('delivery');
+        $field->addWidget(
+            new RadioButtonWidgetAnnotation(
+                8,
+                $page,
+                $field,
+                10,
+                20,
+                12,
+                'standard',
+                true,
+                new RadioButtonAppearanceStream(9, 12, false),
+                new RadioButtonAppearanceStream(10, 12, true),
+            ),
+            'standard',
+            true,
+        );
+
+        $rendered = $field->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        );
+
+        self::assertStringStartsWith("7 0 obj\n<< /FT /Btn /T <", $rendered);
+        self::assertStringNotContainsString('(delivery)', $rendered);
     }
 }

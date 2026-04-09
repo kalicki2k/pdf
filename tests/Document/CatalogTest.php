@@ -12,6 +12,11 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
@@ -255,5 +260,35 @@ final class CatalogTest extends TestCase
 
         self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.json) 5 0 R] >> >>', $rendered);
         self::assertStringContainsString('/AF [5 0 R]', $rendered);
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4), language: 'de-DE');
+        $document->addAttachment('demo.txt', 'hello', 'Demo attachment', 'text/plain');
+        $document->registerFont('Helvetica');
+        $document->addPage()->addText(
+            'Hello',
+            new Position(10, 20),
+            'Helvetica',
+            12,
+            new TextOptions(structureTag: StructureTag::Paragraph),
+        );
+        $catalog = new Catalog(1, $document);
+
+        $rendered = $catalog->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                1,
+            ),
+        );
+
+        self::assertStringStartsWith("1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata ", $rendered);
+        self::assertStringNotContainsString('(de-DE)', $rendered);
+        self::assertStringNotContainsString('(demo.txt)', $rendered);
     }
 }

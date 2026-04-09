@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
@@ -20,6 +21,11 @@ final class Catalog extends IndirectObject
     }
 
     public function render(): string
+    {
+        return $this->renderWithStringEncryptor();
+    }
+
+    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
     {
         $metadata = $this->document->getXmpMetadata();
         $dictionary = new DictionaryType([
@@ -144,7 +150,7 @@ final class Catalog extends IndirectObject
         }
 
         return "$this->id 0 obj" . PHP_EOL
-            . $dictionary->render() . PHP_EOL
+            . $dictionary->render($encryptor) . PHP_EOL
             . 'endobj' . PHP_EOL;
     }
 }
