@@ -10,7 +10,6 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\PageFonts;
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
@@ -23,11 +22,13 @@ final class PageAnnotations
     /** @var list<IndirectObject&PageAnnotation> */
     private array $annotations = [];
     private ?PageAnnotationFactory $factory = null;
+    private readonly PageAnnotationFactoryContext $factoryContext;
 
     public function __construct(
         private readonly Page $page,
-        private readonly PageFonts $pageFonts,
+        PageFonts $pageFonts,
     ) {
+        $this->factoryContext = PageAnnotationFactoryContext::forPage($page, $pageFonts);
     }
 
     public function addLinkAnnotation(
@@ -279,11 +280,6 @@ final class PageAnnotations
 
     private function factory(): PageAnnotationFactory
     {
-        return $this->factory ??= new PageAnnotationFactory(
-            $this->page,
-            fn (): int => $this->page->getDocument()->getUniqObjectId(),
-            fn (string $baseFont): FontDefinition => $this->pageFonts->resolveFont($baseFont),
-            fn (FontDefinition $font): string => $this->pageFonts->registerFontResource($font),
-        );
+        return $this->factory ??= new PageAnnotationFactory($this->page, $this->factoryContext);
     }
 }

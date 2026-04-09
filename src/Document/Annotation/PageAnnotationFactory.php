@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Annotation;
 
-use Closure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
@@ -12,7 +11,6 @@ use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
@@ -24,16 +22,9 @@ final readonly class PageAnnotationFactory
 {
     private const MINIMUM_APPEARANCE_DIMENSION = 0.0001;
 
-    /**
-     * @param Closure(): int $nextObjectId
-     * @param Closure(string): FontDefinition $resolveFont
-     * @param Closure(FontDefinition): string $registerFontResource
-     */
     public function __construct(
-        private Page    $page,
-        private Closure $nextObjectId,
-        private Closure $resolveFont,
-        private Closure $registerFontResource,
+        private Page $page,
+        private PageAnnotationFactoryContext $context,
     ) {
     }
 
@@ -209,8 +200,8 @@ final readonly class PageAnnotationFactory
             throw new InvalidArgumentException('Free text annotation font size must be greater than zero.');
         }
 
-        $font = ($this->resolveFont)($baseFont);
-        $fontResourceName = ($this->registerFontResource)($font);
+        $font = $this->context->resolveFont($baseFont);
+        $fontResourceName = $this->context->registerFontResource($font);
 
         $annotation = new FreeTextAnnotation(
             $this->nextObjectId(),
@@ -677,7 +668,7 @@ final readonly class PageAnnotationFactory
 
     private function nextObjectId(): int
     {
-        return ($this->nextObjectId)();
+        return $this->context->nextObjectId();
     }
 
     private function createAppearanceStream(float $width, float $height): TextAnnotationAppearanceStream

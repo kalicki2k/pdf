@@ -12,6 +12,7 @@ use Kalle\Pdf\Document\Annotation\HighlightAnnotation;
 use Kalle\Pdf\Document\Annotation\InkAnnotation;
 use Kalle\Pdf\Document\Annotation\LineAnnotation;
 use Kalle\Pdf\Document\Annotation\PageAnnotationFactory;
+use Kalle\Pdf\Document\Annotation\PageAnnotationFactoryContext;
 use Kalle\Pdf\Document\Annotation\PolygonAnnotation;
 use Kalle\Pdf\Document\Annotation\PolyLineAnnotation;
 use Kalle\Pdf\Document\Annotation\PopupAnnotation;
@@ -496,25 +497,27 @@ final class PageAnnotationFactoryTest extends TestCase
 
         return new PageAnnotationFactory(
             $page,
-            static function () use (&$nextObjectId): int {
-                return $nextObjectId++;
-            },
-            static function (string $baseFont) use (&$resolvedFonts): StandardFont {
-                $resolvedFonts[] = $baseFont;
+            PageAnnotationFactoryContext::fromCallables(
+                static function () use (&$nextObjectId): int {
+                    return $nextObjectId++;
+                },
+                static function (string $baseFont) use (&$resolvedFonts): StandardFont {
+                    $resolvedFonts[] = $baseFont;
 
-                return new StandardFont(
-                    999,
-                    $baseFont,
-                    'Type1',
-                    'WinAnsiEncoding',
-                    1.4,
-                );
-            },
-            static function (FontDefinition $font) use (&$registeredFonts): string {
-                $registeredFonts[] = $font->getBaseFont();
+                    return new StandardFont(
+                        999,
+                        $baseFont,
+                        'Type1',
+                        'WinAnsiEncoding',
+                        1.4,
+                    );
+                },
+                static function (FontDefinition $font) use (&$registeredFonts): string {
+                    $registeredFonts[] = $font->getBaseFont();
 
-                return 'F1';
-            },
+                    return 'F1';
+                },
+            ),
         );
     }
 }
