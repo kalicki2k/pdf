@@ -23,15 +23,10 @@ final class PdfObjectSerializer
     {
         $offsets = [];
 
-        RenderContext::runWith(
-            $this->objectEncryptor,
-            function () use ($objects, $output, &$offsets): void {
-                foreach ($objects as $object) {
-                    $offsets[$object->id] = $output->offset();
-                    $this->writeObject($object, $output);
-                }
-            },
-        );
+        foreach ($objects as $object) {
+            $offsets[$object->id] = $output->offset();
+            $this->writeObject($object, $output);
+        }
 
         return new PdfObjectOffsets($offsets);
     }
@@ -40,30 +35,25 @@ final class PdfObjectSerializer
     {
         $objectEncryptor = $this->objectEncryptor;
 
-        RenderContext::runInObject(
-            $object->id,
-            static function () use ($object, $output, $objectEncryptor): void {
-                if (
-                    $objectEncryptor !== null
-                    && !$object instanceof EncryptDictionary
-                    && $object instanceof EncryptableIndirectObject
-                ) {
-                    $object->writeEncrypted($output, $objectEncryptor);
+        if (
+            $objectEncryptor !== null
+            && !$object instanceof EncryptDictionary
+            && $object instanceof EncryptableIndirectObject
+        ) {
+            $object->writeEncrypted($output, $objectEncryptor);
 
-                    return;
-                }
+            return;
+        }
 
-                if ($objectEncryptor !== null && !$object instanceof EncryptDictionary) {
-                    $object->writeWithStringEncryptor(
-                        $output,
-                        new ObjectStringEncryptor($objectEncryptor, $object->id),
-                    );
+        if ($objectEncryptor !== null && !$object instanceof EncryptDictionary) {
+            $object->writeWithStringEncryptor(
+                $output,
+                new ObjectStringEncryptor($objectEncryptor, $object->id),
+            );
 
-                    return;
-                }
+            return;
+        }
 
-                $object->write($output);
-            },
-        );
+        $object->write($output);
     }
 }

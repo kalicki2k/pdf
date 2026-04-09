@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Types;
 
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Render\RenderContext;
 use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 final class StringType implements Type
@@ -18,7 +17,7 @@ final class StringType implements Type
 
     public function render(?ObjectStringEncryptor $encryptor = null): string
     {
-        $encryptor ??= $this->encryptor ?? RenderContext::currentStringEncryptor();
+        $encryptor ??= $this->encryptor;
 
         if ($this->canBeEncodedAsWindows1252($this->value)) {
             $encoded = mb_convert_encoding($this->value, 'Windows-1252', 'UTF-8');

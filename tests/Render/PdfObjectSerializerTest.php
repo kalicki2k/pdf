@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\Info;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
@@ -186,6 +187,13 @@ final class PdfObjectSerializerTest extends TestCase
             public function render(): string
             {
                 return $this->id . " 0 obj\n<< /Value " . (new StringType('plain-text'))->render() . " >>\nendobj\n";
+            }
+
+            public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+            {
+                return $this->id . " 0 obj\n<< /Value "
+                    . (new StringType('plain-text'))->render($encryptor)
+                    . " >>\nendobj\n";
             }
         }], $output);
 
