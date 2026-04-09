@@ -22,6 +22,21 @@ Die Migration folgt weiterhin diesen Grundsaetzen:
 - keine neue God-Class erzeugen
 - bestehende Low-Level-Pakete nur dann verschieben, wenn ein echter Strukturgewinn entsteht
 
+## Status April 2026
+
+Diese Migrationsphase ist nach den ersten zwanzig Schritten in diesem Zustand:
+
+- die dokumentweite Orchestrierung liegt jetzt unter `Application/Document`
+- zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
+- `Feature/Action`, `Feature/Annotation`, `Feature/Form`, `Feature/OptionalContent`, `Feature/Outline`, `Feature/Table` und `Feature/Text` existieren bereits als Ziel-Namespaces
+- die Feature-Pakete sind im Moment noch bewusst ueber Namespace-Bridges an die bestehenden `Document`-Implementierungen gekoppelt
+
+Das ist absichtlich kein Endzustand.
+
+Die Bridges schaffen zuerst eine lesbare Zielstruktur und halten das Verhalten stabil.
+Erst danach werden die eigentlichen Implementierungen schrittweise aus `Document`
+in `Feature` und `Model` ueberfuehrt.
+
 ## Zielbild
 
 Die Public API bleibt im Wurzel-Namespace:
@@ -43,6 +58,7 @@ src/
     Page/
 
   Feature/
+    Action/
     Annotation/
     Form/
     OptionalContent/
@@ -114,6 +130,7 @@ Hier liegen fachlich zusammenhaengende Dokumentfeatures.
 
 Beispiele:
 
+- Actions
 - Annotationen
 - Formulare
 - Tabellen
