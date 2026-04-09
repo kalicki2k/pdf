@@ -176,6 +176,19 @@ final class Document
         return $this->language;
     }
 
+    /**
+     * @return list<Page>
+     */
+    public function getPages(): array
+    {
+        return array_values($this->pages->pages);
+    }
+
+    public function getDeferredRendering(): DocumentDeferredRendering
+    {
+        return $this->deferredRendering;
+    }
+
     public function getModificationDate(): DateTimeImmutable
     {
         return $this->modificationDate;
@@ -734,27 +747,6 @@ final class Document
 
     private function writeToOutput(PdfOutput $output): void
     {
-        $this->applyRenderLifecycle();
-
         (new DocumentPdfWriter())->write($this, $output);
-    }
-
-    private function applyRenderLifecycle(): void
-    {
-        $renderLifecycle = new DocumentRenderLifecycle();
-        $renderLifecycle->applyDeferredRenderFinalizers($this->deferredRendering);
-        $renderLifecycle->applyDeferredPageDecorators(
-            $this->deferredRendering,
-            array_values($this->pages->pages),
-            function (callable $renderer): void {
-                $this->renderInArtifactContext($renderer);
-            },
-        );
-        $renderLifecycle->assertRenderRequirements(
-            $this->profile,
-            $this->title,
-            $this->language,
-            $this->structTreeRoot !== null,
-        );
     }
 }
