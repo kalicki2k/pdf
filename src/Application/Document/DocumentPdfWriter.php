@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Application\Document;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\DocumentPdfSerializer;
 use Kalle\Pdf\Render\PdfOutput;
 
 class DocumentPdfWriter
