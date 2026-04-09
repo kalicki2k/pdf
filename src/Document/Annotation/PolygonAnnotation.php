@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document\Annotation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
@@ -45,6 +46,11 @@ final class PolygonAnnotation extends IndirectObject implements PageAnnotation, 
     }
 
     public function render(): string
+    {
+        return $this->renderWithStringEncryptor();
+    }
+
+    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
     {
         $xValues = array_map(static fn (array $vertex): float => $vertex[0], $this->vertices);
         $yValues = array_map(static fn (array $vertex): float => $vertex[1], $this->vertices);
@@ -111,7 +117,7 @@ final class PolygonAnnotation extends IndirectObject implements PageAnnotation, 
         }
 
         return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
+            . $dictionary->render($encryptor) . PHP_EOL
             . 'endobj' . PHP_EOL;
     }
 

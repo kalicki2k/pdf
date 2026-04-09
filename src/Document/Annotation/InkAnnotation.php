@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document\Annotation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
@@ -45,6 +46,11 @@ final class InkAnnotation extends IndirectObject implements PageAnnotation, Stru
     }
 
     public function render(): string
+    {
+        return $this->renderWithStringEncryptor();
+    }
+
+    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
     {
         $inkList = [];
 
@@ -97,7 +103,7 @@ final class InkAnnotation extends IndirectObject implements PageAnnotation, Stru
         }
 
         return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
+            . $dictionary->render($encryptor) . PHP_EOL
             . 'endobj' . PHP_EOL;
     }
 
