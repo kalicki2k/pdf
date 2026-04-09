@@ -19,18 +19,12 @@ final class PdfFileStructureSerializer
         $output->write($this->generateCrossReferenceTable($offsets));
     }
 
-    /**
-     * @param array{string, string} $documentId
-     */
     public function writeTrailer(
         PdfOutput $output,
-        int $size,
-        int $rootId,
-        ?int $infoId,
-        ?int $encryptId,
-        array $documentId,
+        PdfObjectOffsets $offsets,
+        PdfTrailer $trailer,
     ): void {
-        $output->write($this->generateTrailer($size, $rootId, $infoId, $encryptId, $documentId));
+        $output->write($this->generateTrailer($offsets, $trailer));
     }
 
     public function writeFooter(PdfOutput $output, int $startXref): void
@@ -59,25 +53,22 @@ final class PdfFileStructureSerializer
         return $xref;
     }
 
-    /**
-     * @param array{string, string} $documentId
-     */
-    private function generateTrailer(int $size, int $rootId, ?int $infoId, ?int $encryptId, array $documentId): string
+    private function generateTrailer(PdfObjectOffsets $offsets, PdfTrailer $trailer): string
     {
-        $trailer = 'trailer' . PHP_EOL
-            . "<< /Size $size" . PHP_EOL
-            . "/Root $rootId 0 R";
+        $trailerContents = 'trailer' . PHP_EOL
+            . "<< /Size {$offsets->size()}" . PHP_EOL
+            . "/Root {$trailer->rootObjectId} 0 R";
 
-        if ($infoId !== null) {
-            $trailer .= PHP_EOL . "/Info $infoId 0 R";
+        if ($trailer->infoObjectId !== null) {
+            $trailerContents .= PHP_EOL . "/Info {$trailer->infoObjectId} 0 R";
         }
 
-        if ($encryptId !== null) {
-            $trailer .= PHP_EOL . "/Encrypt $encryptId 0 R";
+        if ($trailer->encryptObjectId !== null) {
+            $trailerContents .= PHP_EOL . "/Encrypt {$trailer->encryptObjectId} 0 R";
         }
 
-        $trailer .= PHP_EOL . "/ID [<{$documentId[0]}> <{$documentId[1]}>]";
+        $trailerContents .= PHP_EOL . "/ID [<{$trailer->documentId[0]}> <{$trailer->documentId[1]}>]";
 
-        return $trailer . ' >>' . PHP_EOL;
+        return $trailerContents . ' >>' . PHP_EOL;
     }
 }

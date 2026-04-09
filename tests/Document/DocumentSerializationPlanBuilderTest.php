@@ -21,10 +21,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $plan = (new DocumentSerializationPlanBuilder())->build($document);
 
         self::assertSame(1.4, $plan->version);
-        self::assertSame(1, $plan->rootObjectId);
-        self::assertSame(3, $plan->infoObjectId);
-        self::assertNull($plan->encryptObjectId);
-        self::assertSame($document->getDocumentId(), $plan->documentId);
+        self::assertSame(1, $plan->trailer->rootObjectId);
+        self::assertSame(3, $plan->trailer->infoObjectId);
+        self::assertNull($plan->trailer->encryptObjectId);
+        self::assertSame($document->getDocumentId(), $plan->trailer->documentId);
         self::assertSame([1, 2, 3], array_slice(array_map(
             static fn (object $object): int => $object->id,
             $plan->objects,
@@ -38,7 +38,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $plan = (new DocumentSerializationPlanBuilder())->build($document);
 
-        self::assertNull($plan->infoObjectId);
+        self::assertNull($plan->trailer->infoObjectId);
     }
 
     #[Test]
@@ -49,7 +49,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $plan = (new DocumentSerializationPlanBuilder())->build($document);
 
-        self::assertNotNull($plan->encryptObjectId);
+        self::assertNotNull($plan->trailer->encryptObjectId);
         self::assertNotNull($plan->encryptionProfile);
         self::assertNotNull($plan->securityHandlerData);
     }

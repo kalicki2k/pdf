@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Render;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\PdfSerializationPlan;
+use Kalle\Pdf\Render\PdfTrailer;
 use Kalle\Pdf\Render\StreamPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -135,10 +136,12 @@ final class PdfRendererTest extends TestCase
                 $this->indirectObject(2, '<< /Type /Pages /Count 0 >>'),
                 $this->indirectObject(3, '<< /Producer (kalle/pdf) >>'),
             ],
-            rootObjectId: 1,
-            infoObjectId: $infoObjectId,
-            encryptObjectId: null,
-            documentId: ['0123456789abcdef0123456789abcdef', '0123456789abcdef0123456789abcdef'],
+            trailer: new PdfTrailer(
+                rootObjectId: 1,
+                infoObjectId: $infoObjectId,
+                encryptObjectId: null,
+                documentId: ['0123456789abcdef0123456789abcdef', '0123456789abcdef0123456789abcdef'],
+            ),
         );
     }
 

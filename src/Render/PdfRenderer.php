@@ -24,14 +24,7 @@ class PdfRenderer
         $startxref = $output->offset();
         $fileStructureSerializer->writeCrossReferenceTable($offsets, $output);
 
-        $fileStructureSerializer->writeTrailer(
-            $output,
-            $offsets->size(),
-            $plan->rootObjectId,
-            $plan->infoObjectId,
-            $plan->encryptObjectId,
-            $plan->documentId,
-        );
+        $fileStructureSerializer->writeTrailer($output, $offsets, $plan->trailer);
         $fileStructureSerializer->writeFooter($output, $startxref);
     }
 }

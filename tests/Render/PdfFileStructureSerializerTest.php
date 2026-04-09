@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Render\PdfFileStructureSerializer;
 use Kalle\Pdf\Render\PdfObjectOffsets;
+use Kalle\Pdf\Render\PdfTrailer;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -19,8 +20,10 @@ final class PdfFileStructureSerializerTest extends TestCase
         $output = new StringPdfOutput();
 
         $serializer->writeHeader(1.4, $output);
-        $serializer->writeCrossReferenceTable(new PdfObjectOffsets([1 => 15, 3 => 42]), $output);
-        $serializer->writeTrailer($output, 4, 1, 2, null, ['abc', 'def']);
+        $offsets = new PdfObjectOffsets([1 => 15, 3 => 42]);
+
+        $serializer->writeCrossReferenceTable($offsets, $output);
+        $serializer->writeTrailer($output, $offsets, new PdfTrailer(1, 2, null, ['abc', 'def']));
         $serializer->writeFooter($output, 99);
 
         $contents = $output->contents();
