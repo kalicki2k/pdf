@@ -60,8 +60,8 @@ final class PageTextElementRendererTest extends TestCase
         return new PageTextElementRenderer(
             $page,
             $pageFonts,
-            new PageLinks($page, new PageAnnotations($page, $pageFonts), 0),
-            new PageGraphics($page),
+            PageLinks::forPage($page, PageAnnotations::forPage($page, $pageFonts)),
+            PageGraphics::forPage($page),
             new PageMarkedContentIds(),
         );
     }

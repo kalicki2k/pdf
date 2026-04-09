@@ -23,6 +23,11 @@ final class PageLinks
     ) {
     }
 
+    public static function forPage(Page $page, PageAnnotations $pageAnnotations): self
+    {
+        return new self($page, $pageAnnotations, $page->structParentId);
+    }
+
     public function addLink(
         Rect $box,
         string $url,

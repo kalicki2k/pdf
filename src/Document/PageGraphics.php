@@ -23,6 +23,11 @@ final class PageGraphics
     {
     }
 
+    public static function forPage(Page $page): self
+    {
+        return new self($page);
+    }
+
     public function addPath(): PathBuilder
     {
         return new PathBuilder($this->page);

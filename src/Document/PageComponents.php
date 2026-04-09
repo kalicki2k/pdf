@@ -30,6 +30,11 @@ final class PageComponents
     ) {
     }
 
+    public static function forPage(Page $page, PageLinks $pageLinks): self
+    {
+        return new self($page, $pageLinks);
+    }
+
     public function addBadge(
         string $text,
         Position $position,

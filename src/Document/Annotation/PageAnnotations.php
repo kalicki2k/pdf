@@ -31,6 +31,11 @@ final class PageAnnotations
         $this->factoryContext = PageAnnotationFactoryContext::forPage($page, $pageFonts);
     }
 
+    public static function forPage(Page $page, PageFonts $pageFonts): self
+    {
+        return new self($page, $pageFonts);
+    }
+
     public function addLinkAnnotation(
         Rect $box,
         LinkTarget $target,

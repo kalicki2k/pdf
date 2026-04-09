@@ -861,17 +861,17 @@ final class Page extends IndirectObject
 
     private function pageGraphics(): PageGraphics
     {
-        return $this->pageGraphics ??= new PageGraphics($this);
+        return $this->pageGraphics ??= PageGraphics::forPage($this);
     }
 
     private function pageComponents(): PageComponents
     {
-        return $this->pageComponents ??= new PageComponents($this, $this->pageLinks());
+        return $this->pageComponents ??= PageComponents::forPage($this, $this->pageLinks());
     }
 
     private function pageAnnotations(): PageAnnotations
     {
-        return $this->pageAnnotations ??= new PageAnnotations($this, $this->pageFonts());
+        return $this->pageAnnotations ??= PageAnnotations::forPage($this, $this->pageFonts());
     }
 
     private function pageImages(): PageImages
@@ -881,20 +881,12 @@ final class Page extends IndirectObject
 
     private function pageLinks(): PageLinks
     {
-        return $this->pageLinks ??= new PageLinks(
-            $this,
-            $this->pageAnnotations(),
-            $this->structParentId,
-        );
+        return $this->pageLinks ??= PageLinks::forPage($this, $this->pageAnnotations());
     }
 
     private function pageForms(): PageForms
     {
-        return $this->pageForms ??= new PageForms(
-            $this,
-            $this->pageAnnotations(),
-            $this->pageFonts(),
-        );
+        return $this->pageForms ??= PageForms::forPage($this, $this->pageAnnotations(), $this->pageFonts());
     }
 
     private function pageTextRenderer(): PageTextRenderer

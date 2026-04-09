@@ -36,6 +36,11 @@ final class PageForms
         $this->factoryContext = FormWidgetFactoryContext::forPage($page, $pageFonts);
     }
 
+    public static function forPage(Page $page, PageAnnotations $pageAnnotations, PageFonts $pageFonts): self
+    {
+        return new self($page, $pageAnnotations, $pageFonts);
+    }
+
     public function addTextField(
         string $name,
         Rect $box,
