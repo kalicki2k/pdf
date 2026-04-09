@@ -12,6 +12,7 @@ use Kalle\Pdf\Document\Table\Layout\RowGroupHeightResolver;
 use Kalle\Pdf\Document\Table\Layout\RowPreparer;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableCaptionRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TableFooterRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupSegmentRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingGroupPaginator;
@@ -58,6 +59,7 @@ final class Table
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
     private readonly TableCaptionRenderer $captionRenderer;
+    private readonly TableFooterRenderer $footerRenderer;
     private readonly TableGroupRenderer $groupRenderer;
     private readonly TableGroupSegmentRenderer $groupSegmentRenderer;
     private readonly TablePendingGroupPaginator $pendingGroupPaginator;
@@ -117,6 +119,7 @@ final class Table
             $this->textMetrics,
         );
         $this->captionRenderer = new TableCaptionRenderer();
+        $this->footerRenderer = new TableFooterRenderer();
         $this->structElemFactory = new TableStructElemFactory();
         $this->groupRenderer = new TableGroupRenderer();
         $this->groupSegmentRenderer = new TableGroupSegmentRenderer(
@@ -461,19 +464,25 @@ final class Table
             'Footer rowspans must be completed within the footer rows.',
         );
         $footerHeights = $this->rowGroupHeightResolver->resolve($preparedFooterRows);
-        $footerHeight = array_sum($footerHeights);
-        $availableHeight = $this->cursorY - $this->bottomMargin;
-
-        if ($footerHeight > $availableHeight) {
-            $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
-            $this->cursorY = $this->page->getHeight() - $this->continuationTopMargin;
-
-            if ($footerHeight > ($this->cursorY - $this->bottomMargin)) {
-                throw new InvalidArgumentException('Table footer rows must fit on a fresh page.');
-            }
-        }
-
-        $this->renderPendingGroup($preparedFooterRows, $footerHeights);
+        $result = $this->footerRenderer->render(
+            $this->page,
+            $this->cursorY,
+            $preparedFooterRows,
+            $footerHeights,
+            $this->bottomMargin,
+            $this->continuationTopMargin,
+            $this->preparedCellRenderer,
+            $this->style,
+            $this->rowStyle,
+            $this->headerStyle,
+            $this->footerStyle,
+            $this->baseFont,
+            $this->fontSize,
+            $this->lineHeightFactor,
+            $this->tableStructElem,
+        );
+        $this->page = $result->page;
+        $this->cursorY = $result->cursorY;
         $this->sections->markFootersRendered();
     }
 
