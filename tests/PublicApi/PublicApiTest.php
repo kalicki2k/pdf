@@ -92,7 +92,7 @@ final class PublicApiTest extends TestCase
 
         self::assertSame('standard', $document->getProfile()->name());
         self::assertSame($expectedVersion, $document->getProfile()->version());
-        self::assertStringStartsWith($expectedHeader, $document->render());
+        self::assertStringStartsWith($expectedHeader, $this->writeDocument($document));
     }
 
     #[Test]
@@ -216,7 +216,7 @@ final class PublicApiTest extends TestCase
         $page = $document->addPage(PageSize::custom(100, 100));
         $page->addText('Hallo PDF/A', new Position(10, 50), 'NotoSans-Regular', 12);
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
@@ -230,7 +230,6 @@ final class PublicApiTest extends TestCase
     public function it_can_write_the_public_document_to_a_stream(): void
     {
         $document = new Document(profile: Profile::standard(1.4), title: 'Stream output');
-        $expectedOutput = $document->render();
         $stream = fopen('php://temp', 'w+b');
 
         self::assertNotFalse($stream);
@@ -242,11 +241,13 @@ final class PublicApiTest extends TestCase
 
         fclose($stream);
 
-        self::assertSame($expectedOutput, $writtenOutput);
+        self::assertNotFalse($writtenOutput);
+        self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $writtenOutput);
+        self::assertStringContainsString('/Title (Stream output)', $writtenOutput);
     }
 
     #[Test]
-    public function it_writes_the_same_bytes_to_a_stream_for_a_representative_public_document(): void
+    public function it_writes_the_same_bytes_to_a_stream_and_file_for_a_representative_public_document(): void
     {
         $document = new Document(
             profile: Profile::pdf15(),
@@ -283,11 +284,11 @@ final class PublicApiTest extends TestCase
             $page->addRectangle(new Rect(18, 730, 170, 90));
         });
         $cover->createTextFrame(new Position(20, 710), 220)
-            ->addParagraph('The writer output must stay byte-identical to the render() convenience path.', 'Helvetica', 11);
+            ->addParagraph('The writer output must stay byte-identical across the public stream and file APIs.', 'Helvetica', 11);
         $cover->createTable(new Position(20, 660), 220, [40, 100, 80])
             ->font('Helvetica', 10)
             ->addHeaderRow(['Key', 'Meaning', 'Value'])
-            ->addRow(['Mode', 'Serialization path', 'stream'])
+            ->addRow(['Mode', 'Serialization path', 'stream + file'])
             ->addRow(['Check', 'Comparison', 'byte-identical']);
 
         $details = $document->addPage(PageSize::A4());
@@ -296,19 +297,24 @@ final class PublicApiTest extends TestCase
         $details->addText('Second page', new Position(20, 800), 'Helvetica-Bold', 16);
         $details->addText('Attachment and optional content are included as well.', new Position(20, 780), 'Helvetica', 11);
 
-        $expectedOutput = $document->render();
         $stream = fopen('php://temp', 'w+b');
+        $targetPath = sys_get_temp_dir() . '/pdf-public-api-' . uniqid('', true) . '.pdf';
 
         self::assertNotFalse($stream);
 
         $document->writeToStream($stream);
         rewind($stream);
 
-        $writtenOutput = stream_get_contents($stream);
+        $streamOutput = stream_get_contents($stream);
 
         fclose($stream);
 
-        self::assertSame($expectedOutput, $writtenOutput);
+        $document->writeToFile($targetPath);
+        $fileOutput = file_get_contents($targetPath);
+
+        self::assertNotFalse($streamOutput);
+        self::assertNotFalse($fileOutput);
+        self::assertSame($streamOutput, $fileOutput);
     }
 
     #[Test]
@@ -316,13 +322,13 @@ final class PublicApiTest extends TestCase
     {
         $targetPath = sys_get_temp_dir() . '/pdf-public-api-' . uniqid('', true) . '.pdf';
         $document = new Document(profile: Profile::standard(1.4), title: 'File output');
-        $expectedOutput = $document->render();
         $document->writeToFile($targetPath);
 
         $writtenOutput = file_get_contents($targetPath);
 
         self::assertNotFalse($writtenOutput);
-        self::assertSame($expectedOutput, $writtenOutput);
+        self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $writtenOutput);
+        self::assertStringContainsString('/Title (File output)', $writtenOutput);
     }
 
     #[Test]
@@ -368,7 +374,7 @@ final class PublicApiTest extends TestCase
         $page = $document->addPage(PageSize::custom(100, 100));
         $page->addText('Hallo PDF/A', new Position(10, 50), 'NotoSans-Regular', 12);
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $rendered);
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
@@ -431,7 +437,7 @@ final class PublicApiTest extends TestCase
             new ImageOptions(structureTag: StructureTag::Figure, altText: 'Dekorative Testgrafik'),
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
@@ -494,7 +500,7 @@ final class PublicApiTest extends TestCase
             new ImageOptions(structureTag: StructureTag::Figure, altText: 'Dekorative Testgrafik'),
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
         self::assertStringContainsString('/ViewerPreferences << /DisplayDocTitle true >>', $rendered);
@@ -553,7 +559,7 @@ final class PublicApiTest extends TestCase
 
         $page->addTextField('field', new Rect(10, 20, 40, 15), 'value', self::pdfUaRegularFont(), 10, accessibleName: 'Customer name');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Widget', $rendered);
         self::assertStringContainsString('/TU (Customer name)', $rendered);
@@ -581,7 +587,7 @@ final class PublicApiTest extends TestCase
             ),
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/TU (Customer name)', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
@@ -602,7 +608,7 @@ final class PublicApiTest extends TestCase
 
         $page->addSignatureField('signature', new Rect(10, 20, 40, 15), 'Approval signature');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/FT /Sig', $rendered);
         self::assertStringContainsString('/TU (Approval signature)', $rendered);
@@ -624,7 +630,7 @@ final class PublicApiTest extends TestCase
 
         $page->addCheckbox('check', new Position(10, 20), 12, true, 'Accept terms');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/T (check)', $rendered);
         self::assertStringContainsString('/V /Yes', $rendered);
@@ -641,7 +647,7 @@ final class PublicApiTest extends TestCase
 
         $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), self::pdfUaRegularFont(), 12, accessibleName: 'Save form');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/T (save_form)', $rendered);
         self::assertStringContainsString('/CA (Speichern)', $rendered);
@@ -664,7 +670,7 @@ final class PublicApiTest extends TestCase
         $page->addRadioButton('delivery', 'standard', new Position(10, 20), 12, true, 'Standard delivery');
         $page->addRadioButton('delivery', 'express', new Position(30, 20), 12, false, 'Express delivery');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/T (delivery)', $rendered);
         self::assertStringContainsString('/TU (delivery)', $rendered);
@@ -692,7 +698,7 @@ final class PublicApiTest extends TestCase
             accessibleName: 'Country selection',
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/T (country)', $rendered);
         self::assertStringContainsString('/V (de)', $rendered);
@@ -718,7 +724,7 @@ final class PublicApiTest extends TestCase
             accessibleName: 'Topics selection',
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/T (topics)', $rendered);
         self::assertStringContainsString('/V (forms)', $rendered);
@@ -740,7 +746,7 @@ final class PublicApiTest extends TestCase
 
         $page->addLink(new Rect(10, 20, 30, 10), 'https://example.com', 'Read more');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Link', $rendered);
         self::assertStringContainsString('/Contents (Read more)', $rendered);
@@ -760,7 +766,7 @@ final class PublicApiTest extends TestCase
 
         $page->addTextAnnotation(new Rect(10, 20, 10, 10), 'Kommentar', 'QA');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Text', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -783,7 +789,7 @@ final class PublicApiTest extends TestCase
 
         $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Demo attachment');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /FileAttachment', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -820,7 +826,7 @@ final class PublicApiTest extends TestCase
             new TextOptions(link: LinkTarget::externalUrl('https://example.com')),
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Link', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -847,7 +853,7 @@ final class PublicApiTest extends TestCase
             ),
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
         self::assertStringContainsString('/Contents (Weiterlesen)', $rendered);
@@ -874,7 +880,7 @@ final class PublicApiTest extends TestCase
             LinkTarget::externalUrl('https://example.com'),
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
         self::assertGreaterThanOrEqual(2, substr_count($rendered, '/Type /StructElem /S /Link'));
@@ -907,7 +913,7 @@ final class PublicApiTest extends TestCase
         $page = $document->addPage(PageSize::custom(100, 100));
         $page->addText('Hallo PDF/A', new Position(10, 50), 'NotoSans-Regular', 12);
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
@@ -940,7 +946,7 @@ final class PublicApiTest extends TestCase
         $page->addText('Hallo Link', new Position(10, 50), 'NotoSans-Regular', 12);
         $page->addLink(new Rect(10, 45, 40, 10), 'https://example.com');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Link', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -985,7 +991,7 @@ final class PublicApiTest extends TestCase
         $popupParent = $this->internalPage($page)->getAnnotations()[0];
         $page->addPopupAnnotation($popupParent, new Rect(25, 20, 30, 20), true);
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Text', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -1017,7 +1023,7 @@ final class PublicApiTest extends TestCase
         $page->addText('Hallo Notiz', new Position(10, 50), 'NotoSans-Regular', 12);
         $page->addTextAnnotation(new Rect(10, 20, 10, 10), 'Kommentar', 'QA');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Text', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -1047,7 +1053,7 @@ final class PublicApiTest extends TestCase
         $page->addText('Hallo Freitext', new Position(10, 70), 'NotoSans-Regular', 12);
         $page->addFreeTextAnnotation(new Rect(10, 20, 40, 20), 'Kommentar', 'NotoSans-Regular', 10);
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /FreeText', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -1077,7 +1083,7 @@ final class PublicApiTest extends TestCase
         $page->addText('Hallo Highlight', new Position(10, 70), 'NotoSans-Regular', 12);
         $page->addHighlightAnnotation(new Rect(10, 65, 20, 8), Color::rgb(1, 1, 0), 'Markiert', 'QA');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Highlight', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -1107,7 +1113,7 @@ final class PublicApiTest extends TestCase
         $page->addText('Hallo Underline', new Position(10, 70), 'NotoSans-Regular', 12);
         $page->addUnderlineAnnotation(new Rect(10, 65, 20, 8), Color::rgb(0, 0, 1), 'Unterstrichen', 'QA');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Underline', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -1137,7 +1143,7 @@ final class PublicApiTest extends TestCase
         $page->addText('Hallo StrikeOut', new Position(10, 70), 'NotoSans-Regular', 12);
         $page->addStrikeOutAnnotation(new Rect(10, 65, 20, 8), Color::rgb(1, 0, 0), 'Durchgestrichen', 'QA');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /StrikeOut', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -1167,7 +1173,7 @@ final class PublicApiTest extends TestCase
         $page->addText('Hallo Squiggly', new Position(10, 70), 'NotoSans-Regular', 12);
         $page->addSquigglyAnnotation(new Rect(10, 65, 20, 8), Color::rgb(1, 0, 1), 'Wellig', 'QA');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Squiggly', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -1204,7 +1210,7 @@ final class PublicApiTest extends TestCase
         $page->addPolygonAnnotation([[170, 75], [180, 95], [190, 80]], Color::rgb(1, 0, 0), Color::gray(0.9), 'Polygon', 'QA');
         $page->addCaretAnnotation(new Rect(10, 55, 10, 10), 'Einfuegen', 'QA', 'P');
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('/Subtype /Stamp', $rendered);
         self::assertStringContainsString('/Subtype /Square', $rendered);
@@ -1267,7 +1273,7 @@ final class PublicApiTest extends TestCase
             new ImageOptions(structureTag: StructureTag::Figure, altText: 'Dekorative Testgrafik'),
         );
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $rendered);
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
@@ -1294,10 +1300,10 @@ final class PublicApiTest extends TestCase
         });
 
         $document->addPage(PageSize::custom(100, 100));
-        $document->render();
+        $this->writeDocument($document);
 
         self::assertInstanceOf(Page::class, $receivedPage);
-        self::assertStringContainsString('(Header 1) Tj', $document->render());
+        self::assertStringContainsString('(Header 1) Tj', $this->writeDocument($document));
     }
 
     #[Test]
@@ -1324,7 +1330,7 @@ final class PublicApiTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString('(2) Tj', $document->render());
+        self::assertStringContainsString('(2) Tj', $this->writeDocument($document));
         self::assertInstanceOf(Page::class, $tocPage);
     }
 
@@ -1369,7 +1375,7 @@ final class PublicApiTest extends TestCase
             ->addHeaderRow(['Name', 'Wert'])
             ->addRow(['A', '1']);
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('(Uebersicht) Tj', $rendered);
         self::assertStringContainsString('(Name) Tj', $rendered);
@@ -1443,7 +1449,7 @@ final class PublicApiTest extends TestCase
         );
 
         $attachment = $this->internalDocument($document)->getAttachment('data.json');
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertInstanceOf(FileSpecification::class, $attachment);
         self::assertStringContainsString('/AFRelationship /Data', $attachment->render());
@@ -1528,7 +1534,7 @@ final class PublicApiTest extends TestCase
         $document->addPage(PageSize::custom(100, 100));
         $document->addPage(PageSize::custom(100, 100));
 
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertStringContainsString('(Footer 1) Tj', $rendered);
         self::assertStringContainsString('(Footer 2) Tj', $rendered);
@@ -1561,7 +1567,7 @@ final class PublicApiTest extends TestCase
 
         $attachment = $document->getAttachment('guide.txt');
         $tocPage = $document->addTableOfContents();
-        $rendered = $document->render();
+        $rendered = $this->writeDocument($document);
 
         self::assertInstanceOf(\DateTimeImmutable::class, $creationDate);
         self::assertInstanceOf(\DateTimeImmutable::class, $modificationDate);
@@ -1853,5 +1859,27 @@ final class PublicApiTest extends TestCase
         $internalPage = $property->getValue($page);
 
         return $internalPage;
+    }
+
+    private function writeDocument(Document | InternalDocument $document): string
+    {
+        $stream = fopen('php://temp', 'w+b');
+
+        self::assertNotFalse($stream);
+
+        $writtenOutput = false;
+
+        try {
+            $document->writeToStream($stream);
+            rewind($stream);
+
+            $writtenOutput = stream_get_contents($stream);
+        } finally {
+            fclose($stream);
+        }
+
+        self::assertNotFalse($writtenOutput);
+
+        return $writtenOutput;
     }
 }

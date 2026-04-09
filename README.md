@@ -91,8 +91,6 @@ $page->createTextFrame(new Position(20, 760), 300)
 $document->writeToFile('hello.pdf');
 ```
 
-`render()` is still available when you explicitly need the PDF bytes in memory, but `writeToFile()` and `writeToStream()` avoid the extra in-memory copy.
-
 ## Examples
 
 Example scripts live in [examples](examples/):

@@ -283,14 +283,6 @@ final readonly class Document
     }
 
     /**
-     * Renders the complete PDF as a binary string.
-     */
-    public function render(): string
-    {
-        return $this->document->render();
-    }
-
-    /**
      * @param resource $stream
      */
     public function writeToStream($stream): void
