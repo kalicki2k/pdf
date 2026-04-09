@@ -6,11 +6,11 @@ namespace Kalle\Pdf;
 
 use DateTimeImmutable;
 use Kalle\Pdf\Document\AssociatedFileRelationship;
-use Kalle\Pdf\Document\Document as InternalDocument;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\OptionalContentGroup;
 use Kalle\Pdf\Document\Page as InternalPage;
+use Kalle\Pdf\Document\PdfDocument as InternalDocument;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Layout\PageSize;

@@ -30,7 +30,7 @@ use Random\RandomException;
 use RuntimeException;
 use Throwable;
 
-final class Document
+class Document
 {
     private const string PACKAGE_NAME = 'kalle/pdf';
     private int $objectId = 0;
