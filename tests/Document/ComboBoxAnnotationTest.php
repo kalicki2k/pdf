@@ -7,6 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\ComboBoxAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
@@ -174,5 +179,47 @@ final class ComboBoxAnnotationTest extends TestCase
 
         self::assertStringContainsString('/StructParent 1', $annotation->render());
         self::assertStringContainsString('/TU (Country selection)', $annotation->render());
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new ComboBoxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            12,
+            'country',
+            ['de' => 'Deutschland', 'at' => 'Oesterreich'],
+            'de',
+            'F1',
+            12,
+            defaultValue: 'at',
+            tooltip: 'Country selection',
+        );
+
+        $rendered = $annotation->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        );
+
+        self::assertStringStartsWith("7 0 obj\n<< /Type /Annot /Subtype /Widget", $rendered);
+        self::assertStringNotContainsString('(country)', $rendered);
+        self::assertStringNotContainsString('(de)', $rendered);
+        self::assertStringNotContainsString('(at)', $rendered);
+        self::assertStringNotContainsString('(Deutschland)', $rendered);
+        self::assertStringNotContainsString('(Oesterreich)', $rendered);
+        self::assertStringNotContainsString('(Country selection)', $rendered);
     }
 }

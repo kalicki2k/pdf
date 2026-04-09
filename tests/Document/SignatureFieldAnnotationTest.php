@@ -7,6 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\SignatureFieldAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldSignatureAppearanceStream;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -61,5 +66,28 @@ final class SignatureFieldAnnotationTest extends TestCase
 
         self::assertStringContainsString('/AP << /N 8 0 R >>', $annotation->render());
         self::assertCount(1, $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $page = $document->addPage();
+
+        $annotation = new SignatureFieldAnnotation(7, $page, 10, 20, 100, 30, 'approval_signature', 'Approval signature');
+
+        $rendered = $annotation->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        );
+
+        self::assertStringStartsWith("7 0 obj\n<< /Type /Annot /Subtype /Widget", $rendered);
+        self::assertStringNotContainsString('(approval_signature)', $rendered);
+        self::assertStringNotContainsString('(Approval signature)', $rendered);
     }
 }

@@ -19,6 +19,11 @@ use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldTextAppearanceStream;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Graphics\Color;
@@ -398,5 +403,42 @@ final class PushButtonAnnotationTest extends TestCase
 
         self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', $annotation->render());
         self::assertSame([], $annotation->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new PushButtonAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            16,
+            'save_form',
+            'Speichern',
+            'F1',
+            12,
+            tooltip: 'Save form',
+        );
+
+        $rendered = $annotation->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        );
+
+        self::assertStringStartsWith("7 0 obj\n<< /Type /Annot /Subtype /Widget", $rendered);
+        self::assertStringNotContainsString('(save_form)', $rendered);
+        self::assertStringNotContainsString('(Speichern)', $rendered);
+        self::assertStringNotContainsString('(Save form)', $rendered);
     }
 }

@@ -7,6 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\CheckboxAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\CheckboxAppearanceStream;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -92,5 +97,40 @@ final class CheckboxAnnotationTest extends TestCase
 
         self::assertStringContainsString('/StructParent 1', $annotation->render());
         self::assertStringContainsString('/TU (Accept terms)', $annotation->render());
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $page = $document->addPage();
+
+        $annotation = new CheckboxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            12,
+            12,
+            'accept_terms',
+            true,
+            new CheckboxAppearanceStream(8, 12, 12, false),
+            new CheckboxAppearanceStream(9, 12, 12, true),
+            'Accept terms',
+        );
+
+        $rendered = $annotation->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        );
+
+        self::assertStringStartsWith("7 0 obj\n<< /Type /Annot /Subtype /Widget", $rendered);
+        self::assertStringNotContainsString('(accept_terms)', $rendered);
+        self::assertStringNotContainsString('(Accept terms)', $rendered);
     }
 }

@@ -7,6 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\ListBoxAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
@@ -201,5 +206,48 @@ final class ListBoxAnnotationTest extends TestCase
 
         self::assertStringContainsString('/StructParent 1', $annotation->render());
         self::assertStringContainsString('/TU (Topics selection)', $annotation->render());
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new ListBoxAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            40,
+            'topics',
+            ['pdf' => 'PDF', 'forms' => 'Forms'],
+            ['forms'],
+            'F1',
+            12,
+            new FormFieldFlags(multiSelect: true),
+            defaultValue: ['pdf', 'forms'],
+            tooltip: 'Topics selection',
+        );
+
+        $rendered = $annotation->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        );
+
+        self::assertStringStartsWith("7 0 obj\n<< /Type /Annot /Subtype /Widget", $rendered);
+        self::assertStringNotContainsString('(topics)', $rendered);
+        self::assertStringNotContainsString('(pdf)', $rendered);
+        self::assertStringNotContainsString('(forms)', $rendered);
+        self::assertStringNotContainsString('(PDF)', $rendered);
+        self::assertStringNotContainsString('(Forms)', $rendered);
+        self::assertStringNotContainsString('(Topics selection)', $rendered);
     }
 }

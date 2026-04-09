@@ -7,6 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -98,5 +103,44 @@ final class TextFieldAnnotationTest extends TestCase
 
         self::assertStringContainsString('/StructParent 1', $annotation->render());
         self::assertStringContainsString('/TU (Customer name)', $annotation->render());
+    }
+
+    #[Test]
+    public function it_can_render_string_entries_with_an_explicit_object_string_encryptor(): void
+    {
+        $document = new Document(profile: \Kalle\Pdf\Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+
+        $annotation = new TextFieldAnnotation(
+            7,
+            $page,
+            10,
+            20,
+            80,
+            12,
+            'customer_name',
+            'Ada',
+            'F1',
+            12,
+            defaultValue: 'Grace',
+            tooltip: 'Customer name',
+        );
+
+        $rendered = $annotation->renderWithStringEncryptor(
+            new ObjectStringEncryptor(
+                new StandardObjectEncryptor(
+                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+                ),
+                7,
+            ),
+        );
+
+        self::assertStringStartsWith("7 0 obj\n<< /Type /Annot /Subtype /Widget", $rendered);
+        self::assertStringNotContainsString('(customer_name)', $rendered);
+        self::assertStringNotContainsString('(Ada)', $rendered);
+        self::assertStringNotContainsString('(Grace)', $rendered);
+        self::assertStringNotContainsString('(Customer name)', $rendered);
     }
 }
