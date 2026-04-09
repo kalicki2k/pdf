@@ -6,6 +6,10 @@ namespace Kalle\Pdf\Tests\Font;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Font\FontFileStream;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Render\StringPdfOutput;
@@ -140,5 +144,23 @@ final class FontFileStreamTest extends TestCase
         $stream->write($output);
 
         self::assertSame($stream->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_an_encrypted_font_stream_consistently(): void
+    {
+        $stream = new FontFileStream(20, BinaryData::fromString('FONTDATA'));
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $stream->writeEncrypted($output, $encryptor);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject($stream->render(), 20),
+            $output->contents(),
+        );
     }
 }

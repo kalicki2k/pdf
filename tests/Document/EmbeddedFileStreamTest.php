@@ -6,6 +6,10 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Document\EmbeddedFileStream;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -53,5 +57,23 @@ final class EmbeddedFileStreamTest extends TestCase
         $stream->write($output);
 
         self::assertSame($stream->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_an_encrypted_embedded_file_stream_consistently(): void
+    {
+        $stream = new EmbeddedFileStream(7, BinaryData::fromString('hello'), 'text/plain');
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $stream->writeEncrypted($output, $encryptor);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject($stream->render(), 7),
+            $output->contents(),
+        );
     }
 }

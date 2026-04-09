@@ -7,6 +7,10 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Document\IccProfileStream;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -83,5 +87,23 @@ final class IccProfileStreamTest extends TestCase
         $stream->write($output);
 
         self::assertSame($stream->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_an_encrypted_icc_profile_stream_consistently(): void
+    {
+        $stream = new IccProfileStream(11, BinaryData::fromString('ICC'), 4);
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $stream->writeEncrypted($output, $encryptor);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject($stream->render(), 11),
+            $output->contents(),
+        );
     }
 }
