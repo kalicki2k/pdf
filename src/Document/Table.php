@@ -267,6 +267,7 @@ final class Table
     {
         $pendingGroupRows = $this->pendingRenderState->rows();
         $rowHeights = $this->rowGroupHeightResolver->resolve($pendingGroupRows);
+        $pendingGroup = new PreparedTableRowGroup($pendingGroupRows, $rowHeights);
         $this->renderCaptionIfNeeded($rowHeights);
         $isBodyGroup = array_any(
             $pendingGroupRows,
@@ -274,17 +275,16 @@ final class Table
         );
         $repeatHeaders = $isBodyGroup && $this->sections->hasRepeatingHeaderRows();
         $repeatingHeaderGroup = $repeatHeaders ? $this->prepareRepeatingHeaderGroup() : null;
-        $remainingRows = $pendingGroupRows;
-        $remainingRowHeights = $rowHeights;
+        $remainingGroup = $pendingGroup;
         $deferredLeadingSplit = false;
 
-        while ($remainingRows !== []) {
-            $pageFit = $this->resolvePendingGroupPageFit($remainingRowHeights, $repeatingHeaderGroup);
+        while (!$remainingGroup->isEmpty()) {
+            $pageFit = $this->resolvePendingGroupPageFit($remainingGroup, $repeatingHeaderGroup);
             $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
 
             if ($fittingRowCount === 0) {
                 $this->moveToNextPageForPendingGroup($pageFit, $repeatingHeaderGroup);
-                $pageFit = $this->resolvePendingGroupPageFit($remainingRowHeights, null);
+                $pageFit = $this->resolvePendingGroupPageFit($remainingGroup, null);
                 $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
 
                 if ($fittingRowCount === 0) {
@@ -295,7 +295,7 @@ final class Table
             if (
                 !$deferredLeadingSplit
                 && $this->pendingGroupPaginator->shouldDeferLeadingSplit(
-                    $remainingRows,
+                    $remainingGroup->rows,
                     $this->pendingRenderState->hasPendingRowspanCells(),
                     $fittingRowCount,
                 )
@@ -305,34 +305,30 @@ final class Table
                 continue;
             }
 
-            if ($fittingRowCount >= count($remainingRows) && !$this->pendingRenderState->hasPendingRowspanCells()) {
-                $this->renderPendingGroup(new PreparedTableRowGroup($remainingRows, $remainingRowHeights));
+            if ($fittingRowCount >= $remainingGroup->count() && !$this->pendingRenderState->hasPendingRowspanCells()) {
+                $this->renderPendingGroup($remainingGroup);
                 break;
             }
 
-            $this->renderPendingGroupSegment($remainingRows, $remainingRowHeights, $fittingRowCount);
+            $this->renderPendingGroupSegment($remainingGroup, $fittingRowCount);
 
-            if ($fittingRowCount >= count($remainingRows)) {
+            if ($fittingRowCount >= $remainingGroup->count()) {
                 break;
             }
 
-            $remainingRows = array_slice($remainingRows, $fittingRowCount);
-            $remainingRowHeights = array_slice($remainingRowHeights, $fittingRowCount);
+            $remainingGroup = $remainingGroup->slice($fittingRowCount);
             $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0), $repeatingHeaderGroup);
         }
 
         $this->pendingRenderState->clear();
     }
 
-    /**
-     * @param list<float> $rowHeights
-     */
     private function resolvePendingGroupPageFit(
-        array $rowHeights,
+        PreparedTableRowGroup $rowGroup,
         ?PreparedTableRowGroup $repeatingHeaderGroup,
     ): TableGroupPageFit {
         return $this->pendingGroupPaginator->resolvePageFit(
-            $rowHeights,
+            $rowGroup->rowHeights,
             $this->cursorY - $this->bottomMargin,
             $repeatingHeaderGroup !== null,
         );
@@ -367,16 +363,12 @@ final class Table
         );
     }
 
-    /**
-     * @param list<PreparedTableRow> $preparedRows
-     * @param list<float> $rowHeights
-     */
-    private function renderPendingGroupSegment(array $preparedRows, array $rowHeights, int $rowCount): void
+    private function renderPendingGroupSegment(PreparedTableRowGroup $rowGroup, int $rowCount): void
     {
         $result = $this->groupSegmentRenderer->render(
             $this->page,
-            $preparedRows,
-            $rowHeights,
+            $rowGroup->rows,
+            $rowGroup->rowHeights,
             $rowCount,
             $this->cursorY,
             $this->pendingRenderState->pendingRowspanCells(),

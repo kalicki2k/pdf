@@ -18,4 +18,22 @@ final readonly class PreparedTableRowGroup
         public array $rowHeights,
     ) {
     }
+
+    public function isEmpty(): bool
+    {
+        return $this->rows === [];
+    }
+
+    public function count(): int
+    {
+        return count($this->rows);
+    }
+
+    public function slice(int $offset): self
+    {
+        return new self(
+            array_slice($this->rows, $offset),
+            array_slice($this->rowHeights, $offset),
+        );
+    }
 }
