@@ -688,8 +688,7 @@ final class PageTextRenderer
     private function textLayoutEngine(): TextLayoutEngine
     {
         return $this->textLayoutEngine ??= new TextLayoutEngine(
-            fn (string $baseFont): FontDefinition => $this->resolveFont($baseFont),
-            fn (string $baseFont, TextSegment $segment): string => $this->resolveStyledBaseFont($baseFont, $segment),
+            TextLayoutFontResolver::forPageFonts($this->pageFonts),
         );
     }
 }

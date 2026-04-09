@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Text\TextLayoutEngine;
+use Kalle\Pdf\Document\Text\TextLayoutFontResolver;
 use Kalle\Pdf\Document\Text\TextSegment;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
@@ -193,63 +194,65 @@ final class TextLayoutEngineTest extends TestCase
     private function createEngine(bool $supportsEllipsis = true): TextLayoutEngine
     {
         return new TextLayoutEngine(
-            resolveFont: static fn (string $fontName): FontDefinition => new class ($fontName, $supportsEllipsis) implements FontDefinition {
-                public function __construct(
-                    private readonly string $fontName,
-                    private readonly bool $supportsEllipsis,
-                ) {
-                }
+            TextLayoutFontResolver::fromCallables(
+                static fn (string $fontName): FontDefinition => new class ($fontName, $supportsEllipsis) implements FontDefinition {
+                    public function __construct(
+                        private readonly string $fontName,
+                        private readonly bool $supportsEllipsis,
+                    ) {
+                    }
 
-                public function getId(): int
-                {
-                    return 1;
-                }
+                    public function getId(): int
+                    {
+                        return 1;
+                    }
 
-                public function getBaseFont(): string
-                {
-                    return $this->fontName;
-                }
+                    public function getBaseFont(): string
+                    {
+                        return $this->fontName;
+                    }
 
-                public function supportsText(string $text): bool
-                {
-                    return $text !== '…' || $this->supportsEllipsis;
-                }
+                    public function supportsText(string $text): bool
+                    {
+                        return $text !== '…' || $this->supportsEllipsis;
+                    }
 
-                public function encodeText(string $text): string
-                {
-                    return $text;
-                }
+                    public function encodeText(string $text): string
+                    {
+                        return $text;
+                    }
 
-                public function measureTextWidth(string $text, float $size): float
-                {
-                    return $this->characterCount($text) * $size;
-                }
+                    public function measureTextWidth(string $text, float $size): float
+                    {
+                        return $this->characterCount($text) * $size;
+                    }
 
-                public function render(): string
-                {
-                    return '';
-                }
+                    public function render(): string
+                    {
+                        return '';
+                    }
 
-                private function characterCount(string $text): int
-                {
-                    return count(preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: []);
-                }
-            },
-            resolveStyledBaseFont: static function (string $baseFont, TextSegment $segment): string {
-                if ($segment->bold && $segment->italic) {
-                    return $baseFont . '-BoldItalic';
-                }
+                    private function characterCount(string $text): int
+                    {
+                        return count(preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: []);
+                    }
+                },
+                static function (string $baseFont, TextSegment $segment): string {
+                    if ($segment->bold && $segment->italic) {
+                        return $baseFont . '-BoldItalic';
+                    }
 
-                if ($segment->bold) {
-                    return $baseFont . '-Bold';
-                }
+                    if ($segment->bold) {
+                        return $baseFont . '-Bold';
+                    }
 
-                if ($segment->italic) {
-                    return $baseFont . '-Italic';
-                }
+                    if ($segment->italic) {
+                        return $baseFont . '-Italic';
+                    }
 
-                return $baseFont;
-            },
+                    return $baseFont;
+                },
+            ),
         );
     }
 }

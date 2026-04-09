@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Text;
 
-use Closure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Font\FontDefinition;
@@ -17,14 +16,8 @@ use Kalle\Pdf\Layout\TextOverflow;
  */
 final readonly class TextLayoutEngine
 {
-    /**
-     * @param Closure(string): FontDefinition $resolveFont
-     * @param Closure(string, TextSegment): string $resolveStyledBaseFont
-     */
-    public function __construct(
-        private Closure $resolveFont,
-        private Closure $resolveStyledBaseFont,
-    ) {
+    public function __construct(private TextLayoutFontResolver $fontResolver)
+    {
     }
 
     /**
@@ -551,13 +544,11 @@ final readonly class TextLayoutEngine
 
     private function resolveFont(string $baseFont): FontDefinition
     {
-        /** @var FontDefinition */
-        return ($this->resolveFont)($baseFont);
+        return $this->fontResolver->resolveFont($baseFont);
     }
 
     private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string
     {
-        /** @var string */
-        return ($this->resolveStyledBaseFont)($baseFont, $segment);
+        return $this->fontResolver->resolveStyledBaseFont($baseFont, $segment);
     }
 }
