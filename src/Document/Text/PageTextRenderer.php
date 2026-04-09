@@ -10,6 +10,9 @@ use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\PageFonts;
+use Kalle\Pdf\Document\PageGraphics;
+use Kalle\Pdf\Document\PageLinks;
 use Kalle\Pdf\Element\Text as TextElement;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
@@ -30,29 +33,14 @@ final class PageTextRenderer
     private ?TextLayoutEngine $textLayoutEngine = null;
 
     /**
-     * @param Closure(string): FontDefinition $resolveFont
-     * @param Closure(FontDefinition): string $registerFontResource
-     * @param Closure(FontDefinition): void $updateUnicodeFontWidths
-     * @param Closure(TextOptions): ?StructureTag $resolveMarkedContentStructureTag
-     * @param Closure(TextOptions, StructureTag, int, string): StructElem $attachTextToStructure
-     * @param Closure(string): ?string $resolveLinkAlternativeDescription
-     * @param Closure(Rect, LinkTarget, ?StructElem, ?string): void $addLinkTarget
-     * @param Closure(?Opacity): ?string $resolveGraphicsStateName
      * @param Closure(): int $nextMarkedContentId
-     * @param Closure(string, TextSegment): string $resolveStyledBaseFont
      */
     public function __construct(
         private readonly Page $page,
-        private readonly Closure $resolveFont,
-        private readonly Closure $registerFontResource,
-        private readonly Closure $updateUnicodeFontWidths,
-        private readonly Closure $resolveMarkedContentStructureTag,
-        private readonly Closure $attachTextToStructure,
-        private readonly Closure $resolveLinkAlternativeDescription,
-        private readonly Closure $addLinkTarget,
-        private readonly Closure $resolveGraphicsStateName,
+        private readonly PageFonts $pageFonts,
+        private readonly PageLinks $pageLinks,
+        private readonly PageGraphics $pageGraphics,
         private readonly Closure $nextMarkedContentId,
-        private readonly Closure $resolveStyledBaseFont,
     ) {
     }
 
@@ -365,32 +353,32 @@ final class PageTextRenderer
 
     private function resolveFont(string $baseFont): FontDefinition
     {
-        return ($this->resolveFont)($baseFont);
+        return $this->pageFonts->resolveFont($baseFont);
     }
 
     private function registerFontResource(FontDefinition $font): string
     {
-        return ($this->registerFontResource)($font);
+        return $this->pageFonts->registerFontResource($font);
     }
 
     private function updateUnicodeFontWidths(FontDefinition $font): void
     {
-        ($this->updateUnicodeFontWidths)($font);
+        $this->pageFonts->updateUnicodeFontWidths($font);
     }
 
     private function resolveMarkedContentStructureTag(TextOptions $options): ?StructureTag
     {
-        return ($this->resolveMarkedContentStructureTag)($options);
+        return $this->pageLinks->resolveMarkedContentStructureTag($options);
     }
 
     private function attachTextToStructure(TextOptions $options, StructureTag $tag, int $markedContentId, string $text): StructElem
     {
-        return ($this->attachTextToStructure)($options, $tag, $markedContentId, $text);
+        return $this->pageLinks->attachTextToStructure($options, $tag, $markedContentId, $text);
     }
 
     private function resolveLinkAlternativeDescription(string $text): ?string
     {
-        return ($this->resolveLinkAlternativeDescription)($text);
+        return $this->pageLinks->resolveLinkAlternativeDescription($text);
     }
 
     private function addLinkTarget(
@@ -399,12 +387,12 @@ final class PageTextRenderer
         ?StructElem $linkStructElem = null,
         ?string $alternativeDescription = null,
     ): void {
-        ($this->addLinkTarget)($box, $target, $linkStructElem, $alternativeDescription);
+        $this->pageLinks->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
     }
 
     private function resolveGraphicsStateName(?Opacity $opacity): ?string
     {
-        return ($this->resolveGraphicsStateName)($opacity);
+        return $this->pageGraphics->resolveGraphicsStateName($opacity);
     }
 
     private function nextMarkedContentId(): int
@@ -414,7 +402,7 @@ final class PageTextRenderer
 
     private function resolveStyledBaseFont(string $baseFont, TextSegment $segment): string
     {
-        return ($this->resolveStyledBaseFont)($baseFont, $segment);
+        return $this->pageFonts->resolveStyledBaseFont($baseFont, $segment);
     }
 
     private function encodeText(FontDefinition $font, string $baseFont, string $text): string

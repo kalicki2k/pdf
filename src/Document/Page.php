@@ -913,20 +913,10 @@ final class Page extends IndirectObject
     {
         return $this->pageTextRenderer ??= new PageTextRenderer(
             $this,
-            fn (string $baseFont): FontDefinition => $this->pageFonts()->resolveFont($baseFont),
-            fn (FontDefinition $font): string => $this->pageFonts()->registerFontResource($font),
-            function (FontDefinition $font): void {
-                $this->pageFonts()->updateUnicodeFontWidths($font);
-            },
-            fn (TextOptions $options): ?StructureTag => $this->pageLinks()->resolveMarkedContentStructureTag($options),
-            fn (TextOptions $options, StructureTag $tag, int $markedContentId, string $text): StructElem => $this->pageLinks()->attachTextToStructure($options, $tag, $markedContentId, $text),
-            fn (string $text): ?string => $this->pageLinks()->resolveLinkAlternativeDescription($text),
-            function (Rect $box, LinkTarget $target, ?StructElem $linkStructElem = null, ?string $alternativeDescription = null): void {
-                $this->pageLinks()->addLinkTarget($box, $target, $linkStructElem, $alternativeDescription);
-            },
-            fn (?Opacity $opacity): ?string => $this->resolveGraphicsStateName($opacity),
+            $this->pageFonts(),
+            $this->pageLinks(),
+            $this->pageGraphics(),
             fn (): int => $this->markedContentId++,
-            fn (string $baseFont, TextSegment $segment): string => $this->pageFonts()->resolveStyledBaseFont($baseFont, $segment),
         );
     }
 
