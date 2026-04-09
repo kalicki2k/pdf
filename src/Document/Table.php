@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\Table\Rendering\CellRenderOptions;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableCaptionRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TableGroupRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingGroupPaginator;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingRenderState;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
@@ -60,6 +61,7 @@ final class Table
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
     private readonly TableCaptionRenderer $captionRenderer;
+    private readonly TableGroupRenderer $groupRenderer;
     private readonly TablePendingGroupPaginator $pendingGroupPaginator;
     private readonly TablePendingRenderState $pendingRenderState;
     private readonly TableSections $sections;
@@ -116,6 +118,7 @@ final class Table
             $this->textMetrics,
         );
         $this->captionRenderer = new TableCaptionRenderer();
+        $this->groupRenderer = new TableGroupRenderer();
         $this->pendingGroupPaginator = new TablePendingGroupPaginator();
         $this->pendingRenderState = new TablePendingRenderState();
         $this->sections = new TableSections();
@@ -556,36 +559,23 @@ final class Table
      */
     private function renderPendingGroup(array $preparedRows, array $rowHeights): void
     {
-        $lineHeight = $this->fontSize * $this->lineHeightFactor;
-        $rowTopY = $this->cursorY;
-
-        foreach ($preparedRows as $rowIndex => $preparedRow) {
-            $rowStructElem = $this->createTableRowStructElem();
-
-            foreach ($preparedRow->cells as $preparedCell) {
-                $this->page = $this->preparedCellRenderer->render(
-                    $this->page,
-                    $preparedCell,
-                    $preparedRow->header,
-                    $rowIndex,
-                    $rowHeights,
-                    $rowTopY,
-                    $lineHeight,
-                    $this->style,
-                    $this->rowStyle,
-                    $this->headerStyle,
-                    $this->baseFont,
-                    $this->fontSize,
-                    $this->createTableCellStructElem($preparedCell->cell, $preparedRow->header, $rowStructElem),
-                    $this->footerStyle,
-                    $preparedRow->footer,
-                );
-            }
-
-            $rowTopY -= $rowHeights[$rowIndex];
-        }
-
-        $this->cursorY = $rowTopY;
+        $result = $this->groupRenderer->render(
+            $this->page,
+            $preparedRows,
+            $rowHeights,
+            $this->cursorY,
+            $this->preparedCellRenderer,
+            $this->style,
+            $this->rowStyle,
+            $this->headerStyle,
+            $this->footerStyle,
+            $this->baseFont,
+            $this->fontSize,
+            $this->lineHeightFactor,
+            $this->tableStructElem,
+        );
+        $this->page = $result->page;
+        $this->cursorY = $result->cursorY;
     }
 
     private function finalize(): void
