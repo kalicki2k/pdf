@@ -30,7 +30,7 @@ Diese Migrationsphase ist nach den ersten zwanzig Schritten in diesem Zustand:
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
 - `Feature/Action`, `Feature/Annotation`, `Feature/Form`, `Feature/OptionalContent`, `Feature/Outline`, `Feature/Table` und `Feature/Text` existieren bereits als Ziel-Namespaces
 - die eigentlichen Implementierungen fuer diese Feature-Familien liegen jetzt in `Feature`
-- die alten `Document`-Namespaces sind fuer diese Familien nur noch eine Rueckwaertskompatibilitaetsschicht
+- die alten `Document`-Feature-Pakete sind entfernt
 
 Das ist ein deutlich saubererer Zwischenstand, aber noch nicht das Ende der Migration.
 
