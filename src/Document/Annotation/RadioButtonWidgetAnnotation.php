@@ -7,13 +7,13 @@ namespace Kalle\Pdf\Document\Annotation;
 use Kalle\Pdf\Document\Form\RadioButtonAppearanceStream;
 use Kalle\Pdf\Document\Form\RadioButtonField;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class RadioButtonWidgetAnnotation extends IndirectObject implements PageAnnotation, StructParentAwareAnnotation
+final class RadioButtonWidgetAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {
     use HasStructParent;
 
@@ -32,7 +32,7 @@ final class RadioButtonWidgetAnnotation extends IndirectObject implements PageAn
         parent::__construct($id);
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $state = $this->checked ? $this->exportValue : 'Off';
 
@@ -59,9 +59,7 @@ final class RadioButtonWidgetAnnotation extends IndirectObject implements PageAn
 
         $this->addStructParentEntry($dictionary);
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $dictionary;
     }
 
     public function getRelatedObjects(): array

@@ -6,11 +6,12 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class Resources extends IndirectObject
+final class Resources extends DictionaryIndirectObject
 {
     /** @var array<int, FontDefinition&IndirectObject>  */
     private array $fonts = [];
@@ -106,7 +107,7 @@ final class Resources extends IndirectObject
         return $images;
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $fontReferences = [];
         $imageReferences = [];
@@ -145,8 +146,6 @@ final class Resources extends IndirectObject
             $dictionary->add('Properties', new DictionaryType($propertyReferences));
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $dictionary;
     }
 }

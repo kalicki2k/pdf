@@ -7,13 +7,14 @@ namespace Kalle\Pdf\Document\Form;
 use Kalle\Pdf\Document\Annotation\PageAnnotation;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class AcroForm extends IndirectObject
+final class AcroForm extends DictionaryIndirectObject
 {
     /** @var list<IndirectObject> */
     private array $fields = [];
@@ -58,7 +59,7 @@ final class AcroForm extends IndirectObject
         return $this->fields;
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $fonts = new DictionaryType([]);
 
@@ -80,9 +81,7 @@ final class AcroForm extends IndirectObject
             ]));
         }
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $dictionary;
     }
 
     public function getOrCreateRadioGroup(string $name, int $id): RadioButtonField

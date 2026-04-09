@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Annotation;
 
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
@@ -12,7 +13,7 @@ use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class PopupAnnotation extends IndirectObject implements PageAnnotation
+final class PopupAnnotation extends DictionaryIndirectObject implements PageAnnotation
 {
     public function __construct(
         int $id,
@@ -27,9 +28,9 @@ final class PopupAnnotation extends IndirectObject implements PageAnnotation
         parent::__construct($id);
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
-        $dictionary = new DictionaryType([
+        return new DictionaryType([
             'Type' => new NameType('Annot'),
             'Subtype' => new NameType('Popup'),
             'Rect' => new ArrayType([
@@ -42,10 +43,6 @@ final class PopupAnnotation extends IndirectObject implements PageAnnotation
             'Parent' => new ReferenceType($this->parent),
             'Open' => new BooleanType($this->open),
         ]);
-
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
     }
 
     public function getRelatedObjects(): array

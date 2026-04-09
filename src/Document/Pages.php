@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class Pages extends IndirectObject
+final class Pages extends DictionaryIndirectObject
 {
     /** @var Page[] */
     public array $pages = [];
@@ -52,7 +52,7 @@ final class Pages extends IndirectObject
         $this->pages = $remainingPages;
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $kidReferences = [];
 
@@ -68,8 +68,6 @@ final class Pages extends IndirectObject
             'Count' => count($this->pages),
         ]);
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $dictionary;
     }
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Outline;
 
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class OutlineRoot extends IndirectObject
+final class OutlineRoot extends DictionaryIndirectObject
 {
     /** @var list<OutlineItem> */
     private array $items = [];
@@ -34,7 +34,7 @@ final class OutlineRoot extends IndirectObject
         return $this->items;
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $dictionary = new DictionaryType([
             'Type' => new NameType('Outlines'),
@@ -52,8 +52,6 @@ final class OutlineRoot extends IndirectObject
             $dictionary->add('Last', new ReferenceType($lastItem));
         }
 
-        return "$this->id 0 obj" . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $dictionary;
     }
 }

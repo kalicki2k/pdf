@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Structure;
 
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class ParentTree extends IndirectObject
+final class ParentTree extends DictionaryIndirectObject
 {
     /** @var array<int, list<StructElem>> */
     private array $markedContentStructElems = [];
@@ -31,7 +31,7 @@ final class ParentTree extends IndirectObject
         return $this;
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $nums = [];
         $entries = [];
@@ -58,8 +58,6 @@ final class ParentTree extends IndirectObject
             'Nums' => new ArrayType($nums),
         ]);
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $dictionary;
     }
 }
