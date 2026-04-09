@@ -1,0 +1,68 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Tests\Document;
+
+use Kalle\Pdf\Document\Annotation\PageAnnotations;
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Document\PageFonts;
+use Kalle\Pdf\Document\PageGraphics;
+use Kalle\Pdf\Document\PageLinks;
+use Kalle\Pdf\Document\PageMarkedContentIds;
+use Kalle\Pdf\Document\Text\PageTextElementRenderer;
+use Kalle\Pdf\Document\Text\TextOptions;
+use Kalle\Pdf\Profile;
+use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+
+final class PageTextElementRendererTest extends TestCase
+{
+    use CreatesPdfUaTestDocument;
+
+    #[Test]
+    public function it_marks_text_as_artifact_inside_artifact_context(): void
+    {
+        $document = $this->createPdfUaTestDocument();
+        $page = $document->addPage();
+        $renderer = $this->createRenderer($page);
+
+        $page->renderDecorativeContent(static function () use ($renderer): void {
+            $renderer->render('Layered', new Position(10, 20), self::pdfUaRegularFont(), 12);
+        });
+
+        self::assertStringContainsString('/Artifact BMC', $page->contents->render());
+    }
+
+    #[Test]
+    public function it_ignores_trailing_spaces_for_underlines(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+        $document->registerFont('Helvetica');
+        $page = $document->addPage();
+        $renderer = $this->createRenderer($page);
+
+        $renderer->render('example ', new Position(10, 50), 'Helvetica', 10, new TextOptions(underline: true));
+
+        $expectedUnderlineWidth = $page->measureTextWidth('example', 'Helvetica', 10);
+        $formattedWidth = rtrim(rtrim(sprintf('%.6F', $expectedUnderlineWidth), '0'), '.');
+
+        self::assertStringContainsString('(example ) Tj', $page->contents->render());
+        self::assertStringContainsString("10 48.2 $formattedWidth 0.5 re f", $page->contents->render());
+    }
+
+    private function createRenderer(\Kalle\Pdf\Document\Page $page): PageTextElementRenderer
+    {
+        $pageFonts = PageFonts::forPage($page);
+
+        return new PageTextElementRenderer(
+            $page,
+            $pageFonts,
+            new PageLinks($page, new PageAnnotations($page, $pageFonts), 0),
+            new PageGraphics($page),
+            new PageMarkedContentIds(),
+        );
+    }
+}
