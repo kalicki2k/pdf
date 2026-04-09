@@ -40,7 +40,7 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Structure\StructElem;
 
-final class Table
+class Table
 {
     private const DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
     private const DEFAULT_CONTINUATION_TOP_MARGIN = 40.0;

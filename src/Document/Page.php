@@ -248,7 +248,7 @@ class Page extends IndirectObject
         array $columnWidths,
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): Table {
-        return new Table($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin);
+        return new PdfTable($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin);
     }
 
     public function addPath(): PathBuilder
