@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Application\Document\DocumentProfileGuard as ApplicationDocumentProfileGuard;
 use Kalle\Pdf\Document\Form\AcroForm;
 
 /**
@@ -18,7 +19,7 @@ final readonly class DocumentAcroFormManager
 
     public function ensureAcroForm(): AcroForm
     {
-        (new DocumentProfileGuard($this->document))->assertAllowsForms();
+        (new ApplicationDocumentProfileGuard($this->document))->assertAllowsForms();
 
         return $this->ensureFormInstance();
     }

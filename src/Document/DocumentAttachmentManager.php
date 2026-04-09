@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Application\Document\DocumentProfileGuard as ApplicationDocumentProfileGuard;
 use RuntimeException;
 
 /**
@@ -97,7 +98,7 @@ final class DocumentAttachmentManager
             : null;
 
         if ($afRelationship !== null) {
-            (new DocumentProfileGuard($this->document))->assertAllowsAssociatedFiles();
+            (new ApplicationDocumentProfileGuard($this->document))->assertAllowsAssociatedFiles();
         }
 
         $embeddedFile = new EmbeddedFileStream($this->document->getUniqObjectId(), $contents, $mimeType);
