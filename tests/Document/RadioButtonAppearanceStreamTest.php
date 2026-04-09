@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Form\RadioButtonAppearanceStream;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -18,5 +23,23 @@ final class RadioButtonAppearanceStreamTest extends TestCase
         self::assertStringContainsString('/Subtype /Form', $stream->render());
         self::assertStringContainsString('6 11.5 m', $stream->render());
         self::assertStringContainsString("\nf\nendstream", $stream->render());
+    }
+
+    #[Test]
+    public function it_writes_an_encrypted_radio_button_appearance_stream_consistently(): void
+    {
+        $stream = new RadioButtonAppearanceStream(7, 12, true);
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $stream->writeEncrypted($output, $encryptor);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject($stream->render(), 7),
+            $output->contents(),
+        );
     }
 }
