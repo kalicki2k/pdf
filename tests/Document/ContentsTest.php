@@ -30,49 +30,57 @@ final class ContentsTest extends TestCase
     public function it_renders_an_empty_stream_with_zero_length(): void
     {
         $contents = new Contents(8);
+        $contents->prepareLengthObject(9);
 
         self::assertSame(
-            "8 0 obj\n<< /Length 0 >>\nstream\n\nendstream\nendobj\n",
+            "8 0 obj\n<< /Length 9 0 R >>\nstream\n\nendstream\nendobj\n",
             $contents->render(),
         );
+        self::assertSame("9 0 obj\n0\nendobj\n", $contents->getLengthObject()->render());
     }
 
     #[Test]
     public function it_renders_all_elements_in_order_and_sets_the_stream_length(): void
     {
         $contents = new Contents(12);
+        $contents->prepareLengthObject(13);
         $contents->addElement($this->createElement('BT'));
         $contents->addElement($this->createElement('ET'));
 
         self::assertSame(
-            "12 0 obj\n<< /Length 5 >>\nstream\nBT\nET\nendstream\nendobj\n",
+            "12 0 obj\n<< /Length 13 0 R >>\nstream\nBT\nET\nendstream\nendobj\n",
             $contents->render(),
         );
+        self::assertSame("13 0 obj\n5\nendobj\n", $contents->getLengthObject()->render());
     }
 
     #[Test]
     public function it_can_append_more_elements_after_the_stream_was_rendered_once(): void
     {
         $contents = new Contents(12);
+        $contents->prepareLengthObject(13);
         $contents->addElement($this->createElement('BT'));
 
         self::assertSame(
-            "12 0 obj\n<< /Length 2 >>\nstream\nBT\nendstream\nendobj\n",
+            "12 0 obj\n<< /Length 13 0 R >>\nstream\nBT\nendstream\nendobj\n",
             $contents->render(),
         );
+        self::assertSame("13 0 obj\n2\nendobj\n", $contents->getLengthObject()->render());
 
         $contents->addElement($this->createElement('ET'));
 
         self::assertSame(
-            "12 0 obj\n<< /Length 5 >>\nstream\nBT\nET\nendstream\nendobj\n",
+            "12 0 obj\n<< /Length 13 0 R >>\nstream\nBT\nET\nendstream\nendobj\n",
             $contents->render(),
         );
+        self::assertSame("13 0 obj\n5\nendobj\n", $contents->getLengthObject()->render());
     }
 
     #[Test]
     public function it_writes_an_empty_stream_with_zero_length(): void
     {
         $contents = new Contents(8);
+        $contents->prepareLengthObject(9);
         $output = new StringPdfOutput();
 
         $contents->write($output);
@@ -84,6 +92,7 @@ final class ContentsTest extends TestCase
     public function it_writes_all_elements_in_order_and_keeps_the_stream_reusable(): void
     {
         $contents = new Contents(12);
+        $contents->prepareLengthObject(13);
         $contents->addElement($this->createElement('BT'));
         $contents->addElement($this->createElement('ET'));
         $output = new StringPdfOutput();
@@ -92,7 +101,7 @@ final class ContentsTest extends TestCase
 
         self::assertSame($contents->render(), $output->contents());
         self::assertSame(
-            "12 0 obj\n<< /Length 5 >>\nstream\nBT\nET\nendstream\nendobj\n",
+            "12 0 obj\n<< /Length 13 0 R >>\nstream\nBT\nET\nendstream\nendobj\n",
             $contents->render(),
         );
     }
@@ -101,6 +110,7 @@ final class ContentsTest extends TestCase
     public function it_writes_encrypted_contents_with_the_same_result_as_the_legacy_stream_encryption_path(): void
     {
         $contents = new Contents(12);
+        $contents->prepareLengthObject(13);
         $contents->addElement($this->createElement('BT'));
         $contents->addElement($this->createElement('ET'));
         $encryptor = new StandardObjectEncryptor(

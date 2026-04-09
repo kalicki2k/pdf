@@ -47,6 +47,7 @@ final readonly class DocumentObjectCollector
         $this->collectFontObjects($objects);
         $this->collectPageObjects($objects);
         $this->collectMetadataObjects($objects, $xmpMetadata);
+        $this->collectPageContentLengthObjects($objects);
 
         return $objects;
     }
@@ -206,6 +207,16 @@ final readonly class DocumentObjectCollector
     {
         if ($xmpMetadata !== null) {
             $objects[] = $xmpMetadata;
+        }
+    }
+
+    /**
+     * @param list<IndirectObject> $objects
+     */
+    private function collectPageContentLengthObjects(array &$objects): void
+    {
+        foreach ($this->document->pages->pages as $page) {
+            $objects[] = $page->prepareContentsLengthObject();
         }
     }
 }

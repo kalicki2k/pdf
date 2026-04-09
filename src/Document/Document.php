@@ -248,7 +248,14 @@ final class Document
 
         $height ??= 841.8897637795277;
 
-        return $this->pages->addPage(++$this->objectId, ++$this->objectId, ++$this->objectId, $this->getNextStructParentId(), $width, $height);
+        return $this->pages->addPage(
+            ++$this->objectId,
+            ++$this->objectId,
+            ++$this->objectId,
+            $this->getNextStructParentId(),
+            $width,
+            $height,
+        );
     }
 
     public function getNextStructParentId(): int

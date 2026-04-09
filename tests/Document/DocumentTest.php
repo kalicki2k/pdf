@@ -600,7 +600,7 @@ final class DocumentTest extends TestCase
         self::assertSame(5, $page->id);
         self::assertSame(6, $page->getContents()->id);
         self::assertSame(7, $page->getResources()->id);
-        self::assertSame([1, 2, 3, 4, 5, 7, 6, 8], array_map(
+        self::assertSame([1, 2, 3, 4, 5, 7, 6, 8, 9], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -1560,7 +1560,7 @@ final class DocumentTest extends TestCase
             ->addOutline('Erste Seite', $firstPage)
             ->addOutline('Zweite Seite', $secondPage);
 
-        self::assertSame([1, 2, 10, 11, 12, 3, 4, 6, 5, 7, 9, 8, 13], array_map(
+        self::assertSame([1, 2, 10, 11, 12, 3, 4, 6, 5, 7, 9, 8, 13, 14, 15], array_map(
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
@@ -1914,8 +1914,8 @@ final class DocumentTest extends TestCase
         self::assertStringNotContainsString('/Lang (de-DE)', $output);
         self::assertStringNotContainsString('/MarkInfo', $output);
         self::assertStringNotContainsString('/StructTreeRoot', $output);
-        self::assertStringContainsString("xref\n0 9\n", $output);
-        self::assertStringContainsString("trailer\n<< /Size 9\n/Root 1 0 R\n/Info 3 0 R\n/ID [<", $output);
+        self::assertStringContainsString("xref\n0 10\n", $output);
+        self::assertStringContainsString("trailer\n<< /Size 10\n/Root 1 0 R\n/Info 3 0 R\n/ID [<", $output);
         self::assertMatchesRegularExpression("/\\/CreationDate \\(D:\\d{14}[+-]\\d{2}'\\d{2}'\\)/", $output);
         self::assertMatchesRegularExpression("/\\/ModDate \\(D:\\d{14}[+-]\\d{2}'\\d{2}'\\)/", $output);
         self::assertStringEndsWith('%%EOF', $output);

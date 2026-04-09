@@ -28,7 +28,15 @@ final class Pages extends DictionaryIndirectObject
         float $width,
         float $height,
     ): Page {
-        $page = new Page($pageId, $contentsId, $resourcesId, $structParentId, $width, $height, $this->document);
+        $page = new Page(
+            $pageId,
+            $contentsId,
+            $resourcesId,
+            $structParentId,
+            $width,
+            $height,
+            $this->document,
+        );
         $this->pages[] = $page;
 
         return $page;

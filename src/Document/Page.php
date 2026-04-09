@@ -847,6 +847,17 @@ final class Page extends IndirectObject
         return $this->contents;
     }
 
+    public function prepareContentsLengthObject(): StreamLengthObject
+    {
+        $lengthObject = $this->contents->getLengthObject();
+
+        if ($lengthObject !== null) {
+            return $lengthObject;
+        }
+
+        return $this->contents->prepareLengthObject($this->document->getUniqObjectId());
+    }
+
     public function addContentElement(Element $element): void
     {
         $this->contents->addElement($element);
