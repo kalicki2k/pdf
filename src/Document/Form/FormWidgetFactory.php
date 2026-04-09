@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Form;
 
-use Closure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Annotation\CheckboxAnnotation;
@@ -28,24 +27,9 @@ use Kalle\Pdf\Object\IndirectObject;
  */
 final readonly class FormWidgetFactory
 {
-    /**
-     * @param Closure(): int $nextObjectId
-     * @param Closure(): AcroForm $ensureTextFieldAcroForm
-     * @param Closure(): AcroForm $ensurePushButtonAcroForm
-     * @param Closure(): AcroForm $ensureRadioButtonAcroForm
-     * @param Closure(): AcroForm $ensureComboBoxAcroForm
-     * @param Closure(): AcroForm $ensureListBoxAcroForm
-     * @param Closure(string): FontDefinition $resolveFont
-     */
     public function __construct(
-        private Page    $page,
-        private Closure $nextObjectId,
-        private Closure $ensureTextFieldAcroForm,
-        private Closure $ensurePushButtonAcroForm,
-        private Closure $ensureRadioButtonAcroForm,
-        private Closure $ensureComboBoxAcroForm,
-        private Closure $ensureListBoxAcroForm,
-        private Closure $resolveFont,
+        private Page $page,
+        private FormWidgetFactoryContext $context,
     ) {
     }
 
@@ -393,32 +377,32 @@ final readonly class FormWidgetFactory
 
     private function nextObjectId(): int
     {
-        return ($this->nextObjectId)();
+        return $this->context->nextObjectId();
     }
 
     private function ensureTextFieldAcroForm(): AcroForm
     {
-        return ($this->ensureTextFieldAcroForm)();
+        return $this->context->ensureTextFieldAcroForm();
     }
 
     private function ensurePushButtonAcroForm(): AcroForm
     {
-        return ($this->ensurePushButtonAcroForm)();
+        return $this->context->ensurePushButtonAcroForm();
     }
 
     private function ensureRadioButtonAcroForm(): AcroForm
     {
-        return ($this->ensureRadioButtonAcroForm)();
+        return $this->context->ensureRadioButtonAcroForm();
     }
 
     private function ensureComboBoxAcroForm(): AcroForm
     {
-        return ($this->ensureComboBoxAcroForm)();
+        return $this->context->ensureComboBoxAcroForm();
     }
 
     private function ensureListBoxAcroForm(): AcroForm
     {
-        return ($this->ensureListBoxAcroForm)();
+        return $this->context->ensureListBoxAcroForm();
     }
 
     /**
@@ -426,7 +410,7 @@ final readonly class FormWidgetFactory
      */
     private function prepareTextFieldAcroFormFont(string $baseFont): array
     {
-        $font = ($this->resolveFont)($baseFont);
+        $font = $this->context->resolveFont($baseFont);
 
         if (!$font instanceof IndirectObject) {
             throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
@@ -440,7 +424,7 @@ final readonly class FormWidgetFactory
      */
     private function preparePushButtonAcroFormFont(string $baseFont): array
     {
-        $font = ($this->resolveFont)($baseFont);
+        $font = $this->context->resolveFont($baseFont);
 
         if (!$font instanceof IndirectObject) {
             throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
@@ -454,7 +438,7 @@ final readonly class FormWidgetFactory
      */
     private function prepareComboBoxAcroFormFont(string $baseFont): array
     {
-        $font = ($this->resolveFont)($baseFont);
+        $font = $this->context->resolveFont($baseFont);
 
         if (!$font instanceof IndirectObject) {
             throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
@@ -468,7 +452,7 @@ final readonly class FormWidgetFactory
      */
     private function prepareListBoxAcroFormFont(string $baseFont): array
     {
-        $font = ($this->resolveFont)($baseFont);
+        $font = $this->context->resolveFont($baseFont);
 
         if (!$font instanceof IndirectObject) {
             throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');

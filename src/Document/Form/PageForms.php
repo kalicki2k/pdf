@@ -15,7 +15,6 @@ use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextOptions;
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
@@ -26,12 +25,14 @@ use Kalle\Pdf\Structure\StructElem;
 final class PageForms
 {
     private ?FormWidgetFactory $factory = null;
+    private readonly FormWidgetFactoryContext $factoryContext;
 
     public function __construct(
         private readonly Page $page,
         private readonly PageAnnotations $pageAnnotations,
-        private readonly PageFonts $pageFonts,
+        PageFonts $pageFonts,
     ) {
+        $this->factoryContext = FormWidgetFactoryContext::forPage($page, $pageFonts);
     }
 
     public function addTextField(
@@ -237,16 +238,7 @@ final class PageForms
 
     private function formWidgetFactory(): FormWidgetFactory
     {
-        return $this->factory ??= new FormWidgetFactory(
-            $this->page,
-            fn (): int => $this->page->getDocument()->getUniqObjectId(),
-            fn (): AcroForm => $this->page->getDocument()->ensureTextFieldAcroForm(),
-            fn (): AcroForm => $this->page->getDocument()->ensurePushButtonAcroForm(),
-            fn (): AcroForm => $this->page->getDocument()->ensureRadioButtonAcroForm(),
-            fn (): AcroForm => $this->page->getDocument()->ensureComboBoxAcroForm(),
-            fn (): AcroForm => $this->page->getDocument()->ensureListBoxAcroForm(),
-            fn (string $baseFont): FontDefinition => $this->pageFonts->resolveFont($baseFont),
-        );
+        return $this->factory ??= new FormWidgetFactory($this->page, $this->factoryContext);
     }
 
     private function bindAccessibleFormField(

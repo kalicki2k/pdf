@@ -17,6 +17,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\FormFieldFlags;
 use Kalle\Pdf\Document\Form\FormWidgetFactory;
+use Kalle\Pdf\Document\Form\FormWidgetFactoryContext;
 use Kalle\Pdf\Document\Form\RadioButtonField;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
@@ -323,35 +324,37 @@ final class FormWidgetFactoryTest extends TestCase
 
         return new FormWidgetFactory(
             $page,
-            static function () use (&$nextObjectId): int {
-                return $nextObjectId++;
-            },
-            static function () use (&$acroForm): AcroForm {
-                return $acroForm;
-            },
-            static function () use (&$acroForm): AcroForm {
-                return $acroForm;
-            },
-            static function () use (&$acroForm): AcroForm {
-                return $acroForm;
-            },
-            static function () use (&$acroForm): AcroForm {
-                return $acroForm;
-            },
-            static function () use (&$acroForm): AcroForm {
-                return $acroForm;
-            },
-            static function (string $baseFont) use (&$resolvedFonts): StandardFont {
-                $resolvedFonts[] = $baseFont;
+            FormWidgetFactoryContext::fromCallables(
+                static function () use (&$nextObjectId): int {
+                    return $nextObjectId++;
+                },
+                static function () use (&$acroForm): AcroForm {
+                    return $acroForm;
+                },
+                static function () use (&$acroForm): AcroForm {
+                    return $acroForm;
+                },
+                static function () use (&$acroForm): AcroForm {
+                    return $acroForm;
+                },
+                static function () use (&$acroForm): AcroForm {
+                    return $acroForm;
+                },
+                static function () use (&$acroForm): AcroForm {
+                    return $acroForm;
+                },
+                static function (string $baseFont) use (&$resolvedFonts): StandardFont {
+                    $resolvedFonts[] = $baseFont;
 
-                return new StandardFont(
-                    999,
-                    $baseFont,
-                    'Type1',
-                    'WinAnsiEncoding',
-                    1.4,
-                );
-            },
+                    return new StandardFont(
+                        999,
+                        $baseFont,
+                        'Type1',
+                        'WinAnsiEncoding',
+                        1.4,
+                    );
+                },
+            ),
         );
     }
 }
