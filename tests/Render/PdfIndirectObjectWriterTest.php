@@ -10,6 +10,7 @@ use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfIndirectObjectWriter;
+use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -46,6 +47,27 @@ final class PdfIndirectObjectWriterTest extends TestCase
         self::assertStringContainsString("7 0 obj\n<< /Length 20 >>\nstream\n", $output->contents());
         self::assertStringContainsString("\nendstream\nendobj\n", $output->contents());
         self::assertStringNotContainsString('plain-stream-payload', $output->contents());
+    }
+
+    #[Test]
+    public function it_uses_the_object_write_path_when_available(): void
+    {
+        $writer = new PdfIndirectObjectWriter();
+        $output = new StringPdfOutput();
+
+        $writer->write(new class (9) extends IndirectObject {
+            public function write(PdfOutput $output): void
+            {
+                $output->write("9 0 obj\nwritten\nendobj\n");
+            }
+
+            public function render(): string
+            {
+                throw new \LogicException('render() should not be called');
+            }
+        }, $output);
+
+        self::assertSame("9 0 obj\nwritten\nendobj\n", $output->contents());
     }
 
     private function indirectObject(int $id, string $body): IndirectObject

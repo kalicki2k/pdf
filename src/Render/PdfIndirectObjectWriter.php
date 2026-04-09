@@ -21,10 +21,16 @@ final class PdfIndirectObjectWriter
 
     private function render(IndirectObject $object): string
     {
-        $renderedObject = RenderContext::runInObject(
+        $buffer = new StringPdfOutput();
+
+        RenderContext::runInObject(
             $object->id,
-            static fn (): string => $object->render(),
+            static function () use ($object, $buffer): void {
+                $object->write($buffer);
+            },
         );
+
+        $renderedObject = $buffer->contents();
 
         if (
             $this->objectEncryptor !== null
