@@ -6,11 +6,11 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
-use Kalle\Pdf\Document\IccProfileStream;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Model\Document\IccProfileStream;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

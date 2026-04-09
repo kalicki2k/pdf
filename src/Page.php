@@ -7,12 +7,9 @@ namespace Kalle\Pdf;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\Page as BaseInternalPage;
+use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Document\PathBuilder;
-use Kalle\Pdf\Document\PdfPage as InternalPage;
-use Kalle\Pdf\Document\PdfTable as InternalTable;
 use Kalle\Pdf\Document\Style\BadgeStyle;
 use Kalle\Pdf\Document\Style\CalloutStyle;
 use Kalle\Pdf\Document\Style\PanelStyle;
@@ -24,7 +21,7 @@ use Kalle\Pdf\Feature\Annotation\PageAnnotation;
 use Kalle\Pdf\Feature\Form\FormFieldFlags;
 use Kalle\Pdf\Feature\Form\FormFieldLabel;
 use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
-use Kalle\Pdf\Feature\Table as BaseInternalTable;
+use Kalle\Pdf\Feature\Table as InternalTable;
 use Kalle\Pdf\Feature\Text\FlowTextOptions;
 use Kalle\Pdf\Feature\Text\TextBoxOptions;
 use Kalle\Pdf\Feature\Text\TextOptions;
@@ -33,8 +30,8 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Model\Page\ImageOptions;
 use Kalle\Pdf\Object\IndirectObject;
-use LogicException;
 
 /**
  * Public facade for page operations exposed to library users.
@@ -73,8 +70,8 @@ final readonly class Page
     {
         $this->page->layer(
             $layer,
-            static function (BaseInternalPage $page) use ($renderer): void {
-                $renderer(new self(self::requireInternalPage($page)));
+            static function (InternalPage $page) use ($renderer): void {
+                $renderer(new self($page));
             },
             $visibleByDefault,
         );
@@ -172,7 +169,7 @@ final readonly class Page
      */
     public function createTable(Position $position, float $width, array $columnWidths, float $bottomMargin = 20.0): Table
     {
-        return new Table(self::requireInternalTable($this->page->createTable($position, $width, $columnWidths, $bottomMargin)));
+        return new Table($this->page->createTable($position, $width, $columnWidths, $bottomMargin));
     }
 
     /**
@@ -562,21 +559,4 @@ final readonly class Page
         return $this->page->measureTextWidth($text, $baseFont, $size);
     }
 
-    private static function requireInternalPage(BaseInternalPage $page): InternalPage
-    {
-        if (!$page instanceof InternalPage) {
-            throw new LogicException('Expected the public API to operate on PdfPage instances.');
-        }
-
-        return $page;
-    }
-
-    private static function requireInternalTable(BaseInternalTable $table): InternalTable
-    {
-        if (!$table instanceof InternalTable) {
-            throw new LogicException('Expected the public API to operate on PdfTable instances.');
-        }
-
-        return $table;
-    }
 }

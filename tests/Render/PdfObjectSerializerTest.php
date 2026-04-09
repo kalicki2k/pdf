@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\EncryptDictionary;
-use Kalle\Pdf\Document\Info;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Model\Document\EncryptDictionary;
+use Kalle\Pdf\Model\Document\Info;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Profile;

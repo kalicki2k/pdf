@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Model\Page\ImageObject;
 
 /**
  * @internal Creates page image XObjects, including recursive soft-mask objects.

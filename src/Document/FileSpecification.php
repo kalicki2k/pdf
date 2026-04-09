@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Model\Document\EmbeddedFileStream;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;

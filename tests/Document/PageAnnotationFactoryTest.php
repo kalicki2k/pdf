@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
@@ -33,6 +32,7 @@ use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
+use Kalle\Pdf\Model\Document\EmbeddedFileStream;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

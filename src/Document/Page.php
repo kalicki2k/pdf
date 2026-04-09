@@ -34,6 +34,10 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Model\Page\Contents;
+use Kalle\Pdf\Model\Page\ImageObject;
+use Kalle\Pdf\Model\Page\ImageOptions;
+use Kalle\Pdf\Model\Page\Resources;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Structure\StructElem;
@@ -250,7 +254,7 @@ class Page extends IndirectObject
         array $columnWidths,
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): Table {
-        return new PdfTable($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin);
+        return new Table($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin);
     }
 
     public function addPath(): PathBuilder

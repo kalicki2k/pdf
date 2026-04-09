@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Application\Document;
 
 use IteratorAggregate;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\IccProfileStream;
-use Kalle\Pdf\Document\XmpMetadata;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Model\Document\IccProfileStream;
+use Kalle\Pdf\Model\Document\XmpMetadata;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
 use Traversable;

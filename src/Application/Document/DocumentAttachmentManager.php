@@ -8,8 +8,8 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\EmbeddedFileStream;
 use Kalle\Pdf\Document\FileSpecification;
+use Kalle\Pdf\Model\Document\EmbeddedFileStream;
 use RuntimeException;
 
 /**

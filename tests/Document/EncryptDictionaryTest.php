@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\EncryptDictionary;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\EncryptionVersionResolver;
+use Kalle\Pdf\Model\Document\EncryptDictionary;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

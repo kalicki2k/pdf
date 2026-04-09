@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\XmpMetadata;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Model\Document\XmpMetadata;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;

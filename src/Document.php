@@ -6,17 +6,15 @@ namespace Kalle\Pdf;
 
 use DateTimeImmutable;
 use Kalle\Pdf\Document\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Document as InternalDocument;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Page as BaseInternalPage;
-use Kalle\Pdf\Document\PdfDocument as InternalDocument;
-use Kalle\Pdf\Document\PdfPage as InternalPage;
+use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
-use LogicException;
 
 /**
  * Public entry point for building and rendering PDF documents.
@@ -201,7 +199,7 @@ final readonly class Document
     public function addHeader(callable $renderer): self
     {
         $this->document->addHeader(
-            function (BaseInternalPage $page, int $pageNumber) use ($renderer): void {
+            function (InternalPage $page, int $pageNumber) use ($renderer): void {
                 $renderer($this->toPublicPage($page), $pageNumber);
             },
         );
@@ -217,7 +215,7 @@ final readonly class Document
     public function addFooter(callable $renderer): self
     {
         $this->document->addFooter(
-            function (BaseInternalPage $page, int $pageNumber) use ($renderer): void {
+            function (InternalPage $page, int $pageNumber) use ($renderer): void {
                 $renderer($this->toPublicPage($page), $pageNumber);
             },
         );
@@ -304,17 +302,8 @@ final readonly class Document
         return PageRegistry::resolve($page);
     }
 
-    private function toPublicPage(BaseInternalPage $page): Page
+    private function toPublicPage(InternalPage $page): Page
     {
-        return new Page($this->requireInternalPage($page));
-    }
-
-    private function requireInternalPage(BaseInternalPage $page): InternalPage
-    {
-        if (!$page instanceof InternalPage) {
-            throw new LogicException('Expected the public API to operate on PdfPage instances.');
-        }
-
-        return $page;
+        return new Page($page);
     }
 }

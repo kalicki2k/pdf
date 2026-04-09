@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Application\Document\DocumentFontFactory;
 use Kalle\Pdf\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\DocumentFontFactory;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;

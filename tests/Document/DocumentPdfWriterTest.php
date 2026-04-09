@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Application\Document\DocumentPdfWriter;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\DocumentPdfWriter;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Profile;

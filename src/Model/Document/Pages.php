@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Model\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\PdfPage;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
@@ -32,7 +31,7 @@ class Pages extends DictionaryIndirectObject
         float $width,
         float $height,
     ): Page {
-        $page = new PdfPage(
+        $page = new Page(
             $pageId,
             $contentsId,
             $resourcesId,

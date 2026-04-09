@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Document\Page as BaseInternalPage;
-use Kalle\Pdf\Document\PdfPage as InternalPage;
+use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Feature\Text\ListOptions;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
 use Kalle\Pdf\Feature\Text\TextFrame as InternalTextFrame;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Layout\BulletType;
-use LogicException;
 
 /**
  * Public facade for flowing text across pages.
@@ -105,20 +103,11 @@ final readonly class TextFrame
 
     public function getPage(): Page
     {
-        return new Page(self::requireInternalPage($this->textFrame->getPage()));
+        return new Page($this->textFrame->getPage());
     }
 
     public function getCursorY(): float
     {
         return $this->textFrame->getCursorY();
-    }
-
-    private static function requireInternalPage(BaseInternalPage $page): InternalPage
-    {
-        if (!$page instanceof InternalPage) {
-            throw new LogicException('Expected the public API to operate on PdfPage instances.');
-        }
-
-        return $page;
     }
 }

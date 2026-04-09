@@ -6,20 +6,21 @@ namespace Kalle\Pdf\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Kalle\Pdf\Application\Document\DocumentAcroFormManager as ApplicationDocumentAcroFormManager;
-use Kalle\Pdf\Application\Document\DocumentAttachmentManager as ApplicationDocumentAttachmentManager;
-use Kalle\Pdf\Application\Document\DocumentEncryptionManager as ApplicationDocumentEncryptionManager;
-use Kalle\Pdf\Application\Document\DocumentFontFactory as ApplicationDocumentFontFactory;
-use Kalle\Pdf\Application\Document\DocumentFontRegistry as ApplicationDocumentFontRegistry;
-use Kalle\Pdf\Application\Document\DocumentMetadataManager as ApplicationDocumentMetadataManager;
-use Kalle\Pdf\Application\Document\DocumentNavigationManager as ApplicationDocumentNavigationManager;
-use Kalle\Pdf\Application\Document\DocumentObjectCollector as ApplicationDocumentObjectCollector;
-use Kalle\Pdf\Application\Document\DocumentOptionalContentManager as ApplicationDocumentOptionalContentManager;
-use Kalle\Pdf\Application\Document\DocumentPageDecoratorManager as ApplicationDocumentPageDecoratorManager;
-use Kalle\Pdf\Application\Document\DocumentPdfWriter as ApplicationDocumentPdfWriter;
-use Kalle\Pdf\Application\Document\DocumentProfileGuard as ApplicationDocumentProfileGuard;
-use Kalle\Pdf\Application\Document\DocumentStructureManager as ApplicationDocumentStructureManager;
-use Kalle\Pdf\Application\Document\DocumentTableOfContentsBuilder as ApplicationDocumentTableOfContentsBuilder;
+use Kalle\Pdf\Application\Document\DocumentAcroFormManager;
+use Kalle\Pdf\Application\Document\DocumentAttachmentManager;
+use Kalle\Pdf\Application\Document\DocumentDeferredRendering;
+use Kalle\Pdf\Application\Document\DocumentEncryptionManager;
+use Kalle\Pdf\Application\Document\DocumentFontFactory;
+use Kalle\Pdf\Application\Document\DocumentFontRegistry;
+use Kalle\Pdf\Application\Document\DocumentMetadataManager;
+use Kalle\Pdf\Application\Document\DocumentNavigationManager;
+use Kalle\Pdf\Application\Document\DocumentObjectCollector;
+use Kalle\Pdf\Application\Document\DocumentOptionalContentManager;
+use Kalle\Pdf\Application\Document\DocumentPageDecoratorManager;
+use Kalle\Pdf\Application\Document\DocumentPdfWriter;
+use Kalle\Pdf\Application\Document\DocumentProfileGuard;
+use Kalle\Pdf\Application\Document\DocumentStructureManager;
+use Kalle\Pdf\Application\Document\DocumentTableOfContentsBuilder;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
@@ -32,10 +33,12 @@ use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
-use Kalle\Pdf\Model\Document\Catalog as ModelCatalog;
-use Kalle\Pdf\Model\Document\EncryptDictionary as ModelEncryptDictionary;
-use Kalle\Pdf\Model\Document\Info as ModelInfo;
-use Kalle\Pdf\Model\Document\Pages as ModelPages;
+use Kalle\Pdf\Model\Document\Catalog;
+use Kalle\Pdf\Model\Document\EncryptDictionary;
+use Kalle\Pdf\Model\Document\IccProfileStream;
+use Kalle\Pdf\Model\Document\Info;
+use Kalle\Pdf\Model\Document\Pages;
+use Kalle\Pdf\Model\Document\XmpMetadata;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\AtomicFilePdfOutput;
@@ -85,24 +88,24 @@ class Document
     /** @var StructElem[]  */
     private array $structElems = [];
     private bool $renderingArtifactContext = false;
-    private ?ApplicationDocumentAcroFormManager $documentAcroFormManager = null;
-    private ?ApplicationDocumentMetadataManager $documentMetadataManager = null;
-    private ?ApplicationDocumentNavigationManager $documentNavigationManager = null;
-    private ?ApplicationDocumentOptionalContentManager $documentOptionalContentManager = null;
-    private ?ApplicationDocumentAttachmentManager $documentAttachmentManager = null;
-    private ?ApplicationDocumentEncryptionManager $documentEncryptionManager = null;
-    private ?ApplicationDocumentPageDecoratorManager $documentPageDecoratorManager = null;
-    private ?ApplicationDocumentStructureManager $documentStructureManager = null;
-    private ?ApplicationDocumentProfileGuard $documentProfileGuard = null;
-    private ?ApplicationDocumentFontFactory $documentFontFactory = null;
-    private ?ApplicationDocumentFontRegistry $documentFontRegistry = null;
-    public ModelCatalog $catalog;
+    private ?DocumentAcroFormManager $documentAcroFormManager = null;
+    private ?DocumentMetadataManager $documentMetadataManager = null;
+    private ?DocumentNavigationManager $documentNavigationManager = null;
+    private ?DocumentOptionalContentManager $documentOptionalContentManager = null;
+    private ?DocumentAttachmentManager $documentAttachmentManager = null;
+    private ?DocumentEncryptionManager $documentEncryptionManager = null;
+    private ?DocumentPageDecoratorManager $documentPageDecoratorManager = null;
+    private ?DocumentStructureManager $documentStructureManager = null;
+    private ?DocumentProfileGuard $documentProfileGuard = null;
+    private ?DocumentFontFactory $documentFontFactory = null;
+    private ?DocumentFontRegistry $documentFontRegistry = null;
+    public Catalog $catalog;
     public ?AcroForm $acroForm = null;
-    public ?ModelEncryptDictionary $encryptDictionary = null;
-    public ModelInfo $info;
+    public ?EncryptDictionary $encryptDictionary = null;
+    public Info $info;
     public ?OutlineRoot $outlineRoot = null;
     public ?ParentTree $parentTree = null;
-    public ModelPages $pages;
+    public Pages $pages;
     public ?StructTreeRoot $structTreeRoot = null;
 
     /**
@@ -125,11 +128,11 @@ class Document
         private readonly ?array $fontConfig = null,
     ) {
         $this->profile = $profile;
-        $this->catalog = new ModelCatalog(++$this->objectId, $this);
-        $this->pages = new ModelPages(++$this->objectId, $this);
+        $this->catalog = new Catalog(++$this->objectId, $this);
+        $this->pages = new Pages(++$this->objectId, $this);
         $this->deferredRendering = new DocumentDeferredRendering();
 
-        $this->info = new ModelInfo(++$this->objectId, $this);
+        $this->info = new Info(++$this->objectId, $this);
         $this->creationDate = new DateTimeImmutable();
         $this->modificationDate = $this->creationDate;
         $this->creator = $creator !== null && $creator !== '' ? $creator : self::PACKAGE_NAME;
@@ -153,7 +156,7 @@ class Document
      */
     public function getDocumentObjects(): array
     {
-        return new ApplicationDocumentObjectCollector($this, array_values($this->structElems))->collect();
+        return new DocumentObjectCollector($this, array_values($this->structElems))->collect();
     }
 
     /**
@@ -161,7 +164,7 @@ class Document
      */
     public function iterateDocumentObjects(): iterable
     {
-        return new ApplicationDocumentObjectCollector($this, array_values($this->structElems));
+        return new DocumentObjectCollector($this, array_values($this->structElems));
     }
 
     public function getCreationDate(): DateTimeImmutable
@@ -633,7 +636,7 @@ class Document
         ?PageSize $size = null,
         ?TableOfContentsOptions $options = null,
     ): Page {
-        return (new ApplicationDocumentTableOfContentsBuilder($this, $this->excludedPageIdsFromNumbering))
+        return (new DocumentTableOfContentsBuilder($this, $this->excludedPageIdsFromNumbering))
             ->addTableOfContents($size, $options);
     }
 
@@ -687,22 +690,22 @@ class Document
         }
     }
 
-    private function documentProfileGuard(): ApplicationDocumentProfileGuard
+    private function documentProfileGuard(): DocumentProfileGuard
     {
-        return $this->documentProfileGuard ??= new ApplicationDocumentProfileGuard($this);
+        return $this->documentProfileGuard ??= new DocumentProfileGuard($this);
     }
 
-    private function documentAcroFormManager(): ApplicationDocumentAcroFormManager
+    private function documentAcroFormManager(): DocumentAcroFormManager
     {
-        return $this->documentAcroFormManager ??= new ApplicationDocumentAcroFormManager(
+        return $this->documentAcroFormManager ??= new DocumentAcroFormManager(
             $this,
             $this->documentProfileGuard(),
         );
     }
 
-    private function documentMetadataManager(): ApplicationDocumentMetadataManager
+    private function documentMetadataManager(): DocumentMetadataManager
     {
-        return $this->documentMetadataManager ??= new ApplicationDocumentMetadataManager(
+        return $this->documentMetadataManager ??= new DocumentMetadataManager(
             $this,
             $this->creator,
             $this->creatorTool,
@@ -713,31 +716,31 @@ class Document
         );
     }
 
-    private function documentNavigationManager(): ApplicationDocumentNavigationManager
+    private function documentNavigationManager(): DocumentNavigationManager
     {
-        return $this->documentNavigationManager ??= new ApplicationDocumentNavigationManager($this, $this->destinations);
+        return $this->documentNavigationManager ??= new DocumentNavigationManager($this, $this->destinations);
     }
 
-    private function documentOptionalContentManager(): ApplicationDocumentOptionalContentManager
+    private function documentOptionalContentManager(): DocumentOptionalContentManager
     {
-        return $this->documentOptionalContentManager ??= new ApplicationDocumentOptionalContentManager(
+        return $this->documentOptionalContentManager ??= new DocumentOptionalContentManager(
             $this,
             $this->optionalContentGroups,
         );
     }
 
-    private function documentAttachmentManager(): ApplicationDocumentAttachmentManager
+    private function documentAttachmentManager(): DocumentAttachmentManager
     {
-        return $this->documentAttachmentManager ??= new ApplicationDocumentAttachmentManager(
+        return $this->documentAttachmentManager ??= new DocumentAttachmentManager(
             $this,
             $this->attachments,
             $this->documentProfileGuard(),
         );
     }
 
-    private function documentEncryptionManager(): ApplicationDocumentEncryptionManager
+    private function documentEncryptionManager(): DocumentEncryptionManager
     {
-        return $this->documentEncryptionManager ??= new ApplicationDocumentEncryptionManager(
+        return $this->documentEncryptionManager ??= new DocumentEncryptionManager(
             $this,
             $this->encryptionProfile,
             $this->encryptionOptions,
@@ -745,28 +748,28 @@ class Document
         );
     }
 
-    private function documentPageDecoratorManager(): ApplicationDocumentPageDecoratorManager
+    private function documentPageDecoratorManager(): DocumentPageDecoratorManager
     {
-        return $this->documentPageDecoratorManager ??= new ApplicationDocumentPageDecoratorManager(
+        return $this->documentPageDecoratorManager ??= new DocumentPageDecoratorManager(
             $this,
             $this->deferredRendering,
             $this->excludedPageIdsFromNumbering,
         );
     }
 
-    private function documentStructureManager(): ApplicationDocumentStructureManager
+    private function documentStructureManager(): DocumentStructureManager
     {
-        return $this->documentStructureManager ??= new ApplicationDocumentStructureManager($this, $this->structElems);
+        return $this->documentStructureManager ??= new DocumentStructureManager($this, $this->structElems);
     }
 
-    private function documentFontFactory(): ApplicationDocumentFontFactory
+    private function documentFontFactory(): DocumentFontFactory
     {
-        return $this->documentFontFactory ??= new ApplicationDocumentFontFactory($this);
+        return $this->documentFontFactory ??= new DocumentFontFactory($this);
     }
 
-    private function documentFontRegistry(): ApplicationDocumentFontRegistry
+    private function documentFontRegistry(): DocumentFontRegistry
     {
-        return $this->documentFontRegistry ??= new ApplicationDocumentFontRegistry(
+        return $this->documentFontRegistry ??= new DocumentFontRegistry(
             $this->fonts,
             $this->documentFontFactory(),
             $this->documentProfileGuard(),
@@ -789,6 +792,6 @@ class Document
 
     private function writeToOutput(PdfOutput $output): void
     {
-        (new ApplicationDocumentPdfWriter())->write($this, $output);
+        (new DocumentPdfWriter())->write($this, $output);
     }
 }

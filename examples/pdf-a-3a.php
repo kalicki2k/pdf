@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\ImageOptions;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Feature\Text\ListOptions;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
@@ -13,6 +12,7 @@ use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Model\Page\ImageOptions;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 
