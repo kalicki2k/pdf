@@ -27,24 +27,34 @@ final class PageComponents
     private const float DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
 
     public function __construct(
-        private readonly Page $page,
         private readonly PageLinks $pageLinks,
         private readonly PageGraphics $pageGraphics,
         private readonly PageFonts $pageFonts,
         private readonly PageTextElementRenderer $pageTextElementRenderer,
         private readonly PageParagraphRenderer $pageParagraphRenderer,
+        private readonly bool $requiresTaggedPdf,
+        private readonly bool $requiresTaggedLinkAnnotations,
     ) {
     }
 
     public static function forPage(
-        Page $page,
         PageLinks $pageLinks,
         PageGraphics $pageGraphics,
         PageFonts $pageFonts,
         PageTextElementRenderer $pageTextElementRenderer,
         PageParagraphRenderer $pageParagraphRenderer,
+        bool $requiresTaggedPdf,
+        bool $requiresTaggedLinkAnnotations,
     ): self {
-        return new self($page, $pageLinks, $pageGraphics, $pageFonts, $pageTextElementRenderer, $pageParagraphRenderer);
+        return new self(
+            $pageLinks,
+            $pageGraphics,
+            $pageFonts,
+            $pageTextElementRenderer,
+            $pageParagraphRenderer,
+            $requiresTaggedPdf,
+            $requiresTaggedLinkAnnotations,
+        );
     }
 
     public function addBadge(
@@ -54,7 +64,7 @@ final class PageComponents
         int $size = 11,
         ?BadgeStyle $style = null,
         ?LinkTarget $link = null,
-    ): Page {
+    ): void {
         if ($text === '') {
             throw new InvalidArgumentException('Badge text must not be empty.');
         }
@@ -110,7 +120,6 @@ final class PageComponents
             ),
         );
 
-        return $this->page;
     }
 
     /**
@@ -127,7 +136,7 @@ final class PageComponents
         ?PanelStyle $style = null,
         ?string $titleFont = null,
         ?LinkTarget $link = null,
-    ): Page {
+    ): void {
         if ($width <= 0) {
             throw new InvalidArgumentException('Panel width must be greater than zero.');
         }
@@ -232,7 +241,6 @@ final class PageComponents
             $this->pageLinks->addLinkTarget(new Rect($x, $y, $width, $height), $link, null, null);
         }
 
-        return $this->page;
     }
 
     /**
@@ -251,7 +259,7 @@ final class PageComponents
         ?CalloutStyle $style = null,
         ?string $titleFont = null,
         ?LinkTarget $link = null,
-    ): Page {
+    ): void {
         $style ??= new CalloutStyle(
             panelStyle: new PanelStyle(
                 fillColor: Color::gray(0.96),
@@ -326,7 +334,6 @@ final class PageComponents
             );
         });
 
-        return $this->page;
     }
 
     /**
@@ -363,12 +370,12 @@ final class PageComponents
     private function shouldBindHighLevelComponentLinkToText(?LinkTarget $link): bool
     {
         return $link !== null
-            && $this->page->getDocument()->getProfile()->requiresTaggedLinkAnnotations();
+            && $this->requiresTaggedLinkAnnotations;
     }
 
     private function resolveComponentTextStructureTag(): ?StructureTag
     {
-        if (!$this->page->getDocument()->getProfile()->requiresTaggedPdf()) {
+        if (!$this->requiresTaggedPdf) {
             return null;
         }
 

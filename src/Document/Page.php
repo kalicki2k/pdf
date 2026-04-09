@@ -99,7 +99,9 @@ final class Page extends IndirectObject
         ?BadgeStyle $style = null,
         ?LinkTarget $link = null,
     ): self {
-        return $this->pageComponents()->addBadge($text, $position, $baseFont, $size, $style, $link);
+        $this->pageComponents()->addBadge($text, $position, $baseFont, $size, $style, $link);
+
+        return $this;
     }
 
     /**
@@ -117,7 +119,9 @@ final class Page extends IndirectObject
         ?string $titleFont = null,
         ?LinkTarget $link = null,
     ): self {
-        return $this->pageComponents()->addPanel($body, $x, $y, $width, $height, $title, $bodyFont, $style, $titleFont, $link);
+        $this->pageComponents()->addPanel($body, $x, $y, $width, $height, $title, $bodyFont, $style, $titleFont, $link);
+
+        return $this;
     }
 
     /**
@@ -137,7 +141,9 @@ final class Page extends IndirectObject
         ?string $titleFont = null,
         ?LinkTarget $link = null,
     ): self {
-        return $this->pageComponents()->addCallout($body, $x, $y, $width, $height, $pointerX, $pointerY, $title, $bodyFont, $style, $titleFont, $link);
+        $this->pageComponents()->addCallout($body, $x, $y, $width, $height, $pointerX, $pointerY, $title, $bodyFont, $style, $titleFont, $link);
+
+        return $this;
     }
 
     /**
@@ -846,12 +852,13 @@ final class Page extends IndirectObject
     private function pageComponents(): PageComponents
     {
         return $this->pageComponents ??= PageComponents::forPage(
-            $this,
             $this->pageLinks(),
             $this->pageGraphics(),
             $this->pageFonts(),
             $this->pageTextElementRenderer(),
             $this->pageParagraphRenderer(),
+            $this->document->getProfile()->requiresTaggedPdf(),
+            $this->document->getProfile()->requiresTaggedLinkAnnotations(),
         );
     }
 
