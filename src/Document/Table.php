@@ -14,6 +14,7 @@ use Kalle\Pdf\Document\Table\PendingRowspanCell;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderOptions;
 use Kalle\Pdf\Document\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TableCaptionRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingRenderState;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
@@ -57,6 +58,7 @@ final class Table
     private readonly TableTextMetrics $textMetrics;
     private readonly RowGroupHeightResolver $rowGroupHeightResolver;
     private readonly PreparedCellRenderer $preparedCellRenderer;
+    private readonly TableCaptionRenderer $captionRenderer;
     private readonly TablePendingRenderState $pendingRenderState;
     private readonly TableSections $sections;
     private readonly ?StructElem $tableStructElem;
@@ -111,6 +113,7 @@ final class Table
             new \Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer($this->styleResolver),
             $this->textMetrics,
         );
+        $this->captionRenderer = new TableCaptionRenderer();
         $this->pendingRenderState = new TablePendingRenderState();
         $this->sections = new TableSections();
         $this->tableStructElem = $page->getDocument()->getProfile()->requiresTaggedPdf()
@@ -752,73 +755,22 @@ final class Table
             return;
         }
 
-        [$captionLines, $captionFont, $captionSize, $captionLineHeight] = $this->resolveCaptionLayout();
-        $captionHeight = (count($captionLines) * $captionLineHeight) + $caption->spacingAfter;
-        $availableHeight = $this->cursorY - $this->bottomMargin;
-        $firstRowHeight = $rowHeights[0] ?? 0.0;
-
-        if ($captionHeight > $availableHeight || ($captionHeight + $firstRowHeight) > $availableHeight) {
-            $this->moveToNextPageForCaption();
-        }
-
-        $captionStructElem = $this->createCaptionStructElem();
-        $this->page = $this->page->renderParagraphLines(
-            $captionLines,
-            $this->x,
+        $result = $this->captionRenderer->render(
+            $caption,
+            $this->page,
             $this->cursorY,
-            $this->width,
-            $captionFont,
-            $captionSize,
-            $captionStructElem !== null ? StructureTag::Paragraph : null,
-            $captionStructElem,
-            $captionLineHeight,
+            $this->topMargin,
             $this->bottomMargin,
+            $this->x,
+            $this->width,
+            $rowHeights[0] ?? 0.0,
+            $this->baseFont,
+            $this->fontSize,
+            $this->lineHeightFactor,
+            $this->tableStructElem,
         );
-        $this->cursorY -= (count($captionLines) * $captionLineHeight) + $caption->spacingAfter;
+        $this->page = $result->page;
+        $this->cursorY = $result->cursorY;
         $this->sections->markCaptionRendered();
-    }
-
-    /**
-     * @return array{0: list<array{segments: array<int, TextSegment>, justify: bool}>, 1: string, 2: int, 3: float}
-     */
-    private function resolveCaptionLayout(): array
-    {
-        $caption = $this->caption;
-
-        if ($caption === null) {
-            throw new InvalidArgumentException('Table caption is not configured.');
-        }
-
-        $captionFont = $caption->fontName ?? $this->baseFont;
-        $captionSize = $caption->size ?? $this->fontSize;
-        $captionLineHeight = $captionSize * $this->lineHeightFactor;
-
-        return [
-            $this->page->layoutParagraphLines(
-                $caption->text,
-                $captionFont,
-                $captionSize,
-                $this->width,
-                $caption->color,
-            ),
-            $captionFont,
-            $captionSize,
-            $captionLineHeight,
-        ];
-    }
-
-    private function createCaptionStructElem(): ?StructElem
-    {
-        if ($this->tableStructElem === null) {
-            return null;
-        }
-
-        return $this->page->getDocument()->createStructElem(StructureTag::Caption, parent: $this->tableStructElem);
-    }
-
-    private function moveToNextPageForCaption(): void
-    {
-        $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
-        $this->cursorY = $this->page->getHeight() - $this->topMargin;
     }
 }
