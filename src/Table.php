@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Document\Table as InternalTable;
+use Kalle\Pdf\Document\Page as BaseInternalPage;
+use Kalle\Pdf\Document\PdfPage as InternalPage;
+use Kalle\Pdf\Document\PdfTable as InternalTable;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
@@ -12,6 +14,7 @@ use Kalle\Pdf\Document\Table\Style\TableStyle;
 use Kalle\Pdf\Document\Table\TableCaption;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Text\TextSegment;
+use LogicException;
 
 /**
  * Public facade for table layout and rendering.
@@ -99,11 +102,20 @@ final readonly class Table
 
     public function getPage(): Page
     {
-        return new Page($this->table->getPage());
+        return new Page(self::requireInternalPage($this->table->getPage()));
     }
 
     public function getCursorY(): float
     {
         return $this->table->getCursorY();
+    }
+
+    private static function requireInternalPage(BaseInternalPage $page): InternalPage
+    {
+        if (!$page instanceof InternalPage) {
+            throw new LogicException('Expected the public API to operate on PdfPage instances.');
+        }
+
+        return $page;
     }
 }

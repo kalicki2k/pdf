@@ -9,12 +9,14 @@ use Kalle\Pdf\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Document\FileSpecification;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\OptionalContentGroup;
-use Kalle\Pdf\Document\Page as InternalPage;
+use Kalle\Pdf\Document\Page as BaseInternalPage;
 use Kalle\Pdf\Document\PdfDocument as InternalDocument;
+use Kalle\Pdf\Document\PdfPage as InternalPage;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
+use LogicException;
 
 /**
  * Public entry point for building and rendering PDF documents.
@@ -112,7 +114,7 @@ final readonly class Document
      */
     public function addPage(?PageSize $size = null): Page
     {
-        return new Page($this->document->addPage($size ?? PageSize::A4()));
+        return $this->toPublicPage($this->document->addPage($size ?? PageSize::A4()));
     }
 
     /**
@@ -199,8 +201,8 @@ final readonly class Document
     public function addHeader(callable $renderer): self
     {
         $this->document->addHeader(
-            static function (InternalPage $page, int $pageNumber) use ($renderer): void {
-                $renderer(new Page($page), $pageNumber);
+            function (BaseInternalPage $page, int $pageNumber) use ($renderer): void {
+                $renderer($this->toPublicPage($page), $pageNumber);
             },
         );
 
@@ -215,8 +217,8 @@ final readonly class Document
     public function addFooter(callable $renderer): self
     {
         $this->document->addFooter(
-            static function (InternalPage $page, int $pageNumber) use ($renderer): void {
-                $renderer(new Page($page), $pageNumber);
+            function (BaseInternalPage $page, int $pageNumber) use ($renderer): void {
+                $renderer($this->toPublicPage($page), $pageNumber);
             },
         );
 
@@ -268,7 +270,7 @@ final readonly class Document
         ?PageSize $size = null,
         ?TableOfContentsOptions $options = null,
     ): Page {
-        return new Page($this->document->addTableOfContents(
+        return $this->toPublicPage($this->document->addTableOfContents(
             $size,
             $options,
         ));
@@ -300,5 +302,19 @@ final readonly class Document
     private function toInternalPage(Page $page): InternalPage
     {
         return PageRegistry::resolve($page);
+    }
+
+    private function toPublicPage(BaseInternalPage $page): Page
+    {
+        return new Page($this->requireInternalPage($page));
+    }
+
+    private function requireInternalPage(BaseInternalPage $page): InternalPage
+    {
+        if (!$page instanceof InternalPage) {
+            throw new LogicException('Expected the public API to operate on PdfPage instances.');
+        }
+
+        return $page;
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Page as InternalPage;
+use Kalle\Pdf\Document\PdfPage as InternalPage;
 use Kalle\Pdf\Page;
 use WeakMap;
 
