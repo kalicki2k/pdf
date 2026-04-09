@@ -6,11 +6,14 @@ namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfBodySerializer;
 use Kalle\Pdf\Render\PdfEncryption;
 use Kalle\Pdf\Render\PdfFileStructure;
+use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\PdfTrailer;
 use Kalle\Pdf\Render\StringPdfOutput;
@@ -42,7 +45,7 @@ final class PdfBodySerializerTest extends TestCase
     }
 
     #[Test]
-    public function it_uses_the_plan_encryption_when_writing_stream_objects(): void
+    public function it_uses_the_plan_encryption_when_writing_encryptable_objects(): void
     {
         $serializer = new PdfBodySerializer();
         $output = new StringPdfOutput();
@@ -50,7 +53,21 @@ final class PdfBodySerializerTest extends TestCase
         $serializer->write(
             new PdfSerializationPlan(
                 objects: [
-                    $this->indirectObject(7, "<< /Length 20 >>\nstream\nplain-stream-payload\nendstream"),
+                    new class (7) extends IndirectObject implements EncryptableIndirectObject {
+                        public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+                        {
+                            $encrypted = $objectEncryptor->encryptString($this->id, 'plain-stream-payload');
+
+                            $output->write(
+                                "7 0 obj\n<< /Length " . strlen($encrypted) . " >>\nstream\n" . $encrypted . "\nendstream\nendobj\n",
+                            );
+                        }
+
+                        public function render(): string
+                        {
+                            return "7 0 obj\n<< /Length 20 >>\nstream\nplain-stream-payload\nendstream\nendobj\n";
+                        }
+                    },
                 ],
                 fileStructure: new PdfFileStructure(1.4, new PdfTrailer(1, 3, 7, ['id-a', 'id-b'])),
                 encryption: new PdfEncryption(
