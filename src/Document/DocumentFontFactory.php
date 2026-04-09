@@ -16,6 +16,7 @@ use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\ToUnicodeCMap;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeGlyphMap;
+use RuntimeException;
 
 /**
  * @internal Resolves document font registrations and creates the corresponding font objects.
@@ -98,17 +99,15 @@ final readonly class DocumentFontFactory
     private function createUnicodeFont(string $baseFont, string $subtype, ?string $fontFilePath): UnicodeFont
     {
         $glyphMap = new UnicodeGlyphMap();
-        $fontDescriptor = null;
-        $fontParser = null;
+        $embeddedFontResources = $this->createEmbeddedUnicodeFontResources($baseFont, $subtype, $fontFilePath);
 
-        if ($fontFilePath !== null) {
-            $fontFile = FontFileStream::fromPath($this->document->getUniqObjectId(), $fontFilePath);
-            $fontDescriptor = new FontDescriptor($this->document->getUniqObjectId(), $baseFont, $fontFile);
-            $fontParser = $fontFile->parser();
-
-            if ($fontParser->hasCffOutlines()) {
-                $subtype = 'CIDFontType0';
-            }
+        if ($embeddedFontResources !== null) {
+            $fontDescriptor = $embeddedFontResources['fontDescriptor'];
+            $fontParser = $embeddedFontResources['fontParser'];
+            $subtype = $embeddedFontResources['subtype'];
+        } else {
+            $fontDescriptor = null;
+            $fontParser = null;
         }
 
         $cidToGidMap = $fontParser !== null
@@ -171,14 +170,42 @@ final readonly class DocumentFontFactory
             return null;
         }
 
-        /** @var string|false $fontData */
-        $fontData = @file_get_contents($fontFilePath);
+        return $this->loadFontParser($fontFilePath);
+    }
 
-        if ($fontData === false) {
-            throw new InvalidArgumentException("Unable to read font file '$fontFilePath'.");
+    /**
+     * @return array{
+     *     fontDescriptor: FontDescriptor,
+     *     fontParser: OpenTypeFontParser,
+     *     subtype: string
+     * }|null
+     */
+    private function createEmbeddedUnicodeFontResources(
+        string $baseFont,
+        string $subtype,
+        ?string $fontFilePath,
+    ): ?array {
+        if ($fontFilePath === null) {
+            return null;
         }
 
-        return new OpenTypeFontParser($fontData);
+        $fontFile = FontFileStream::fromPath($this->document->getUniqObjectId(), $fontFilePath);
+        $fontParser = $fontFile->parser();
+
+        return [
+            'fontDescriptor' => new FontDescriptor($this->document->getUniqObjectId(), $baseFont, $fontFile),
+            'fontParser' => $fontParser,
+            'subtype' => $fontParser->hasCffOutlines() ? 'CIDFontType0' : $subtype,
+        ];
+    }
+
+    private function loadFontParser(string $fontFilePath): OpenTypeFontParser
+    {
+        try {
+            return new OpenTypeFontParser(BinaryData::fromFile($fontFilePath)->contents());
+        } catch (RuntimeException $exception) {
+            throw new InvalidArgumentException("Unable to read font file '$fontFilePath'.");
+        }
     }
 
     private function supportsWesternStandardEncodingDifferences(string $baseFont): bool

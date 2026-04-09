@@ -1712,6 +1712,19 @@ final class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function it_uses_cid_font_type_0_for_embedded_fonts_with_cff_outlines(): void
+    {
+        $document = new Document(profile: Profile::standard(1.4));
+
+        $document->registerFont('NotoSansCJKsc-Regular');
+
+        $font = $document->getFonts()[0];
+
+        self::assertInstanceOf(UnicodeFont::class, $font);
+        self::assertStringContainsString('/Subtype /CIDFontType0', $font->descendantFont->render());
+    }
+
+    #[Test]
     public function it_registers_an_embedded_font_by_its_direct_font_name(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
