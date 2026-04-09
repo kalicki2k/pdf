@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 
-final class ImageObject extends IndirectObject
+final class ImageObject extends IndirectObject implements EncryptableIndirectObject
 {
     public function __construct(
         int $id,
@@ -34,6 +36,13 @@ final class ImageObject extends IndirectObject
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
         $this->image->write($output, $this->softMask?->getId());
+        $output->write('endobj' . PHP_EOL);
+    }
+
+    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    {
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $this->image->writeEncrypted($output, $objectEncryptor, $this->id, $this->softMask?->getId());
         $output->write('endobj' . PHP_EOL);
     }
 

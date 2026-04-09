@@ -6,6 +6,10 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\ImageObject;
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -72,5 +76,23 @@ final class ImageObjectTest extends TestCase
         $imageObject->write($output);
 
         self::assertSame($imageObject->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_an_encrypted_image_object_consistently(): void
+    {
+        $imageObject = new ImageObject(9, new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123'));
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $imageObject->writeEncrypted($output, $encryptor);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject($imageObject->render(), 9),
+            $output->contents(),
+        );
     }
 }

@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Element;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
@@ -77,19 +78,34 @@ class Image extends Element
 
     public function render(?int $softMaskObjectId = null): string
     {
-        return $this->header($softMaskObjectId)
-            . $this->data->contents() . PHP_EOL
+        $data = $this->data->contents();
+
+        return $this->header($softMaskObjectId, strlen($data))
+            . $data . PHP_EOL
             . 'endstream' . PHP_EOL;
     }
 
     public function write(PdfOutput $output, ?int $softMaskObjectId = null): void
     {
-        $output->write($this->header($softMaskObjectId));
+        $output->write($this->header($softMaskObjectId, $this->data->length()));
         $this->data->writeTo($output);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL);
     }
 
-    private function header(?int $softMaskObjectId): string
+    public function writeEncrypted(
+        PdfOutput $output,
+        StandardObjectEncryptor $objectEncryptor,
+        int $objectId,
+        ?int $softMaskObjectId = null,
+    ): void {
+        $encryptedData = $objectEncryptor->encryptString($objectId, $this->data->contents());
+
+        $output->write($this->header($softMaskObjectId, strlen($encryptedData)));
+        $output->write($encryptedData);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL);
+    }
+
+    private function header(?int $softMaskObjectId, int $length): string
     {
         $output = '<< /Type /XObject' . PHP_EOL;
         $output .= '/Subtype /Image' . PHP_EOL;
@@ -107,7 +123,7 @@ class Image extends Element
             $output .= "/SMask {$softMaskObjectId} 0 R" . PHP_EOL;
         }
 
-        $output .= '/Length ' . $this->data->length() . ' >>' . PHP_EOL;
+        $output .= '/Length ' . $length . ' >>' . PHP_EOL;
         $output .= 'stream' . PHP_EOL;
 
         return $output;

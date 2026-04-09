@@ -8,6 +8,10 @@ require_once __DIR__ . '/Support/ImageGzcompressStub.php';
 
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -65,6 +69,24 @@ final class ImageTest extends TestCase
         $image->write($output);
 
         self::assertSame($image->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_an_encrypted_image_xobject_stream_consistently(): void
+    {
+        $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', BinaryData::fromString('abc123'));
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $image->writeEncrypted($output, $encryptor, 9);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject("9 0 obj\n" . $image->render() . "endobj\n", 9),
+            "9 0 obj\n" . $output->contents() . "endobj\n",
+        );
     }
 
     #[Test]
