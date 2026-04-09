@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\ImageObject;
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -60,5 +61,16 @@ final class ImageObjectTest extends TestCase
             $imageObject->render(),
         );
         self::assertSame([$imageObject, $softMask], $imageObject->getRelatedObjects());
+    }
+
+    #[Test]
+    public function it_writes_an_image_object_to_a_pdf_output(): void
+    {
+        $imageObject = new ImageObject(9, new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123'));
+        $output = new StringPdfOutput();
+
+        $imageObject->write($output);
+
+        self::assertSame($imageObject->render(), $output->contents());
     }
 }

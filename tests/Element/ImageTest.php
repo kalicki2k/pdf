@@ -8,6 +8,7 @@ require_once __DIR__ . '/Support/ImageGzcompressStub.php';
 
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Element\Image;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -53,6 +54,17 @@ final class ImageTest extends TestCase
             . "endstream\n",
             $image->render(),
         );
+    }
+
+    #[Test]
+    public function it_writes_an_image_xobject_stream_to_a_pdf_output(): void
+    {
+        $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', BinaryData::fromString('abc123'));
+        $output = new StringPdfOutput();
+
+        $image->write($output);
+
+        self::assertSame($image->render(), $output->contents());
     }
 
     #[Test]

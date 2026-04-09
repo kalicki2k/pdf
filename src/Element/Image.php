@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Element;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
+use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
 class Image extends Element
@@ -76,6 +77,20 @@ class Image extends Element
 
     public function render(?int $softMaskObjectId = null): string
     {
+        return $this->header($softMaskObjectId)
+            . $this->data->contents() . PHP_EOL
+            . 'endstream' . PHP_EOL;
+    }
+
+    public function write(PdfOutput $output, ?int $softMaskObjectId = null): void
+    {
+        $output->write($this->header($softMaskObjectId));
+        $this->data->writeTo($output);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL);
+    }
+
+    private function header(?int $softMaskObjectId): string
+    {
         $output = '<< /Type /XObject' . PHP_EOL;
         $output .= '/Subtype /Image' . PHP_EOL;
         $output .= "/Width {$this->width}" . PHP_EOL;
@@ -94,8 +109,6 @@ class Image extends Element
 
         $output .= '/Length ' . $this->data->length() . ' >>' . PHP_EOL;
         $output .= 'stream' . PHP_EOL;
-        $output .= $this->data->contents() . PHP_EOL;
-        $output .= 'endstream' . PHP_EOL;
 
         return $output;
     }

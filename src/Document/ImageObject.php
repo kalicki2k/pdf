@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
 
 final class ImageObject extends IndirectObject
 {
@@ -27,6 +28,13 @@ final class ImageObject extends IndirectObject
         return $this->id . ' 0 obj' . PHP_EOL
             . $this->image->render($this->softMask?->getId())
             . 'endobj' . PHP_EOL;
+    }
+
+    public function write(PdfOutput $output): void
+    {
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $this->image->write($output, $this->softMask?->getId());
+        $output->write('endobj' . PHP_EOL);
     }
 
     /**
