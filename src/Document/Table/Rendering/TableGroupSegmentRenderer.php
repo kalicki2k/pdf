@@ -24,7 +24,6 @@ use Kalle\Pdf\Structure\StructElem;
 final class TableGroupSegmentRenderer
 {
     public function __construct(
-        private readonly PreparedCellRenderer $preparedCellRenderer,
         private readonly TableStyleResolver $styleResolver,
         private readonly TableStructElemFactory $structElemFactory = new TableStructElemFactory(),
     ) {
@@ -42,16 +41,9 @@ final class TableGroupSegmentRenderer
         int $rowCount,
         float $cursorY,
         array $pendingRowspanCells,
-        TableStyle $style,
-        ?RowStyle $rowStyle,
-        ?HeaderStyle $headerStyle,
-        ?FooterStyle $footerStyle,
-        string $baseFont,
-        int $fontSize,
-        float $lineHeightFactor,
-        ?StructElem $tableStructElem,
+        TableRenderContext $context,
     ): TableGroupSegmentRenderResult {
-        $lineHeight = $fontSize * $lineHeightFactor;
+        $lineHeight = $context->lineHeight();
         $rowTopY = $cursorY;
         $segmentRowHeights = array_slice($rowHeights, 0, $rowCount);
         /** @var list<list<array{segments: array<int, TextSegment>, justify: bool}>> $continuationLines */
@@ -65,9 +57,10 @@ final class TableGroupSegmentRenderer
                 $segmentRowHeights,
                 $rowTopY,
                 $lineHeight,
-                $baseFont,
-                $fontSize,
-                $style,
+                $context->baseFont,
+                $context->fontSize,
+                $context->style,
+                $context->preparedCellRenderer,
             );
             $page = $result->page;
             $continuationLines[] = $result->remainingLines;
@@ -75,7 +68,7 @@ final class TableGroupSegmentRenderer
 
         for ($rowIndex = 0; $rowIndex < $rowCount; $rowIndex++) {
             $preparedRow = $preparedRows[$rowIndex];
-            $rowStructElem = $this->structElemFactory->createRow($page, $tableStructElem);
+            $rowStructElem = $this->structElemFactory->createRow($page, $context->tableStructElem);
 
             foreach ($preparedRow->cells as $preparedCell) {
                 $result = $this->renderPreparedCellSegment(
@@ -88,12 +81,13 @@ final class TableGroupSegmentRenderer
                     $segmentRowHeights,
                     $rowTopY,
                     $lineHeight,
-                    $style,
-                    $rowStyle,
-                    $headerStyle,
-                    $footerStyle,
-                    $baseFont,
-                    $fontSize,
+                    $context->style,
+                    $context->rowStyle,
+                    $context->headerStyle,
+                    $context->footerStyle,
+                    $context->baseFont,
+                    $context->fontSize,
+                    $context->preparedCellRenderer,
                     $this->structElemFactory->createCell($page, $preparedCell->cell, $preparedRow->header, $rowStructElem),
                 );
                 $page = $result->page;
@@ -111,10 +105,10 @@ final class TableGroupSegmentRenderer
                 $rowCount,
                 $pendingRowspanCells,
                 $continuationLines,
-                $style,
-                $rowStyle,
-                $headerStyle,
-                $footerStyle,
+                $context->style,
+                $context->rowStyle,
+                $context->headerStyle,
+                $context->footerStyle,
             ),
         );
     }
@@ -132,11 +126,12 @@ final class TableGroupSegmentRenderer
         string $baseFont,
         int $fontSize,
         TableStyle $style,
+        PreparedCellRenderer $preparedCellRenderer,
         ?StructElem $cellStructElem = null,
     ): CellRenderResult {
         $visibleRowspan = min($pendingRowspanCell->remainingRows, $rowCount);
 
-        return $this->preparedCellRenderer->renderSegment(
+        return $preparedCellRenderer->renderSegment(
             $page,
             $pendingRowspanCell->cell,
             $pendingRowspanCell->style,
@@ -176,11 +171,12 @@ final class TableGroupSegmentRenderer
         ?FooterStyle $footerStyle,
         string $baseFont,
         int $fontSize,
+        PreparedCellRenderer $preparedCellRenderer,
         ?StructElem $cellStructElem = null,
     ): CellRenderResult {
         $visibleRowspan = min($preparedCell->cell->rowspan, $rowCount - $rowIndex);
 
-        return $this->preparedCellRenderer->renderSegment(
+        return $preparedCellRenderer->renderSegment(
             $page,
             $preparedCell,
             $this->resolveEffectiveCellStyle($preparedCell->cell, $header, $footer, $style, $rowStyle, $headerStyle, $footerStyle),

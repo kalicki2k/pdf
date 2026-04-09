@@ -12,6 +12,7 @@ use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TableRenderContext;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
@@ -22,6 +23,7 @@ use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -45,15 +47,7 @@ final class TableGroupRendererTest extends TestCase
                 [24.0],
             ),
             160.0,
-            $this->createPreparedCellRenderer(),
-            $this->createTableStyle(),
-            null,
-            null,
-            null,
-            'Helvetica',
-            12,
-            1.2,
-            null,
+            $this->createRenderContext($this->createPreparedCellRenderer()),
         );
 
         self::assertSame($page, $result->page);
@@ -76,15 +70,11 @@ final class TableGroupRendererTest extends TestCase
                 [24.0],
             ),
             160.0,
-            $this->createPreparedCellRenderer(x: 20.0, width: 160.0),
-            $this->createTableStyle(),
-            null,
-            null,
-            null,
-            self::pdfUaRegularFont(),
-            12,
-            1.2,
-            $tableStructElem,
+            $this->createRenderContext(
+                $this->createPreparedCellRenderer(x: 20.0, width: 160.0),
+                self::pdfUaRegularFont(),
+                $tableStructElem,
+            ),
         );
 
         $rendered = $document->render();
@@ -125,6 +115,24 @@ final class TableGroupRendererTest extends TestCase
             padding: TablePadding::all(6.0),
             border: TableBorder::all(color: Color::gray(0.75)),
             verticalAlign: VerticalAlign::TOP,
+        );
+    }
+
+    private function createRenderContext(
+        PreparedCellRenderer $preparedCellRenderer,
+        string $baseFont = 'Helvetica',
+        ?StructElem $tableStructElem = null,
+    ): TableRenderContext {
+        return new TableRenderContext(
+            $preparedCellRenderer,
+            $this->createTableStyle(),
+            null,
+            null,
+            null,
+            $baseFont,
+            12,
+            1.2,
+            $tableStructElem,
         );
     }
 }

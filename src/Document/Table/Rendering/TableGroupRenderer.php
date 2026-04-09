@@ -6,11 +6,6 @@ namespace Kalle\Pdf\Document\Table\Rendering;
 
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
-use Kalle\Pdf\Document\Table\Style\FooterStyle;
-use Kalle\Pdf\Document\Table\Style\HeaderStyle;
-use Kalle\Pdf\Document\Table\Style\RowStyle;
-use Kalle\Pdf\Document\Table\Style\TableStyle;
-use Kalle\Pdf\Structure\StructElem;
 
 /**
  * @internal Renders prepared table row groups without owning page-flow decisions.
@@ -26,24 +21,16 @@ final class TableGroupRenderer
         Page $page,
         PreparedTableRowGroup $rowGroup,
         float $cursorY,
-        PreparedCellRenderer $preparedCellRenderer,
-        TableStyle $style,
-        ?RowStyle $rowStyle,
-        ?HeaderStyle $headerStyle,
-        ?FooterStyle $footerStyle,
-        string $baseFont,
-        int $fontSize,
-        float $lineHeightFactor,
-        ?StructElem $tableStructElem,
+        TableRenderContext $context,
     ): TableGroupRenderResult {
-        $lineHeight = $fontSize * $lineHeightFactor;
+        $lineHeight = $context->lineHeight();
         $rowTopY = $cursorY;
 
         foreach ($rowGroup->rows as $rowIndex => $preparedRow) {
-            $rowStructElem = $this->structElemFactory->createRow($page, $tableStructElem);
+            $rowStructElem = $this->structElemFactory->createRow($page, $context->tableStructElem);
 
             foreach ($preparedRow->cells as $preparedCell) {
-                $page = $preparedCellRenderer->render(
+                $page = $context->preparedCellRenderer->render(
                     $page,
                     $preparedCell,
                     $preparedRow->header,
@@ -51,13 +38,13 @@ final class TableGroupRenderer
                     $rowGroup->rowHeights,
                     $rowTopY,
                     $lineHeight,
-                    $style,
-                    $rowStyle,
-                    $headerStyle,
-                    $baseFont,
-                    $fontSize,
+                    $context->style,
+                    $context->rowStyle,
+                    $context->headerStyle,
+                    $context->baseFont,
+                    $context->fontSize,
                     $this->structElemFactory->createCell($page, $preparedCell->cell, $preparedRow->header, $rowStructElem),
-                    $footerStyle,
+                    $context->footerStyle,
                     $preparedRow->footer,
                 );
             }

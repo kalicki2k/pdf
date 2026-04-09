@@ -13,6 +13,7 @@ use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableFooterRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TableRenderContext;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
@@ -44,15 +45,7 @@ final class TableFooterRendererTest extends TestCase
             ),
             20.0,
             40.0,
-            $this->createPreparedCellRenderer(),
-            $this->createTableStyle(),
-            null,
-            null,
-            null,
-            'Helvetica',
-            12,
-            1.2,
-            null,
+            $this->createRenderContext(),
         );
 
         self::assertSame($page, $result->page);
@@ -77,15 +70,7 @@ final class TableFooterRendererTest extends TestCase
             ),
             20.0,
             40.0,
-            $this->createPreparedCellRenderer(),
-            $this->createTableStyle(),
-            null,
-            null,
-            null,
-            'Helvetica',
-            12,
-            1.2,
-            null,
+            $this->createRenderContext(),
         );
 
         self::assertNotSame($page, $result->page);
@@ -113,15 +98,7 @@ final class TableFooterRendererTest extends TestCase
             ),
             20.0,
             40.0,
-            $this->createPreparedCellRenderer(),
-            $this->createTableStyle(),
-            null,
-            null,
-            null,
-            'Helvetica',
-            12,
-            1.2,
-            null,
+            $this->createRenderContext(),
         );
     }
 
@@ -156,6 +133,21 @@ final class TableFooterRendererTest extends TestCase
             padding: TablePadding::all(6.0),
             border: TableBorder::all(color: Color::gray(0.75)),
             verticalAlign: VerticalAlign::TOP,
+        );
+    }
+
+    private function createRenderContext(): TableRenderContext
+    {
+        return new TableRenderContext(
+            $this->createPreparedCellRenderer(),
+            $this->createTableStyle(),
+            null,
+            null,
+            null,
+            'Helvetica',
+            12,
+            1.2,
+            null,
         );
     }
 }

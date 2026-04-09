@@ -20,6 +20,7 @@ use Kalle\Pdf\Document\Table\Rendering\TableGroupRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupSegmentRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingGroupPaginator;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingRenderState;
+use Kalle\Pdf\Document\Table\Rendering\TableRenderContext;
 use Kalle\Pdf\Document\Table\Rendering\TableStructElemFactory;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
@@ -126,7 +127,6 @@ final class Table
         $this->structElemFactory = new TableStructElemFactory();
         $this->groupRenderer = new TableGroupRenderer();
         $this->groupSegmentRenderer = new TableGroupSegmentRenderer(
-            $this->preparedCellRenderer,
             $this->styleResolver,
             $this->structElemFactory,
         );
@@ -373,14 +373,7 @@ final class Table
             $rowCount,
             $this->cursorY,
             $this->pendingRenderState->pendingRowspanCells(),
-            $this->style,
-            $this->rowStyle,
-            $this->headerStyle,
-            $this->footerStyle,
-            $this->baseFont,
-            $this->fontSize,
-            $this->lineHeightFactor,
-            $this->tableStructElem,
+            $this->renderContext(),
         );
         $this->page = $result->page;
         $this->cursorY = $result->cursorY;
@@ -418,15 +411,7 @@ final class Table
             new PreparedTableRowGroup($preparedFooterRows, $footerHeights),
             $this->bottomMargin,
             $this->continuationTopMargin,
-            $this->preparedCellRenderer,
-            $this->style,
-            $this->rowStyle,
-            $this->headerStyle,
-            $this->footerStyle,
-            $this->baseFont,
-            $this->fontSize,
-            $this->lineHeightFactor,
-            $this->tableStructElem,
+            $this->renderContext(),
         );
         $this->page = $result->page;
         $this->cursorY = $result->cursorY;
@@ -500,6 +485,15 @@ final class Table
             $this->page,
             $rowGroup,
             $this->cursorY,
+            $this->renderContext(),
+        );
+        $this->page = $result->page;
+        $this->cursorY = $result->cursorY;
+    }
+
+    private function renderContext(): TableRenderContext
+    {
+        return new TableRenderContext(
             $this->preparedCellRenderer,
             $this->style,
             $this->rowStyle,
@@ -510,7 +504,5 @@ final class Table
             $this->lineHeightFactor,
             $this->tableStructElem,
         );
-        $this->page = $result->page;
-        $this->cursorY = $result->cursorY;
     }
 }

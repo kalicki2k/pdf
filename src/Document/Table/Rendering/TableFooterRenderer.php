@@ -7,11 +7,6 @@ namespace Kalle\Pdf\Document\Table\Rendering;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
-use Kalle\Pdf\Document\Table\Style\FooterStyle;
-use Kalle\Pdf\Document\Table\Style\HeaderStyle;
-use Kalle\Pdf\Document\Table\Style\RowStyle;
-use Kalle\Pdf\Document\Table\Style\TableStyle;
-use Kalle\Pdf\Structure\StructElem;
 
 /**
  * @internal Renders prepared table footer rows and resolves a required fresh-page move.
@@ -29,15 +24,7 @@ final class TableFooterRenderer
         PreparedTableRowGroup $footerGroup,
         float $bottomMargin,
         float $continuationTopMargin,
-        PreparedCellRenderer $preparedCellRenderer,
-        TableStyle $style,
-        ?RowStyle $rowStyle,
-        ?HeaderStyle $headerStyle,
-        ?FooterStyle $footerStyle,
-        string $baseFont,
-        int $fontSize,
-        float $lineHeightFactor,
-        ?StructElem $tableStructElem,
+        TableRenderContext $context,
     ): TableGroupRenderResult {
         $footerHeight = array_sum($footerGroup->rowHeights);
         $availableHeight = $cursorY - $bottomMargin;
@@ -55,15 +42,7 @@ final class TableFooterRenderer
             $page,
             $footerGroup,
             $cursorY,
-            $preparedCellRenderer,
-            $style,
-            $rowStyle,
-            $headerStyle,
-            $footerStyle,
-            $baseFont,
-            $fontSize,
-            $lineHeightFactor,
-            $tableStructElem,
+            $context,
         );
     }
 }

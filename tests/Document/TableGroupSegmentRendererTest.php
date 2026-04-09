@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
 use Kalle\Pdf\Document\Table\Rendering\CellBoxRenderer;
 use Kalle\Pdf\Document\Table\Rendering\PreparedCellRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupSegmentRenderer;
+use Kalle\Pdf\Document\Table\Rendering\TableRenderContext;
 use Kalle\Pdf\Document\Table\Rendering\TableStructElemFactory;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Style\TablePadding;
@@ -34,10 +35,10 @@ final class TableGroupSegmentRendererTest extends TestCase
         $page = $document->addPage(200, 200);
         $styleResolver = new TableStyleResolver();
         $renderer = new TableGroupSegmentRenderer(
-            $this->createPreparedCellRenderer($styleResolver),
             $styleResolver,
             new TableStructElemFactory(),
         );
+        $preparedCellRenderer = $this->createPreparedCellRenderer($styleResolver);
 
         $result = $renderer->render(
             $page,
@@ -49,14 +50,7 @@ final class TableGroupSegmentRendererTest extends TestCase
             1,
             160.0,
             [],
-            $this->createTableStyle(),
-            null,
-            null,
-            null,
-            'Helvetica',
-            12,
-            1.2,
-            null,
+            $this->createRenderContext($preparedCellRenderer),
         );
 
         self::assertSame($page, $result->page);
@@ -95,6 +89,21 @@ final class TableGroupSegmentRendererTest extends TestCase
             padding: TablePadding::all(6.0),
             border: TableBorder::all(color: Color::gray(0.75)),
             verticalAlign: VerticalAlign::TOP,
+        );
+    }
+
+    private function createRenderContext(PreparedCellRenderer $preparedCellRenderer): TableRenderContext
+    {
+        return new TableRenderContext(
+            $preparedCellRenderer,
+            $this->createTableStyle(),
+            null,
+            null,
+            null,
+            'Helvetica',
+            12,
+            1.2,
+            null,
         );
     }
 }
