@@ -22,8 +22,8 @@ final class PageDictionaryBuilder
             'Type' => new NameType('Page'),
             'Parent' => new ReferenceType($page->getDocument()->pages),
             'MediaBox' => new ArrayType([0, 0, $page->getWidth(), $page->getHeight()]),
-            'Resources' => new ReferenceType($page->resources),
-            'Contents' => new ReferenceType($page->contents),
+            'Resources' => new ReferenceType($page->getResources()),
+            'Contents' => new ReferenceType($page->getContents()),
         ]);
 
         if ($hasMarkedContent && $page->getDocument()->hasStructure()) {

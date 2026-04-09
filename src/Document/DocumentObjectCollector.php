@@ -190,12 +190,12 @@ final readonly class DocumentObjectCollector
                 }
             }
 
-            foreach ($page->resources->getImages() as $image) {
+            foreach ($page->getResources()->getImages() as $image) {
                 $objects[] = $image;
             }
 
-            $objects[] = $page->resources;
-            $objects[] = $page->contents;
+            $objects[] = $page->getResources();
+            $objects[] = $page->getContents();
         }
     }
 

@@ -776,6 +776,16 @@ final class Page extends IndirectObject
         return $this->document;
     }
 
+    public function getResources(): Resources
+    {
+        return $this->resources;
+    }
+
+    public function getContents(): Contents
+    {
+        return $this->contents;
+    }
+
     public function addContentElement(Element $element): void
     {
         $this->contents->addElement($element);
