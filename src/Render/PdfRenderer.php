@@ -21,10 +21,6 @@ class PdfRenderer
         $objectSerializer = new PdfObjectSerializer((new PdfObjectEncryptorFactory())->create($plan));
         $offsets = $objectSerializer->writeObjects($plan->objects, $output);
 
-        $startxref = $output->offset();
-        $fileStructureSerializer->writeCrossReferenceTable($offsets, $output);
-
-        $fileStructureSerializer->writeTrailer($output, $offsets, $plan->trailer);
-        $fileStructureSerializer->writeFooter($output, $startxref);
+        $fileStructureSerializer->writeCrossReferenceSection($output, $offsets, $plan->trailer);
     }
 }

@@ -19,6 +19,18 @@ final class PdfFileStructureSerializer
         $output->write($this->generateCrossReferenceTable($offsets));
     }
 
+    public function writeCrossReferenceSection(
+        PdfOutput $output,
+        PdfObjectOffsets $offsets,
+        PdfTrailer $trailer,
+    ): void {
+        $startXref = $output->offset();
+
+        $this->writeCrossReferenceTable($offsets, $output);
+        $this->writeTrailer($output, $offsets, $trailer);
+        $this->writeFooter($output, $startXref);
+    }
+
     public function writeTrailer(
         PdfOutput $output,
         PdfObjectOffsets $offsets,
