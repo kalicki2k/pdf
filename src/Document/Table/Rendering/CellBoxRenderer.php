@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Document\Table\Rendering;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Document\PageGraphics;
 use Kalle\Pdf\Document\Table\Style\TableBorder;
 use Kalle\Pdf\Document\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Graphics\Color;
@@ -33,8 +34,10 @@ final readonly class CellBoxRenderer
         bool $renderBottomBorder = true,
         bool $renderLeftBorder = true,
     ): void {
-        $page->renderDecorativeContent(function () use (
-            $page,
+        $pageGraphics = PageGraphics::forPage($page);
+
+        $pageGraphics->renderDecorativeContent(function () use (
+            $pageGraphics,
             $x,
             $y,
             $width,
@@ -49,7 +52,7 @@ final readonly class CellBoxRenderer
             $renderLeftBorder,
         ): void {
             if ($fillColor !== null) {
-                $page->addRectangle(new Rect($x, $y, $width, $height), null, null, $fillColor);
+                $pageGraphics->addRectangle(new Rect($x, $y, $width, $height), null, null, $fillColor);
             }
 
             $topBorder = $renderTopBorder ? $this->styleResolver->resolveBorderSide('top', $defaultBorder, $rowBorder, $cellBorder) : null;
@@ -68,7 +71,7 @@ final readonly class CellBoxRenderer
                 && $leftBorder !== null
                 && $this->styleResolver->bordersAreEquivalent($topBorder, $rightBorder, $bottomBorder, $leftBorder)
             ) {
-                $page->addRectangle(
+                $pageGraphics->addRectangle(
                     new Rect($x, $y, $width, $height),
                     $topBorder->width,
                     $topBorder->color,
@@ -80,19 +83,19 @@ final readonly class CellBoxRenderer
             }
 
             if ($topBorder !== null) {
-                $page->addLine(new Position($x, $y + $height), new Position($x + $width, $y + $height), $topBorder->width, $topBorder->color, $topBorder->opacity);
+                $pageGraphics->addLine(new Position($x, $y + $height), new Position($x + $width, $y + $height), $topBorder->width, $topBorder->color, $topBorder->opacity);
             }
 
             if ($rightBorder !== null) {
-                $page->addLine(new Position($x + $width, $y), new Position($x + $width, $y + $height), $rightBorder->width, $rightBorder->color, $rightBorder->opacity);
+                $pageGraphics->addLine(new Position($x + $width, $y), new Position($x + $width, $y + $height), $rightBorder->width, $rightBorder->color, $rightBorder->opacity);
             }
 
             if ($bottomBorder !== null) {
-                $page->addLine(new Position($x, $y), new Position($x + $width, $y), $bottomBorder->width, $bottomBorder->color, $bottomBorder->opacity);
+                $pageGraphics->addLine(new Position($x, $y), new Position($x + $width, $y), $bottomBorder->width, $bottomBorder->color, $bottomBorder->opacity);
             }
 
             if ($leftBorder !== null) {
-                $page->addLine(new Position($x, $y), new Position($x, $y + $height), $leftBorder->width, $leftBorder->color, $leftBorder->opacity);
+                $pageGraphics->addLine(new Position($x, $y), new Position($x, $y + $height), $leftBorder->width, $leftBorder->color, $leftBorder->opacity);
             }
         });
     }

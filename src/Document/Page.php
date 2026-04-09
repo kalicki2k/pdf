@@ -858,7 +858,7 @@ final class Page extends IndirectObject
 
     private function pageComponents(): PageComponents
     {
-        return $this->pageComponents ??= PageComponents::forPage($this, $this->pageLinks());
+        return $this->pageComponents ??= PageComponents::forPage($this, $this->pageLinks(), $this->pageGraphics());
     }
 
     private function pageAnnotations(): PageAnnotations
@@ -897,11 +897,4 @@ final class Page extends IndirectObject
         return $this->pageParagraphRenderer ??= PageParagraphRenderer::forPage($this, $this->pageFonts());
     }
 
-    /**
-     * @param callable(): void $renderer
-     */
-    public function renderDecorativeContent(callable $renderer): void
-    {
-        $this->pageGraphics()->renderDecorativeContent($renderer);
-    }
 }

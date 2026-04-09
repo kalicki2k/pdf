@@ -29,7 +29,7 @@ final class PageTextElementRendererTest extends TestCase
         $page = $document->addPage();
         $renderer = $this->createRenderer($page);
 
-        $page->renderDecorativeContent(static function () use ($renderer): void {
+        PageGraphics::forPage($page)->renderDecorativeContent(static function () use ($renderer): void {
             $renderer->render('Layered', new Position(10, 20), self::pdfUaRegularFont(), 12);
         });
 

@@ -27,12 +27,13 @@ final class PageComponents
     public function __construct(
         private readonly Page $page,
         private readonly PageLinks $pageLinks,
+        private readonly PageGraphics $pageGraphics,
     ) {
     }
 
-    public static function forPage(Page $page, PageLinks $pageLinks): self
+    public static function forPage(Page $page, PageLinks $pageLinks, PageGraphics $pageGraphics): self
     {
-        return new self($page, $pageLinks);
+        return new self($page, $pageLinks, $pageGraphics);
     }
 
     public function addBadge(
@@ -59,9 +60,9 @@ final class PageComponents
         $badgeWidth = $textWidth + ($style->paddingHorizontal * 2);
         $badgeHeight = $size + ($style->paddingVertical * 2);
 
-        $this->page->renderDecorativeContent(function () use ($position, $badgeWidth, $badgeHeight, $style): void {
+        $this->pageGraphics->renderDecorativeContent(function () use ($position, $badgeWidth, $badgeHeight, $style): void {
             if ($style->cornerRadius > 0) {
-                $this->page->addRoundedRectangle(
+                $this->pageGraphics->addRoundedRectangle(
                     new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
                     $style->cornerRadius,
                     $style->borderWidth,
@@ -73,7 +74,7 @@ final class PageComponents
                 return;
             }
 
-            $this->page->addRectangle(
+            $this->pageGraphics->addRectangle(
                 new Rect($position->x, $position->y, $badgeWidth, $badgeHeight),
                 $style->borderWidth,
                 $style->borderColor,
@@ -135,9 +136,9 @@ final class PageComponents
         $titleFont ??= $bodyFont;
         $bindLinkToText = $this->shouldBindHighLevelComponentLinkToText($link);
 
-        $this->page->renderDecorativeContent(function () use ($style, $x, $y, $width, $height): void {
+        $this->pageGraphics->renderDecorativeContent(function () use ($style, $x, $y, $width, $height): void {
             if ($style->cornerRadius > 0) {
-                $this->page->addRoundedRectangle(
+                $this->pageGraphics->addRoundedRectangle(
                     new Rect($x, $y, $width, $height),
                     $style->cornerRadius,
                     $style->borderWidth,
@@ -149,7 +150,7 @@ final class PageComponents
                 return;
             }
 
-            $this->page->addRectangle(
+            $this->pageGraphics->addRectangle(
                 new Rect($x, $y, $width, $height),
                 $style->borderWidth,
                 $style->borderColor,
@@ -304,8 +305,8 @@ final class PageComponents
             ];
         }
 
-        $this->page->renderDecorativeContent(function () use ($points, $pointerStrokeWidth, $pointerStrokeColor, $pointerFillColor, $pointerOpacity): void {
-            $this->page->addPolygon(
+        $this->pageGraphics->renderDecorativeContent(function () use ($points, $pointerStrokeWidth, $pointerStrokeColor, $pointerFillColor, $pointerOpacity): void {
+            $this->pageGraphics->addPolygon(
                 $points,
                 $pointerStrokeWidth,
                 $pointerStrokeColor,
