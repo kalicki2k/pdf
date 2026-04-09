@@ -16,10 +16,26 @@ final class PdfIndirectObjectWriter
 
     public function write(IndirectObject $object, PdfOutput $output): void
     {
-        $output->write($this->render($object));
+        if ($this->writesDirectly($object)) {
+            RenderContext::runInObject(
+                $object->id,
+                static function () use ($object, $output): void {
+                    $object->write($output);
+                },
+            );
+
+            return;
+        }
+
+        $output->write($this->renderEncryptedObject($object));
     }
 
-    private function render(IndirectObject $object): string
+    private function writesDirectly(IndirectObject $object): bool
+    {
+        return $this->objectEncryptor === null || $object instanceof EncryptDictionary;
+    }
+
+    private function renderEncryptedObject(IndirectObject $object): string
     {
         $buffer = new StringPdfOutput();
 
@@ -32,13 +48,12 @@ final class PdfIndirectObjectWriter
 
         $renderedObject = $buffer->contents();
 
-        if (
-            $this->objectEncryptor !== null
-            && !$object instanceof EncryptDictionary
-        ) {
-            return $this->objectEncryptor->encryptStreamObject($renderedObject, $object->id);
+        $objectEncryptor = $this->objectEncryptor;
+
+        if ($objectEncryptor === null) {
+            throw new \LogicException('Encrypted object rendering requires an initialized object encryptor.');
         }
 
-        return $renderedObject;
+        return $objectEncryptor->encryptStreamObject($renderedObject, $object->id);
     }
 }
