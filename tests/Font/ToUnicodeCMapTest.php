@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Font;
 
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Font\ToUnicodeCMap;
 use Kalle\Pdf\Font\UnicodeGlyphMap;
 use Kalle\Pdf\Render\StringPdfOutput;
@@ -39,5 +43,25 @@ final class ToUnicodeCMapTest extends TestCase
         $cmap->write($output);
 
         self::assertSame($cmap->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_an_encrypted_to_unicode_cmap_stream_consistently(): void
+    {
+        $glyphMap = new UnicodeGlyphMap();
+        $glyphMap->encodeText('漢字');
+        $cmap = new ToUnicodeCMap(40, $glyphMap);
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $cmap->writeEncrypted($output, $encryptor);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject($cmap->render(), 40),
+            $output->contents(),
+        );
     }
 }

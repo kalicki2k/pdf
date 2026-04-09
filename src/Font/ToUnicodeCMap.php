@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 
-final class ToUnicodeCMap extends IndirectObject
+final class ToUnicodeCMap extends IndirectObject implements EncryptableIndirectObject
 {
     public function __construct(
         int $id,
@@ -34,6 +36,17 @@ final class ToUnicodeCMap extends IndirectObject
         $output->write($this->dictionary(strlen($cmap))->render() . PHP_EOL);
         $output->write('stream' . PHP_EOL);
         $output->write($cmap);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+    }
+
+    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    {
+        $encryptedCmap = $objectEncryptor->encryptString($this->id, $this->buildCMap());
+
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary(strlen($encryptedCmap))->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $output->write($encryptedCmap);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 

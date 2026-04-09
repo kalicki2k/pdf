@@ -6,6 +6,10 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\XmpMetadata;
+use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
@@ -80,6 +84,32 @@ final class XmpMetadataTest extends TestCase
         $metadata->write($output);
 
         self::assertSame($metadata->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_encrypted_xmp_metadata_consistently(): void
+    {
+        $document = new Document(
+            profile: Profile::standard(1.4),
+            title: 'Spec',
+            author: 'Kalle',
+            subject: 'Testing',
+            language: 'de-DE',
+        );
+        $document->addKeyword('pdf')->addKeyword('tests');
+        $metadata = new XmpMetadata(4, $document);
+        $encryptor = new StandardObjectEncryptor(
+            new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+            new StandardSecurityHandlerData('', '', '1234567890123456', -4),
+        );
+        $output = new StringPdfOutput();
+
+        $metadata->writeEncrypted($output, $encryptor);
+
+        self::assertSame(
+            $encryptor->encryptStreamObject($metadata->render(), 4),
+            $output->contents(),
+        );
     }
 
     #[Test]

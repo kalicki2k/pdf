@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 
-final class CidToGidMap extends IndirectObject
+final class CidToGidMap extends IndirectObject implements EncryptableIndirectObject
 {
     public function __construct(
         int $id,
@@ -30,9 +32,20 @@ final class CidToGidMap extends IndirectObject
     public function write(PdfOutput $output): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary()->render() . PHP_EOL);
+        $output->write($this->dictionary($this->mapLength())->render() . PHP_EOL);
         $output->write('stream' . PHP_EOL);
         $this->writeMapDataTo($output);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+    }
+
+    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    {
+        $encryptedData = $objectEncryptor->encryptString($this->id, $this->mapData());
+
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary(strlen($encryptedData))->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $output->write($encryptedData);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
@@ -72,11 +85,19 @@ final class CidToGidMap extends IndirectObject
         return $maxCid;
     }
 
-    private function dictionary(): DictionaryType
+    private function dictionary(int $length): DictionaryType
     {
         return new DictionaryType([
-            'Length' => $this->mapLength(),
+            'Length' => $length,
         ]);
+    }
+
+    private function mapData(): string
+    {
+        $buffer = new StringPdfOutput();
+        $this->writeMapDataTo($buffer);
+
+        return $buffer->contents();
     }
 
     private function mapLength(): int

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 
-final class XmpMetadata extends IndirectObject
+final class XmpMetadata extends IndirectObject implements EncryptableIndirectObject
 {
     public function __construct(int $id, private readonly Document $document)
     {
@@ -33,6 +35,17 @@ final class XmpMetadata extends IndirectObject
         $output->write($this->dictionary(strlen($xml))->render() . PHP_EOL);
         $output->write('stream' . PHP_EOL);
         $output->write($xml);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+    }
+
+    public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
+    {
+        $encryptedXml = $objectEncryptor->encryptString($this->id, $this->buildXml());
+
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary(strlen($encryptedXml))->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $output->write($encryptedXml);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
