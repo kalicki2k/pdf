@@ -18,6 +18,7 @@ use Kalle\Pdf\Document\Table\Rendering\TableCaptionRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TableGroupRenderer;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingGroupPaginator;
 use Kalle\Pdf\Document\Table\Rendering\TablePendingRenderState;
+use Kalle\Pdf\Document\Table\Rendering\TableStructElemFactory;
 use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
@@ -30,7 +31,6 @@ use Kalle\Pdf\Document\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Document\Table\TableCaption;
 use Kalle\Pdf\Document\Table\TableCell;
 use Kalle\Pdf\Document\Table\TableGroupPageFit;
-use Kalle\Pdf\Document\Table\TableHeaderScope;
 use Kalle\Pdf\Document\Table\TableSections;
 use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Document\Text\TextSegment;
@@ -64,6 +64,7 @@ final class Table
     private readonly TableGroupRenderer $groupRenderer;
     private readonly TablePendingGroupPaginator $pendingGroupPaginator;
     private readonly TablePendingRenderState $pendingRenderState;
+    private readonly TableStructElemFactory $structElemFactory;
     private readonly TableSections $sections;
     private readonly ?StructElem $tableStructElem;
     private ?TableCaption $caption = null;
@@ -118,6 +119,7 @@ final class Table
             $this->textMetrics,
         );
         $this->captionRenderer = new TableCaptionRenderer();
+        $this->structElemFactory = new TableStructElemFactory();
         $this->groupRenderer = new TableGroupRenderer();
         $this->pendingGroupPaginator = new TablePendingGroupPaginator();
         $this->pendingRenderState = new TablePendingRenderState();
@@ -374,7 +376,7 @@ final class Table
 
         for ($rowIndex = 0; $rowIndex < $rowCount; $rowIndex++) {
             $preparedRow = $preparedRows[$rowIndex];
-            $rowStructElem = $this->createTableRowStructElem();
+            $rowStructElem = $this->structElemFactory->createRow($this->page, $this->tableStructElem);
 
             foreach ($preparedRow->cells as $preparedCell) {
                 $result = $this->renderPreparedCellSegment(
@@ -386,7 +388,12 @@ final class Table
                     $segmentRowHeights,
                     $rowTopY,
                     $lineHeight,
-                    $this->createTableCellStructElem($preparedCell->cell, $preparedRow->header, $rowStructElem),
+                    $this->structElemFactory->createCell(
+                        $this->page,
+                        $preparedCell->cell,
+                        $preparedRow->header,
+                        $rowStructElem,
+                    ),
                 );
                 $this->page = $result->page;
                 $continuationLines[] = $result->remainingLines;
@@ -648,52 +655,6 @@ final class Table
             $this->textMetrics,
             $this->footerStyle,
         );
-    }
-
-    private function createTableRowStructElem(): ?StructElem
-    {
-        if ($this->tableStructElem === null) {
-            return null;
-        }
-
-        return $this->page->getDocument()->createStructElem(StructureTag::TableRow, parent: $this->tableStructElem);
-    }
-
-    private function createTableCellStructElem(TableCell $cell, bool $header, ?StructElem $rowStructElem): ?StructElem
-    {
-        if ($rowStructElem === null) {
-            return null;
-        }
-
-        $headerScope = $this->resolveTableCellHeaderScope($cell, $header);
-
-        $structElem = $this->page->getDocument()->createStructElem(
-            $headerScope === null ? StructureTag::TableDataCell : StructureTag::TableHeaderCell,
-            parent: $rowStructElem,
-        );
-
-        if ($headerScope !== null) {
-            $structElem->setScope($headerScope->value);
-        }
-
-        if ($cell->rowspan > 1) {
-            $structElem->setRowSpan($cell->rowspan);
-        }
-
-        if ($cell->colspan > 1) {
-            $structElem->setColSpan($cell->colspan);
-        }
-
-        return $structElem;
-    }
-
-    private function resolveTableCellHeaderScope(TableCell $cell, bool $header): ?TableHeaderScope
-    {
-        if ($cell->headerScope !== null) {
-            return $cell->headerScope;
-        }
-
-        return $header ? TableHeaderScope::Column : null;
     }
 
     /**

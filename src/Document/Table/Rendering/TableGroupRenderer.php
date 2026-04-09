@@ -10,9 +10,6 @@ use Kalle\Pdf\Document\Table\Style\FooterStyle;
 use Kalle\Pdf\Document\Table\Style\HeaderStyle;
 use Kalle\Pdf\Document\Table\Style\RowStyle;
 use Kalle\Pdf\Document\Table\Style\TableStyle;
-use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Document\Table\TableHeaderScope;
-use Kalle\Pdf\Document\Text\StructureTag;
 use Kalle\Pdf\Structure\StructElem;
 
 /**
@@ -20,6 +17,11 @@ use Kalle\Pdf\Structure\StructElem;
  */
 final class TableGroupRenderer
 {
+    public function __construct(
+        private readonly TableStructElemFactory $structElemFactory = new TableStructElemFactory(),
+    ) {
+    }
+
     /**
      * @param list<PreparedTableRow> $preparedRows
      * @param list<float> $rowHeights
@@ -43,7 +45,7 @@ final class TableGroupRenderer
         $rowTopY = $cursorY;
 
         foreach ($preparedRows as $rowIndex => $preparedRow) {
-            $rowStructElem = $this->createTableRowStructElem($page, $tableStructElem);
+            $rowStructElem = $this->structElemFactory->createRow($page, $tableStructElem);
 
             foreach ($preparedRow->cells as $preparedCell) {
                 $page = $preparedCellRenderer->render(
@@ -59,7 +61,7 @@ final class TableGroupRenderer
                     $headerStyle,
                     $baseFont,
                     $fontSize,
-                    $this->createTableCellStructElem($page, $preparedCell->cell, $preparedRow->header, $rowStructElem),
+                    $this->structElemFactory->createCell($page, $preparedCell->cell, $preparedRow->header, $rowStructElem),
                     $footerStyle,
                     $preparedRow->footer,
                 );
@@ -69,55 +71,5 @@ final class TableGroupRenderer
         }
 
         return new TableGroupRenderResult($page, $rowTopY);
-    }
-
-    private function createTableRowStructElem(Page $page, ?StructElem $tableStructElem): ?StructElem
-    {
-        if ($tableStructElem === null) {
-            return null;
-        }
-
-        return $page->getDocument()->createStructElem(StructureTag::TableRow, parent: $tableStructElem);
-    }
-
-    private function createTableCellStructElem(
-        Page $page,
-        TableCell $cell,
-        bool $header,
-        ?StructElem $rowStructElem,
-    ): ?StructElem {
-        if ($rowStructElem === null) {
-            return null;
-        }
-
-        $headerScope = $this->resolveTableCellHeaderScope($cell, $header);
-
-        $structElem = $page->getDocument()->createStructElem(
-            $headerScope === null ? StructureTag::TableDataCell : StructureTag::TableHeaderCell,
-            parent: $rowStructElem,
-        );
-
-        if ($headerScope !== null) {
-            $structElem->setScope($headerScope->value);
-        }
-
-        if ($cell->rowspan > 1) {
-            $structElem->setRowSpan($cell->rowspan);
-        }
-
-        if ($cell->colspan > 1) {
-            $structElem->setColSpan($cell->colspan);
-        }
-
-        return $structElem;
-    }
-
-    private function resolveTableCellHeaderScope(TableCell $cell, bool $header): ?TableHeaderScope
-    {
-        if ($cell->headerScope !== null) {
-            return $cell->headerScope;
-        }
-
-        return $header ? TableHeaderScope::Column : null;
     }
 }
