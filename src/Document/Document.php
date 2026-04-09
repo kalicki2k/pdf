@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Kalle\Pdf\Application\Document\DocumentPdfWriter as ApplicationDocumentPdfWriter;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Document\Outline\OutlineRoot;
@@ -763,6 +764,6 @@ class Document
 
     private function writeToOutput(PdfOutput $output): void
     {
-        (new DocumentPdfWriter())->write($this, $output);
+        (new ApplicationDocumentPdfWriter())->write($this, $output);
     }
 }
