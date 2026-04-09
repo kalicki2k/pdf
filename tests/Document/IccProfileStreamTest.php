@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Document\IccProfileStream;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -71,5 +72,16 @@ final class IccProfileStreamTest extends TestCase
         $this->expectExceptionMessage("Unable to read ICC profile '$missingPath'.");
 
         IccProfileStream::fromPath(11, $missingPath, 3);
+    }
+
+    #[Test]
+    public function it_writes_an_icc_profile_stream_to_a_pdf_output(): void
+    {
+        $stream = new IccProfileStream(11, BinaryData::fromString('ICC'), 4);
+        $output = new StringPdfOutput();
+
+        $stream->write($output);
+
+        self::assertSame($stream->render(), $output->contents());
     }
 }

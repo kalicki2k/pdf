@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
 final class BinaryData
 {
+    private const int READ_CHUNK_BYTES = 8192;
+
     /** @var resource|null */
     private $stream = null;
 
@@ -78,6 +81,37 @@ final class BinaryData
         }
 
         return $contents;
+    }
+
+    public function writeTo(PdfOutput $output): void
+    {
+        if ($this->length === 0) {
+            return;
+        }
+
+        $stream = $this->stream();
+
+        if (rewind($stream) === false) {
+            throw new RuntimeException('Unable to rewind binary data buffer.');
+        }
+
+        while (!feof($stream)) {
+            $chunk = fread($stream, self::READ_CHUNK_BYTES);
+
+            if ($chunk === false) {
+                throw new RuntimeException('Unable to read binary data buffer.');
+            }
+
+            if ($chunk === '') {
+                continue;
+            }
+
+            $output->write($chunk);
+        }
+
+        if (fseek($stream, 0, SEEK_END) !== 0) {
+            throw new RuntimeException('Unable to seek binary data buffer.');
+        }
     }
 
     public function __destruct()

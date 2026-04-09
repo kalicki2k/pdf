@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use RuntimeException;
 
@@ -35,16 +36,28 @@ final class IccProfileStream extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new DictionaryType([
-            'N' => $this->colorComponents,
-            'Length' => $this->data->length(),
-        ]);
-
         return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
+            . $this->dictionary()->render() . PHP_EOL
             . 'stream' . PHP_EOL
             . $this->data->contents() . PHP_EOL
             . 'endstream' . PHP_EOL
             . 'endobj' . PHP_EOL;
+    }
+
+    public function write(PdfOutput $output): void
+    {
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary()->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $this->data->writeTo($output);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+    }
+
+    private function dictionary(): DictionaryType
+    {
+        return new DictionaryType([
+            'N' => $this->colorComponents,
+            'Length' => $this->data->length(),
+        ]);
     }
 }

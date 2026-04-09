@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Document\EmbeddedFileStream;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -41,5 +42,16 @@ final class EmbeddedFileStreamTest extends TestCase
             . "endobj\n",
             $stream->render(),
         );
+    }
+
+    #[Test]
+    public function it_writes_an_embedded_file_stream_to_a_pdf_output(): void
+    {
+        $stream = new EmbeddedFileStream(7, BinaryData::fromString('hello'), 'text/plain');
+        $output = new StringPdfOutput();
+
+        $stream->write($output);
+
+        self::assertSame($stream->render(), $output->contents());
     }
 }

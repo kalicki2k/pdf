@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Font\FontFileStream;
 use Kalle\Pdf\Font\OpenTypeFontParser;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -128,5 +129,16 @@ final class FontFileStreamTest extends TestCase
         self::assertInstanceOf(OpenTypeFontParser::class, $firstParser);
         self::assertSame($firstParser, $secondParser);
         self::assertGreaterThan(0, $firstParser->getUnitsPerEm());
+    }
+
+    #[Test]
+    public function it_writes_a_font_stream_to_a_pdf_output(): void
+    {
+        $stream = new FontFileStream(20, BinaryData::fromString('FONTDATA'));
+        $output = new StringPdfOutput();
+
+        $stream->write($output);
+
+        self::assertSame($stream->render(), $output->contents());
     }
 }

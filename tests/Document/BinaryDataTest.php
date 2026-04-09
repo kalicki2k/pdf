@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\BinaryData;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -36,5 +37,16 @@ final class BinaryDataTest extends TestCase
         } finally {
             @unlink($path);
         }
+    }
+
+    #[Test]
+    public function it_writes_buffered_data_to_a_pdf_output(): void
+    {
+        $data = BinaryData::fromString('hello');
+        $output = new StringPdfOutput();
+
+        $data->writeTo($output);
+
+        self::assertSame('hello', $output->contents());
     }
 }
