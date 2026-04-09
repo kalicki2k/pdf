@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Structure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
@@ -16,7 +16,7 @@ use Kalle\Pdf\Types\RawType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class StructElem extends IndirectObject
+final class StructElem extends DictionaryIndirectObject
 {
     /** @var StructElem[] */
     private array $kids = [];
@@ -125,12 +125,7 @@ final class StructElem extends IndirectObject
         return $this;
     }
 
-    public function render(): string
-    {
-        return $this->renderWithStringEncryptor();
-    }
-
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    protected function dictionary(): DictionaryType
     {
         $dictionary = new DictionaryType([
             'Type' => new NameType('StructElem'),
@@ -189,7 +184,7 @@ final class StructElem extends IndirectObject
             $dictionary->add('K', new ArrayType($kidReferences));
         }
 
-        return $this->renderDictionaryObject($dictionary, $encryptor);
+        return $dictionary;
     }
 
     private function validate(): void

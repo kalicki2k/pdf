@@ -4,24 +4,18 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\StringType;
 
-final class Info extends IndirectObject
+final class Info extends DictionaryIndirectObject
 {
     public function __construct(int $id, private readonly Document $document)
     {
         parent::__construct($id);
     }
 
-    public function render(): string
-    {
-        return $this->renderWithStringEncryptor();
-    }
-
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    protected function dictionary(): DictionaryType
     {
         $dictionary = new DictionaryType([
             'Title' => new StringType($this->document->getTitle() ?? ''),
@@ -42,7 +36,7 @@ final class Info extends IndirectObject
             $dictionary->add('Keywords', new StringType(implode(', ', $keywords)));
         }
 
-        return $this->renderDictionaryObject($dictionary, $encryptor);
+        return $dictionary;
     }
 
     private function formatPdfDate(\DateTimeImmutable $date): string

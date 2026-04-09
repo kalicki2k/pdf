@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\StringType;
 
-final class OptionalContentGroup extends IndirectObject
+final class OptionalContentGroup extends DictionaryIndirectObject
 {
     public function __construct(
         int $id,
@@ -30,18 +29,11 @@ final class OptionalContentGroup extends IndirectObject
         return $this->visibleByDefault;
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
-        return $this->renderWithStringEncryptor();
-    }
-
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
-    {
-        $dictionary = new DictionaryType([
+        return new DictionaryType([
             'Type' => new NameType('OCG'),
             'Name' => new StringType($this->name),
         ]);
-
-        return $this->renderDictionaryObject($dictionary, $encryptor);
     }
 }

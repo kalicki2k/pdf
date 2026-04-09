@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
 use Kalle\Pdf\Types\DictionaryType;
@@ -13,19 +12,14 @@ use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class Catalog extends IndirectObject
+final class Catalog extends DictionaryIndirectObject
 {
     public function __construct(int $id, private readonly Document $document)
     {
         parent::__construct($id);
     }
 
-    public function render(): string
-    {
-        return $this->renderWithStringEncryptor();
-    }
-
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    protected function dictionary(): DictionaryType
     {
         $metadata = $this->document->getXmpMetadata();
         $dictionary = new DictionaryType([
@@ -149,6 +143,6 @@ final class Catalog extends IndirectObject
             $dictionary->add('StructTreeRoot', new ReferenceType($this->document->structTreeRoot));
         }
 
-        return $this->renderDictionaryObject($dictionary, $encryptor);
+        return $dictionary;
     }
 }

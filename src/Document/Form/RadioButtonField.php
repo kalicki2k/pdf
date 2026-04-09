@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Form;
 
 use Kalle\Pdf\Document\Annotation\RadioButtonWidgetAnnotation;
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class RadioButtonField extends IndirectObject
+final class RadioButtonField extends DictionaryIndirectObject
 {
     /** @var list<RadioButtonWidgetAnnotation> */
     private array $widgets = [];
@@ -47,12 +46,7 @@ final class RadioButtonField extends IndirectObject
         return $this;
     }
 
-    public function render(): string
-    {
-        return $this->renderWithStringEncryptor();
-    }
-
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    protected function dictionary(): DictionaryType
     {
         $dictionary = new DictionaryType([
             'FT' => new NameType('Btn'),
@@ -72,6 +66,6 @@ final class RadioButtonField extends IndirectObject
             $dictionary->add('TU', new StringType($this->tooltip));
         }
 
-        return $this->renderDictionaryObject($dictionary, $encryptor);
+        return $dictionary;
     }
 }
