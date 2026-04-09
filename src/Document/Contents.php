@@ -6,11 +6,14 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use RuntimeException;
 
 final class Contents extends IndirectObject
 {
+    private const int READ_CHUNK_BYTES = 8192;
+
     /** @var resource|null */
     private $stream = null;
 
@@ -31,16 +34,21 @@ final class Contents extends IndirectObject
 
     public function render(): string
     {
-        $dictionary = new DictionaryType([
-            'Length' => $this->length,
-        ]);
-
         return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
+            . $this->dictionary()->render() . PHP_EOL
             . 'stream' . PHP_EOL
             . $this->readContents() . PHP_EOL
             . 'endstream' . PHP_EOL
             . 'endobj' . PHP_EOL;
+    }
+
+    public function write(PdfOutput $output): void
+    {
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary()->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $this->writeContentsTo($output);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
     public function __destruct()
@@ -94,6 +102,44 @@ final class Contents extends IndirectObject
         }
 
         return $contents;
+    }
+
+    private function writeContentsTo(PdfOutput $output): void
+    {
+        if (!$this->hasElements) {
+            return;
+        }
+
+        $stream = $this->stream();
+
+        if (rewind($stream) === false) {
+            throw new RuntimeException('Unable to rewind PDF content stream buffer.');
+        }
+
+        while (!feof($stream)) {
+            $chunk = fread($stream, self::READ_CHUNK_BYTES);
+
+            if ($chunk === false) {
+                throw new RuntimeException('Unable to read PDF content stream buffer.');
+            }
+
+            if ($chunk === '') {
+                continue;
+            }
+
+            $output->write($chunk);
+        }
+
+        if (fseek($stream, 0, SEEK_END) !== 0) {
+            throw new RuntimeException('Unable to seek PDF content stream buffer.');
+        }
+    }
+
+    private function dictionary(): DictionaryType
+    {
+        return new DictionaryType([
+            'Length' => $this->length,
+        ]);
     }
 
     /**

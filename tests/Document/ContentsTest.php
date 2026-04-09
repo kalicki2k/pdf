@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Contents;
 use Kalle\Pdf\Element\Element;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -58,6 +59,34 @@ final class ContentsTest extends TestCase
 
         $contents->addElement($this->createElement('ET'));
 
+        self::assertSame(
+            "12 0 obj\n<< /Length 5 >>\nstream\nBT\nET\nendstream\nendobj\n",
+            $contents->render(),
+        );
+    }
+
+    #[Test]
+    public function it_writes_an_empty_stream_with_zero_length(): void
+    {
+        $contents = new Contents(8);
+        $output = new StringPdfOutput();
+
+        $contents->write($output);
+
+        self::assertSame($contents->render(), $output->contents());
+    }
+
+    #[Test]
+    public function it_writes_all_elements_in_order_and_keeps_the_stream_reusable(): void
+    {
+        $contents = new Contents(12);
+        $contents->addElement($this->createElement('BT'));
+        $contents->addElement($this->createElement('ET'));
+        $output = new StringPdfOutput();
+
+        $contents->write($output);
+
+        self::assertSame($contents->render(), $output->contents());
         self::assertSame(
             "12 0 obj\n<< /Length 5 >>\nstream\nBT\nET\nendstream\nendobj\n",
             $contents->render(),
