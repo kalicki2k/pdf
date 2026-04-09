@@ -378,9 +378,7 @@ final class Page extends IndirectObject
         string $icon = 'PushPin',
         ?string $contents = null,
     ): self {
-        $this->pageAnnotations()->addFileAttachmentAnnotation($box, $file, $icon, $contents);
-
-        return $this;
+        return $this->pageAnnotations()->addFileAttachmentAnnotation($box, $file, $icon, $contents);
     }
 
     public function addTextAnnotation(
@@ -390,9 +388,7 @@ final class Page extends IndirectObject
         string $icon = 'Note',
         bool $open = false,
     ): self {
-        $this->pageAnnotations()->addTextAnnotation($box, $contents, $title, $icon, $open);
-
-        return $this;
+        return $this->pageAnnotations()->addTextAnnotation($box, $contents, $title, $icon, $open);
     }
 
     public function addPopupAnnotation(
@@ -400,9 +396,7 @@ final class Page extends IndirectObject
         Rect $box,
         bool $open = false,
     ): self {
-        $this->pageAnnotations()->addPopupAnnotation($parent, $box, $open);
-
-        return $this;
+        return $this->pageAnnotations()->addPopupAnnotation($parent, $box, $open);
     }
 
     public function addFreeTextAnnotation(
@@ -415,7 +409,7 @@ final class Page extends IndirectObject
         ?Color $fillColor = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addFreeTextAnnotation(
+        return $this->pageAnnotations()->addFreeTextAnnotation(
             $box,
             $contents,
             $baseFont,
@@ -425,8 +419,6 @@ final class Page extends IndirectObject
             $fillColor,
             $title,
         );
-
-        return $this;
     }
 
     public function addHighlightAnnotation(
@@ -435,9 +427,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addHighlightAnnotation($box, $color, $contents, $title);
-
-        return $this;
+        return $this->pageAnnotations()->addHighlightAnnotation($box, $color, $contents, $title);
     }
 
     public function addUnderlineAnnotation(
@@ -446,9 +436,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addUnderlineAnnotation($box, $color, $contents, $title);
-
-        return $this;
+        return $this->pageAnnotations()->addUnderlineAnnotation($box, $color, $contents, $title);
     }
 
     public function addStrikeOutAnnotation(
@@ -457,9 +445,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addStrikeOutAnnotation($box, $color, $contents, $title);
-
-        return $this;
+        return $this->pageAnnotations()->addStrikeOutAnnotation($box, $color, $contents, $title);
     }
 
     public function addSquigglyAnnotation(
@@ -468,9 +454,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addSquigglyAnnotation($box, $color, $contents, $title);
-
-        return $this;
+        return $this->pageAnnotations()->addSquigglyAnnotation($box, $color, $contents, $title);
     }
 
     public function addStampAnnotation(
@@ -480,9 +464,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addStampAnnotation($box, $icon, $color, $contents, $title);
-
-        return $this;
+        return $this->pageAnnotations()->addStampAnnotation($box, $icon, $color, $contents, $title);
     }
 
     public function addSquareAnnotation(
@@ -493,7 +475,7 @@ final class Page extends IndirectObject
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addSquareAnnotation(
+        return $this->pageAnnotations()->addSquareAnnotation(
             $box,
             $borderColor,
             $fillColor,
@@ -501,8 +483,6 @@ final class Page extends IndirectObject
             $title,
             $borderStyle,
         );
-
-        return $this;
     }
 
     public function addCircleAnnotation(
@@ -513,7 +493,7 @@ final class Page extends IndirectObject
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addCircleAnnotation(
+        return $this->pageAnnotations()->addCircleAnnotation(
             $box,
             $borderColor,
             $fillColor,
@@ -521,8 +501,6 @@ final class Page extends IndirectObject
             $title,
             $borderStyle,
         );
-
-        return $this;
     }
 
     /**
@@ -535,9 +513,7 @@ final class Page extends IndirectObject
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addInkAnnotation($box, $paths, $color, $contents, $title);
-
-        return $this;
+        return $this->pageAnnotations()->addInkAnnotation($box, $paths, $color, $contents, $title);
     }
 
     public function addLineAnnotation(
@@ -551,7 +527,7 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addLineAnnotation(
+        return $this->pageAnnotations()->addLineAnnotation(
             $from,
             $to,
             $color,
@@ -562,8 +538,6 @@ final class Page extends IndirectObject
             $subject,
             $borderStyle,
         );
-
-        return $this;
     }
 
     /**
@@ -579,7 +553,7 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addPolyLineAnnotation(
+        return $this->pageAnnotations()->addPolyLineAnnotation(
             $vertices,
             $color,
             $contents,
@@ -589,8 +563,6 @@ final class Page extends IndirectObject
             $subject,
             $borderStyle,
         );
-
-        return $this;
     }
 
     /**
@@ -605,7 +577,7 @@ final class Page extends IndirectObject
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addPolygonAnnotation(
+        return $this->pageAnnotations()->addPolygonAnnotation(
             $vertices,
             $borderColor,
             $fillColor,
@@ -614,8 +586,6 @@ final class Page extends IndirectObject
             $subject,
             $borderStyle,
         );
-
-        return $this;
     }
 
     public function addCaretAnnotation(
@@ -624,9 +594,7 @@ final class Page extends IndirectObject
         ?string $title = null,
         string $symbol = 'None',
     ): self {
-        $this->pageAnnotations()->addCaretAnnotation($box, $contents, $title, $symbol);
-
-        return $this;
+        return $this->pageAnnotations()->addCaretAnnotation($box, $contents, $title, $symbol);
     }
 
     public function addImage(
@@ -652,7 +620,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addTextField(
+        return $this->pageForms()->addTextField(
             $name,
             $box,
             $value,
@@ -665,8 +633,6 @@ final class Page extends IndirectObject
             $accessibleName,
             $fieldLabel,
         );
-
-        return $this;
     }
 
     public function addCheckbox(
@@ -677,9 +643,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addCheckbox($name, $position, $size, $checked, $accessibleName, $fieldLabel);
-
-        return $this;
+        return $this->pageForms()->addCheckbox($name, $position, $size, $checked, $accessibleName, $fieldLabel);
     }
 
     public function addRadioButton(
@@ -691,9 +655,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addRadioButton($name, $value, $position, $size, $checked, $accessibleName, $fieldLabel);
-
-        return $this;
+        return $this->pageForms()->addRadioButton($name, $value, $position, $size, $checked, $accessibleName, $fieldLabel);
     }
 
     /**
@@ -712,7 +674,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addComboBox(
+        return $this->pageForms()->addComboBox(
             $name,
             $box,
             $options,
@@ -725,8 +687,6 @@ final class Page extends IndirectObject
             $accessibleName,
             $fieldLabel,
         );
-
-        return $this;
     }
 
     /**
@@ -747,7 +707,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addListBox(
+        return $this->pageForms()->addListBox(
             $name,
             $box,
             $options,
@@ -760,8 +720,6 @@ final class Page extends IndirectObject
             $accessibleName,
             $fieldLabel,
         );
-
-        return $this;
     }
 
     public function addSignatureField(
@@ -770,9 +728,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addSignatureField($name, $box, $accessibleName, $fieldLabel);
-
-        return $this;
+        return $this->pageForms()->addSignatureField($name, $box, $accessibleName, $fieldLabel);
     }
 
     public function addPushButton(
@@ -786,7 +742,7 @@ final class Page extends IndirectObject
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addPushButton(
+        return $this->pageForms()->addPushButton(
             $name,
             $label,
             $box,
@@ -797,8 +753,6 @@ final class Page extends IndirectObject
             $accessibleName,
             $fieldLabel,
         );
-
-        return $this;
     }
 
     public function render(): string

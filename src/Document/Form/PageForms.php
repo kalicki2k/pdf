@@ -53,7 +53,7 @@ final class PageForms
         ?string $defaultValue,
         ?string $accessibleName,
         ?FormFieldLabel $fieldLabel,
-    ): void {
+    ): Page {
         $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
         $acroForm = $this->page->getDocument()->ensureTextFieldAcroForm();
         $annotation = $this->formWidgetFactory()->createTextField(
@@ -73,6 +73,8 @@ final class PageForms
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
         $this->pageAnnotations->add($annotation);
+
+        return $this->page;
     }
 
     public function addCheckbox(
@@ -82,7 +84,7 @@ final class PageForms
         bool $checked,
         ?string $accessibleName,
         ?FormFieldLabel $fieldLabel,
-    ): void {
+    ): Page {
         $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
         $acroForm = $this->page->getDocument()->ensureCheckboxAcroForm();
         $annotation = $this->formWidgetFactory()->createCheckbox($name, $position, $size, $checked, $resolvedAccessibleName);
@@ -91,6 +93,8 @@ final class PageForms
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
         $this->pageAnnotations->add($annotation);
+
+        return $this->page;
     }
 
     public function addRadioButton(
@@ -101,7 +105,7 @@ final class PageForms
         bool $checked,
         ?string $accessibleName,
         ?FormFieldLabel $fieldLabel,
-    ): void {
+    ): Page {
         $resolvedAccessibleName = $this->resolveRadioButtonAccessibleName($value, $accessibleName, $fieldLabel);
         [$group, $annotation] = $this->formWidgetFactory()->createRadioButton($name, $value, $position, $size, $checked, $resolvedAccessibleName);
         $groupAccessibleName = $this->resolveRadioButtonGroupAccessibleName($name);
@@ -114,6 +118,8 @@ final class PageForms
         $formStructElem = $this->bindAccessibleFormField($annotation, $resolvedAccessibleName, $fieldLabel !== null);
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $this->pageAnnotations->add($annotation);
+
+        return $this->page;
     }
 
     /**
@@ -131,7 +137,7 @@ final class PageForms
         ?string $defaultValue,
         ?string $accessibleName,
         ?FormFieldLabel $fieldLabel,
-    ): void {
+    ): Page {
         $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
         $acroForm = $this->page->getDocument()->ensureComboBoxAcroForm();
         $annotation = $this->formWidgetFactory()->createComboBox(
@@ -151,6 +157,8 @@ final class PageForms
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
         $this->pageAnnotations->add($annotation);
+
+        return $this->page;
     }
 
     /**
@@ -170,7 +178,7 @@ final class PageForms
         string | array | null $defaultValue,
         ?string $accessibleName,
         ?FormFieldLabel $fieldLabel,
-    ): void {
+    ): Page {
         $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
         $acroForm = $this->page->getDocument()->ensureListBoxAcroForm();
         $annotation = $this->formWidgetFactory()->createListBox(
@@ -190,6 +198,8 @@ final class PageForms
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
         $this->pageAnnotations->add($annotation);
+
+        return $this->page;
     }
 
     public function addSignatureField(
@@ -197,7 +207,7 @@ final class PageForms
         Rect $box,
         ?string $accessibleName,
         ?FormFieldLabel $fieldLabel,
-    ): void {
+    ): Page {
         $resolvedAccessibleName = $this->resolveFormFieldAccessibleName($name, $accessibleName, $fieldLabel);
         $acroForm = $this->page->getDocument()->ensureSignatureFieldAcroForm();
         $annotation = $this->formWidgetFactory()->createSignatureField($name, $box, $resolvedAccessibleName);
@@ -206,6 +216,8 @@ final class PageForms
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
         $this->pageAnnotations->add($annotation);
+
+        return $this->page;
     }
 
     public function addPushButton(
@@ -218,7 +230,7 @@ final class PageForms
         ?ButtonAction $action,
         ?string $accessibleName,
         ?FormFieldLabel $fieldLabel,
-    ): void {
+    ): Page {
         if ($action instanceof SetOcgStateAction) {
             $this->page->getDocument()->assertAllowsOptionalContentGroups();
         }
@@ -240,6 +252,8 @@ final class PageForms
         $this->renderFormFieldLabel($fieldLabel, $formStructElem);
         $acroForm->addField($annotation);
         $this->pageAnnotations->add($annotation);
+
+        return $this->page;
     }
 
     private function formWidgetFactory(): FormWidgetFactory

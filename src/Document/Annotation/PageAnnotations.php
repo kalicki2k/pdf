@@ -41,8 +41,10 @@ final class PageAnnotations
         LinkTarget $target,
         ?StructElem $linkStructElem = null,
         ?string $alternativeDescription = null,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
+
+        return $this->page;
     }
 
     public function addFileAttachmentAnnotation(
@@ -50,8 +52,10 @@ final class PageAnnotations
         FileSpecification $file,
         string $icon,
         ?string $contents,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createFileAttachmentAnnotation($box, $file, $icon, $contents);
+
+        return $this->page;
     }
 
     public function addTextAnnotation(
@@ -60,21 +64,27 @@ final class PageAnnotations
         ?string $title,
         string $icon,
         bool $open,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createTextAnnotation($box, $contents, $title, $icon, $open);
+
+        return $this->page;
     }
 
     public function addPopupAnnotation(
         PageAnnotation & IndirectObject $parent,
         Rect $box,
         bool $open,
-    ): void {
+    ): Page {
         $this->factory()->createPopupAnnotation($parent, $box, $open);
+
+        return $this->page;
     }
 
-    public function add(PageAnnotation & IndirectObject $annotation): void
+    public function add(PageAnnotation & IndirectObject $annotation): Page
     {
         $this->annotations[] = $annotation;
+
+        return $this->page;
     }
 
     public function addFreeTextAnnotation(
@@ -86,7 +96,7 @@ final class PageAnnotations
         ?Color $borderColor,
         ?Color $fillColor,
         ?string $title,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createFreeTextAnnotation(
             $box,
             $contents,
@@ -97,6 +107,8 @@ final class PageAnnotations
             $fillColor,
             $title,
         );
+
+        return $this->page;
     }
 
     public function addHighlightAnnotation(
@@ -104,8 +116,10 @@ final class PageAnnotations
         ?Color $color,
         ?string $contents,
         ?string $title,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createHighlightAnnotation($box, $color, $contents, $title);
+
+        return $this->page;
     }
 
     public function addUnderlineAnnotation(
@@ -113,8 +127,10 @@ final class PageAnnotations
         ?Color $color,
         ?string $contents,
         ?string $title,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createUnderlineAnnotation($box, $color, $contents, $title);
+
+        return $this->page;
     }
 
     public function addStrikeOutAnnotation(
@@ -122,8 +138,10 @@ final class PageAnnotations
         ?Color $color,
         ?string $contents,
         ?string $title,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createStrikeOutAnnotation($box, $color, $contents, $title);
+
+        return $this->page;
     }
 
     public function addSquigglyAnnotation(
@@ -131,8 +149,10 @@ final class PageAnnotations
         ?Color $color,
         ?string $contents,
         ?string $title,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createSquigglyAnnotation($box, $color, $contents, $title);
+
+        return $this->page;
     }
 
     public function addStampAnnotation(
@@ -141,8 +161,10 @@ final class PageAnnotations
         ?Color $color,
         ?string $contents,
         ?string $title,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createStampAnnotation($box, $icon, $color, $contents, $title);
+
+        return $this->page;
     }
 
     public function addSquareAnnotation(
@@ -152,7 +174,7 @@ final class PageAnnotations
         ?string $contents,
         ?string $title,
         ?AnnotationBorderStyle $borderStyle,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createSquareAnnotation(
             $box,
             $borderColor,
@@ -161,6 +183,8 @@ final class PageAnnotations
             $title,
             $borderStyle,
         );
+
+        return $this->page;
     }
 
     public function addCircleAnnotation(
@@ -170,7 +194,7 @@ final class PageAnnotations
         ?string $contents,
         ?string $title,
         ?AnnotationBorderStyle $borderStyle,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createCircleAnnotation(
             $box,
             $borderColor,
@@ -179,6 +203,8 @@ final class PageAnnotations
             $title,
             $borderStyle,
         );
+
+        return $this->page;
     }
 
     /**
@@ -190,8 +216,10 @@ final class PageAnnotations
         ?Color $color,
         ?string $contents,
         ?string $title,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createInkAnnotation($box, $paths, $color, $contents, $title);
+
+        return $this->page;
     }
 
     public function addLineAnnotation(
@@ -204,7 +232,7 @@ final class PageAnnotations
         ?LineEndingStyle $endStyle,
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createLineAnnotation(
             $from,
             $to,
@@ -216,6 +244,8 @@ final class PageAnnotations
             $subject,
             $borderStyle,
         );
+
+        return $this->page;
     }
 
     /**
@@ -230,7 +260,7 @@ final class PageAnnotations
         ?LineEndingStyle $endStyle,
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createPolyLineAnnotation(
             $vertices,
             $color,
@@ -241,6 +271,8 @@ final class PageAnnotations
             $subject,
             $borderStyle,
         );
+
+        return $this->page;
     }
 
     /**
@@ -254,7 +286,7 @@ final class PageAnnotations
         ?string $title,
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createPolygonAnnotation(
             $vertices,
             $borderColor,
@@ -264,6 +296,8 @@ final class PageAnnotations
             $subject,
             $borderStyle,
         );
+
+        return $this->page;
     }
 
     public function addCaretAnnotation(
@@ -271,8 +305,10 @@ final class PageAnnotations
         ?string $contents,
         ?string $title,
         string $symbol,
-    ): void {
+    ): Page {
         $this->annotations[] = $this->factory()->createCaretAnnotation($box, $contents, $title, $symbol);
+
+        return $this->page;
     }
 
     /**
