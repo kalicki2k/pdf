@@ -6,16 +6,15 @@ namespace Kalle\Pdf\Document\Annotation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class PolygonAnnotation extends IndirectObject implements PageAnnotation, StructParentAwareAnnotation
+final class PolygonAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {
     use HasStructParent;
 
@@ -45,12 +44,7 @@ final class PolygonAnnotation extends IndirectObject implements PageAnnotation, 
         }
     }
 
-    public function render(): string
-    {
-        return $this->renderWithStringEncryptor();
-    }
-
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    protected function dictionary(): DictionaryType
     {
         $xValues = array_map(static fn (array $vertex): float => $vertex[0], $this->vertices);
         $yValues = array_map(static fn (array $vertex): float => $vertex[1], $this->vertices);
@@ -116,7 +110,7 @@ final class PolygonAnnotation extends IndirectObject implements PageAnnotation, 
             $dictionary->add('Popup', new ReferenceType($this->popup));
         }
 
-        return $this->renderDictionaryObject($dictionary, $encryptor);
+        return $dictionary;
     }
 
     public function getRelatedObjects(): array

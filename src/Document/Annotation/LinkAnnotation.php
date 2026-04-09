@@ -7,8 +7,7 @@ namespace Kalle\Pdf\Document\Annotation;
 use Kalle\Pdf\Document\Action\UriAction;
 use Kalle\Pdf\Document\LinkTarget;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
@@ -16,7 +15,7 @@ use Kalle\Pdf\Types\RawType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class LinkAnnotation extends IndirectObject implements PageAnnotation, StructParentAwareAnnotation
+final class LinkAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {
     use HasStructParent;
 
@@ -42,12 +41,7 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation, Str
         return $this;
     }
 
-    public function render(): string
-    {
-        return $this->renderWithStringEncryptor();
-    }
-
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    protected function dictionary(): DictionaryType
     {
         $dictionary = new DictionaryType([
             'Type' => new NameType('Annot'),
@@ -91,7 +85,7 @@ final class LinkAnnotation extends IndirectObject implements PageAnnotation, Str
             $dictionary->add('A', new UriAction($this->target->externalUrlValue())->toPdfDictionary());
         }
 
-        return $this->renderDictionaryObject($dictionary, $encryptor);
+        return $dictionary;
     }
 
     public function getRelatedObjects(): array
