@@ -30,14 +30,13 @@ final class PageTextRenderer
     private const float DEFAULT_LINE_HEIGHT_FACTOR = 1.2;
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
-    private ?TextLayoutEngine $textLayoutEngine = null;
-
     public function __construct(
         private readonly Page $page,
         private readonly PageFonts $pageFonts,
         private readonly PageLinks $pageLinks,
         private readonly PageGraphics $pageGraphics,
         private readonly PageMarkedContentIds $pageMarkedContentIds,
+        private readonly TextLayoutEngine $textLayoutEngine,
     ) {
     }
 
@@ -267,7 +266,7 @@ final class PageTextRenderer
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): array {
-        return $this->textLayoutEngine()->layoutParagraphLines(
+        return $this->textLayoutEngine->layoutParagraphLines(
             $text,
             $baseFont,
             $size,
@@ -345,7 +344,7 @@ final class PageTextRenderer
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): int {
-        return $this->textLayoutEngine()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
+        return $this->textLayoutEngine->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
     }
 
     private function resolveFont(string $baseFont): FontDefinition
@@ -500,7 +499,7 @@ final class PageTextRenderer
             return 0.0;
         }
 
-        $line = $this->textLayoutEngine()->trimTrailingWhitespaceFromLine($line);
+        $line = $this->textLayoutEngine->trimTrailingWhitespaceFromLine($line);
 
         $lineWidth = 0.0;
 
@@ -685,10 +684,4 @@ final class PageTextRenderer
         return [$leadingInset, $trailingInset];
     }
 
-    private function textLayoutEngine(): TextLayoutEngine
-    {
-        return $this->textLayoutEngine ??= new TextLayoutEngine(
-            TextLayoutFontResolver::forPageFonts($this->pageFonts),
-        );
-    }
 }

@@ -908,6 +908,9 @@ final class Page extends IndirectObject
             $this->pageLinks(),
             $this->pageGraphics(),
             $this->pageMarkedContentIds,
+            new Text\TextLayoutEngine(
+                Text\TextLayoutFontResolver::forPageFonts($this->pageFonts()),
+            ),
         );
     }
 
