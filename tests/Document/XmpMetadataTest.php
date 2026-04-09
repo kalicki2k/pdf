@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\XmpMetadata;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -60,6 +61,25 @@ final class XmpMetadataTest extends TestCase
 
         self::assertStringContainsString('<pdf:Producer>kalle/pdf 1.0</pdf:Producer>', $rendered);
         self::assertStringContainsString('<xmp:CreatorTool>Acme Backoffice</xmp:CreatorTool>', $rendered);
+    }
+
+    #[Test]
+    public function it_writes_xmp_metadata_via_the_output_path(): void
+    {
+        $document = new Document(
+            profile: Profile::standard(1.4),
+            title: 'Spec',
+            author: 'Kalle',
+            subject: 'Testing',
+            language: 'de-DE',
+        );
+        $document->addKeyword('pdf')->addKeyword('tests');
+        $metadata = new XmpMetadata(4, $document);
+        $output = new StringPdfOutput();
+
+        $metadata->write($output);
+
+        self::assertSame($metadata->render(), $output->contents());
     }
 
     #[Test]

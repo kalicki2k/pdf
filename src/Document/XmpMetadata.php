@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 
@@ -17,19 +19,21 @@ final class XmpMetadata extends IndirectObject
 
     public function render(): string
     {
-        $xml = $this->buildXml();
-        $dictionary = new DictionaryType([
-            'Type' => new NameType('Metadata'),
-            'Subtype' => new NameType('XML'),
-            'Length' => strlen($xml),
-        ]);
+        $buffer = new StringPdfOutput();
+        $this->write($buffer);
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'stream' . PHP_EOL
-            . $xml . PHP_EOL
-            . 'endstream' . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $buffer->contents();
+    }
+
+    public function write(PdfOutput $output): void
+    {
+        $xml = $this->buildXml();
+
+        $output->write($this->id . ' 0 obj' . PHP_EOL);
+        $output->write($this->dictionary(strlen($xml))->render() . PHP_EOL);
+        $output->write('stream' . PHP_EOL);
+        $output->write($xml);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
     private function buildXml(): string
@@ -190,5 +194,14 @@ XML . PHP_EOL;
     private function escape(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_XML1, 'UTF-8');
+    }
+
+    private function dictionary(int $length): DictionaryType
+    {
+        return new DictionaryType([
+            'Type' => new NameType('Metadata'),
+            'Subtype' => new NameType('XML'),
+            'Length' => $length,
+        ]);
     }
 }
