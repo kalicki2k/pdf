@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Document\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Document\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Document\Table\Layout\RowGroupHeightResolver;
 use Kalle\Pdf\Document\Table\Layout\RowGroupPreparer;
 use Kalle\Pdf\Document\Table\Layout\RowPreparer;
@@ -272,17 +273,18 @@ final class Table
             static fn (PreparedTableRow $row): bool => $row->header === false,
         );
         $repeatHeaders = $isBodyGroup && $this->sections->hasRepeatingHeaderRows();
+        $repeatingHeaderGroup = $repeatHeaders ? $this->prepareRepeatingHeaderGroup() : null;
         $remainingRows = $pendingGroupRows;
         $remainingRowHeights = $rowHeights;
         $deferredLeadingSplit = false;
 
         while ($remainingRows !== []) {
-            $pageFit = $this->resolvePendingGroupPageFit($remainingRowHeights, $repeatHeaders);
+            $pageFit = $this->resolvePendingGroupPageFit($remainingRowHeights, $repeatingHeaderGroup);
             $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
 
             if ($fittingRowCount === 0) {
-                $this->moveToNextPageForPendingGroup($pageFit);
-                $pageFit = $this->resolvePendingGroupPageFit($remainingRowHeights, false);
+                $this->moveToNextPageForPendingGroup($pageFit, $repeatingHeaderGroup);
+                $pageFit = $this->resolvePendingGroupPageFit($remainingRowHeights, null);
                 $fittingRowCount = $pageFit->fittingRowCountOnCurrentPage;
 
                 if ($fittingRowCount === 0) {
@@ -298,7 +300,7 @@ final class Table
                     $fittingRowCount,
                 )
             ) {
-                $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0));
+                $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0), $repeatingHeaderGroup);
                 $deferredLeadingSplit = true;
                 continue;
             }
@@ -316,7 +318,7 @@ final class Table
 
             $remainingRows = array_slice($remainingRows, $fittingRowCount);
             $remainingRowHeights = array_slice($remainingRowHeights, $fittingRowCount);
-            $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0));
+            $this->moveToNextPageForPendingGroup(new TableGroupPageFit($repeatHeaders, 0), $repeatingHeaderGroup);
         }
 
         $this->pendingRenderState->clear();
@@ -325,42 +327,44 @@ final class Table
     /**
      * @param list<float> $rowHeights
      */
-    private function resolvePendingGroupPageFit(array $rowHeights, bool $repeatHeaders): TableGroupPageFit
-    {
-        if ($repeatHeaders && $this->sections->hasRepeatingHeaderRows()) {
-            $preparedHeaderRows = $this->createRowGroupPreparer()->prepareGroup(
-                $this->sections->repeatingHeaderRows(),
-                true,
-                false,
-                'Header rowspans must be completed within the repeated header rows.',
-            );
-            $this->rowGroupHeightResolver->resolve($preparedHeaderRows);
-        }
-
+    private function resolvePendingGroupPageFit(
+        array $rowHeights,
+        ?PreparedTableRowGroup $repeatingHeaderGroup,
+    ): TableGroupPageFit {
         return $this->pendingGroupPaginator->resolvePageFit(
             $rowHeights,
             $this->cursorY - $this->bottomMargin,
-            $repeatHeaders && $this->sections->hasRepeatingHeaderRows(),
+            $repeatingHeaderGroup !== null,
         );
     }
 
-    private function moveToNextPageForPendingGroup(TableGroupPageFit $pageFit): void
-    {
+    private function moveToNextPageForPendingGroup(
+        TableGroupPageFit $pageFit,
+        ?PreparedTableRowGroup $repeatingHeaderGroup,
+    ): void {
         $this->page = $this->page->getDocument()->addPage($this->page->getWidth(), $this->page->getHeight());
         $this->cursorY = $this->page->getHeight() - $this->continuationTopMargin;
 
-        if (!$pageFit->repeatHeaders) {
+        if (!$pageFit->repeatHeaders || $repeatingHeaderGroup === null) {
             return;
         }
 
+        $this->renderPendingGroup($repeatingHeaderGroup->rows, $repeatingHeaderGroup->rowHeights);
+    }
+
+    private function prepareRepeatingHeaderGroup(): PreparedTableRowGroup
+    {
         $preparedHeaderRows = $this->createRowGroupPreparer()->prepareGroup(
             $this->sections->repeatingHeaderRows(),
             true,
             false,
             'Header rowspans must be completed within the repeated header rows.',
         );
-        $headerHeights = $this->rowGroupHeightResolver->resolve($preparedHeaderRows);
-        $this->renderPendingGroup($preparedHeaderRows, $headerHeights);
+
+        return new PreparedTableRowGroup(
+            $preparedHeaderRows,
+            $this->rowGroupHeightResolver->resolve($preparedHeaderRows),
+        );
     }
 
     /**
