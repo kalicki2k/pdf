@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\PdfVersion;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Utilities\PdfStringEscaper;
 
-final class StandardFont extends IndirectObject implements FontDefinition
+final class StandardFont extends DictionaryIndirectObject implements FontDefinition
 {
     private const FALLBACK_GLYPH_WIDTH = 600;
 
@@ -104,9 +104,9 @@ final class StandardFont extends IndirectObject implements FontDefinition
         return ($width / $unitsPerEm) * $size;
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
-        $dictionary = new DictionaryType([
+        return new DictionaryType([
             'Type' => new NameType('Font'),
             'Subtype' => new NameType($this->subtype),
             'BaseFont' => new NameType($this->baseFont),
@@ -114,10 +114,6 @@ final class StandardFont extends IndirectObject implements FontDefinition
                 ? new ReferenceType($this->encodingDictionary)
                 : new NameType($this->encoding),
         ]);
-
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
     }
 
     private function validate(): void

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 
-final class FontDescriptor extends IndirectObject
+final class FontDescriptor extends DictionaryIndirectObject
 {
     /**
      * @param list<int|float> $fontBBox
@@ -30,7 +30,7 @@ final class FontDescriptor extends IndirectObject
         parent::__construct($id);
     }
 
-    public function render(): string
+    protected function dictionary(): DictionaryType
     {
         $dictionary = new DictionaryType([
             'Type' => new NameType('FontDescriptor'),
@@ -45,9 +45,7 @@ final class FontDescriptor extends IndirectObject
             $this->getFontFileKey() => new ReferenceType($this->fontFile),
         ]);
 
-        return $this->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        return $dictionary;
     }
 
     private function getFontFileKey(): string
