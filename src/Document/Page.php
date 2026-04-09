@@ -796,6 +796,11 @@ final class Page extends IndirectObject
         return $this->resources->addProperty($group);
     }
 
+    public function addOpacityResource(Opacity $opacity): string
+    {
+        return $this->resources->addOpacity($opacity);
+    }
+
     /**
      * @return list<IndirectObject&PageAnnotation>
      */

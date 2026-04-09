@@ -387,21 +387,21 @@ final class PageGraphics
 
         $this->page->getDocument()->assertAllowsTransparency();
 
-        return $this->page->resources->addOpacity($opacity);
+        return $this->page->addOpacityResource($opacity);
     }
 
     public function addGraphicElement(Element $element): void
     {
         if ($this->page->getDocument()->isRenderingArtifactContext()) {
-            $this->page->contents->addElement(new Raw('/Artifact BMC'));
-            $this->page->contents->addElement($element);
-            $this->page->contents->addElement(new Raw('EMC'));
+            $this->page->addContentElement(new Raw('/Artifact BMC'));
+            $this->page->addContentElement($element);
+            $this->page->addContentElement(new Raw('EMC'));
 
             return;
         }
 
         $this->assertAllowsGraphicElements();
-        $this->page->contents->addElement($element);
+        $this->page->addContentElement($element);
     }
 
     /**
