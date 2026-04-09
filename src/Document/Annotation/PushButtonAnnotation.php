@@ -7,16 +7,15 @@ namespace Kalle\Pdf\Document\Annotation;
 use Kalle\Pdf\Document\Action\ButtonAction;
 use Kalle\Pdf\Document\Form\FormFieldTextAppearanceStream;
 use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
 use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Types\StringType;
 
-final class PushButtonAnnotation extends IndirectObject implements PageAnnotation, StructParentAwareAnnotation
+final class PushButtonAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {
     use HasStructParent;
 
@@ -39,12 +38,7 @@ final class PushButtonAnnotation extends IndirectObject implements PageAnnotatio
         parent::__construct($id);
     }
 
-    public function render(): string
-    {
-        return $this->renderWithStringEncryptor();
-    }
-
-    public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
+    protected function dictionary(): DictionaryType
     {
         $defaultAppearance = sprintf(
             '/%s %d Tf %s',
@@ -89,7 +83,7 @@ final class PushButtonAnnotation extends IndirectObject implements PageAnnotatio
             ]));
         }
 
-        return $this->renderDictionaryObject($dictionary, $encryptor);
+        return $dictionary;
     }
 
     public function getRelatedObjects(): array
