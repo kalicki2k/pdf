@@ -111,6 +111,7 @@ Example scripts live in [examples](examples/):
 - [table-header-matrix-pagination.php](examples/table-header-matrix-pagination.php)
 - [table-header-matrix-breaks.php](examples/table-header-matrix-breaks.php)
 - [table-narrow-columns.php](examples/table-narrow-columns.php)
+- [stream-to-file.php](examples/stream-to-file.php)
 - [table.php](examples/table.php)
 - [table-of-contents.php](examples/table-of-contents.php)
 - [table-of-contents-after-cover.php](examples/table-of-contents-after-cover.php)
@@ -126,6 +127,8 @@ Run one of them with:
 ```bash
 php examples/rechnung.php
 ```
+
+`stream-to-file.php` shows how to write the generated PDF into a writable file resource via `Document::writeToStream()`.
 
 Generated example PDFs are written to `var/examples`.
 

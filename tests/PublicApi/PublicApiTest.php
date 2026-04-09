@@ -246,6 +246,72 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
+    public function it_writes_the_same_bytes_to_a_stream_for_a_representative_public_document(): void
+    {
+        $document = new Document(
+            profile: Profile::pdf15(),
+            title: 'Streaming contract',
+            author: 'kalle/pdf',
+            subject: 'Representative stream regression document',
+            language: 'en-US',
+            creator: 'PHPUnit',
+            creatorTool: 'PublicApiTest',
+        );
+        $document->registerFont('Helvetica');
+        $document->registerFont('Helvetica-Bold');
+        $document->addKeyword('stream');
+        $document->addKeyword('regression');
+        $document->addAttachment('payload.txt', 'stream-contract');
+        $document->addPageNumbers(new Position(280, 20), 'Helvetica', 9, '{{page}} / {{pages}}');
+        $document->addHeader(static function (Page $page, int $pageNumber): void {
+            $page->addText("Header $pageNumber", new Position(20, 820), 'Helvetica', 9);
+        });
+        $document->addFooter(static function (Page $page, int $pageNumber): void {
+            $page->addText("Footer $pageNumber", new Position(20, 15), 'Helvetica', 9);
+        });
+
+        $guidesLayer = $document->addLayer('Guides');
+
+        $cover = $document->addPage(PageSize::A4());
+        $document->addOutline('Cover', $cover);
+        $document->addDestination('cover', $cover);
+        $cover->addText('Streaming contract', new Position(20, 800), 'Helvetica-Bold', 18);
+        $cover->addText('This document exercises multiple public API paths.', new Position(20, 780), 'Helvetica', 11);
+        $cover->addLink(new Rect(20, 740, 120, 14), 'https://example.com', 'Example');
+        $cover->addImage(new Image(1, 1, 'DeviceGray', 'FlateDecode', "\x00"), new Position(160, 760), 24, 24);
+        $cover->layer($guidesLayer, static function (Page $page): void {
+            $page->addRectangle(new Rect(18, 730, 170, 90));
+        });
+        $cover->createTextFrame(new Position(20, 710), 220)
+            ->addParagraph('The writer output must stay byte-identical to the render() convenience path.', 'Helvetica', 11);
+        $cover->createTable(new Position(20, 660), 220, [40, 100, 80])
+            ->font('Helvetica', 10)
+            ->addHeaderRow(['Key', 'Meaning', 'Value'])
+            ->addRow(['Mode', 'Serialization path', 'stream'])
+            ->addRow(['Check', 'Comparison', 'byte-identical']);
+
+        $details = $document->addPage(PageSize::A4());
+        $document->addOutline('Details', $details);
+        $details->addInternalLink(new Rect(20, 740, 100, 14), 'cover', 'Back to cover');
+        $details->addText('Second page', new Position(20, 800), 'Helvetica-Bold', 16);
+        $details->addText('Attachment and optional content are included as well.', new Position(20, 780), 'Helvetica', 11);
+
+        $expectedOutput = $document->render();
+        $stream = fopen('php://temp', 'w+b');
+
+        self::assertNotFalse($stream);
+
+        $document->writeToStream($stream);
+        rewind($stream);
+
+        $writtenOutput = stream_get_contents($stream);
+
+        fclose($stream);
+
+        self::assertSame($expectedOutput, $writtenOutput);
+    }
+
+    #[Test]
     public function it_can_write_the_public_document_directly_to_a_file(): void
     {
         $targetPath = sys_get_temp_dir() . '/pdf-public-api-' . uniqid('', true) . '.pdf';
