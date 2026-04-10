@@ -29,7 +29,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - die dokumentweite Orchestrierung liegt jetzt unter `Internal/Document`
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
-- der oeffentliche Binary-Wrapper liegt jetzt unter `Binary`, die konkreten Datenquellen unter `Internal/Binary`
+- wiederverwendbare Bytequellen liegen jetzt komplett unter `Internal/Binary`
 - oeffentliche Geometrie-Primitiven `Position`, `Rect` und `Insets` liegen jetzt unter `Layout`
 - oeffentliche Stil-Primitiven `Color` und `Opacity` liegen jetzt unter `Style`
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
@@ -57,7 +57,6 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
-  Binary/
   Table/
   Text/
 
@@ -112,19 +111,6 @@ Regeln:
 - keine Objektlisten aufbauen
 - keine PDF-Syntax rendern
 - nur Uebersetzung auf interne Use-Cases und Modelle
-
-### Binary
-
-Das Root-Paket `Binary` enthaelt den oeffentlichen Wrapper fuer wiederverwendbare Bytequellen.
-
-Beispiele:
-
-- `BinaryData`
-
-Regeln:
-
-- bleibt oeffentliche API, weil `Image` und einige Stream-Objekte Bytequellen direkt entgegennehmen
-- kapselt nur den kleinen oeffentlichen Einstieg; die konkreten Datenquellen liegen unter `Internal/Binary`
 
 ### Internal
 Hier liegt der interne Dokumentkern samt Ablaufsteuerung fuer Aufbau und Ausgabe.

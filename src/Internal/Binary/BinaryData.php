@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Binary;
+namespace Kalle\Pdf\Internal\Binary;
 
 use Kalle\Pdf\Internal\Binary\BinaryDataSource;
 use Kalle\Pdf\Internal\Binary\FileBinaryDataSource;
