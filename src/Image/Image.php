@@ -79,10 +79,60 @@ class Image
         return $this->softMask;
     }
 
+    public function streamLength(): int
+    {
+        return $this->data->length();
+    }
+
+    public function encryptedStreamLength(StandardObjectEncryptor $objectEncryptor): int
+    {
+        return $objectEncryptor->encryptedByteLength($this->streamLength());
+    }
+
+    public function writeDictionary(PdfOutput $output, ?int $softMaskObjectId, int $length): void
+    {
+        $output->write('<< /Type /XObject' . PHP_EOL);
+        $output->write('/Subtype /Image' . PHP_EOL);
+        $output->write("/Width {$this->width}" . PHP_EOL);
+        $output->write("/Height {$this->height}" . PHP_EOL);
+        $output->write("/ColorSpace /{$this->colorSpace}" . PHP_EOL);
+        $output->write("/BitsPerComponent {$this->bitsPerComponent}" . PHP_EOL);
+        $output->write("/Filter /{$this->filter}" . PHP_EOL);
+
+        if ($this->decodeParameters !== null) {
+            $output->write("/DecodeParms {$this->decodeParameters}" . PHP_EOL);
+        }
+
+        if ($softMaskObjectId !== null) {
+            $output->write("/SMask {$softMaskObjectId} 0 R" . PHP_EOL);
+        }
+
+        $output->write('/Length ' . $length . ' >>' . PHP_EOL);
+    }
+
+    public function writeStreamContents(PdfOutput $output): void
+    {
+        $this->data->writeTo($output);
+    }
+
+    public function writeEncryptedStreamContents(
+        PdfOutput $output,
+        StandardObjectEncryptor $objectEncryptor,
+        int $objectId,
+    ): void {
+        $encryptedOutput = new EncryptingPdfOutput(
+            $output,
+            $objectEncryptor->createStreamEncryptor($objectId),
+        );
+        $this->data->writeTo($encryptedOutput);
+        $encryptedOutput->finish();
+    }
+
     public function write(PdfOutput $output, ?int $softMaskObjectId = null): void
     {
-        $output->write($this->header($softMaskObjectId, $this->data->length()));
-        $this->data->writeTo($output);
+        $this->writeDictionary($output, $softMaskObjectId, $this->streamLength());
+        $output->write('stream' . PHP_EOL);
+        $this->writeStreamContents($output);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL);
     }
 
@@ -92,40 +142,10 @@ class Image
         int $objectId,
         ?int $softMaskObjectId = null,
     ): void {
-        $encryptedOutput = new EncryptingPdfOutput(
-            $output,
-            $objectEncryptor->createStreamEncryptor($objectId),
-        );
-        $encryptedLength = $objectEncryptor->encryptedByteLength($this->data->length());
-
-        $output->write($this->header($softMaskObjectId, $encryptedLength));
-        $this->data->writeTo($encryptedOutput);
-        $encryptedOutput->finish();
+        $this->writeDictionary($output, $softMaskObjectId, $this->encryptedStreamLength($objectEncryptor));
+        $output->write('stream' . PHP_EOL);
+        $this->writeEncryptedStreamContents($output, $objectEncryptor, $objectId);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL);
-    }
-
-    private function header(?int $softMaskObjectId, int $length): string
-    {
-        $output = '<< /Type /XObject' . PHP_EOL;
-        $output .= '/Subtype /Image' . PHP_EOL;
-        $output .= "/Width {$this->width}" . PHP_EOL;
-        $output .= "/Height {$this->height}" . PHP_EOL;
-        $output .= "/ColorSpace /{$this->colorSpace}" . PHP_EOL;
-        $output .= "/BitsPerComponent {$this->bitsPerComponent}" . PHP_EOL;
-        $output .= "/Filter /{$this->filter}" . PHP_EOL;
-
-        if ($this->decodeParameters !== null) {
-            $output .= "/DecodeParms {$this->decodeParameters}" . PHP_EOL;
-        }
-
-        if ($softMaskObjectId !== null) {
-            $output .= "/SMask {$softMaskObjectId} 0 R" . PHP_EOL;
-        }
-
-        $output .= '/Length ' . $length . ' >>' . PHP_EOL;
-        $output .= 'stream' . PHP_EOL;
-
-        return $output;
     }
 
     /**

@@ -28,14 +28,24 @@ class ImageObject extends IndirectObject implements EncryptableIndirectObject
     protected function writeObject(PdfOutput $output): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $this->image->write($output, $this->softMask?->getId());
+        $this->image->writeDictionary($output, $this->softMask?->getId(), $this->image->streamLength());
+        $output->write('stream' . PHP_EOL);
+        $this->image->writeStreamContents($output);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL);
         $output->write('endobj' . PHP_EOL);
     }
 
     public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $this->image->writeEncrypted($output, $objectEncryptor, $this->id, $this->softMask?->getId());
+        $this->image->writeDictionary(
+            $output,
+            $this->softMask?->getId(),
+            $this->image->encryptedStreamLength($objectEncryptor),
+        );
+        $output->write('stream' . PHP_EOL);
+        $this->image->writeEncryptedStreamContents($output, $objectEncryptor, $this->id);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL);
         $output->write('endobj' . PHP_EOL);
     }
 
