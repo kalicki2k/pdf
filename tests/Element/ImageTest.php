@@ -15,8 +15,8 @@ use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Render\StringPdfOutput;
-use Kalle\Pdf\Security\EncryptionAlgorithm;
 
 use function Kalle\Pdf\setImageGzcompressFailure;
 

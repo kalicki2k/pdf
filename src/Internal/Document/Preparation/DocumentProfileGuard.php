@@ -7,8 +7,8 @@ namespace Kalle\Pdf\Internal\Document\Preparation;
 use InvalidArgumentException;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\PdfVersion;
-use Kalle\Pdf\Security\EncryptionAlgorithm;
 
 /**
  * @internal Guards document features against profile and version requirements.

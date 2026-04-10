@@ -6,4 +6,4 @@ Internal encryption is split by technical responsibility:
 - `Stream` performs incremental payload encryption
 - `Crypto` contains low-level cipher primitives
 
-Only public encryption configuration stays in `src/Security`.
+Encryption configuration now lives alongside the rest of the internal security model in `src/Internal/Security`.

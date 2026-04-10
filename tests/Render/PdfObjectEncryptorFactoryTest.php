@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Render\PdfEncryption;
 use Kalle\Pdf\Render\PdfFileStructure;
 use Kalle\Pdf\Render\PdfObjectEncryptorFactory;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\PdfTrailer;
-use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

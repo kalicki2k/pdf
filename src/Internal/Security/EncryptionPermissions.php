@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Security;
+namespace Kalle\Pdf\Internal\Security;
 
 final readonly class EncryptionPermissions
 {

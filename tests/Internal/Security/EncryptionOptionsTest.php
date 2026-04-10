@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Security;
+namespace Kalle\Pdf\Tests\Internal\Security;
 
-use Kalle\Pdf\Security\EncryptionAlgorithm;
-use Kalle\Pdf\Security\EncryptionOptions;
-use Kalle\Pdf\Security\EncryptionPermissions;
+use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Internal\Security\EncryptionOptions;
+use Kalle\Pdf\Internal\Security\EncryptionPermissions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

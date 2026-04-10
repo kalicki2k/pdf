@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Encryption\Profile;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Security\EncryptionPermissions;
+use Kalle\Pdf\Internal\Security\EncryptionPermissions;
 
 final class PermissionBitsResolver
 {

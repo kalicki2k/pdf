@@ -21,6 +21,7 @@ use function Kalle\Pdf\Internal\Document\setDocumentRandomBytesShouldThrow;
 
 use Kalle\Pdf\Internal\Page\Page;
 
+use Kalle\Pdf\Internal\Security\EncryptionOptions;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
@@ -28,7 +29,6 @@ use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

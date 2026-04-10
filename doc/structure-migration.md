@@ -51,11 +51,6 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
-  Security/
-    EncryptionAlgorithm.php
-    EncryptionOptions.php
-    EncryptionPermissions.php
-
   Internal/
     Document/
       Preparation/
@@ -66,6 +61,10 @@ src/
       Profile/
       Standard/
       Stream/
+    Security/
+      EncryptionAlgorithm.php
+      EncryptionOptions.php
+      EncryptionPermissions.php
     Page/
 
   Model/

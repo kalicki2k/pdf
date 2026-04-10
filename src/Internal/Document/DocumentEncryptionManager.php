@@ -9,8 +9,8 @@ use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionVersionResolver;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandler;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Security\EncryptionOptions;
 use Kalle\Pdf\Model\Document\EncryptDictionary;
-use Kalle\Pdf\Security\EncryptionOptions;
 
 /**
  * @internal Manages document encryption state and lazy security handler data creation.

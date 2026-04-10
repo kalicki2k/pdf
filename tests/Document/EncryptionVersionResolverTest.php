@@ -8,10 +8,10 @@ use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionVersionResolver;
 use Kalle\Pdf\Internal\Encryption\Profile\PermissionBitsResolver;
+use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Internal\Security\EncryptionOptions;
+use Kalle\Pdf\Internal\Security\EncryptionPermissions;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Security\EncryptionAlgorithm;
-use Kalle\Pdf\Security\EncryptionOptions;
-use Kalle\Pdf\Security\EncryptionPermissions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

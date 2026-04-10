@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Internal\Encryption\Crypto\Rc4Cipher;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Profile\PermissionBitsResolver;
-use Kalle\Pdf\Security\EncryptionOptions;
+use Kalle\Pdf\Internal\Security\EncryptionOptions;
 
 final class StandardSecurityHandler
 {

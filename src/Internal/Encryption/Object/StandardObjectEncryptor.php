@@ -11,7 +11,7 @@ use Kalle\Pdf\Internal\Encryption\Stream\AesCbcStreamingByteEncryptor;
 use Kalle\Pdf\Internal\Encryption\Stream\PassthroughStreamingByteEncryptor;
 use Kalle\Pdf\Internal\Encryption\Stream\Rc4StreamingByteEncryptor;
 use Kalle\Pdf\Internal\Encryption\Stream\StreamingByteEncryptor;
-use Kalle\Pdf\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use RuntimeException;
 
 final readonly class StandardObjectEncryptor
