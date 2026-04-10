@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Element;
+namespace Kalle\Pdf;
 
 function setImageGzcompressFailure(bool $shouldFail): void
 {

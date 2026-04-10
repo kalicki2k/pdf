@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Feature\Action\ButtonAction;
 use Kalle\Pdf\Feature\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Feature\Annotation\LineEndingStyle;
@@ -21,6 +20,7 @@ use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\PageRegistry;

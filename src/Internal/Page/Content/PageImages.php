@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Element\DrawImage;
-use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Image;
+use Kalle\Pdf\Internal\Page\Content\Instruction\DrawImageInstruction;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Model\Page\ImageOptions;
 
@@ -73,7 +73,7 @@ final class PageImages
             : $artifactTag;
         $markedContentId = $options->structureTag !== null ? $this->nextMarkedContentId() : null;
 
-        $this->page->addContentElement(new DrawImage(
+        $this->page->addContentElement(new DrawImageInstruction(
             $resourceName,
             $position->x,
             $position->y,

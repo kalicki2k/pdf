@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Element;
+namespace Kalle\Pdf\Internal\Page\Content\Instruction;
 
-final class Path extends Element
+final class PathInstruction extends ContentInstruction
 {
     /**
      * @param list<string> $commands

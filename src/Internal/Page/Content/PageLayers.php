@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Content;
 
-use Kalle\Pdf\Element\Raw;
 use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Page\Content\Instruction\RawInstruction;
 use Kalle\Pdf\Internal\Page\Page;
 
 /**
@@ -32,12 +32,12 @@ final class PageLayers
             : $this->page->getDocument()->addLayer($layer->getName(), $layer->isVisibleByDefault());
         $resourceName = $this->page->addPropertyResource($group);
 
-        $this->page->addContentElement(new Raw("/OC /$resourceName BDC"));
+        $this->page->addContentElement(new RawInstruction("/OC /$resourceName BDC"));
 
         try {
             $renderer($this->page);
         } finally {
-            $this->page->addContentElement(new Raw('EMC'));
+            $this->page->addContentElement(new RawInstruction('EMC'));
         }
 
         return $this->page;

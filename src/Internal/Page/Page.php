@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page;
 
-use Kalle\Pdf\Element\Element;
-use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Feature\Action\ButtonAction;
 use Kalle\Pdf\Feature\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Feature\Annotation\LineEndingStyle;
@@ -29,7 +27,9 @@ use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Internal\Page\Content\PageComponents;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;
 use Kalle\Pdf\Internal\Page\Content\PageImages;
@@ -878,7 +878,7 @@ class Page extends IndirectObject
         return $this->contents->prepareLengthObject($this->document->getUniqObjectId());
     }
 
-    public function addContentElement(Element $element): void
+    public function addContentElement(ContentInstruction $element): void
     {
         $this->contents->addElement($element);
     }

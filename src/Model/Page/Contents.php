@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Model\Page;
 
-use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Model\Page\StreamLengthObject;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
@@ -17,12 +17,12 @@ use Kalle\Pdf\Types\ReferenceType;
 
 class Contents extends IndirectObject implements EncryptableIndirectObject
 {
-    /** @var list<Element> */
+    /** @var list<ContentInstruction> */
     private array $elements = [];
 
     private ?StreamLengthObject $lengthObject = null;
 
-    public function addElement(Element $element): self
+    public function addElement(ContentInstruction $element): self
     {
         $this->elements[] = $element;
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Model\Page\Contents;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
@@ -127,9 +127,9 @@ final class ContentsTest extends TestCase
         );
     }
 
-    private function createElement(string $renderedValue): Element
+    private function createElement(string $renderedValue): ContentInstruction
     {
-        return new class ($renderedValue) extends Element {
+        return new class ($renderedValue) extends ContentInstruction {
             public function __construct(private readonly string $renderedValue)
             {
             }

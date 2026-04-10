@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Element;
+namespace Kalle\Pdf\Internal\Page\Content\Instruction;
 
 use Kalle\Pdf\Render\PdfOutput;
 
-abstract class Element
+abstract class ContentInstruction
 {
     public float $x;
     public float $y;

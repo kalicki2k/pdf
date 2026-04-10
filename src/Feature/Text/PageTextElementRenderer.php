@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Element\Text as TextElement;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Content\Instruction\TextInstruction as TextElement;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;
 use Kalle\Pdf\Internal\Page\Content\PageLinks;
 use Kalle\Pdf\Internal\Page\Content\PageMarkedContentIds;

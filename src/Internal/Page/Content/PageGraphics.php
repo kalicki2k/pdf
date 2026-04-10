@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Element\Element;
-use Kalle\Pdf\Element\Line;
-use Kalle\Pdf\Element\Raw;
-use Kalle\Pdf\Element\Rectangle;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
+use Kalle\Pdf\Internal\Page\Content\Instruction\LineInstruction;
+use Kalle\Pdf\Internal\Page\Content\Instruction\RawInstruction;
+use Kalle\Pdf\Internal\Page\Content\Instruction\RectangleInstruction;
 use Kalle\Pdf\Internal\Page\Page;
 
 /**
@@ -48,7 +48,7 @@ final class PageGraphics
         $colorOperator = $color?->renderStrokingOperator();
         $graphicsStateName = $this->resolveGraphicsStateName($opacity);
 
-        $this->addGraphicElement(new Line(
+        $this->addGraphicElement(new LineInstruction(
             $from->x,
             $from->y,
             $to->x,
@@ -84,7 +84,7 @@ final class PageGraphics
 
         $graphicsStateName = $this->resolveGraphicsStateName($opacity);
 
-        $this->addGraphicElement(new Rectangle(
+        $this->addGraphicElement(new RectangleInstruction(
             $box->x,
             $box->y,
             $box->width,
@@ -385,12 +385,12 @@ final class PageGraphics
         return $this->page->addOpacityResource($opacity);
     }
 
-    public function addGraphicElement(Element $element): void
+    public function addGraphicElement(ContentInstruction $element): void
     {
         if ($this->page->getDocument()->isRenderingArtifactContext()) {
-            $this->page->addContentElement(new Raw('/Artifact BMC'));
+            $this->page->addContentElement(new RawInstruction('/Artifact BMC'));
             $this->page->addContentElement($element);
-            $this->page->addContentElement(new Raw('EMC'));
+            $this->page->addContentElement(new RawInstruction('EMC'));
 
             return;
         }

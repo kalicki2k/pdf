@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Element\Path;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Content\Instruction\PathInstruction;
 use Kalle\Pdf\Internal\Page\Page;
 
 final class PathBuilder
@@ -23,14 +23,14 @@ final class PathBuilder
 
     public function moveTo(float $x, float $y): self
     {
-        $this->commands[] = Path::formatNumber($x) . ' ' . Path::formatNumber($y) . ' m';
+        $this->commands[] = PathInstruction::formatNumber($x) . ' ' . PathInstruction::formatNumber($y) . ' m';
 
         return $this;
     }
 
     public function lineTo(float $x, float $y): self
     {
-        $this->commands[] = Path::formatNumber($x) . ' ' . Path::formatNumber($y) . ' l';
+        $this->commands[] = PathInstruction::formatNumber($x) . ' ' . PathInstruction::formatNumber($y) . ' l';
 
         return $this;
     }
@@ -43,12 +43,12 @@ final class PathBuilder
         float $x3,
         float $y3,
     ): self {
-        $this->commands[] = Path::formatNumber($x1) . ' '
-            . Path::formatNumber($y1) . ' '
-            . Path::formatNumber($x2) . ' '
-            . Path::formatNumber($y2) . ' '
-            . Path::formatNumber($x3) . ' '
-            . Path::formatNumber($y3) . ' c';
+        $this->commands[] = PathInstruction::formatNumber($x1) . ' '
+            . PathInstruction::formatNumber($y1) . ' '
+            . PathInstruction::formatNumber($x2) . ' '
+            . PathInstruction::formatNumber($y2) . ' '
+            . PathInstruction::formatNumber($x3) . ' '
+            . PathInstruction::formatNumber($y3) . ' c';
 
         return $this;
     }
@@ -118,7 +118,7 @@ final class PathBuilder
 
         $graphicsStateName = $this->pageGraphics->resolveGraphicsStateName($opacity);
 
-        $this->pageGraphics->addGraphicElement(new Path(
+        $this->pageGraphics->addGraphicElement(new PathInstruction(
             $this->commands,
             $strokeWidth,
             $strokeColorOperator,

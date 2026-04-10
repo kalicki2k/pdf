@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Element;
+namespace Kalle\Pdf\Internal\Page\Content\Instruction;
 
-final class DrawImage extends Element
+final class DrawImageInstruction extends ContentInstruction
 {
     public function __construct(
         private readonly string $resourceName,

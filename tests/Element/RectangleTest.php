@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Element;
 
-use Kalle\Pdf\Element\Rectangle;
+use Kalle\Pdf\Internal\Page\Content\Instruction\RectangleInstruction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -13,7 +13,7 @@ final class RectangleTest extends TestCase
     #[Test]
     public function it_renders_a_stroked_rectangle(): void
     {
-        $rectangle = new Rectangle(10, 20, 100, 40);
+        $rectangle = new RectangleInstruction(10, 20, 100, 40);
 
         self::assertSame(
             "q\n"
@@ -27,7 +27,7 @@ final class RectangleTest extends TestCase
     #[Test]
     public function it_renders_a_filled_rectangle(): void
     {
-        $rectangle = new Rectangle(10, 20, 100, 40, null, null, '0.5 g');
+        $rectangle = new RectangleInstruction(10, 20, 100, 40, null, null, '0.5 g');
 
         self::assertSame(
             "q\n"
@@ -42,7 +42,7 @@ final class RectangleTest extends TestCase
     #[Test]
     public function it_renders_a_filled_and_stroked_rectangle(): void
     {
-        $rectangle = new Rectangle(10, 20, 100, 40, 2.5, '1 0 0 RG', '0.5 g', 'GS1');
+        $rectangle = new RectangleInstruction(10, 20, 100, 40, 2.5, '1 0 0 RG', '0.5 g', 'GS1');
 
         self::assertSame(
             "q\n"

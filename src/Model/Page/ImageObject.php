@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Model\Page;
 
-use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Image;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;

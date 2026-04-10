@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Element;
+namespace Kalle\Pdf;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
@@ -11,7 +11,7 @@ use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
-class Image extends Element
+class Image
 {
     private int $width;
     private int $height;

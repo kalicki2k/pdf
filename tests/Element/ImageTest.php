@@ -7,17 +7,19 @@ namespace Kalle\Pdf\Tests\Element;
 require_once __DIR__ . '/Support/ImageGzcompressStub.php';
 
 use InvalidArgumentException;
-use Kalle\Pdf\Element\Image;
-
-use function Kalle\Pdf\Element\setImageGzcompressFailure;
-
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 
 use Kalle\Pdf\Encryption\EncryptionProfile;
+
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Image;
 use Kalle\Pdf\Infrastructure\Binary\BinaryData;
 use Kalle\Pdf\Render\StringPdfOutput;
+
+use function Kalle\Pdf\setImageGzcompressFailure;
+
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
@@ -95,18 +97,6 @@ final class ImageTest extends TestCase
             $encryptor->encryptStreamObject("9 0 obj\n" . $image->render() . "endobj\n", 9),
             "9 0 obj\n" . $output->contents() . "endobj\n",
         );
-    }
-
-    #[Test]
-    public function it_inherits_position_handling_from_element(): void
-    {
-        $image = new Image(10, 20, 'DeviceGray', 'FlateDecode', 'data');
-
-        $result = $image->setPosition(15.5, 25.25);
-
-        self::assertSame($image, $result);
-        self::assertSame(15.5, $image->x);
-        self::assertSame(25.25, $image->y);
     }
 
     #[Test]

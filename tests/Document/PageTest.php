@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Feature\Action\GoToAction;
 use Kalle\Pdf\Feature\Action\GoToRemoteAction;
 use Kalle\Pdf\Feature\Action\HideAction;
@@ -42,6 +41,7 @@ use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;

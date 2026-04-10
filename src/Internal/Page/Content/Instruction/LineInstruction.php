@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Element;
+namespace Kalle\Pdf\Internal\Page\Content\Instruction;
 
-final class Line extends Element
+final class LineInstruction extends ContentInstruction
 {
     public function __construct(
         private readonly float $startX,

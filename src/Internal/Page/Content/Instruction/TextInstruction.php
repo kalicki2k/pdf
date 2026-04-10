@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Element;
+namespace Kalle\Pdf\Internal\Page\Content\Instruction;
 
-class Text extends Element
+class TextInstruction extends ContentInstruction
 {
     private ?int $markedContentId;
     private string $content;
