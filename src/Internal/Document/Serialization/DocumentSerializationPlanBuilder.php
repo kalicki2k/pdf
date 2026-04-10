@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Document\Serialization;
 
-use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Render\PdfEncryption;
 use Kalle\Pdf\Internal\Render\PdfFileStructure;
 use Kalle\Pdf\Internal\Render\PdfSerializationPlan;

@@ -14,9 +14,9 @@ use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Page;
 
 final readonly class PreparedCellRenderer
 {

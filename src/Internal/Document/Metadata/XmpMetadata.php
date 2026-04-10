@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Document\Metadata;
 
-use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Object\StreamIndirectObject;
 use Kalle\Pdf\Internal\PdfType\DictionaryType;
 use Kalle\Pdf\Internal\PdfType\NameType;

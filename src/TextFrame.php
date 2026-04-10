@@ -10,7 +10,6 @@ use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Text\TextFrame as InternalTextFrame;
 use Kalle\Pdf\Internal\Layout\Value\BulletType;
-use Kalle\Pdf\Internal\Page\Page as InternalPage;
 
 /**
  * Public facade for flowing text across pages.
@@ -103,7 +102,7 @@ final readonly class TextFrame
 
     public function getPage(): Page
     {
-        return new Page($this->textFrame->getPage());
+        return $this->textFrame->getPage();
     }
 
     public function getCursorY(): float

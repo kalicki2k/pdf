@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Text\Input\ListOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;

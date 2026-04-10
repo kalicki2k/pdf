@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Document\Form\AcroForm;
 use Kalle\Pdf\Internal\Document\Preparation\DocumentProfileGuard;
 

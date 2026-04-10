@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Internal\Page\Annotation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\PdfType\ArrayType;
 use Kalle\Pdf\Internal\PdfType\DictionaryType;
 use Kalle\Pdf\Internal\PdfType\NameType;
 use Kalle\Pdf\Internal\PdfType\ReferenceType;
 use Kalle\Pdf\Internal\PdfType\StringType;
+use Kalle\Pdf\Page;
 
 final class CaretAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {

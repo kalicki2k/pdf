@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Document\Outline\OutlineItem;
 use Kalle\Pdf\Internal\Document\Outline\OutlineRoot;
-use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Manages document outlines and named destinations.

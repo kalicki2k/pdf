@@ -12,10 +12,10 @@ use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Collects page annotations so Page can stay focused on its public API.

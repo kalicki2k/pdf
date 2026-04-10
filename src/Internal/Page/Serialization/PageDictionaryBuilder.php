@@ -6,11 +6,11 @@ namespace Kalle\Pdf\Internal\Page\Serialization;
 
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
-use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\PdfType\ArrayType;
 use Kalle\Pdf\Internal\PdfType\DictionaryType;
 use Kalle\Pdf\Internal\PdfType\NameType;
 use Kalle\Pdf\Internal\PdfType\ReferenceType;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Builds the PDF page object dictionary before serialization.

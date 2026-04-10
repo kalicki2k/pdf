@@ -5,26 +5,111 @@ declare(strict_types=1);
 namespace Kalle\Pdf;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
-use Kalle\Pdf\Internal\Document\Document as InternalDocument;
+use Kalle\Pdf\Internal\Document\DocumentAcroFormManager;
+use Kalle\Pdf\Internal\Document\DocumentAttachmentManager;
+use Kalle\Pdf\Internal\Document\DocumentEncryptionManager;
+use Kalle\Pdf\Internal\Document\DocumentFontFactory;
+use Kalle\Pdf\Internal\Document\DocumentFontRegistry;
+use Kalle\Pdf\Internal\Document\DocumentMetadataManager;
+use Kalle\Pdf\Internal\Document\DocumentNavigationManager;
+use Kalle\Pdf\Internal\Document\DocumentOptionalContentManager;
+use Kalle\Pdf\Internal\Document\DocumentStructureManager;
+use Kalle\Pdf\Internal\Document\Form\AcroForm;
+use Kalle\Pdf\Internal\Document\Metadata\IccProfileStream;
+use Kalle\Pdf\Internal\Document\Metadata\Info;
+use Kalle\Pdf\Internal\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Document\Outline\OutlineRoot;
+use Kalle\Pdf\Internal\Document\Preparation\DocumentDeferredRendering;
+use Kalle\Pdf\Internal\Document\Preparation\DocumentPageDecoratorManager;
+use Kalle\Pdf\Internal\Document\Preparation\DocumentProfileGuard;
+use Kalle\Pdf\Internal\Document\Preparation\DocumentTableOfContentsBuilder;
+use Kalle\Pdf\Internal\Document\Serialization\DocumentObjectCollector;
+use Kalle\Pdf\Internal\Document\Serialization\DocumentPdfWriter;
+use Kalle\Pdf\Internal\Document\Structure\Catalog;
+use Kalle\Pdf\Internal\Document\Structure\Pages;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Internal\Encryption\Standard\EncryptDictionary;
+use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Page\PageSize;
-use Kalle\Pdf\Internal\Page\Page as InternalPage;
+use Kalle\Pdf\Internal\Object\IndirectObject;
+use Kalle\Pdf\Internal\Render\AtomicFilePdfOutput;
+use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\StreamPdfOutput;
+use Kalle\Pdf\Internal\Render\StringPdfOutput;
+use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;
+use Kalle\Pdf\Internal\TaggedPdf\ParentTree;
+use Kalle\Pdf\Internal\TaggedPdf\StructElem;
+use Kalle\Pdf\Internal\TaggedPdf\StructTreeRoot;
+use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Random\RandomException;
+use RuntimeException;
+use Throwable;
 
-/**
- * Public entry point for building and rendering PDF documents.
- */
-final readonly class Document
+class Document
 {
-    private InternalDocument $document;
+    private const string PACKAGE_NAME = 'kalle/pdf';
+    private int $objectId = 0;
+    private int $structParentId = -1;
+    private readonly DateTimeImmutable $creationDate;
+    private readonly DateTimeImmutable $modificationDate;
+    private string $creator;
+    private string $creatorTool;
+    private string $producer;
+    private ?EncryptionProfile $encryptionProfile = null;
+    private ?EncryptionOptions $encryptionOptions = null;
+    private ?StandardSecurityHandlerData $securityHandlerData = null;
+    private ?IccProfileStream $pdfaOutputIntentProfile = null;
+    private ?XmpMetadata $xmpMetadata = null;
+    private DocumentDeferredRendering $deferredRendering;
+
+    /** @var array<int, FontDefinition&IndirectObject> */
+    private array $fonts = [];
+
+    /** @var list<string> */
+    private array $keywords = [];
+    /** @var array<int, true> */
+    private array $excludedPageIdsFromNumbering = [];
+    /** @var array<string, Page> */
+    private array $destinations = [];
+    /** @var array<string, OptionalContentGroup> */
+    private array $optionalContentGroups = [];
+    /** @var list<FileSpecification> */
+    private array $attachments = [];
+    /** @var array{string, string} */
+    private array $documentId;
+
+    /** @var StructElem[]  */
+    private array $structElems = [];
+    private bool $renderingArtifactContext = false;
+    private ?DocumentAcroFormManager $documentAcroFormManager = null;
+    private ?DocumentMetadataManager $documentMetadataManager = null;
+    private ?DocumentNavigationManager $documentNavigationManager = null;
+    private ?DocumentOptionalContentManager $documentOptionalContentManager = null;
+    private ?DocumentAttachmentManager $documentAttachmentManager = null;
+    private ?DocumentEncryptionManager $documentEncryptionManager = null;
+    private ?DocumentPageDecoratorManager $documentPageDecoratorManager = null;
+    private ?DocumentStructureManager $documentStructureManager = null;
+    private ?DocumentProfileGuard $documentProfileGuard = null;
+    private ?DocumentFontFactory $documentFontFactory = null;
+    private ?DocumentFontRegistry $documentFontRegistry = null;
+    public Catalog $catalog;
+    public ?AcroForm $acroForm = null;
+    public ?EncryptDictionary $encryptDictionary = null;
+    public Info $info;
+    public ?OutlineRoot $outlineRoot = null;
+    public ?ParentTree $parentTree = null;
+    public Pages $pages;
+    public ?StructTreeRoot $structTreeRoot = null;
 
     /**
-     * Creates a new PDF document with metadata and optional font presets.
-     *
      * @param list<array{
      *     baseFont: string,
      *     path: string,
@@ -35,126 +120,243 @@ final readonly class Document
      */
     public function __construct(
         Profile $profile,
-        ?string $title = null,
-        ?string $author = null,
-        ?string $subject = null,
-        ?string $language = null,
+        private readonly ?string $title = null,
+        private readonly ?string $author = null,
+        private readonly ?string $subject = null,
+        private readonly ?string $language = null,
         ?string $creator = null,
         ?string $creatorTool = null,
-        ?array $fontConfig = null,
+        private readonly ?array $fontConfig = null,
     ) {
-        $this->document = new InternalDocument(
-            profile: $profile,
-            title: $title,
-            author: $author,
-            subject: $subject,
-            language: $language,
-            creator: $creator,
-            creatorTool: $creatorTool,
-            fontConfig: $fontConfig,
-        );
+        $this->profile = $profile;
+        $this->catalog = new Catalog(++$this->objectId, $this);
+        $this->pages = new Pages(++$this->objectId, $this);
+        $this->deferredRendering = new DocumentDeferredRendering();
+
+        $this->info = new Info(++$this->objectId, $this);
+        $this->creationDate = new DateTimeImmutable();
+        $this->modificationDate = $this->creationDate;
+        $this->creator = $creator !== null && $creator !== '' ? $creator : self::PACKAGE_NAME;
+        $this->creatorTool = $creatorTool !== null && $creatorTool !== '' ? $creatorTool : self::PACKAGE_NAME;
+        $this->producer = DocumentMetadataManager::resolveDefaultProducer(self::PACKAGE_NAME);
+        $this->documentId = $this->generateDocumentId();
     }
 
-    public function getProfile(): Profile
+    private readonly Profile $profile;
+
+    /**
+     * @return int
+     */
+    public function getUniqObjectId(): int
     {
-        return $this->document->getProfile();
+        return ++$this->objectId;
+    }
+
+    /**
+     * @return list<IndirectObject>
+     */
+    public function getDocumentObjects(): array
+    {
+        return new DocumentObjectCollector($this, array_values($this->structElems))->collect();
+    }
+
+    /**
+     * @return iterable<IndirectObject>
+     */
+    public function iterateDocumentObjects(): iterable
+    {
+        return new DocumentObjectCollector($this, array_values($this->structElems));
     }
 
     public function getCreationDate(): DateTimeImmutable
     {
-        return $this->document->getCreationDate();
+        return $this->creationDate;
+    }
+
+    public function getVersion(): float
+    {
+        return $this->profile->version();
+    }
+
+    public function getProfile(): Profile
+    {
+        return $this->profile;
+    }
+
+    public function getPdfAOutputIntentProfile(): ?IccProfileStream
+    {
+        return $this->documentMetadataManager()->getPdfAOutputIntentProfile();
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function getAuthor(): ?string
+    {
+        return $this->author;
+    }
+
+    public function getSubject(): ?string
+    {
+        return $this->subject;
+    }
+
+    public function getLanguage(): ?string
+    {
+        return $this->language;
+    }
+
+    /**
+     * @return list<Page>
+     */
+    public function getPages(): array
+    {
+        return array_values($this->pages->pages);
+    }
+
+    public function getDeferredRendering(): DocumentDeferredRendering
+    {
+        return $this->deferredRendering;
     }
 
     public function getModificationDate(): DateTimeImmutable
     {
-        return $this->document->getModificationDate();
+        return $this->modificationDate;
     }
 
     public function getCreator(): string
     {
-        return $this->document->getCreator();
+        return $this->documentMetadataManager()->getCreator();
     }
 
     public function setCreator(string $creator): self
     {
-        $this->document->setCreator($creator);
+        $this->documentMetadataManager()->setCreator($creator);
 
         return $this;
     }
 
     public function getProducer(): string
     {
-        return $this->document->getProducer();
+        return $this->documentMetadataManager()->getProducer();
     }
 
     public function setProducer(string $producer): self
     {
-        $this->document->setProducer($producer);
+        $this->documentMetadataManager()->setProducer($producer);
 
         return $this;
     }
 
     public function getCreatorTool(): string
     {
-        return $this->document->getCreatorTool();
+        return $this->documentMetadataManager()->getCreatorTool();
     }
 
     public function setCreatorTool(string $creatorTool): self
     {
-        $this->document->setCreatorTool($creatorTool);
+        $this->documentMetadataManager()->setCreatorTool($creatorTool);
 
         return $this;
     }
 
-    /**
-     * Adds a page and returns the public page facade.
-     */
-    public function addPage(?PageSize $size = null): Page
+    public function getXmpMetadata(): ?XmpMetadata
     {
-        return $this->toPublicPage($this->document->addPage($size ?? PageSize::A4()));
+        return $this->documentMetadataManager()->getXmpMetadata();
     }
 
-    /**
-     * Adds an outline entry that points to the given page.
-     */
+    public function addPage(PageSize | float $width = 595.2755905511812, ?float $height = null): Page
+    {
+        if ($width instanceof PageSize) {
+            if ($height !== null) {
+                throw new InvalidArgumentException('Height must not be provided when using a PageSize.');
+            }
+
+            $height = $width->height();
+            $width = $width->width();
+        }
+
+        $height ??= 841.8897637795277;
+
+        return $this->pages->addPage(
+            ++$this->objectId,
+            ++$this->objectId,
+            ++$this->objectId,
+            $this->getNextStructParentId(),
+            $width,
+            $height,
+        );
+    }
+
+    public function getNextStructParentId(): int
+    {
+        return ++$this->structParentId;
+    }
+
     public function addOutline(string $title, Page $page): self
     {
-        $this->document->addOutline($title, $this->toInternalPage($page));
+        $this->documentNavigationManager()->addOutline($title, $page);
 
         return $this;
     }
 
-    /**
-     * Registers a named destination for the given page.
-     */
     public function addDestination(string $name, Page $page): self
     {
-        $this->document->addDestination($name, $this->toInternalPage($page));
+        $this->documentNavigationManager()->addDestination($name, $page);
 
         return $this;
     }
 
-    /**
-     * Enables PDF encryption for the rendered output.
-     */
     public function encrypt(EncryptionOptions $options): self
     {
-        $this->document->encrypt($options);
+        $this->documentEncryptionManager()->encrypt($options);
 
         return $this;
     }
 
-    /**
-     * Registers an optional content layer.
-     */
-    public function addLayer(string $name, bool $visibleByDefault = true): OptionalContentGroup
+    public function getEncryptionProfile(): ?EncryptionProfile
     {
-        return $this->document->addLayer($name, $visibleByDefault);
+        return $this->documentEncryptionManager()->getEncryptionProfile();
+    }
+
+    public function getEncryptionOptions(): ?EncryptionOptions
+    {
+        return $this->documentEncryptionManager()->getEncryptionOptions();
+    }
+
+    public function getSecurityHandlerData(): ?StandardSecurityHandlerData
+    {
+        return $this->documentEncryptionManager()->getSecurityHandlerData();
     }
 
     /**
-     * Adds an embedded file attachment.
+     * @return array{string, string}
      */
+    public function getDocumentId(): array
+    {
+        return $this->documentId;
+    }
+
+    /**
+     * @return array<string, Page>
+     */
+    public function getDestinations(): array
+    {
+        return $this->documentNavigationManager()->getDestinations();
+    }
+
+    public function ensureOptionalContentGroup(string $name, bool $visibleByDefault = true): OptionalContentGroup
+    {
+        return $this->documentOptionalContentManager()->ensureOptionalContentGroup($name, $visibleByDefault);
+    }
+
+    public function addLayer(string $name, bool $visibleByDefault = true): OptionalContentGroup
+    {
+        return $this->ensureOptionalContentGroup($name, $visibleByDefault);
+    }
+
     public function addAttachment(
         string $filename,
         string $contents,
@@ -162,14 +364,17 @@ final readonly class Document
         ?string $mimeType = null,
         ?AssociatedFileRelationship $afRelationship = null,
     ): self {
-        $this->document->addAttachment($filename, $contents, $description, $mimeType, $afRelationship);
+        $this->documentAttachmentManager()->addAttachment(
+            $filename,
+            $contents,
+            $description,
+            $mimeType,
+            $afRelationship,
+        );
 
         return $this;
     }
 
-    /**
-     * Adds an embedded file attachment from the filesystem.
-     */
     public function addAttachmentFromFile(
         string $path,
         ?string $filename = null,
@@ -177,54 +382,58 @@ final readonly class Document
         ?string $mimeType = null,
         ?AssociatedFileRelationship $afRelationship = null,
     ): self {
-        $this->document->addAttachmentFromFile($path, $filename, $description, $mimeType, $afRelationship);
+        $this->documentAttachmentManager()->addAttachmentFromFile(
+            $path,
+            $filename,
+            $description,
+            $mimeType,
+            $afRelationship,
+        );
 
         return $this;
     }
 
     /**
-     * Returns a previously added attachment by filename.
+     * @return list<FileSpecification>
      */
+    public function getAttachments(): array
+    {
+        return $this->documentAttachmentManager()->getAttachments();
+    }
+
     public function getAttachment(string $filename): ?FileSpecification
     {
-        return $this->document->getAttachment($filename);
+        return $this->documentAttachmentManager()->getAttachment($filename);
     }
 
     /**
-     * Adds a header renderer that runs for newly created pages.
-     *
+     * @return list<OptionalContentGroup>
+     */
+    public function getOptionalContentGroups(): array
+    {
+        return $this->documentOptionalContentManager()->getOptionalContentGroups();
+    }
+
+    /**
      * @param callable(Page, int): void $renderer
      */
     public function addHeader(callable $renderer): self
     {
-        $this->document->addHeader(
-            function (InternalPage $page, int $pageNumber) use ($renderer): void {
-                $renderer($this->toPublicPage($page), $pageNumber);
-            },
-        );
+        $this->documentPageDecoratorManager()->addHeader($renderer);
 
         return $this;
     }
 
     /**
-     * Adds a footer renderer that runs for newly created pages.
-     *
      * @param callable(Page, int): void $renderer
      */
     public function addFooter(callable $renderer): self
     {
-        $this->document->addFooter(
-            function (InternalPage $page, int $pageNumber) use ($renderer): void {
-                $renderer($this->toPublicPage($page), $pageNumber);
-            },
-        );
+        $this->documentPageDecoratorManager()->addFooter($renderer);
 
         return $this;
     }
 
-    /**
-     * Adds automatic page numbers to all pages.
-     */
     public function addPageNumbers(
         Position $position,
         string $baseFont = 'Helvetica',
@@ -233,21 +442,25 @@ final readonly class Document
         bool $footer = true,
         bool $useLogicalPageNumbers = false,
     ): self {
-        $this->document->addPageNumbers($position, $baseFont, $size, $template, $footer, $useLogicalPageNumbers);
+        $this->documentPageDecoratorManager()->addPageNumbers(
+            $position,
+            $baseFont,
+            $size,
+            $template,
+            $footer,
+            $useLogicalPageNumbers,
+        );
 
         return $this;
     }
 
     public function excludePageFromNumbering(Page $page): self
     {
-        $this->document->excludePageFromNumbering($this->toInternalPage($page));
+        $this->documentPageDecoratorManager()->excludePageFromNumbering($page);
 
         return $this;
     }
 
-    /**
-     * Registers a font for subsequent page operations.
-     */
     public function registerFont(
         string $fontName,
         string $subtype = 'Type1',
@@ -255,32 +468,205 @@ final readonly class Document
         bool $unicode = false,
         ?string $fontFilePath = null,
     ): self {
-        $this->document->registerFont($fontName, $subtype, $encoding, $unicode, $fontFilePath);
+        $this->documentFontRegistry()->registerFont(
+            $fontName,
+            $subtype,
+            $encoding,
+            $unicode,
+            $fontFilePath,
+        );
 
         return $this;
     }
 
+    public function getFontByBaseFont(string $baseFont): ?FontDefinition
+    {
+        return $this->documentFontRegistry()->getFontByBaseFont($baseFont);
+    }
+
     /**
-     * Generates a table of contents page and returns its public page facade.
+     * @return array<int, FontDefinition&IndirectObject>
      */
+    public function getFonts(): array
+    {
+        return $this->documentFontRegistry()->getFonts();
+    }
+
+    public function ensureAcroForm(): AcroForm
+    {
+        return $this->documentAcroFormManager()->ensureAcroForm();
+    }
+
+    public function ensureTextFieldAcroForm(): AcroForm
+    {
+        return $this->documentAcroFormManager()->ensureTextFieldAcroForm();
+    }
+
+    public function ensureCheckboxAcroForm(): AcroForm
+    {
+        return $this->documentAcroFormManager()->ensureCheckboxAcroForm();
+    }
+
+    public function ensurePushButtonAcroForm(): AcroForm
+    {
+        return $this->documentAcroFormManager()->ensurePushButtonAcroForm();
+    }
+
+    public function ensureRadioButtonAcroForm(): AcroForm
+    {
+        return $this->documentAcroFormManager()->ensureRadioButtonAcroForm();
+    }
+
+    public function ensureComboBoxAcroForm(): AcroForm
+    {
+        return $this->documentAcroFormManager()->ensureComboBoxAcroForm();
+    }
+
+    public function ensureListBoxAcroForm(): AcroForm
+    {
+        return $this->documentAcroFormManager()->ensureListBoxAcroForm();
+    }
+
+    public function ensureSignatureFieldAcroForm(): AcroForm
+    {
+        return $this->documentAcroFormManager()->ensureSignatureFieldAcroForm();
+    }
+
+    /**
+     * @return list<array{
+     *     baseFont: string,
+     *     path: string,
+     *     unicode: bool,
+     *     subtype?: string,
+     *     encoding?: string
+     * }>|null
+     */
+    public function getFontConfig(): ?array
+    {
+        return $this->fontConfig;
+    }
+
+    /**
+     * @param StructureTag $tag
+     * @param int $markedContentId
+     * @param Page|null $page
+     * @return $this
+     */
+    public function addStructElem(StructureTag $tag, int $markedContentId, ?Page $page = null): self
+    {
+        $this->documentStructureManager()->addStructElem($tag, $markedContentId, $page);
+
+        return $this;
+    }
+
+    public function createStructElem(
+        StructureTag $tag,
+        ?int $markedContentId = null,
+        ?Page $page = null,
+        ?StructElem $parent = null,
+    ): StructElem {
+        return $this->documentStructureManager()->createStructElem($tag, $markedContentId, $page, $parent);
+    }
+
+    public function registerObjectStructElem(int $structParentId, StructElem $structElem): void
+    {
+        $this->documentStructureManager()->registerObjectStructElem($structParentId, $structElem);
+    }
+
+    public function registerMarkedContentStructElem(int $structParentId, StructElem $structElem): void
+    {
+        $this->documentStructureManager()->registerMarkedContentStructElem($structParentId, $structElem);
+    }
+
+    public function registerDeferredRenderFinalizer(callable $finalizer): void
+    {
+        $this->deferredRendering->registerRenderFinalizer($finalizer);
+    }
+
+    public function ensureStructureEnabled(): void
+    {
+        $this->documentStructureManager()->ensureStructureEnabled();
+    }
+
+    public function hasStructure(): bool
+    {
+        return $this->structTreeRoot !== null;
+    }
+
+    public function isRenderingArtifactContext(): bool
+    {
+        return $this->renderingArtifactContext;
+    }
+
+    /**
+     * @param callable(): void $renderer
+     */
+    public function renderInArtifactContext(callable $renderer): void
+    {
+        $previousArtifactContext = $this->renderingArtifactContext;
+        $this->renderingArtifactContext = true;
+
+        try {
+            $renderer();
+        } finally {
+            $this->renderingArtifactContext = $previousArtifactContext;
+        }
+    }
+
+    public function assertAllowsEncryptionAlgorithm(EncryptionAlgorithm $algorithm): void
+    {
+        $this->documentProfileGuard()->assertAllowsEncryptionAlgorithm($algorithm);
+    }
+
+    public function assertAllowsAttachments(): void
+    {
+        $this->documentProfileGuard()->assertAllowsAttachments();
+    }
+
+    public function assertAllowsOptionalContentGroups(): void
+    {
+        $this->documentProfileGuard()->assertAllowsOptionalContentGroups();
+    }
+
+    public function assertAllowsTransparency(): void
+    {
+        $this->documentProfileGuard()->assertAllowsTransparency();
+    }
+
     public function addTableOfContents(
         ?PageSize $size = null,
         ?TableOfContentsOptions $options = null,
     ): Page {
-        return $this->toPublicPage($this->document->addTableOfContents(
-            $size,
-            $options,
-        ));
+        return (new DocumentTableOfContentsBuilder($this, $this->excludedPageIdsFromNumbering))
+            ->addTableOfContents($size, $options);
+    }
+
+    public function addKeyword(string $keyword): self
+    {
+        $this->documentMetadataManager()->addKeyword($keyword);
+
+        return $this;
     }
 
     /**
-     * Adds a keyword to the document metadata.
+     * @return string[]
      */
-    public function addKeyword(string $keyword): self
+    public function getKeywords(): array
     {
-        $this->document->addKeyword($keyword);
+        return $this->documentMetadataManager()->getKeywords();
+    }
 
-        return $this;
+    public function shouldWriteInfoDictionary(): bool
+    {
+        return $this->profile->writesInfoDictionary();
+    }
+
+    public function render(): string
+    {
+        $output = new StringPdfOutput();
+        $this->writeToOutput($output);
+
+        return $output->contents();
     }
 
     /**
@@ -288,21 +674,125 @@ final readonly class Document
      */
     public function writeToStream($stream): void
     {
-        $this->document->writeToStream($stream);
+        $this->writeToOutput(new StreamPdfOutput($stream));
     }
 
     public function writeToFile(string $path): void
     {
-        $this->document->writeToFile($path);
+        $output = new AtomicFilePdfOutput($path);
+
+        try {
+            $this->writeToOutput($output);
+            $output->commit();
+        } catch (Throwable $exception) {
+            $output->discard();
+
+            throw $exception;
+        }
     }
 
-    private function toInternalPage(Page $page): InternalPage
+    private function documentProfileGuard(): DocumentProfileGuard
     {
-        return $page->toInternalPage();
+        return $this->documentProfileGuard ??= new DocumentProfileGuard($this);
     }
 
-    private function toPublicPage(InternalPage $page): Page
+    private function documentAcroFormManager(): DocumentAcroFormManager
     {
-        return new Page($page);
+        return $this->documentAcroFormManager ??= new DocumentAcroFormManager(
+            $this,
+            $this->documentProfileGuard(),
+        );
+    }
+
+    private function documentMetadataManager(): DocumentMetadataManager
+    {
+        return $this->documentMetadataManager ??= new DocumentMetadataManager(
+            $this,
+            $this->creator,
+            $this->creatorTool,
+            $this->producer,
+            $this->pdfaOutputIntentProfile,
+            $this->xmpMetadata,
+            $this->keywords,
+        );
+    }
+
+    private function documentNavigationManager(): DocumentNavigationManager
+    {
+        return $this->documentNavigationManager ??= new DocumentNavigationManager($this, $this->destinations);
+    }
+
+    private function documentOptionalContentManager(): DocumentOptionalContentManager
+    {
+        return $this->documentOptionalContentManager ??= new DocumentOptionalContentManager(
+            $this,
+            $this->optionalContentGroups,
+        );
+    }
+
+    private function documentAttachmentManager(): DocumentAttachmentManager
+    {
+        return $this->documentAttachmentManager ??= new DocumentAttachmentManager(
+            $this,
+            $this->attachments,
+            $this->documentProfileGuard(),
+        );
+    }
+
+    private function documentEncryptionManager(): DocumentEncryptionManager
+    {
+        return $this->documentEncryptionManager ??= new DocumentEncryptionManager(
+            $this,
+            $this->encryptionProfile,
+            $this->encryptionOptions,
+            $this->securityHandlerData,
+        );
+    }
+
+    private function documentPageDecoratorManager(): DocumentPageDecoratorManager
+    {
+        return $this->documentPageDecoratorManager ??= new DocumentPageDecoratorManager(
+            $this,
+            $this->deferredRendering,
+            $this->excludedPageIdsFromNumbering,
+        );
+    }
+
+    private function documentStructureManager(): DocumentStructureManager
+    {
+        return $this->documentStructureManager ??= new DocumentStructureManager($this, $this->structElems);
+    }
+
+    private function documentFontFactory(): DocumentFontFactory
+    {
+        return $this->documentFontFactory ??= new DocumentFontFactory($this);
+    }
+
+    private function documentFontRegistry(): DocumentFontRegistry
+    {
+        return $this->documentFontRegistry ??= new DocumentFontRegistry(
+            $this->fonts,
+            $this->documentFontFactory(),
+            $this->documentProfileGuard(),
+        );
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    private function generateDocumentId(): array
+    {
+        try {
+            $value = bin2hex(random_bytes(16));
+        } catch (RandomException) {
+            $value = md5(uniqid((string) mt_rand(), true));
+        }
+
+        return [$value, $value];
+    }
+
+    private function writeToOutput(PdfOutput $output): void
+    {
+        (new DocumentPdfWriter())->write($this, $output);
     }
 }

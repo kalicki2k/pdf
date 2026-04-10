@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Serialization;
 
-use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Renders the PDF page object dictionary.

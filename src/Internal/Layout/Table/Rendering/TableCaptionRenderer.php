@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Internal\Layout\Table\Rendering;
 
 use Kalle\Pdf\Internal\Layout\Table\Definition\TableCaption;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Renders table captions and resolves any required page break.

@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Layout\Table\Rendering;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableRowGroup;
-use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Renders prepared table footer rows and resolves a required fresh-page move.

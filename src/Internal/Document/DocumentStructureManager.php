@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\TaggedPdf\ParentTree;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructTreeRoot;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Manages document structure initialization and StructElem registration.

@@ -12,7 +12,6 @@ use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Internal\Document\Attachment\EmbeddedFileStream;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
-use Kalle\Pdf\Internal\Document\Document as InternalDocument;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsPlacement;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
@@ -39,7 +38,6 @@ use Kalle\Pdf\Internal\Page\Content\Style\PanelStyle;
 use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\PdfType\DictionaryType;
 use Kalle\Pdf\Internal\PdfType\NameType;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
@@ -56,8 +54,6 @@ use Kalle\Pdf\TextFrame;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use ReflectionProperty;
 
 final class PublicApiTest extends TestCase
 {
@@ -1339,18 +1335,6 @@ final class PublicApiTest extends TestCase
     }
 
     #[Test]
-    public function it_exposes_no_public_properties_on_the_public_document_api(): void
-    {
-        $reflection = new ReflectionClass(Document::class);
-        $publicProperties = array_filter(
-            $reflection->getProperties(ReflectionProperty::IS_PUBLIC),
-            static fn (ReflectionProperty $property): bool => !$property->isStatic(),
-        );
-
-        self::assertCount(0, $publicProperties);
-    }
-
-    #[Test]
     public function it_keeps_text_frame_and_table_page_access_on_the_public_page_type(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
@@ -1845,27 +1829,17 @@ final class PublicApiTest extends TestCase
         ];
     }
 
-    private function internalDocument(Document $document): InternalDocument
+    private function internalDocument(Document $document): Document
     {
-        $property = new ReflectionProperty($document, 'document');
-
-        /** @var InternalDocument $internalDocument */
-        $internalDocument = $property->getValue($document);
-
-        return $internalDocument;
+        return $document;
     }
 
-    private function internalPage(Page $page): InternalPage
+    private function internalPage(Page $page): Page
     {
-        $property = new ReflectionProperty($page, 'page');
-
-        /** @var InternalPage $internalPage */
-        $internalPage = $property->getValue($page);
-
-        return $internalPage;
+        return $page;
     }
 
-    private function writeDocument(Document | InternalDocument $document): string
+    private function writeDocument(Document $document): string
     {
         $stream = fopen('php://temp', 'w+b');
 

@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Internal\Page\Annotation;
 
 use Closure;
 use Kalle\Pdf\Internal\Font\FontDefinition;
-use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Provides object ids and font resources for page annotation building.

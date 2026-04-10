@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

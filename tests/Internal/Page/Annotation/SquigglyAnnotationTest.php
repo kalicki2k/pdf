@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
-use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Page\Annotation\PopupAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\SquigglyAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextAnnotationAppearanceStream;

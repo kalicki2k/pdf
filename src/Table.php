@@ -12,7 +12,6 @@ use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Table\Table as InternalTable;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\Page\Page as InternalPage;
 
 /**
  * Public facade for table layout and rendering.
@@ -100,7 +99,7 @@ final readonly class Table
 
     public function getPage(): Page
     {
-        return new Page($this->table->getPage());
+        return $this->table->getPage();
     }
 
     public function getCursorY(): float

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Table\Rendering;
 
 use Kalle\Pdf\Internal\Layout\Table\PendingRowspanCell;
-use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Carries the updated page state after rendering a partial table row group.

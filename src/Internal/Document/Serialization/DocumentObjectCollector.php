@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document\Serialization;
 
 use IteratorAggregate;
-use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Document\Metadata\IccProfileStream;
 use Kalle\Pdf\Internal\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Internal\Font\StandardFont;

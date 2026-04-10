@@ -9,8 +9,8 @@ use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableBorder;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;
-use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Page;
 
 final readonly class CellBoxRenderer
 {

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use InvalidArgumentException;
-use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Table\Table as InternalTable;
@@ -16,51 +15,80 @@ use Kalle\Pdf\Internal\Layout\Text\Input\FlowTextOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
+use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
+use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
+use Kalle\Pdf\Internal\Layout\Text\TextFrame as InternalTextFrame;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
+use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation as PopupParentAnnotation;
+use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
+use Kalle\Pdf\Internal\Page\Content\Contents;
 use Kalle\Pdf\Internal\Page\Content\ImageOptions;
+use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
+use Kalle\Pdf\Internal\Page\Content\PageComponents;
+use Kalle\Pdf\Internal\Page\Content\PageGraphics;
+use Kalle\Pdf\Internal\Page\Content\PageImages;
+use Kalle\Pdf\Internal\Page\Content\PageLayers;
+use Kalle\Pdf\Internal\Page\Content\PageLinks;
+use Kalle\Pdf\Internal\Page\Content\PageMarkedContentIds;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;
+use Kalle\Pdf\Internal\Page\Content\StreamLengthObject;
 use Kalle\Pdf\Internal\Page\Content\Style\BadgeStyle;
 use Kalle\Pdf\Internal\Page\Content\Style\CalloutStyle;
 use Kalle\Pdf\Internal\Page\Content\Style\PanelStyle;
 use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
+use Kalle\Pdf\Internal\Page\Form\PageForms;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Internal\Page\Page as InternalPage;
+use Kalle\Pdf\Internal\Page\Resources\ImageObject;
+use Kalle\Pdf\Internal\Page\Resources\PageFonts;
+use Kalle\Pdf\Internal\Page\Resources\Resources;
+use Kalle\Pdf\Internal\Page\Serialization\PageObjectRenderer;
+use Kalle\Pdf\Internal\Render\PdfOutput;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
-use ReflectionProperty;
+use Kalle\Pdf\Internal\TaggedPdf\StructElem;
+use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 
-/**
- * Public facade for page operations exposed to library users.
- */
-final readonly class Page
+class Page extends IndirectObject
 {
-    /**
-     * @internal Public pages are created by Document::addPage().
-     */
-    public function __construct(private InternalPage $page)
-    {
+    private const float DEFAULT_BOTTOM_MARGIN = 20.0;
+
+    private ?PageComponents $pageComponents = null;
+    private ?PageFonts $pageFonts = null;
+    private ?PageGraphics $pageGraphics = null;
+    private ?PageImages $pageImages = null;
+    private ?PageLinks $pageLinks = null;
+    private ?PageObjectRenderer $pageObjectRenderer = null;
+    private ?PageAnnotations $pageAnnotations = null;
+    private ?PageForms $pageForms = null;
+    private ?PageLayers $pageLayers = null;
+    private ?PageTextElementRenderer $pageTextElementRenderer = null;
+    private ?PageParagraphRenderer $pageParagraphRenderer = null;
+    private PageMarkedContentIds $pageMarkedContentIds;
+    private readonly Contents $contents;
+    private readonly Resources $resources;
+
+    public function __construct(
+        public int                $id,
+        int                       $contentsId,
+        int                       $resourcesId,
+        public readonly int       $structParentId,
+        private readonly float    $width,
+        private readonly float    $height,
+        private readonly Document $document,
+    ) {
+        parent::__construct($this->id);
+
+        $this->contents = new Contents($contentsId);
+        $this->resources = new Resources($resourcesId);
+        $this->pageMarkedContentIds = new PageMarkedContentIds();
     }
 
-    /**
-     * @internal Transitional bridge while public and internal page types still coexist.
-     */
-    public function toInternalPage(): InternalPage
-    {
-        if (!(new ReflectionProperty(self::class, 'page'))->isInitialized($this)) {
-            throw new InvalidArgumentException('The provided page does not belong to this library API.');
-        }
-
-        return $this->page;
-    }
-
-    /**
-     * Writes a single text fragment at the given position.
-     */
     public function addText(
         string $text,
         Position $position,
@@ -68,27 +96,15 @@ final readonly class Page
         int $size = 12,
         TextOptions $options = new TextOptions(),
     ): self {
-        $this->page->addText($text, $position, $fontName, $size, $options);
-
-        return $this;
+        return $this->pageTextElementRenderer()->render($text, $position, $fontName, $size, $options);
     }
 
     /**
-     * Runs drawing commands inside an optional content layer.
-     *
      * @param callable(self): void $renderer
      */
     public function layer(string | OptionalContentGroup $layer, callable $renderer, bool $visibleByDefault = true): self
     {
-        $this->page->layer(
-            $layer,
-            static function (InternalPage $page) use ($renderer): void {
-                $renderer(new self($page));
-            },
-            $visibleByDefault,
-        );
-
-        return $this;
+        return $this->pageLayers()->layer($layer, $renderer, $visibleByDefault);
     }
 
     public function addBadge(
@@ -99,7 +115,7 @@ final readonly class Page
         ?BadgeStyle $style = null,
         ?LinkTarget $link = null,
     ): self {
-        $this->page->addBadge($text, $position, $baseFont, $size, $style, $link);
+        $this->pageComponents()->addBadge($text, $position, $baseFont, $size, $style, $link);
 
         return $this;
     }
@@ -119,7 +135,7 @@ final readonly class Page
         ?string $titleFont = null,
         ?LinkTarget $link = null,
     ): self {
-        $this->page->addPanel($body, $x, $y, $width, $height, $title, $bodyFont, $style, $titleFont, $link);
+        $this->pageComponents()->addPanel($body, $x, $y, $width, $height, $title, $bodyFont, $style, $titleFont, $link);
 
         return $this;
     }
@@ -141,7 +157,7 @@ final readonly class Page
         ?string $titleFont = null,
         ?LinkTarget $link = null,
     ): self {
-        $this->page->addCallout($body, $x, $y, $width, $height, $pointerX, $pointerY, $title, $bodyFont, $style, $titleFont, $link);
+        $this->pageComponents()->addCallout($body, $x, $y, $width, $height, $pointerX, $pointerY, $title, $bodyFont, $style, $titleFont, $link);
 
         return $this;
     }
@@ -149,80 +165,174 @@ final readonly class Page
     /**
      * @param string|list<TextSegment> $text
      */
-    public function addFlowText(string | array $text, Position $position, float $maxWidth, string $fontName = 'Helvetica', int $size = 12, FlowTextOptions $options = new FlowTextOptions()): self
-    {
-        $this->page->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
-
-        return $this;
+    public function addFlowText(
+        string | array $text,
+        Position $position,
+        float $maxWidth,
+        string $fontName = 'Helvetica',
+        int $size = 12,
+        FlowTextOptions $options = new FlowTextOptions(),
+    ): self {
+        return $this->pageParagraphRenderer()->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
     }
 
     /**
      * @param string|list<TextSegment> $text
      */
-    public function addTextBox(string | array $text, Rect $box, string $fontName = 'Helvetica', int $size = 12, TextBoxOptions $options = new TextBoxOptions()): self
-    {
-        $this->page->addTextBox($text, $box, $fontName, $size, $options);
-
-        return $this;
+    public function addTextBox(
+        string | array $text,
+        Rect $box,
+        string $fontName = 'Helvetica',
+        int $size = 12,
+        TextBoxOptions $options = new TextBoxOptions(),
+    ): self {
+        return $this->pageParagraphRenderer()->addTextBox($text, $box, $fontName, $size, $options);
     }
 
     /**
-     * Creates a text frame for flowing text across pages.
+     * @param string|list<TextSegment> $text
+     * @return list<array{segments: array<int, TextSegment>, justify: bool}>
      */
-    public function createTextFrame(Position $position, float $width, float $bottomMargin = 20.0): TextFrame
-    {
-        return new TextFrame($this->page->createTextFrame($position, $width, $bottomMargin));
+    public function layoutParagraphLines(
+        string | array $text,
+        string $baseFont,
+        int $size,
+        float $maxWidth,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+        ?int $maxLines = null,
+        TextOverflow $overflow = TextOverflow::CLIP,
+    ): array {
+        return $this->pageParagraphRenderer()->layoutParagraphLines(
+            $text,
+            $baseFont,
+            $size,
+            $maxWidth,
+            $color,
+            $opacity,
+            $maxLines,
+            $overflow,
+        );
     }
 
     /**
-     * Creates a table builder anchored on this page.
-     *
+     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $lines
+     */
+    public function renderParagraphLines(
+        array $lines,
+        float $x,
+        float $y,
+        float $maxWidth,
+        string $baseFont,
+        int $size,
+        ?StructureTag $tag = null,
+        ?StructElem $parentStructElem = null,
+        ?float $lineHeight = null,
+        ?float $bottomMargin = null,
+        HorizontalAlign $align = HorizontalAlign::LEFT,
+    ): self {
+        return $this->pageParagraphRenderer()->renderParagraphLines(
+            $lines,
+            $x,
+            $y,
+            $maxWidth,
+            $baseFont,
+            $size,
+            $tag,
+            $parentStructElem,
+            $lineHeight,
+            $bottomMargin,
+            $align,
+        );
+    }
+
+    public function createTextFrame(
+        Position $position,
+        float $width,
+        float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
+    ): TextFrame {
+        return new TextFrame(new InternalTextFrame($this, $position->x, $position->y, $width, $bottomMargin));
+    }
+
+    /**
      * @param list<float|int> $columnWidths
      */
-    public function createTable(Position $position, float $width, array $columnWidths, float $bottomMargin = 20.0): Table
-    {
-        return new Table($this->page->createTable($position, $width, $columnWidths, $bottomMargin));
+    public function createTable(
+        Position $position,
+        float $width,
+        array $columnWidths,
+        float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
+    ): Table {
+        return new Table(new InternalTable($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin));
     }
 
-    /**
-     * Starts a path builder for custom vector drawing.
-     */
     public function addPath(): PathBuilder
     {
-        return $this->page->addPath();
+        return $this->pageGraphics()->addPath();
     }
 
-    public function addLine(Position $from, Position $to, float $width = 1.0, ?Color $color = null, ?Opacity $opacity = null): self
-    {
-        $this->page->addLine($from, $to, $width, $color, $opacity);
+    public function addLine(
+        Position $from,
+        Position $to,
+        float $width = 1.0,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+    ): self {
+        $this->pageGraphics()->addLine($from, $to, $width, $color, $opacity);
 
         return $this;
     }
 
-    public function addRectangle(Rect $box, ?float $strokeWidth = 1.0, ?Color $strokeColor = null, ?Color $fillColor = null, ?Opacity $opacity = null): self
-    {
-        $this->page->addRectangle($box, $strokeWidth, $strokeColor, $fillColor, $opacity);
+    public function addRectangle(
+        Rect $box,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        $this->pageGraphics()->addRectangle($box, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
 
-    public function addRoundedRectangle(Rect $box, float $radius, ?float $strokeWidth = 1.0, ?Color $strokeColor = null, ?Color $fillColor = null, ?Opacity $opacity = null): self
-    {
-        $this->page->addRoundedRectangle($box, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+    public function addRoundedRectangle(
+        Rect $box,
+        float $radius,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        $this->pageGraphics()->addRoundedRectangle($box, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
 
-    public function addCircle(float $centerX, float $centerY, float $radius, ?float $strokeWidth = 1.0, ?Color $strokeColor = null, ?Color $fillColor = null, ?Opacity $opacity = null): self
-    {
-        $this->page->addCircle($centerX, $centerY, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+    public function addCircle(
+        float $centerX,
+        float $centerY,
+        float $radius,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        $this->pageGraphics()->addCircle($centerX, $centerY, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
 
-    public function addEllipse(float $centerX, float $centerY, float $radiusX, float $radiusY, ?float $strokeWidth = 1.0, ?Color $strokeColor = null, ?Color $fillColor = null, ?Opacity $opacity = null): self
-    {
-        $this->page->addEllipse($centerX, $centerY, $radiusX, $radiusY, $strokeWidth, $strokeColor, $fillColor, $opacity);
+    public function addEllipse(
+        float $centerX,
+        float $centerY,
+        float $radiusX,
+        float $radiusY,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        $this->pageGraphics()->addEllipse($centerX, $centerY, $radiusX, $radiusY, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
@@ -230,9 +340,14 @@ final readonly class Page
     /**
      * @param list<array{0: float|int, 1: float|int}> $points
      */
-    public function addPolygon(array $points, ?float $strokeWidth = 1.0, ?Color $strokeColor = null, ?Color $fillColor = null, ?Opacity $opacity = null): self
-    {
-        $this->page->addPolygon($points, $strokeWidth, $strokeColor, $fillColor, $opacity);
+    public function addPolygon(
+        array $points,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        $this->pageGraphics()->addPolygon($points, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
@@ -246,49 +361,76 @@ final readonly class Page
         float $headLength = 10.0,
         float $headWidth = 8.0,
     ): self {
-        $this->page->addArrow($from, $to, $strokeWidth, $color, $opacity, $headLength, $headWidth);
+        $this->pageGraphics()->addArrow($from, $to, $strokeWidth, $color, $opacity, $headLength, $headWidth);
 
         return $this;
     }
 
-    public function addStar(float $centerX, float $centerY, int $points, float $outerRadius, float $innerRadius, ?float $strokeWidth = 1.0, ?Color $strokeColor = null, ?Color $fillColor = null, ?Opacity $opacity = null): self
-    {
-        $this->page->addStar($centerX, $centerY, $points, $outerRadius, $innerRadius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+    public function addStar(
+        float $centerX,
+        float $centerY,
+        int $points,
+        float $outerRadius,
+        float $innerRadius,
+        ?float $strokeWidth = 1.0,
+        ?Color $strokeColor = null,
+        ?Color $fillColor = null,
+        ?Opacity $opacity = null,
+    ): self {
+        $this->pageGraphics()->addStar($centerX, $centerY, $points, $outerRadius, $innerRadius, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
 
-    public function addLink(Rect $box, string $url, ?string $accessibleName = null): self
-    {
-        $this->page->addLink($box, $url, $accessibleName);
+    public function addLink(
+        Rect $box,
+        string $url,
+        ?string $accessibleName = null,
+    ): self {
+        $this->pageLinks()->addLink($box, $url, $accessibleName);
 
         return $this;
     }
 
-    public function addInternalLink(Rect $box, string $destination, ?string $accessibleName = null): self
-    {
-        $this->page->addInternalLink($box, $destination, $accessibleName);
+    public function addInternalLink(
+        Rect $box,
+        string $destination,
+        ?string $accessibleName = null,
+    ): self {
+        $this->pageLinks()->addInternalLink($box, $destination, $accessibleName);
 
         return $this;
     }
 
-    public function addFileAttachment(Rect $box, FileSpecification $file, string $icon = 'PushPin', ?string $contents = null): self
-    {
-        $this->page->addFileAttachment($box, $file, $icon, $contents);
+    public function addFileAttachment(
+        Rect $box,
+        FileSpecification $file,
+        string $icon = 'PushPin',
+        ?string $contents = null,
+    ): self {
+        $this->pageAnnotations()->addFileAttachmentAnnotation($box, $file, $icon, $contents);
 
         return $this;
     }
 
-    public function addTextAnnotation(Rect $box, string $contents, ?string $title = null, string $icon = 'Note', bool $open = false): self
-    {
-        $this->page->addTextAnnotation($box, $contents, $title, $icon, $open);
+    public function addTextAnnotation(
+        Rect $box,
+        string $contents,
+        ?string $title = null,
+        string $icon = 'Note',
+        bool $open = false,
+    ): self {
+        $this->pageAnnotations()->addTextAnnotation($box, $contents, $title, $icon, $open);
 
         return $this;
     }
 
-    public function addPopupAnnotation(PageAnnotation & IndirectObject $parent, Rect $box, bool $open = false): self
-    {
-        $this->page->addPopupAnnotation($parent, $box, $open);
+    public function addPopupAnnotation(
+        PopupParentAnnotation & IndirectObject $parent,
+        Rect $box,
+        bool $open = false,
+    ): self {
+        $this->pageAnnotations()->addPopupAnnotation($parent, $box, $open);
 
         return $this;
     }
@@ -303,56 +445,112 @@ final readonly class Page
         ?Color $fillColor = null,
         ?string $title = null,
     ): self {
-        $this->page->addFreeTextAnnotation($box, $contents, $baseFont, $size, $textColor, $borderColor, $fillColor, $title);
+        $this->pageAnnotations()->addFreeTextAnnotation(
+            $box,
+            $contents,
+            $baseFont,
+            $size,
+            $textColor,
+            $borderColor,
+            $fillColor,
+            $title,
+        );
 
         return $this;
     }
 
-    public function addHighlightAnnotation(Rect $box, ?Color $color = null, ?string $contents = null, ?string $title = null): self
-    {
-        $this->page->addHighlightAnnotation($box, $color, $contents, $title);
+    public function addHighlightAnnotation(
+        Rect $box,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        $this->pageAnnotations()->addHighlightAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
 
-    public function addUnderlineAnnotation(Rect $box, ?Color $color = null, ?string $contents = null, ?string $title = null): self
-    {
-        $this->page->addUnderlineAnnotation($box, $color, $contents, $title);
+    public function addUnderlineAnnotation(
+        Rect $box,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        $this->pageAnnotations()->addUnderlineAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
 
-    public function addStrikeOutAnnotation(Rect $box, ?Color $color = null, ?string $contents = null, ?string $title = null): self
-    {
-        $this->page->addStrikeOutAnnotation($box, $color, $contents, $title);
+    public function addStrikeOutAnnotation(
+        Rect $box,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        $this->pageAnnotations()->addStrikeOutAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
 
-    public function addSquigglyAnnotation(Rect $box, ?Color $color = null, ?string $contents = null, ?string $title = null): self
-    {
-        $this->page->addSquigglyAnnotation($box, $color, $contents, $title);
+    public function addSquigglyAnnotation(
+        Rect $box,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        $this->pageAnnotations()->addSquigglyAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
 
-    public function addStampAnnotation(Rect $box, string $icon = 'Draft', ?Color $color = null, ?string $contents = null, ?string $title = null): self
-    {
-        $this->page->addStampAnnotation($box, $icon, $color, $contents, $title);
+    public function addStampAnnotation(
+        Rect $box,
+        string $icon = 'Draft',
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        $this->pageAnnotations()->addStampAnnotation($box, $icon, $color, $contents, $title);
 
         return $this;
     }
 
-    public function addSquareAnnotation(Rect $box, ?Color $borderColor = null, ?Color $fillColor = null, ?string $contents = null, ?string $title = null, ?AnnotationBorderStyle $borderStyle = null): self
-    {
-        $this->page->addSquareAnnotation($box, $borderColor, $fillColor, $contents, $title, $borderStyle);
+    public function addSquareAnnotation(
+        Rect $box,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $contents = null,
+        ?string $title = null,
+        ?AnnotationBorderStyle $borderStyle = null,
+    ): self {
+        $this->pageAnnotations()->addSquareAnnotation(
+            $box,
+            $borderColor,
+            $fillColor,
+            $contents,
+            $title,
+            $borderStyle,
+        );
 
         return $this;
     }
 
-    public function addCircleAnnotation(Rect $box, ?Color $borderColor = null, ?Color $fillColor = null, ?string $contents = null, ?string $title = null, ?AnnotationBorderStyle $borderStyle = null): self
-    {
-        $this->page->addCircleAnnotation($box, $borderColor, $fillColor, $contents, $title, $borderStyle);
+    public function addCircleAnnotation(
+        Rect $box,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $contents = null,
+        ?string $title = null,
+        ?AnnotationBorderStyle $borderStyle = null,
+    ): self {
+        $this->pageAnnotations()->addCircleAnnotation(
+            $box,
+            $borderColor,
+            $fillColor,
+            $contents,
+            $title,
+            $borderStyle,
+        );
 
         return $this;
     }
@@ -360,9 +558,14 @@ final readonly class Page
     /**
      * @param list<list<array{0: float, 1: float}>> $paths
      */
-    public function addInkAnnotation(Rect $box, array $paths, ?Color $color = null, ?string $contents = null, ?string $title = null): self
-    {
-        $this->page->addInkAnnotation($box, $paths, $color, $contents, $title);
+    public function addInkAnnotation(
+        Rect $box,
+        array $paths,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        $this->pageAnnotations()->addInkAnnotation($box, $paths, $color, $contents, $title);
 
         return $this;
     }
@@ -378,7 +581,17 @@ final readonly class Page
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->page->addLineAnnotation($from, $to, $color, $contents, $title, $startStyle, $endStyle, $subject, $borderStyle);
+        $this->pageAnnotations()->addLineAnnotation(
+            $from,
+            $to,
+            $color,
+            $contents,
+            $title,
+            $startStyle,
+            $endStyle,
+            $subject,
+            $borderStyle,
+        );
 
         return $this;
     }
@@ -396,7 +609,16 @@ final readonly class Page
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->page->addPolyLineAnnotation($vertices, $color, $contents, $title, $startStyle, $endStyle, $subject, $borderStyle);
+        $this->pageAnnotations()->addPolyLineAnnotation(
+            $vertices,
+            $color,
+            $contents,
+            $title,
+            $startStyle,
+            $endStyle,
+            $subject,
+            $borderStyle,
+        );
 
         return $this;
     }
@@ -413,23 +635,38 @@ final readonly class Page
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->page->addPolygonAnnotation($vertices, $borderColor, $fillColor, $contents, $title, $subject, $borderStyle);
+        $this->pageAnnotations()->addPolygonAnnotation(
+            $vertices,
+            $borderColor,
+            $fillColor,
+            $contents,
+            $title,
+            $subject,
+            $borderStyle,
+        );
 
         return $this;
     }
 
-    public function addCaretAnnotation(Rect $box, ?string $contents = null, ?string $title = null, string $symbol = 'None'): self
-    {
-        $this->page->addCaretAnnotation($box, $contents, $title, $symbol);
+    public function addCaretAnnotation(
+        Rect $box,
+        ?string $contents = null,
+        ?string $title = null,
+        string $symbol = 'None',
+    ): self {
+        $this->pageAnnotations()->addCaretAnnotation($box, $contents, $title, $symbol);
 
         return $this;
     }
 
-    public function addImage(Image $image, Position $position, ?float $width = null, ?float $height = null, ImageOptions $options = new ImageOptions()): self
-    {
-        $this->page->addImage($image, $position, $width, $height, $options);
-
-        return $this;
+    public function addImage(
+        Image $image,
+        Position $position,
+        ?float $width = null,
+        ?float $height = null,
+        ImageOptions $options = new ImageOptions(),
+    ): self {
+        return $this->pageImages()->addImage($image, $position, $width, $height, $options);
     }
 
     public function addTextField(
@@ -445,21 +682,46 @@ final readonly class Page
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->page->addTextField($name, $box, $value, $baseFont, $size, $multiline, $textColor, $flags, $defaultValue, $accessibleName, $fieldLabel);
+        $this->pageForms()->addTextField(
+            $name,
+            $box,
+            $value,
+            $baseFont,
+            $size,
+            $multiline,
+            $textColor,
+            $flags,
+            $defaultValue,
+            $accessibleName,
+            $fieldLabel,
+        );
 
         return $this;
     }
 
-    public function addCheckbox(string $name, Position $position, float $size, bool $checked = false, ?string $accessibleName = null, ?FormFieldLabel $fieldLabel = null): self
-    {
-        $this->page->addCheckbox($name, $position, $size, $checked, $accessibleName, $fieldLabel);
+    public function addCheckbox(
+        string $name,
+        Position $position,
+        float $size,
+        bool $checked = false,
+        ?string $accessibleName = null,
+        ?FormFieldLabel $fieldLabel = null,
+    ): self {
+        $this->pageForms()->addCheckbox($name, $position, $size, $checked, $accessibleName, $fieldLabel);
 
         return $this;
     }
 
-    public function addRadioButton(string $name, string $value, Position $position, float $size, bool $checked = false, ?string $accessibleName = null, ?FormFieldLabel $fieldLabel = null): self
-    {
-        $this->page->addRadioButton($name, $value, $position, $size, $checked, $accessibleName, $fieldLabel);
+    public function addRadioButton(
+        string $name,
+        string $value,
+        Position $position,
+        float $size,
+        bool $checked = false,
+        ?string $accessibleName = null,
+        ?FormFieldLabel $fieldLabel = null,
+    ): self {
+        $this->pageForms()->addRadioButton($name, $value, $position, $size, $checked, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -480,7 +742,19 @@ final readonly class Page
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->page->addComboBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue, $accessibleName, $fieldLabel);
+        $this->pageForms()->addComboBox(
+            $name,
+            $box,
+            $options,
+            $value,
+            $baseFont,
+            $size,
+            $textColor,
+            $flags,
+            $defaultValue,
+            $accessibleName,
+            $fieldLabel,
+        );
 
         return $this;
     }
@@ -503,14 +777,30 @@ final readonly class Page
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->page->addListBox($name, $box, $options, $value, $baseFont, $size, $textColor, $flags, $defaultValue, $accessibleName, $fieldLabel);
+        $this->pageForms()->addListBox(
+            $name,
+            $box,
+            $options,
+            $value,
+            $baseFont,
+            $size,
+            $textColor,
+            $flags,
+            $defaultValue,
+            $accessibleName,
+            $fieldLabel,
+        );
 
         return $this;
     }
 
-    public function addSignatureField(string $name, Rect $box, ?string $accessibleName = null, ?FormFieldLabel $fieldLabel = null): self
-    {
-        $this->page->addSignatureField($name, $box, $accessibleName, $fieldLabel);
+    public function addSignatureField(
+        string $name,
+        Rect $box,
+        ?string $accessibleName = null,
+        ?FormFieldLabel $fieldLabel = null,
+    ): self {
+        $this->pageForms()->addSignatureField($name, $box, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -526,30 +816,101 @@ final readonly class Page
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->page->addPushButton($name, $label, $box, $baseFont, $size, $textColor, $action, $accessibleName, $fieldLabel);
+        $this->pageForms()->addPushButton(
+            $name,
+            $label,
+            $box,
+            $baseFont,
+            $size,
+            $textColor,
+            $action,
+            $accessibleName,
+            $fieldLabel,
+        );
 
         return $this;
     }
 
-    /**
-     * Returns the page width in PDF points.
-     */
+    protected function writeObject(PdfOutput $output): void
+    {
+        $output->write(
+            $this->pageObjectRenderer()->render($this->pageMarkedContentIds->hasAllocatedIds()),
+        );
+    }
+
     public function getWidth(): float
     {
-        return $this->page->getWidth();
+        return $this->width;
     }
 
-    /**
-     * Returns the page height in PDF points.
-     */
     public function getHeight(): float
     {
-        return $this->page->getHeight();
+        return $this->height;
+    }
+
+    public function getDocument(): Document
+    {
+        return $this->document;
+    }
+
+    public function getResources(): Resources
+    {
+        return $this->resources;
+    }
+
+    public function getContents(): Contents
+    {
+        return $this->contents;
+    }
+
+    public function prepareContentsLengthObject(): StreamLengthObject
+    {
+        $lengthObject = $this->contents->getLengthObject();
+
+        if ($lengthObject !== null) {
+            return $lengthObject;
+        }
+
+        return $this->contents->prepareLengthObject($this->document->getUniqObjectId());
+    }
+
+    public function addContentElement(ContentInstruction $element): void
+    {
+        $this->contents->addElement($element);
+    }
+
+    public function addFontResource(FontDefinition $font): string
+    {
+        return $this->resources->addFont($font);
+    }
+
+    public function addImageResource(ImageObject $image): string
+    {
+        return $this->resources->addImage($image);
+    }
+
+    public function addPropertyResource(OptionalContentGroup $group): string
+    {
+        return $this->resources->addProperty($group);
+    }
+
+    public function addOpacityResource(Opacity $opacity): string
+    {
+        return $this->resources->addOpacity($opacity);
     }
 
     /**
-     * Counts wrapped paragraph lines for the given text and width.
-     *
+     * @return list<IndirectObject&PageAnnotation>
+     */
+    public function getAnnotations(): array
+    {
+        return $this->pageAnnotations?->all() ?? [];
+    }
+
+    /**
+     * @return list<string>
+     */
+    /**
      * @param string|list<TextSegment> $text
      */
     public function countParagraphLines(
@@ -560,15 +921,81 @@ final readonly class Page
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): int {
-        return $this->page->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
+        return $this->pageParagraphRenderer()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
     }
 
-    /**
-     * Measures the width of a text fragment for the given font and size.
-     */
     public function measureTextWidth(string $text, string $baseFont, int $size): float
     {
-        return $this->page->measureTextWidth($text, $baseFont, $size);
+        return $this->pageFonts()->measureTextWidth($text, $baseFont, $size);
+    }
+
+    private function pageFonts(): PageFonts
+    {
+        return $this->pageFonts ??= PageFonts::forPage($this);
+    }
+
+    private function pageObjectRenderer(): PageObjectRenderer
+    {
+        return $this->pageObjectRenderer ??= PageObjectRenderer::forPage($this);
+    }
+
+    private function pageGraphics(): PageGraphics
+    {
+        return $this->pageGraphics ??= PageGraphics::forPage($this);
+    }
+
+    private function pageComponents(): PageComponents
+    {
+        return $this->pageComponents ??= PageComponents::forPage(
+            $this->pageLinks(),
+            $this->pageGraphics(),
+            $this->pageFonts(),
+            $this->pageTextElementRenderer(),
+            $this->pageParagraphRenderer(),
+            $this->document->getProfile()->requiresTaggedPdf(),
+            $this->document->getProfile()->requiresTaggedLinkAnnotations(),
+        );
+    }
+
+    private function pageAnnotations(): PageAnnotations
+    {
+        return $this->pageAnnotations ??= PageAnnotations::forPage($this, $this->pageFonts());
+    }
+
+    private function pageImages(): PageImages
+    {
+        return $this->pageImages ??= PageImages::forPage($this, $this->pageMarkedContentIds);
+    }
+
+    private function pageLinks(): PageLinks
+    {
+        return $this->pageLinks ??= PageLinks::forPage($this, $this->pageAnnotations());
+    }
+
+    private function pageForms(): PageForms
+    {
+        return $this->pageForms ??= PageForms::forPage($this, $this->pageAnnotations(), $this->pageFonts());
+    }
+
+    private function pageLayers(): PageLayers
+    {
+        return $this->pageLayers ??= PageLayers::forPage($this);
+    }
+
+    private function pageTextElementRenderer(): PageTextElementRenderer
+    {
+        return $this->pageTextElementRenderer ??= PageTextElementRenderer::forPage(
+            $this,
+            $this->pageFonts(),
+            $this->pageLinks(),
+            $this->pageGraphics(),
+            $this->pageMarkedContentIds,
+        );
+    }
+
+    private function pageParagraphRenderer(): PageParagraphRenderer
+    {
+        return $this->pageParagraphRenderer ??= PageParagraphRenderer::forPage($this, $this->pageFonts());
     }
 
 }

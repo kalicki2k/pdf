@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Page\Content;
 
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Page\Content\Instruction\RawInstruction;
-use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Page;
 
 /**
  * @internal Coordinates optional-content layer scopes for a page.

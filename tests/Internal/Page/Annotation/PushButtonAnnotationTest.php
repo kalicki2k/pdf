@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Action\GoToAction;
 use Kalle\Pdf\Internal\Action\GoToRemoteAction;
 use Kalle\Pdf\Internal\Action\HideAction;
@@ -16,7 +17,6 @@ use Kalle\Pdf\Internal\Action\SetOcgStateAction;
 use Kalle\Pdf\Internal\Action\SubmitFormAction;
 use Kalle\Pdf\Internal\Action\ThreadAction;
 use Kalle\Pdf\Internal\Action\UriAction;
-use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;

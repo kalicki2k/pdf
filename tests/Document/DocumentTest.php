@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Document\Attachment\AssociatedFileRelationship;
-use Kalle\Pdf\Internal\Document\Document;
 
 use Kalle\Pdf\Internal\Document\DocumentFontFactory;
 
@@ -30,9 +30,9 @@ use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
