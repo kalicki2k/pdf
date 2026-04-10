@@ -13,7 +13,7 @@ use Kalle\Pdf\PdfType\ReferenceType;
 
 final readonly class SetOcgStateAction implements ButtonAction
 {
-    private const STATE_OPERATORS = ['ON', 'OFF', 'Toggle'];
+    private const array STATE_OPERATORS = ['ON', 'OFF', 'Toggle'];
 
     /**
      * @param list<string|OptionalContentGroup> $state

@@ -8,15 +8,6 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\FileSpecification;
-use Kalle\Pdf\Document\DocumentAcroFormManager;
-use Kalle\Pdf\Document\DocumentAttachmentManager;
-use Kalle\Pdf\Document\DocumentEncryptionManager;
-use Kalle\Pdf\Document\DocumentFontFactory;
-use Kalle\Pdf\Document\DocumentFontRegistry;
-use Kalle\Pdf\Document\DocumentMetadataManager;
-use Kalle\Pdf\Document\DocumentNavigationManager;
-use Kalle\Pdf\Document\DocumentOptionalContentManager;
-use Kalle\Pdf\Document\DocumentStructureManager;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Metadata\IccProfileStream;
 use Kalle\Pdf\Document\Metadata\Info;
@@ -51,7 +42,6 @@ use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructTreeRoot;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 use Random\RandomException;
-use RuntimeException;
 use Throwable;
 
 class Document
@@ -638,7 +628,7 @@ class Document
         ?PageSize $size = null,
         ?TableOfContentsOptions $options = null,
     ): Page {
-        return (new DocumentTableOfContentsBuilder($this, $this->excludedPageIdsFromNumbering))
+        return new DocumentTableOfContentsBuilder($this, $this->excludedPageIdsFromNumbering)
             ->addTableOfContents($size, $options);
     }
 
@@ -670,6 +660,11 @@ class Document
         $this->writeToOutput(new StreamPdfOutput($stream));
     }
 
+    /**
+     * @param string $path
+     * @return void
+     * @throws Throwable
+     */
     public function writeToFile(string $path): void
     {
         $output = new AtomicFilePdfOutput($path);
@@ -786,6 +781,6 @@ class Document
 
     private function writeToOutput(PdfOutput $output): void
     {
-        (new DocumentPdfWriter())->write($this, $output);
+        new DocumentPdfWriter()->write($this, $output);
     }
 }

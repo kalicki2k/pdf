@@ -10,7 +10,7 @@ use Kalle\Pdf\PdfType\NameType;
 
 final readonly class NamedAction implements ButtonAction
 {
-    private const ALLOWED_NAMES = [
+    private const array ALLOWED_NAMES = [
         'NextPage',
         'PrevPage',
         'FirstPage',
