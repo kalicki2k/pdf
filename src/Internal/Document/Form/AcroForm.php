@@ -9,10 +9,10 @@ use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
-use Kalle\Pdf\Types\ArrayType;
-use Kalle\Pdf\Types\BooleanType;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\ReferenceType;
+use Kalle\Pdf\Internal\PdfType\ArrayType;
+use Kalle\Pdf\Internal\PdfType\BooleanType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\ReferenceType;
 
 final class AcroForm extends DictionaryIndirectObject
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Types;
+namespace Kalle\Pdf\Tests\Internal\PdfType;
 
-use Kalle\Pdf\Types\RawType;
+use Kalle\Pdf\Internal\PdfType\RawType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -11,12 +11,12 @@ use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Object\StreamIndirectObject;
+use Kalle\Pdf\Internal\PdfType\ArrayType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
+use Kalle\Pdf\Internal\PdfType\ReferenceType;
 use Kalle\Pdf\Internal\Render\PdfOutput;
 use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Types\ArrayType;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
-use Kalle\Pdf\Types\ReferenceType;
 
 final class FormFieldTextAppearanceStream extends StreamIndirectObject
 {

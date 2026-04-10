@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Action;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
-use Kalle\Pdf\Types\StringType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
+use Kalle\Pdf\Internal\PdfType\StringType;
 
 final readonly class ImportDataAction implements ButtonAction
 {

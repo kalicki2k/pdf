@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Types;
+namespace Kalle\Pdf\Tests\Internal\PdfType;
 
 use Kalle\Pdf\Internal\Object\IndirectObject;
+use Kalle\Pdf\Internal\PdfType\ReferenceType;
 use Kalle\Pdf\Internal\Render\PdfOutput;
-use Kalle\Pdf\Types\ReferenceType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

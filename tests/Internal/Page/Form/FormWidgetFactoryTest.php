@@ -25,10 +25,10 @@ use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormWidgetFactory;
 use Kalle\Pdf\Internal\Page\Form\FormWidgetFactoryContext;
 use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

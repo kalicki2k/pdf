@@ -7,9 +7,9 @@ namespace Kalle\Pdf\Internal\Font;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Binary\BinaryData;
 use Kalle\Pdf\Internal\Object\StreamIndirectObject;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
 use Kalle\Pdf\Internal\Render\PdfOutput;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
 use RuntimeException;
 
 final class FontFileStream extends StreamIndirectObject

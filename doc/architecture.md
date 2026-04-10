@@ -931,16 +931,16 @@ Danach erzeugt `PdfRenderer`:
 3. `startxref`
 4. `%%EOF`
 
-## Typ-System
+## PDF-Typen
 
-Unter `src/Types` liegen kleine Value-Objekte fuer PDF-Grundbausteine, zum Beispiel:
+Unter `src/Internal/PdfType` liegen kleine Value-Objekte fuer PDF-Grundbausteine, zum Beispiel:
 
-- `Dictionary`
-- `ArrayValue`
-- `Name`
-- `Reference`
-- `StringValue`
-- `RawValue`
+- `DictionaryType`
+- `ArrayType`
+- `NameType`
+- `ReferenceType`
+- `StringType`
+- `RawType`
 
 Diese Klassen kapseln die PDF-Syntax auf niedriger Ebene und halten die `render()`-Methoden der Fachobjekte kompakter.
 

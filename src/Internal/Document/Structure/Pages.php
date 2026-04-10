@@ -8,10 +8,10 @@ use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Types\ArrayType;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
-use Kalle\Pdf\Types\ReferenceType;
+use Kalle\Pdf\Internal\PdfType\ArrayType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
+use Kalle\Pdf\Internal\PdfType\ReferenceType;
 
 class Pages extends DictionaryIndirectObject
 {

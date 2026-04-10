@@ -9,9 +9,9 @@ use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Object\IndirectObject;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\ReferenceType;
 use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\ReferenceType;
 
 class Resources extends DictionaryIndirectObject
 {

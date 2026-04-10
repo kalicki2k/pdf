@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
-use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
 
 trait HasStructParent
 {

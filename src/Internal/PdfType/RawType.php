@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Types;
+namespace Kalle\Pdf\Internal\PdfType;
 
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 
-final readonly class NameType implements Type
+final readonly class RawType implements Type
 {
     public function __construct(private string $value)
     {
@@ -14,6 +14,6 @@ final readonly class NameType implements Type
 
     public function render(?ObjectStringEncryptor $encryptor = null): string
     {
-        return '/' . $this->value;
+        return $this->value;
     }
 }

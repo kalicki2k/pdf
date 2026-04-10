@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Types;
+namespace Kalle\Pdf\Tests\Internal\PdfType;
 
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\PdfType\BooleanType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
+use Kalle\Pdf\Internal\PdfType\StringType;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
-use Kalle\Pdf\Types\BooleanType;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
-use Kalle\Pdf\Types\StringType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

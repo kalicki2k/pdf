@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Types;
+namespace Kalle\Pdf\Internal\PdfType;
 
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 

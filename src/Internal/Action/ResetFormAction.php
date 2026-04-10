@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Action;
 
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
 
 final readonly class ResetFormAction implements ButtonAction
 {

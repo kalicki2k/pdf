@@ -93,9 +93,9 @@ src/
       Form/
       Link/
     Render/
+    PdfType/
     TaggedPdf/
     Style/
-  Types/
   Utilities/
 ```
 
@@ -259,14 +259,15 @@ Regeln:
 Diese technischen Bausteine bleiben erhalten, sind aber jetzt konsequent intern geschnitten:
 
 - `Internal/Object`
+- `Internal/PdfType`
 - `Internal/Render`
 - `Internal/TaggedPdf`
-- `Types`
 
 Grund:
 
 - sie sind relativ kohärent und bilden den PDF-Kern
 - `Object` ist keine Public API, sondern technische Basis fuer indirekte PDF-Objekte
+- `PdfType` ist keine Public API, sondern buendelt PDF-Grundwerte wie Dictionary-, Name-, String- und Reference-Werte
 - `Render` ist keine Public API, sondern der technische Ausgabe- und Serialisierungskern
 - `TaggedPdf` ist keine Public API, sondern der technische Strukturbaum fuer PDF/UA- und Tagged-PDF-Pfade
 - `Security` enthaelt jetzt die Public-Konfiguration, `Internal/Encryption` den technischen Kryptokern

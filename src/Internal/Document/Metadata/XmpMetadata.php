@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Internal\Document\Metadata;
 
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Object\StreamIndirectObject;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
 use Kalle\Pdf\Internal\Render\PdfOutput;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
 
 class XmpMetadata extends StreamIndirectObject
 {

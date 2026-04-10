@@ -9,11 +9,11 @@ use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Object\IndirectObject;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\StringType;
 use Kalle\Pdf\Internal\Render\PdfOutput;
 use Kalle\Pdf\Internal\Render\StringPdfOutput;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\StringType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

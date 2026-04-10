@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Object;
 
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
 use Kalle\Pdf\Internal\Render\CountingPdfOutput;
 use Kalle\Pdf\Internal\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Internal\Render\PdfOutput;
-use Kalle\Pdf\Types\DictionaryType;
 
 abstract class StreamIndirectObject extends IndirectObject implements EncryptableIndirectObject
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Types\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
 
 final readonly class Opacity
 {

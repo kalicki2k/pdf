@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Internal\Font;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
+use Kalle\Pdf\Internal\PdfType\ReferenceType;
 use Kalle\Pdf\PdfVersion;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
-use Kalle\Pdf\Types\ReferenceType;
 use Kalle\Pdf\Utilities\PdfStringEscaper;
 
 final class StandardFont extends DictionaryIndirectObject implements FontDefinition

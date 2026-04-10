@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Internal\Page\Annotation;
 
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Internal\PdfType\ArrayType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
+use Kalle\Pdf\Internal\PdfType\ReferenceType;
+use Kalle\Pdf\Internal\PdfType\StringType;
 use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Types\ArrayType;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
-use Kalle\Pdf\Types\ReferenceType;
-use Kalle\Pdf\Types\StringType;
 
 final class HighlightAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {

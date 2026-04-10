@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Font;
 
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Types\ArrayType;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
-use Kalle\Pdf\Types\ReferenceType;
+use Kalle\Pdf\Internal\PdfType\ArrayType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
+use Kalle\Pdf\Internal\PdfType\ReferenceType;
 
 final class FontDescriptor extends DictionaryIndirectObject
 {

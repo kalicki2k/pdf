@@ -7,8 +7,8 @@ namespace Kalle\Pdf\Internal\Document\Metadata;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Binary\BinaryData;
 use Kalle\Pdf\Internal\Object\StreamIndirectObject;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
 use Kalle\Pdf\Internal\Render\PdfOutput;
-use Kalle\Pdf\Types\DictionaryType;
 use RuntimeException;
 
 class IccProfileStream extends StreamIndirectObject

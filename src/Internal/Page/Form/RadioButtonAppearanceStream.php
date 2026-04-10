@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Form;
 
 use Kalle\Pdf\Internal\Object\StreamIndirectObject;
+use Kalle\Pdf\Internal\PdfType\ArrayType;
+use Kalle\Pdf\Internal\PdfType\DictionaryType;
+use Kalle\Pdf\Internal\PdfType\NameType;
 use Kalle\Pdf\Internal\Render\PdfOutput;
-use Kalle\Pdf\Types\ArrayType;
-use Kalle\Pdf\Types\DictionaryType;
-use Kalle\Pdf\Types\NameType;
 
 final class RadioButtonAppearanceStream extends StreamIndirectObject
 {
