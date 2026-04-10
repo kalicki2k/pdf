@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Document\Structure;
 
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
-use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
 use Kalle\Pdf\Types\DictionaryType;

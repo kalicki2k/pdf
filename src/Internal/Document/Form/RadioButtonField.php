@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Document\Form;
 
+use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\RadioButtonWidgetAnnotation;
-use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;

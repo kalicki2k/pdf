@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Internal\Object\IndirectObject;
 
 final readonly class PdfSerializationPlan
 {

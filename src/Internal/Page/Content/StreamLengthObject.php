@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Content;
 
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 
 final class StreamLengthObject extends IndirectObject

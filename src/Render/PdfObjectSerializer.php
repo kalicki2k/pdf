@@ -7,8 +7,8 @@ namespace Kalle\Pdf\Render;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Standard\EncryptDictionary;
-use Kalle\Pdf\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Internal\Object\EncryptableIndirectObject;
+use Kalle\Pdf\Internal\Object\IndirectObject;
 
 final class PdfObjectSerializer
 {

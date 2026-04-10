@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Object;
+namespace Kalle\Pdf\Tests\Internal\Object;
 
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
-use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\DictionaryType;

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Internal\Object\EncryptableIndirectObject;
+use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Internal\Page\Content\StreamLengthObject;
-use Kalle\Pdf\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\CountingPdfOutput;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;

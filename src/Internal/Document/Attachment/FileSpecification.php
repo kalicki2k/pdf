@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Document\Attachment;
 
-use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\ReferenceType;

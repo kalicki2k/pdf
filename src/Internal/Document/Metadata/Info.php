@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Document\Metadata;
 
 use DateTimeImmutable;
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\StringType;
 

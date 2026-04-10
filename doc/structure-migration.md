@@ -82,6 +82,7 @@ src/
       Table/
       Text/
       Value/
+    Object/
     Security/
       EncryptionAlgorithm.php
       EncryptionOptions.php
@@ -91,7 +92,6 @@ src/
       Form/
       Link/
 
-  Object/
   Render/
   Structure/
   Style/
@@ -246,16 +246,17 @@ Regeln:
 
 ### Low-Level-Pakete
 
-Diese bestehenden Pakete bleiben vorerst erhalten:
+Diese technischen Bausteine bleiben erhalten, sind aber jetzt konsequent intern geschnitten:
 
+- `Internal/Object`
 - `Render`
-- `Object`
 - `Types`
 - `Structure`
 
 Grund:
 
-- sie sind bereits relativ kohärent
+- sie sind relativ kohärent und bilden den PDF-Kern
+- `Object` ist keine Public API, sondern technische Basis fuer indirekte PDF-Objekte
 - `Security` enthaelt jetzt die Public-Konfiguration, `Internal/Encryption` den technischen Kryptokern
 
 ## Geplante Migrationsreihenfolge

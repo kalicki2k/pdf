@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
+use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Page\Form\CheckboxAppearanceStream;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;

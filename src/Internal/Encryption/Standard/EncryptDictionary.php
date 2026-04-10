@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Internal\Encryption\Standard;
 
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
-use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\RawType;

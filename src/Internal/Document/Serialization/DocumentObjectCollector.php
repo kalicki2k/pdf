@@ -10,7 +10,7 @@ use Kalle\Pdf\Internal\Document\Metadata\IccProfileStream;
 use Kalle\Pdf\Internal\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Internal\Font\StandardFont;
 use Kalle\Pdf\Internal\Font\UnicodeFont;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
 use Traversable;
 

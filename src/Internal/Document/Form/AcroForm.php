@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Internal\Document\Form;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
-use Kalle\Pdf\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
 use Kalle\Pdf\Types\DictionaryType;

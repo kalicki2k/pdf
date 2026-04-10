@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Types;
 
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
-use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Internal\Object\IndirectObject;
 
 final readonly class ReferenceType implements Type
 {
