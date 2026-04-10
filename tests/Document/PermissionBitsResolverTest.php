@@ -7,8 +7,8 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
-use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Encryption\PermissionBitsResolver;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Internal\Encryption\Profile\PermissionBitsResolver;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

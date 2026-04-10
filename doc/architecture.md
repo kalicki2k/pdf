@@ -80,25 +80,25 @@ Wenn Verschluesselung aktiv ist, cached `Document` die Security-Handler-Daten ei
 
 ### Verschluesselung
 
-Die Verschluesselung ist aktuell als eigener Teilpfad ueber `src/Encryption` modelliert.
+Die Verschluesselung ist jetzt in einen kleinen Public-Schnitt und einen internen Kryptokern getrennt.
 
 Die wichtigsten Bausteine sind:
 
 - `EncryptionAlgorithm`
-- `EncryptionProfile`
 - `EncryptionOptions`
 - `EncryptionPermissions`
-- `EncryptionVersionResolver`
-- `StandardSecurityHandler`
-- `StandardObjectEncryptor`
+- `Internal\\Encryption\\Profile\\EncryptionProfile`
+- `Internal\\Encryption\\Profile\\EncryptionVersionResolver`
+- `Internal\\Encryption\\Standard\\StandardSecurityHandler`
+- `Internal\\Encryption\\Object\\StandardObjectEncryptor`
 
 Der Ablauf ist:
 
 1. `Document::encrypt(...)` nimmt Passwort und optionalen Algorithmus entgegen.
-2. `EncryptionVersionResolver` waehlt anhand der PDF-Version das passende Profil.
-3. `StandardSecurityHandler` erzeugt die Security-Handler-Daten fuer das Dokument.
+2. `Internal\\Encryption\\Profile\\EncryptionVersionResolver` waehlt anhand der PDF-Version das passende Profil.
+3. `Internal\\Encryption\\Standard\\StandardSecurityHandler` erzeugt die Security-Handler-Daten fuer das Dokument.
 4. `EncryptDictionary` rendert daraus den `/Encrypt`-Eintrag.
-5. `PdfRenderer` verschluesselt Strings und Streams objektbezogen ueber `StandardObjectEncryptor`.
+5. `PdfRenderer` verschluesselt Strings und Streams objektbezogen ueber `Internal\\Encryption\\Object\\StandardObjectEncryptor`.
 6. Der Trailer bekommt `/Encrypt` und `/ID`.
 
 Aktuell unterstuetzt:

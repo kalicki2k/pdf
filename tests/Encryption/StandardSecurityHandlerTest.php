@@ -10,12 +10,14 @@ use InvalidArgumentException;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Encryption\EncryptionPermissions;
-use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Encryption\EncryptionVersionResolver;
 
 use function Kalle\Pdf\Encryption\setStandardSecurityHandlerOpenSslShouldFail;
 
-use Kalle\Pdf\Encryption\StandardSecurityHandler;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionVersionResolver;
+
+use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandler;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;

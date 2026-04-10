@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Encryption;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
-use Kalle\Pdf\Encryption\EncryptionProfile;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

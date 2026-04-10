@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
-use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
-use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Feature\Annotation\LinkAnnotation;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

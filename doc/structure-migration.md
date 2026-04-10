@@ -51,10 +51,22 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
+  Encryption/
+    EncryptionAlgorithm.php
+    EncryptionOptions.php
+    EncryptionPermissions.php
+
   Internal/
     Document/
       Preparation/
       Serialization/
+    Encryption/
+      Crypto/
+      Object/
+      Profile/
+      Standard/
+      Stream/
+    Page/
 
   Model/
     Document/
@@ -69,8 +81,6 @@ src/
     Table/
     Text/
 
-  Element/
-  Encryption/
   Font/
   Graphics/
   Layout/
@@ -103,6 +113,7 @@ Beispiele:
 - Serialisierungsplanung
 - Writer-Orchestrierung
 - Dokumentweite Guards und Manager
+- interner Encryption-Kern
 
 Regeln:
 
@@ -155,13 +166,11 @@ Diese bestehenden Pakete bleiben vorerst erhalten:
 - `Object`
 - `Types`
 - `Structure`
-- `Encryption`
-- `Element`
 
 Grund:
 
 - sie sind bereits relativ kohärent
-- das Hauptproblem liegt derzeit nicht dort, sondern im ueberladenen `Document`-Paket
+- `Encryption` ist jetzt in Public-Konfiguration und `Internal/Encryption` getrennt
 
 ## Geplante Migrationsreihenfolge
 

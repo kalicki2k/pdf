@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document;
 
 use Kalle\Pdf\Encryption\EncryptionOptions;
-use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Encryption\EncryptionVersionResolver;
-use Kalle\Pdf\Encryption\StandardSecurityHandler;
-use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionVersionResolver;
+use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandler;
+use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Model\Document\EncryptDictionary;
 
 /**

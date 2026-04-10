@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Model\Document\EncryptDictionary;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;

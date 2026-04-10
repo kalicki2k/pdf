@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Model\Page;
 
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Model\Page\StreamLengthObject;
 use Kalle\Pdf\Object\EncryptableIndirectObject;

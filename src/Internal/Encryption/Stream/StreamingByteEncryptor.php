@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Encryption;
+namespace Kalle\Pdf\Internal\Encryption\Stream;
 
 interface StreamingByteEncryptor
 {

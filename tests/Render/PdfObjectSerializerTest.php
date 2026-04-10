@@ -6,11 +6,11 @@ namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionOptions;
-use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
-use Kalle\Pdf\Encryption\StandardObjectEncryptor;
-use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Model\Document\EncryptDictionary;
 use Kalle\Pdf\Model\Document\Info;
 use Kalle\Pdf\Object\EncryptableIndirectObject;

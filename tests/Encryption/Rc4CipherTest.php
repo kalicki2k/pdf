@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Encryption;
 
-use Kalle\Pdf\Encryption\Rc4Cipher;
+use Kalle\Pdf\Internal\Encryption\Crypto\Rc4Cipher;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

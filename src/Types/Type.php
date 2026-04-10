@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Types;
 
-use Kalle\Pdf\Encryption\ObjectStringEncryptor;
+use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 
 interface Type
 {

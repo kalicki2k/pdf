@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Encryption;
+namespace Kalle\Pdf\Internal\Encryption\Standard;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Encryption\EncryptionOptions;
+use Kalle\Pdf\Internal\Encryption\Crypto\Rc4Cipher;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Internal\Encryption\Profile\PermissionBitsResolver;
 
 final class StandardSecurityHandler
 {

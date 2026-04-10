@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Render;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
-use Kalle\Pdf\Encryption\EncryptionProfile;
-use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Render\PdfEncryption;
 use Kalle\Pdf\Render\PdfFileStructure;
 use Kalle\Pdf\Render\PdfObjectEncryptorFactory;
