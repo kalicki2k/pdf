@@ -942,7 +942,7 @@ Unter `src/PdfType` liegen kleine Value-Objekte fuer PDF-Grundbausteine, zum Bei
 - `StringType`
 - `RawType`
 
-Diese Klassen kapseln die PDF-Syntax auf niedriger Ebene und halten die `render()`-Methoden der Fachobjekte kompakter.
+Diese Klassen kapseln die PDF-Syntax auf niedriger Ebene. Im Produktionspfad werden sie write-first ueber `write()` serialisiert; `render()` ist dort nur noch der In-Memory-Komfortpfad fuer Tests und gezielte Debug-Ausgaben.
 
 ## Design-Entscheidungen im aktuellen Stand
 

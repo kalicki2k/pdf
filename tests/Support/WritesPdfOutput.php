@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Support;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\PdfType\Type;
@@ -46,6 +47,21 @@ function writePdfTypeToString(Type $type, ?ObjectStringEncryptor $encryptor = nu
 {
     return capturePdfOutput(static function ($stream) use ($type, $encryptor): void {
         $type->write(new StreamPdfOutput($stream), $encryptor);
+    });
+}
+
+function writeIndirectObjectToString(IndirectObject $object, ?ObjectStringEncryptor $encryptor = null): string
+{
+    return capturePdfOutput(static function ($stream) use ($object, $encryptor): void {
+        $output = new StreamPdfOutput($stream);
+
+        if ($encryptor === null) {
+            $object->write($output);
+
+            return;
+        }
+
+        $object->writeWithStringEncryptor($output, $encryptor);
     });
 }
 

@@ -14,7 +14,11 @@ use Kalle\Pdf\PdfType\StringType;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
+
+use function Kalle\Pdf\Tests\Support\writeIndirectObjectToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class IndirectObjectTest extends TestCase
@@ -49,6 +53,19 @@ final class IndirectObjectTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_render_as_a_wrapper_around_write(): void
+    {
+        $object = new class (42) extends IndirectObject {
+            protected function writeObject(PdfOutput $output): void
+            {
+                $output->write('dummy');
+            }
+        };
+
+        self::assertSame($object->render(), writeIndirectObjectToString($object));
+    }
+
+    #[Test]
     public function it_can_write_bytes_with_an_explicit_object_string_encryptor(): void
     {
         $object = new class (42) extends IndirectObject {
@@ -79,7 +96,7 @@ final class IndirectObjectTest extends TestCase
     }
 
     #[Test]
-    public function it_can_render_a_dictionary_object_with_an_explicit_string_encryptor(): void
+    public function it_keeps_render_with_string_encryptor_as_a_wrapper_around_write(): void
     {
         $object = new class (42) extends IndirectObject {
             protected function writeObject(PdfOutput $output): void
@@ -103,17 +120,17 @@ final class IndirectObjectTest extends TestCase
                 );
             }
         };
-
-        $rendered = $object->renderWithStringEncryptor(
-            new ObjectStringEncryptor(
-                new StandardObjectEncryptor(
-                    new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
-                    new StandardSecurityHandlerData('', '', '1234567890123456', -4),
-                ),
-                42,
+        $encryptor = new ObjectStringEncryptor(
+            new StandardObjectEncryptor(
+                new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
+                new StandardSecurityHandlerData('', '', '1234567890123456', -4),
             ),
+            42,
         );
 
+        $rendered = $object->renderWithStringEncryptor($encryptor);
+
+        self::assertSame($rendered, writeIndirectObjectToString($object, $encryptor));
         self::assertStringContainsString('42 0 obj', $rendered);
         self::assertStringContainsString('endobj', $rendered);
         self::assertStringNotContainsString('(plain-text)', $rendered);
