@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Element;
 
 use Kalle\Pdf\Page\Content\Instruction\RawInstruction;
+
+use function Kalle\Pdf\Tests\Support\writeContentInstructionToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class RawTest extends TestCase
@@ -15,7 +19,7 @@ final class RawTest extends TestCase
     {
         $raw = new RawInstruction("q\nBT\n(Hello) Tj\nET\nQ");
 
-        self::assertSame("q\nBT\n(Hello) Tj\nET\nQ", $raw->render());
+        self::assertSame("q\nBT\n(Hello) Tj\nET\nQ", writeContentInstructionToString($raw));
     }
 
     #[Test]

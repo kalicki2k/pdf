@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Element;
 
 use Kalle\Pdf\Page\Content\Instruction\TextInstruction;
+
+use function Kalle\Pdf\Tests\Support\writeContentInstructionToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class TextTest extends TestCase
@@ -25,7 +29,7 @@ final class TextTest extends TestCase
             . "ET\n"
             . "EMC\n"
             . 'Q',
-            $text->render(),
+            writeContentInstructionToString($text),
         );
     }
 
@@ -44,7 +48,7 @@ final class TextTest extends TestCase
             . "ET\n"
             . "EMC\n"
             . 'Q',
-            $text->render(),
+            writeContentInstructionToString($text),
         );
     }
 
@@ -61,7 +65,7 @@ final class TextTest extends TestCase
             . "(Hello) Tj\n"
             . "ET\n"
             . 'Q',
-            $text->render(),
+            writeContentInstructionToString($text),
         );
     }
 
@@ -79,7 +83,7 @@ final class TextTest extends TestCase
             . "(Hello) Tj\n"
             . "ET\n"
             . 'Q',
-            $text->render(),
+            writeContentInstructionToString($text),
         );
     }
 
@@ -97,7 +101,7 @@ final class TextTest extends TestCase
             . "(Hello) Tj\n"
             . "ET\n"
             . 'Q',
-            $text->render(),
+            writeContentInstructionToString($text),
         );
     }
 
@@ -117,7 +121,7 @@ final class TextTest extends TestCase
             . "10 17.84 30 0.6 re f\n"
             . "10 23.6 30 0.6 re f\n"
             . 'Q',
-            $text->render(),
+            writeContentInstructionToString($text),
         );
     }
 
@@ -135,7 +139,7 @@ final class TextTest extends TestCase
             . "(Hello) Tj\n"
             . "ET\n"
             . 'Q',
-            $text->render(),
+            writeContentInstructionToString($text),
         );
     }
 
@@ -153,7 +157,7 @@ final class TextTest extends TestCase
             . "ET\n"
             . "12.5 17.84 23 0.6 re f\n"
             . 'Q',
-            $text->render(),
+            writeContentInstructionToString($text),
         );
     }
 }

@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Element;
 
 use Kalle\Pdf\Page\Content\Instruction\PathInstruction;
+
+use function Kalle\Pdf\Tests\Support\writeContentInstructionToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class PathTest extends TestCase
@@ -26,7 +30,7 @@ final class PathTest extends TestCase
             . "h\n"
             . "S\n"
             . 'Q',
-            $path->render(),
+            writeContentInstructionToString($path),
         );
     }
 
@@ -45,7 +49,7 @@ final class PathTest extends TestCase
             . "h\n"
             . "f\n"
             . 'Q',
-            $path->render(),
+            writeContentInstructionToString($path),
         );
     }
 
@@ -62,7 +66,7 @@ final class PathTest extends TestCase
             . "116.568542 130 130 116.568542 130 100 c\n"
             . "S\n"
             . 'Q',
-            $path->render(),
+            writeContentInstructionToString($path),
         );
     }
 
@@ -78,7 +82,7 @@ final class PathTest extends TestCase
             . "20 20 l\n"
             . "S\n"
             . 'Q',
-            $path->render(),
+            writeContentInstructionToString($path),
         );
     }
 

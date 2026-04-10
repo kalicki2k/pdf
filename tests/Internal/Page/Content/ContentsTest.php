@@ -9,6 +9,7 @@ use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Page\Content\Contents;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
+use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;
@@ -134,9 +135,9 @@ final class ContentsTest extends TestCase
             {
             }
 
-            public function render(): string
+            protected function writeInstruction(PdfOutput $output): void
             {
-                return $this->renderedValue;
+                $output->write($this->renderedValue);
             }
         };
     }

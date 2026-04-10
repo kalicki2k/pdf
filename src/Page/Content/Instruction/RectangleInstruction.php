@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page\Content\Instruction;
 
+use Kalle\Pdf\Render\PdfOutput;
+
 final class RectangleInstruction extends ContentInstruction
 {
     public function __construct(
@@ -18,33 +20,32 @@ final class RectangleInstruction extends ContentInstruction
     ) {
     }
 
-    public function render(): string
+    protected function writeInstruction(PdfOutput $output): void
     {
-        $output = 'q' . PHP_EOL;
+        $output->write('q' . PHP_EOL);
 
         if ($this->strokeColorOperator !== null) {
-            $output .= $this->strokeColorOperator . PHP_EOL;
+            $output->write($this->strokeColorOperator . PHP_EOL);
         }
 
         if ($this->fillColorOperator !== null) {
-            $output .= $this->fillColorOperator . PHP_EOL;
+            $output->write($this->fillColorOperator . PHP_EOL);
         }
 
         if ($this->graphicsState !== null) {
-            $output .= '/' . $this->graphicsState . ' gs' . PHP_EOL;
+            $output->write('/' . $this->graphicsState . ' gs' . PHP_EOL);
         }
 
         if ($this->strokeWidth !== null) {
-            $output .= self::formatNumber($this->strokeWidth) . ' w' . PHP_EOL;
+            $output->write(self::formatNumber($this->strokeWidth) . ' w' . PHP_EOL);
         }
 
-        $output .= self::formatNumber($this->rectX) . ' '
+        $output->write(self::formatNumber($this->rectX) . ' '
             . self::formatNumber($this->rectY) . ' '
             . self::formatNumber($this->rectWidth) . ' '
-            . self::formatNumber($this->rectHeight) . ' re' . PHP_EOL;
-        $output .= $this->paintOperator() . PHP_EOL;
-
-        return $output . 'Q';
+            . self::formatNumber($this->rectHeight) . ' re' . PHP_EOL);
+        $output->write($this->paintOperator() . PHP_EOL);
+        $output->write('Q');
     }
 
     private function paintOperator(): string

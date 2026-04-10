@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page\Content\Instruction;
 
+use Kalle\Pdf\Render\PdfOutput;
+
 class TextInstruction extends ContentInstruction
 {
     private ?int $markedContentId;
@@ -51,65 +53,60 @@ class TextInstruction extends ContentInstruction
         $this->trailingDecorationInset = $trailingDecorationInset;
     }
 
-    public function render(): string
+    protected function writeInstruction(PdfOutput $output): void
     {
-        $output = 'q' . PHP_EOL;
+        $output->write('q' . PHP_EOL);
 
         if ($this->tag !== null && $this->markedContentId !== null) {
-            $output .= "/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL;
+            $output->write("/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL);
         } elseif ($this->tag !== null) {
-            $output .= "/$this->tag BMC" . PHP_EOL;
+            $output->write("/$this->tag BMC" . PHP_EOL);
         }
 
-        $output .= 'BT' . PHP_EOL
+        $output->write('BT' . PHP_EOL
             . "/$this->font $this->size Tf" . PHP_EOL
-            . "$this->x $this->y Td" . PHP_EOL;
+            . "$this->x $this->y Td" . PHP_EOL);
 
         if ($this->colorOperator !== null) {
-            $output .= $this->colorOperator . PHP_EOL;
+            $output->write($this->colorOperator . PHP_EOL);
         }
 
         if ($this->graphicsState !== null) {
-            $output .= "/$this->graphicsState gs" . PHP_EOL;
+            $output->write("/$this->graphicsState gs" . PHP_EOL);
         }
 
-        $output .= $this->content . ' Tj' . PHP_EOL;
-        $output .= 'ET' . PHP_EOL;
+        $output->write($this->content . ' Tj' . PHP_EOL);
+        $output->write('ET' . PHP_EOL);
 
         if ($this->tag !== null) {
-            $output .= 'EMC' . PHP_EOL;
+            $output->write('EMC' . PHP_EOL);
         }
 
-        foreach ($this->renderDecorations() as $decoration) {
-            $output .= $decoration . PHP_EOL;
-        }
-
-        return $output . 'Q';
+        $this->writeDecorations($output);
+        $output->write('Q');
     }
 
-    /**
-     * @return list<string>
-     */
-    private function renderDecorations(): array
+    private function writeDecorations(PdfOutput $output): void
     {
         if ($this->width <= 0.0) {
-            return [];
+            return;
         }
 
-        $decorations = [];
         $lineHeight = max(0.5, $this->size * 0.05);
         $decorationX = $this->x + $this->leadingDecorationInset;
         $decorationWidth = max(0.0, $this->width - $this->leadingDecorationInset - $this->trailingDecorationInset);
 
         if ($this->underline) {
-            $decorations[] = $this->renderFilledLine($decorationX, $this->y - ($this->size * 0.18), $decorationWidth, $lineHeight);
+            $output->write(
+                $this->renderFilledLine($decorationX, $this->y - ($this->size * 0.18), $decorationWidth, $lineHeight) . PHP_EOL,
+            );
         }
 
         if ($this->strikethrough) {
-            $decorations[] = $this->renderFilledLine($decorationX, $this->y + ($this->size * 0.3), $decorationWidth, $lineHeight);
+            $output->write(
+                $this->renderFilledLine($decorationX, $this->y + ($this->size * 0.3), $decorationWidth, $lineHeight) . PHP_EOL,
+            );
         }
-
-        return $decorations;
     }
 
     private function renderFilledLine(float $x, float $y, float $width, float $height): string

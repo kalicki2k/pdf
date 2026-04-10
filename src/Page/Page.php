@@ -837,9 +837,7 @@ class Page extends IndirectObject
 
     protected function writeObject(PdfOutput $output): void
     {
-        $output->write(
-            $this->pageObjectRenderer()->render($this->pageMarkedContentIds->hasAllocatedIds()),
-        );
+        $this->pageObjectRenderer()->write($output, $this->pageMarkedContentIds->hasAllocatedIds());
     }
 
     public function getWidth(): float

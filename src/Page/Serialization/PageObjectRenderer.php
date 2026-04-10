@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page\Serialization;
 
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Render\PdfOutput;
 
 /**
  * @internal Renders the PDF page object dictionary.
@@ -25,12 +26,12 @@ final class PageObjectRenderer
     ) {
     }
 
-    public function render(bool $hasMarkedContent): string
+    public function write(PdfOutput $output, bool $hasMarkedContent): void
     {
         $dictionary = $this->dictionaryBuilder->build($this->page, $hasMarkedContent);
 
-        return $this->page->id . ' 0 obj' . PHP_EOL
-            . $dictionary->render() . PHP_EOL
-            . 'endobj' . PHP_EOL;
+        $output->write($this->page->id . ' 0 obj' . PHP_EOL);
+        $output->write($dictionary->render() . PHP_EOL);
+        $output->write('endobj' . PHP_EOL);
     }
 }

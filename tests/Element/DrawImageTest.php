@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Element;
 
 use Kalle\Pdf\Page\Content\Instruction\DrawImageInstruction;
+
+use function Kalle\Pdf\Tests\Support\writeContentInstructionToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class DrawImageTest extends TestCase
@@ -20,7 +24,7 @@ final class DrawImageTest extends TestCase
             . "100 0 0 40 10 20 cm\n"
             . "/Im1 Do\n"
             . 'Q',
-            $image->render(),
+            writeContentInstructionToString($image),
         );
     }
 
@@ -34,7 +38,7 @@ final class DrawImageTest extends TestCase
             . "100.5 0 0 40.75 10.5 20.25 cm\n"
             . "/Im2 Do\n"
             . 'Q',
-            $image->render(),
+            writeContentInstructionToString($image),
         );
     }
 
@@ -50,7 +54,7 @@ final class DrawImageTest extends TestCase
             . "/Im3 Do\n"
             . "EMC\n"
             . 'Q',
-            $image->render(),
+            writeContentInstructionToString($image),
         );
     }
 }

@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page\Content\Instruction;
 
+use Kalle\Pdf\Render\PdfOutput;
+
 final class RawInstruction extends ContentInstruction
 {
     public function __construct(private readonly string $content)
     {
     }
 
-    public function render(): string
+    protected function writeInstruction(PdfOutput $output): void
     {
-        return $this->content;
+        $output->write($this->content);
     }
 }

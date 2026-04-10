@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Element;
 
 use Kalle\Pdf\Page\Content\Instruction\LineInstruction;
+
+use function Kalle\Pdf\Tests\Support\writeContentInstructionToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class LineTest extends TestCase
@@ -22,7 +26,7 @@ final class LineTest extends TestCase
             . "100 20 l\n"
             . "S\n"
             . 'Q',
-            $line->render(),
+            writeContentInstructionToString($line),
         );
     }
 
@@ -40,7 +44,7 @@ final class LineTest extends TestCase
             . "100 20 l\n"
             . "S\n"
             . 'Q',
-            $line->render(),
+            writeContentInstructionToString($line),
         );
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Support;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
+use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\StreamPdfOutput;
@@ -21,6 +23,20 @@ function writePlanToString(PdfRenderer $renderer, PdfSerializationPlan $plan): s
 {
     return capturePdfOutput(static function ($stream) use ($renderer, $plan): void {
         $renderer->write($plan, new StreamPdfOutput($stream));
+    });
+}
+
+function writeContentInstructionToString(ContentInstruction $instruction): string
+{
+    return capturePdfOutput(static function ($stream) use ($instruction): void {
+        $instruction->write(new StreamPdfOutput($stream));
+    });
+}
+
+function writePageObjectToString(PageObjectRenderer $renderer, bool $hasMarkedContent): string
+{
+    return capturePdfOutput(static function ($stream) use ($renderer, $hasMarkedContent): void {
+        $renderer->write(new StreamPdfOutput($stream), $hasMarkedContent);
     });
 }
 

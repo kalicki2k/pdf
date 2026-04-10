@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page\Content\Instruction;
 
+use Kalle\Pdf\Render\PdfOutput;
+
 final class DrawImageInstruction extends ContentInstruction
 {
     public function __construct(
@@ -19,27 +21,27 @@ final class DrawImageInstruction extends ContentInstruction
         $this->y = $y;
     }
 
-    public function render(): string
+    protected function writeInstruction(PdfOutput $output): void
     {
-        $output = 'q' . PHP_EOL;
+        $output->write('q' . PHP_EOL);
 
         if ($this->tag !== null && $this->markedContentId !== null) {
-            $output .= "/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL;
+            $output->write("/$this->tag << /MCID $this->markedContentId >> BDC" . PHP_EOL);
         } elseif ($this->tag !== null) {
-            $output .= "/$this->tag BMC" . PHP_EOL;
+            $output->write("/$this->tag BMC" . PHP_EOL);
         }
 
-        $output .= self::formatNumber($this->width) . ' 0 0 '
+        $output->write(self::formatNumber($this->width) . ' 0 0 '
             . self::formatNumber($this->height) . ' '
             . self::formatNumber($this->x) . ' '
             . self::formatNumber($this->y) . ' cm' . PHP_EOL
-            . '/' . $this->resourceName . ' Do' . PHP_EOL;
+            . '/' . $this->resourceName . ' Do' . PHP_EOL);
 
         if ($this->tag !== null) {
-            $output .= 'EMC' . PHP_EOL;
+            $output->write('EMC' . PHP_EOL);
         }
 
-        return $output . 'Q';
+        $output->write('Q');
     }
 
     private static function formatNumber(float $value): string

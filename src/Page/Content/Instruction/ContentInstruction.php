@@ -19,10 +19,10 @@ abstract class ContentInstruction
         return $this;
     }
 
-    public function write(PdfOutput $output): void
+    final public function write(PdfOutput $output): void
     {
-        $output->write($this->render());
+        $this->writeInstruction($output);
     }
 
-    abstract public function render(): string;
+    abstract protected function writeInstruction(PdfOutput $output): void;
 }

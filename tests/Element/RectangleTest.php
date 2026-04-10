@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Element;
 
 use Kalle\Pdf\Page\Content\Instruction\RectangleInstruction;
+
+use function Kalle\Pdf\Tests\Support\writeContentInstructionToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class RectangleTest extends TestCase
@@ -20,7 +24,7 @@ final class RectangleTest extends TestCase
             . "10 20 100 40 re\n"
             . "S\n"
             . 'Q',
-            $rectangle->render(),
+            writeContentInstructionToString($rectangle),
         );
     }
 
@@ -35,7 +39,7 @@ final class RectangleTest extends TestCase
             . "10 20 100 40 re\n"
             . "f\n"
             . 'Q',
-            $rectangle->render(),
+            writeContentInstructionToString($rectangle),
         );
     }
 
@@ -53,7 +57,7 @@ final class RectangleTest extends TestCase
             . "10 20 100 40 re\n"
             . "B\n"
             . 'Q',
-            $rectangle->render(),
+            writeContentInstructionToString($rectangle),
         );
     }
 }

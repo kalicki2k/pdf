@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page\Content\Instruction;
 
+use Kalle\Pdf\Render\PdfOutput;
+
 final class LineInstruction extends ContentInstruction
 {
     public function __construct(
@@ -17,24 +19,23 @@ final class LineInstruction extends ContentInstruction
     ) {
     }
 
-    public function render(): string
+    protected function writeInstruction(PdfOutput $output): void
     {
-        $output = 'q' . PHP_EOL;
+        $output->write('q' . PHP_EOL);
 
         if ($this->strokeColorOperator !== null) {
-            $output .= $this->strokeColorOperator . PHP_EOL;
+            $output->write($this->strokeColorOperator . PHP_EOL);
         }
 
         if ($this->graphicsState !== null) {
-            $output .= '/' . $this->graphicsState . ' gs' . PHP_EOL;
+            $output->write('/' . $this->graphicsState . ' gs' . PHP_EOL);
         }
 
-        $output .= self::formatNumber($this->width) . ' w' . PHP_EOL;
-        $output .= self::formatNumber($this->startX) . ' ' . self::formatNumber($this->startY) . ' m' . PHP_EOL;
-        $output .= self::formatNumber($this->endX) . ' ' . self::formatNumber($this->endY) . ' l' . PHP_EOL;
-        $output .= 'S' . PHP_EOL;
-
-        return $output . 'Q';
+        $output->write(self::formatNumber($this->width) . ' w' . PHP_EOL);
+        $output->write(self::formatNumber($this->startX) . ' ' . self::formatNumber($this->startY) . ' m' . PHP_EOL);
+        $output->write(self::formatNumber($this->endX) . ' ' . self::formatNumber($this->endY) . ' l' . PHP_EOL);
+        $output->write('S' . PHP_EOL);
+        $output->write('Q');
     }
 
     private static function formatNumber(float $value): string

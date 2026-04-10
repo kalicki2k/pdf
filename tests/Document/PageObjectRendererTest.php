@@ -7,7 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\Profile\Profile;
+
+use function Kalle\Pdf\Tests\Support\writePageObjectToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class PageObjectRendererTest extends TestCase
@@ -22,7 +26,7 @@ final class PageObjectRendererTest extends TestCase
 
         self::assertSame(
             "4 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 6 0 R /Contents 5 0 R >>\nendobj\n",
-            $renderer->render(false),
+            writePageObjectToString($renderer, false),
         );
     }
 }
