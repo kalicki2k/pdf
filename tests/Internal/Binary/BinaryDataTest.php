@@ -102,4 +102,32 @@ final class BinaryDataTest extends TestCase
 
         self::assertFalse(is_resource($reader));
     }
+
+    #[Test]
+    public function it_accepts_non_seekable_streams_with_known_length_without_prebuffering_them(): void
+    {
+        $streams = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+
+        if ($streams === false) {
+            self::markTestSkipped('stream_socket_pair is not available.');
+        }
+
+        [$reader, $writer] = $streams;
+
+        $data = BinaryData::fromStream($reader, 5, closeOnDestruct: true);
+
+        fwrite($writer, 'hello');
+        fclose($writer);
+
+        $output = new StringPdfOutput();
+        $data->writeTo($output);
+
+        self::assertSame('hello', $output->contents());
+        self::assertSame(5, $data->length());
+        self::assertSame('ell', $data->slice(1, 3));
+
+        unset($data);
+
+        self::assertFalse(is_resource($reader));
+    }
 }
