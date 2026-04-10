@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use ReflectionMethod;
+use ReflectionProperty;
 use Throwable;
 
 final class ImageTest extends TestCase
@@ -455,8 +456,10 @@ final class ImageTest extends TestCase
         $compressed = gzcompress(chr(0) . str_repeat(chr(0), 3));
         self::assertNotFalse($compressed);
 
+        [$colorData] = $splitPngAlphaChannels->invoke(null, 'alpha-length.png', BinaryData::fromString($compressed), 1, 1, 3);
+
         try {
-            $splitPngAlphaChannels->invoke(null, 'alpha-length.png', BinaryData::fromString($compressed), 1, 1, 3);
+            $colorData->length();
             self::fail('Expected exception for unexpected alpha image length.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -480,8 +483,10 @@ final class ImageTest extends TestCase
             self::assertSame('Unable to read PNG chunk data.', $exception->getMessage());
         }
 
+        [$colorData] = $splitPngAlphaChannels->invoke(null, 'alpha.png', BinaryData::fromString('not-compressed'), 1, 1, 3);
+
         try {
-            $splitPngAlphaChannels->invoke(null, 'alpha.png', BinaryData::fromString('not-compressed'), 1, 1, 3);
+            $colorData->length();
             self::fail('Expected exception for invalid compressed alpha data.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -501,8 +506,10 @@ final class ImageTest extends TestCase
 
         setImageGzcompressFailure(true);
 
+        [$colorData] = $splitPngAlphaChannels->invoke(null, 'alpha-recompress.png', BinaryData::fromString($compressed), 1, 1, 3);
+
         try {
-            $splitPngAlphaChannels->invoke(null, 'alpha-recompress.png', BinaryData::fromString($compressed), 1, 1, 3);
+            $colorData->length();
             self::fail('Expected exception for failed PNG alpha recompression.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -537,6 +544,29 @@ final class ImageTest extends TestCase
         self::assertSame($alphaData->slice(0, $alphaData->length()), $alphaOutput->contents());
         self::assertSame("\x00\x0A\x14\x1E", gzuncompress($colorOutput->contents()));
         self::assertSame("\x00\x28", gzuncompress($alphaOutput->contents()));
+    }
+
+    #[Test]
+    public function it_defers_png_alpha_channel_length_measurement_until_needed(): void
+    {
+        $compressed = gzcompress(chr(0) . chr(10) . chr(20) . chr(30) . chr(40));
+        self::assertNotFalse($compressed);
+
+        [$colorData, $alphaData] = PngAlphaChannelSplitter::split(
+            'alpha-lazy-length.png',
+            BinaryData::fromString($compressed),
+            1,
+            1,
+            3,
+        );
+
+        self::assertNull($this->binaryDataCachedLength($colorData));
+        self::assertNull($this->binaryDataCachedLength($alphaData));
+
+        self::assertGreaterThan(0, $colorData->length());
+        self::assertGreaterThan(0, $alphaData->length());
+        self::assertNotNull($this->binaryDataCachedLength($colorData));
+        self::assertNotNull($this->binaryDataCachedLength($alphaData));
     }
 
     #[Test]
@@ -657,5 +687,17 @@ final class ImageTest extends TestCase
             . $this->createPngChunk('IHDR', pack('NNC5', $width, $height, 8, 4, 0, 0, 0))
             . $this->createPngChunk('IDAT', $compressed)
             . $this->createPngChunk('IEND', '');
+    }
+
+    private function binaryDataCachedLength(BinaryData $data): ?int
+    {
+        $binaryDataReflection = new ReflectionProperty(BinaryData::class, 'source');
+        $binaryDataReflection->setAccessible(true);
+        $source = $binaryDataReflection->getValue($data);
+
+        $lengthReflection = new ReflectionProperty($source, 'length');
+        $lengthReflection->setAccessible(true);
+
+        return $lengthReflection->getValue($source);
     }
 }

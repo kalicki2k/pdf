@@ -31,9 +31,6 @@ final class PngAlphaChannelSplitter
             true,
         ));
 
-        $colorData->length();
-        $alphaData->length();
-
         return [$colorData, $alphaData];
     }
 
