@@ -8,7 +8,7 @@ use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Internal\Page\PageFonts;
+use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Object\IndirectObject;

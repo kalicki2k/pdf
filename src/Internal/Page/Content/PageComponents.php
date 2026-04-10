@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Page;
+namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Feature\Text\PageParagraphRenderer;
@@ -14,6 +14,7 @@ use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Style\BadgeStyle;

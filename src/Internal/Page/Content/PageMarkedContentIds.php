@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Page;
+namespace Kalle\Pdf\Internal\Page\Content;
 
 /**
  * @internal Tracks marked-content identifiers allocated while rendering a page.

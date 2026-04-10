@@ -10,11 +10,11 @@ use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Content\PageGraphics;
+use Kalle\Pdf\Internal\Page\Content\PageLinks;
+use Kalle\Pdf\Internal\Page\Content\PageMarkedContentIds;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Internal\Page\PageFonts;
-use Kalle\Pdf\Internal\Page\PageGraphics;
-use Kalle\Pdf\Internal\Page\PageLinks;
-use Kalle\Pdf\Internal\Page\PageMarkedContentIds;
+use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Structure\StructElem;
 

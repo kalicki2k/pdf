@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Page;
+namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Element\Path;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Page;
 
 final class PathBuilder
 {

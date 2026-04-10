@@ -9,7 +9,7 @@ use Kalle\Pdf\Feature\Text\TextBoxOptions;
 use Kalle\Pdf\Geometry\Insets;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Internal\Page\PageFonts;
+use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Feature\Form;
 use Closure;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Internal\Page\PageFonts;
+use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 
 /**
  * @internal Provides object ids, AcroForms and fonts for page form widget building.

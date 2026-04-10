@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Page;
+namespace Kalle\Pdf\Internal\Page\Serialization;
 
 use Kalle\Pdf\Feature\Annotation\PageAnnotation;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;

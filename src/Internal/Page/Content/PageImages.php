@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Page;
+namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Element\DrawImage;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Model\Page\ImageOptions;
 
 /**

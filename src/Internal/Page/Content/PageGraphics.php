@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Page;
+namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Element\Element;
@@ -13,6 +13,7 @@ use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Page;
 
 /**
  * @internal Coordinates graphic primitives for a page.

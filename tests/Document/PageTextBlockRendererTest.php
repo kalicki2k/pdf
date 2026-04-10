@@ -9,7 +9,7 @@ use Kalle\Pdf\Feature\Text\PageTextLineRenderer;
 use Kalle\Pdf\Feature\Text\TextLayoutEngine;
 use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Internal\Page\PageFonts;
+use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

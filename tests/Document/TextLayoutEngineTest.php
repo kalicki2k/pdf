@@ -12,7 +12,7 @@ use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Internal\Page\PageFonts;
+use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;

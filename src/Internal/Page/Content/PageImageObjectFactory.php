@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Page;
+namespace Kalle\Pdf\Internal\Page\Content;
 
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Internal\Document\Document;
