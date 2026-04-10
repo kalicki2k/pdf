@@ -7,9 +7,9 @@ namespace Kalle\Pdf\Tests\Element;
 require_once __DIR__ . '/Support/ImageGzcompressStub.php';
 
 use InvalidArgumentException;
-use Kalle\Pdf\Image;
+use Kalle\Pdf\Binary\BinaryData;
 
-use Kalle\Pdf\Infrastructure\Binary\BinaryData;
+use Kalle\Pdf\Image;
 
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 

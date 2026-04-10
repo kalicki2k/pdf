@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Binary;
 
-use Kalle\Pdf\Infrastructure\Binary\BinaryData;
+use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

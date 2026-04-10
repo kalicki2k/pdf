@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Font;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Infrastructure\Binary\BinaryData;
+use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;

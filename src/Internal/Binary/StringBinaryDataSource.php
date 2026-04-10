@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Infrastructure\Binary;
+namespace Kalle\Pdf\Internal\Binary;
 
 use Kalle\Pdf\Render\PdfOutput;
 

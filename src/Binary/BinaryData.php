@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Infrastructure\Binary;
+namespace Kalle\Pdf\Binary;
 
+use Kalle\Pdf\Internal\Binary\BinaryDataSource;
+use Kalle\Pdf\Internal\Binary\FileBinaryDataSource;
+use Kalle\Pdf\Internal\Binary\StreamBinaryDataSource;
+use Kalle\Pdf\Internal\Binary\StringBinaryDataSource;
 use Kalle\Pdf\Render\PdfOutput;
 
 final class BinaryData
