@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Annotation;
+namespace Kalle\Pdf\Internal\Page\Annotation\Style;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Types\ArrayType;

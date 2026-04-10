@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Annotation\LineEndingStyle;
-use Kalle\Pdf\Annotation\PageAnnotation;
 use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Form\FormFieldLabel;
 use Kalle\Pdf\Geometry\Position;
@@ -17,6 +14,9 @@ use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Layout\Table\Table as InternalTable;
+use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
+use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
+use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\PageRegistry;

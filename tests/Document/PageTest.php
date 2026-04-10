@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Annotation\LineEndingStyle;
 use Kalle\Pdf\Font\CidFont;
 use Kalle\Pdf\Font\CidToGidMap;
 use Kalle\Pdf\Font\FontDescriptor;
@@ -37,6 +35,8 @@ use Kalle\Pdf\Internal\Action\ThreadAction;
 use Kalle\Pdf\Internal\Action\UriAction;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
+use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;
 use Kalle\Pdf\Internal\Page\Page;

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page;
 
-use Kalle\Pdf\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Annotation\LineEndingStyle;
-use Kalle\Pdf\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Form\FormFieldLabel;
@@ -23,7 +20,10 @@ use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
 use Kalle\Pdf\Internal\Layout\Text\TextFrame;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
+use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
+use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
+use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Internal\Page\Content\PageComponents;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;

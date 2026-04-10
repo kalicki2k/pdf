@@ -6,8 +6,6 @@ namespace Kalle\Pdf\Tests\PublicApi;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Kalle\Pdf\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Annotation\LineEndingStyle;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Form\FormFieldLabel;
@@ -18,6 +16,8 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Document as InternalDocument;
+use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
+use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;

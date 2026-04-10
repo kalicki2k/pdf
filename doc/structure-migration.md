@@ -30,7 +30,8 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
-- oeffentliche Annotation- und Formular-Value-Types liegen unter `src/Annotation` und `src/Form`
+- PDF-Annotation-Stiltypen und das Marker-Interface liegen jetzt unter `Internal/Page/Annotation`
+- oeffentliche Formular-Value-Types liegen weiter unter `src/Form`
 - konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
 - `AcroForm` und `RadioButtonField` liegen unter `Model/Document/Form`
 - oeffentliche Text- und Tabellen-Value-Types liegen unter `src/Text` und `src/Table`
@@ -52,7 +53,6 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
-  Annotation/
   Form/
   Table/
   Text/
@@ -179,7 +179,8 @@ Diese Bereiche sind jetzt zwischen internem PDF-Mechanismus, Public API, Seiteni
 Beispiele:
 
 - `Internal/Action` fuer PDF-Action-Dictionaries von Buttons und Links
-- `Annotation` fuer oeffentliche Annotation-Value-Types und Rollen
+- `Internal/Page/Annotation/Style` fuer Annotation-Border- und Linienend-Stile
+- `Internal/Page/Annotation/PageAnnotation` als gemeinsames Marker- und Related-Objects-Interface
 - `Form` fuer oeffentliche Formularoptionen
 - `Internal/Page/Annotation` fuer konkrete Seitenannotationen und ihre Koordination
 - `Internal/Page/Form` fuer Widget-Erzeugung und Appearance-Streams
@@ -188,7 +189,8 @@ Beispiele:
 Regeln:
 
 - PDF-Action-Typen liegen intern, auch wenn einzelne Public-API-Signaturen sie referenzieren
-- oeffentliche Annotation- und Formular-Value-Types bleiben ausserhalb von `Internal`
+- annotation-spezifische PDF-Typen liegen intern nahe an der Seitenannotation-Schicht
+- oeffentliche Formular-Value-Types bleiben ausserhalb von `Internal`
 - konkrete Seitenobjekte und Builder liegen nahe am Seitenkern
 - dokumentweite Formularzustandsobjekte liegen im Modell statt im Ablaufcode
 

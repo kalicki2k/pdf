@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
-use Kalle\Pdf\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Annotation\LineEndingStyle;
-use Kalle\Pdf\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation as PopupParentAnnotation;
+use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
+use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Model\Document\FileSpecification;
@@ -22,7 +22,7 @@ use Kalle\Pdf\Structure\StructElem;
  */
 final class PageAnnotations
 {
-    /** @var list<IndirectObject&PageAnnotation> */
+    /** @var list<IndirectObject&PopupParentAnnotation> */
     private array $annotations = [];
     private ?PageAnnotationFactory $factory = null;
     private readonly PageAnnotationFactoryContext $factoryContext;
@@ -75,7 +75,7 @@ final class PageAnnotations
         $this->factory()->createPopupAnnotation($parent, $box, $open);
     }
 
-    public function add(PageAnnotation & IndirectObject $annotation): void
+    public function add(PopupParentAnnotation & IndirectObject $annotation): void
     {
         $this->annotations[] = $annotation;
     }
@@ -279,7 +279,7 @@ final class PageAnnotations
     }
 
     /**
-     * @return list<IndirectObject&PageAnnotation>
+     * @return list<IndirectObject&PopupParentAnnotation>
      */
     public function all(): array
     {
