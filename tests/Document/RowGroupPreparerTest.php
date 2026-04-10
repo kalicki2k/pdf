@@ -6,16 +6,16 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableRow;
 use Kalle\Pdf\Internal\Layout\Table\Layout\RowGroupPreparer;
 use Kalle\Pdf\Internal\Layout\Table\Layout\RowPreparer;
+use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Table\Style\HeaderStyle;
-use Kalle\Pdf\Table\Style\RowStyle;
-use Kalle\Pdf\Table\Style\TableStyle;
-use Kalle\Pdf\Table\TableCell;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

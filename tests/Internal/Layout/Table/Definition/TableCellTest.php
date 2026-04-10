@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Internal\Layout\Table\Definition;
 
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
+use Kalle\Pdf\Internal\Layout\Table\Style\CellStyle;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Table\Style\CellStyle;
-use Kalle\Pdf\Table\TableCell;
 use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

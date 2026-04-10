@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Table;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCaption;
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
 use Kalle\Pdf\Internal\Layout\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableRow;
@@ -23,6 +25,12 @@ use Kalle\Pdf\Internal\Layout\Table\Rendering\TablePendingGroupPaginator;
 use Kalle\Pdf\Internal\Layout\Table\Rendering\TablePendingRenderState;
 use Kalle\Pdf\Internal\Layout\Table\Rendering\TableRenderContext;
 use Kalle\Pdf\Internal\Layout\Table\Rendering\TableStructElemFactory;
+use Kalle\Pdf\Internal\Layout\Table\Style\FooterStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\TableBorder;
+use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
+use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Internal\Layout\Table\TableSections;
@@ -31,14 +39,6 @@ use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Style\Color;
-use Kalle\Pdf\Table\Style\FooterStyle;
-use Kalle\Pdf\Table\Style\HeaderStyle;
-use Kalle\Pdf\Table\Style\RowStyle;
-use Kalle\Pdf\Table\Style\TableBorder;
-use Kalle\Pdf\Table\Style\TablePadding;
-use Kalle\Pdf\Table\Style\TableStyle;
-use Kalle\Pdf\Table\TableCaption;
-use Kalle\Pdf\Table\TableCell;
 use Kalle\Pdf\Text\TextSegment;
 
 class Table

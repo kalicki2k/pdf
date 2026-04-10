@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Layout\Table\Rendering;
 
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableHeaderScope;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
-use Kalle\Pdf\Table\TableCell;
-use Kalle\Pdf\Table\TableHeaderScope;
 
 /**
  * @internal Creates tagged PDF structure elements for rendered table rows and cells.

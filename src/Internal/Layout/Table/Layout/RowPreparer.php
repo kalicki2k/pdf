@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Table\Layout;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
+use Kalle\Pdf\Internal\Layout\Table\Style\CellStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\FooterStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Table\Style\CellStyle;
-use Kalle\Pdf\Table\Style\FooterStyle;
-use Kalle\Pdf\Table\Style\HeaderStyle;
-use Kalle\Pdf\Table\Style\RowStyle;
-use Kalle\Pdf\Table\Style\TableStyle;
-use Kalle\Pdf\Table\TableCell;
 use Kalle\Pdf\Text\TextSegment;
 
 final readonly class RowPreparer

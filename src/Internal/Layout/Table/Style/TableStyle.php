@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Table\Style;
+namespace Kalle\Pdf\Internal\Layout\Table\Style;
 
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Style\Color;

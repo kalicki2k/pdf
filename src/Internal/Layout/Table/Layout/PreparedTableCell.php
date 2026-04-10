@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Layout\Table\Layout;
 
-use Kalle\Pdf\Table\Style\TablePadding;
-use Kalle\Pdf\Table\TableCell;
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
+use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
 
 final readonly class PreparedTableCell
 {

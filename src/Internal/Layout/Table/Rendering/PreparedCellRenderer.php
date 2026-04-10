@@ -6,16 +6,16 @@ namespace Kalle\Pdf\Internal\Layout\Table\Rendering;
 
 use Kalle\Pdf\Internal\Layout\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Internal\Layout\Table\Style\FooterStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
-use Kalle\Pdf\Table\Style\FooterStyle;
-use Kalle\Pdf\Table\Style\HeaderStyle;
-use Kalle\Pdf\Table\Style\RowStyle;
-use Kalle\Pdf\Table\Style\TableStyle;
 use Kalle\Pdf\Text\TextSegment;
 
 final readonly class PreparedCellRenderer

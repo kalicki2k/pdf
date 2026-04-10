@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
 use Kalle\Pdf\Internal\Layout\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Table\Style\TablePadding;
-use Kalle\Pdf\Table\TableCell;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

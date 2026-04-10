@@ -4,4 +4,4 @@ Dieses Paket enthaelt die internen Layout-Primitiven und Layout-Implementierunge
 - `Page` enthaelt `PageSize` und `Units`.
 - `Value` enthaelt Alignment-, Overflow- und Bullet-Enums.
 - `Text` enthaelt Absatz- und Textframe-Layout sowie die zugehoerigen Renderer.
-- `Table` enthaelt Tabellenzustand, Vorbereitung, Pagination und Rendering.
+- `Table` enthaelt Tabellen-Definitionen, Stilobjekte, Tabellenzustand, Vorbereitung, Pagination und Rendering.

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Layout\Table\Rendering;
 
+use Kalle\Pdf\Internal\Layout\Table\Style\FooterStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
+use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
-use Kalle\Pdf\Table\Style\FooterStyle;
-use Kalle\Pdf\Table\Style\HeaderStyle;
-use Kalle\Pdf\Table\Style\RowStyle;
-use Kalle\Pdf\Table\Style\TableStyle;
 
 /**
  * @internal Bundles shared table render dependencies for prepared row-group rendering.

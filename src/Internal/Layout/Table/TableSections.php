@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Layout\Table;
 
-use Kalle\Pdf\Table\TableCell;
+use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
 use Kalle\Pdf\Text\TextSegment;
 
 /**
