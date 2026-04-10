@@ -13,8 +13,8 @@ use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Text\TextSegment;
 
 final readonly class RowPreparer
 {

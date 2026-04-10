@@ -17,12 +17,12 @@ use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableBorder;
 use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
-use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

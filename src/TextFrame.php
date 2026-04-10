@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
+use Kalle\Pdf\Internal\Layout\Text\Input\ListOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Text\TextFrame as InternalTextFrame;
 use Kalle\Pdf\Internal\Layout\Value\BulletType;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
-use Kalle\Pdf\Text\ListOptions;
-use Kalle\Pdf\Text\ParagraphOptions;
-use Kalle\Pdf\Text\TextOptions;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * Public facade for flowing text across pages.

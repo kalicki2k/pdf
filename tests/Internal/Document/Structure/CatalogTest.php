@@ -13,12 +13,12 @@ use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
-use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

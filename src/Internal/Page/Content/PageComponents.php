@@ -7,6 +7,9 @@ namespace Kalle\Pdf\Internal\Page\Content;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
@@ -17,9 +20,6 @@ use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
-use Kalle\Pdf\Text\TextBoxOptions;
-use Kalle\Pdf\Text\TextOptions;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * @internal Coordinates high-level page components such as badges, panels and callouts.

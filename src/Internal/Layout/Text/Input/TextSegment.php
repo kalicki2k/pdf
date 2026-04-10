@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Text;
+namespace Kalle\Pdf\Internal\Layout\Text\Input;
 
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Style\Color;

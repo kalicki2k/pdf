@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Text\FlowTextLayout;
-use Kalle\Pdf\Text\FlowTextOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\FlowTextOptions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Layout\Table\Layout;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
-use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 
 /**
  * @internal Prepares standalone table row groups such as repeated headers and footers.

@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Internal\Layout\Text;
 
 use Closure;
 use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * @internal Resolves fonts needed by text layout without exposing page-level wiring.

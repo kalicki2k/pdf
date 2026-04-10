@@ -11,11 +11,11 @@ use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsStyle;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Page\PageSize;
+use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
-use Kalle\Pdf\Text\ParagraphOptions;
-use Kalle\Pdf\Text\TextOptions;
 
 /**
  * @internal Builds and inserts the table of contents pages for a document.

@@ -451,7 +451,7 @@ Verantwortlich fuer:
 
 ### TextLayoutEngine
 
-`TextLayoutEngine` ist eine kleine interne Hilfsklasse unter `src/Document/Text`.
+`TextLayoutEngine` ist eine kleine interne Hilfsklasse unter `src/Internal/Layout/Text`.
 
 Sie gehoert nicht zur oeffentlichen API. `Page` bleibt der oeffentliche Einstiegspunkt fuer Text-Rendering.
 

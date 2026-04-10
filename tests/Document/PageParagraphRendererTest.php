@@ -7,11 +7,11 @@ namespace Kalle\Pdf\Tests\Layout;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Layout\Geometry\Insets;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
 use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Text\TextBoxOptions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -7,14 +7,14 @@ use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Layout\Page\Units;
+use Kalle\Pdf\Internal\Layout\Text\Input\ListOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Page\Content\ImageOptions;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Text\ListOptions;
-use Kalle\Pdf\Text\ParagraphOptions;
-use Kalle\Pdf\Text\TextOptions;
 
 require __DIR__ . '/../vendor/autoload.php';
 

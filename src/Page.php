@@ -11,6 +11,10 @@ use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Table\Table as InternalTable;
+use Kalle\Pdf\Internal\Layout\Text\Input\FlowTextOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
@@ -28,10 +32,6 @@ use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Text\FlowTextOptions;
-use Kalle\Pdf\Text\TextBoxOptions;
-use Kalle\Pdf\Text\TextOptions;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * Public facade for page operations exposed to library users.

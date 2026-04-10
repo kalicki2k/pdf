@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Text\FlowTextOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\FlowTextOptions;
 
 /**
  * @internal Holds validated layout values for flow text rendering.

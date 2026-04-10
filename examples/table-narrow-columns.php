@@ -13,11 +13,11 @@ use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableBorder;
 use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
+use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Text\ParagraphOptions;
-use Kalle\Pdf\Text\TextOptions;
 
 require __DIR__ . '/../vendor/autoload.php';
 

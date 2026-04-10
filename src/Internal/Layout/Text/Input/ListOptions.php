@@ -2,24 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Text;
+namespace Kalle\Pdf\Internal\Layout\Text\Input;
 
-use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 
-final readonly class TextOptions
+final readonly class ListOptions
 {
     public function __construct(
         public ?StructureTag $structureTag = null,
-        public ?StructElem $parentStructElem = null,
+        public ?float $lineHeight = null,
+        public ?float $spacingAfter = null,
+        public ?float $itemSpacing = null,
         public ?Color $color = null,
         public ?Opacity $opacity = null,
-        public bool $underline = false,
-        public bool $strikethrough = false,
-        public ?LinkTarget $link = null,
+        public ?Color $markerColor = null,
+        public ?float $markerIndent = null,
     ) {
     }
 }

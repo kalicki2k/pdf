@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Tests\Internal\Layout\Table\Definition;
 
 use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
 use Kalle\Pdf\Internal\Layout\Table\Style\CellStyle;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Internal\Layout\Text;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * Keeps text run normalization, line breaking and overflow rules together.

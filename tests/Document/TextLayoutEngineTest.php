@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Text\TextLayoutEngine;
 use Kalle\Pdf\Internal\Layout\Text\TextLayoutFontResolver;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
@@ -15,7 +16,6 @@ use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

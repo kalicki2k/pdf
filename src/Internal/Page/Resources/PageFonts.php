@@ -10,8 +10,8 @@ use Kalle\Pdf\Internal\Font\FontRegistry;
 use Kalle\Pdf\Internal\Font\StandardFontName;
 use Kalle\Pdf\Internal\Font\UnicodeFont;
 use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * @internal Coordinates font resolution and font-related page resources.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Layout\Table\Rendering;
 
-use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 
 final readonly class CellRenderOptions
 {

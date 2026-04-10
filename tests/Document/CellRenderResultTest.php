@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Layout\Table\Rendering\CellRenderResult;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

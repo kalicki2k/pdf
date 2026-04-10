@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Layout\Text;
 
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * @internal Renders multi-line text blocks onto one or more pages.

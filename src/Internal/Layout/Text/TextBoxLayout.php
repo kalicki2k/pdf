@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Internal\Layout\Text;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Text\TextBoxOptions;
 
 /**
  * @internal Holds validated layout values for text rendered inside a fixed box.

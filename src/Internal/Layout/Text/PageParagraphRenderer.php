@@ -7,6 +7,9 @@ namespace Kalle\Pdf\Internal\Layout\Text;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
+use Kalle\Pdf\Internal\Layout\Text\Input\FlowTextOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Page\Page;
@@ -15,9 +18,6 @@ use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
-use Kalle\Pdf\Text\FlowTextOptions;
-use Kalle\Pdf\Text\TextBoxOptions;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * @internal Coordinates multi-line text layout and rendering for a page.

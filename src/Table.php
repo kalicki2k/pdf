@@ -11,8 +11,8 @@ use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Table\Table as InternalTable;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
-use Kalle\Pdf\Text\TextSegment;
 
 /**
  * Public facade for table layout and rendering.

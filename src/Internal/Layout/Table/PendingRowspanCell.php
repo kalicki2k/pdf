@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Layout\Table;
 
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedTableCellStyle;
-use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 
 final readonly class PendingRowspanCell
 {

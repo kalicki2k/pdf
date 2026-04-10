@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Table\Definition;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Text\TextSegment;
 
 final readonly class TableCaption
 {

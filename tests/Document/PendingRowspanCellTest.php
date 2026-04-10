@@ -9,11 +9,11 @@ use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Internal\Layout\Table\PendingRowspanCell;
 use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
 use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedTableCellStyle;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

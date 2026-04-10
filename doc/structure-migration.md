@@ -40,7 +40,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - gemeinsame Formularoptionen fuer Seitenwidgets liegen jetzt unter `Internal/Page/Form`
 - konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
 - `AcroForm` und `RadioButtonField` liegen unter `Internal/Document/Form`
-- oeffentliche Text-Value-Types liegen unter `src/Text`; tabellenspezifische Eingabe- und Stiltypen liegen jetzt unter `Internal/Layout/Table`
+- Text-Eingabetypen liegen jetzt unter `Internal/Layout/Text/Input`; tabellenspezifische Eingabe- und Stiltypen liegen unter `Internal/Layout/Table`
 - interne Text- und Tabellen-Layoutimplementierungen liegen unter `Internal/Layout/Text` und `Internal/Layout/Table`
 - `OptionalContent` und `Outline` liegen jetzt unter `Internal/Document`, weil sie dokumentweiten Zustand und Navigation modellieren
 - Tagged-PDF-Strukturtypen liegen jetzt unter `Internal/TaggedPdf`, weil sie technischer Dokumentkern und keine Root-Public-API sind
@@ -59,9 +59,6 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
-  Table/
-  Text/
-
   Internal/
     Action/
     Binary/
@@ -82,6 +79,7 @@ src/
       Page/
       Table/
       Text/
+        Input/
       Value/
     Object/
     Security/
@@ -133,18 +131,6 @@ Regeln:
 - soll keine PDF-Typen oder Streamsyntax im Detail modellieren
 - soll lesbar den Ablauf erklaeren
 
-### Text
-
-Die oeffentlichen Eingabetypen fuer Textaufbau liegen weiterhin in einem eigenen Root-Paket.
-
-Beispiele:
-
-- `TextOptions`, `ParagraphOptions`, `TextSegment`
-
-Regeln:
-
-- Public-API-Typen bleiben schlanke Value-Types ohne Seiten- oder Dokumentzustand
-
 ### Internal/Style
 
 Die generischen Stil-Primitiven liegen jetzt gesammelt unter `Internal/Style`.
@@ -169,6 +155,7 @@ Beispiele:
 - `Internal/Layout/Geometry` fuer `Position`, `Rect` und `Insets`
 - `Internal/Layout/Page` fuer `PageSize` und `Units`
 - `Internal/Layout/Value` fuer `HorizontalAlign`, `VerticalAlign`, `TextOverflow` und `BulletType`
+- `Internal/Layout/Text/Input` fuer Text-Eingabetypen wie `TextOptions`, `ParagraphOptions`, `TextBoxOptions`, `FlowTextOptions`, `ListOptions` und `TextSegment`
 - `Internal/Layout/Table/Definition` fuer deklarative Tabellen-Eingabetypen wie `TableCell` und `TableCaption`
 - `Internal/Layout/Table/Style` fuer deklarative Tabellen-Stilobjekte wie `TableStyle`, `RowStyle` und `CellStyle`
 - `Internal/Layout/Text` fuer Absatzlayout, Textboxen und Textframes
@@ -178,7 +165,7 @@ Regeln:
 
 - kennt Seiten- und Dokumentkern und liefert auch die kleinen Layout-Primitiven fuer oeffentliche Signaturen
 - kapselt Layout- und Rendering-Details fuer mehrseitige Text- und Tabellenfluesse
-- verwendet die oeffentlichen Text-Value-Types und die internen Tabellen-Definitionen als Eingaben
+- verwendet die Text-Eingabetypen aus `Internal/Layout/Text/Input` und die internen Tabellen-Definitionen als Eingaben
 
 ### Internal/Document/TableOfContents
 

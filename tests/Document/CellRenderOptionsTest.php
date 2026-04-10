@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Internal\Layout\Table\Rendering\CellRenderOptions;
-use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
