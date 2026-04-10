@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
-use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Page\Annotation\CircleAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Internal\Page\Annotation\TextAnnotationAppearanceStream;
-use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

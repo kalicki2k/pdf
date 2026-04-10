@@ -14,7 +14,7 @@ namespace Kalle\Pdf\Encryption {
     }
 }
 
-namespace Kalle\Pdf\Internal\Encryption\Stream {
+namespace Kalle\Pdf\Encryption\Stream {
     use function openssl_encrypt as global_openssl_encrypt;
 
     function openssl_encrypt(
@@ -39,7 +39,7 @@ namespace Kalle\Pdf\Internal\Encryption\Stream {
     }
 }
 
-namespace Kalle\Pdf\Internal\Encryption\Standard {
+namespace Kalle\Pdf\Encryption\Standard {
     use function openssl_encrypt as global_openssl_encrypt;
 
     function openssl_encrypt(

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Encryption\Object;
+namespace Kalle\Pdf\Encryption\Object;
 
 final readonly class ObjectStringEncryptor
 {

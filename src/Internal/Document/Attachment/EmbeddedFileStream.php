@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Document\Attachment;
 
-use Kalle\Pdf\Internal\Binary\BinaryData;
+use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\Render\PdfOutput;

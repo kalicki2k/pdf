@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Encryption;
 
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

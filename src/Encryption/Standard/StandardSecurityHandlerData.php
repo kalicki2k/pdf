@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Encryption\Standard;
+namespace Kalle\Pdf\Encryption\Standard;
 
 final readonly class StandardSecurityHandlerData
 {

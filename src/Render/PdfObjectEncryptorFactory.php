@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 
 final class PdfObjectEncryptorFactory
 {

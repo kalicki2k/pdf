@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Resources;
 
+use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Image;
-use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Page\Resources\ImageObject;
-use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

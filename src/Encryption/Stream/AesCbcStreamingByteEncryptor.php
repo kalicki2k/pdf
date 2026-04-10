@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Encryption\Stream;
+namespace Kalle\Pdf\Encryption\Stream;
 
 use RuntimeException;
 

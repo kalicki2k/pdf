@@ -8,18 +8,19 @@ require_once __DIR__ . '/Support/StandardObjectEncryptorOpenSslStub.php';
 
 use InvalidArgumentException;
 
+use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
+
+use Kalle\Pdf\Encryption\Profile\EncryptionVersionResolver;
+
 use function Kalle\Pdf\Encryption\setStandardSecurityHandlerOpenSslShouldFail;
 
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionVersionResolver;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandler;
 
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandler;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 
-use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Security\EncryptionOptions;
 
-use Kalle\Pdf\Internal\Security\EncryptionOptions;
-
-use Kalle\Pdf\Internal\Security\EncryptionPermissions;
+use Kalle\Pdf\Security\EncryptionPermissions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;

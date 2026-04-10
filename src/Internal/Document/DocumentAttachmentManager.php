@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Binary\BinaryData;
 use Kalle\Pdf\Internal\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Internal\Document\Attachment\EmbeddedFileStream;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;

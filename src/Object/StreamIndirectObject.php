@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Object;
 
-use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\Render\CountingPdfOutput;
 use Kalle\Pdf\Render\EncryptingPdfOutput;

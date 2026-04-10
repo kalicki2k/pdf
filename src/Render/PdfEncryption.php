@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 
 final readonly class PdfEncryption
 {

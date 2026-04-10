@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Encryption\Standard;
+namespace Kalle\Pdf\Encryption\Standard;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\PdfType\RawType;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use RuntimeException;
 
 class EncryptDictionary extends DictionaryIndirectObject

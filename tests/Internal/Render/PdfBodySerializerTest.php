@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Render;
 
-use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfBodySerializer;
@@ -17,6 +16,7 @@ use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\PdfTrailer;
 use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

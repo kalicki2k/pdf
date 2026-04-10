@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionVersionResolver;
-use Kalle\Pdf\Internal\Encryption\Standard\EncryptDictionary;
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandler;
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Internal\Security\EncryptionOptions;
+use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Encryption\Profile\EncryptionVersionResolver;
+use Kalle\Pdf\Encryption\Standard\EncryptDictionary;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandler;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Security\EncryptionOptions;
 
 /**
  * @internal Manages document encryption state and lazy security handler data creation.

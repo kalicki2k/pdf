@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-use Kalle\Pdf\Internal\Encryption\Stream\StreamingByteEncryptor;
+use Kalle\Pdf\Encryption\Stream\StreamingByteEncryptor;
 
 final class EncryptingPdfOutput implements PdfOutput
 {

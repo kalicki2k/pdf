@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Form;
 
-use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
-use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
+use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Font\StandardFont;
 use Kalle\Pdf\Internal\Font\StandardFontName;
 use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Internal\Page\Form\FormFieldTextAppearanceStream;
-use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

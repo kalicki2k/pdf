@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Encryption\Crypto;
+namespace Kalle\Pdf\Encryption\Crypto;
 
 final class Rc4Cipher
 {
