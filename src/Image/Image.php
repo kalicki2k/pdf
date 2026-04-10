@@ -52,9 +52,11 @@ class Image
             throw new InvalidArgumentException("Unsupported or invalid image file '$path'.");
         }
 
+        $data = self::readBinaryImageFile($path);
+
         return match ($imageInfo[2]) {
-            IMAGETYPE_JPEG => self::fromJpegData($path, self::readBinaryImageFile($path), $imageInfo),
-            IMAGETYPE_PNG => self::fromPngData($path, self::readImageFileContents($path)),
+            IMAGETYPE_JPEG => self::fromJpegData($path, $data, $imageInfo),
+            IMAGETYPE_PNG => self::fromPngData($path, $data),
             default => throw new InvalidArgumentException(sprintf(
                 "Unsupported image type '%s'.",
                 $imageInfo['mime'],
@@ -149,13 +151,14 @@ class Image
         );
     }
 
-    private static function fromPngData(string $path, string $data): self
+    private static function fromPngData(string $path, BinaryData $data): self
     {
-        if (!str_starts_with($data, "\x89PNG\x0D\x0A\x1A\x0A")) {
+        if ($data->slice(0, 8) !== "\x89PNG\x0D\x0A\x1A\x0A") {
             throw new InvalidArgumentException("Invalid PNG file '$path'.");
         }
 
         $offset = 8;
+        $dataLength = $data->length();
         $width = null;
         $height = null;
         $bitDepth = null;
@@ -165,13 +168,17 @@ class Image
         $interlaceMethod = null;
         $imageData = '';
 
-        while ($offset + 8 <= strlen($data)) {
-            $length = self::readUint32($data, $offset);
-            $offset += 4;
-            $type = substr($data, $offset, 4);
-            $offset += 4;
-            $chunkData = substr($data, $offset, $length);
-            $offset += $length + 4;
+        while ($offset + 8 <= $dataLength) {
+            $chunkHeader = $data->slice($offset, 8);
+
+            if (strlen($chunkHeader) !== 8) {
+                break;
+            }
+
+            $length = self::readUint32($chunkHeader, 0);
+            $type = substr($chunkHeader, 4, 4);
+            $chunkData = $data->slice($offset + 8, $length);
+            $offset += $length + 12;
 
             if ($type === 'IHDR') {
                 $width = self::readUint32($chunkData, 0);
@@ -269,17 +276,6 @@ class Image
                 $width,
             ),
         );
-    }
-
-    private static function readImageFileContents(string $path): string
-    {
-        $data = @file_get_contents($path);
-
-        if ($data === false) {
-            throw new InvalidArgumentException("Unable to read image file '$path'.");
-        }
-
-        return $data;
     }
 
     private static function readBinaryImageFile(string $path): BinaryData

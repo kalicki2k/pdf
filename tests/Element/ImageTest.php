@@ -324,7 +324,7 @@ final class ImageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid PNG file 'broken.png'.");
 
-        $method->invoke(null, 'broken.png', 'not-a-png');
+        $method->invoke(null, 'broken.png', BinaryData::fromString('not-a-png'));
     }
 
     #[Test]
@@ -336,7 +336,7 @@ final class ImageTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid PNG file 'missing-ihdr.png'.");
 
-        $method->invoke(null, 'missing-ihdr.png', $pngWithoutHeader);
+        $method->invoke(null, 'missing-ihdr.png', BinaryData::fromString($pngWithoutHeader));
     }
 
     #[Test]
@@ -350,7 +350,7 @@ final class ImageTest extends TestCase
             . $this->createPngChunk('IEND', '');
 
         try {
-            $method->invoke(null, 'compression.png', $unsupportedCompression);
+            $method->invoke(null, 'compression.png', BinaryData::fromString($unsupportedCompression));
             self::fail('Expected exception for unsupported compression settings.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -364,7 +364,7 @@ final class ImageTest extends TestCase
             . $this->createPngChunk('IEND', '');
 
         try {
-            $method->invoke(null, 'interlaced.png', $interlaced);
+            $method->invoke(null, 'interlaced.png', BinaryData::fromString($interlaced));
             self::fail('Expected exception for interlaced PNG.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -378,7 +378,7 @@ final class ImageTest extends TestCase
             . $this->createPngChunk('IEND', '');
 
         try {
-            $method->invoke(null, 'indexed.png', $indexed);
+            $method->invoke(null, 'indexed.png', BinaryData::fromString($indexed));
             self::fail('Expected exception for indexed PNG.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -392,7 +392,7 @@ final class ImageTest extends TestCase
             . $this->createPngChunk('IEND', '');
 
         try {
-            $method->invoke(null, 'color.png', $unsupportedColor);
+            $method->invoke(null, 'color.png', BinaryData::fromString($unsupportedColor));
             self::fail('Expected exception for unsupported PNG color type.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -411,7 +411,7 @@ final class ImageTest extends TestCase
             . $this->createPngChunk('IEND', '');
 
         try {
-            $method->invoke(null, 'empty.png', $withoutData);
+            $method->invoke(null, 'empty.png', BinaryData::fromString($withoutData));
             self::fail('Expected exception for missing PNG image data.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -425,7 +425,7 @@ final class ImageTest extends TestCase
             . $this->createPngChunk('IEND', '');
 
         try {
-            $method->invoke(null, 'alpha16.png', $alpha16Bit);
+            $method->invoke(null, 'alpha16.png', BinaryData::fromString($alpha16Bit));
             self::fail('Expected exception for unsupported alpha bit depth.');
         } catch (ReflectionException $exception) {
             throw $exception;
