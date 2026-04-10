@@ -528,6 +528,32 @@ final class ImageTest extends TestCase
     }
 
     #[Test]
+    public function it_streams_png_alpha_channels_from_replayable_sources(): void
+    {
+        $compressed = gzcompress(chr(0) . chr(10) . chr(20) . chr(30) . chr(40));
+        self::assertNotFalse($compressed);
+
+        [$colorData, $alphaData] = PngAlphaChannelSplitter::split(
+            'alpha-stream.png',
+            BinaryData::fromString($compressed),
+            1,
+            1,
+            3,
+        );
+
+        $colorOutput = new StringPdfOutput();
+        $alphaOutput = new StringPdfOutput();
+
+        $colorData->writeTo($colorOutput);
+        $alphaData->writeTo($alphaOutput);
+
+        self::assertSame($colorData->slice(0, $colorData->length()), $colorOutput->contents());
+        self::assertSame($alphaData->slice(0, $alphaData->length()), $alphaOutput->contents());
+        self::assertSame("\x00\x0A\x14\x1E", gzuncompress($colorOutput->contents()));
+        self::assertSame("\x00\x28", gzuncompress($alphaOutput->contents()));
+    }
+
+    #[Test]
     public function it_unfilters_png_scanlines_for_all_supported_filter_types_and_rejects_unknown_ones(): void
     {
         $method = new ReflectionMethod(PngAlphaChannelSplitter::class, 'unfilterScanline');

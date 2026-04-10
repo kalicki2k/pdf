@@ -6,11 +6,15 @@ namespace Kalle\Pdf\Binary;
 
 use Kalle\Pdf\Render\PdfOutput;
 
-final class BinaryData
+final readonly class BinaryData
 {
-    private function __construct(
-        private readonly BinaryDataSource $source,
-    ) {
+    private function __construct(private BinaryDataSource $source)
+    {
+    }
+
+    public static function fromSource(BinaryDataSource $source): self
+    {
+        return new self($source);
     }
 
     public static function fromString(string $bytes): self
