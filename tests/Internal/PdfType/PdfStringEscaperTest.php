@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Utilities;
+namespace Kalle\Pdf\Tests\Internal\PdfType;
 
-use Kalle\Pdf\Utilities\PdfStringEscaper;
+use Kalle\Pdf\Internal\PdfType\PdfStringEscaper;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

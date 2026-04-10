@@ -96,7 +96,6 @@ src/
     PdfType/
     TaggedPdf/
     Style/
-  Utilities/
 ```
 
 ## Paketregeln

@@ -9,7 +9,6 @@ use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\Metadata\IccProfileStream;
 use Kalle\Pdf\Internal\Document\Metadata\XmpMetadata;
-use Kalle\Pdf\Utilities\StringListNormalizer;
 
 /**
  * @internal Manages document metadata values and lazy metadata-related objects.
@@ -132,7 +131,7 @@ class DocumentMetadataManager
 
     public function addKeyword(string $keyword): void
     {
-        $this->keywords = StringListNormalizer::unique([...$this->keywords, $keyword]);
+        $this->keywords = self::normalizeKeywords([...$this->keywords, $keyword]);
     }
 
     /**
@@ -141,5 +140,20 @@ class DocumentMetadataManager
     public function getKeywords(): array
     {
         return $this->keywords;
+    }
+
+    /**
+     * @param list<string> $values
+     * @return list<string>
+     */
+    private static function normalizeKeywords(array $values): array
+    {
+        return array_values(array_unique(array_filter(
+            array_map(
+                static fn (string $value): string => trim($value),
+                $values,
+            ),
+            static fn (string $value): bool => $value !== '',
+        )));
     }
 }
