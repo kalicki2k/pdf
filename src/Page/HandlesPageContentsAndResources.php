@@ -68,6 +68,6 @@ trait HandlesPageContentsAndResources
      */
     public function getAnnotations(): array
     {
-        return $this->collaborators->existingAnnotations()?->all() ?? [];
+        return $this->collaborators->cachedAnnotations()?->all() ?? [];
     }
 }

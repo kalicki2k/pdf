@@ -45,65 +45,122 @@ final class PageCollaborators
 
     public function fonts(): PageFonts
     {
-        return $this->fonts ??= PageFonts::forPage($this->page);
+        return $this->fonts ??= $this->createFonts();
     }
 
     public function objectRenderer(): PageObjectRenderer
     {
-        return $this->objectRenderer ??= PageObjectRenderer::forPage($this->page);
+        return $this->objectRenderer ??= $this->createObjectRenderer();
     }
 
     public function graphics(): PageGraphics
     {
-        return $this->graphics ??= PageGraphics::forPage($this->page);
+        return $this->graphics ??= $this->createGraphics();
     }
 
     public function components(): PageComponents
     {
-        return $this->components ??= PageComponents::forPage(
-            $this->links(),
-            $this->graphics(),
-            $this->fonts(),
-            $this->textElementRenderer(),
-            $this->paragraphRenderer(),
-            $this->page->getDocument()->getProfile()->requiresTaggedPdf(),
-            $this->page->getDocument()->getProfile()->requiresTaggedLinkAnnotations(),
-        );
+        return $this->components ??= $this->createComponents();
     }
 
     public function annotations(): PageAnnotations
     {
-        return $this->annotations ??= PageAnnotations::forPage($this->page, $this->fonts());
+        return $this->annotations ??= $this->createAnnotations();
     }
 
-    public function existingAnnotations(): ?PageAnnotations
+    public function cachedAnnotations(): ?PageAnnotations
     {
         return $this->annotations;
     }
 
     public function images(): PageImages
     {
-        return $this->images ??= PageImages::forPage($this->page, $this->markedContentIds());
+        return $this->images ??= $this->createImages();
     }
 
     public function links(): PageLinks
     {
-        return $this->links ??= PageLinks::forPage($this->page, $this->annotations());
+        return $this->links ??= $this->createLinks();
     }
 
     public function forms(): PageForms
     {
-        return $this->forms ??= PageForms::forPage($this->page, $this->annotations(), $this->fonts());
+        return $this->forms ??= $this->createForms();
     }
 
     public function layers(): PageLayers
     {
-        return $this->layers ??= PageLayers::forPage($this->page);
+        return $this->layers ??= $this->createLayers();
     }
 
     public function textElementRenderer(): PageTextElementRenderer
     {
-        return $this->textElementRenderer ??= PageTextElementRenderer::forPage(
+        return $this->textElementRenderer ??= $this->createTextElementRenderer();
+    }
+
+    public function paragraphRenderer(): PageParagraphRenderer
+    {
+        return $this->paragraphRenderer ??= $this->createParagraphRenderer();
+    }
+
+    private function createFonts(): PageFonts
+    {
+        return PageFonts::forPage($this->page);
+    }
+
+    private function createObjectRenderer(): PageObjectRenderer
+    {
+        return PageObjectRenderer::forPage($this->page);
+    }
+
+    private function createGraphics(): PageGraphics
+    {
+        return PageGraphics::forPage($this->page);
+    }
+
+    private function createComponents(): PageComponents
+    {
+        $profile = $this->page->getDocument()->getProfile();
+
+        return PageComponents::forPage(
+            $this->links(),
+            $this->graphics(),
+            $this->fonts(),
+            $this->textElementRenderer(),
+            $this->paragraphRenderer(),
+            $profile->requiresTaggedPdf(),
+            $profile->requiresTaggedLinkAnnotations(),
+        );
+    }
+
+    private function createAnnotations(): PageAnnotations
+    {
+        return PageAnnotations::forPage($this->page, $this->fonts());
+    }
+
+    private function createImages(): PageImages
+    {
+        return PageImages::forPage($this->page, $this->markedContentIds());
+    }
+
+    private function createLinks(): PageLinks
+    {
+        return PageLinks::forPage($this->page, $this->annotations());
+    }
+
+    private function createForms(): PageForms
+    {
+        return PageForms::forPage($this->page, $this->annotations(), $this->fonts());
+    }
+
+    private function createLayers(): PageLayers
+    {
+        return PageLayers::forPage($this->page);
+    }
+
+    private function createTextElementRenderer(): PageTextElementRenderer
+    {
+        return PageTextElementRenderer::forPage(
             $this->page,
             $this->fonts(),
             $this->links(),
@@ -112,8 +169,8 @@ final class PageCollaborators
         );
     }
 
-    public function paragraphRenderer(): PageParagraphRenderer
+    private function createParagraphRenderer(): PageParagraphRenderer
     {
-        return $this->paragraphRenderer ??= PageParagraphRenderer::forPage($this->page, $this->fonts());
+        return PageParagraphRenderer::forPage($this->page, $this->fonts());
     }
 }
