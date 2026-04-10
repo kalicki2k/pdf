@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page;
 
-use Kalle\Pdf\Feature\Action\ButtonAction;
-use Kalle\Pdf\Feature\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Feature\Annotation\LineEndingStyle;
-use Kalle\Pdf\Feature\Annotation\PageAnnotation;
-use Kalle\Pdf\Feature\Annotation\PageAnnotations;
-use Kalle\Pdf\Feature\Form\FormFieldFlags;
-use Kalle\Pdf\Feature\Form\FormFieldLabel;
-use Kalle\Pdf\Feature\Form\PageForms;
+use Kalle\Pdf\Action\ButtonAction;
+use Kalle\Pdf\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Annotation\LineEndingStyle;
+use Kalle\Pdf\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Feature\Table;
 use Kalle\Pdf\Feature\Text\FlowTextOptions;
 use Kalle\Pdf\Feature\Text\PageParagraphRenderer;
@@ -21,6 +17,8 @@ use Kalle\Pdf\Feature\Text\TextFrame;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Form\FormFieldFlags;
+use Kalle\Pdf\Form\FormFieldLabel;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
@@ -28,6 +26,8 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
+use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Internal\Page\Content\PageComponents;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;
@@ -36,6 +36,7 @@ use Kalle\Pdf\Internal\Page\Content\PageLayers;
 use Kalle\Pdf\Internal\Page\Content\PageLinks;
 use Kalle\Pdf\Internal\Page\Content\PageMarkedContentIds;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;
+use Kalle\Pdf\Internal\Page\Form\PageForms;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -430,7 +431,7 @@ class Page extends IndirectObject
     }
 
     public function addPopupAnnotation(
-        PageAnnotation & IndirectObject $parent,
+        PopupParentAnnotation & IndirectObject $parent,
         Rect $box,
         bool $open = false,
     ): self {

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\Form\AcroForm;
 use Kalle\Pdf\Internal\Document\Preparation\DocumentProfileGuard;
+use Kalle\Pdf\Model\Document\Form\AcroForm;
 
 /**
  * @internal Creates and reuses the document-wide AcroForm while guarding feature support.

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Feature\Action\ButtonAction;
-use Kalle\Pdf\Feature\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Feature\Annotation\LineEndingStyle;
-use Kalle\Pdf\Feature\Annotation\PageAnnotation;
-use Kalle\Pdf\Feature\Form\FormFieldFlags;
-use Kalle\Pdf\Feature\Form\FormFieldLabel;
+use Kalle\Pdf\Action\ButtonAction;
+use Kalle\Pdf\Annotation\AnnotationBorderStyle;
+use Kalle\Pdf\Annotation\LineEndingStyle;
+use Kalle\Pdf\Annotation\PageAnnotation;
 use Kalle\Pdf\Feature\Table as InternalTable;
 use Kalle\Pdf\Feature\Text\FlowTextOptions;
 use Kalle\Pdf\Feature\Text\TextBoxOptions;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Form\FormFieldFlags;
+use Kalle\Pdf\Form\FormFieldLabel;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;

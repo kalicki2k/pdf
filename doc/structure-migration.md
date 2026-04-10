@@ -29,7 +29,11 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - die dokumentweite Orchestrierung liegt jetzt unter `Internal/Document`
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
-- `Feature/Action`, `Feature/Annotation`, `Feature/Form`, `Feature/Table` und `Feature/Text` tragen die verbleibenden Feature-Implementierungen
+- `Action` ist als oeffentliche API nach `src/Action` gezogen
+- oeffentliche Annotation- und Formular-Value-Types liegen unter `src/Annotation` und `src/Form`
+- konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
+- `AcroForm` und `RadioButtonField` liegen unter `Model/Document/Form`
+- `Feature` traegt nur noch `Table` und `Text`
 - `OptionalContent` und `Outline` liegen jetzt unter `Internal/Document`, weil sie dokumentweiten Zustand und Navigation modellieren
 - `StructureTag` liegt unter `Structure`, weil es Tagged-PDF-Semantik beschreibt
 - die alte `src/Document`-Struktur ist als internes Codepaket entfernt
@@ -52,8 +56,13 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
+  Action/
+  Annotation/
+  Form/
+
   Internal/
     Document/
+      Form/
       Preparation/
       Serialization/
     Encryption/
@@ -67,15 +76,15 @@ src/
       EncryptionOptions.php
       EncryptionPermissions.php
     Page/
+      Annotation/
+      Form/
 
   Model/
     Document/
+      Form/
     Page/
 
   Feature/
-    Action/
-    Annotation/
-    Form/
     Table/
     Text/
 
@@ -129,6 +138,7 @@ Beispiele:
 - internes Dokumentaggregat
 - Seitenmodell
 - Catalog, Pages, Info, Resources, Contents
+- dokumentweite Formularobjekte wie `AcroForm`
 
 Regeln:
 
@@ -142,9 +152,6 @@ Hier liegen fachlich zusammenhaengende Dokumentfeatures.
 
 Beispiele:
 
-- Actions
-- Annotationen
-- Formulare
 - Tabellen
 - Textlayout
 
@@ -153,6 +160,25 @@ Regeln:
 - ein Feature enthaelt seine Modelle, Builder und Renderer moeglichst zusammen
 - kein verstecktes Rueckgreifen auf unklare globale Dokumentzustandsobjekte
 - Schnittstellen zum Dokumentmodell sollen expliziter werden
+
+### Action, Annotation und Form
+
+Diese Bereiche sind jetzt zwischen Public API, Seitenimplementierung und Dokumentmodell geschnitten.
+
+Beispiele:
+
+- `Action` fuer oeffentliche Button- und Link-Aktionen
+- `Annotation` fuer oeffentliche Annotation-Value-Types und Rollen
+- `Form` fuer oeffentliche Formularoptionen
+- `Internal/Page/Annotation` fuer konkrete Seitenannotationen und ihre Koordination
+- `Internal/Page/Form` fuer Widget-Erzeugung und Appearance-Streams
+- `Model/Document/Form` fuer dokumentweite AcroForm-Objekte
+
+Regeln:
+
+- oeffentliche API-Typen bleiben ausserhalb von `Internal`
+- konkrete Seitenobjekte und Builder liegen nahe am Seitenkern
+- dokumentweite Formularzustandsobjekte liegen im Modell statt im Ablaufcode
 
 ### Structure
 

@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Internal\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\Form\AcroForm;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Internal\Document\DocumentAcroFormManager;
@@ -37,6 +36,7 @@ use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Model\Document\Catalog;
 use Kalle\Pdf\Model\Document\EncryptDictionary;
 use Kalle\Pdf\Model\Document\FileSpecification;
+use Kalle\Pdf\Model\Document\Form\AcroForm;
 use Kalle\Pdf\Model\Document\IccProfileStream;
 use Kalle\Pdf\Model\Document\Info;
 use Kalle\Pdf\Model\Document\Pages;
