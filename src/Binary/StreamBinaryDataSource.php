@@ -14,35 +14,58 @@ final class StreamBinaryDataSource implements BinaryDataSource
     /** @var resource */
     private $stream;
 
+    /** @var list<resource> */
+    private array $streamsToClose = [];
+
+    private ?int $length;
+
     /**
      * @param resource $stream
      */
     public function __construct(
         $stream,
-        private readonly ?int $length = null,
-        private readonly bool $closeOnDestruct = false,
+        ?int $length = null,
+        bool $closeOnDestruct = false,
     ) {
         if (!is_resource($stream)) {
             throw new RuntimeException('Binary data stream must be a valid resource.');
         }
 
-        if ($this->length !== null && $this->length < 0) {
+        if ($length !== null && $length < 0) {
             throw new RuntimeException('Binary data stream length must not be negative.');
         }
 
         $metadata = stream_get_meta_data($stream);
-
-        if ($metadata['seekable'] !== true) {
-            throw new RuntimeException('Binary data stream must be seekable.');
-        }
-
         $mode = (string) $metadata['mode'];
 
         if (!str_contains($mode, 'r') && !str_contains($mode, '+')) {
             throw new RuntimeException('Binary data stream must be readable.');
         }
 
-        $this->stream = $stream;
+        $this->length = $length;
+
+        if ($metadata['seekable'] === true) {
+            $this->stream = $stream;
+
+            if ($closeOnDestruct) {
+                $this->streamsToClose[] = $stream;
+            }
+
+            return;
+        }
+
+        [$this->stream, $bufferedLength] = $this->bufferNonSeekableStream($stream);
+        $this->streamsToClose[] = $this->stream;
+
+        if ($closeOnDestruct) {
+            $this->streamsToClose[] = $stream;
+        }
+
+        if ($this->length !== null && $this->length !== $bufferedLength) {
+            throw new RuntimeException('Binary data stream length does not match the provided byte length.');
+        }
+
+        $this->length ??= $bufferedLength;
     }
 
     public function length(): int
@@ -102,9 +125,58 @@ final class StreamBinaryDataSource implements BinaryDataSource
 
     public function close(): void
     {
-        if ($this->closeOnDestruct && is_resource($this->stream)) {
-            fclose($this->stream);
+        foreach ($this->streamsToClose as $stream) {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
         }
+
+        $this->streamsToClose = [];
+    }
+
+    /**
+     * @param resource $stream
+     * @return array{0:resource,1:int}
+     */
+    private function bufferNonSeekableStream($stream): array
+    {
+        $buffer = fopen('php://temp', 'w+b');
+
+        if ($buffer === false) {
+            throw new RuntimeException('Unable to allocate a temporary buffer for binary data.');
+        }
+
+        $length = 0;
+
+        while (!feof($stream)) {
+            $chunk = fread($stream, self::READ_CHUNK_BYTES);
+
+            if ($chunk === false) {
+                fclose($buffer);
+
+                throw new RuntimeException('Unable to read binary data stream.');
+            }
+
+            if ($chunk === '') {
+                continue;
+            }
+
+            $length += strlen($chunk);
+
+            if (fwrite($buffer, $chunk) === false) {
+                fclose($buffer);
+
+                throw new RuntimeException('Unable to buffer binary data stream.');
+            }
+        }
+
+        if (rewind($buffer) === false) {
+            fclose($buffer);
+
+            throw new RuntimeException('Unable to rewind buffered binary data stream.');
+        }
+
+        return [$buffer, $length];
     }
 
     /**

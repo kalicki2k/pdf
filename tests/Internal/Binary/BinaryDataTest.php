@@ -70,4 +70,32 @@ final class BinaryDataTest extends TestCase
 
         fclose($stream);
     }
+
+    #[Test]
+    public function it_can_reuse_non_seekable_stream_data_via_a_temp_buffer(): void
+    {
+        $streams = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+
+        if ($streams === false) {
+            self::markTestSkipped('stream_socket_pair is not available.');
+        }
+
+        [$reader, $writer] = $streams;
+
+        fwrite($writer, 'hello');
+        fclose($writer);
+
+        $data = BinaryData::fromStream($reader, closeOnDestruct: true);
+        $output = new StringPdfOutput();
+
+        $data->writeTo($output);
+
+        self::assertSame(5, $data->length());
+        self::assertSame('hello', $output->contents());
+        self::assertSame('hello', $data->contents());
+
+        unset($data);
+
+        self::assertFalse(is_resource($reader));
+    }
 }

@@ -9,6 +9,7 @@ use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Render\StringPdfOutput;
 use RuntimeException;
 
 class Image
@@ -79,11 +80,10 @@ class Image
 
     public function render(?int $softMaskObjectId = null): string
     {
-        $data = $this->data->contents();
+        $output = new StringPdfOutput();
+        $this->write($output, $softMaskObjectId);
 
-        return $this->header($softMaskObjectId, strlen($data))
-            . $data . PHP_EOL
-            . 'endstream' . PHP_EOL;
+        return $output->contents();
     }
 
     public function write(PdfOutput $output, ?int $softMaskObjectId = null): void
@@ -302,7 +302,11 @@ class Image
 
     private static function assertReadableImageFile(string $path): void
     {
-        if (@file_get_contents($path) !== false) {
+        $stream = @fopen($path, 'rb');
+
+        if ($stream !== false) {
+            fclose($stream);
+
             return;
         }
 
