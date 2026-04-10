@@ -1,6 +1,6 @@
-# Internal Page
+# Page
 
-Dieses Paket enthaelt den internen Seitenkern.
+Dieses Paket enthaelt den Seitenkern.
 
 Die Struktur ist bewusst in kleine Teilpakete geschnitten:
 
@@ -9,4 +9,4 @@ Die Struktur ist bewusst in kleine Teilpakete geschnitten:
 - `Resources` fuer seitenbezogene Ressourcen wie Fonts und XObjects
 - `Serialization` fuer den PDF-Seitenobjekt-Output
 
-`Page` selbst bleibt im Root-Paket als zentrale interne Seitenklasse.
+`Kalle\Pdf\Page` liegt in diesem Paket als zentrale Seitenklasse.

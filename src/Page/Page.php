@@ -10,14 +10,14 @@ use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
-use Kalle\Pdf\Layout\Table\Table as InternalTable;
+use Kalle\Pdf\Layout\Table\Table as LayoutTable;
 use Kalle\Pdf\Layout\Text\Input\FlowTextOptions;
 use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Layout\Text\PageTextElementRenderer;
-use Kalle\Pdf\Layout\Text\TextFrame as InternalTextFrame;
+use Kalle\Pdf\Layout\Text\TextFrame as LayoutTextFrame;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
@@ -251,7 +251,7 @@ class Page extends IndirectObject
         float $width,
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): TextFrame {
-        return new TextFrame(new InternalTextFrame($this, $position->x, $position->y, $width, $bottomMargin));
+        return new TextFrame(new LayoutTextFrame($this, $position->x, $position->y, $width, $bottomMargin));
     }
 
     /**
@@ -263,7 +263,7 @@ class Page extends IndirectObject
         array $columnWidths,
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): Table {
-        return new Table(new InternalTable($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin));
+        return new Table(new LayoutTable($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin));
     }
 
     public function addPath(): PathBuilder

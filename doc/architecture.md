@@ -80,25 +80,25 @@ Wenn Verschluesselung aktiv ist, cached `Document` die Security-Handler-Daten ei
 
 ### Verschluesselung
 
-Die Verschluesselung ist jetzt in einen kleinen Public-Schnitt und einen internen Kryptokern getrennt.
+Die Verschluesselung ist jetzt in einen kleinen Public-Schnitt und einen technischen Kryptokern getrennt.
 
 Die wichtigsten Bausteine sind:
 
-- `Internal\\Security\\EncryptionAlgorithm`
-- `Internal\\Security\\EncryptionOptions`
-- `Internal\\Security\\EncryptionPermissions`
-- `Internal\\Encryption\\Profile\\EncryptionProfile`
-- `Internal\\Encryption\\Profile\\EncryptionVersionResolver`
-- `Internal\\Encryption\\Standard\\StandardSecurityHandler`
-- `Internal\\Encryption\\Object\\StandardObjectEncryptor`
+- `Security\\EncryptionAlgorithm`
+- `Security\\EncryptionOptions`
+- `Security\\EncryptionPermissions`
+- `Encryption\\Profile\\EncryptionProfile`
+- `Encryption\\Profile\\EncryptionVersionResolver`
+- `Encryption\\Standard\\StandardSecurityHandler`
+- `Encryption\\Object\\StandardObjectEncryptor`
 
 Der Ablauf ist:
 
 1. `Document::encrypt(...)` nimmt Passwort und optionalen Algorithmus entgegen.
-2. `Internal\\Encryption\\Profile\\EncryptionVersionResolver` waehlt anhand der PDF-Version das passende Profil.
-3. `Internal\\Encryption\\Standard\\StandardSecurityHandler` erzeugt die Security-Handler-Daten fuer das Dokument.
+2. `Encryption\\Profile\\EncryptionVersionResolver` waehlt anhand der PDF-Version das passende Profil.
+3. `Encryption\\Standard\\StandardSecurityHandler` erzeugt die Security-Handler-Daten fuer das Dokument.
 4. `EncryptDictionary` rendert daraus den `/Encrypt`-Eintrag.
-5. `PdfRenderer` verschluesselt Strings und Streams objektbezogen ueber `Internal\\Encryption\\Object\\StandardObjectEncryptor`.
+5. `PdfRenderer` verschluesselt Strings und Streams objektbezogen ueber `Encryption\\Object\\StandardObjectEncryptor`.
 6. Der Trailer bekommt `/Encrypt` und `/ID`.
 
 Aktuell unterstuetzt:
@@ -184,7 +184,7 @@ Bei Formularen kommt stattdessen oder zusaetzlich dazu:
 9. Die Widget-Annotation wird in `/Annots` der Seite eingetragen.
 10. Das Feld wird zusaetzlich im `AcroForm` unter `/Fields` registriert.
 11. Text- und Choice-Felder registrieren ihre verwendete Font-Resource im `AcroForm`-`DR`-Dictionary.
-12. `Internal\\Page\\Form\\FormFieldFlags` werden in den jeweiligen `/Ff`-Bitwert uebersetzt.
+12. `Page\\Form\\FormFieldFlags` werden in den jeweiligen `/Ff`-Bitwert uebersetzt.
 13. `defaultValue` wird fuer TextField, ComboBox und ListBox als `/DV` gerendert.
 14. Checkboxen und Radio-Buttons verwenden eigene Appearance-Streams fuer On/Off-Zustaende.
 
@@ -204,10 +204,10 @@ Die wichtigsten Bausteine sind:
 - `SignatureFieldAnnotation`
 - `PushButtonAnnotation`
 - `FormFieldFlags`
-- `Internal\\Action\\ButtonAction`
-- `Internal\\Action\\SubmitFormAction`
-- `Internal\\Action\\ResetFormAction`
-- `Internal\\Action\\JavaScriptAction`
+- `Action\\ButtonAction`
+- `Action\\SubmitFormAction`
+- `Action\\ResetFormAction`
+- `Action\\JavaScriptAction`
 
 `AcroForm` ist aktuell verantwortlich fuer:
 
@@ -263,7 +263,7 @@ Die Feldtypen sind aktuell so umgesetzt:
   - sichtbare Caption ueber `/MK /CA`
   - optionales Action-Dictionary ueber `/A`
 
-`Internal\\Action\\ButtonAction` kapselt aktuell zwoelf konkrete PDF-Action-Typen:
+`Action\\ButtonAction` kapselt aktuell zwoelf konkrete PDF-Action-Typen:
 
 - `SubmitFormAction`
   - `/S /SubmitForm`
@@ -451,7 +451,7 @@ Verantwortlich fuer:
 
 ### TextLayoutEngine
 
-`TextLayoutEngine` ist eine kleine interne Hilfsklasse unter `src/Internal/Layout/Text`.
+`TextLayoutEngine` ist eine kleine interne Hilfsklasse unter `src/Layout/Text`.
 
 Sie gehoert nicht zur oeffentlichen API. `Page` bleibt der oeffentliche Einstiegspunkt fuer Text-Rendering.
 
@@ -808,13 +808,13 @@ Wenn der verwendete Font das Zeichen `…` unterstuetzt, wird dieses verwendet. 
 
 ## Font-Modell
 
-Das Font-System liegt jetzt komplett unter `Internal\\Font`. Die oeffentliche API bleibt bei
+Das Font-System liegt jetzt komplett unter `Font`. Die oeffentliche API bleibt bei
 `Document::registerFont(...)`, waehrend Presets, Parser und konkrete PDF-Fontobjekte intern bleiben.
 
 ### FontRegistry
 
-`Internal\\Font\\FontRegistry` liest die eingebetteten Fontdefinitionen aus
-`Internal\\Font\\DefaultFontPresetDefinitions`.
+`Font\\FontRegistry` liest die eingebetteten Fontdefinitionen aus
+`Font\\DefaultFontPresetDefinitions`.
 
 Sie arbeitet mit echten Fontnamen als Schluessel, zum Beispiel:
 
@@ -933,7 +933,7 @@ Danach erzeugt `PdfRenderer`:
 
 ## PDF-Typen
 
-Unter `src/Internal/PdfType` liegen kleine Value-Objekte fuer PDF-Grundbausteine, zum Beispiel:
+Unter `src/PdfType` liegen kleine Value-Objekte fuer PDF-Grundbausteine, zum Beispiel:
 
 - `DictionaryType`
 - `ArrayType`

@@ -1,4 +1,6 @@
-Internal encryption is split by technical responsibility:
+# Encryption
+
+Encryption is split by technical responsibility:
 
 - `Profile` resolves PDF-version-dependent encryption capabilities
 - `Standard` builds standard security handler data for the document
@@ -6,4 +8,4 @@ Internal encryption is split by technical responsibility:
 - `Stream` performs incremental payload encryption
 - `Crypto` contains low-level cipher primitives
 
-Encryption configuration now lives alongside the rest of the internal security model in `src/Internal/Security`.
+Encryption configuration now lives in `src/Security`.

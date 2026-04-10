@@ -10,7 +10,7 @@ use Kalle\Pdf\Layout\Table\Style\FooterStyle;
 use Kalle\Pdf\Layout\Table\Style\HeaderStyle;
 use Kalle\Pdf\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Layout\Table\Style\TableStyle;
-use Kalle\Pdf\Layout\Table\Table as InternalTable;
+use Kalle\Pdf\Layout\Table\Table as LayoutTable;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 
 /**
@@ -21,7 +21,7 @@ final readonly class Table
     /**
      * @internal Tables are created by Page::createTable().
      */
-    public function __construct(private InternalTable $table)
+    public function __construct(private LayoutTable $table)
     {
     }
 

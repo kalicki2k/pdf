@@ -1,4 +1,4 @@
-# Internal Font
+# Font
 
 Dieses Paket enthaelt den technischen Font-Kern der PDF-Erzeugung.
 
@@ -8,4 +8,4 @@ Dieses Paket enthaelt den technischen Font-Kern der PDF-Erzeugung.
 - Width- und Encoding-Unterstuetzung fuer Text- und Formular-Rendering
 
 Die oeffentliche API bleibt bewusst bei `Document::registerFont(...)` mit primitiven Werten.
-Der eigentliche Font-Aufbau und die PDF-Objekte liegen intern nahe an Dokument-, Seiten- und Formularlogik.
+Der eigentliche Font-Aufbau und die PDF-Objekte liegen nahe an Dokument-, Seiten- und Formularlogik.

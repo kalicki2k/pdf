@@ -1,6 +1,6 @@
-# Internal Document
+# Document
 
-Dieses Paket enthaelt den internen Dokumentkern und die dokumentweite Ablaufsteuerung.
+Dieses Paket enthaelt den Dokumentkern und die dokumentweite Ablaufsteuerung.
 
 Die Struktur ist bewusst in kleine Teilpakete geschnitten:
 
@@ -10,4 +10,4 @@ Die Struktur ist bewusst in kleine Teilpakete geschnitten:
 - `Preparation` fuer Render-Vorbereitung, Guards, TOC- und Decorator-Vorbereitung
 - `Serialization` fuer Planaufbau und Writer-Orchestrierung
 - `Structure` fuer Root-Objekte wie `Catalog` und `Pages`
-- Root-Paket fuer das interne Dokumentaggregat und dokumentweite Manager
+- Root-Paket fuer das Dokumentaggregat `Kalle\Pdf\Document` und dokumentweite Manager

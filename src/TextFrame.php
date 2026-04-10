@@ -8,7 +8,7 @@ use Kalle\Pdf\Layout\Text\Input\ListOptions;
 use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Layout\Text\TextFrame as InternalTextFrame;
+use Kalle\Pdf\Layout\Text\TextFrame as LayoutTextFrame;
 use Kalle\Pdf\Layout\Value\BulletType;
 
 /**
@@ -19,7 +19,7 @@ final readonly class TextFrame
     /**
      * @internal Text frames are created by Page::createTextFrame().
      */
-    public function __construct(private InternalTextFrame $textFrame)
+    public function __construct(private LayoutTextFrame $textFrame)
     {
     }
 
