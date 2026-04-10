@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
-use Kalle\Pdf\Internal\Action\ButtonAction;
+use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Internal\Page\Form\FormFieldTextAppearanceStream;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Page;

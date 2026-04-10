@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Form;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
-use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Form\AcroForm;
 use Kalle\Pdf\Internal\Document\Form\RadioButtonField;
 use Kalle\Pdf\Internal\Page\Annotation\CheckboxAnnotation;

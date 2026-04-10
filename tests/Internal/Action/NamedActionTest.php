@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Action\NamedAction;
+use Kalle\Pdf\Action\NamedAction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

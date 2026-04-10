@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
+use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;

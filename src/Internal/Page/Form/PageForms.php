@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Form;
 
+use Kalle\Pdf\Action\ButtonAction;
+use Kalle\Pdf\Action\SetOcgStateAction;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
-use Kalle\Pdf\Internal\Action\ButtonAction;
-use Kalle\Pdf\Internal\Action\SetOcgStateAction;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Internal\Page\Annotation\StructParentAwareAnnotation;

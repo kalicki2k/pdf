@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Action;
 
-use Kalle\Pdf\Internal\Action\ResetFormAction;
+use Kalle\Pdf\Action\ResetFormAction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Tests\PublicApi;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Image;
-use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Internal\Document\Attachment\EmbeddedFileStream;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;

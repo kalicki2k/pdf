@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Action;
+namespace Kalle\Pdf\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
