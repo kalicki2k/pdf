@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Layout;
 
-use Kalle\Pdf\Geometry\Position;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
@@ -13,6 +11,8 @@ use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Model\Document\Catalog;
 use Kalle\Pdf\Profile;

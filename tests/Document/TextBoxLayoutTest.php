@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Insets;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Text\TextBoxLayout;
+use Kalle\Pdf\Layout\Insets;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Text\TextBoxOptions;
 use PHPUnit\Framework\Attributes\Test;

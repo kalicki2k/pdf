@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Insets;
-use Kalle\Pdf\Geometry\Position;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
@@ -42,7 +39,10 @@ use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\Insets;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Model\Document\EmbeddedFileStream;

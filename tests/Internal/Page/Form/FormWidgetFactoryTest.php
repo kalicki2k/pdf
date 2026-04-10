@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Form;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Position;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Document;
@@ -24,6 +22,8 @@ use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormWidgetFactory;
 use Kalle\Pdf\Internal\Page\Form\FormWidgetFactoryContext;
 use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Model\Document\Form\AcroForm;
 use Kalle\Pdf\Model\Document\Form\RadioButtonField;
 use Kalle\Pdf\Profile;

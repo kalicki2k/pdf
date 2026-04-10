@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Geometry\Insets;
-use Kalle\Pdf\Geometry\Position;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\Insets;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;

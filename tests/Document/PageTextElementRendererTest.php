@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Layout;
 
-use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
@@ -13,6 +12,7 @@ use Kalle\Pdf\Internal\Page\Content\PageLinks;
 use Kalle\Pdf\Internal\Page\Content\PageMarkedContentIds;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
+use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use Kalle\Pdf\Text\TextOptions;

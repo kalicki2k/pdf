@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Position;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Page\Content\Instruction\TextInstruction as TextElement;
@@ -15,6 +13,8 @@ use Kalle\Pdf\Internal\Page\Content\PageLinks;
 use Kalle\Pdf\Internal\Page\Content\PageMarkedContentIds;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
+use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;

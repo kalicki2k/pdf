@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Geometry\Position;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
@@ -20,6 +18,8 @@ use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\PageRegistry;
+use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Model\Page\ImageOptions;

@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Internal\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Internal\Document\DocumentAcroFormManager;
 use Kalle\Pdf\Internal\Document\DocumentAttachmentManager;
 use Kalle\Pdf\Internal\Document\DocumentEncryptionManager;
@@ -31,6 +30,7 @@ use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Model\Document\Catalog;

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Table\Style\CellStyle;

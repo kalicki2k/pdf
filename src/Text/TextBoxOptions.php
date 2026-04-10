@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
-use Kalle\Pdf\Geometry\Insets;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\Insets;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Structure\StructElem;

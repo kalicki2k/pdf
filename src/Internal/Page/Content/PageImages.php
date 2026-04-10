@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Page\Content\Instruction\DrawImageInstruction;
 use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Model\Page\ImageOptions;
 use Kalle\Pdf\Structure\StructureTag;
 

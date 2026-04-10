@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document\Preparation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsStyle;

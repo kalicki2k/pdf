@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Geometry;
+namespace Kalle\Pdf\Layout;
 
 final readonly class Position
 {

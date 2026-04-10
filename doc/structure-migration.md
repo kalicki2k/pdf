@@ -29,6 +29,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - die dokumentweite Orchestrierung liegt jetzt unter `Internal/Document`
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
+- oeffentliche Geometrie-Primitiven `Position`, `Rect` und `Insets` liegen jetzt unter `Layout`
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
 - PDF-Annotation-Stiltypen und das Marker-Interface liegen jetzt unter `Internal/Page/Annotation`
 - der technische Font-Kern liegt jetzt unter `Internal/Font`
@@ -157,6 +158,20 @@ Regeln:
 
 - Public-API-Typen bleiben schlanke Value-Types ohne Seiten- oder Dokumentzustand
 - Styles und Eingabemodelle sollen von den internen Layout-Renderern getrennt bleiben
+
+### Layout
+
+Das Root-Paket `Layout` enthaelt die oeffentlichen Layout- und Geometrie-Primitiven.
+
+Beispiele:
+
+- `PageSize`, `Units`, `HorizontalAlign`, `VerticalAlign`
+- `Position`, `Rect`, `Insets`
+
+Regeln:
+
+- bleibt oeffentliche API, weil diese Typen direkt in Signaturen von `Document`, `Page`, `TextFrame` und `Table` verwendet werden
+- enthaelt nur kleine Value-Types und Layout-Helfer, keine Seiten- oder Dokumentzustandslogik
 
 ### Internal/Layout
 

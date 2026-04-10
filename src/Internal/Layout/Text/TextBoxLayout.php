@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Rect;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Text\TextBoxOptions;
 

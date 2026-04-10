@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Geometry\Position;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Object\IndirectObject;

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Layout;
 
-use Kalle\Pdf\Geometry\Insets;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
+use Kalle\Pdf\Layout\Insets;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Text\TextBoxOptions;

@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Page;

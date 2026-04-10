@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page;
 
-use Kalle\Pdf\Geometry\Position;
-use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
@@ -36,6 +34,8 @@ use Kalle\Pdf\Internal\Page\Form\PageForms;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Model\Page\Contents;
