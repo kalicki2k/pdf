@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Layout\Table\Rendering;
 
 use Kalle\Pdf\Layout\Table\Definition\TableCell;
 use Kalle\Pdf\Layout\Table\Definition\TableHeaderScope;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Document\Form;
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\RadioButtonField;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;

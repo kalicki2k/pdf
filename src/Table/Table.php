@@ -12,7 +12,7 @@ use Kalle\Pdf\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Layout\Table\Table as LayoutTable;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 
 /**
  * Public facade for table layout and rendering.

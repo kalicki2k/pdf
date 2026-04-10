@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Form\RadioButtonField;
 use Kalle\Pdf\Page\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Page\Form\RadioButtonAppearanceStream;

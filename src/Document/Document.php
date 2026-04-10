@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf;
+namespace Kalle\Pdf\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -39,6 +39,7 @@ use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Render\AtomicFilePdfOutput;
 use Kalle\Pdf\Render\PdfOutput;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
 
 /**

@@ -14,7 +14,7 @@ use Kalle\Pdf\Layout\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 

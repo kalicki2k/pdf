@@ -47,12 +47,12 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 
 ## Ergebnis
 
-Die Public API bleibt im Wurzel-Namespace:
+Die Public API liegt jetzt in paketbezogenen Namespaces:
 
-- `Kalle\\Pdf\\Document`
-- `Kalle\\Pdf\\Page`
-- `Kalle\\Pdf\\Table`
-- `Kalle\\Pdf\\TextFrame`
+- `Kalle\\Pdf\\Document\\Document`
+- `Kalle\\Pdf\\Page\\Page`
+- `Kalle\\Pdf\\Table\\Table`
+- `Kalle\\Pdf\\Text\\TextFrame`
 
 Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 

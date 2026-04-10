@@ -16,7 +16,7 @@ use Kalle\Pdf\Action\SetOcgStateAction;
 use Kalle\Pdf\Action\SubmitFormAction;
 use Kalle\Pdf\Action\ThreadAction;
 use Kalle\Pdf\Action\UriAction;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;

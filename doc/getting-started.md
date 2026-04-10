@@ -23,7 +23,7 @@ composer require kalle/pdf
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Profile\Profile;

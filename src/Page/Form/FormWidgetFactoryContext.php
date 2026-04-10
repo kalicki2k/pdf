@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Page\Form;
 use Closure;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\Resources\PageFonts;
 
 /**

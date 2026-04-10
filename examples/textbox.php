@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\Geometry\Insets;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
@@ -14,8 +14,8 @@ use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Link\LinkTarget;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 

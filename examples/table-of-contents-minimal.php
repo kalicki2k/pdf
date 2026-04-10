@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsPlacement;

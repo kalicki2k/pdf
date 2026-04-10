@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Page\Annotation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Page\Annotation\Style\LineEndingStyle;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\PdfType\ArrayType;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;

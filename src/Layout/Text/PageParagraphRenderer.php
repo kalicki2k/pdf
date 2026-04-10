@@ -12,7 +12,7 @@ use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\TextOverflow;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\Resources\PageFonts;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;

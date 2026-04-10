@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Content\Instruction\PathInstruction;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 

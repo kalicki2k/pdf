@@ -10,7 +10,7 @@ use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Text\TextFrame as LayoutTextFrame;
 use Kalle\Pdf\Layout\Value\BulletType;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 
 /**
  * Public facade for flowing text across pages.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Metadata;
 
 use DateTimeImmutable;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\StringType;

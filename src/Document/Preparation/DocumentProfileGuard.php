@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Preparation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Profile\PdfVersion;
 use Kalle\Pdf\Security\EncryptionAlgorithm;

@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Page\Annotation;
 
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\PdfType\ArrayType;
 use Kalle\Pdf\PdfType\BooleanType;
 use Kalle\Pdf\PdfType\DictionaryType;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page\Annotation;
 
 use Kalle\Pdf\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Page\Form\FormFieldListBoxAppearanceStream;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\PdfType\ArrayType;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;

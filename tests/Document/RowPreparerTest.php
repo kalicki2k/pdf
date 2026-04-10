@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\Table\Definition\TableCell;
 use Kalle\Pdf\Layout\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Layout\Table\Layout\RowPreparer;

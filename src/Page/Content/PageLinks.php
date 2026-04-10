@@ -7,9 +7,9 @@ namespace Kalle\Pdf\Page\Content;
 use InvalidArgumentException;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Page\Link\LinkTarget;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 

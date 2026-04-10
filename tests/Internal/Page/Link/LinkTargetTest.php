@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Link;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Page\Link\LinkTarget;
 use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;

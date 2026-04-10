@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Encryption\Standard;
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;

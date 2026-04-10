@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\TaggedPdf\ParentTree;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructTreeRoot;

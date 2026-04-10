@@ -9,7 +9,7 @@ use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\Resources\PageFonts;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructureTag;

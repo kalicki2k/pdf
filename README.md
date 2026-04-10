@@ -47,19 +47,19 @@ For document standards there are dedicated helpers such as `Profile::pdfA2u()` a
 
 ## Quick Start
 
-The public entry points live in the root namespace:
+The public entry points live in dedicated package namespaces:
 
-- `Kalle\Pdf\Document`
-- `Kalle\Pdf\Page`
-- `Kalle\Pdf\TextFrame`
-- `Kalle\Pdf\Table`
+- `Kalle\Pdf\Document\Document`
+- `Kalle\Pdf\Page\Page`
+- `Kalle\Pdf\Text\TextFrame`
+- `Kalle\Pdf\Table\Table`
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Profile\Profile;

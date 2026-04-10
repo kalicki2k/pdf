@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Document;
 
 use Kalle\Pdf\Document\DocumentFontFactory;
 
@@ -30,7 +30,7 @@ use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\TaggedPdf\StructureTag;

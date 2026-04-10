@@ -11,7 +11,7 @@ use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 
 /**
  * @internal Coordinates font resolution and font-related page resources.

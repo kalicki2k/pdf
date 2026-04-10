@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Preparation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsStyle;
@@ -13,8 +13,8 @@ use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Link\LinkTarget;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**

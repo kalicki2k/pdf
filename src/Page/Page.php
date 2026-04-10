@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf;
+namespace Kalle\Pdf\Page;
 
 use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Document\Attachment\FileSpecification;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Image\Image;

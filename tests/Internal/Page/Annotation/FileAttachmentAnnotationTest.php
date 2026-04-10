@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
-use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Attachment\EmbeddedFileStream;
 use Kalle\Pdf\Document\Attachment\FileSpecification;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;

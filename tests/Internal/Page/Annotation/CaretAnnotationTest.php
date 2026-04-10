@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Page\Annotation\CaretAnnotation;
 use Kalle\Pdf\Page\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Profile\Profile;

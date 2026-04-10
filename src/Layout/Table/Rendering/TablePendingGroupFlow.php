@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Layout\Table\Rendering;
 use InvalidArgumentException;
 use Kalle\Pdf\Layout\Table\Layout\PreparedTableRowGroup;
 use Kalle\Pdf\Layout\Table\TableGroupPageFit;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 
 /**
  * @internal Owns the page-flow loop for rendering pending prepared table row groups.

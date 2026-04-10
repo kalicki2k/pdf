@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Layout;
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Layout\Text\PageTextElementRenderer;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Page\Content\PageGraphics;
 use Kalle\Pdf\Page\Content\PageLinks;
 use Kalle\Pdf\Page\Content\PageMarkedContentIds;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\Resources\PageFonts;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;

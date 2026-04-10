@@ -36,7 +36,7 @@ use Kalle\Pdf\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Layout\Table\TableSections;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructureTag;

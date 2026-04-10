@@ -7,9 +7,9 @@ namespace Kalle\Pdf\Page\Content;
 use InvalidArgumentException;
 use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Layout\Geometry\Position;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Content\ImageOptions;
 use Kalle\Pdf\Page\Content\Instruction\DrawImageInstruction;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**

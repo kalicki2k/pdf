@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Page\Annotation;
 
 use Closure;
 use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\Resources\PageFonts;
 
 /**

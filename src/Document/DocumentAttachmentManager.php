@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Binary\BinaryData;
-use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFileStream;
 use Kalle\Pdf\Document\Attachment\FileSpecification;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Preparation\DocumentProfileGuard;
 use RuntimeException;
 

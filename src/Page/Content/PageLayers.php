@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page\Content;
 
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Content\Instruction\RawInstruction;
+use Kalle\Pdf\Page\Page;
 
 /**
  * @internal Coordinates optional-content layer scopes for a page.

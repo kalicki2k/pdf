@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Content;
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Page\Content\PageImageObjectFactory;
 use Kalle\Pdf\Profile\Profile;

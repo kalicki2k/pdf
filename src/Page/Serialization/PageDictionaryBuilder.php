@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page\Serialization;
 
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Annotation\PageAnnotation;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\PdfType\ArrayType;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;

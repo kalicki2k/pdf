@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\Profile\EncryptionVersionResolver;
 use Kalle\Pdf\Encryption\Profile\PermissionBitsResolver;
 use Kalle\Pdf\Profile\Profile;

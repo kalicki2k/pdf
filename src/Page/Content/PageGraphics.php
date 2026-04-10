@@ -7,11 +7,11 @@ namespace Kalle\Pdf\Page\Content;
 use InvalidArgumentException;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Page\Content\Instruction\LineInstruction;
 use Kalle\Pdf\Page\Content\Instruction\RawInstruction;
 use Kalle\Pdf\Page\Content\Instruction\RectangleInstruction;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page\Link;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 
 final readonly class LinkTarget
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Layout;
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\Geometry\Insets;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;

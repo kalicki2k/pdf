@@ -17,16 +17,7 @@
   "autoload": {
     "psr-4": {
       "Kalle\\Pdf\\": "src/"
-    },
-    "classmap": [
-      "src/Document/Document.php",
-      "src/Page/Page.php",
-      "src/Image/Image.php",
-      "src/Profile/Profile.php",
-      "src/Profile/PdfVersion.php",
-      "src/Table/Table.php",
-      "src/Text/TextFrame.php"
-    ]
+    }
   },
   "autoload-dev": {
     "psr-4": {

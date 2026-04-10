@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use Composer\InstalledVersions;
 use InvalidArgumentException;
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Metadata\IccProfileStream;
 use Kalle\Pdf\Document\Metadata\XmpMetadata;
 

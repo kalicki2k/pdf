@@ -15,7 +15,6 @@ use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Annotation\CheckboxAnnotation;
 use Kalle\Pdf\Page\Annotation\ComboBoxAnnotation;
 use Kalle\Pdf\Page\Annotation\ListBoxAnnotation;
@@ -24,6 +23,7 @@ use Kalle\Pdf\Page\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Page\Annotation\SignatureFieldAnnotation;
 use Kalle\Pdf\Page\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Page\Form\FormFieldFlags;
+use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Style\Color;
 
 /**

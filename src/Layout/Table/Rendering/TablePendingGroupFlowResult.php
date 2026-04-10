@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Layout\Table\Rendering;
 
-use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Page;
 
 /**
  * @internal Carries the updated page state after rendering a pending table row group flow.

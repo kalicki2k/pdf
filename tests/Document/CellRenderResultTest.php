@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Profile\Profile;

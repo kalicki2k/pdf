@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Serialization;
 
-use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Preparation\DocumentRenderPreparer;
 use Kalle\Pdf\Render\PdfOutput;
 
