@@ -37,7 +37,6 @@ use Kalle\Pdf\Page\Content\PageGraphics;
 use Kalle\Pdf\Page\Content\PageImages;
 use Kalle\Pdf\Page\Content\PageLayers;
 use Kalle\Pdf\Page\Content\PageLinks;
-use Kalle\Pdf\Page\Content\PageMarkedContentIds;
 use Kalle\Pdf\Page\Content\PathBuilder;
 use Kalle\Pdf\Page\Content\Style\BadgeStyle;
 use Kalle\Pdf\Page\Content\Style\CalloutStyle;
@@ -62,18 +61,7 @@ class Page extends IndirectObject
 {
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
-    private ?PageComponents $pageComponents = null;
-    private ?PageFonts $pageFonts = null;
-    private ?PageGraphics $pageGraphics = null;
-    private ?PageImages $pageImages = null;
-    private ?PageLinks $pageLinks = null;
-    private ?PageObjectRenderer $pageObjectRenderer = null;
-    private ?PageAnnotations $pageAnnotations = null;
-    private ?PageForms $pageForms = null;
-    private ?PageLayers $pageLayers = null;
-    private ?PageTextElementRenderer $pageTextElementRenderer = null;
-    private ?PageParagraphRenderer $pageParagraphRenderer = null;
-    private PageMarkedContentIds $pageMarkedContentIds;
+    private readonly PageCollaborators $collaborators;
     private readonly Contents $contents;
     private readonly Resources $resources;
 
@@ -90,7 +78,7 @@ class Page extends IndirectObject
 
         $this->contents = new Contents($contentsId);
         $this->resources = new Resources($resourcesId);
-        $this->pageMarkedContentIds = new PageMarkedContentIds();
+        $this->collaborators = new PageCollaborators($this);
     }
 
     public function addText(
@@ -837,7 +825,7 @@ class Page extends IndirectObject
 
     protected function writeObject(PdfOutput $output): void
     {
-        $this->pageObjectRenderer()->write($output, $this->pageMarkedContentIds->hasAllocatedIds());
+        $this->pageObjectRenderer()->write($output, $this->collaborators->markedContentIds()->hasAllocatedIds());
     }
 
     public function getWidth(): float
@@ -906,7 +894,7 @@ class Page extends IndirectObject
      */
     public function getAnnotations(): array
     {
-        return $this->pageAnnotations?->all() ?? [];
+        return $this->collaborators->existingAnnotations()?->all() ?? [];
     }
 
     /**
@@ -933,71 +921,57 @@ class Page extends IndirectObject
 
     private function pageFonts(): PageFonts
     {
-        return $this->pageFonts ??= PageFonts::forPage($this);
+        return $this->collaborators->fonts();
     }
 
     private function pageObjectRenderer(): PageObjectRenderer
     {
-        return $this->pageObjectRenderer ??= PageObjectRenderer::forPage($this);
+        return $this->collaborators->objectRenderer();
     }
 
     private function pageGraphics(): PageGraphics
     {
-        return $this->pageGraphics ??= PageGraphics::forPage($this);
+        return $this->collaborators->graphics();
     }
 
     private function pageComponents(): PageComponents
     {
-        return $this->pageComponents ??= PageComponents::forPage(
-            $this->pageLinks(),
-            $this->pageGraphics(),
-            $this->pageFonts(),
-            $this->pageTextElementRenderer(),
-            $this->pageParagraphRenderer(),
-            $this->document->getProfile()->requiresTaggedPdf(),
-            $this->document->getProfile()->requiresTaggedLinkAnnotations(),
-        );
+        return $this->collaborators->components();
     }
 
     private function pageAnnotations(): PageAnnotations
     {
-        return $this->pageAnnotations ??= PageAnnotations::forPage($this, $this->pageFonts());
+        return $this->collaborators->annotations();
     }
 
     private function pageImages(): PageImages
     {
-        return $this->pageImages ??= PageImages::forPage($this, $this->pageMarkedContentIds);
+        return $this->collaborators->images();
     }
 
     private function pageLinks(): PageLinks
     {
-        return $this->pageLinks ??= PageLinks::forPage($this, $this->pageAnnotations());
+        return $this->collaborators->links();
     }
 
     private function pageForms(): PageForms
     {
-        return $this->pageForms ??= PageForms::forPage($this, $this->pageAnnotations(), $this->pageFonts());
+        return $this->collaborators->forms();
     }
 
     private function pageLayers(): PageLayers
     {
-        return $this->pageLayers ??= PageLayers::forPage($this);
+        return $this->collaborators->layers();
     }
 
     private function pageTextElementRenderer(): PageTextElementRenderer
     {
-        return $this->pageTextElementRenderer ??= PageTextElementRenderer::forPage(
-            $this,
-            $this->pageFonts(),
-            $this->pageLinks(),
-            $this->pageGraphics(),
-            $this->pageMarkedContentIds,
-        );
+        return $this->collaborators->textElementRenderer();
     }
 
     private function pageParagraphRenderer(): PageParagraphRenderer
     {
-        return $this->pageParagraphRenderer ??= PageParagraphRenderer::forPage($this, $this->pageFonts());
+        return $this->collaborators->paragraphRenderer();
     }
 
 }
