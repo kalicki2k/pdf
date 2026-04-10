@@ -30,11 +30,7 @@ use Kalle\Pdf\Page\Content\PageGraphics;
 use Kalle\Pdf\Page\Content\PageImages;
 use Kalle\Pdf\Page\Content\PageLayers;
 use Kalle\Pdf\Page\Content\PageLinks;
-use Kalle\Pdf\Page\Content\Style\BadgeStyle;
-use Kalle\Pdf\Page\Content\Style\CalloutStyle;
-use Kalle\Pdf\Page\Content\Style\PanelStyle;
 use Kalle\Pdf\Page\Form\PageForms;
-use Kalle\Pdf\Page\Link\LinkTarget;
 use Kalle\Pdf\Page\Resources\ImageObject;
 use Kalle\Pdf\Page\Resources\PageFonts;
 use Kalle\Pdf\Page\Resources\Resources;
@@ -50,6 +46,7 @@ use Kalle\Pdf\Text\TextFrame;
 class Page extends IndirectObject
 {
     use HandlesPageAnnotations;
+    use HandlesPageComponents;
     use HandlesPageForms;
     use HandlesPageGraphics;
     use HandlesPageLinksAndImages;
@@ -92,61 +89,6 @@ class Page extends IndirectObject
     public function layer(string | OptionalContentGroup $layer, callable $renderer, bool $visibleByDefault = true): self
     {
         return $this->pageLayers()->layer($layer, $renderer, $visibleByDefault);
-    }
-
-    public function addBadge(
-        string $text,
-        Position $position,
-        string $baseFont = 'Helvetica',
-        int $size = 11,
-        ?BadgeStyle $style = null,
-        ?LinkTarget $link = null,
-    ): self {
-        $this->pageComponents()->addBadge($text, $position, $baseFont, $size, $style, $link);
-
-        return $this;
-    }
-
-    /**
-     * @param string|list<TextSegment> $body
-     */
-    public function addPanel(
-        string | array $body,
-        float $x,
-        float $y,
-        float $width,
-        float $height,
-        ?string $title = null,
-        string $bodyFont = 'Helvetica',
-        ?PanelStyle $style = null,
-        ?string $titleFont = null,
-        ?LinkTarget $link = null,
-    ): self {
-        $this->pageComponents()->addPanel($body, $x, $y, $width, $height, $title, $bodyFont, $style, $titleFont, $link);
-
-        return $this;
-    }
-
-    /**
-     * @param string|list<TextSegment> $body
-     */
-    public function addCallout(
-        string | array $body,
-        float $x,
-        float $y,
-        float $width,
-        float $height,
-        float $pointerX,
-        float $pointerY,
-        ?string $title = null,
-        string $bodyFont = 'Helvetica',
-        ?CalloutStyle $style = null,
-        ?string $titleFont = null,
-        ?LinkTarget $link = null,
-    ): self {
-        $this->pageComponents()->addCallout($body, $x, $y, $width, $height, $pointerX, $pointerY, $title, $bodyFont, $style, $titleFont, $link);
-
-        return $this;
     }
 
     /**
