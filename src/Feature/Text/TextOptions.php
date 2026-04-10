@@ -8,6 +8,7 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 final readonly class TextOptions
 {

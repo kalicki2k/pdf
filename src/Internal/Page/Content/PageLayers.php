@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Content;
 
-use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Page\Content\Instruction\RawInstruction;
 use Kalle\Pdf\Internal\Page\Page;
 

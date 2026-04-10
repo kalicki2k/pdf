@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
@@ -18,6 +17,7 @@ use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Model\Document\Catalog;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

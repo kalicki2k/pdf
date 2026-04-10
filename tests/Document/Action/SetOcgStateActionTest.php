@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Tests\Document\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Feature\Action\SetOcgStateAction;
-use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

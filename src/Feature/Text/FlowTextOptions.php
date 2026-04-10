@@ -9,6 +9,7 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 final readonly class FlowTextOptions
 {

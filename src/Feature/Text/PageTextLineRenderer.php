@@ -10,6 +10,7 @@ use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 /**
  * @internal Renders already prepared text lines onto a page.

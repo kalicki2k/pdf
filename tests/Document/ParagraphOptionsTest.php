@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Structure\StructureTag;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Internal\Document\OptionalContent;
 
-use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;

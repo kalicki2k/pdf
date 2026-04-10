@@ -22,7 +22,6 @@ use Kalle\Pdf\Feature\Annotation\StampAnnotation;
 use Kalle\Pdf\Feature\Annotation\StrikeOutAnnotation;
 use Kalle\Pdf\Feature\Annotation\TextAnnotation;
 use Kalle\Pdf\Feature\Annotation\UnderlineAnnotation;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
@@ -34,6 +33,7 @@ use Kalle\Pdf\Model\Document\EmbeddedFileStream;
 use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Structure\StructureTag;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

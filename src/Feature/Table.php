@@ -34,12 +34,12 @@ use Kalle\Pdf\Feature\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Feature\Table\TableCaption;
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Table\TableSections;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 class Table
 {

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf;
 
 use DateTimeImmutable;
-use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Internal\Document\Document as InternalDocument;
+use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;

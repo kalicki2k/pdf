@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Feature\Text\ListOptions;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
@@ -18,6 +17,7 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Structure\StructureTag;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

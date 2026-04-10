@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Feature\Outline;
+namespace Kalle\Pdf\Internal\Document\Outline;
 
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Object\DictionaryIndirectObject;

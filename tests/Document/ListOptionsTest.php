@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Feature\Text\ListOptions;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Structure\StructureTag;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

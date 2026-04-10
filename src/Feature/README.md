@@ -7,13 +7,11 @@ Aktuell vorhanden:
 - Actions
 - Annotationen
 - Formulare
-- Optional Content
-- Outlines
 - Tabellen
 - Text
 
 Der aktuelle Stand dieser Phase:
 
-- `Action`, `Annotation`, `Form`, `Outline`, `OptionalContent`, `Table` und `Text` sind als Ziel-Namespaces vorhanden
-- die eigentlichen Implementierungen liegen jetzt in `Feature`
-- die historischen `Document`-Feature-Pakete sind entfernt
+- `Action`, `Annotation`, `Form`, `Table` und `Text` liegen weiterhin in `Feature`
+- `OptionalContent` und `Outline` gehoeren jetzt zum internen Dokumentkern unter `Internal/Document`
+- `StructureTag` liegt unter `Structure`, weil es Tagged-PDF-Semantik und kein Textdetail modelliert

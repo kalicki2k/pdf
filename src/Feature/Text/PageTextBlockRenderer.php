@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Feature\Text;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 /**
  * @internal Renders multi-line text blocks onto one or more pages.

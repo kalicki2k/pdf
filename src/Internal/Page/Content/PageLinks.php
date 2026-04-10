@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Feature\Annotation\PageAnnotations;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 /**
  * @internal Coordinates link annotations and link-related structure handling for a page.

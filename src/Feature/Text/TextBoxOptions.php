@@ -11,6 +11,7 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 /**
  * Controls how text is rendered inside a fixed rectangle.

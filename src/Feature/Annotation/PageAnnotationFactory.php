@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Annotation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
@@ -14,6 +13,7 @@ use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 /**
  * Builds page annotations so Page can stay focused on the public API surface.

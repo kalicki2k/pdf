@@ -29,14 +29,15 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - die dokumentweite Orchestrierung liegt jetzt unter `Internal/Document`
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
-- `Feature/Action`, `Feature/Annotation`, `Feature/Form`, `Feature/OptionalContent`, `Feature/Outline`, `Feature/Table` und `Feature/Text` existieren bereits als Ziel-Namespaces
-- die eigentlichen Implementierungen fuer diese Feature-Familien liegen jetzt in `Feature`
+- `Feature/Action`, `Feature/Annotation`, `Feature/Form`, `Feature/Table` und `Feature/Text` tragen die verbleibenden Feature-Implementierungen
+- `OptionalContent` und `Outline` liegen jetzt unter `Internal/Document`, weil sie dokumentweiten Zustand und Navigation modellieren
+- `StructureTag` liegt unter `Structure`, weil es Tagged-PDF-Semantik beschreibt
 - die alte `src/Document`-Struktur ist als internes Codepaket entfernt
 
 Das ist ein deutlich saubererer Zwischenstand, aber noch nicht das Ende der Migration.
 
-Als naechster Schritt kann `Document` weiter von verbliebenen Zustands- und Glue-Klassen bereinigt werden,
-ohne dass die Feature-Pakete erneut umgeschnitten werden muessen.
+Als naechster Schritt koennen die verbleibenden `Feature`-Pakete weiter entlang von Dokumentkern und Layout
+aufgeschnitten werden, ohne die bereits verschobenen Navigations- und Strukturklassen erneut bewegen zu muessen.
 
 ## Zielbild
 
@@ -75,8 +76,6 @@ src/
     Action/
     Annotation/
     Form/
-    OptionalContent/
-    Outline/
     Table/
     Text/
 
@@ -148,14 +147,26 @@ Beispiele:
 - Formulare
 - Tabellen
 - Textlayout
-- Outlines
-- Optional Content
 
 Regeln:
 
 - ein Feature enthaelt seine Modelle, Builder und Renderer moeglichst zusammen
 - kein verstecktes Rueckgreifen auf unklare globale Dokumentzustandsobjekte
 - Schnittstellen zum Dokumentmodell sollen expliziter werden
+
+### Structure
+
+Hier liegen PDF-Struktur- und Tagged-PDF-Typen.
+
+Beispiele:
+
+- `StructElem`
+- `StructureTag`
+
+Regeln:
+
+- beschreibt Struktursemantik des PDFs
+- ist kein Text- oder Layout-Unterpaket
 
 ### Low-Level-Pakete
 
@@ -186,7 +197,7 @@ Die Strukturmigration wird in diese groben Schritte geschnitten:
 9. Orchestrierung nach `Internal/Document` verschieben
 10. Dokumentmodell nach `Model` verschieben
 11. Text- und Tabellenfeature sauber trennen
-12. weitere Feature-Pakete schrittweise aus `Document` herausloesen
+12. verbleibende Feature-Pakete schrittweise weiter schneiden
 
 ## Nicht-Ziele
 

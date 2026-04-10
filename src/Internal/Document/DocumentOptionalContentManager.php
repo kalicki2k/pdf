@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 
 /**
  * @internal Manages optional content groups (layers) for a document.

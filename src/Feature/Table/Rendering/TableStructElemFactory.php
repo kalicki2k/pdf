@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Feature\Table\Rendering;
 
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Table\TableHeaderScope;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 /**
  * @internal Creates tagged PDF structure elements for rendered table rows and cells.

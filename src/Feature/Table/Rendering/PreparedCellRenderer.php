@@ -13,10 +13,10 @@ use Kalle\Pdf\Feature\Table\Style\TableStyle;
 use Kalle\Pdf\Feature\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Feature\Table\Support\TableTextMetrics;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 final readonly class PreparedCellRenderer
 {

@@ -11,13 +11,13 @@ use Kalle\Pdf\Feature\Table\TableCaption;
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Table\TableHeaderScope;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Structure\StructureTag;
 
 require __DIR__ . '/../vendor/autoload.php';
 

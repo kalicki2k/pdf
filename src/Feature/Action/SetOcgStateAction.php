@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Action;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;

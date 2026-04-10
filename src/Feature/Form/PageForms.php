@@ -9,7 +9,6 @@ use Kalle\Pdf\Feature\Action\SetOcgStateAction;
 use Kalle\Pdf\Feature\Annotation\PageAnnotation;
 use Kalle\Pdf\Feature\Annotation\PageAnnotations;
 use Kalle\Pdf\Feature\Annotation\StructParentAwareAnnotation;
-use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Geometry\Position;
@@ -19,6 +18,7 @@ use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Structure\StructureTag;
 
 /**
  * @internal Coordinates form widgets and accessibility bindings for a page.

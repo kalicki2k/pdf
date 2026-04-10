@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Document;
+namespace Kalle\Pdf\Tests\Internal\Document\Outline;
 
-use Kalle\Pdf\Feature\Outline\OutlineItem;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Document\Outline\OutlineItem;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
