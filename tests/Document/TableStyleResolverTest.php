@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Feature\Table\Style\CellStyle;
-use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
-use Kalle\Pdf\Feature\Table\Style\RowStyle;
-use Kalle\Pdf\Feature\Table\Style\TableBorder;
-use Kalle\Pdf\Feature\Table\Style\TablePadding;
-use Kalle\Pdf\Feature\Table\Style\TableStyle;
-use Kalle\Pdf\Feature\Table\Support\ResolvedBorderSide;
-use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
-use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedBorderSide;
+use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Table\Style\CellStyle;
+use Kalle\Pdf\Table\Style\HeaderStyle;
+use Kalle\Pdf\Table\Style\RowStyle;
+use Kalle\Pdf\Table\Style\TableBorder;
+use Kalle\Pdf\Table\Style\TablePadding;
+use Kalle\Pdf\Table\Style\TableStyle;
+use Kalle\Pdf\Table\TableCell;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

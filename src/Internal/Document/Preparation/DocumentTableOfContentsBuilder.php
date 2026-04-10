@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document\Preparation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\Text\ParagraphOptions;
-use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Page\Page;
@@ -16,6 +14,8 @@ use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Text\ParagraphOptions;
+use Kalle\Pdf\Text\TextOptions;
 
 /**
  * @internal Builds and inserts the table of contents pages for a document.

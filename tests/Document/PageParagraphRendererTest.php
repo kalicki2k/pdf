@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Feature\Text\PageParagraphRenderer;
-use Kalle\Pdf\Feature\Text\TextBoxOptions;
 use Kalle\Pdf\Geometry\Insets;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Text\TextBoxOptions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

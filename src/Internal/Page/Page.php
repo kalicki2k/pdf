@@ -8,14 +8,6 @@ use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Annotation\LineEndingStyle;
 use Kalle\Pdf\Annotation\PageAnnotation as PopupParentAnnotation;
-use Kalle\Pdf\Feature\Table;
-use Kalle\Pdf\Feature\Text\FlowTextOptions;
-use Kalle\Pdf\Feature\Text\PageParagraphRenderer;
-use Kalle\Pdf\Feature\Text\PageTextElementRenderer;
-use Kalle\Pdf\Feature\Text\TextBoxOptions;
-use Kalle\Pdf\Feature\Text\TextFrame;
-use Kalle\Pdf\Feature\Text\TextOptions;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Form\FormFieldLabel;
@@ -26,6 +18,10 @@ use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Layout\Table\Table;
+use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
+use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
+use Kalle\Pdf\Internal\Layout\Text\TextFrame;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
@@ -55,6 +51,10 @@ use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Style\BadgeStyle;
 use Kalle\Pdf\Style\CalloutStyle;
 use Kalle\Pdf\Style\PanelStyle;
+use Kalle\Pdf\Text\FlowTextOptions;
+use Kalle\Pdf\Text\TextBoxOptions;
+use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 /**
  * @internal Internal page implementation. Use Kalle\Pdf\Page from the public API.

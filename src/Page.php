@@ -8,11 +8,6 @@ use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Annotation\LineEndingStyle;
 use Kalle\Pdf\Annotation\PageAnnotation;
-use Kalle\Pdf\Feature\Table as InternalTable;
-use Kalle\Pdf\Feature\Text\FlowTextOptions;
-use Kalle\Pdf\Feature\Text\TextBoxOptions;
-use Kalle\Pdf\Feature\Text\TextOptions;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Form\FormFieldLabel;
 use Kalle\Pdf\Geometry\Position;
@@ -21,6 +16,7 @@ use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Layout\Table\Table as InternalTable;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\PageRegistry;
@@ -32,6 +28,10 @@ use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Style\BadgeStyle;
 use Kalle\Pdf\Style\CalloutStyle;
 use Kalle\Pdf\Style\PanelStyle;
+use Kalle\Pdf\Text\FlowTextOptions;
+use Kalle\Pdf\Text\TextBoxOptions;
+use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 /**
  * Public facade for page operations exposed to library users.

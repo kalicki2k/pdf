@@ -33,15 +33,11 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - oeffentliche Annotation- und Formular-Value-Types liegen unter `src/Annotation` und `src/Form`
 - konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
 - `AcroForm` und `RadioButtonField` liegen unter `Model/Document/Form`
-- `Feature` traegt nur noch `Table` und `Text`
+- oeffentliche Text- und Tabellen-Value-Types liegen unter `src/Text` und `src/Table`
+- interne Text- und Tabellen-Layoutimplementierungen liegen unter `Internal/Layout/Text` und `Internal/Layout/Table`
 - `OptionalContent` und `Outline` liegen jetzt unter `Internal/Document`, weil sie dokumentweiten Zustand und Navigation modellieren
 - `StructureTag` liegt unter `Structure`, weil es Tagged-PDF-Semantik beschreibt
 - die alte `src/Document`-Struktur ist als internes Codepaket entfernt
-
-Das ist ein deutlich saubererer Zwischenstand, aber noch nicht das Ende der Migration.
-
-Als naechster Schritt koennen die verbleibenden `Feature`-Pakete weiter entlang von Dokumentkern und Layout
-aufgeschnitten werden, ohne die bereits verschobenen Navigations- und Strukturklassen erneut bewegen zu muessen.
 
 ## Zielbild
 
@@ -59,6 +55,8 @@ src/
   Action/
   Annotation/
   Form/
+  Table/
+  Text/
 
   Internal/
     Document/
@@ -71,6 +69,9 @@ src/
       Profile/
       Standard/
       Stream/
+    Layout/
+      Table/
+      Text/
     Security/
       EncryptionAlgorithm.php
       EncryptionOptions.php
@@ -83,10 +84,6 @@ src/
     Document/
       Form/
     Page/
-
-  Feature/
-    Table/
-    Text/
 
   Font/
   Graphics/
@@ -146,20 +143,34 @@ Regeln:
 - trifft keine uebergeordneten Ablaufentscheidungen
 - soll moeglichst keine Public-API-Verantwortung tragen
 
-### Feature
+### Text und Table
 
-Hier liegen fachlich zusammenhaengende Dokumentfeatures.
+Die oeffentlichen Eingabetypen fuer Text- und Tabellenaufbau liegen jetzt in eigenen Root-Paketen.
 
 Beispiele:
 
-- Tabellen
-- Textlayout
+- `TextOptions`, `ParagraphOptions`, `TextSegment`
+- `TableCell`, `TableCaption`, `TableStyle`
 
 Regeln:
 
-- ein Feature enthaelt seine Modelle, Builder und Renderer moeglichst zusammen
-- kein verstecktes Rueckgreifen auf unklare globale Dokumentzustandsobjekte
-- Schnittstellen zum Dokumentmodell sollen expliziter werden
+- Public-API-Typen bleiben schlanke Value-Types ohne Seiten- oder Dokumentzustand
+- Styles und Eingabemodelle sollen von den internen Layout-Renderern getrennt bleiben
+
+### Internal/Layout
+
+Hier liegen die internen Layout-Implementierungen fuer laengeren Textfluss und Tabellen.
+
+Beispiele:
+
+- `Internal/Layout/Text` fuer Absatzlayout, Textboxen und Textframes
+- `Internal/Layout/Table` fuer Tabellenzustand, Zeilengruppen, Pagination und Rendering
+
+Regeln:
+
+- kennt Seiten- und Dokumentkern, aber keine oeffentlichen Fassaden
+- kapselt Layout- und Rendering-Details fuer mehrseitige Text- und Tabellenfluesse
+- verwendet die oeffentlichen Text- und Tabellen-Value-Types als Eingaben
 
 ### Action, Annotation und Form
 
@@ -222,8 +233,8 @@ Die Strukturmigration wird in diese groben Schritte geschnitten:
 8. Public API an die internen Namen anpassen
 9. Orchestrierung nach `Internal/Document` verschieben
 10. Dokumentmodell nach `Model` verschieben
-11. Text- und Tabellenfeature sauber trennen
-12. verbleibende Feature-Pakete schrittweise weiter schneiden
+11. Text- und Tabellenlayout in Public-Value-Types und `Internal/Layout` schneiden
+12. historische Test- und Reststrukturen schrittweise nachziehen
 
 ## Nicht-Ziele
 

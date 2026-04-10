@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Resources;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\FontRegistry;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Text\TextSegment;
 
 /**
  * @internal Coordinates font resolution and font-related page resources.

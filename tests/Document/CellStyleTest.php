@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Feature\Table\Style\CellStyle;
-use Kalle\Pdf\Feature\Table\Style\TableBorder;
-use Kalle\Pdf\Feature\Table\Style\TablePadding;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Table\Style\CellStyle;
+use Kalle\Pdf\Table\Style\TableBorder;
+use Kalle\Pdf\Table\Style\TablePadding;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

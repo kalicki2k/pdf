@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\Table\Layout\PreparedTableRow;
-use Kalle\Pdf\Feature\Table\Layout\RowGroupPreparer;
-use Kalle\Pdf\Feature\Table\Layout\RowPreparer;
-use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
-use Kalle\Pdf\Feature\Table\Style\RowStyle;
-use Kalle\Pdf\Feature\Table\Style\TableStyle;
-use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
-use Kalle\Pdf\Feature\Table\Support\TableTextMetrics;
-use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Internal\Layout\Table\Layout\RowGroupPreparer;
+use Kalle\Pdf\Internal\Layout\Table\Layout\RowPreparer;
+use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
+use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Table\Style\HeaderStyle;
+use Kalle\Pdf\Table\Style\RowStyle;
+use Kalle\Pdf\Table\Style\TableStyle;
+use Kalle\Pdf\Table\TableCell;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

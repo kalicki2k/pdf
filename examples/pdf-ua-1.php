@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Feature\Text\ParagraphOptions;
-use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
@@ -15,6 +13,8 @@ use Kalle\Pdf\Model\Page\ImageOptions;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Text\ParagraphOptions;
+use Kalle\Pdf\Text\TextOptions;
 
 require __DIR__ . '/../vendor/autoload.php';
 

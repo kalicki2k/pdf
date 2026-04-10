@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Feature\Text\ParagraphOptions;
-use Kalle\Pdf\Feature\Text\TextOptions;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Text\ParagraphOptions;
+use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 require __DIR__ . '/../vendor/autoload.php';
 

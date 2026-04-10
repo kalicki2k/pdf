@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Feature\Text\PageTextBlockRenderer;
-use Kalle\Pdf\Feature\Text\PageTextLineRenderer;
-use Kalle\Pdf\Feature\Text\TextLayoutEngine;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Layout\Text\PageTextBlockRenderer;
+use Kalle\Pdf\Internal\Layout\Text\PageTextLineRenderer;
+use Kalle\Pdf\Internal\Layout\Text\TextLayoutEngine;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

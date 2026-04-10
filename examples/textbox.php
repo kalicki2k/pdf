@@ -3,9 +3,6 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Feature\Text\TextBoxOptions;
-use Kalle\Pdf\Feature\Text\TextOptions;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Geometry\Insets;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
@@ -18,6 +15,9 @@ use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Text\TextBoxOptions;
+use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 require __DIR__ . '/../vendor/autoload.php';
 

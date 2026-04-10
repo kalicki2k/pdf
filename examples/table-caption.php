@@ -3,21 +3,21 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
-use Kalle\Pdf\Feature\Table\Style\TableBorder;
-use Kalle\Pdf\Feature\Table\Style\TablePadding;
-use Kalle\Pdf\Feature\Table\Style\TableStyle;
-use Kalle\Pdf\Feature\Table\TableCaption;
-use Kalle\Pdf\Feature\Table\TableCell;
-use Kalle\Pdf\Feature\Table\TableHeaderScope;
-use Kalle\Pdf\Feature\Text\ParagraphOptions;
-use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Table\Style\HeaderStyle;
+use Kalle\Pdf\Table\Style\TableBorder;
+use Kalle\Pdf\Table\Style\TablePadding;
+use Kalle\Pdf\Table\Style\TableStyle;
+use Kalle\Pdf\Table\TableCaption;
+use Kalle\Pdf\Table\TableCell;
+use Kalle\Pdf\Table\TableHeaderScope;
+use Kalle\Pdf\Text\ParagraphOptions;
+use Kalle\Pdf\Text\TextOptions;
 
 require __DIR__ . '/../vendor/autoload.php';
 

@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Feature\Table\Layout\CellLayoutResolver;
-use Kalle\Pdf\Feature\Table\Layout\PreparedTableCell;
-use Kalle\Pdf\Feature\Table\Rendering\CellBoxRenderer;
-use Kalle\Pdf\Feature\Table\Rendering\CellRenderOptions;
-use Kalle\Pdf\Feature\Table\Rendering\PreparedCellRenderer;
-use Kalle\Pdf\Feature\Table\Style\TablePadding;
-use Kalle\Pdf\Feature\Table\Style\TableStyle;
-use Kalle\Pdf\Feature\Table\Support\ResolvedTableCellStyle;
-use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
-use Kalle\Pdf\Feature\Table\Support\TableTextMetrics;
-use Kalle\Pdf\Feature\Table\TableCell;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Layout\Table\Layout\CellLayoutResolver;
+use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Internal\Layout\Table\Rendering\CellBoxRenderer;
+use Kalle\Pdf\Internal\Layout\Table\Rendering\CellRenderOptions;
+use Kalle\Pdf\Internal\Layout\Table\Rendering\PreparedCellRenderer;
+use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedTableCellStyle;
+use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
+use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Table\Style\TablePadding;
+use Kalle\Pdf\Table\Style\TableStyle;
+use Kalle\Pdf\Table\TableCell;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

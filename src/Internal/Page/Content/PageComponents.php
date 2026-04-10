@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Feature\Text\PageParagraphRenderer;
-use Kalle\Pdf\Feature\Text\PageTextElementRenderer;
-use Kalle\Pdf\Feature\Text\TextBoxOptions;
-use Kalle\Pdf\Feature\Text\TextOptions;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
+use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Navigation\LinkTarget;
@@ -20,6 +17,9 @@ use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Style\BadgeStyle;
 use Kalle\Pdf\Style\CalloutStyle;
 use Kalle\Pdf\Style\PanelStyle;
+use Kalle\Pdf\Text\TextBoxOptions;
+use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 /**
  * @internal Coordinates high-level page components such as badges, panels and callouts.

@@ -3,16 +3,6 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Feature\Table\Style\CellStyle;
-use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
-use Kalle\Pdf\Feature\Table\Style\TableBorder;
-use Kalle\Pdf\Feature\Table\Style\TablePadding;
-use Kalle\Pdf\Feature\Table\Style\TableStyle;
-use Kalle\Pdf\Feature\Table\TableCell;
-use Kalle\Pdf\Feature\Text\ParagraphOptions;
-use Kalle\Pdf\Feature\Text\TextBoxOptions;
-use Kalle\Pdf\Feature\Text\TextOptions;
-use Kalle\Pdf\Feature\Text\TextSegment;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
@@ -20,6 +10,16 @@ use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Table\Style\CellStyle;
+use Kalle\Pdf\Table\Style\HeaderStyle;
+use Kalle\Pdf\Table\Style\TableBorder;
+use Kalle\Pdf\Table\Style\TablePadding;
+use Kalle\Pdf\Table\Style\TableStyle;
+use Kalle\Pdf\Table\TableCell;
+use Kalle\Pdf\Text\ParagraphOptions;
+use Kalle\Pdf\Text\TextBoxOptions;
+use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 require __DIR__ . '/../vendor/autoload.php';
 
