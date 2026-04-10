@@ -212,7 +212,7 @@ Wichtig fuer die Einordnung:
 
 Fuer den aktuellen Standard-Pfad sind vor allem diese Stellen relevant:
 
-- `src/Profile.php`
+- `src/Profile/Profile.php`
 - `src/Document/Document.php`
 - `src/Document/Page.php`
 - `src/Document/Annotation/PageAnnotationFactory.php`
