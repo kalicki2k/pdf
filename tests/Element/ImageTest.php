@@ -15,6 +15,7 @@ use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Image\Image;
+use Kalle\Pdf\Image\PngAlphaChannelSplitter;
 
 use function Kalle\Pdf\Image\setImageGzcompressFailure;
 
@@ -463,7 +464,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_invalid_alpha_channel_payload_lengths(): void
     {
-        $splitPngAlphaChannels = new ReflectionMethod(Image::class, 'splitPngAlphaChannels');
+        $splitPngAlphaChannels = new ReflectionMethod(PngAlphaChannelSplitter::class, 'split');
 
         $compressed = gzcompress(chr(0) . str_repeat(chr(0), 3));
         self::assertNotFalse($compressed);
@@ -482,7 +483,7 @@ final class ImageTest extends TestCase
     public function it_rejects_invalid_png_chunk_headers_and_invalid_alpha_payload_compression(): void
     {
         $readUint32 = new ReflectionMethod(Image::class, 'readUint32');
-        $splitPngAlphaChannels = new ReflectionMethod(Image::class, 'splitPngAlphaChannels');
+        $splitPngAlphaChannels = new ReflectionMethod(PngAlphaChannelSplitter::class, 'split');
 
         try {
             $readUint32->invoke(null, 'abc', 0);
@@ -506,7 +507,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_rejects_png_alpha_recompression_failures(): void
     {
-        $splitPngAlphaChannels = new ReflectionMethod(Image::class, 'splitPngAlphaChannels');
+        $splitPngAlphaChannels = new ReflectionMethod(PngAlphaChannelSplitter::class, 'split');
         $pixelData = chr(0) . chr(10) . chr(20) . chr(30) . chr(40);
         $compressed = gzcompress($pixelData);
 
@@ -529,7 +530,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_unfilters_png_scanlines_for_all_supported_filter_types_and_rejects_unknown_ones(): void
     {
-        $method = new ReflectionMethod(Image::class, 'unfilterPngScanline');
+        $method = new ReflectionMethod(PngAlphaChannelSplitter::class, 'unfilterScanline');
 
         self::assertSame([10, 20], $method->invoke(null, [10, 20], [0, 0], 0, 1, 'row.png'));
         self::assertSame([10, 30], $method->invoke(null, [10, 20], [0, 0], 1, 1, 'row.png'));
@@ -546,7 +547,7 @@ final class ImageTest extends TestCase
     #[Test]
     public function it_uses_each_paeth_predictor_branch(): void
     {
-        $method = new ReflectionMethod(Image::class, 'paethPredictor');
+        $method = new ReflectionMethod(PngAlphaChannelSplitter::class, 'paethPredictor');
 
         self::assertSame(10, $method->invoke(null, 10, 20, 20));
         self::assertSame(20, $method->invoke(null, 10, 20, 10));

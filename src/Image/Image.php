@@ -181,7 +181,7 @@ class Image
                 throw new InvalidArgumentException("PNG images with alpha channels currently require 8 bits per component for '$path'.");
             }
 
-            [$colorData, $alphaData] = self::splitPngAlphaChannels(
+            [$colorData, $alphaData] = PngAlphaChannelSplitter::split(
                 $path,
                 $png['imageData'],
                 $png['width'],
@@ -335,111 +335,4 @@ class Image
         return $value[1];
     }
 
-    /**
-     * @return array{0:BinaryData,1:BinaryData}
-     */
-    private static function splitPngAlphaChannels(
-        string $path,
-        BinaryData $compressedData,
-        int $width,
-        int $height,
-        int $colors,
-    ): array {
-        $compressedBytes = $compressedData->slice(0, $compressedData->length());
-        $decompressedData = @gzuncompress($compressedBytes);
-
-        if ($decompressedData === false) {
-            throw new InvalidArgumentException("Unable to decompress PNG image data for '$path'.");
-        }
-
-        $channels = $colors + 1;
-        $bytesPerPixel = $channels;
-        $scanlineLength = 1 + ($width * $channels);
-        $expectedLength = $scanlineLength * $height;
-
-        if (strlen($decompressedData) !== $expectedLength) {
-            throw new InvalidArgumentException("Unexpected PNG alpha image data length for '$path'.");
-        }
-
-        $colorOutput = '';
-        $alphaOutput = '';
-        $previousRow = array_fill(0, $width * $channels, 0);
-
-        for ($rowIndex = 0; $rowIndex < $height; $rowIndex++) {
-            $rowOffset = $rowIndex * $scanlineLength;
-            $filterType = ord($decompressedData[$rowOffset]);
-            $filteredRow = substr($decompressedData, $rowOffset + 1, $width * $channels);
-            $rowBytes = array_map('ord', str_split($filteredRow));
-            $unfilteredRow = self::unfilterPngScanline($rowBytes, $previousRow, $filterType, $bytesPerPixel, $path);
-            $previousRow = $unfilteredRow;
-
-            $colorOutput .= chr(0);
-            $alphaOutput .= chr(0);
-
-            for ($pixelOffset = 0, $count = count($unfilteredRow); $pixelOffset < $count; $pixelOffset += $channels) {
-                for ($channelIndex = 0; $channelIndex < $colors; $channelIndex++) {
-                    $colorOutput .= chr($unfilteredRow[$pixelOffset + $channelIndex]);
-                }
-
-                $alphaOutput .= chr($unfilteredRow[$pixelOffset + $colors]);
-            }
-        }
-
-        $compressedColorOutput = gzcompress($colorOutput);
-        $compressedAlphaOutput = gzcompress($alphaOutput);
-
-        if ($compressedColorOutput === false || $compressedAlphaOutput === false) {
-            throw new InvalidArgumentException('Failed to recompress PNG image data.');
-        }
-
-        return [
-            BinaryData::fromString($compressedColorOutput),
-            BinaryData::fromString($compressedAlphaOutput),
-        ];
-    }
-
-    /**
-     * @param list<int> $rowBytes
-     * @param list<int> $previousRow
-     * @return list<int>
-     */
-    private static function unfilterPngScanline(array $rowBytes, array $previousRow, int $filterType, int $bytesPerPixel, string $path): array
-    {
-        $result = [];
-
-        foreach ($rowBytes as $index => $value) {
-            $left = $index >= $bytesPerPixel ? $result[$index - $bytesPerPixel] : 0;
-            $up = $previousRow[$index] ?? 0;
-            $upperLeft = $index >= $bytesPerPixel ? ($previousRow[$index - $bytesPerPixel] ?? 0) : 0;
-
-            $result[] = match ($filterType) {
-                0 => $value,
-                1 => ($value + $left) & 0xFF,
-                2 => ($value + $up) & 0xFF,
-                3 => ($value + intdiv($left + $up, 2)) & 0xFF,
-                4 => ($value + self::paethPredictor($left, $up, $upperLeft)) & 0xFF,
-                default => throw new InvalidArgumentException("Unsupported PNG filter type '$filterType' in '$path'."),
-            };
-        }
-
-        return $result;
-    }
-
-    private static function paethPredictor(int $left, int $up, int $upperLeft): int
-    {
-        $prediction = $left + $up - $upperLeft;
-        $distanceLeft = abs($prediction - $left);
-        $distanceUp = abs($prediction - $up);
-        $distanceUpperLeft = abs($prediction - $upperLeft);
-
-        if ($distanceLeft <= $distanceUp && $distanceLeft <= $distanceUpperLeft) {
-            return $left;
-        }
-
-        if ($distanceUp <= $distanceUpperLeft) {
-            return $up;
-        }
-
-        return $upperLeft;
-    }
 }
