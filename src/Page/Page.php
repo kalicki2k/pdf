@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Page;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Table\Table as LayoutTable;
@@ -25,7 +24,6 @@ use Kalle\Pdf\Object\StreamLengthObject;
 use Kalle\Pdf\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Page\Content\Contents;
-use Kalle\Pdf\Page\Content\ImageOptions;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Page\Content\PageComponents;
 use Kalle\Pdf\Page\Content\PageGraphics;
@@ -54,6 +52,7 @@ class Page extends IndirectObject
     use HandlesPageAnnotations;
     use HandlesPageForms;
     use HandlesPageGraphics;
+    use HandlesPageLinksAndImages;
 
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
@@ -252,36 +251,6 @@ class Page extends IndirectObject
         float $bottomMargin = self::DEFAULT_BOTTOM_MARGIN,
     ): Table {
         return new Table(new LayoutTable($this, $position->x, $position->y, $width, $columnWidths, $bottomMargin));
-    }
-
-    public function addLink(
-        Rect $box,
-        string $url,
-        ?string $accessibleName = null,
-    ): self {
-        $this->pageLinks()->addLink($box, $url, $accessibleName);
-
-        return $this;
-    }
-
-    public function addInternalLink(
-        Rect $box,
-        string $destination,
-        ?string $accessibleName = null,
-    ): self {
-        $this->pageLinks()->addInternalLink($box, $destination, $accessibleName);
-
-        return $this;
-    }
-
-    public function addImage(
-        Image $image,
-        Position $position,
-        ?float $width = null,
-        ?float $height = null,
-        ImageOptions $options = new ImageOptions(),
-    ): self {
-        return $this->pageImages()->addImage($image, $position, $width, $height, $options);
     }
 
     protected function writeObject(PdfOutput $output): void
