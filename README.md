@@ -104,6 +104,7 @@ Example scripts live in [examples](examples/):
 - [pdf-a-4e.php](examples/pdf-a-4e.php)
 - [pdf-a-4f.php](examples/pdf-a-4f.php)
 - [pdf-ua-1.php](examples/pdf-ua-1.php)
+- [images-multipage.php](examples/images-multipage.php)
 - [table-caption.php](examples/table-caption.php)
 - [table-caption-pagination.php](examples/table-caption-pagination.php)
 - [table-caption-spans-pagination.php](examples/table-caption-spans-pagination.php)
