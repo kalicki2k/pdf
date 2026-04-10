@@ -3,21 +3,20 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\ImageOptions;
-use Kalle\Pdf\Document\Page as InternalPage;
-use Kalle\Pdf\Document\Text\ListOptions;
-use Kalle\Pdf\Document\Text\ParagraphOptions;
-use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Document\Text\TextOptions;
-use Kalle\Pdf\Element\Image;
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\Units;
-use Kalle\Pdf\Page;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Image\Image;
+use Kalle\Pdf\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Geometry\Rect;
+use Kalle\Pdf\Layout\Page\PageSize;
+use Kalle\Pdf\Layout\Page\Units;
+use Kalle\Pdf\Layout\Text\Input\ListOptions;
+use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Page\Content\ImageOptions;
+use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Profile\Profile;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -50,7 +49,7 @@ $fixtures = [
 ];
 
 foreach ($fixtures as $path => $createFixture) {
-    file_put_contents($path, $createFixture()->render());
+    $createFixture()->writeToFile($path);
     fwrite(STDOUT, $path . PHP_EOL);
 }
 
@@ -510,12 +509,7 @@ function createPdfADocument(Profile $profile, string $title): Document
     return $document;
 }
 
-function internalPage(Page $page): InternalPage
+function internalPage(Page $page): Page
 {
-    $property = new ReflectionProperty($page, 'page');
-
-    /** @var InternalPage $internalPage */
-    $internalPage = $property->getValue($page);
-
-    return $internalPage;
+    return $page;
 }

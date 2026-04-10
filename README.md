@@ -45,6 +45,8 @@ If the target version is dynamic, `Profile::standard($version)` remains availabl
 
 For document standards there are dedicated helpers such as `Profile::pdfA2u()` and `Profile::pdfUa1()`.
 
+If you are upgrading older consumer code from the former root API, see [doc/namespace-upgrade.md](doc/namespace-upgrade.md).
+
 ## Quick Start
 
 The public entry points live in dedicated package namespaces:

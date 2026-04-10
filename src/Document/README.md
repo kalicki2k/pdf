@@ -10,4 +10,4 @@ Die Struktur ist bewusst in kleine Teilpakete geschnitten:
 - `Preparation` fuer Render-Vorbereitung, Guards, TOC- und Decorator-Vorbereitung
 - `Serialization` fuer Planaufbau und Writer-Orchestrierung
 - `Structure` fuer Root-Objekte wie `Catalog` und `Pages`
-- Root-Paket fuer das Dokumentaggregat `Kalle\Pdf\Document` und dokumentweite Manager
+- Root-Paket fuer das Dokumentaggregat `Kalle\Pdf\Document\Document` und dokumentweite Manager

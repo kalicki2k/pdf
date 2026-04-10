@@ -3,17 +3,17 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document;
-use Kalle\Pdf\Document\Form\FormFieldLabel;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\ImageOptions;
-use Kalle\Pdf\Document\Text\ListOptions;
-use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Document\Text\TextOptions;
-use Kalle\Pdf\Element\Image;
-use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Image\Image;
+use Kalle\Pdf\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Geometry\Rect;
+use Kalle\Pdf\Layout\Page\PageSize;
+use Kalle\Pdf\Layout\Text\Input\ListOptions;
+use Kalle\Pdf\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Page\Content\ImageOptions;
+use Kalle\Pdf\Page\Form\FormFieldLabel;
+use Kalle\Pdf\Profile\Profile;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

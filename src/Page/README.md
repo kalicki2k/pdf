@@ -9,4 +9,4 @@ Die Struktur ist bewusst in kleine Teilpakete geschnitten:
 - `Resources` fuer seitenbezogene Ressourcen wie Fonts und XObjects
 - `Serialization` fuer den PDF-Seitenobjekt-Output
 
-`Kalle\Pdf\Page` liegt in diesem Paket als zentrale Seitenklasse.
+`Kalle\Pdf\Page\Page` liegt in diesem Paket als zentrale Seitenklasse.

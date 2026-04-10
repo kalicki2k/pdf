@@ -3,32 +3,31 @@
 
 declare(strict_types=1);
 
-use Kalle\Pdf\Document;
-use Kalle\Pdf\Document\Annotation\AnnotationBorderStyle;
-use Kalle\Pdf\Document\Annotation\LineEndingStyle;
-use Kalle\Pdf\Document\Form\FormFieldLabel;
-use Kalle\Pdf\Document\Form\FormFieldFlags;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\ImageOptions;
-use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\Page as InternalPage;
-use Kalle\Pdf\Document\Style\BadgeStyle;
-use Kalle\Pdf\Document\Style\CalloutStyle;
-use Kalle\Pdf\Document\Style\PanelStyle;
-use Kalle\Pdf\Document\Table\TableCaption;
-use Kalle\Pdf\Document\Table\TableCell;
-use Kalle\Pdf\Document\Table\TableHeaderScope;
-use Kalle\Pdf\Document\Text\ListOptions;
-use Kalle\Pdf\Document\Text\ParagraphOptions;
-use Kalle\Pdf\Document\Text\StructureTag;
-use Kalle\Pdf\Document\Text\TextOptions;
-use Kalle\Pdf\Element\Image;
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\Units;
-use Kalle\Pdf\Page;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Image\Image;
+use Kalle\Pdf\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Geometry\Rect;
+use Kalle\Pdf\Layout\Page\PageSize;
+use Kalle\Pdf\Layout\Page\Units;
+use Kalle\Pdf\Layout\Table\Definition\TableCaption;
+use Kalle\Pdf\Layout\Table\Definition\TableCell;
+use Kalle\Pdf\Layout\Table\Definition\TableHeaderScope;
+use Kalle\Pdf\Layout\Text\Input\ListOptions;
+use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Page\Annotation\Style\AnnotationBorderStyle;
+use Kalle\Pdf\Page\Annotation\Style\LineEndingStyle;
+use Kalle\Pdf\Page\Content\ImageOptions;
+use Kalle\Pdf\Page\Content\Style\BadgeStyle;
+use Kalle\Pdf\Page\Content\Style\CalloutStyle;
+use Kalle\Pdf\Page\Content\Style\PanelStyle;
+use Kalle\Pdf\Page\Form\FormFieldFlags;
+use Kalle\Pdf\Page\Form\FormFieldLabel;
+use Kalle\Pdf\Page\Link\LinkTarget;
+use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Profile\Profile;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -63,7 +62,7 @@ $fixtures = [
 ];
 
 foreach ($fixtures as $path => $createFixture) {
-    file_put_contents($path, $createFixture()->render());
+    $createFixture()->writeToFile($path);
     fwrite(STDOUT, $path . PHP_EOL);
 }
 
@@ -1557,12 +1556,7 @@ function createPdfUaDocument(string $title, string $subject): Document
     return $document;
 }
 
-function internalPage(Page $page): InternalPage
+function internalPage(Page $page): Page
 {
-    $property = new ReflectionProperty($page, 'page');
-
-    /** @var InternalPage $internalPage */
-    $internalPage = $property->getValue($page);
-
-    return $internalPage;
+    return $page;
 }
