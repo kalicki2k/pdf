@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Font;
 
-use Kalle\Pdf\Internal\Object\StreamIndirectObject;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\Render\PdfOutput;
 
 final class ToUnicodeCMap extends StreamIndirectObject
 {

@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Internal\Document\Structure;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\PdfType\ArrayType;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\PdfType\ArrayType;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\ReferenceType;
 
 class Pages extends DictionaryIndirectObject
 {

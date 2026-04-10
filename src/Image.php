@@ -7,8 +7,8 @@ namespace Kalle\Pdf;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Binary\BinaryData;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
-use Kalle\Pdf\Internal\Render\EncryptingPdfOutput;
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Render\EncryptingPdfOutput;
+use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
 class Image

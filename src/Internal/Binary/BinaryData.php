@@ -8,7 +8,7 @@ use Kalle\Pdf\Internal\Binary\BinaryDataSource;
 use Kalle\Pdf\Internal\Binary\FileBinaryDataSource;
 use Kalle\Pdf\Internal\Binary\StreamBinaryDataSource;
 use Kalle\Pdf\Internal\Binary\StringBinaryDataSource;
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Render\PdfOutput;
 
 final class BinaryData
 {

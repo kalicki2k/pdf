@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Render;
 
-use Kalle\Pdf\Internal\Render\PdfObjectOffsets;
+use Kalle\Pdf\Render\PdfObjectOffsets;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

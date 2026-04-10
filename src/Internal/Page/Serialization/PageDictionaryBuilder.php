@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Serialization;
 
-use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
-use Kalle\Pdf\Internal\PdfType\ArrayType;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
+use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\PdfType\ArrayType;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\ReferenceType;
 
 /**
  * @internal Builds the PDF page object dictionary before serialization.

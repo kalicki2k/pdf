@@ -6,13 +6,13 @@ namespace Kalle\Pdf\Internal\Document\Form;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Font\FontDefinition;
-use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
-use Kalle\Pdf\Internal\PdfType\ArrayType;
-use Kalle\Pdf\Internal\PdfType\BooleanType;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\PdfType\ArrayType;
+use Kalle\Pdf\PdfType\BooleanType;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\ReferenceType;
 
 final class AcroForm extends DictionaryIndirectObject
 {

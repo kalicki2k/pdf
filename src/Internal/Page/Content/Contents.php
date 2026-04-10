@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
-use Kalle\Pdf\Internal\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Internal\Page\Content\StreamLengthObject;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
-use Kalle\Pdf\Internal\Render\CountingPdfOutput;
-use Kalle\Pdf\Internal\Render\EncryptingPdfOutput;
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
+use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\ReferenceType;
+use Kalle\Pdf\Render\CountingPdfOutput;
+use Kalle\Pdf\Render\EncryptingPdfOutput;
+use Kalle\Pdf\Render\PdfOutput;
 
 class Contents extends IndirectObject implements EncryptableIndirectObject
 {

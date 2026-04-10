@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document\Attachment;
 
 use Kalle\Pdf\Internal\Binary\BinaryData;
-use Kalle\Pdf\Internal\Object\StreamIndirectObject;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\Render\PdfOutput;
 
 class EmbeddedFileStream extends StreamIndirectObject
 {

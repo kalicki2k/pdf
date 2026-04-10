@@ -20,7 +20,6 @@ use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
 use Kalle\Pdf\Internal\Layout\Text\TextFrame as InternalTextFrame;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
-use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
@@ -48,11 +47,12 @@ use Kalle\Pdf\Internal\Page\Resources\ImageObject;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Page\Resources\Resources;
 use Kalle\Pdf\Internal\Page\Serialization\PageObjectRenderer;
-use Kalle\Pdf\Internal\Render\PdfOutput;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
 
 class Page extends IndirectObject
 {

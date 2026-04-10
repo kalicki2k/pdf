@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\PdfType;
 
-use Kalle\Pdf\Internal\PdfType\BooleanType;
+use Kalle\Pdf\PdfType\BooleanType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

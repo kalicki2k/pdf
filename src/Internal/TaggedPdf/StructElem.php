@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\TaggedPdf;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\Object\IndirectObject;
-use Kalle\Pdf\Internal\PdfType\ArrayType;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
-use Kalle\Pdf\Internal\PdfType\RawType;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
-use Kalle\Pdf\Internal\PdfType\StringType;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\PdfType\ArrayType;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\RawType;
+use Kalle\Pdf\PdfType\ReferenceType;
+use Kalle\Pdf\PdfType\StringType;
 
 final class StructElem extends DictionaryIndirectObject
 {

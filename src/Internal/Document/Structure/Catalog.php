@@ -6,13 +6,13 @@ namespace Kalle\Pdf\Internal\Document\Structure;
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
-use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\PdfType\ArrayType;
-use Kalle\Pdf\Internal\PdfType\BooleanType;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
-use Kalle\Pdf\Internal\PdfType\StringType;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\PdfType\ArrayType;
+use Kalle\Pdf\PdfType\BooleanType;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\ReferenceType;
+use Kalle\Pdf\PdfType\StringType;
 
 class Catalog extends DictionaryIndirectObject
 {

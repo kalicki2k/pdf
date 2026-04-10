@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
-use Kalle\Pdf\Internal\Object\StreamIndirectObject;
-use Kalle\Pdf\Internal\PdfType\ArrayType;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\PdfType\ArrayType;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\Render\PdfOutput;
 
 final class TextAnnotationAppearanceStream extends StreamIndirectObject
 {

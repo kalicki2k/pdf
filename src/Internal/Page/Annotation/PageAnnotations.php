@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Internal\Page\Annotation;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
-use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
@@ -15,6 +14,7 @@ use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
+use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page;
 
 /**

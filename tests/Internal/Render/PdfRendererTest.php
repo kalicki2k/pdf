@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Render;
 
-use Kalle\Pdf\Internal\Object\IndirectObject;
-use Kalle\Pdf\Internal\Render\PdfFileStructure;
-use Kalle\Pdf\Internal\Render\PdfOutput;
-use Kalle\Pdf\Internal\Render\PdfRenderer;
-use Kalle\Pdf\Internal\Render\PdfSerializationPlan;
-use Kalle\Pdf\Internal\Render\PdfTrailer;
-use Kalle\Pdf\Internal\Render\StreamPdfOutput;
+use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfFileStructure;
+use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Render\PdfRenderer;
+use Kalle\Pdf\Render\PdfSerializationPlan;
+use Kalle\Pdf\Render\PdfTrailer;
+use Kalle\Pdf\Render\StreamPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

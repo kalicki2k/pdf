@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Internal\Page\Resources;
 
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
-use Kalle\Pdf\Internal\Object\EncryptableIndirectObject;
-use Kalle\Pdf\Internal\Object\IndirectObject;
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Object\EncryptableIndirectObject;
+use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
 
 class ImageObject extends IndirectObject implements EncryptableIndirectObject
 {

@@ -6,11 +6,11 @@ namespace Kalle\Pdf\Internal\Encryption\Standard;
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
-use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
-use Kalle\Pdf\Internal\PdfType\RawType;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\RawType;
 use RuntimeException;
 
 class EncryptDictionary extends DictionaryIndirectObject

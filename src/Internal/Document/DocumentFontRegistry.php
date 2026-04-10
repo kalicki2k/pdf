@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Document;
 
 use Kalle\Pdf\Internal\Document\Preparation\DocumentProfileGuard;
 use Kalle\Pdf\Internal\Font\FontDefinition;
-use Kalle\Pdf\Internal\Object\IndirectObject;
+use Kalle\Pdf\Object\IndirectObject;
 
 /**
  * @internal Manages document font registrations and lookup.

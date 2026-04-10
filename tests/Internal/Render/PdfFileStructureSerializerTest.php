@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Render;
 
-use Kalle\Pdf\Internal\Render\PdfFileStructure;
-use Kalle\Pdf\Internal\Render\PdfFileStructureSerializer;
-use Kalle\Pdf\Internal\Render\PdfObjectOffsets;
-use Kalle\Pdf\Internal\Render\PdfTrailer;
-use Kalle\Pdf\Internal\Render\StringPdfOutput;
+use Kalle\Pdf\Render\PdfFileStructure;
+use Kalle\Pdf\Render\PdfFileStructureSerializer;
+use Kalle\Pdf\Render\PdfObjectOffsets;
+use Kalle\Pdf\Render\PdfTrailer;
+use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

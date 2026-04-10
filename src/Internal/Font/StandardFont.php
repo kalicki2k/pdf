@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Font;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
-use Kalle\Pdf\Internal\PdfType\PdfStringEscaper;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\PdfStringEscaper;
+use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\PdfVersion;
 
 final class StandardFont extends DictionaryIndirectObject implements FontDefinition

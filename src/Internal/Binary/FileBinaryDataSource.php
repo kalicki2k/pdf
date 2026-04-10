@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Binary;
 
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
 final readonly class FileBinaryDataSource implements BinaryDataSource

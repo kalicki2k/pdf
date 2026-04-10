@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Internal\Document\Metadata;
 
 use DateTimeImmutable;
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\StringType;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\StringType;
 
 class Info extends DictionaryIndirectObject
 {

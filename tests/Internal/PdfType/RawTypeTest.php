@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\PdfType;
 
-use Kalle\Pdf\Internal\PdfType\RawType;
+use Kalle\Pdf\PdfType\RawType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

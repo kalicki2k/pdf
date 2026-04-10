@@ -7,11 +7,11 @@ namespace Kalle\Pdf\Internal\Page\Resources;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Font\FontDefinition;
-use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
-use Kalle\Pdf\Internal\Object\IndirectObject;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
 use Kalle\Pdf\Internal\Style\Opacity;
+use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\ReferenceType;
 
 class Resources extends DictionaryIndirectObject
 {

@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Internal\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
-use Kalle\Pdf\Internal\PdfType\ArrayType;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
-use Kalle\Pdf\Internal\PdfType\ReferenceType;
+use Kalle\Pdf\PdfType\ArrayType;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\ReferenceType;
 
 final readonly class SetOcgStateAction implements ButtonAction
 {

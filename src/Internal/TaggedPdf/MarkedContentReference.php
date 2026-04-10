@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\TaggedPdf;
 
-use Kalle\Pdf\Internal\Object\IndirectObject;
-use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Render\PdfOutput;
 
 final class MarkedContentReference extends IndirectObject
 {

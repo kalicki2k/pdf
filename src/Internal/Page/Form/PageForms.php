@@ -10,7 +10,6 @@ use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Internal\Page\Annotation\StructParentAwareAnnotation;
@@ -20,6 +19,7 @@ use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page;
 
 /**

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Annotation\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\PdfType\ArrayType;
-use Kalle\Pdf\Internal\PdfType\DictionaryType;
-use Kalle\Pdf\Internal\PdfType\NameType;
+use Kalle\Pdf\PdfType\ArrayType;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\NameType;
 
 final class AnnotationBorderStyle
 {
