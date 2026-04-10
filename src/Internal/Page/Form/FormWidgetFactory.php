@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Form;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Page\Annotation\CheckboxAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\ComboBoxAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\ListBoxAnnotation;

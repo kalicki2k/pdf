@@ -29,7 +29,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - die dokumentweite Orchestrierung liegt jetzt unter `Internal/Document`
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
-- `Action` ist als oeffentliche API nach `src/Action` gezogen
+- PDF-Action-Typen liegen jetzt unter `Internal/Action`
 - oeffentliche Annotation- und Formular-Value-Types liegen unter `src/Annotation` und `src/Form`
 - konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
 - `AcroForm` und `RadioButtonField` liegen unter `Model/Document/Form`
@@ -52,13 +52,13 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
-  Action/
   Annotation/
   Form/
   Table/
   Text/
 
   Internal/
+    Action/
     Document/
       Form/
       Preparation/
@@ -174,11 +174,11 @@ Regeln:
 
 ### Action, Annotation und Form
 
-Diese Bereiche sind jetzt zwischen Public API, Seitenimplementierung und Dokumentmodell geschnitten.
+Diese Bereiche sind jetzt zwischen internem PDF-Mechanismus, Public API, Seitenimplementierung und Dokumentmodell geschnitten.
 
 Beispiele:
 
-- `Action` fuer oeffentliche Button- und Link-Aktionen
+- `Internal/Action` fuer PDF-Action-Dictionaries von Buttons und Links
 - `Annotation` fuer oeffentliche Annotation-Value-Types und Rollen
 - `Form` fuer oeffentliche Formularoptionen
 - `Internal/Page/Annotation` fuer konkrete Seitenannotationen und ihre Koordination
@@ -187,7 +187,8 @@ Beispiele:
 
 Regeln:
 
-- oeffentliche API-Typen bleiben ausserhalb von `Internal`
+- PDF-Action-Typen liegen intern, auch wenn einzelne Public-API-Signaturen sie referenzieren
+- oeffentliche Annotation- und Formular-Value-Types bleiben ausserhalb von `Internal`
 - konkrete Seitenobjekte und Builder liegen nahe am Seitenkern
 - dokumentweite Formularzustandsobjekte liegen im Modell statt im Ablaufcode
 

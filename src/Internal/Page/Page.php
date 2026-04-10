@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page;
 
-use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Annotation\AnnotationBorderStyle;
 use Kalle\Pdf\Annotation\LineEndingStyle;
 use Kalle\Pdf\Annotation\PageAnnotation as PopupParentAnnotation;
@@ -16,6 +15,7 @@ use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
+use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Layout\Table\Table;

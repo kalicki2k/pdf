@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
-use Kalle\Pdf\Action\UriAction;
+use Kalle\Pdf\Internal\Action\UriAction;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Object\DictionaryIndirectObject;

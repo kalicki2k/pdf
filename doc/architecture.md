@@ -204,10 +204,10 @@ Die wichtigsten Bausteine sind:
 - `SignatureFieldAnnotation`
 - `PushButtonAnnotation`
 - `FormFieldFlags`
-- `ButtonAction`
-- `SubmitFormAction`
-- `ResetFormAction`
-- `JavaScriptAction`
+- `Internal\\Action\\ButtonAction`
+- `Internal\\Action\\SubmitFormAction`
+- `Internal\\Action\\ResetFormAction`
+- `Internal\\Action\\JavaScriptAction`
 
 `AcroForm` ist aktuell verantwortlich fuer:
 
@@ -263,7 +263,7 @@ Die Feldtypen sind aktuell so umgesetzt:
   - sichtbare Caption ueber `/MK /CA`
   - optionales Action-Dictionary ueber `/A`
 
-`ButtonAction` kapselt aktuell zwoelf konkrete Action-Typen:
+`Internal\\Action\\ButtonAction` kapselt aktuell zwoelf konkrete PDF-Action-Typen:
 
 - `SubmitFormAction`
   - `/S /SubmitForm`

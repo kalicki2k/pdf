@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Action;
+namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Action\SetOcgStateAction;
+use Kalle\Pdf\Internal\Action\SetOcgStateAction;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
