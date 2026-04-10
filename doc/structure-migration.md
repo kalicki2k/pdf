@@ -24,13 +24,14 @@ Die Migration folgt weiterhin diesen Grundsaetzen:
 
 ## Status April 2026
 
-Diese Migrationsphase ist nach den ersten zwanzig Schritten in diesem Zustand:
+Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 
-- die dokumentweite Orchestrierung liegt jetzt unter `Application/Document`
+- die dokumentweite Orchestrierung liegt jetzt unter `Internal/Document`
+- Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
 - `Feature/Action`, `Feature/Annotation`, `Feature/Form`, `Feature/OptionalContent`, `Feature/Outline`, `Feature/Table` und `Feature/Text` existieren bereits als Ziel-Namespaces
 - die eigentlichen Implementierungen fuer diese Feature-Familien liegen jetzt in `Feature`
-- die alten `Document`-Feature-Pakete sind entfernt
+- die alte `src/Document`-Struktur ist als internes Codepaket entfernt
 
 Das ist ein deutlich saubererer Zwischenstand, aber noch nicht das Ende der Migration.
 
@@ -46,12 +47,14 @@ Die Public API bleibt im Wurzel-Namespace:
 - `Kalle\\Pdf\\Table`
 - `Kalle\\Pdf\\TextFrame`
 
-Darunter wird die interne Struktur schrittweise in drei Ebenen getrennt:
+Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
-  Application/
+  Internal/
     Document/
+      Preparation/
+      Serialization/
 
   Model/
     Document/
@@ -91,9 +94,8 @@ Regeln:
 - keine PDF-Syntax rendern
 - nur Uebersetzung auf interne Use-Cases und Modelle
 
-### Application
-
-Hier liegt Ablaufsteuerung fuer Dokumentaufbau und Ausgabe.
+### Internal
+Hier liegt der interne Dokumentkern samt Ablaufsteuerung fuer Aufbau und Ausgabe.
 
 Beispiele:
 
@@ -105,6 +107,7 @@ Beispiele:
 Regeln:
 
 - kennt Modell und Infrastruktur
+- kapselt internen mutierbaren Dokumentzustand
 - soll keine PDF-Typen oder Streamsyntax im Detail modellieren
 - soll lesbar den Ablauf erklaeren
 
@@ -172,7 +175,7 @@ Die Strukturmigration wird in diese groben Schritte geschnitten:
 6. interne Namenskollisionen fuer `Page` aufloesen
 7. interne Namenskollisionen fuer `Table` aufloesen
 8. Public API an die internen Namen anpassen
-9. Orchestrierung nach `Application` verschieben
+9. Orchestrierung nach `Internal/Document` verschieben
 10. Dokumentmodell nach `Model` verschieben
 11. Text- und Tabellenfeature sauber trennen
 12. weitere Feature-Pakete schrittweise aus `Document` herausloesen

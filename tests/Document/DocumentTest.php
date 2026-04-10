@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Application\Document\DocumentFontFactory;
 use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
 use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Font\OpenTypeFontParser;
-
 use Kalle\Pdf\Font\UnicodeFont;
 
 use Kalle\Pdf\Geometry\Position;
+
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Document\DocumentFontFactory;
 
 use function Kalle\Pdf\Internal\Document\setDocumentRandomBytesShouldThrow;
 

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Application\Document;
+namespace Kalle\Pdf\Internal\Document;
 
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Internal\Document\Preparation\DocumentProfileGuard;
 use Kalle\Pdf\Object\IndirectObject;
 
 /**
