@@ -8,17 +8,10 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\Geometry\Position;
-use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Table\Table as LayoutTable;
-use Kalle\Pdf\Layout\Text\Input\FlowTextOptions;
-use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
-use Kalle\Pdf\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Layout\Text\PageTextElementRenderer;
 use Kalle\Pdf\Layout\Text\TextFrame as LayoutTextFrame;
-use Kalle\Pdf\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Object\StreamLengthObject;
 use Kalle\Pdf\Page\Annotation\PageAnnotation;
@@ -36,11 +29,8 @@ use Kalle\Pdf\Page\Resources\PageFonts;
 use Kalle\Pdf\Page\Resources\Resources;
 use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\Table\Table;
-use Kalle\Pdf\TaggedPdf\StructElem;
-use Kalle\Pdf\TaggedPdf\StructureTag;
 use Kalle\Pdf\Text\TextFrame;
 
 class Page extends IndirectObject
@@ -50,6 +40,7 @@ class Page extends IndirectObject
     use HandlesPageForms;
     use HandlesPageGraphics;
     use HandlesPageLinksAndImages;
+    use HandlesPageTextLayout;
 
     private const float DEFAULT_BOTTOM_MARGIN = 20.0;
 
@@ -73,106 +64,12 @@ class Page extends IndirectObject
         $this->collaborators = new PageCollaborators($this);
     }
 
-    public function addText(
-        string $text,
-        Position $position,
-        string $fontName = 'Helvetica',
-        int $size = 12,
-        TextOptions $options = new TextOptions(),
-    ): self {
-        return $this->pageTextElementRenderer()->render($text, $position, $fontName, $size, $options);
-    }
-
     /**
      * @param callable(self): void $renderer
      */
     public function layer(string | OptionalContentGroup $layer, callable $renderer, bool $visibleByDefault = true): self
     {
         return $this->pageLayers()->layer($layer, $renderer, $visibleByDefault);
-    }
-
-    /**
-     * @param string|list<TextSegment> $text
-     */
-    public function addParagraph(
-        string | array $text,
-        Position $position,
-        float $maxWidth,
-        string $fontName = 'Helvetica',
-        int $size = 12,
-        FlowTextOptions $options = new FlowTextOptions(),
-    ): self {
-        return $this->pageParagraphRenderer()->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
-    }
-
-    /**
-     * @param string|list<TextSegment> $text
-     */
-    public function addTextBox(
-        string | array $text,
-        Rect $box,
-        string $fontName = 'Helvetica',
-        int $size = 12,
-        TextBoxOptions $options = new TextBoxOptions(),
-    ): self {
-        return $this->pageParagraphRenderer()->addTextBox($text, $box, $fontName, $size, $options);
-    }
-
-    /**
-     * @param string|list<TextSegment> $text
-     * @return list<array{segments: array<int, TextSegment>, justify: bool}>
-     */
-    public function layoutParagraphLines(
-        string | array $text,
-        string $baseFont,
-        int $size,
-        float $maxWidth,
-        ?Color $color = null,
-        ?Opacity $opacity = null,
-        ?int $maxLines = null,
-        TextOverflow $overflow = TextOverflow::CLIP,
-    ): array {
-        return $this->pageParagraphRenderer()->layoutParagraphLines(
-            $text,
-            $baseFont,
-            $size,
-            $maxWidth,
-            $color,
-            $opacity,
-            $maxLines,
-            $overflow,
-        );
-    }
-
-    /**
-     * @param list<array{segments: array<int, TextSegment>, justify: bool}> $lines
-     */
-    public function renderParagraphLines(
-        array $lines,
-        float $x,
-        float $y,
-        float $maxWidth,
-        string $baseFont,
-        int $size,
-        ?StructureTag $tag = null,
-        ?StructElem $parentStructElem = null,
-        ?float $lineHeight = null,
-        ?float $bottomMargin = null,
-        HorizontalAlign $align = HorizontalAlign::LEFT,
-    ): self {
-        return $this->pageParagraphRenderer()->renderParagraphLines(
-            $lines,
-            $x,
-            $y,
-            $maxWidth,
-            $baseFont,
-            $size,
-            $tag,
-            $parentStructElem,
-            $lineHeight,
-            $bottomMargin,
-            $align,
-        );
     }
 
     public function createTextFrame(
@@ -267,28 +164,6 @@ class Page extends IndirectObject
     public function getAnnotations(): array
     {
         return $this->collaborators->existingAnnotations()?->all() ?? [];
-    }
-
-    /**
-     * @return list<string>
-     */
-    /**
-     * @param string|list<TextSegment> $text
-     */
-    public function countParagraphLines(
-        string | array $text,
-        string $baseFont,
-        int $size,
-        float $maxWidth,
-        ?int $maxLines = null,
-        TextOverflow $overflow = TextOverflow::CLIP,
-    ): int {
-        return $this->pageParagraphRenderer()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
-    }
-
-    public function measureTextWidth(string $text, string $baseFont, int $size): float
-    {
-        return $this->pageFonts()->measureTextWidth($text, $baseFont, $size);
     }
 
     private function pageFonts(): PageFonts
