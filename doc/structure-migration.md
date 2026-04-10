@@ -32,7 +32,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
 - PDF-Annotation-Stiltypen und das Marker-Interface liegen jetzt unter `Internal/Page/Annotation`
 - der technische Font-Kern liegt jetzt unter `Internal/Font`
-- oeffentliche Formular-Value-Types liegen weiter unter `src/Form`
+- gemeinsame Formularoptionen fuer Seitenwidgets liegen jetzt unter `Internal/Page/Form`
 - konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
 - `AcroForm` und `RadioButtonField` liegen unter `Model/Document/Form`
 - oeffentliche Text- und Tabellen-Value-Types liegen unter `src/Text` und `src/Table`
@@ -54,7 +54,6 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
-  Form/
   Table/
   Text/
 
@@ -183,16 +182,15 @@ Beispiele:
 - `Internal/Action` fuer PDF-Action-Dictionaries von Buttons und Links
 - `Internal/Page/Annotation/Style` fuer Annotation-Border- und Linienend-Stile
 - `Internal/Page/Annotation/PageAnnotation` als gemeinsames Marker- und Related-Objects-Interface
-- `Form` fuer oeffentliche Formularoptionen
 - `Internal/Page/Annotation` fuer konkrete Seitenannotationen und ihre Koordination
-- `Internal/Page/Form` fuer Widget-Erzeugung und Appearance-Streams
+- `Internal/Page/Form` fuer Widget-Erzeugung, Appearance-Streams und gemeinsame Formularoptionen
 - `Model/Document/Form` fuer dokumentweite AcroForm-Objekte
 
 Regeln:
 
 - PDF-Action-Typen liegen intern, auch wenn einzelne Public-API-Signaturen sie referenzieren
 - annotation-spezifische PDF-Typen liegen intern nahe an der Seitenannotation-Schicht
-- oeffentliche Formular-Value-Types bleiben ausserhalb von `Internal`
+- formularspezifische Optionen fuer Seitenwidgets liegen intern nahe an der Widget-Erzeugung
 - konkrete Seitenobjekte und Builder liegen nahe am Seitenkern
 - dokumentweite Formularzustandsobjekte liegen im Modell statt im Ablaufcode
 

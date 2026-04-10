@@ -184,7 +184,7 @@ Bei Formularen kommt stattdessen oder zusaetzlich dazu:
 9. Die Widget-Annotation wird in `/Annots` der Seite eingetragen.
 10. Das Feld wird zusaetzlich im `AcroForm` unter `/Fields` registriert.
 11. Text- und Choice-Felder registrieren ihre verwendete Font-Resource im `AcroForm`-`DR`-Dictionary.
-12. `FormFieldFlags` werden in den jeweiligen `/Ff`-Bitwert uebersetzt.
+12. `Internal\\Page\\Form\\FormFieldFlags` werden in den jeweiligen `/Ff`-Bitwert uebersetzt.
 13. `defaultValue` wird fuer TextField, ComboBox und ListBox als `/DV` gerendert.
 14. Checkboxen und Radio-Buttons verwenden eigene Appearance-Streams fuer On/Off-Zustaende.
 

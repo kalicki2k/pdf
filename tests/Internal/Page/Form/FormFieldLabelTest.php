@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Form;
+namespace Kalle\Pdf\Tests\Internal\Page\Form;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Form\FormFieldLabel;
 use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Form\FormFieldFlags;
-use Kalle\Pdf\Form\FormFieldLabel;
 use Kalle\Pdf\Geometry\Insets;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
@@ -39,6 +37,8 @@ use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;
 use Kalle\Pdf\Internal\Page\Content\PathBuilder;
+use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
+use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\HorizontalAlign;

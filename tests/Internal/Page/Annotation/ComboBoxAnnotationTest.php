@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
-use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
@@ -12,6 +11,7 @@ use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Page\Annotation\ComboBoxAnnotation;
+use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;

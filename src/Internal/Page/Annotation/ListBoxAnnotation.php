@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
-use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormFieldListBoxAppearanceStream;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Object\DictionaryIndirectObject;

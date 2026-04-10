@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Form;
 
-use Kalle\Pdf\Form\FormFieldFlags;
-use Kalle\Pdf\Form\FormFieldLabel;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
@@ -15,6 +13,8 @@ use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Internal\Page\Annotation\StructParentAwareAnnotation;
+use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
+use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Object\IndirectObject;

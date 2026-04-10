@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Form;
+namespace Kalle\Pdf\Internal\Page\Form;
 
 final readonly class FormFieldFlags
 {

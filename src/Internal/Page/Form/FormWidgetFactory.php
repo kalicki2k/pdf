@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Form;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
@@ -19,6 +18,7 @@ use Kalle\Pdf\Internal\Page\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\SignatureFieldAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextFieldAnnotation;
+use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
