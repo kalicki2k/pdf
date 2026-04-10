@@ -46,7 +46,7 @@ final class RadioButtonFieldTest extends TestCase
             "7 0 obj\n"
             . "<< /FT /Btn /T (delivery) /Ff 49152 /Kids [8 0 R] /V /standard >>\n"
             . "endobj\n",
-            $field->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($field),
         );
     }
 
@@ -73,7 +73,7 @@ final class RadioButtonFieldTest extends TestCase
             true,
         );
 
-        self::assertStringContainsString('/TU (delivery)', $field->render());
+        self::assertStringContainsString('/TU (delivery)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($field));
     }
 
     #[Test]
@@ -99,7 +99,8 @@ final class RadioButtonFieldTest extends TestCase
             true,
         );
 
-        $rendered = $field->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $field,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

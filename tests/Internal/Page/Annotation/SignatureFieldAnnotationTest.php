@@ -30,7 +30,7 @@ final class SignatureFieldAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /FT /Sig /Rect [10 20 110 50] /Border [0 0 1] /P 4 0 R /T (approval_signature) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -44,8 +44,8 @@ final class SignatureFieldAnnotationTest extends TestCase
         $annotation = new SignatureFieldAnnotation(7, $page, 10, 20, 100, 30, 'approval_signature', 'Approval signature');
         $annotation->withStructParent(3);
 
-        self::assertStringContainsString('/StructParent 3', $annotation->render());
-        self::assertStringContainsString('/TU (Approval signature)', $annotation->render());
+        self::assertStringContainsString('/StructParent 3', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Approval signature)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -65,7 +65,7 @@ final class SignatureFieldAnnotationTest extends TestCase
             appearance: new FormFieldSignatureAppearanceStream(8, 100, 30),
         );
 
-        self::assertStringContainsString('/AP << /N 8 0 R >>', $annotation->render());
+        self::assertStringContainsString('/AP << /N 8 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -77,7 +77,8 @@ final class SignatureFieldAnnotationTest extends TestCase
 
         $annotation = new SignatureFieldAnnotation(7, $page, 10, 20, 100, 30, 'approval_signature', 'Approval signature');
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

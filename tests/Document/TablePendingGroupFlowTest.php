@@ -66,8 +66,8 @@ final class TablePendingGroupFlowTest extends TestCase
         self::assertNotSame($page, $result->page);
         self::assertCount(2, $document->pages->pages);
         self::assertSame(32.0, $result->cursorY);
-        self::assertStringContainsString('(Header) Tj', $result->page->getContents()->render());
-        self::assertStringContainsString('(Body) Tj', $result->page->getContents()->render());
+        self::assertStringContainsString('(Header) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($result->page->getContents()));
+        self::assertStringContainsString('(Body) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($result->page->getContents()));
     }
 
     private function createPreparedCell(string $text): PreparedTableCell

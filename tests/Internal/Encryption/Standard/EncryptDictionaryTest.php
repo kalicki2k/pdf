@@ -37,11 +37,11 @@ final class EncryptDictionaryTest extends TestCase
         $encryptDictionary = $document->encryptDictionary;
 
         self::assertNotNull($encryptDictionary);
-        self::assertStringContainsString('/Filter /Standard', $encryptDictionary->render());
-        self::assertStringContainsString('/V 1', $encryptDictionary->render());
-        self::assertStringContainsString('/R 2', $encryptDictionary->render());
-        self::assertStringContainsString('/Length 40', $encryptDictionary->render());
-        self::assertStringContainsString('/P -4', $encryptDictionary->render());
+        self::assertStringContainsString('/Filter /Standard', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/V 1', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/R 2', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/Length 40', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/P -4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
     }
 
     #[Test]
@@ -58,11 +58,11 @@ final class EncryptDictionaryTest extends TestCase
         $encryptDictionary = $document->encryptDictionary;
 
         self::assertNotNull($encryptDictionary);
-        self::assertStringContainsString('/Filter /Standard', $encryptDictionary->render());
-        self::assertStringContainsString('/V 2', $encryptDictionary->render());
-        self::assertStringContainsString('/R 3', $encryptDictionary->render());
-        self::assertStringContainsString('/Length 128', $encryptDictionary->render());
-        self::assertStringContainsString('/P -4', $encryptDictionary->render());
+        self::assertStringContainsString('/Filter /Standard', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/V 2', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/R 3', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/Length 128', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/P -4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
     }
 
     #[Test]
@@ -94,11 +94,11 @@ final class EncryptDictionaryTest extends TestCase
         $encryptDictionary = $document->encryptDictionary;
 
         self::assertNotNull($encryptDictionary);
-        self::assertStringContainsString('/V 4', $encryptDictionary->render());
-        self::assertStringContainsString('/R 4', $encryptDictionary->render());
-        self::assertStringContainsString('/CF << /StdCF << /CFM /AESV2 /AuthEvent /DocOpen /Length 16 >> >>', $encryptDictionary->render());
-        self::assertStringContainsString('/StmF /StdCF', $encryptDictionary->render());
-        self::assertStringContainsString('/StrF /StdCF', $encryptDictionary->render());
+        self::assertStringContainsString('/V 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/R 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/CF << /StdCF << /CFM /AESV2 /AuthEvent /DocOpen /Length 16 >> >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/StmF /StdCF', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/StrF /StdCF', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
     }
 
     #[Test]
@@ -114,7 +114,7 @@ final class EncryptDictionaryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.2 does not allow RC4 40-bit encryption. PDF 1.3 or higher is required.');
 
-        $encryptDictionary->render();
+        \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary);
     }
 
     #[Test]
@@ -130,7 +130,7 @@ final class EncryptDictionaryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.5 does not allow AES-128 encryption. PDF 1.6 or higher is required.');
 
-        $encryptDictionary->render();
+        \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary);
     }
 
     #[Test]
@@ -146,12 +146,12 @@ final class EncryptDictionaryTest extends TestCase
         $encryptDictionary = $document->encryptDictionary;
 
         self::assertNotNull($encryptDictionary);
-        self::assertStringContainsString('/V 5', $encryptDictionary->render());
-        self::assertStringContainsString('/R 5', $encryptDictionary->render());
-        self::assertStringContainsString('/OE <', $encryptDictionary->render());
-        self::assertStringContainsString('/UE <', $encryptDictionary->render());
-        self::assertStringContainsString('/Perms <', $encryptDictionary->render());
-        self::assertStringContainsString('/CF << /StdCF << /CFM /AESV3 /AuthEvent /DocOpen /Length 32 >> >>', $encryptDictionary->render());
+        self::assertStringContainsString('/V 5', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/R 5', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/OE <', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/UE <', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/Perms <', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
+        self::assertStringContainsString('/CF << /StdCF << /CFM /AESV3 /AuthEvent /DocOpen /Length 32 >> >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary));
     }
 
     #[Test]
@@ -167,7 +167,7 @@ final class EncryptDictionaryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF version 1.6 does not allow AES-256 encryption. PDF 1.7 or higher is required.');
 
-        $encryptDictionary->render();
+        \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary);
     }
 
     #[Test]
@@ -190,6 +190,6 @@ final class EncryptDictionaryTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Encryption dictionary requires initialized security handler data.');
 
-        $encryptDictionary->render();
+        \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary);
     }
 }

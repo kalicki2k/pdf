@@ -30,7 +30,7 @@ final class TextAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Text /Rect [10 20 26 38] /P 4 0 R /Contents (Kommentar) /Name /Comment /Open true /T (QA) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -43,7 +43,7 @@ final class TextAnnotationTest extends TestCase
         $popup = new PopupAnnotation(8, $page, $annotation, 20, 30, 60, 40, false);
         $annotation->withPopup($popup);
 
-        self::assertStringContainsString('/Popup 8 0 R', $annotation->render());
+        self::assertStringContainsString('/Popup 8 0 R', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -59,7 +59,7 @@ final class TextAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Text /Rect [10 20 26 38] /P 4 0 R /Contents (Kommentar) /Name /Comment /Open true /F 4 /T (QA) /AP << /N 8 0 R >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }
@@ -72,7 +72,7 @@ final class TextAnnotationTest extends TestCase
         $annotation = new TextAnnotation(7, $page, 10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
         $annotation->withStructParent(3);
 
-        self::assertStringContainsString('/StructParent 3', $annotation->render());
+        self::assertStringContainsString('/StructParent 3', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -82,7 +82,8 @@ final class TextAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new TextAnnotation(7, $page, 10, 20, 16, 18, 'Kommentar', 'QA', 'Comment', true);
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

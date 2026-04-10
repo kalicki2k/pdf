@@ -50,7 +50,7 @@ final class PushButtonAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /FT /Btn /Rect [10 20 90 36] /Border [0 0 1] /P 5 0 R /T (save_form) /Ff 65536 /DA (/F1 12 Tf 0 g) /MK << /CA (Speichern) >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -63,8 +63,8 @@ final class PushButtonAnnotationTest extends TestCase
         $annotation = new PushButtonAnnotation(7, $page, 10, 20, 80, 16, 'save_form', 'Speichern', 'F1', 12, action: null, tooltip: 'Save form');
         $annotation->withStructParent(1);
 
-        self::assertStringContainsString('/StructParent 1', $annotation->render());
-        self::assertStringContainsString('/TU (Save form)', $annotation->render());
+        self::assertStringContainsString('/StructParent 1', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Save form)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -89,7 +89,7 @@ final class PushButtonAnnotationTest extends TestCase
             appearance: new FormFieldTextAppearanceStream(8, 80, 16, $font, new UnicodeFontWidthUpdater(), 'F1', 12, ['Speichern']),
         );
 
-        self::assertStringContainsString('/AP << /N 8 0 R >>', $annotation->render());
+        self::assertStringContainsString('/AP << /N 8 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -114,7 +114,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new SubmitFormAction('https://example.com/submit'),
         );
 
-        self::assertStringContainsString('/A << /S /SubmitForm /F (https://example.com/submit) >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /SubmitForm /F (https://example.com/submit) >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -138,7 +138,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new ResetFormAction(),
         );
 
-        self::assertStringContainsString('/A << /S /ResetForm >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /ResetForm >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -162,7 +162,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new JavaScriptAction("app.alert('Hallo');"),
         );
 
-        self::assertStringContainsString("/A << /S /JavaScript /JS (app.alert\\('Hallo'\\);) >>", $annotation->render());
+        self::assertStringContainsString("/A << /S /JavaScript /JS (app.alert\\('Hallo'\\);) >>", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -186,7 +186,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new NamedAction('PrevPage'),
         );
 
-        self::assertStringContainsString('/A << /S /Named /N /PrevPage >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /Named /N /PrevPage >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -210,7 +210,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new GoToAction('table-demo'),
         );
 
-        self::assertStringContainsString('/A << /S /GoTo /D /table-demo >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /GoTo /D /table-demo >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -234,7 +234,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new GoToRemoteAction('guide.pdf', 'chapter-1'),
         );
 
-        self::assertStringContainsString('/A << /S /GoToR /F (guide.pdf) /D /chapter-1 >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /GoToR /F (guide.pdf) /D /chapter-1 >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -258,7 +258,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new LaunchAction('guide.pdf'),
         );
 
-        self::assertStringContainsString('/A << /S /Launch /F (guide.pdf) >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /Launch /F (guide.pdf) >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -282,7 +282,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new UriAction('https://example.com'),
         );
 
-        self::assertStringContainsString('/A << /S /URI /URI (https://example.com) >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com) >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -306,7 +306,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new HideAction('notes_panel'),
         );
 
-        self::assertStringContainsString('/A << /S /Hide /T (notes_panel) >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /Hide /T (notes_panel) >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -330,7 +330,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new ImportDataAction('form-data.fdf'),
         );
 
-        self::assertStringContainsString('/A << /S /ImportData /F (form-data.fdf) >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /ImportData /F (form-data.fdf) >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -355,7 +355,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new SetOcgStateAction(['Toggle', $layer], false),
         );
 
-        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle 8 0 R] /PreserveRB false >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle 8 0 R] /PreserveRB false >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -379,7 +379,7 @@ final class PushButtonAnnotationTest extends TestCase
             action: new ThreadAction('article-1', 'threads.pdf'),
         );
 
-        self::assertStringContainsString('/A << /S /Thread /D (article-1) /F (threads.pdf) >>', $annotation->render());
+        self::assertStringContainsString('/A << /S /Thread /D (article-1) /F (threads.pdf) >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -403,7 +403,7 @@ final class PushButtonAnnotationTest extends TestCase
             Color::rgb(255, 0, 0),
         );
 
-        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', $annotation->render());
+        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertSame([], $annotation->getRelatedObjects());
     }
 
@@ -428,7 +428,8 @@ final class PushButtonAnnotationTest extends TestCase
             tooltip: 'Save form',
         );
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

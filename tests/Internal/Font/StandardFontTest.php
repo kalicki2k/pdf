@@ -29,7 +29,7 @@ final class StandardFontTest extends TestCase
 
         self::assertSame(
             "6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\nendobj\n",
-            $font->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font),
         );
     }
 

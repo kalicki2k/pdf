@@ -23,7 +23,7 @@ final class ToUnicodeCMapTest extends TestCase
         $glyphMap->encodeText('漢字');
 
         $cmap = new ToUnicodeCMap(40, $glyphMap);
-        $rendered = $cmap->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($cmap);
 
         self::assertStringContainsString('/CIDInit /ProcSet findresource begin', $rendered);
         self::assertStringContainsString('2 beginbfchar', $rendered);
@@ -42,7 +42,7 @@ final class ToUnicodeCMapTest extends TestCase
 
         $cmap->write($output);
 
-        self::assertSame($cmap->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($cmap), $output->contents());
     }
 
     #[Test]
@@ -60,7 +60,7 @@ final class ToUnicodeCMapTest extends TestCase
         $cmap->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($cmap->render(), 40),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($cmap), 40),
             $output->contents(),
         );
     }

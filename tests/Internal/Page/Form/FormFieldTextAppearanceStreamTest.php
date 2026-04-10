@@ -37,7 +37,7 @@ final class FormFieldTextAppearanceStreamTest extends TestCase
             Color::rgb(255, 0, 0),
         );
 
-        $rendered = $stream->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream);
 
         self::assertStringContainsString('7 0 obj', $rendered);
         self::assertStringContainsString('/Subtype /Form', $rendered);
@@ -68,7 +68,7 @@ final class FormFieldTextAppearanceStreamTest extends TestCase
             VerticalAlign::MIDDLE,
         );
 
-        $rendered = $stream->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream);
         $expectedX = 2.5 + max(0.0, ((80.0 - 5.0) - $font->measureTextWidth('Apply', 12)) / 2);
 
         self::assertStringContainsString(
@@ -97,7 +97,7 @@ final class FormFieldTextAppearanceStreamTest extends TestCase
             true,
         );
 
-        $rendered = $stream->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream);
 
         self::assertStringContainsString('66 2.5 m', $rendered);
         self::assertStringContainsString('66 17.5 l', $rendered);
@@ -131,7 +131,7 @@ final class FormFieldTextAppearanceStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 7),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 7),
             $output->contents(),
         );
     }

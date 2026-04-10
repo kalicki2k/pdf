@@ -38,6 +38,6 @@ final class PageParagraphRendererTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString("15 32 Td\n(Hello\x85) Tj", $page->getContents()->render());
+        self::assertStringContainsString("15 32 Td\n(Hello\x85) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 }

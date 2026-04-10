@@ -57,13 +57,13 @@ final class FormWidgetFactoryTest extends TestCase
 
         self::assertInstanceOf(TextFieldAnnotation::class, $annotation);
         self::assertSame([StandardFontName::HELVETICA], $resolvedFonts);
-        self::assertStringContainsString('/T (customer_name)', $annotation->render());
-        self::assertStringContainsString('/DA (/F1 12 Tf 0 0 1 rg)', $annotation->render());
-        self::assertStringContainsString('/V (Ada)', $annotation->render());
-        self::assertStringContainsString('/DV (Grace)', $annotation->render());
-        self::assertStringContainsString('/Ff 4098', $annotation->render());
-        self::assertStringContainsString('/TU (Customer name)', $annotation->render());
-        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertStringContainsString('/T (customer_name)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/DA (/F1 12 Tf 0 0 1 rg)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/V (Ada)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/DV (Grace)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/Ff 4098', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Customer name)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N ', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -79,9 +79,9 @@ final class FormWidgetFactoryTest extends TestCase
 
         self::assertInstanceOf(CheckboxAnnotation::class, $annotation);
         self::assertCount(2, $annotation->getRelatedObjects());
-        self::assertStringContainsString('/T (terms)', $annotation->render());
-        self::assertStringContainsString('/V /Yes', $annotation->render());
-        self::assertStringContainsString('/TU (Accept terms)', $annotation->render());
+        self::assertStringContainsString('/T (terms)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/V /Yes', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Accept terms)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -102,7 +102,7 @@ final class FormWidgetFactoryTest extends TestCase
         self::assertInstanceOf(RadioButtonWidgetAnnotation::class, $annotationB);
         self::assertCount(1, $acroForm?->getFields() ?? []);
         self::assertSame([$groupA], $acroForm?->getFields());
-        self::assertStringContainsString('/TU (delivery)', $groupA->render());
+        self::assertStringContainsString('/TU (delivery)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($groupA));
     }
 
     #[Test]
@@ -128,14 +128,14 @@ final class FormWidgetFactoryTest extends TestCase
 
         self::assertInstanceOf(ComboBoxAnnotation::class, $annotation);
         self::assertSame([StandardFontName::HELVETICA], $resolvedFonts);
-        self::assertStringContainsString('/T (delivery)', $annotation->render());
-        self::assertStringContainsString('/V (express)', $annotation->render());
-        self::assertStringContainsString('/DV (standard)', $annotation->render());
-        self::assertStringContainsString('/Ff 393218', $annotation->render());
-        self::assertStringContainsString('/TU (Delivery method)', $annotation->render());
-        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertStringContainsString('/T (delivery)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/V (express)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/DV (standard)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/Ff 393218', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Delivery method)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N ', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
-        self::assertStringContainsString('86 2.5 m', $annotation->getRelatedObjects()[0]->render());
+        self::assertStringContainsString('86 2.5 m', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
     }
 
     #[Test]
@@ -161,17 +161,17 @@ final class FormWidgetFactoryTest extends TestCase
 
         self::assertInstanceOf(ListBoxAnnotation::class, $annotation);
         self::assertSame([StandardFontName::HELVETICA], $resolvedFonts);
-        self::assertStringContainsString('/T (features)', $annotation->render());
-        self::assertStringContainsString('/V [(a) (c)]', $annotation->render());
-        self::assertStringContainsString('/DV [(b)]', $annotation->render());
-        self::assertStringContainsString('/Ff 2097152', $annotation->render());
-        self::assertStringContainsString('/TU (Feature selection)', $annotation->render());
-        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertStringContainsString('/T (features)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/V [(a) (c)]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/DV [(b)]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/Ff 2097152', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Feature selection)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N ', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
-        self::assertStringContainsString('(Alpha) Tj', $annotation->getRelatedObjects()[0]->render());
-        self::assertStringContainsString('(Beta) Tj', $annotation->getRelatedObjects()[0]->render());
-        self::assertStringNotContainsString('(Gamma) Tj', $annotation->getRelatedObjects()[0]->render());
-        self::assertStringContainsString('0.219608 0.458824 0.843137 rg', $annotation->getRelatedObjects()[0]->render());
+        self::assertStringContainsString('(Alpha) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
+        self::assertStringContainsString('(Beta) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
+        self::assertStringNotContainsString('(Gamma) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
+        self::assertStringContainsString('0.219608 0.458824 0.843137 rg', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
     }
 
     #[Test]
@@ -196,11 +196,11 @@ final class FormWidgetFactoryTest extends TestCase
         );
 
         self::assertInstanceOf(ListBoxAnnotation::class, $annotation);
-        self::assertStringContainsString('/V (express)', $annotation->render());
-        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertStringContainsString('/V (express)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N ', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
-        self::assertStringContainsString('(Standard) Tj', $annotation->getRelatedObjects()[0]->render());
-        self::assertStringContainsString('(Express) Tj', $annotation->getRelatedObjects()[0]->render());
+        self::assertStringContainsString('(Standard) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
+        self::assertStringContainsString('(Express) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
     }
 
     #[Test]
@@ -214,9 +214,9 @@ final class FormWidgetFactoryTest extends TestCase
         $annotation = $factory->createSignatureField('signature', new Rect(10, 20, 100, 30), 'Approval signature');
 
         self::assertInstanceOf(SignatureFieldAnnotation::class, $annotation);
-        self::assertStringContainsString('/T (signature)', $annotation->render());
-        self::assertStringContainsString('/TU (Approval signature)', $annotation->render());
-        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertStringContainsString('/T (signature)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Approval signature)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N ', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -249,14 +249,14 @@ final class FormWidgetFactoryTest extends TestCase
 
         self::assertInstanceOf(PushButtonAnnotation::class, $annotation);
         self::assertSame([StandardFontName::HELVETICA], $resolvedFonts);
-        self::assertStringContainsString('/T (submit)', $annotation->render());
-        self::assertStringContainsString('/MK << /CA (Senden) >>', $annotation->render());
-        self::assertStringContainsString('/A << /S /ResetForm >>', $annotation->render());
-        self::assertStringContainsString('/TU (Submit form)', $annotation->render());
-        self::assertStringContainsString('/AP << /N ', $annotation->render());
+        self::assertStringContainsString('/T (submit)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/MK << /CA (Senden) >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/A << /S /ResetForm >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Submit form)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N ', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
-        self::assertStringContainsString('(Senden) Tj', $annotation->getRelatedObjects()[0]->render());
-        self::assertStringNotContainsString('1 0 0 1 2.5 ', $annotation->getRelatedObjects()[0]->render());
+        self::assertStringContainsString('(Senden) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
+        self::assertStringNotContainsString('1 0 0 1 2.5 ', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation->getRelatedObjects()[0]));
     }
 
     #[Test]

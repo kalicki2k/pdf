@@ -33,7 +33,7 @@ final class LineAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Line /Rect [10 20 90 32] /P 4 0 R /L [10 20 90 32] /C [1 0 0] /Contents (Linie) /T (QA) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -53,7 +53,7 @@ final class LineAnnotationTest extends TestCase
             endStyle: LineEndingStyle::CLOSED_ARROW,
         );
 
-        self::assertStringContainsString('/LE [/OpenArrow /ClosedArrow]', $annotation->render());
+        self::assertStringContainsString('/LE [/OpenArrow /ClosedArrow]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -71,7 +71,7 @@ final class LineAnnotationTest extends TestCase
             startStyle: LineEndingStyle::OPEN_ARROW,
         );
 
-        self::assertStringContainsString('/LE [/OpenArrow /None]', $annotation->render());
+        self::assertStringContainsString('/LE [/OpenArrow /None]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -84,8 +84,8 @@ final class LineAnnotationTest extends TestCase
 
         self::assertSame($annotation, $annotation->withPopup($popup));
 
-        self::assertStringContainsString('/Subj (Messlinie)', $annotation->render());
-        self::assertStringContainsString('/Popup 8 0 R', $annotation->render());
+        self::assertStringContainsString('/Subj (Messlinie)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/Popup 8 0 R', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertSame([$popup], $annotation->getRelatedObjects());
     }
 
@@ -96,7 +96,7 @@ final class LineAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, borderStyle: AnnotationBorderStyle::dashed(2.0, [4.0, 2.0]));
 
-        self::assertStringContainsString('/BS << /W 2 /S /D /D [4 2] >>', $annotation->render());
+        self::assertStringContainsString('/BS << /W 2 /S /D /D [4 2] >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -110,7 +110,7 @@ final class LineAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Line /Rect [10 20 90 32] /P 4 0 R /L [90 32 10 20] >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -122,7 +122,7 @@ final class LineAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, Color::cmyk(0.1, 0.2, 0.3, 0.4));
 
-        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -137,7 +137,7 @@ final class LineAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Line /Rect [10 20 90 32] /P 4 0 R /L [10 20 90 32] /F 4 /C [1 0 0] /Contents (Linie) /T (QA) /AP << /N 8 0 R >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }
@@ -149,7 +149,8 @@ final class LineAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new LineAnnotation(7, $page, 10, 20, 90, 32, Color::rgb(255, 0, 0), 'Linie', 'QA', subject: 'Messlinie');
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

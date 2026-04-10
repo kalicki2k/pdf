@@ -34,7 +34,7 @@ final class TextFieldAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /FT /Tx /Rect [10 20 90 32] /Border [0 0 1] /P 5 0 R /T (customer_name) /DA (/F1 12 Tf 0 g) /V (Ada) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -51,7 +51,7 @@ final class TextFieldAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /FT /Tx /Rect [10 20 90 50] /Border [0 0 1] /P 5 0 R /T (notes) /DA (/F1 12 Tf 0 g) /Ff 4096 /V (Line 1\\nLine 2) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -77,7 +77,7 @@ final class TextFieldAnnotationTest extends TestCase
             new FormFieldFlags(readOnly: true, required: true, password: true),
         );
 
-        self::assertStringContainsString('/Ff 8195', $annotation->render());
+        self::assertStringContainsString('/Ff 8195', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -89,8 +89,8 @@ final class TextFieldAnnotationTest extends TestCase
 
         $annotation = new TextFieldAnnotation(7, $page, 10, 20, 80, 12, 'customer_name', 'Ada', 'F1', 12, defaultValue: 'Grace');
 
-        self::assertStringContainsString('/V (Ada)', $annotation->render());
-        self::assertStringContainsString('/DV (Grace)', $annotation->render());
+        self::assertStringContainsString('/V (Ada)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/DV (Grace)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -102,8 +102,8 @@ final class TextFieldAnnotationTest extends TestCase
         $annotation = new TextFieldAnnotation(7, $page, 10, 20, 80, 12, 'customer_name', 'Ada', 'F1', 12, tooltip: 'Customer name');
         $annotation->withStructParent(1);
 
-        self::assertStringContainsString('/StructParent 1', $annotation->render());
-        self::assertStringContainsString('/TU (Customer name)', $annotation->render());
+        self::assertStringContainsString('/StructParent 1', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Customer name)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -128,7 +128,8 @@ final class TextFieldAnnotationTest extends TestCase
             tooltip: 'Customer name',
         );
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

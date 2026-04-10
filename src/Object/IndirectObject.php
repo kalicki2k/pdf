@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Object;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\StringPdfOutput;
 
 abstract class IndirectObject
 {
@@ -35,22 +34,6 @@ abstract class IndirectObject
         }
 
         $this->writeObjectWithStringEncryptor($output, $encryptor);
-    }
-
-    final public function render(): string
-    {
-        $buffer = new StringPdfOutput();
-        $this->write($buffer);
-
-        return $buffer->contents();
-    }
-
-    final public function renderWithStringEncryptor(?ObjectStringEncryptor $encryptor = null): string
-    {
-        $buffer = new StringPdfOutput();
-        $this->writeWithStringEncryptor($buffer, $encryptor);
-
-        return $buffer->contents();
     }
 
     protected function writeObjectWithStringEncryptor(PdfOutput $output, ObjectStringEncryptor $encryptor): void

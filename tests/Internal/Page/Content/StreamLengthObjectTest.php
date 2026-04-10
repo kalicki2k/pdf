@@ -16,6 +16,6 @@ final class StreamLengthObjectTest extends TestCase
         $object = new StreamLengthObject(9);
         $object->setLength(42);
 
-        self::assertSame("9 0 obj\n42\nendobj\n", $object->render());
+        self::assertSame("9 0 obj\n42\nendobj\n", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($object));
     }
 }

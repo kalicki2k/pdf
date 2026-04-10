@@ -25,7 +25,7 @@ final class StampAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Stamp /Rect [10 20 90 44] /P 4 0 R /Name /Approved /C [0 0.501961 0] /Contents (Freigegeben) /T (QA) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -40,7 +40,7 @@ final class StampAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Stamp /Rect [10 20 90 44] /P 4 0 R /Name /Draft >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -52,7 +52,7 @@ final class StampAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new StampAnnotation(7, $page, 10, 20, 80, 24, 'Approved', Color::cmyk(0.1, 0.2, 0.3, 0.4));
 
-        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -67,7 +67,7 @@ final class StampAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Stamp /Rect [10 20 90 44] /P 4 0 R /Name /Approved /F 4 /C [0 0.501961 0] /Contents (Freigegeben) /T (QA) /AP << /N 8 0 R >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }

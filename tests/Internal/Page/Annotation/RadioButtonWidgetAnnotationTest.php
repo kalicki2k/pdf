@@ -37,7 +37,7 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
             "8 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /Rect [10 20 22 32] /Border [0 0 0] /P 4 0 R /Parent 7 0 R /AS /standard /AP << /N << /Off 9 0 R /standard 10 0 R >> >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -67,7 +67,7 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
             "8 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /Rect [10 20 22 32] /Border [0 0 0] /P 4 0 R /Parent 7 0 R /AS /Off /AP << /N << /Off 9 0 R /standard 10 0 R >> >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([$offAppearance, $onAppearance], $annotation->getRelatedObjects());
     }
@@ -92,6 +92,6 @@ final class RadioButtonWidgetAnnotationTest extends TestCase
         );
         $annotation->withStructParent(1);
 
-        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/StructParent 1', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 }

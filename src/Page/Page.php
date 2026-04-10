@@ -23,8 +23,8 @@ use Kalle\Pdf\Layout\Text\TextFrame as LayoutTextFrame;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Object\StreamLengthObject;
+use Kalle\Pdf\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Page\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Page\Annotation\Style\AnnotationBorderStyle;
@@ -169,7 +169,7 @@ class Page extends IndirectObject
     /**
      * @param string|list<TextSegment> $text
      */
-    public function addFlowText(
+    public function addParagraph(
         string | array $text,
         Position $position,
         float $maxWidth,

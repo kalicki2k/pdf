@@ -57,7 +57,7 @@ final class TableGroupSegmentRendererTest extends TestCase
         self::assertSame(136.0, $result->cursorY);
         self::assertCount(1, $result->pendingRowspanCells);
         self::assertSame(1, $result->pendingRowspanCells[0]->remainingRows);
-        self::assertStringContainsString('(Cell) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Cell) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     private function createPreparedCell(string $text, int $rowspan = 1): PreparedTableCell

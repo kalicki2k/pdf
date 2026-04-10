@@ -66,7 +66,7 @@ final class PageAnnotationFactoryTest extends TestCase
         self::assertInstanceOf(FreeTextAnnotation::class, $annotation);
         self::assertSame([StandardFontName::HELVETICA], $resolvedFonts);
         self::assertSame([StandardFontName::HELVETICA], $registeredFonts);
-        self::assertStringContainsString('/DA (/F1 12 Tf 0 g)', $annotation->render());
+        self::assertStringContainsString('/DA (/F1 12 Tf 0 g)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -92,8 +92,8 @@ final class PageAnnotationFactoryTest extends TestCase
         self::assertInstanceOf(FreeTextAnnotation::class, $annotation);
         self::assertSame([StandardFontName::HELVETICA], $resolvedFonts);
         self::assertSame([StandardFontName::HELVETICA], $registeredFonts);
-        self::assertStringContainsString('/F 4', $annotation->render());
-        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N 101 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -108,7 +108,7 @@ final class PageAnnotationFactoryTest extends TestCase
 
         $annotation = $factory->createTextAnnotation(new Rect(10, 20, 80, 12), 'Kommentar', 'QA', 'Note', false);
 
-        self::assertStringContainsString('/StructParent 1', $annotation->render());
+        self::assertStringContainsString('/StructParent 1', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Annot \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', writeDocumentToString($document));
     }
 
@@ -144,10 +144,10 @@ final class PageAnnotationFactoryTest extends TestCase
             'Example',
         );
 
-        self::assertStringContainsString('/StructParent 1', $annotation->render());
-        self::assertStringContainsString('/Contents (Example)', $annotation->render());
-        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj', $linkStructElem->render());
-        self::assertStringContainsString('/Alt (Example)', $linkStructElem->render());
+        self::assertStringContainsString('/StructParent 1', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/Contents (Example)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($linkStructElem));
+        self::assertStringContainsString('/Alt (Example)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($linkStructElem));
     }
 
     #[Test]
@@ -194,8 +194,8 @@ final class PageAnnotationFactoryTest extends TestCase
         $annotation = $factory->createHighlightAnnotation(new Rect(10, 20, 80, 12), null, 'Markiert', 'QA');
 
         self::assertInstanceOf(HighlightAnnotation::class, $annotation);
-        self::assertStringContainsString('/F 4', $annotation->render());
-        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N 101 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -211,8 +211,8 @@ final class PageAnnotationFactoryTest extends TestCase
         $annotation = $factory->createUnderlineAnnotation(new Rect(10, 20, 80, 12), null, 'Unterstrichen', 'QA');
 
         self::assertInstanceOf(UnderlineAnnotation::class, $annotation);
-        self::assertStringContainsString('/F 4', $annotation->render());
-        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N 101 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -228,8 +228,8 @@ final class PageAnnotationFactoryTest extends TestCase
         $annotation = $factory->createStrikeOutAnnotation(new Rect(10, 20, 80, 12), null, 'Durchgestrichen', 'QA');
 
         self::assertInstanceOf(StrikeOutAnnotation::class, $annotation);
-        self::assertStringContainsString('/F 4', $annotation->render());
-        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N 101 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -245,8 +245,8 @@ final class PageAnnotationFactoryTest extends TestCase
         $annotation = $factory->createSquigglyAnnotation(new Rect(10, 20, 80, 12), null, 'Wellig', 'QA');
 
         self::assertInstanceOf(SquigglyAnnotation::class, $annotation);
-        self::assertStringContainsString('/F 4', $annotation->render());
-        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N 101 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 
@@ -266,28 +266,28 @@ final class PageAnnotationFactoryTest extends TestCase
         $caret = $factory->createCaretAnnotation(new Rect(10, 20, 16, 18), 'Einfuegen', 'QA', 'P');
 
         self::assertInstanceOf(StampAnnotation::class, $stamp);
-        self::assertStringContainsString('/F 4', $stamp->render());
-        self::assertStringContainsString('/AP << /N 101 0 R >>', $stamp->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stamp));
+        self::assertStringContainsString('/AP << /N 101 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stamp));
         self::assertCount(1, $stamp->getRelatedObjects());
 
         self::assertInstanceOf(SquareAnnotation::class, $square);
-        self::assertStringContainsString('/F 4', $square->render());
-        self::assertStringContainsString('/AP << /N 103 0 R >>', $square->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($square));
+        self::assertStringContainsString('/AP << /N 103 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($square));
         self::assertCount(1, $square->getRelatedObjects());
 
         self::assertInstanceOf(CircleAnnotation::class, $circle);
-        self::assertStringContainsString('/F 4', $circle->render());
-        self::assertStringContainsString('/AP << /N 105 0 R >>', $circle->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($circle));
+        self::assertStringContainsString('/AP << /N 105 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($circle));
         self::assertCount(1, $circle->getRelatedObjects());
 
         self::assertInstanceOf(InkAnnotation::class, $ink);
-        self::assertStringContainsString('/F 4', $ink->render());
-        self::assertStringContainsString('/AP << /N 107 0 R >>', $ink->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($ink));
+        self::assertStringContainsString('/AP << /N 107 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($ink));
         self::assertCount(1, $ink->getRelatedObjects());
 
         self::assertInstanceOf(CaretAnnotation::class, $caret);
-        self::assertStringContainsString('/F 4', $caret->render());
-        self::assertStringContainsString('/AP << /N 109 0 R >>', $caret->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($caret));
+        self::assertStringContainsString('/AP << /N 109 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($caret));
         self::assertCount(1, $caret->getRelatedObjects());
     }
 
@@ -305,18 +305,18 @@ final class PageAnnotationFactoryTest extends TestCase
         $polygon = $factory->createPolygonAnnotation([[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], null, null, 'Polygon', 'QA', null, null);
 
         self::assertInstanceOf(LineAnnotation::class, $line);
-        self::assertStringContainsString('/F 4', $line->render());
-        self::assertStringContainsString('/AP << /N 101 0 R >>', $line->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($line));
+        self::assertStringContainsString('/AP << /N 101 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($line));
         self::assertCount(1, $line->getRelatedObjects());
 
         self::assertInstanceOf(PolyLineAnnotation::class, $polyLine);
-        self::assertStringContainsString('/F 4', $polyLine->render());
-        self::assertStringContainsString('/AP << /N 103 0 R >>', $polyLine->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($polyLine));
+        self::assertStringContainsString('/AP << /N 103 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($polyLine));
         self::assertCount(1, $polyLine->getRelatedObjects());
 
         self::assertInstanceOf(PolygonAnnotation::class, $polygon);
-        self::assertStringContainsString('/F 4', $polygon->render());
-        self::assertStringContainsString('/AP << /N 105 0 R >>', $polygon->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($polygon));
+        self::assertStringContainsString('/AP << /N 105 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($polygon));
         self::assertCount(1, $polygon->getRelatedObjects());
     }
 
@@ -424,8 +424,8 @@ final class PageAnnotationFactoryTest extends TestCase
         $annotation = $factory->createTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA', 'Comment', true);
 
         self::assertInstanceOf(TextAnnotation::class, $annotation);
-        self::assertStringContainsString('/F 4', $annotation->render());
-        self::assertStringContainsString('/AP << /N 101 0 R >>', $annotation->render());
+        self::assertStringContainsString('/F 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/AP << /N 101 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertCount(1, $annotation->getRelatedObjects());
     }
 

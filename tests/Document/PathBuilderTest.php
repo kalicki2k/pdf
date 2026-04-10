@@ -28,8 +28,8 @@ final class PathBuilderTest extends TestCase
             ->stroke(1.5, Color::rgb(255, 0, 0), Opacity::stroke(0.25));
 
         self::assertSame($page, $returnedPage);
-        self::assertStringContainsString("q\n1 0 0 RG\n/GS1 gs\n1.5 w\n10 20 m\n30 40 l\n50 60 70 80 90 95 c\nh\nS\nQ", $page->getContents()->render());
-        self::assertStringContainsString('/ExtGState << /GS1 << /CA 0.25 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("q\n1 0 0 RG\n/GS1 gs\n1.5 w\n10 20 m\n30 40 l\n50 60 70 80 90 95 c\nh\nS\nQ", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('/ExtGState << /GS1 << /CA 0.25 >> >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getResources()));
     }
 
     #[Test]
@@ -43,8 +43,8 @@ final class PathBuilderTest extends TestCase
             ->lineTo(30, 40)
             ->fill(Color::gray(0.5), Opacity::fill(0.4));
 
-        self::assertStringContainsString("q\n0.5 g\n/GS1 gs\n10 20 m\n30 40 l\nf\nQ", $page->getContents()->render());
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("q\n0.5 g\n/GS1 gs\n10 20 m\n30 40 l\nf\nQ", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 >> >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getResources()));
     }
 
     #[Test]
@@ -58,8 +58,8 @@ final class PathBuilderTest extends TestCase
             ->lineTo(30, 40)
             ->fillAndStroke(2.5, Color::rgb(255, 0, 0), Color::gray(0.5), Opacity::both(0.4));
 
-        self::assertStringContainsString("q\n1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n10 20 m\n30 40 l\nB\nQ", $page->getContents()->render());
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', $page->getResources()->render());
+        self::assertStringContainsString("q\n1 0 0 RG\n0.5 g\n/GS1 gs\n2.5 w\n10 20 m\n30 40 l\nB\nQ", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getResources()));
     }
 
     #[Test]

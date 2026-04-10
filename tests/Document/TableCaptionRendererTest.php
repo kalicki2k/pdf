@@ -38,7 +38,7 @@ final class TableCaptionRendererTest extends TestCase
 
         self::assertSame($page, $result->page);
         self::assertLessThan(160.0, $result->cursorY);
-        self::assertStringContainsString('(Uebersicht) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Uebersicht) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -66,6 +66,6 @@ final class TableCaptionRendererTest extends TestCase
 
         self::assertNotSame($page, $result->page);
         self::assertCount(2, $document->pages->pages);
-        self::assertStringContainsString('(Uebersicht) Tj', $result->page->getContents()->render());
+        self::assertStringContainsString('(Uebersicht) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($result->page->getContents()));
     }
 }

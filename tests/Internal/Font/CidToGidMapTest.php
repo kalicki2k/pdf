@@ -25,7 +25,7 @@ final class CidToGidMapTest extends TestCase
         $parser = new OpenTypeFontParser(file_get_contents('assets/fonts/NotoSansCJKsc-Regular.otf'));
         $map = new CidToGidMap(50, $glyphMap, $parser);
 
-        $rendered = $map->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($map);
 
         self::assertStringContainsString("50 0 obj\n", $rendered);
         self::assertStringContainsString("stream\n", $rendered);
@@ -43,7 +43,7 @@ final class CidToGidMapTest extends TestCase
 
         $map->write($output);
 
-        self::assertSame($map->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($map), $output->contents());
     }
 
     #[Test]
@@ -62,7 +62,7 @@ final class CidToGidMapTest extends TestCase
         $map->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($map->render(), 50),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($map), 50),
             $output->contents(),
         );
     }

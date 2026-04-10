@@ -29,7 +29,7 @@ final class LinkAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 4 0 R /A << /S /URI /URI (https://example.com) >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -44,7 +44,7 @@ final class LinkAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 4 0 R /F 4 /A << /S /URI /URI (https://example.com) >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -60,7 +60,7 @@ final class LinkAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 4 0 R /StructParent 1 /Contents (Example) /A << /S /URI /URI (https://example.com) >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -75,7 +75,7 @@ final class LinkAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 4 0 R /Dest /table-demo >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -91,7 +91,7 @@ final class LinkAnnotationTest extends TestCase
             "10 0 obj\n"
             . "<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 4 0 R /Dest [7 0 R /Fit] >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -107,7 +107,7 @@ final class LinkAnnotationTest extends TestCase
             "10 0 obj\n"
             . "<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 4 0 R /Dest [7 0 R /XYZ 15 25 null] >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -120,7 +120,8 @@ final class LinkAnnotationTest extends TestCase
         $annotation = new LinkAnnotation(7, $page, 10, 20, 80, 12, LinkTarget::externalUrl('https://example.com'));
         $annotation->withContents('Example');
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

@@ -36,7 +36,7 @@ final class ImageObjectTest extends TestCase
             . "abc123\n"
             . "endstream\n"
             . "endobj\n",
-            $imageObject->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($imageObject),
         );
         self::assertSame([$imageObject], $imageObject->getRelatedObjects());
     }
@@ -62,7 +62,7 @@ final class ImageObjectTest extends TestCase
             . "abc123\n"
             . "endstream\n"
             . "endobj\n",
-            $imageObject->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($imageObject),
         );
         self::assertSame([$imageObject, $softMask], $imageObject->getRelatedObjects());
     }
@@ -75,7 +75,7 @@ final class ImageObjectTest extends TestCase
 
         $imageObject->write($output);
 
-        self::assertSame($imageObject->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($imageObject), $output->contents());
     }
 
     #[Test]
@@ -91,7 +91,7 @@ final class ImageObjectTest extends TestCase
         $imageObject->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($imageObject->render(), 9),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($imageObject), 9),
             $output->contents(),
         );
     }

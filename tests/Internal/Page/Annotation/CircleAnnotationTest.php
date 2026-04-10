@@ -31,7 +31,7 @@ final class CircleAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Circle /Rect [10 20 90 44] /P 4 0 R /C [0 0 1] /IC [0.9] /Contents (Kreis) /T (QA) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -42,7 +42,7 @@ final class CircleAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new CircleAnnotation(7, $page, 10, 20, 80, 24, borderStyle: AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
 
-        self::assertStringContainsString('/BS << /W 1.5 /S /D /D [2 1] >>', $annotation->render());
+        self::assertStringContainsString('/BS << /W 1.5 /S /D /D [2 1] >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -56,7 +56,7 @@ final class CircleAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Circle /Rect [10 20 90 44] /P 4 0 R >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -77,8 +77,8 @@ final class CircleAnnotationTest extends TestCase
             Color::cmyk(0.5, 0.6, 0.7, 0.8),
         );
 
-        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
-        self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', $annotation->render());
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -93,7 +93,7 @@ final class CircleAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Circle /Rect [10 20 90 44] /P 4 0 R /F 4 /C [0 0 1] /IC [0.9] /Contents (Kreis) /T (QA) /AP << /N 8 0 R >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }
@@ -105,7 +105,8 @@ final class CircleAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new CircleAnnotation(7, $page, 10, 20, 80, 24, Color::rgb(0, 0, 255), Color::gray(0.9), 'Kreis', 'QA');
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

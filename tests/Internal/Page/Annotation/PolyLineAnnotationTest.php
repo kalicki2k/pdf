@@ -34,7 +34,7 @@ final class PolyLineAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /PolyLine /Rect [10 20 90 50] /P 4 0 R /Vertices [10 20 40 50 90 32] /C [0 0 1] /Contents (PolyLine) /T (QA) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -51,7 +51,7 @@ final class PolyLineAnnotationTest extends TestCase
             endStyle: LineEndingStyle::SLASH,
         );
 
-        self::assertStringContainsString('/LE [/Circle /Slash]', $annotation->render());
+        self::assertStringContainsString('/LE [/Circle /Slash]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -66,7 +66,7 @@ final class PolyLineAnnotationTest extends TestCase
             startStyle: LineEndingStyle::CIRCLE,
         );
 
-        self::assertStringContainsString('/LE [/Circle /None]', $annotation->render());
+        self::assertStringContainsString('/LE [/Circle /None]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -79,8 +79,8 @@ final class PolyLineAnnotationTest extends TestCase
 
         self::assertSame($annotation, $annotation->withPopup($popup));
 
-        self::assertStringContainsString('/Subj (Korrekturpfad)', $annotation->render());
-        self::assertStringContainsString('/Popup 8 0 R', $annotation->render());
+        self::assertStringContainsString('/Subj (Korrekturpfad)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/Popup 8 0 R', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertSame([$popup], $annotation->getRelatedObjects());
     }
 
@@ -91,7 +91,7 @@ final class PolyLineAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], borderStyle: AnnotationBorderStyle::solid(2.5));
 
-        self::assertStringContainsString('/BS << /W 2.5 /S /S >>', $annotation->render());
+        self::assertStringContainsString('/BS << /W 2.5 /S /S >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -105,7 +105,7 @@ final class PolyLineAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /PolyLine /Rect [10 20 90 50] /P 4 0 R /Vertices [90 32 10 20 40 50] >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -122,7 +122,7 @@ final class PolyLineAnnotationTest extends TestCase
             Color::cmyk(0.1, 0.2, 0.3, 0.4),
         );
 
-        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -149,7 +149,7 @@ final class PolyLineAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /PolyLine /Rect [10 20 90 50] /P 4 0 R /Vertices [10 20 40 50 90 32] /F 4 /C [0 0 1] /Contents (PolyLine) /T (QA) /AP << /N 8 0 R >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }
@@ -161,7 +161,8 @@ final class PolyLineAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new PolyLineAnnotation(7, $page, [[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(0, 0, 255), 'PolyLine', 'QA', subject: 'Korrekturpfad');
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

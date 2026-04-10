@@ -17,7 +17,7 @@ final class MarkedContentReferenceTest extends TestCase
 
         self::assertSame(
             "11 0 obj\n<< /Type /MCR\n/MCID 0 >>\nendobj\n",
-            $reference->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($reference),
         );
     }
 }

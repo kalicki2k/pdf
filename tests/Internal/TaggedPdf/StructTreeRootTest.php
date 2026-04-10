@@ -17,7 +17,7 @@ final class StructTreeRootTest extends TestCase
 
         self::assertSame(
             "3 0 obj\n<< /Type /StructTreeRoot /K [] >>\nendobj\n",
-            $root->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($root),
         );
     }
 
@@ -31,7 +31,7 @@ final class StructTreeRootTest extends TestCase
         self::assertSame($root, $result);
         self::assertSame(
             "3 0 obj\n<< /Type /StructTreeRoot /K [4 0 R 10 0 R] >>\nendobj\n",
-            $root->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($root),
         );
     }
 }

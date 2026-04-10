@@ -38,7 +38,7 @@ final class TextFrameTest extends TestCase
         $frame->addText('Hello', 'Helvetica', 10);
 
         self::assertSame($page, $frame->getPage());
-        self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->getContents()->render());
+        self::assertStringContainsString("20 100 Td\n(Hello) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
         self::assertSame(88.0, $frame->getCursorY());
     }
 
@@ -54,8 +54,8 @@ final class TextFrameTest extends TestCase
         $frame->addText('World', 'Helvetica', 10, spacingAfter: 12);
 
         self::assertCount(5, $document->pages->pages);
-        self::assertStringContainsString('(Hello) Tj', $document->pages->pages[1]->getContents()->render());
-        self::assertStringContainsString('(World) Tj', $document->pages->pages[3]->getContents()->render());
+        self::assertStringContainsString('(Hello) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($document->pages->pages[1]->getContents()));
+        self::assertStringContainsString('(World) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($document->pages->pages[3]->getContents()));
         self::assertSame($document->pages->pages[4], $frame->getPage());
         self::assertSame(20.0, $frame->getCursorY());
     }
@@ -74,8 +74,8 @@ final class TextFrameTest extends TestCase
             ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(structureTag: StructureTag::Paragraph, spacingAfter: 8));
 
         self::assertSame($page, $frame->getPage());
-        self::assertStringContainsString("/H1 << /MCID 0 >> BDC\nBT\n/F1 20 Tf\n20 100 Td\n(Headline) Tj\nET\nEMC", $page->getContents()->render());
-        self::assertStringContainsString("/P << /MCID 1 >> BDC\nBT\n/F1 10 Tf\n20 60 Td\n(Hello world from PDF) Tj\nET\nEMC", $page->getContents()->render());
+        self::assertStringContainsString("/H1 << /MCID 0 >> BDC\nBT\n/F1 20 Tf\n20 100 Td\n(Headline) Tj\nET\nEMC", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("/P << /MCID 1 >> BDC\nBT\n/F1 10 Tf\n20 60 Td\n(Hello world from PDF) Tj\nET\nEMC", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
         self::assertSame(40.0, $frame->getCursorY());
     }
 
@@ -121,8 +121,8 @@ final class TextFrameTest extends TestCase
             ->addHeading('Headline', 'Helvetica', 20)
             ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(spacingAfter: 8));
 
-        self::assertStringContainsString('(Headline) Tj', $page->getContents()->render());
-        self::assertStringNotContainsString('BDC', $page->getContents()->render());
+        self::assertStringContainsString('(Headline) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringNotContainsString('BDC', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -137,8 +137,8 @@ final class TextFrameTest extends TestCase
             ->addHeading('Headline', 'Helvetica', 20, new ParagraphOptions(opacity: Opacity::fill(0.5)))
             ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(opacity: Opacity::fill(0.5), spacingAfter: 8));
 
-        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', $page->getResources()->render());
-        self::assertSame(2, substr_count($page->getContents()->render(), '/GS1 gs'));
+        self::assertStringContainsString('/ExtGState << /GS1 << /ca 0.5 >> >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getResources()));
+        self::assertSame(2, substr_count(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()), '/GS1 gs'));
     }
 
     #[Test]
@@ -153,8 +153,8 @@ final class TextFrameTest extends TestCase
             ->addHeading('Headline', 'Helvetica', 20, new ParagraphOptions(color: Color::rgb(255, 0, 0)))
             ->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(color: Color::cmyk(0.1, 0.2, 0.3, 0.4), spacingAfter: 8));
 
-        self::assertStringContainsString("1 0 0 rg\n(Headline) Tj", $page->getContents()->render());
-        self::assertStringContainsString("0.1 0.2 0.3 0.4 k\n(Hello world from PDF) Tj", $page->getContents()->render());
+        self::assertStringContainsString("1 0 0 rg\n(Headline) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("0.1 0.2 0.3 0.4 k\n(Hello world from PDF) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -175,9 +175,9 @@ final class TextFrameTest extends TestCase
             options: new ParagraphOptions(spacingAfter: 8),
         );
 
-        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", $page->getContents()->render());
-        self::assertStringContainsString('( Hello world from) Tj', $page->getContents()->render());
-        self::assertStringContainsString('(PDF) Tj', $page->getContents()->render());
+        self::assertStringContainsString("1 0 0 rg\n(Achtung:) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('( Hello world from) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('(PDF) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -190,7 +190,7 @@ final class TextFrameTest extends TestCase
         $frame = $page->createTextFrame(new Position(20, 100), 100, 20);
         $frame->addParagraph('Hello', 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::CENTER, spacingAfter: 8));
 
-        self::assertStringContainsString("58.61 100 Td\n(Hello) Tj", $page->getContents()->render());
+        self::assertStringContainsString("58.61 100 Td\n(Hello) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -203,8 +203,8 @@ final class TextFrameTest extends TestCase
         $frame = $page->createTextFrame(new Position(20, 100), 70, 20);
         $frame->addParagraph('Hello world from PDF', 'Helvetica', 10, new ParagraphOptions(align: HorizontalAlign::JUSTIFY, spacingAfter: 8));
 
-        self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->getContents()->render());
-        self::assertStringContainsString("66.11 100 Td\n(world) Tj", $page->getContents()->render());
+        self::assertStringContainsString("20 100 Td\n(Hello) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("66.11 100 Td\n(world) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -222,8 +222,8 @@ final class TextFrameTest extends TestCase
             options: new ParagraphOptions(maxLines: 2, overflow: TextOverflow::ELLIPSIS, spacingAfter: 8),
         );
 
-        self::assertStringContainsString("20 100 Td\n(Hello) Tj", $page->getContents()->render());
-        self::assertStringContainsString("20 88 Td\n(world\x85) Tj", $page->getContents()->render());
+        self::assertStringContainsString("20 100 Td\n(Hello) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("20 88 Td\n(world\x85) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
         self::assertSame(68.0, $frame->getCursorY());
     }
 
@@ -245,7 +245,7 @@ final class TextFrameTest extends TestCase
             options: new ParagraphOptions(spacingAfter: 8),
         );
 
-        self::assertStringContainsString('/Annots [8 0 R]', $frame->getPage()->render());
+        self::assertStringContainsString('/Annots [8 0 R]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($frame->getPage()));
         self::assertStringContainsString('/URI (https://example.com/docs)', writeDocumentToString($document));
     }
 
@@ -270,10 +270,10 @@ final class TextFrameTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString("20 100 Td\n(-) Tj", $page->getContents()->render());
-        self::assertStringContainsString("34 100 Td\n(First bullet item) Tj", $page->getContents()->render());
-        self::assertStringContainsString("20 84 Td\n(-) Tj", $page->getContents()->render());
-        self::assertStringContainsString('(Second) Tj', $page->getContents()->render());
+        self::assertStringContainsString("20 100 Td\n(-) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("34 100 Td\n(First bullet item) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("20 84 Td\n(-) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('(Second) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
         self::assertSame(66.0, $frame->getCursorY());
     }
 
@@ -295,8 +295,8 @@ final class TextFrameTest extends TestCase
 
         $rendered = writeDocumentToString($document);
 
-        self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', $page->getContents()->render());
-        self::assertStringContainsString('/LBody << /MCID 1 >> BDC', $page->getContents()->render());
+        self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('/LBody << /MCID 1 >> BDC', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
         self::assertStringContainsString('/Type /StructElem /S /L ', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /LI ', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Lbl ', $rendered);
@@ -323,7 +323,7 @@ final class TextFrameTest extends TestCase
             new ListOptions(color: Color::rgb(255, 0, 0)),
         );
 
-        self::assertStringContainsString("1 0 0 rg\n(\225) Tj", $page->getContents()->render());
+        self::assertStringContainsString("1 0 0 rg\n(\225) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -340,7 +340,7 @@ final class TextFrameTest extends TestCase
         self::assertSame($frame, $sameFrame);
         self::assertSame($page, $frame->getPage());
         self::assertSame(100.0, $frame->getCursorY());
-        self::assertStringNotContainsString('Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -363,9 +363,9 @@ final class TextFrameTest extends TestCase
         );
 
         self::assertGreaterThan(1, count($document->pages->pages));
-        self::assertStringContainsString("10 25 Td\n(-) Tj", $document->pages->pages[1]->getContents()->render());
+        self::assertStringContainsString("10 25 Td\n(-) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($document->pages->pages[1]->getContents()));
         self::assertStringContainsString('(Second) Tj', writeDocumentToString($document));
-        self::assertStringContainsString('(item) Tj', $frame->getPage()->getContents()->render());
+        self::assertStringContainsString('(item) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($frame->getPage()->getContents()));
     }
 
     #[Test]
@@ -389,10 +389,10 @@ final class TextFrameTest extends TestCase
             ),
         );
 
-        self::assertStringContainsString("20 100 Td\n(3.) Tj", $page->getContents()->render());
-        self::assertStringContainsString("34 100 Td\n(First item) Tj", $page->getContents()->render());
-        self::assertStringContainsString("20 84 Td\n(4.) Tj", $page->getContents()->render());
-        self::assertStringContainsString('(Second) Tj', $page->getContents()->render());
+        self::assertStringContainsString("20 100 Td\n(3.) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("34 100 Td\n(First item) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("20 84 Td\n(4.) Tj", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('(Second) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]

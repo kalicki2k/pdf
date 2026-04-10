@@ -56,7 +56,7 @@ final class TableGroupRendererTest extends TestCase
 
         self::assertSame($page, $result->page);
         self::assertSame(136.0, $result->cursorY);
-        self::assertStringContainsString('(Cell) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Cell) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]

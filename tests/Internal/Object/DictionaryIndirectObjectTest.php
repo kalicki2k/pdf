@@ -29,7 +29,7 @@ final class DictionaryIndirectObjectTest extends TestCase
             }
         };
 
-        self::assertSame("42 0 obj\n<< /Value (plain-text) >>\nendobj\n", $object->render());
+        self::assertSame("42 0 obj\n<< /Value (plain-text) >>\nendobj\n", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($object));
     }
 
     #[Test]
@@ -44,7 +44,8 @@ final class DictionaryIndirectObjectTest extends TestCase
             }
         };
 
-        $rendered = $object->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $object,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

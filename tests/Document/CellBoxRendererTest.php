@@ -24,7 +24,7 @@ final class CellBoxRendererTest extends TestCase
 
         $renderer->render($page, 10, 20, 30, 40, Color::gray(0.8), null, null, null);
 
-        self::assertStringContainsString("0.8 g\n10 20 30 40 re\nf", $page->getContents()->render());
+        self::assertStringContainsString("0.8 g\n10 20 30 40 re\nf", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -46,7 +46,7 @@ final class CellBoxRendererTest extends TestCase
             null,
         );
 
-        self::assertStringContainsString("1 0 0 RG\n1.5 w\n10 20 30 40 re\nS", $page->getContents()->render());
+        self::assertStringContainsString("1 0 0 RG\n1.5 w\n10 20 30 40 re\nS", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -69,7 +69,7 @@ final class CellBoxRendererTest extends TestCase
             renderTopBorder: false,
         );
 
-        $contents = $page->getContents()->render();
+        $contents = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents());
 
         self::assertStringNotContainsString("10 60 m\n40 60 l", $contents);
         self::assertStringContainsString("1 0 0 RG\n2 w\n40 20 m\n40 60 l\nS", $contents);
@@ -96,6 +96,6 @@ final class CellBoxRendererTest extends TestCase
             TableBorder::only(['top'], 2.0, Color::rgb(0, 128, 0)),
         );
 
-        self::assertStringContainsString("0 0.501961 0 RG\n2 w\n10 60 m\n40 60 l\nS", $page->getContents()->render());
+        self::assertStringContainsString("0 0.501961 0 RG\n2 w\n10 60 m\n40 60 l\nS", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 }

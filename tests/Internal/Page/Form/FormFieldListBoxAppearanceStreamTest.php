@@ -34,7 +34,7 @@ final class FormFieldListBoxAppearanceStreamTest extends TestCase
             ['forms'],
         );
 
-        $rendered = $stream->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream);
 
         self::assertStringContainsString('0.219608 0.458824 0.843137 rg', $rendered);
         self::assertStringContainsString('1 8.7 78 14.4 re', $rendered);
@@ -70,7 +70,7 @@ final class FormFieldListBoxAppearanceStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 7),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 7),
             $output->contents(),
         );
     }

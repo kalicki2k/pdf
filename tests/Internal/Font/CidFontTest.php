@@ -32,7 +32,7 @@ final class CidFontTest extends TestCase
             "13 0 obj\n"
             . "<< /Type /Font /Subtype /CIDFontType2 /BaseFont /NotoSansCJKsc-Regular /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /DW 1000 >>\n"
             . "endobj\n",
-            $font->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font),
         );
     }
 
@@ -46,7 +46,7 @@ final class CidFontTest extends TestCase
             "13 0 obj\n"
             . "<< /Type /Font /Subtype /CIDFontType2 /BaseFont /NotoSansCJKsc-Regular /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor 14 0 R /DW 1000 >>\n"
             . "endobj\n",
-            $font->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font),
         );
     }
 
@@ -58,8 +58,8 @@ final class CidFontTest extends TestCase
         $cidToGidMap = new CidToGidMap(16, $glyphMap, new OpenTypeFontParser(file_get_contents('assets/fonts/NotoSansCJKsc-Regular.otf')));
         $font = new CidFont(13, 'NotoSansCJKsc-Regular', 'CIDFontType0', cidToGidMap: $cidToGidMap);
 
-        self::assertStringContainsString('/Subtype /CIDFontType0', $font->render());
-        self::assertStringContainsString('/CIDToGIDMap 16 0 R', $font->render());
+        self::assertStringContainsString('/Subtype /CIDFontType0', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font));
+        self::assertStringContainsString('/CIDToGIDMap 16 0 R', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font));
     }
 
     #[Test]
@@ -70,8 +70,8 @@ final class CidFontTest extends TestCase
             '0002' => 980,
         ]);
 
-        self::assertStringContainsString('/DW 1000', $font->render());
-        self::assertStringContainsString('/W [1 [1000] 2 [980]]', $font->render());
+        self::assertStringContainsString('/DW 1000', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font));
+        self::assertStringContainsString('/W [1 [1000] 2 [980]]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font));
     }
 
     #[Test]
@@ -83,6 +83,6 @@ final class CidFontTest extends TestCase
             '000B' => 710,
         ]);
 
-        self::assertStringContainsString('/W [10 [700] 11 [710]]', $font->render());
+        self::assertStringContainsString('/W [10 [700] 11 [710]]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font));
     }
 }

@@ -27,7 +27,7 @@ final class StructElemTest extends TestCase
 
         self::assertSame(
             "4 0 obj\n<< /Type /StructElem /S /Document /K [] >>\nendobj\n",
-            $structElem->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($structElem),
         );
     }
 
@@ -43,7 +43,7 @@ final class StructElemTest extends TestCase
         self::assertSame($structElem, $result);
         self::assertSame(
             "10 0 obj\n<< /Type /StructElem /S /P /K [11 0 R 12 0 R] >>\nendobj\n",
-            $structElem->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($structElem),
         );
     }
 
@@ -59,11 +59,11 @@ final class StructElemTest extends TestCase
     #[Test]
     public function it_accepts_table_structure_tags(): void
     {
-        self::assertStringContainsString('/S /Table', (new StructElem(12, 'Table'))->render());
-        self::assertStringContainsString('/S /TR', (new StructElem(13, 'TR'))->render());
-        self::assertStringContainsString('/S /TH', (new StructElem(14, 'TH'))->render());
-        self::assertStringContainsString('/S /TD', (new StructElem(15, 'TD'))->render());
-        self::assertStringContainsString('/S /Figure', (new StructElem(16, 'Figure'))->render());
+        self::assertStringContainsString('/S /Table', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString((new StructElem(12, 'Table'))));
+        self::assertStringContainsString('/S /TR', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString((new StructElem(13, 'TR'))));
+        self::assertStringContainsString('/S /TH', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString((new StructElem(14, 'TH'))));
+        self::assertStringContainsString('/S /TD', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString((new StructElem(15, 'TD'))));
+        self::assertStringContainsString('/S /Figure', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString((new StructElem(16, 'Figure'))));
     }
 
     #[Test]
@@ -72,7 +72,7 @@ final class StructElemTest extends TestCase
         $structElem = new StructElem(12, 'Figure');
         $structElem->setAltText('Illustration');
 
-        self::assertStringContainsString('/Alt (Illustration)', $structElem->render());
+        self::assertStringContainsString('/Alt (Illustration)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($structElem));
     }
 
     #[Test]
@@ -84,7 +84,7 @@ final class StructElemTest extends TestCase
             ->setRowSpan(2)
             ->setColSpan(3);
 
-        self::assertStringContainsString('/A << /O /Table /Scope /Row /RowSpan 2 /ColSpan 3 >>', $structElem->render());
+        self::assertStringContainsString('/A << /O /Table /Scope /Row /RowSpan 2 /ColSpan 3 >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($structElem));
     }
 
     #[Test]
@@ -110,7 +110,7 @@ final class StructElemTest extends TestCase
             "11 0 obj\n"
             . "<< /Type /StructElem /S /Link /Pg 4 0 R /K [0 << /Type /OBJR /Obj 12 0 R /Pg 4 0 R >>] >>\n"
             . "endobj\n",
-            $structElem->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($structElem),
         );
     }
 
@@ -120,7 +120,8 @@ final class StructElemTest extends TestCase
         $structElem = new StructElem(12, 'Figure');
         $structElem->setAltText('Illustration');
 
-        $rendered = $structElem->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $structElem,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

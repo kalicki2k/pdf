@@ -30,7 +30,7 @@ final class XmpMetadataTest extends TestCase
         $document->addKeyword('pdf')->addKeyword('tests');
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringStartsWith("4 0 obj\n<< /Type /Metadata /Subtype /XML /Length ", $rendered);
         self::assertStringContainsString('<dc:format>application/pdf</dc:format>', $rendered);
@@ -61,7 +61,7 @@ final class XmpMetadataTest extends TestCase
             ->setProducer('kalle/pdf 1.0');
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('<pdf:Producer>kalle/pdf 1.0</pdf:Producer>', $rendered);
         self::assertStringContainsString('<xmp:CreatorTool>Acme Backoffice</xmp:CreatorTool>', $rendered);
@@ -83,7 +83,7 @@ final class XmpMetadataTest extends TestCase
 
         $metadata->write($output);
 
-        self::assertSame($metadata->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata), $output->contents());
     }
 
     #[Test]
@@ -107,7 +107,7 @@ final class XmpMetadataTest extends TestCase
         $metadata->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($metadata->render(), 4),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata), 4),
             $output->contents(),
         );
     }
@@ -124,7 +124,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('<dc:creator>', $rendered);
         self::assertStringContainsString('<rdf:li>DEIN FIRMENNAME</rdf:li>', $rendered);
@@ -141,7 +141,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringNotContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
         self::assertStringNotContainsString('<pdfaid:part>', $rendered);
@@ -158,7 +158,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"', $rendered);
         self::assertStringContainsString('<pdfuaid:part>1</pdfuaid:part>', $rendered);
@@ -173,7 +173,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
         self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
@@ -189,7 +189,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
         self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $rendered);
@@ -205,7 +205,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
         self::assertStringContainsString('<pdfaid:part>3</pdfaid:part>', $rendered);
@@ -221,7 +221,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
         self::assertStringContainsString('<pdfaid:part>3</pdfaid:part>', $rendered);
@@ -237,7 +237,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"', $rendered);
         self::assertStringContainsString('<pdfaid:part>4</pdfaid:part>', $rendered);
@@ -254,7 +254,7 @@ final class XmpMetadataTest extends TestCase
         );
         $metadata = new XmpMetadata(4, $document);
 
-        $rendered = $metadata->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($metadata);
 
         self::assertStringContainsString('<pdfaid:part>4</pdfaid:part>', $rendered);
         self::assertStringContainsString('<pdfaid:rev>2020</pdfaid:rev>', $rendered);

@@ -24,7 +24,7 @@ final class ResourcesTest extends TestCase
 
         self::assertSame(
             "8 0 obj\n<< /Font <<  >> >>\nendobj\n",
-            $resources->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($resources),
         );
     }
 
@@ -39,7 +39,7 @@ final class ResourcesTest extends TestCase
         self::assertSame('F2', $resources->registerFont($fontTwo));
         self::assertSame(
             "8 0 obj\n<< /Font << /F1 6 0 R /F2 7 0 R >> >>\nendobj\n",
-            $resources->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($resources),
         );
     }
 
@@ -53,7 +53,7 @@ final class ResourcesTest extends TestCase
         self::assertSame('F1', $resources->registerFont($font));
         self::assertSame(
             "8 0 obj\n<< /Font << /F1 6 0 R >> >>\nendobj\n",
-            $resources->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($resources),
         );
     }
 
@@ -66,7 +66,7 @@ final class ResourcesTest extends TestCase
         self::assertSame('GS2', $resources->addOpacity(Opacity::stroke(0.25)));
         self::assertSame(
             "8 0 obj\n<< /Font <<  >> /ExtGState << /GS1 << /ca 0.5 >> /GS2 << /CA 0.25 >> >> >>\nendobj\n",
-            $resources->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($resources),
         );
     }
 
@@ -79,7 +79,7 @@ final class ResourcesTest extends TestCase
         self::assertSame('GS1', $resources->addOpacity(Opacity::both(0.4)));
         self::assertSame(
             "8 0 obj\n<< /Font <<  >> /ExtGState << /GS1 << /ca 0.4 /CA 0.4 >> >> >>\nendobj\n",
-            $resources->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($resources),
         );
     }
 
@@ -92,7 +92,7 @@ final class ResourcesTest extends TestCase
         self::assertSame('Im1', $resources->addImage($image));
         self::assertSame(
             "8 0 obj\n<< /Font <<  >> /XObject << /Im1 9 0 R >> >>\nendobj\n",
-            $resources->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($resources),
         );
     }
 
@@ -115,7 +115,7 @@ final class ResourcesTest extends TestCase
         self::assertSame('OC1', $resources->addProperty($group));
         self::assertSame(
             "8 0 obj\n<< /Font <<  >> /Properties << /OC1 9 0 R >> >>\nendobj\n",
-            $resources->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($resources),
         );
     }
 

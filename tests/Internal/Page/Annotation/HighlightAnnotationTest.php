@@ -31,7 +31,7 @@ final class HighlightAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Highlight /Rect [10 20 90 32] /P 4 0 R /QuadPoints [10 32 90 32 10 20 90 20] /C [1 1 0] /Contents (Markiert) /T (QA) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -46,7 +46,7 @@ final class HighlightAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Highlight /Rect [10 20 90 32] /P 4 0 R /QuadPoints [10 32 90 32 10 20 90 20] >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -60,7 +60,7 @@ final class HighlightAnnotationTest extends TestCase
         $popup = new PopupAnnotation(8, $page, $annotation, 20, 40, 60, 30, true);
 
         self::assertSame($annotation, $annotation->withPopup($popup));
-        self::assertStringContainsString('/Popup 8 0 R', $annotation->render());
+        self::assertStringContainsString('/Popup 8 0 R', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertSame([$popup], $annotation->getRelatedObjects());
     }
 
@@ -71,7 +71,7 @@ final class HighlightAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new HighlightAnnotation(7, $page, 10, 20, 80, 12, Color::cmyk(0.1, 0.2, 0.3, 0.4));
 
-        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -86,7 +86,7 @@ final class HighlightAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Highlight /Rect [10 20 90 32] /P 4 0 R /QuadPoints [10 32 90 32 10 20 90 20] /F 4 /C [1 1 0] /Contents (Markiert) /T (QA) /AP << /N 8 0 R >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }
@@ -98,7 +98,8 @@ final class HighlightAnnotationTest extends TestCase
         $page = $document->addPage();
         $annotation = new HighlightAnnotation(7, $page, 10, 20, 80, 12, Color::rgb(255, 255, 0), 'Markiert', 'QA');
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

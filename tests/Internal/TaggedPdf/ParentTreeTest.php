@@ -22,7 +22,7 @@ final class ParentTreeTest extends TestCase
 
         self::assertSame(
             "7 0 obj\n<< /Nums [0 [11 0 R 12 0 R] 1 13 0 R] >>\nendobj\n",
-            $parentTree->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($parentTree),
         );
     }
 }

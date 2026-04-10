@@ -307,7 +307,7 @@ final class TextFrame
         $lineHeight = $options->lineHeight ?? $size * 1.2;
         $spacingAfter ??= $options->spacingAfter ?? $lineHeight;
 
-        $this->page = $this->page->addFlowText(
+        $this->page = $this->page->addParagraph(
             text: $text,
             position: new Position($x, $this->cursorY),
             maxWidth: $width,

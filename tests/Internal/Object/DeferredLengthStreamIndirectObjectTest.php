@@ -25,7 +25,7 @@ final class DeferredLengthStreamIndirectObjectTest extends TestCase
 
         self::assertSame(
             "7 0 obj\n<< /Length 2 >>\nstream\nBT\nendstream\nendobj\n",
-            $object->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($object),
         );
     }
 
@@ -43,7 +43,7 @@ final class DeferredLengthStreamIndirectObjectTest extends TestCase
             $output->contents(),
         );
         self::assertNotNull($object->getLengthObject());
-        self::assertSame("9 0 obj\n2\nendobj\n", $object->getLengthObject()->render());
+        self::assertSame("9 0 obj\n2\nendobj\n", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($object->getLengthObject()));
     }
 
     #[Test]

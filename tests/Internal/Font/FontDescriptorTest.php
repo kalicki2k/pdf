@@ -21,7 +21,7 @@ final class FontDescriptorTest extends TestCase
             "31 0 obj\n"
             . "<< /Type /FontDescriptor /FontName /NotoSans-Regular /Flags 4 /FontBBox [0 -200 1000 900] /ItalicAngle 0 /Ascent 800 /Descent -200 /CapHeight 700 /StemV 80 /FontFile2 30 0 R >>\n"
             . "endobj\n",
-            $descriptor->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($descriptor),
         );
     }
 
@@ -31,6 +31,6 @@ final class FontDescriptorTest extends TestCase
         $fontFile = new FontFileStream(32, 'OTFDATA', 'FontFile3', 'OpenType');
         $descriptor = new FontDescriptor(33, 'NotoSansCJK-Regular', $fontFile);
 
-        self::assertStringContainsString('/FontFile3 32 0 R', $descriptor->render());
+        self::assertStringContainsString('/FontFile3 32 0 R', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($descriptor));
     }
 }

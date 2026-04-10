@@ -23,7 +23,7 @@ final class EncodingDictionaryTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Encoding /BaseEncoding /StandardEncoding /Differences [128 /Adieresis /Odieresis 140 /germandbls] >>\n"
             . "endobj\n",
-            $dictionary->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($dictionary),
         );
     }
 }

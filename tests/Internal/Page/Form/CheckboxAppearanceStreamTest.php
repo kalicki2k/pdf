@@ -20,9 +20,9 @@ final class CheckboxAppearanceStreamTest extends TestCase
     {
         $stream = new CheckboxAppearanceStream(7, 12, 12, true);
 
-        self::assertStringContainsString('/Subtype /Form', $stream->render());
-        self::assertStringContainsString('0 0 12 12 re', $stream->render());
-        self::assertStringContainsString("S\nendstream", $stream->render());
+        self::assertStringContainsString('/Subtype /Form', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream));
+        self::assertStringContainsString('0 0 12 12 re', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream));
+        self::assertStringContainsString("S\nendstream", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream));
     }
 
     #[Test]
@@ -38,7 +38,7 @@ final class CheckboxAppearanceStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 7),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 7),
             $output->contents(),
         );
     }

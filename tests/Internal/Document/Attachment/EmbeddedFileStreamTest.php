@@ -28,7 +28,7 @@ final class EmbeddedFileStreamTest extends TestCase
             . "hello\n"
             . "endstream\n"
             . "endobj\n",
-            $stream->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream),
         );
     }
 
@@ -44,7 +44,7 @@ final class EmbeddedFileStreamTest extends TestCase
             . "hello\n"
             . "endstream\n"
             . "endobj\n",
-            $stream->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream),
         );
     }
 
@@ -56,7 +56,7 @@ final class EmbeddedFileStreamTest extends TestCase
 
         $stream->write($output);
 
-        self::assertSame($stream->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), $output->contents());
     }
 
     #[Test]
@@ -72,7 +72,7 @@ final class EmbeddedFileStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 7),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 7),
             $output->contents(),
         );
     }

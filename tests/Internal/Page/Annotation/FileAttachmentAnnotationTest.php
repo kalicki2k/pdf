@@ -32,7 +32,7 @@ final class FileAttachmentAnnotationTest extends TestCase
             "9 0 obj\n"
             . "<< /Type /Annot /Subtype /FileAttachment /Rect [10 20 22 34] /P 4 0 R /FS 8 0 R /Name /Graph /Contents (Anhang) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -49,7 +49,7 @@ final class FileAttachmentAnnotationTest extends TestCase
             "9 0 obj\n"
             . "<< /Type /Annot /Subtype /FileAttachment /Rect [10 20 22 34] /P 4 0 R /FS 8 0 R /Name /PushPin >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -64,7 +64,7 @@ final class FileAttachmentAnnotationTest extends TestCase
         $annotation = new FileAttachmentAnnotation(9, $page, 10, 20, 12, 14, $fileSpecification, 'Graph', 'Anhang');
         $annotation->withStructParent(4);
 
-        self::assertStringContainsString('/StructParent 4', $annotation->render());
+        self::assertStringContainsString('/StructParent 4', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -76,7 +76,8 @@ final class FileAttachmentAnnotationTest extends TestCase
         $fileSpecification = new FileSpecification(8, 'demo.txt', $embeddedFile, 'Demo attachment');
         $annotation = new FileAttachmentAnnotation(9, $page, 10, 20, 12, 14, $fileSpecification, 'Graph', 'Anhang');
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

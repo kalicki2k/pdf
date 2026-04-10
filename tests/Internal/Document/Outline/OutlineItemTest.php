@@ -30,7 +30,7 @@ final class OutlineItemTest extends TestCase
 
         self::assertSame(
             "8 0 obj\n<< /Title (Intro) /Parent 7 0 R /Dest [4 0 R /Fit] >>\nendobj\n",
-            $outlineItem->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($outlineItem),
         );
     }
 
@@ -44,7 +44,8 @@ final class OutlineItemTest extends TestCase
         /** @var OutlineItem $outlineItem */
         $outlineItem = $document->outlineRoot?->getItems()[0] ?? throw new RuntimeException('Expected outline item.');
 
-        $rendered = $outlineItem->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $outlineItem,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

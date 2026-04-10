@@ -44,7 +44,7 @@ final class FreeTextAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /FreeText /Rect [10 20 90 44] /P 4 0 R /Contents (Hinweistext) /DA (/F1 12 Tf 1 0 0 rg) /T (QA) /C [0.5] /IC [0.9] >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -59,7 +59,7 @@ final class FreeTextAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /FreeText /Rect [10 20 90 44] /P 4 0 R /Contents (Hinweistext) /DA (/F1 12 Tf 0 g) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -84,8 +84,8 @@ final class FreeTextAnnotationTest extends TestCase
             Color::cmyk(0.5, 0.6, 0.7, 0.8),
         );
 
-        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
-        self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', $annotation->render());
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/IC [0.5 0.6 0.7 0.8]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -100,7 +100,7 @@ final class FreeTextAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /FreeText /Rect [10 20 90 44] /P 4 0 R /Contents (Hinweistext) /DA (/F1 12 Tf 0 g) /F 4 /AP << /N 8 0 R >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }
@@ -123,7 +123,8 @@ final class FreeTextAnnotationTest extends TestCase
             title: 'QA',
         );
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

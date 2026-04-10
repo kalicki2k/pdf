@@ -48,7 +48,7 @@ final class UnicodeFontWidthUpdaterTest extends TestCase
 
         (new UnicodeFontWidthUpdater())->update($font);
 
-        self::assertStringContainsString('/W [1 [1000] 2 [1000]]', $font->descendantFont->render());
+        self::assertStringContainsString('/W [1 [1000] 2 [1000]]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font->descendantFont));
     }
 
     #[Test]
@@ -65,6 +65,6 @@ final class UnicodeFontWidthUpdaterTest extends TestCase
 
         (new UnicodeFontWidthUpdater())->update($font);
 
-        self::assertStringNotContainsString('/W [', $font->descendantFont->render());
+        self::assertStringNotContainsString('/W [', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font->descendantFont));
     }
 }

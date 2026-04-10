@@ -44,7 +44,7 @@ final class InkAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Ink /Rect [10 20 90 44] /P 4 0 R /InkList [[10 20 20 30 30 20]] /C [0 0 0] /Contents (Ink) /T (QA) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -69,7 +69,7 @@ final class InkAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Ink /Rect [10 20 90 44] /P 4 0 R /InkList [[10 20 20 30]] >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
@@ -92,7 +92,7 @@ final class InkAnnotationTest extends TestCase
             Color::cmyk(0.1, 0.2, 0.3, 0.4),
         );
 
-        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', $annotation->render());
+        self::assertStringContainsString('/C [0.1 0.2 0.3 0.4]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -132,7 +132,7 @@ final class InkAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Ink /Rect [10 20 90 44] /P 4 0 R /InkList [[10 20 20 30 30 20]] /F 4 /C [0 0 0] /Contents (Ink) /T (QA) /AP << /N 8 0 R >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertCount(1, $annotation->getRelatedObjects());
     }
@@ -157,7 +157,8 @@ final class InkAnnotationTest extends TestCase
             'QA',
         );
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

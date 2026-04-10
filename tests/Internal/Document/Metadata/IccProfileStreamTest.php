@@ -29,7 +29,7 @@ final class IccProfileStreamTest extends TestCase
             . "ICC\n"
             . "endstream\n"
             . "endobj\n",
-            $stream->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream),
         );
     }
 
@@ -45,7 +45,7 @@ final class IccProfileStreamTest extends TestCase
             . "ICC\n"
             . "endstream\n"
             . "endobj\n",
-            $stream->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream),
         );
     }
 
@@ -60,8 +60,8 @@ final class IccProfileStreamTest extends TestCase
             $stream = IccProfileStream::fromPath(11, $path, 3);
             file_put_contents($path, 'changed');
 
-            self::assertStringContainsString('/Length 7', $stream->render());
-            self::assertStringContainsString("stream\nchanged\n", $stream->render());
+            self::assertStringContainsString('/Length 7', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream));
+            self::assertStringContainsString("stream\nchanged\n", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream));
         } finally {
             @unlink($path);
         }
@@ -86,7 +86,7 @@ final class IccProfileStreamTest extends TestCase
 
         $stream->write($output);
 
-        self::assertSame($stream->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), $output->contents());
     }
 
     #[Test]
@@ -102,7 +102,7 @@ final class IccProfileStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 11),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 11),
             $output->contents(),
         );
     }

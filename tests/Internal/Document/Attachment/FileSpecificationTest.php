@@ -27,7 +27,7 @@ final class FileSpecificationTest extends TestCase
             "8 0 obj\n"
             . "<< /Type /Filespec /F (demo.txt) /UF (demo.txt) /EF << /F 7 0 R /UF 7 0 R >> /Desc (Demo attachment) >>\n"
             . "endobj\n",
-            $fileSpecification->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($fileSpecification),
         );
     }
 
@@ -43,7 +43,7 @@ final class FileSpecificationTest extends TestCase
             AssociatedFileRelationship::DATA,
         );
 
-        self::assertStringContainsString('/AFRelationship /Data', $fileSpecification->render());
+        self::assertStringContainsString('/AFRelationship /Data', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($fileSpecification));
     }
 
     #[Test]
@@ -52,7 +52,8 @@ final class FileSpecificationTest extends TestCase
         $embeddedFile = new EmbeddedFileStream(7, 'hello');
         $fileSpecification = new FileSpecification(8, 'demo.txt', $embeddedFile, 'Demo attachment');
 
-        $rendered = $fileSpecification->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $fileSpecification,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

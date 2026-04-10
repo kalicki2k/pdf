@@ -22,7 +22,7 @@ final class InfoTest extends TestCase
         );
         $info = new Info(3, $document);
 
-        $rendered = $info->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($info);
 
         self::assertStringStartsWith("3 0 obj\n<< /Title (Spec) /Author (Kalle)", $rendered);
         self::assertStringContainsString('/Creator (' . $document->getCreator() . ')', $rendered);
@@ -48,7 +48,7 @@ final class InfoTest extends TestCase
         $document->addKeyword('pdf')->addKeyword('tests');
         $info = new Info(5, $document);
 
-        $rendered = $info->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($info);
 
         self::assertStringContainsString('/Subject (Testing)', $rendered);
         self::assertStringContainsString('/Keywords (pdf, tests)', $rendered);
@@ -67,7 +67,7 @@ final class InfoTest extends TestCase
         $document->setProducer('kalle/pdf 1.0');
         $info = new Info(3, $document);
 
-        $rendered = $info->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($info);
 
         self::assertStringContainsString('/Creator (Acme Invoice Service)', $rendered);
         self::assertStringContainsString('/Producer (kalle/pdf 1.0)', $rendered);
@@ -85,7 +85,7 @@ final class InfoTest extends TestCase
         );
         $info = new Info(3, $document);
 
-        $rendered = $info->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($info);
 
         self::assertStringContainsString('/Author (DEIN FIRMENNAME)', $rendered);
         self::assertStringContainsString('/Creator (Rechnungsservice)', $rendered);

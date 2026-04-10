@@ -20,7 +20,7 @@ final class FormFieldSignatureAppearanceStreamTest extends TestCase
     {
         $stream = new FormFieldSignatureAppearanceStream(7, 100, 30);
 
-        $rendered = $stream->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream);
 
         self::assertStringContainsString('7 0 obj', $rendered);
         self::assertStringContainsString('/Subtype /Form', $rendered);
@@ -43,7 +43,7 @@ final class FormFieldSignatureAppearanceStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 7),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 7),
             $output->contents(),
         );
     }

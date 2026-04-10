@@ -34,7 +34,7 @@ final class PageTextElementRendererTest extends TestCase
             $renderer->render('Layered', new Position(10, 20), self::pdfUaRegularFont(), 12);
         });
 
-        self::assertStringContainsString('/Artifact BMC', $page->getContents()->render());
+        self::assertStringContainsString('/Artifact BMC', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -50,8 +50,8 @@ final class PageTextElementRendererTest extends TestCase
         $expectedUnderlineWidth = $page->measureTextWidth('example', 'Helvetica', 10);
         $formattedWidth = rtrim(rtrim(sprintf('%.6F', $expectedUnderlineWidth), '0'), '.');
 
-        self::assertStringContainsString('(example ) Tj', $page->getContents()->render());
-        self::assertStringContainsString("10 48.2 $formattedWidth 0.5 re f", $page->getContents()->render());
+        self::assertStringContainsString('(example ) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString("10 48.2 $formattedWidth 0.5 re f", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     private function createRenderer(Page $page): PageTextElementRenderer

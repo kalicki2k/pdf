@@ -20,9 +20,9 @@ final class RadioButtonAppearanceStreamTest extends TestCase
     {
         $stream = new RadioButtonAppearanceStream(7, 12, true);
 
-        self::assertStringContainsString('/Subtype /Form', $stream->render());
-        self::assertStringContainsString('6 11.5 m', $stream->render());
-        self::assertStringContainsString("\nf\nendstream", $stream->render());
+        self::assertStringContainsString('/Subtype /Form', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream));
+        self::assertStringContainsString('6 11.5 m', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream));
+        self::assertStringContainsString("\nf\nendstream", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream));
     }
 
     #[Test]
@@ -38,7 +38,7 @@ final class RadioButtonAppearanceStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 7),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 7),
             $output->contents(),
         );
     }

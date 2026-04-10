@@ -50,7 +50,7 @@ final class TableFooterRendererTest extends TestCase
 
         self::assertSame($page, $result->page);
         self::assertSame(56.0, $result->cursorY);
-        self::assertStringContainsString('(Summe) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Summe) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -75,7 +75,7 @@ final class TableFooterRendererTest extends TestCase
 
         self::assertNotSame($page, $result->page);
         self::assertCount(2, $document->pages->pages);
-        self::assertStringContainsString('(Summe) Tj', $result->page->getContents()->render());
+        self::assertStringContainsString('(Summe) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($result->page->getContents()));
     }
 
     #[Test]

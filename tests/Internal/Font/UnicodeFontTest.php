@@ -76,7 +76,7 @@ final class UnicodeFontTest extends TestCase
             "12 0 obj\n"
             . "<< /Type /Font /Subtype /Type0 /BaseFont /NotoSansCJKsc-Regular /Encoding /Identity-H /DescendantFonts [13 0 R] /ToUnicode 14 0 R >>\n"
             . "endobj\n",
-            $font->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($font),
         );
     }
 

@@ -51,7 +51,7 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertSame($page, $resultPage);
-        self::assertStringContainsString('(Hello world) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Hello world) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -83,7 +83,7 @@ final class PreparedCellRendererTest extends TestCase
 
         self::assertSame($page, $result->page);
         self::assertSame($remainingLines, $result->remainingLines);
-        self::assertStringNotContainsString('Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -122,7 +122,7 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertSame($remainingLines, $result->remainingLines);
-        self::assertStringNotContainsString('Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -156,7 +156,7 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertSame([], $result->remainingLines);
-        self::assertStringNotContainsString('Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -191,7 +191,7 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertGreaterThan(1, count($result->remainingLines));
-        self::assertStringNotContainsString('Tj', $page->getContents()->render());
+        self::assertStringNotContainsString('Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -224,8 +224,8 @@ final class PreparedCellRendererTest extends TestCase
 
         self::assertCount(1, $result->remainingLines);
         self::assertSame('Line 3', $result->remainingLines[0]['segments'][0]->text);
-        self::assertStringContainsString('(Line 1) Tj', $page->getContents()->render());
-        self::assertStringContainsString('(Line 2) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Line 1) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('(Line 2) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     #[Test]
@@ -256,8 +256,8 @@ final class PreparedCellRendererTest extends TestCase
         );
 
         self::assertSame([], $result->remainingLines);
-        self::assertStringContainsString('(Line 1) Tj', $page->getContents()->render());
-        self::assertStringContainsString('(Line 2) Tj', $page->getContents()->render());
+        self::assertStringContainsString('(Line 1) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
+        self::assertStringContainsString('(Line 2) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
     }
 
     private function createRenderer(): PreparedCellRenderer

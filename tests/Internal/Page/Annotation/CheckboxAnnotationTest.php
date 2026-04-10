@@ -41,7 +41,7 @@ final class CheckboxAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /FT /Btn /Rect [10 20 22 32] /Border [0 0 0] /P 4 0 R /T (accept_terms) /V /Yes /AS /Yes /AP << /N << /Off 8 0 R /Yes 9 0 R >> >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -70,7 +70,7 @@ final class CheckboxAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /FT /Btn /Rect [10 20 22 32] /Border [0 0 0] /P 4 0 R /T (accept_terms) /V /Off /AS /Off /AP << /N << /Off 8 0 R /Yes 9 0 R >> >> >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([$offAppearance, $onAppearance], $annotation->getRelatedObjects());
     }
@@ -96,8 +96,8 @@ final class CheckboxAnnotationTest extends TestCase
         );
         $annotation->withStructParent(1);
 
-        self::assertStringContainsString('/StructParent 1', $annotation->render());
-        self::assertStringContainsString('/TU (Accept terms)', $annotation->render());
+        self::assertStringContainsString('/StructParent 1', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Accept terms)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -120,7 +120,8 @@ final class CheckboxAnnotationTest extends TestCase
             'Accept terms',
         );
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

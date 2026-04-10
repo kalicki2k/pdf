@@ -53,7 +53,7 @@ final class IndirectObjectTest extends TestCase
     }
 
     #[Test]
-    public function it_keeps_render_as_a_wrapper_around_write(): void
+    public function it_can_be_serialized_via_the_test_helper(): void
     {
         $object = new class (42) extends IndirectObject {
             protected function writeObject(PdfOutput $output): void
@@ -62,7 +62,7 @@ final class IndirectObjectTest extends TestCase
             }
         };
 
-        self::assertSame($object->render(), writeIndirectObjectToString($object));
+        self::assertSame('dummy', writeIndirectObjectToString($object));
     }
 
     #[Test]
@@ -96,7 +96,7 @@ final class IndirectObjectTest extends TestCase
     }
 
     #[Test]
-    public function it_keeps_render_with_string_encryptor_as_a_wrapper_around_write(): void
+    public function it_can_be_serialized_with_an_encryptor_via_the_test_helper(): void
     {
         $object = new class (42) extends IndirectObject {
             protected function writeObject(PdfOutput $output): void
@@ -128,9 +128,7 @@ final class IndirectObjectTest extends TestCase
             42,
         );
 
-        $rendered = $object->renderWithStringEncryptor($encryptor);
-
-        self::assertSame($rendered, writeIndirectObjectToString($object, $encryptor));
+        $rendered = writeIndirectObjectToString($object, $encryptor);
         self::assertStringContainsString('42 0 obj', $rendered);
         self::assertStringContainsString('endobj', $rendered);
         self::assertStringNotContainsString('(plain-text)', $rendered);

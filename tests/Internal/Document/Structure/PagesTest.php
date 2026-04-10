@@ -21,7 +21,7 @@ final class PagesTest extends TestCase
 
         self::assertSame(
             "2 0 obj\n<< /Type /Pages /Kids [] /Count 0 >>\nendobj\n",
-            $pages->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($pages),
         );
     }
 
@@ -37,7 +37,7 @@ final class PagesTest extends TestCase
         self::assertSame(6, $page->id);
         self::assertSame(
             "6 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 8 0 R /Contents 7 0 R >>\nendobj\n",
-            $page->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page),
         );
     }
 
@@ -51,7 +51,7 @@ final class PagesTest extends TestCase
 
         self::assertSame(
             "2 0 obj\n<< /Type /Pages /Kids [6 0 R 9 0 R] /Count 2 >>\nendobj\n",
-            $pages->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($pages),
         );
     }
 
@@ -69,7 +69,7 @@ final class PagesTest extends TestCase
         self::assertSame([$firstPage, $thirdPage, $secondPage], $pages->pages);
         self::assertSame(
             "2 0 obj\n<< /Type /Pages /Kids [6 0 R 12 0 R 9 0 R] /Count 3 >>\nendobj\n",
-            $pages->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($pages),
         );
     }
 

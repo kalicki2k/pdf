@@ -591,7 +591,7 @@ final class PublicApiTest extends TestCase
 
         self::assertStringContainsString('/TU (Customer name)', $rendered);
         self::assertStringContainsString('/Tabs /S', $rendered);
-        self::assertSame(1, substr_count($page->getContents()->render(), '/P << /MCID'));
+        self::assertSame(1, substr_count(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()), '/P << /MCID'));
         self::assertStringContainsString('/Type /StructElem /S /Div', $rendered);
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Form \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Customer name\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $rendered);
     }
@@ -1440,7 +1440,7 @@ final class PublicApiTest extends TestCase
         $rendered = $this->writeDocument($document);
 
         self::assertInstanceOf(FileSpecification::class, $attachment);
-        self::assertStringContainsString('/AFRelationship /Data', $attachment->render());
+        self::assertStringContainsString('/AFRelationship /Data', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($attachment));
         self::assertStringContainsString('/AF [', $rendered);
     }
 
@@ -1587,7 +1587,7 @@ final class PublicApiTest extends TestCase
         self::assertSame($page, $returnedPage);
         self::assertSame(120.0, $page->getWidth());
         self::assertSame(140.0, $page->getHeight());
-        self::assertStringContainsString('(Hello) Tj', $internalPage->getContents()->render());
+        self::assertStringContainsString('(Hello) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($internalPage->getContents()));
         self::assertCount(2, $internalPage->getAnnotations());
     }
 
@@ -1607,7 +1607,7 @@ final class PublicApiTest extends TestCase
         $internalPage = $this->internalPage($page);
 
         self::assertInstanceOf(Page::class, $receivedPage);
-        self::assertStringContainsString('(Layered) Tj', $internalPage->getContents()->render());
+        self::assertStringContainsString('(Layered) Tj', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($internalPage->getContents()));
     }
 
     #[Test]
@@ -1704,7 +1704,7 @@ final class PublicApiTest extends TestCase
         self::assertInstanceOf(Page::class, $frame->getPage());
         self::assertLessThan(190.0, $frame->getCursorY());
 
-        $rendered = $this->internalPage($page)->getContents()->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($this->internalPage($page)->getContents());
 
         self::assertStringContainsString('(Intro) Tj', $rendered);
         self::assertStringContainsString('(Paragraph) Tj', $rendered);
@@ -1727,7 +1727,7 @@ final class PublicApiTest extends TestCase
             ->addBadge('Badge', new Position(10, 200), 'Helvetica', 10, new BadgeStyle(fillColor: Color::rgb(230, 230, 230), textColor: Color::rgb(0, 0, 0)))
             ->addPanel('Body', 10, 135, 80, 55, 'Title', 'Helvetica', new PanelStyle())
             ->addCallout('Body', 100, 135, 80, 55, 90, 125, 'Callout', 'Helvetica', new CalloutStyle())
-            ->addFlowText('Flow text', new Position(10, 130), 80, 'Helvetica', 10, new FlowTextOptions())
+            ->addParagraph('Flow text', new Position(10, 130), 80, 'Helvetica', 10, new FlowTextOptions())
             ->addTextBox('Box text', new Rect(10, 100, 80, 20), 'Helvetica', 10, new TextBoxOptions())
             ->addRoundedRectangle(new Rect(10, 70, 20, 10), 2.0, 1.0, Color::rgb(0, 0, 0), Color::rgb(0, 1, 0))
             ->addCircle(50, 75, 5.0, 1.0, Color::rgb(0, 0, 0), Color::rgb(0, 0, 1))
@@ -1742,7 +1742,7 @@ final class PublicApiTest extends TestCase
         self::assertGreaterThan(0, $page->countParagraphLines('Hello world', 'Helvetica', 10, 40));
         self::assertSame(22.78, $page->measureTextWidth('Hello', 'Helvetica', 10));
 
-        $rendered = $this->internalPage($page)->getContents()->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($this->internalPage($page)->getContents());
 
         self::assertStringContainsString('(Badge) Tj', $rendered);
         self::assertStringContainsString('(Title) Tj', $rendered);

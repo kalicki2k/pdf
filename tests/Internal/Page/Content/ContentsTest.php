@@ -35,9 +35,9 @@ final class ContentsTest extends TestCase
 
         self::assertSame(
             "8 0 obj\n<< /Length 9 0 R >>\nstream\n\nendstream\nendobj\n",
-            $contents->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents),
         );
-        self::assertSame("9 0 obj\n0\nendobj\n", $contents->getLengthObject()->render());
+        self::assertSame("9 0 obj\n0\nendobj\n", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents->getLengthObject()));
     }
 
     #[Test]
@@ -50,9 +50,9 @@ final class ContentsTest extends TestCase
 
         self::assertSame(
             "12 0 obj\n<< /Length 13 0 R >>\nstream\nBT\nET\nendstream\nendobj\n",
-            $contents->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents),
         );
-        self::assertSame("13 0 obj\n5\nendobj\n", $contents->getLengthObject()->render());
+        self::assertSame("13 0 obj\n5\nendobj\n", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents->getLengthObject()));
     }
 
     #[Test]
@@ -64,17 +64,17 @@ final class ContentsTest extends TestCase
 
         self::assertSame(
             "12 0 obj\n<< /Length 13 0 R >>\nstream\nBT\nendstream\nendobj\n",
-            $contents->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents),
         );
-        self::assertSame("13 0 obj\n2\nendobj\n", $contents->getLengthObject()->render());
+        self::assertSame("13 0 obj\n2\nendobj\n", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents->getLengthObject()));
 
         $contents->addElement($this->createElement('ET'));
 
         self::assertSame(
             "12 0 obj\n<< /Length 13 0 R >>\nstream\nBT\nET\nendstream\nendobj\n",
-            $contents->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents),
         );
-        self::assertSame("13 0 obj\n5\nendobj\n", $contents->getLengthObject()->render());
+        self::assertSame("13 0 obj\n5\nendobj\n", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents->getLengthObject()));
     }
 
     #[Test]
@@ -86,7 +86,7 @@ final class ContentsTest extends TestCase
 
         $contents->write($output);
 
-        self::assertSame($contents->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents), $output->contents());
     }
 
     #[Test]
@@ -100,10 +100,10 @@ final class ContentsTest extends TestCase
 
         $contents->write($output);
 
-        self::assertSame($contents->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents), $output->contents());
         self::assertSame(
             "12 0 obj\n<< /Length 13 0 R >>\nstream\nBT\nET\nendstream\nendobj\n",
-            $contents->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents),
         );
     }
 
@@ -123,7 +123,7 @@ final class ContentsTest extends TestCase
         $contents->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($contents->render(), 12),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($contents), 12),
             $output->contents(),
         );
     }

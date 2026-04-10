@@ -30,9 +30,9 @@ final class AcroFormTest extends TestCase
         $acroForm = $document->acroForm;
 
         self::assertNotNull($acroForm);
-        self::assertStringContainsString('/Fields [9 0 R]', $acroForm->render());
-        self::assertStringContainsString('/NeedAppearances true', $acroForm->render());
-        self::assertStringContainsString('/DR << /Font << /F1 4 0 R >> >>', $acroForm->render());
+        self::assertStringContainsString('/Fields [9 0 R]', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($acroForm));
+        self::assertStringContainsString('/NeedAppearances true', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($acroForm));
+        self::assertStringContainsString('/DR << /Font << /F1 4 0 R >> >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($acroForm));
     }
 
     #[Test]
@@ -44,7 +44,7 @@ final class AcroFormTest extends TestCase
 
         self::assertSame('F1', $acroForm->registerFont($fontA));
         self::assertSame('F1', $acroForm->registerFont($fontB));
-        self::assertStringContainsString('/DR << /Font << /F1 4 0 R >> >>', $acroForm->render());
+        self::assertStringContainsString('/DR << /Font << /F1 4 0 R >> >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($acroForm));
     }
 
     #[Test]

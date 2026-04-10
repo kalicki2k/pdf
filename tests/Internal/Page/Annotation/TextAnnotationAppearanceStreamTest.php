@@ -20,7 +20,7 @@ final class TextAnnotationAppearanceStreamTest extends TestCase
     {
         $stream = new TextAnnotationAppearanceStream(7, 16, 18);
 
-        $rendered = $stream->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream);
 
         self::assertStringContainsString('7 0 obj', $rendered);
         self::assertStringContainsString('/Subtype /Form', $rendered);
@@ -42,7 +42,7 @@ final class TextAnnotationAppearanceStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 7),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 7),
             $output->contents(),
         );
     }

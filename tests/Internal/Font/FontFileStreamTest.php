@@ -30,7 +30,7 @@ final class FontFileStreamTest extends TestCase
             . "FONTDATA\n"
             . "endstream\n"
             . "endobj\n",
-            $stream->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream),
         );
     }
 
@@ -46,7 +46,7 @@ final class FontFileStreamTest extends TestCase
             . "OTFDATA\n"
             . "endstream\n"
             . "endobj\n",
-            $stream->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream),
         );
     }
 
@@ -62,7 +62,7 @@ final class FontFileStreamTest extends TestCase
             . "FONTDATA\n"
             . "endstream\n"
             . "endobj\n",
-            $stream->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream),
         );
     }
 
@@ -85,7 +85,7 @@ final class FontFileStreamTest extends TestCase
             . "ABC\n"
             . "endstream\n"
             . "endobj\n",
-            $stream->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream),
         );
 
         unlink($ttfPath);
@@ -143,7 +143,7 @@ final class FontFileStreamTest extends TestCase
 
         $stream->write($output);
 
-        self::assertSame($stream->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), $output->contents());
     }
 
     #[Test]
@@ -159,7 +159,7 @@ final class FontFileStreamTest extends TestCase
         $stream->writeEncrypted($output, $encryptor);
 
         self::assertSame(
-            $encryptor->encryptStreamObject($stream->render(), 20),
+            $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($stream), 20),
             $output->contents(),
         );
     }

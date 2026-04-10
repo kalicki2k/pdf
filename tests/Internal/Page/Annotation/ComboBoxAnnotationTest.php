@@ -47,7 +47,7 @@ final class ComboBoxAnnotationTest extends TestCase
             "7 0 obj\n"
             . "<< /Type /Annot /Subtype /Widget /FT /Ch /Rect [10 20 90 32] /Border [0 0 1] /P 5 0 R /T (country) /DA (/F1 12 Tf 0 g) /Opt [[(de) (Deutschland)] [(at) (Oesterreich)]] /Ff 131072 /V (de) >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -73,7 +73,7 @@ final class ComboBoxAnnotationTest extends TestCase
             new FormFieldFlags(readOnly: true, required: true),
         );
 
-        self::assertStringContainsString('/Ff 131075', $annotation->render());
+        self::assertStringContainsString('/Ff 131075', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -98,7 +98,7 @@ final class ComboBoxAnnotationTest extends TestCase
             new FormFieldFlags(editable: true),
         );
 
-        self::assertStringContainsString('/Ff 393216', $annotation->render());
+        self::assertStringContainsString('/Ff 393216', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -123,8 +123,8 @@ final class ComboBoxAnnotationTest extends TestCase
             defaultValue: 'at',
         );
 
-        self::assertStringContainsString('/V (de)', $annotation->render());
-        self::assertStringContainsString('/DV (at)', $annotation->render());
+        self::assertStringContainsString('/V (de)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/DV (at)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -150,9 +150,9 @@ final class ComboBoxAnnotationTest extends TestCase
             Color::rgb(255, 0, 0),
         );
 
-        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', $annotation->render());
-        self::assertStringNotContainsString('/V (', $annotation->render());
-        self::assertStringNotContainsString('/DV (', $annotation->render());
+        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringNotContainsString('/V (', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringNotContainsString('/DV (', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
         self::assertSame([], $annotation->getRelatedObjects());
     }
 
@@ -178,8 +178,8 @@ final class ComboBoxAnnotationTest extends TestCase
         );
         $annotation->withStructParent(1);
 
-        self::assertStringContainsString('/StructParent 1', $annotation->render());
-        self::assertStringContainsString('/TU (Country selection)', $annotation->render());
+        self::assertStringContainsString('/StructParent 1', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
+        self::assertStringContainsString('/TU (Country selection)', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation));
     }
 
     #[Test]
@@ -205,7 +205,8 @@ final class ComboBoxAnnotationTest extends TestCase
             tooltip: 'Country selection',
         );
 
-        $rendered = $annotation->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $annotation,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

@@ -217,6 +217,6 @@ final class PdfObjectSerializerTest extends TestCase
 
         $serializer->writeObjects([$encryptDictionary], $output);
 
-        self::assertSame($encryptDictionary->render(), $output->contents());
+        self::assertSame(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($encryptDictionary), $output->contents());
     }
 }

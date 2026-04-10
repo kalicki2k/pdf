@@ -34,7 +34,7 @@ final class CatalogTest extends TestCase
 
         self::assertSame(
             "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -50,7 +50,7 @@ final class CatalogTest extends TestCase
             "1 0 obj\n"
             . "<< /Type /Catalog /Pages 2 0 R /Metadata 12 0 R /MarkInfo << /Marked true >> /Lang (de-DE) /StructTreeRoot 8 0 R >>\n"
             . "endobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -61,7 +61,7 @@ final class CatalogTest extends TestCase
         $document->addPage()->addText('Hello', new Position(10, 20), self::pdfUaRegularFont(), 12, new TextOptions(structureTag: StructureTag::Paragraph));
         $catalog = new Catalog(1, $document);
 
-        $rendered = $catalog->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog);
 
         self::assertStringStartsWith("1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata ", $rendered);
         self::assertStringContainsString('/ViewerPreferences << /DisplayDocTitle true >>', $rendered);
@@ -79,7 +79,7 @@ final class CatalogTest extends TestCase
 
         self::assertSame(
             "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata 4 0 R >>\nendobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -93,7 +93,7 @@ final class CatalogTest extends TestCase
 
         self::assertSame(
             "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata 9 0 R /Outlines 7 0 R /PageMode /UseOutlines >>\nendobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -107,7 +107,7 @@ final class CatalogTest extends TestCase
 
         self::assertSame(
             "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata 7 0 R /Dests << /table-demo [4 0 R /Fit] >> >>\nendobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -125,7 +125,7 @@ final class CatalogTest extends TestCase
             "1 0 obj\n"
             . "<< /Type /Catalog /Pages 2 0 R /Metadata 8 0 R /OCProperties << /OCGs [7 0 R] /D << /Order [7 0 R] /ON [7 0 R] >> >> >>\n"
             . "endobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -141,7 +141,7 @@ final class CatalogTest extends TestCase
             "1 0 obj\n"
             . "<< /Type /Catalog /Pages 2 0 R /Metadata 6 0 R /OCProperties << /OCGs [4 0 R 5 0 R] /D << /Order [4 0 R 5 0 R] /ON [4 0 R] /OFF [5 0 R] >> >> >>\n"
             . "endobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -156,7 +156,7 @@ final class CatalogTest extends TestCase
             "1 0 obj\n"
             . "<< /Type /Catalog /Pages 2 0 R /Metadata 6 0 R /Names << /EmbeddedFiles << /Names [(demo.txt) 5 0 R] >> >> >>\n"
             . "endobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -170,7 +170,7 @@ final class CatalogTest extends TestCase
 
         self::assertSame(
             "1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Metadata 8 0 R /AcroForm 7 0 R >>\nendobj\n",
-            $catalog->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog),
         );
     }
 
@@ -180,7 +180,7 @@ final class CatalogTest extends TestCase
         $document = new Document(profile: Profile::pdfA2u());
         $catalog = new Catalog(1, $document);
 
-        $rendered = $catalog->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog);
 
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
         self::assertStringContainsString('/S /GTS_PDFA1', $rendered);
@@ -194,7 +194,7 @@ final class CatalogTest extends TestCase
         $document = new Document(profile: Profile::pdfA2b());
         $catalog = new Catalog(1, $document);
 
-        $rendered = $catalog->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog);
 
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
         self::assertStringContainsString('/S /GTS_PDFA1', $rendered);
@@ -209,7 +209,7 @@ final class CatalogTest extends TestCase
         $document->addAttachment('data.xml', '<root/>', 'Machine-readable source', 'application/xml');
         $catalog = new Catalog(1, $document);
 
-        $rendered = $catalog->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog);
 
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
         self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.xml) 5 0 R] >> >>', $rendered);
@@ -222,7 +222,7 @@ final class CatalogTest extends TestCase
         $document = new Document(profile: Profile::pdfA4());
         $catalog = new Catalog(1, $document);
 
-        $rendered = $catalog->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog);
 
         self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent', $rendered);
         self::assertStringContainsString('/S /GTS_PDFA1', $rendered);
@@ -237,7 +237,7 @@ final class CatalogTest extends TestCase
         $document->addAttachment('data.xml', '<root/>', 'Machine-readable source', 'application/xml');
         $catalog = new Catalog(1, $document);
 
-        $rendered = $catalog->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog);
 
         self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.xml) 5 0 R] >> >>', $rendered);
         self::assertStringContainsString('/AF [5 0 R]', $rendered);
@@ -256,7 +256,7 @@ final class CatalogTest extends TestCase
         );
         $catalog = new Catalog(1, $document);
 
-        $rendered = $catalog->render();
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($catalog);
 
         self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.json) 5 0 R] >> >>', $rendered);
         self::assertStringContainsString('/AF [5 0 R]', $rendered);
@@ -277,7 +277,8 @@ final class CatalogTest extends TestCase
         );
         $catalog = new Catalog(1, $document);
 
-        $rendered = $catalog->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $catalog,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

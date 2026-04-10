@@ -22,7 +22,7 @@ final class OptionalContentGroupTest extends TestCase
 
         self::assertSame(
             "7 0 obj\n<< /Type /OCG /Name (Notes) >>\nendobj\n",
-            $group->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($group),
         );
     }
 
@@ -31,7 +31,8 @@ final class OptionalContentGroupTest extends TestCase
     {
         $group = new OptionalContentGroup(7, 'Notes');
 
-        $rendered = $group->renderWithStringEncryptor(
+        $rendered = \Kalle\Pdf\Tests\Support\writeIndirectObjectToString(
+            $group,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

@@ -25,7 +25,7 @@ final class PopupAnnotationTest extends TestCase
             "8 0 obj\n"
             . "<< /Type /Annot /Subtype /Popup /Rect [20 30 80 70] /P 4 0 R /Parent 7 0 R /Open true >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
     }
 
@@ -41,7 +41,7 @@ final class PopupAnnotationTest extends TestCase
             "8 0 obj\n"
             . "<< /Type /Annot /Subtype /Popup /Rect [20 30 80 70] /P 4 0 R /Parent 7 0 R /Open false >>\n"
             . "endobj\n",
-            $annotation->render(),
+            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($annotation),
         );
         self::assertSame([], $annotation->getRelatedObjects());
     }
