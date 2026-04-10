@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\Object\KnownLengthStreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 
-final class CidToGidMap extends StreamIndirectObject
+final class CidToGidMap extends KnownLengthStreamIndirectObject
 {
     public function __construct(
         int $id,
@@ -62,7 +62,7 @@ final class CidToGidMap extends StreamIndirectObject
         }
     }
 
-    protected function streamLength(): int
+    protected function knownStreamLength(): int
     {
         return $this->mapLength();
     }

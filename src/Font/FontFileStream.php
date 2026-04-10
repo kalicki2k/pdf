@@ -6,14 +6,14 @@ namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Binary\BinaryData;
-use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\Object\KnownLengthStreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
-final class FontFileStream extends StreamIndirectObject
+final class FontFileStream extends KnownLengthStreamIndirectObject
 {
     private readonly BinaryData $data;
     private ?OpenTypeFontParser $parser = null;
@@ -74,7 +74,7 @@ final class FontFileStream extends StreamIndirectObject
         $this->data->writeTo($output);
     }
 
-    protected function streamLength(): int
+    protected function knownStreamLength(): int
     {
         return $this->data->length();
     }

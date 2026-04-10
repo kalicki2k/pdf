@@ -11,7 +11,7 @@ use Kalle\Pdf\Render\MeasuringPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use LogicException;
 
-abstract class DeferredLengthStreamIndirectObject extends StreamIndirectObject implements HasDeferredStreamLengthObject
+abstract class DeferredLengthStreamIndirectObject extends AbstractStreamIndirectObject implements HasDeferredStreamLengthObject
 {
     private ?StreamLengthObject $lengthObject = null;
 
@@ -64,14 +64,6 @@ abstract class DeferredLengthStreamIndirectObject extends StreamIndirectObject i
         $lengthObject->setLength($measuringOutput->writtenBytes());
 
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
-    }
-
-    protected function streamLength(): int
-    {
-        throw new LogicException(sprintf(
-            'Deferred stream object %s requires a prepared length object before serialization.',
-            static::class,
-        ));
     }
 
     private function requireLengthObject(): StreamLengthObject

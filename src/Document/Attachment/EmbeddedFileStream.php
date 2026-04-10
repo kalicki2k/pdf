@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Attachment;
 
 use Kalle\Pdf\Binary\BinaryData;
-use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\Object\KnownLengthStreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 
-class EmbeddedFileStream extends StreamIndirectObject
+class EmbeddedFileStream extends KnownLengthStreamIndirectObject
 {
     public function __construct(
         int $id,
@@ -45,7 +45,7 @@ class EmbeddedFileStream extends StreamIndirectObject
         $this->contents->writeTo($output);
     }
 
-    protected function streamLength(): int
+    protected function knownStreamLength(): int
     {
         return $this->contents->length();
     }
