@@ -17,12 +17,10 @@ use Kalle\Pdf\TaggedPdf\StructureTag;
 /**
  * @internal Renders already prepared text lines onto a page.
  */
-final class PageTextLineRenderer
+final readonly class PageTextLineRenderer
 {
-    public function __construct(
-        private readonly PageFonts $pageFonts,
-        private readonly TextLayoutEngine $textLayoutEngine,
-    ) {
+    public function __construct(private PageFonts $pageFonts, private TextLayoutEngine $textLayoutEngine)
+    {
     }
 
     /**

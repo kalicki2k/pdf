@@ -20,15 +20,13 @@ use Kalle\Pdf\TaggedPdf\StructureTag;
 /**
  * @internal Builds and inserts the table of contents pages for a document.
  */
-class DocumentTableOfContentsBuilder
+final readonly class DocumentTableOfContentsBuilder
 {
     /**
      * @param array<int, true> $excludedPageIdsFromNumbering
      */
-    public function __construct(
-        private Document $document,
-        private array $excludedPageIdsFromNumbering,
-    ) {
+    public function __construct(private Document $document, private array $excludedPageIdsFromNumbering)
+    {
     }
 
     public function addTableOfContents(?PageSize $size = null, ?TableOfContentsOptions $options = null): Page
