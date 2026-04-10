@@ -13,7 +13,6 @@ use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
-use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;
 
 /**
@@ -299,7 +298,7 @@ final readonly class Document
 
     private function toInternalPage(Page $page): InternalPage
     {
-        return PageRegistry::resolve($page);
+        return $page->toInternalPage();
     }
 
     private function toPublicPage(InternalPage $page): Page

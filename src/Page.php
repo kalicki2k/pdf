@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
@@ -29,9 +30,9 @@ use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
-use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Internal\Style\Opacity;
+use ReflectionProperty;
 
 /**
  * Public facade for page operations exposed to library users.
@@ -43,7 +44,18 @@ final readonly class Page
      */
     public function __construct(private InternalPage $page)
     {
-        PageRegistry::register($this, $page);
+    }
+
+    /**
+     * @internal Transitional bridge while public and internal page types still coexist.
+     */
+    public function toInternalPage(): InternalPage
+    {
+        if (!(new ReflectionProperty(self::class, 'page'))->isInitialized($this)) {
+            throw new InvalidArgumentException('The provided page does not belong to this library API.');
+        }
+
+        return $this->page;
     }
 
     /**
