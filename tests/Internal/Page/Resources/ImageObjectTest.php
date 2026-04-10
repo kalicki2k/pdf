@@ -24,20 +24,14 @@ final class ImageObjectTest extends TestCase
         self::assertSame(9, $imageObject->getId());
         self::assertSame(
             "9 0 obj\n"
-            . "<< /Type /XObject\n"
-            . "/Subtype /Image\n"
-            . "/Width 320\n"
-            . "/Height 200\n"
-            . "/ColorSpace /DeviceRGB\n"
-            . "/BitsPerComponent 8\n"
-            . "/Filter /DCTDecode\n"
-            . "/Length 6 >>\n"
+            . "<< /Type /XObject /Subtype /Image /Width 320 /Height 200 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length 1000009 0 R >>\n"
             . "stream\n"
             . "abc123\n"
             . "endstream\n"
             . "endobj\n",
             \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($imageObject),
         );
+        self::assertSame(6, $imageObject->getLengthObject()?->getLength());
         self::assertSame([$imageObject], $imageObject->getRelatedObjects());
     }
 
@@ -49,21 +43,14 @@ final class ImageObjectTest extends TestCase
 
         self::assertSame(
             "9 0 obj\n"
-            . "<< /Type /XObject\n"
-            . "/Subtype /Image\n"
-            . "/Width 320\n"
-            . "/Height 200\n"
-            . "/ColorSpace /DeviceRGB\n"
-            . "/BitsPerComponent 8\n"
-            . "/Filter /DCTDecode\n"
-            . "/SMask 10 0 R\n"
-            . "/Length 6 >>\n"
+            . "<< /Type /XObject /Subtype /Image /Width 320 /Height 200 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length 1000009 0 R /SMask 10 0 R >>\n"
             . "stream\n"
             . "abc123\n"
             . "endstream\n"
             . "endobj\n",
             \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($imageObject),
         );
+        self::assertSame(6, $imageObject->getLengthObject()?->getLength());
         self::assertSame([$imageObject, $softMask], $imageObject->getRelatedObjects());
     }
 
@@ -72,6 +59,7 @@ final class ImageObjectTest extends TestCase
     {
         $imageObject = new ImageObject(9, new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123'));
         $output = new StringPdfOutput();
+        $imageObject->prepareLengthObject(13);
 
         $imageObject->write($output);
 
@@ -87,6 +75,7 @@ final class ImageObjectTest extends TestCase
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),
         );
         $output = new StringPdfOutput();
+        $imageObject->prepareLengthObject(13);
 
         $imageObject->writeEncrypted($output, $encryptor);
 
@@ -94,5 +83,6 @@ final class ImageObjectTest extends TestCase
             $encryptor->encryptStreamObject(\Kalle\Pdf\Tests\Support\writeIndirectObjectToString($imageObject), 9),
             $output->contents(),
         );
+        self::assertNotNull($imageObject->getLengthObject());
     }
 }

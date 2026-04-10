@@ -7,6 +7,8 @@ namespace Kalle\Pdf\Image;
 use InvalidArgumentException;
 use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
+use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\Type;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
@@ -89,25 +91,34 @@ class Image
         return $objectEncryptor->encryptedByteLength($this->streamLength());
     }
 
-    public function writeDictionary(PdfOutput $output, ?int $softMaskObjectId, int $length): void
+    public function dictionary(int | Type $length, ?int $softMaskObjectId): DictionaryType
     {
-        $output->write('<< /Type /XObject' . PHP_EOL);
-        $output->write('/Subtype /Image' . PHP_EOL);
-        $output->write("/Width {$this->width}" . PHP_EOL);
-        $output->write("/Height {$this->height}" . PHP_EOL);
-        $output->write("/ColorSpace /{$this->colorSpace}" . PHP_EOL);
-        $output->write("/BitsPerComponent {$this->bitsPerComponent}" . PHP_EOL);
-        $output->write("/Filter /{$this->filter}" . PHP_EOL);
+        $dictionary = new DictionaryType([
+            'Type' => '/XObject',
+            'Subtype' => '/Image',
+            'Width' => $this->width,
+            'Height' => $this->height,
+            'ColorSpace' => '/' . $this->colorSpace,
+            'BitsPerComponent' => $this->bitsPerComponent,
+            'Filter' => '/' . $this->filter,
+            'Length' => $length,
+        ]);
 
         if ($this->decodeParameters !== null) {
-            $output->write("/DecodeParms {$this->decodeParameters}" . PHP_EOL);
+            $dictionary->add('DecodeParms', $this->decodeParameters);
         }
 
         if ($softMaskObjectId !== null) {
-            $output->write("/SMask {$softMaskObjectId} 0 R" . PHP_EOL);
+            $dictionary->add('SMask', $softMaskObjectId . ' 0 R');
         }
 
-        $output->write('/Length ' . $length . ' >>' . PHP_EOL);
+        return $dictionary;
+    }
+
+    public function writeDictionary(PdfOutput $output, ?int $softMaskObjectId, int $length): void
+    {
+        $this->dictionary($length, $softMaskObjectId)->write($output);
+        $output->write(PHP_EOL);
     }
 
     public function writeStreamContents(PdfOutput $output): void

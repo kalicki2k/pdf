@@ -39,14 +39,7 @@ final class ImageTest extends TestCase
         $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', 'abc123');
 
         self::assertSame(
-            "<< /Type /XObject\n"
-            . "/Subtype /Image\n"
-            . "/Width 320\n"
-            . "/Height 200\n"
-            . "/ColorSpace /DeviceRGB\n"
-            . "/BitsPerComponent 8\n"
-            . "/Filter /DCTDecode\n"
-            . "/Length 6 >>\n"
+            "<< /Type /XObject /Subtype /Image /Width 320 /Height 200 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length 6 >>\n"
             . "stream\n"
             . "abc123\n"
             . "endstream\n",
@@ -60,14 +53,7 @@ final class ImageTest extends TestCase
         $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', BinaryData::fromString('abc123'));
 
         self::assertSame(
-            "<< /Type /XObject\n"
-            . "/Subtype /Image\n"
-            . "/Width 320\n"
-            . "/Height 200\n"
-            . "/ColorSpace /DeviceRGB\n"
-            . "/BitsPerComponent 8\n"
-            . "/Filter /DCTDecode\n"
-            . "/Length 6 >>\n"
+            "<< /Type /XObject /Subtype /Image /Width 320 /Height 200 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length 6 >>\n"
             . "stream\n"
             . "abc123\n"
             . "endstream\n",

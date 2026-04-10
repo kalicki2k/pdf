@@ -106,7 +106,7 @@ final class PageTest extends TestCase
         self::assertSame($page, $page->addImage($image, new Position(10, 20), 160, 100));
         self::assertStringContainsString('/XObject << /Im1 7 0 R >>', \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getResources()));
         self::assertStringContainsString("160 0 0 100 10 20 cm\n/Im1 Do", \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($page->getContents()));
-        self::assertStringContainsString("7 0 obj\n<< /Type /XObject\n/Subtype /Image", writeDocumentToString($document));
+        self::assertStringContainsString("7 0 obj\n<< /Type /XObject /Subtype /Image", writeDocumentToString($document));
     }
 
     #[Test]
