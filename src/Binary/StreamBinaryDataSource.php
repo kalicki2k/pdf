@@ -21,6 +21,8 @@ final class StreamBinaryDataSource implements BinaryDataSource
 
     private ?int $length;
 
+    private bool $isConsumed = false;
+
     /**
      * @param resource $stream
      */
@@ -59,7 +61,12 @@ final class StreamBinaryDataSource implements BinaryDataSource
             return $this->length;
         }
 
-        $this->ensureSeekableReplayStream();
+        if (!$this->isSeekable) {
+            throw new RuntimeException(
+                'Unable to determine the length of a non-seekable binary stream without buffering it. '
+                . 'Provide the byte length explicitly.',
+            );
+        }
 
         return $this->withStreamFromStart(function (): int {
             if (fseek($this->stream, 0, SEEK_END) !== 0) {
@@ -86,7 +93,9 @@ final class StreamBinaryDataSource implements BinaryDataSource
             return '';
         }
 
-        $this->ensureSeekableReplayStream();
+        if (!$this->isSeekable) {
+            throw new RuntimeException('Unable to slice a non-seekable binary stream without buffering it.');
+        }
 
         return $this->withStreamAtOffset($offset, function () use ($length): string {
             $bytes = '';
@@ -114,7 +123,7 @@ final class StreamBinaryDataSource implements BinaryDataSource
     public function writeTo(PdfOutput $output): void
     {
         if (!$this->isSeekable) {
-            $this->writeFromNonSeekableSource($output);
+            $this->writeNonSeekableStream($output);
 
             return;
         }
@@ -149,47 +158,12 @@ final class StreamBinaryDataSource implements BinaryDataSource
         $this->streamsToClose = [];
     }
 
-    /**
-     * @return resource
-     */
-    private function createReplayStream()
+    private function writeNonSeekableStream(PdfOutput $output): void
     {
-        $buffer = fopen('php://temp', 'w+b');
-
-        if ($buffer === false) {
-            throw new RuntimeException('Unable to allocate a temporary buffer for binary data.');
+        if ($this->isConsumed) {
+            throw new RuntimeException('Unable to replay a non-seekable binary stream after it has been consumed.');
         }
 
-        $this->streamsToClose[] = $buffer;
-
-        return $buffer;
-    }
-
-    private function ensureSeekableReplayStream(): void
-    {
-        if ($this->isSeekable) {
-            return;
-        }
-
-        $buffer = $this->createReplayStream();
-        $length = $this->copyStream($this->stream, $buffer);
-
-        if (rewind($buffer) === false) {
-            throw new RuntimeException('Unable to rewind buffered binary data stream.');
-        }
-
-        if ($this->length !== null && $this->length !== $length) {
-            throw new RuntimeException('Binary data stream length does not match the provided byte length.');
-        }
-
-        $this->length ??= $length;
-        $this->stream = $buffer;
-        $this->isSeekable = true;
-    }
-
-    private function writeFromNonSeekableSource(PdfOutput $output): void
-    {
-        $buffer = $this->createReplayStream();
         $length = 0;
 
         while (!feof($this->stream)) {
@@ -205,14 +179,6 @@ final class StreamBinaryDataSource implements BinaryDataSource
 
             $length += strlen($chunk);
             $output->write($chunk);
-
-            if (fwrite($buffer, $chunk) === false) {
-                throw new RuntimeException('Unable to buffer binary data stream.');
-            }
-        }
-
-        if (rewind($buffer) === false) {
-            throw new RuntimeException('Unable to rewind buffered binary data stream.');
         }
 
         if ($this->length !== null && $this->length !== $length) {
@@ -220,37 +186,7 @@ final class StreamBinaryDataSource implements BinaryDataSource
         }
 
         $this->length ??= $length;
-        $this->stream = $buffer;
-        $this->isSeekable = true;
-    }
-
-    /**
-     * @param resource $source
-     * @param resource $target
-     */
-    private function copyStream($source, $target): int
-    {
-        $length = 0;
-
-        while (!feof($source)) {
-            $chunk = fread($source, self::READ_CHUNK_BYTES);
-
-            if ($chunk === false) {
-                throw new RuntimeException('Unable to read binary data stream.');
-            }
-
-            if ($chunk === '') {
-                continue;
-            }
-
-            $length += strlen($chunk);
-
-            if (fwrite($target, $chunk) === false) {
-                throw new RuntimeException('Unable to buffer binary data stream.');
-            }
-        }
-
-        return $length;
+        $this->isConsumed = true;
     }
 
     /**
