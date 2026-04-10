@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Feature\Table\Layout\PreparedTableRow;
 use Kalle\Pdf\Feature\Table\Layout\RowGroupPreparer;
 use Kalle\Pdf\Feature\Table\Layout\RowPreparer;
@@ -15,6 +14,7 @@ use Kalle\Pdf\Feature\Table\Style\TableStyle;
 use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Feature\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Feature\Table\TableCell;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

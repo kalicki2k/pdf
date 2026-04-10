@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Feature\Text\ListOptions;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
 use Kalle\Pdf\Feature\Text\TextFrame as InternalTextFrame;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Layout\BulletType;
 
 /**

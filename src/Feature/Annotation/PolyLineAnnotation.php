@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Annotation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;

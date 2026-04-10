@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Feature\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Feature\Table\Layout\RowPreparer;
 use Kalle\Pdf\Feature\Table\Style\CellStyle;
@@ -17,6 +16,7 @@ use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Feature\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

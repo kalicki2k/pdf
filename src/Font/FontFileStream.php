@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\BinaryData;
+use Kalle\Pdf\Infrastructure\Binary\BinaryData;
 use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;

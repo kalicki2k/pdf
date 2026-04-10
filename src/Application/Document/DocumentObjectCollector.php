@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Application\Document;
 
 use IteratorAggregate;
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Model\Document\IccProfileStream;
 use Kalle\Pdf\Model\Document\XmpMetadata;
 use Kalle\Pdf\Object\IndirectObject;

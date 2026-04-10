@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Feature\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

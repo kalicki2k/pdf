@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Application\Document\DocumentPdfWriter;
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;

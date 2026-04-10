@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\PageFonts;
-use Kalle\Pdf\Document\PageGraphics;
-use Kalle\Pdf\Document\PageLinks;
-use Kalle\Pdf\Document\PageMarkedContentIds;
 use Kalle\Pdf\Feature\Annotation\PageAnnotations;
 use Kalle\Pdf\Feature\Text\PageTextElementRenderer;
 use Kalle\Pdf\Feature\Text\TextOptions;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Internal\Page\PageFonts;
+use Kalle\Pdf\Internal\Page\PageGraphics;
+use Kalle\Pdf\Internal\Page\PageLinks;
+use Kalle\Pdf\Internal\Page\PageMarkedContentIds;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;

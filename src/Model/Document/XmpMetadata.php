@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Model\Document;
 
-use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;

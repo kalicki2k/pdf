@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Geometry\Rect;
+use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Layout\VerticalAlign;
 
 /**

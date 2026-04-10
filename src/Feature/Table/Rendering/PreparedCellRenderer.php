@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table\Rendering;
 
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Feature\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Feature\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Feature\Table\Style\FooterStyle;
@@ -16,6 +15,7 @@ use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Feature\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Structure\StructElem;
 
 final readonly class PreparedCellRenderer

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Form;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Feature\Annotation\PageAnnotation;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Types\ArrayType;

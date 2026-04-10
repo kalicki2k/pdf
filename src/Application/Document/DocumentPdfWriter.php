@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Application\Document;
 
-use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Render\PdfOutput;
 
 class DocumentPdfWriter

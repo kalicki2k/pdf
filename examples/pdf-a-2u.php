@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;

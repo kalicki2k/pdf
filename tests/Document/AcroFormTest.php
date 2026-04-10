@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Feature\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Feature\Form\AcroForm;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontName;
+use Kalle\Pdf\Geometry\Rect;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;

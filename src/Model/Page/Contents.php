@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Model\Page;
 
-use Kalle\Pdf\Document\StreamLengthObject;
 use Kalle\Pdf\Element\Element;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Model\Page\StreamLengthObject;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\CountingPdfOutput;

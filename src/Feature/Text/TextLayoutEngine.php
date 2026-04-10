@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\PageFonts;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Navigation\LinkTarget;
 
 /**
  * Keeps text run normalization, line breaking and overflow rules together.

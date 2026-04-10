@@ -4,15 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Document\FileSpecification;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\Page as InternalPage;
-use Kalle\Pdf\Document\PathBuilder;
-use Kalle\Pdf\Document\Style\BadgeStyle;
-use Kalle\Pdf\Document\Style\CalloutStyle;
-use Kalle\Pdf\Document\Style\PanelStyle;
 use Kalle\Pdf\Element\Image;
 use Kalle\Pdf\Feature\Action\ButtonAction;
 use Kalle\Pdf\Feature\Annotation\AnnotationBorderStyle;
@@ -26,12 +17,21 @@ use Kalle\Pdf\Feature\Text\FlowTextOptions;
 use Kalle\Pdf\Feature\Text\TextBoxOptions;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Page as InternalPage;
+use Kalle\Pdf\Internal\Page\PathBuilder;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Model\Page\ImageOptions;
+use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Style\BadgeStyle;
+use Kalle\Pdf\Style\CalloutStyle;
+use Kalle\Pdf\Style\PanelStyle;
 
 /**
  * Public facade for page operations exposed to library users.

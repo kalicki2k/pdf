@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Geometry\Insets;
-use Kalle\Pdf\Document\Geometry\Rect;
 use Kalle\Pdf\Feature\Text\TextBoxLayout;
 use Kalle\Pdf\Feature\Text\TextBoxOptions;
+use Kalle\Pdf\Geometry\Insets;
+use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Layout\VerticalAlign;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table\Rendering;
 
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Table\TableHeaderScope;
 use Kalle\Pdf\Feature\Text\StructureTag;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Structure\StructElem;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Annotation;
 
-use Kalle\Pdf\Document\HasRelatedObjects;
+use Kalle\Pdf\Feature\Annotation\HasRelatedObjects;
 
 interface PageAnnotation extends HasRelatedObjects
 {

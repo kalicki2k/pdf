@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Application\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\BinaryData;
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Font\CidFont;
 use Kalle\Pdf\Font\CidToGidMap;
 use Kalle\Pdf\Font\EncodingDictionary;
@@ -18,6 +16,8 @@ use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\ToUnicodeCMap;
 use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeGlyphMap;
+use Kalle\Pdf\Infrastructure\Binary\BinaryData;
+use Kalle\Pdf\Internal\Document\Document;
 use RuntimeException;
 
 /**

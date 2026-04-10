@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Application\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Page\Page;
 
 /**
  * @internal Registers deferred page decorators and resolves logical page numbering.

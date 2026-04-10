@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Application\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Feature\Text\StructureTag;
+use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Structure\ParentTree;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructTreeRoot;

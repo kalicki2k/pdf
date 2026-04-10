@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Table\Layout;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Feature\Table\Style\CellStyle;
 use Kalle\Pdf\Feature\Table\Style\FooterStyle;
 use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
@@ -15,6 +14,7 @@ use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Feature\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Internal\Page\Page;
 
 final readonly class RowPreparer
 {

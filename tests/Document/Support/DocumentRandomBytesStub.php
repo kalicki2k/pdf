@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Internal\Document;
 
 use Random\RandomException;
 

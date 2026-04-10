@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Application\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
 use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
+use Kalle\Pdf\Navigation\LinkTarget;
 
 /**
  * @internal Builds and inserts the table of contents pages for a document.

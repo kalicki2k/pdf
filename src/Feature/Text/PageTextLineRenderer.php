@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Text;
 
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Internal\Page\PageFonts;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Structure\StructElem;
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table\Rendering;
 
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\PageGraphics;
 use Kalle\Pdf\Feature\Table\Style\TableBorder;
 use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Internal\Page\PageGraphics;
 
 final readonly class CellBoxRenderer
 {

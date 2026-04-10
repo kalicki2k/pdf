@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\LinkTarget;
-use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\PageFonts;
-use Kalle\Pdf\Document\PageGraphics;
-use Kalle\Pdf\Document\PageLinks;
-use Kalle\Pdf\Document\PageMarkedContentIds;
 use Kalle\Pdf\Element\Text as TextElement;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Internal\Page\PageFonts;
+use Kalle\Pdf\Internal\Page\PageGraphics;
+use Kalle\Pdf\Internal\Page\PageLinks;
+use Kalle\Pdf\Internal\Page\PageMarkedContentIds;
+use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Structure\StructElem;
 
 /**

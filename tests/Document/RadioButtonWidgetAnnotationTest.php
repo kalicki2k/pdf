@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Feature\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Feature\Form\RadioButtonAppearanceStream;
 use Kalle\Pdf\Feature\Form\RadioButtonField;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Table\Rendering;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Feature\Table\Layout\PreparedTableRowGroup;
+use Kalle\Pdf\Internal\Page\Page;
 
 /**
  * @internal Renders prepared table footer rows and resolves a required fresh-page move.

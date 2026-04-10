@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Application\Document\DocumentSerializationPlanBuilder;
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\EncryptionOptions;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

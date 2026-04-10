@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Application\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Profile;
 
 /**

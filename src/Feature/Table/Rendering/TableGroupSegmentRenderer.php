@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Table\Rendering;
 
-use Kalle\Pdf\Document\Page;
 use Kalle\Pdf\Feature\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Feature\Table\Layout\PreparedTableRow;
 use Kalle\Pdf\Feature\Table\PendingRowspanCell;
@@ -16,6 +15,7 @@ use Kalle\Pdf\Feature\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Feature\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Structure\StructElem;
 
 /**

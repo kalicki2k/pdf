@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Document\Geometry\Position;
+use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Profile;
 

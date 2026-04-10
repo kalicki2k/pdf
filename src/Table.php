@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Document\Page as InternalPage;
 use Kalle\Pdf\Feature\Table as InternalTable;
 use Kalle\Pdf\Feature\Table\Style\FooterStyle;
 use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
@@ -13,6 +12,7 @@ use Kalle\Pdf\Feature\Table\Style\TableStyle;
 use Kalle\Pdf\Feature\Table\TableCaption;
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Internal\Page\Page as InternalPage;
 
 /**
  * Public facade for table layout and rendering.

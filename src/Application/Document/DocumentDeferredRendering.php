@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Application\Document;
 
-use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Internal\Page\Page;
 
 class DocumentDeferredRendering
 {

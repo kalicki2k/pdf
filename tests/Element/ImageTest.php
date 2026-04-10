@@ -7,15 +7,16 @@ namespace Kalle\Pdf\Tests\Element;
 require_once __DIR__ . '/Support/ImageGzcompressStub.php';
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Element\Image;
 
 use function Kalle\Pdf\Element\setImageGzcompressFailure;
 
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandlerData;
+use Kalle\Pdf\Infrastructure\Binary\BinaryData;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

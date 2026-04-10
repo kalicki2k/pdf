@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectStringEncryptor;
@@ -17,6 +16,7 @@ use Kalle\Pdf\Feature\Annotation\PolyLineAnnotation;
 use Kalle\Pdf\Feature\Annotation\PopupAnnotation;
 use Kalle\Pdf\Feature\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

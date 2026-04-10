@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Form;
 
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Geometry\Rect;
-use Kalle\Pdf\Document\Page;
-use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Feature\Action\ButtonAction;
 use Kalle\Pdf\Feature\Action\SetOcgStateAction;
 use Kalle\Pdf\Feature\Annotation\PageAnnotation;
@@ -16,7 +12,11 @@ use Kalle\Pdf\Feature\Annotation\StructParentAwareAnnotation;
 use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
+use Kalle\Pdf\Geometry\Position;
+use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Internal\Page\PageFonts;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
 

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Feature\Table\Style\CellStyle;
 use Kalle\Pdf\Feature\Table\Style\FooterStyle;
 use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
@@ -18,7 +16,9 @@ use Kalle\Pdf\Feature\Table\TableCaption;
 use Kalle\Pdf\Feature\Table\TableCell;
 use Kalle\Pdf\Feature\Table\TableHeaderScope;
 use Kalle\Pdf\Feature\Text\TextSegment;
+use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Profile;

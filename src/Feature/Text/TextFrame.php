@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Feature\Text;
 
 use Closure;
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Geometry\Position;
-use Kalle\Pdf\Document\Page;
+use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\TextOverflow;

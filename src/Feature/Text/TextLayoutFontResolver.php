@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Feature\Text;
 
 use Closure;
-use Kalle\Pdf\Document\PageFonts;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Internal\Page\PageFonts;
 
 /**
  * @internal Resolves fonts needed by text layout without exposing page-level wiring.

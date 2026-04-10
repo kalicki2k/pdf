@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Element;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\BinaryData;
 use Kalle\Pdf\Encryption\StandardObjectEncryptor;
+use Kalle\Pdf\Infrastructure\Binary\BinaryData;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;

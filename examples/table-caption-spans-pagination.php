@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Document\Geometry\Position;
 use Kalle\Pdf\Feature\Table\Style\HeaderStyle;
 use Kalle\Pdf\Feature\Table\Style\TableBorder;
 use Kalle\Pdf\Feature\Table\Style\TablePadding;
@@ -14,6 +13,7 @@ use Kalle\Pdf\Feature\Table\TableHeaderScope;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
 use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
+use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Units;

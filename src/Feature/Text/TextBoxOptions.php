@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Feature\Text;
 
-use Kalle\Pdf\Document\Geometry\Insets;
+use Kalle\Pdf\Geometry\Insets;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
