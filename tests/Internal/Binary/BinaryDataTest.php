@@ -19,6 +19,7 @@ final class BinaryDataTest extends TestCase
         self::assertSame(5, $data->length());
         self::assertSame('hello', $data->contents());
         self::assertSame('hello', $data->contents());
+        self::assertSame('ell', $data->slice(1, 3));
     }
 
     #[Test]
@@ -34,6 +35,7 @@ final class BinaryDataTest extends TestCase
 
             self::assertSame(7, $data->length());
             self::assertSame('changed', $data->contents());
+            self::assertSame('ang', $data->slice(2, 3));
         } finally {
             @unlink($path);
         }
@@ -66,6 +68,7 @@ final class BinaryDataTest extends TestCase
         self::assertSame('hello', $output->contents());
         self::assertSame(2, ftell($stream));
         self::assertSame('hello', $data->contents());
+        self::assertSame('ell', $data->slice(1, 3));
         self::assertSame(2, ftell($stream));
 
         fclose($stream);
@@ -93,6 +96,7 @@ final class BinaryDataTest extends TestCase
         self::assertSame(5, $data->length());
         self::assertSame('hello', $output->contents());
         self::assertSame('hello', $data->contents());
+        self::assertSame('ell', $data->slice(1, 3));
 
         unset($data);
 

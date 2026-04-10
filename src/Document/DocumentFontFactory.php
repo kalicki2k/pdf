@@ -204,7 +204,7 @@ readonly class DocumentFontFactory
     private function loadFontParser(string $fontFilePath): OpenTypeFontParser
     {
         try {
-            return new OpenTypeFontParser(BinaryData::fromFile($fontFilePath)->contents());
+            return new OpenTypeFontParser(BinaryData::fromFile($fontFilePath));
         } catch (RuntimeException $exception) {
             throw new InvalidArgumentException("Unable to read font file '$fontFilePath'.");
         }

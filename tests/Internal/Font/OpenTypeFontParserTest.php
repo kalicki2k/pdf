@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Font;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -139,6 +140,15 @@ final class OpenTypeFontParserTest extends TestCase
         $glyphId = $parser->getGlyphIdForCharacter('漢');
 
         self::assertGreaterThan(0, $parser->getAdvanceWidthForGlyphId($glyphId));
+    }
+
+    #[Test]
+    public function it_can_parse_fonts_from_binary_data_without_building_a_full_string_parser_input(): void
+    {
+        $parser = new OpenTypeFontParser(BinaryData::fromFile('assets/fonts/NotoSansCJKsc-Regular.otf'));
+
+        self::assertTrue($parser->hasCffOutlines());
+        self::assertGreaterThan(0, $parser->getGlyphIdForCharacter('漢'));
     }
 
     private function createFontDataWithSingleHorizontalMetric(int $advanceWidth): string

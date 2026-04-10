@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Binary\BinaryData;
 
 final class OpenTypeFontParser
 {
     /** @var array<string, array{offset: int, length: int}> */
     private array $tables = [];
 
-    public function __construct(private readonly string $data)
-    {
+    public function __construct(
+        string | BinaryData $data,
+    ) {
+        $this->data = is_string($data) ? BinaryData::fromString($data) : $data;
         $this->parseTableDirectory();
     }
+
+    private readonly BinaryData $data;
 
     public function hasCffOutlines(): bool
     {
@@ -70,7 +75,7 @@ final class OpenTypeFontParser
 
         for ($index = 0; $index < $numTables; $index++) {
             $offset = 12 + ($index * 16);
-            $tag = substr($this->data, $offset, 4);
+            $tag = $this->readBytes($offset, 4);
 
             $this->tables[$tag] = [
                 'offset' => $this->readUInt32($offset + 8),
@@ -190,7 +195,7 @@ final class OpenTypeFontParser
 
     private function readUInt16(int $offset): int
     {
-        $value = @unpack('n', substr($this->data, $offset, 2));
+        $value = @unpack('n', $this->readBytes($offset, 2));
 
         if ($value === false) {
             throw new InvalidArgumentException('Unable to read 16-bit unsigned integer from font data.');
@@ -211,7 +216,7 @@ final class OpenTypeFontParser
 
     private function readUInt32(int $offset): int
     {
-        $value = @unpack('N', substr($this->data, $offset, 4));
+        $value = @unpack('N', $this->readBytes($offset, 4));
 
         if ($value === false) {
             throw new InvalidArgumentException('Unable to read 32-bit unsigned integer from font data.');
@@ -221,5 +226,10 @@ final class OpenTypeFontParser
         $result = $value[1];
 
         return $result;
+    }
+
+    private function readBytes(int $offset, int $length): string
+    {
+        return $this->data->slice($offset, $length);
     }
 }

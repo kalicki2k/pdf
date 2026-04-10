@@ -23,6 +23,15 @@ final readonly class StringBinaryDataSource implements BinaryDataSource
         return $this->bytes;
     }
 
+    public function slice(int $offset, int $length): string
+    {
+        if ($offset < 0) {
+            return '';
+        }
+
+        return substr($this->bytes, $offset, $length);
+    }
+
     public function writeTo(PdfOutput $output): void
     {
         if ($this->bytes === '') {

@@ -45,6 +45,11 @@ final class BinaryData
         return $this->source->contents();
     }
 
+    public function slice(int $offset, int $length): string
+    {
+        return $this->source->slice($offset, $length);
+    }
+
     public function writeTo(PdfOutput $output): void
     {
         $this->source->writeTo($output);

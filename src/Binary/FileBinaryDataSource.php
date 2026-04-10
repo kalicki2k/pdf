@@ -51,6 +51,29 @@ final readonly class FileBinaryDataSource implements BinaryDataSource
         return $contents;
     }
 
+    public function slice(int $offset, int $length): string
+    {
+        if ($offset < 0 || $length < 0) {
+            throw new RuntimeException('Binary data slice offset and length must not be negative.');
+        }
+
+        if ($length === 0) {
+            return '';
+        }
+
+        $stream = $this->openStream();
+
+        try {
+            if (fseek($stream, $offset) !== 0) {
+                throw new RuntimeException("Unable to seek binary data file '$this->path'.");
+            }
+
+            return $this->readFromStream($stream, $length);
+        } finally {
+            fclose($stream);
+        }
+    }
+
     public function writeTo(PdfOutput $output): void
     {
         $stream = $this->openStream();
@@ -90,5 +113,31 @@ final readonly class FileBinaryDataSource implements BinaryDataSource
         }
 
         return $stream;
+    }
+
+    /**
+     * @param resource $stream
+     */
+    private function readFromStream($stream, int $length): string
+    {
+        $bytes = '';
+        $remaining = $length;
+
+        while ($remaining > 0 && !feof($stream)) {
+            $chunk = fread($stream, $remaining);
+
+            if ($chunk === false) {
+                throw new RuntimeException("Unable to read binary data file '$this->path'.");
+            }
+
+            if ($chunk === '') {
+                break;
+            }
+
+            $bytes .= $chunk;
+            $remaining -= strlen($chunk);
+        }
+
+        return $bytes;
     }
 }

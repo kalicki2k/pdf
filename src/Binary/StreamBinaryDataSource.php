@@ -102,6 +102,39 @@ final class StreamBinaryDataSource implements BinaryDataSource
         });
     }
 
+    public function slice(int $offset, int $length): string
+    {
+        if ($offset < 0 || $length < 0) {
+            throw new RuntimeException('Binary data slice offset and length must not be negative.');
+        }
+
+        if ($length === 0) {
+            return '';
+        }
+
+        return $this->withStreamAtOffset($offset, function () use ($length): string {
+            $bytes = '';
+            $remaining = $length;
+
+            while ($remaining > 0 && !feof($this->stream)) {
+                $chunk = fread($this->stream, $remaining);
+
+                if ($chunk === false) {
+                    throw new RuntimeException('Unable to read binary data stream.');
+                }
+
+                if ($chunk === '') {
+                    break;
+                }
+
+                $bytes .= $chunk;
+                $remaining -= strlen($chunk);
+            }
+
+            return $bytes;
+        });
+    }
+
     public function writeTo(PdfOutput $output): void
     {
         $this->withStreamFromStart(function () use ($output): null {
@@ -190,6 +223,28 @@ final class StreamBinaryDataSource implements BinaryDataSource
 
         if (rewind($this->stream) === false) {
             throw new RuntimeException('Unable to rewind binary data stream.');
+        }
+
+        try {
+            return $callback();
+        } finally {
+            if (fseek($this->stream, $position) !== 0) {
+                throw new RuntimeException('Unable to restore binary data stream position.');
+            }
+        }
+    }
+
+    /**
+     * @template T
+     * @param callable(): T $callback
+     * @return T
+     */
+    private function withStreamAtOffset(int $offset, callable $callback)
+    {
+        $position = $this->currentPosition();
+
+        if (fseek($this->stream, $offset) !== 0) {
+            throw new RuntimeException('Unable to seek binary data stream.');
         }
 
         try {

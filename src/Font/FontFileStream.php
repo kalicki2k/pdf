@@ -57,7 +57,7 @@ final class FontFileStream extends StreamIndirectObject
 
     public function parser(): OpenTypeFontParser
     {
-        return $this->parser ??= new OpenTypeFontParser($this->contents());
+        return $this->parser ??= new OpenTypeFontParser($this->data);
     }
 
     protected function streamDictionary(int | ReferenceType $length): DictionaryType
