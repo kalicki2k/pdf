@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Support;
 
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
+use Kalle\Pdf\PdfType\Type;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\StreamPdfOutput;
@@ -37,6 +39,13 @@ function writePageObjectToString(PageObjectRenderer $renderer, bool $hasMarkedCo
 {
     return capturePdfOutput(static function ($stream) use ($renderer, $hasMarkedContent): void {
         $renderer->write(new StreamPdfOutput($stream), $hasMarkedContent);
+    });
+}
+
+function writePdfTypeToString(Type $type, ?ObjectStringEncryptor $encryptor = null): string
+{
+    return capturePdfOutput(static function ($stream) use ($type, $encryptor): void {
+        $type->write(new StreamPdfOutput($stream), $encryptor);
     });
 }
 

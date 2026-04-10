@@ -13,7 +13,11 @@ use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\PdfType\StringType;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class DictionaryTypeTest extends TestCase
@@ -38,6 +42,18 @@ final class DictionaryTypeTest extends TestCase
             ->add('Count', 3);
 
         self::assertSame('<< /Type /Pages /Count 3 >>', $dictionary->render());
+    }
+
+    #[Test]
+    public function it_writes_the_same_bytes_as_the_render_helper(): void
+    {
+        $dictionary = new DictionaryType([
+            'Type' => new NameType('Catalog'),
+            'Count' => 2,
+            'Open' => new BooleanType(true),
+        ]);
+
+        self::assertSame($dictionary->render(), writePdfTypeToString($dictionary));
     }
 
     #[Test]

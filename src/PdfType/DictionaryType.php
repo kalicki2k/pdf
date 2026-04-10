@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\PdfType;
 
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Render\PdfOutput;
 
 final class DictionaryType implements Type
 {
+    use RendersPdfType;
+
     /**
      * @param array<string, Type|string|int|float> $entries
      */
@@ -22,21 +25,36 @@ final class DictionaryType implements Type
         return $this;
     }
 
-    public function render(?ObjectStringEncryptor $encryptor = null): string
+    public function write(PdfOutput $output, ?ObjectStringEncryptor $encryptor = null): void
     {
-        $parts = [];
+        $output->write('<< ');
+
+        $index = 0;
 
         foreach ($this->entries as $key => $value) {
-            $parts[] = '/' . $key . ' ' . self::renderValue($value, $encryptor);
+            if ($index > 0) {
+                $output->write(' ');
+            }
+
+            $output->write('/' . $key . ' ');
+            self::writeEntryValue($output, $value, $encryptor);
+            $index++;
         }
 
-        return '<< ' . implode(' ', $parts) . ' >>';
+        $output->write(' >>');
     }
 
-    private static function renderValue(
+    private static function writeEntryValue(
+        PdfOutput $output,
         Type | string | int | float $value,
         ?ObjectStringEncryptor $encryptor,
-    ): string {
-        return $value instanceof Type ? $value->render($encryptor) : (string) $value;
+    ): void {
+        if ($value instanceof Type) {
+            $value->write($output, $encryptor);
+
+            return;
+        }
+
+        $output->write((string) $value);
     }
 }

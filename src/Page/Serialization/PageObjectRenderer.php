@@ -31,7 +31,8 @@ final class PageObjectRenderer
         $dictionary = $this->dictionaryBuilder->build($this->page, $hasMarkedContent);
 
         $output->write($this->page->id . ' 0 obj' . PHP_EOL);
-        $output->write($dictionary->render() . PHP_EOL);
+        $dictionary->write($output);
+        $output->write(PHP_EOL);
         $output->write('endobj' . PHP_EOL);
     }
 }

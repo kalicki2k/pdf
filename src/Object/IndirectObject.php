@@ -74,7 +74,8 @@ abstract class IndirectObject
         ?ObjectStringEncryptor $encryptor = null,
     ): void {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($dictionary->render($encryptor) . PHP_EOL);
+        $dictionary->write($output, $encryptor);
+        $output->write(PHP_EOL);
         $output->write('endobj' . PHP_EOL);
     }
 

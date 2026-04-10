@@ -15,7 +15,8 @@ abstract class StreamIndirectObject extends IndirectObject implements Encryptabl
     protected function writeObject(PdfOutput $output): void
     {
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->streamDictionary($this->streamLength())->render() . PHP_EOL);
+        $this->streamDictionary($this->streamLength())->write($output);
+        $output->write(PHP_EOL);
         $output->write('stream' . PHP_EOL);
         $this->writeStreamContents($output);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
@@ -30,7 +31,8 @@ abstract class StreamIndirectObject extends IndirectObject implements Encryptabl
         $encryptedLength = $objectEncryptor->encryptedByteLength($this->streamLength());
 
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->streamDictionary($encryptedLength)->render() . PHP_EOL);
+        $this->streamDictionary($encryptedLength)->write($output);
+        $output->write(PHP_EOL);
         $output->write('stream' . PHP_EOL);
         $this->writeStreamContents($encryptedOutput);
         $encryptedOutput->finish();

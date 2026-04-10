@@ -34,7 +34,8 @@ class Contents extends IndirectObject implements EncryptableIndirectObject
         $length = $this->synchronizeLengthObject();
 
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary($length)->render() . PHP_EOL);
+        $this->dictionary($length)->write($output);
+        $output->write(PHP_EOL);
         $output->write('stream' . PHP_EOL);
         $this->writeContentsTo($output);
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
@@ -49,7 +50,8 @@ class Contents extends IndirectObject implements EncryptableIndirectObject
         }
 
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $output->write($this->dictionary($length)->render() . PHP_EOL);
+        $this->dictionary($length)->write($output);
+        $output->write(PHP_EOL);
         $output->write('stream' . PHP_EOL);
         $encryptedOutput = new EncryptingPdfOutput(
             $output,

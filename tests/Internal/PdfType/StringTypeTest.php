@@ -10,7 +10,11 @@ use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\PdfType\StringType;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class StringTypeTest extends TestCase
@@ -89,5 +93,13 @@ final class StringTypeTest extends TestCase
     public function it_renders_plain_strings_without_an_explicit_encryptor(): void
     {
         self::assertSame('(Hello)', (new StringType('Hello'))->render());
+    }
+
+    #[Test]
+    public function it_writes_the_same_bytes_as_the_render_helper(): void
+    {
+        $value = new StringType('Hello');
+
+        self::assertSame($value->render(), writePdfTypeToString($value));
     }
 }

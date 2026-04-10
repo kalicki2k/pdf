@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\PdfType;
 
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Render\PdfOutput;
 
 final readonly class ArrayType implements Type
 {
+    use RendersPdfType;
+
     /**
      * @param list<Type|int|float> $values
      */
@@ -15,20 +18,32 @@ final readonly class ArrayType implements Type
     {
     }
 
-    public function render(?ObjectStringEncryptor $encryptor = null): string
+    public function write(PdfOutput $output, ?ObjectStringEncryptor $encryptor = null): void
     {
-        $items = array_map(
-            static fn (Type | int | float $value): string => self::renderValue($value, $encryptor),
-            $this->values,
-        );
+        $output->write('[');
 
-        return '[' . implode(' ', $items) . ']';
+        foreach ($this->values as $index => $value) {
+            if ($index > 0) {
+                $output->write(' ');
+            }
+
+            self::writeEntryValue($output, $value, $encryptor);
+        }
+
+        $output->write(']');
     }
 
-    private static function renderValue(
+    private static function writeEntryValue(
+        PdfOutput $output,
         Type | int | float $value,
         ?ObjectStringEncryptor $encryptor,
-    ): string {
-        return $value instanceof Type ? $value->render($encryptor) : (string) $value;
+    ): void {
+        if ($value instanceof Type) {
+            $value->write($output, $encryptor);
+
+            return;
+        }
+
+        $output->write((string) $value);
     }
 }

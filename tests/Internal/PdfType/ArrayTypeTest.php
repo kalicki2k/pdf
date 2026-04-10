@@ -13,7 +13,11 @@ use Kalle\Pdf\PdfType\BooleanType;
 use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\PdfType\StringType;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class ArrayTypeTest extends TestCase
@@ -29,6 +33,19 @@ final class ArrayTypeTest extends TestCase
         ]);
 
         self::assertSame('[/Type 12 3.5 true]', $value->render());
+    }
+
+    #[Test]
+    public function it_writes_the_same_bytes_as_the_render_helper(): void
+    {
+        $value = new ArrayType([
+            new NameType('Type'),
+            12,
+            3.5,
+            new BooleanType(true),
+        ]);
+
+        self::assertSame($value->render(), writePdfTypeToString($value));
     }
 
     #[Test]
