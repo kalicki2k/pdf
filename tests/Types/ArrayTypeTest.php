@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Types;
 
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\BooleanType;
 use Kalle\Pdf\Types\NameType;

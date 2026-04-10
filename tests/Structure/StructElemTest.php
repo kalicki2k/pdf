@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Structure;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Feature\Annotation\LinkAnnotation;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
@@ -14,6 +13,7 @@ use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Structure\StructElem;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

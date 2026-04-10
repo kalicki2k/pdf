@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Encryption\Profile;
 
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 
 final readonly class EncryptionProfile
 {

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Encryption\Object;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Encryption\Stream\AesCbcStreamingByteEncryptor;
 use Kalle\Pdf\Internal\Encryption\Stream\PassthroughStreamingByteEncryptor;
 use Kalle\Pdf\Internal\Encryption\Stream\Rc4StreamingByteEncryptor;
 use Kalle\Pdf\Internal\Encryption\Stream\StreamingByteEncryptor;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use RuntimeException;
 
 final readonly class StandardObjectEncryptor

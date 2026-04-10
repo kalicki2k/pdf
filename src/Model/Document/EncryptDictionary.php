@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Model\Document;
 
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use Kalle\Pdf\Types\RawType;

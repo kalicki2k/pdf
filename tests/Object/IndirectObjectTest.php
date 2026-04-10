@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Object;
 
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
@@ -12,6 +11,7 @@ use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\StringType;
 use PHPUnit\Framework\Attributes\Test;

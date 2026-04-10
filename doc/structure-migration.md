@@ -51,7 +51,7 @@ Darunter wird die interne Struktur schrittweise in diese Ebenen getrennt:
 
 ```text
 src/
-  Encryption/
+  Security/
     EncryptionAlgorithm.php
     EncryptionOptions.php
     EncryptionPermissions.php
@@ -170,7 +170,7 @@ Diese bestehenden Pakete bleiben vorerst erhalten:
 Grund:
 
 - sie sind bereits relativ kohärent
-- `Encryption` ist jetzt in Public-Konfiguration und `Internal/Encryption` getrennt
+- `Security` enthaelt jetzt die Public-Konfiguration, `Internal/Encryption` den technischen Kryptokern
 
 ## Geplante Migrationsreihenfolge
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Encryption\Profile;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\PdfVersion;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 
 final class EncryptionVersionResolver
 {

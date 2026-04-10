@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
-use Kalle\Pdf\Encryption\EncryptionPermissions;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Profile\PermissionBitsResolver;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Security\EncryptionPermissions;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Render;
 
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
-use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
@@ -20,6 +18,8 @@ use Kalle\Pdf\Render\PdfObjectOffsets;
 use Kalle\Pdf\Render\PdfObjectSerializer;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\Types\StringType;
 use LogicException;
 use PHPUnit\Framework\Attributes\Test;

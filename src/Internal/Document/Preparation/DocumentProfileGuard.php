@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document\Preparation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
 use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\PdfVersion;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 
 /**
  * @internal Guards document features against profile and version requirements.

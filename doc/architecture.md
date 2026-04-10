@@ -84,9 +84,9 @@ Die Verschluesselung ist jetzt in einen kleinen Public-Schnitt und einen interne
 
 Die wichtigsten Bausteine sind:
 
-- `EncryptionAlgorithm`
-- `EncryptionOptions`
-- `EncryptionPermissions`
+- `Security\\EncryptionAlgorithm`
+- `Security\\EncryptionOptions`
+- `Security\\EncryptionPermissions`
 - `Internal\\Encryption\\Profile\\EncryptionProfile`
 - `Internal\\Encryption\\Profile\\EncryptionVersionResolver`
 - `Internal\\Encryption\\Standard\\StandardSecurityHandler`

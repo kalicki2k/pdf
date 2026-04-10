@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf;
 
 use DateTimeImmutable;
-use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Internal\Document\Document as InternalDocument;
@@ -15,6 +14,7 @@ use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Model\Document\FileSpecification;
+use Kalle\Pdf\Security\EncryptionOptions;
 
 /**
  * Public entry point for building and rendering PDF documents.

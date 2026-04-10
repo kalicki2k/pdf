@@ -6,8 +6,6 @@ namespace Kalle\Pdf\Internal\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Kalle\Pdf\Encryption\EncryptionAlgorithm;
-use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Feature\Form\AcroForm;
 use Kalle\Pdf\Feature\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Feature\Outline\OutlineRoot;
@@ -48,6 +46,8 @@ use Kalle\Pdf\Render\AtomicFilePdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StreamPdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\Structure\ParentTree;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructTreeRoot;

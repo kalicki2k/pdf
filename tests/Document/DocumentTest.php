@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Encryption\EncryptionOptions;
 use Kalle\Pdf\Feature\Text\ParagraphOptions;
 use Kalle\Pdf\Feature\Text\StructureTag;
 use Kalle\Pdf\Feature\Text\TextOptions;
 use Kalle\Pdf\Font\OpenTypeFontParser;
 use Kalle\Pdf\Font\UnicodeFont;
-
 use Kalle\Pdf\Geometry\Position;
 
 use Kalle\Pdf\Geometry\Rect;
+
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\DocumentFontFactory;
 
 use function Kalle\Pdf\Internal\Document\setDocumentRandomBytesShouldThrow;
 
 use Kalle\Pdf\Internal\Page\Page;
+
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Layout\TableOfContentsOptions;
@@ -28,6 +28,7 @@ use Kalle\Pdf\Layout\TableOfContentsPlacement;
 use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
