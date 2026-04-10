@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Navigation;
+namespace Kalle\Pdf\Internal\Page\Link;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Page\Page;

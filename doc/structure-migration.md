@@ -34,6 +34,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - oeffentliche Stil-Primitiven `Color` und `Opacity` liegen jetzt unter `Style`
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
 - PDF-Annotation-Stiltypen und das Marker-Interface liegen jetzt unter `Internal/Page/Annotation`
+- `LinkTarget` liegt jetzt unter `Internal/Page/Link`, weil es die seitennahe Linkziel-Semantik fuer Text und Annotationen beschreibt
 - der technische Font-Kern liegt jetzt unter `Internal/Font`
 - gemeinsame Formularoptionen fuer Seitenwidgets liegen jetzt unter `Internal/Page/Form`
 - konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
@@ -88,6 +89,7 @@ src/
     Page/
       Annotation/
       Form/
+      Link/
 
   Object/
   Render/
@@ -201,6 +203,7 @@ Beispiele:
 - `Internal/Page/Annotation/PageAnnotation` als gemeinsames Marker- und Related-Objects-Interface
 - `Internal/Page/Annotation` fuer konkrete Seitenannotationen und ihre Koordination
 - `Internal/Page/Form` fuer Widget-Erzeugung, Appearance-Streams und gemeinsame Formularoptionen
+- `Internal/Page/Link` fuer logische Linkziele, die von Public API, Textlayout und Link-Annotationen geteilt werden
 - `Internal/Document/Form` fuer dokumentweite AcroForm-Objekte
 
 Regeln:

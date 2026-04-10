@@ -10,7 +10,7 @@ use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Value\BulletType;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
-use Kalle\Pdf\Navigation\LinkTarget;
+use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Style\Color;

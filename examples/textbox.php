@@ -11,7 +11,7 @@ use Kalle\Pdf\Internal\Layout\Page\Units;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Navigation\LinkTarget;
+use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Style\Color;
