@@ -12,10 +12,10 @@ use Kalle\Pdf\Object\StreamLengthObject;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\ReferenceType;
-use Kalle\Pdf\Render\CountingPdfOutput;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\MeasuringPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
+use LogicException;
 
 class Contents extends IndirectObject implements EncryptableIndirectObject, HasDeferredStreamLengthObject
 {
@@ -33,39 +33,12 @@ class Contents extends IndirectObject implements EncryptableIndirectObject, HasD
 
     protected function writeObject(PdfOutput $output): void
     {
-        if ($this->lengthObject !== null) {
-            $this->writeObjectWithDeferredLength($output);
-
-            return;
-        }
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $this->dictionary($this->synchronizeLengthObject())->write($output);
-        $output->write(PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $this->writeContentsTo($output);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        $this->writeObjectWithDeferredLength($output, $this->requireLengthObject());
     }
 
     public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
     {
-        if ($this->lengthObject !== null) {
-            $this->writeEncryptedWithDeferredLength($output, $objectEncryptor);
-
-            return;
-        }
-
-        $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $this->dictionary($objectEncryptor->encryptedByteLength($this->synchronizeLengthObject()))->write($output);
-        $output->write(PHP_EOL);
-        $output->write('stream' . PHP_EOL);
-        $encryptedOutput = new EncryptingPdfOutput(
-            $output,
-            $objectEncryptor->createStreamEncryptor($this->id),
-        );
-        $this->writeContentsTo($encryptedOutput);
-        $encryptedOutput->finish();
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+        $this->writeEncryptedWithDeferredLength($output, $objectEncryptor, $this->requireLengthObject());
     }
 
     public function prepareLengthObject(int $id): StreamLengthObject
@@ -97,35 +70,29 @@ class Contents extends IndirectObject implements EncryptableIndirectObject, HasD
         }
     }
 
-    private function dictionary(int $length): DictionaryType
+    private function dictionary(StreamLengthObject $lengthObject): DictionaryType
     {
         return new DictionaryType([
-            'Length' => $this->lengthObject !== null
-                ? new ReferenceType($this->lengthObject)
-                : $length,
+            'Length' => new ReferenceType($lengthObject),
         ]);
     }
 
-    private function synchronizeLengthObject(): int
+    private function requireLengthObject(): StreamLengthObject
     {
-        $counter = new CountingPdfOutput();
-        $this->writeContentsTo($counter);
-        $length = $counter->offset();
-
-        if ($this->lengthObject !== null) {
-            $this->lengthObject->setLength($length);
+        if ($this->lengthObject === null) {
+            throw new LogicException(sprintf(
+                'Contents object %s requires a prepared length object before serialization.',
+                static::class,
+            ));
         }
 
-        return $length;
+        return $this->lengthObject;
     }
 
-    private function writeObjectWithDeferredLength(PdfOutput $output): void
+    private function writeObjectWithDeferredLength(PdfOutput $output, StreamLengthObject $lengthObject): void
     {
-        $lengthObject = $this->lengthObject;
-        assert($lengthObject instanceof StreamLengthObject);
-
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $this->dictionary(0)->write($output);
+        $this->dictionary($lengthObject)->write($output);
         $output->write(PHP_EOL);
         $output->write('stream' . PHP_EOL);
 
@@ -139,12 +106,10 @@ class Contents extends IndirectObject implements EncryptableIndirectObject, HasD
     private function writeEncryptedWithDeferredLength(
         PdfOutput $output,
         StandardObjectEncryptor $objectEncryptor,
+        StreamLengthObject $lengthObject,
     ): void {
-        $lengthObject = $this->lengthObject;
-        assert($lengthObject instanceof StreamLengthObject);
-
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $this->dictionary(0)->write($output);
+        $this->dictionary($lengthObject)->write($output);
         $output->write(PHP_EOL);
         $output->write('stream' . PHP_EOL);
 

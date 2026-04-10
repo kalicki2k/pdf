@@ -38,6 +38,7 @@ final class ToUnicodeCMapTest extends TestCase
         $glyphMap = new UnicodeGlyphMap();
         $glyphMap->encodeText('漢字');
         $cmap = new ToUnicodeCMap(40, $glyphMap);
+        $cmap->prepareLengthObject(41);
         $output = new StringPdfOutput();
 
         $cmap->write($output);
@@ -51,6 +52,7 @@ final class ToUnicodeCMapTest extends TestCase
         $glyphMap = new UnicodeGlyphMap();
         $glyphMap->encodeText('漢字');
         $cmap = new ToUnicodeCMap(40, $glyphMap);
+        $cmap->prepareLengthObject(41);
         $encryptor = new StandardObjectEncryptor(
             new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),

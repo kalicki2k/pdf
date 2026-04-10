@@ -13,20 +13,21 @@ use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
+use LogicException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class DeferredLengthStreamIndirectObjectTest extends TestCase
 {
     #[Test]
-    public function it_keeps_the_direct_length_path_without_a_deferred_length_object(): void
+    public function it_requires_a_prepared_length_object_before_serialization(): void
     {
         $object = $this->createStreamObject('BT');
 
-        self::assertSame(
-            "7 0 obj\n<< /Length 2 >>\nstream\nBT\nendstream\nendobj\n",
-            \Kalle\Pdf\Tests\Support\writeIndirectObjectToString($object),
-        );
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('requires a prepared length object');
+
+        $object->write(new StringPdfOutput());
     }
 
     #[Test]

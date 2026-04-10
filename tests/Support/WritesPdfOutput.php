@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Support;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Image\Image;
+use Kalle\Pdf\Object\HasDeferredStreamLengthObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
@@ -55,6 +56,10 @@ function writeIndirectObjectToString(IndirectObject $object, ?ObjectStringEncryp
 {
     return capturePdfOutput(static function ($stream) use ($object, $encryptor): void {
         $output = new StreamPdfOutput($stream);
+
+        if ($object instanceof HasDeferredStreamLengthObject && $object->getLengthObject() === null) {
+            $object->prepareLengthObject($object->id + 1000000);
+        }
 
         if ($encryptor === null) {
             $object->write($output);

@@ -9,6 +9,7 @@ use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\MeasuringPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
+use LogicException;
 
 abstract class DeferredLengthStreamIndirectObject extends StreamIndirectObject implements HasDeferredStreamLengthObject
 {
@@ -30,34 +31,26 @@ abstract class DeferredLengthStreamIndirectObject extends StreamIndirectObject i
 
     protected function writeObject(PdfOutput $output): void
     {
-        if ($this->lengthObject === null) {
-            parent::writeObject($output);
-
-            return;
-        }
+        $lengthObject = $this->requireLengthObject();
 
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $this->streamDictionary(new ReferenceType($this->lengthObject))->write($output);
+        $this->streamDictionary(new ReferenceType($lengthObject))->write($output);
         $output->write(PHP_EOL);
         $output->write('stream' . PHP_EOL);
 
         $measuringOutput = new MeasuringPdfOutput($output);
         $this->writeStreamContents($measuringOutput);
-        $this->lengthObject->setLength($measuringOutput->writtenBytes());
+        $lengthObject->setLength($measuringOutput->writtenBytes());
 
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
     public function writeEncrypted(PdfOutput $output, StandardObjectEncryptor $objectEncryptor): void
     {
-        if ($this->lengthObject === null) {
-            parent::writeEncrypted($output, $objectEncryptor);
-
-            return;
-        }
+        $lengthObject = $this->requireLengthObject();
 
         $output->write($this->id . ' 0 obj' . PHP_EOL);
-        $this->streamDictionary(new ReferenceType($this->lengthObject))->write($output);
+        $this->streamDictionary(new ReferenceType($lengthObject))->write($output);
         $output->write(PHP_EOL);
         $output->write('stream' . PHP_EOL);
 
@@ -68,8 +61,28 @@ abstract class DeferredLengthStreamIndirectObject extends StreamIndirectObject i
         );
         $this->writeStreamContents($encryptedOutput);
         $encryptedOutput->finish();
-        $this->lengthObject->setLength($measuringOutput->writtenBytes());
+        $lengthObject->setLength($measuringOutput->writtenBytes());
 
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
+    }
+
+    protected function streamLength(): int
+    {
+        throw new LogicException(sprintf(
+            'Deferred stream object %s requires a prepared length object before serialization.',
+            static::class,
+        ));
+    }
+
+    private function requireLengthObject(): StreamLengthObject
+    {
+        if ($this->lengthObject === null) {
+            throw new LogicException(sprintf(
+                'Deferred stream object %s requires a prepared length object before serialization.',
+                static::class,
+            ));
+        }
+
+        return $this->lengthObject;
     }
 }

@@ -12,6 +12,7 @@ use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
+use LogicException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -25,6 +26,17 @@ final class ContentsTest extends TestCase
         $result = $contents->addElement($this->createElement('BT'));
 
         self::assertSame($contents, $result);
+    }
+
+    #[Test]
+    public function it_requires_a_prepared_length_object_before_serialization(): void
+    {
+        $contents = new Contents(8);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('requires a prepared length object');
+
+        $contents->write(new StringPdfOutput());
     }
 
     #[Test]

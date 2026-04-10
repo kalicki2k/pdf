@@ -122,6 +122,7 @@ final class FormFieldTextAppearanceStreamTest extends TestCase
             ['Ada Lovelace', 'Grace Hopper'],
             Color::rgb(255, 0, 0),
         );
+        $stream->prepareLengthObject(9);
         $encryptor = new StandardObjectEncryptor(
             new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),

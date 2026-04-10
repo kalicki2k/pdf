@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Object;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\ReferenceType;
-use Kalle\Pdf\Render\CountingPdfOutput;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 
@@ -40,13 +39,6 @@ abstract class StreamIndirectObject extends IndirectObject implements Encryptabl
         $output->write(PHP_EOL . 'endstream' . PHP_EOL . 'endobj' . PHP_EOL);
     }
 
-    protected function streamLength(): int
-    {
-        $counter = new CountingPdfOutput();
-        $this->writeStreamContents($counter);
-
-        return $counter->offset();
-    }
     /**
      * @param list<string> $lines
      */
@@ -62,6 +54,8 @@ abstract class StreamIndirectObject extends IndirectObject implements Encryptabl
     }
 
     abstract protected function streamDictionary(int | ReferenceType $length): DictionaryType;
+
+    abstract protected function streamLength(): int;
 
     abstract protected function writeStreamContents(PdfOutput $output): void;
 }

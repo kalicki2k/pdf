@@ -33,6 +33,7 @@ final class TextAnnotationAppearanceStreamTest extends TestCase
     public function it_writes_an_encrypted_text_annotation_appearance_stream_consistently(): void
     {
         $stream = new TextAnnotationAppearanceStream(7, 16, 18);
+        $stream->prepareLengthObject(9);
         $encryptor = new StandardObjectEncryptor(
             new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),

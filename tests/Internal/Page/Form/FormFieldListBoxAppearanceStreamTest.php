@@ -61,6 +61,7 @@ final class FormFieldListBoxAppearanceStreamTest extends TestCase
             ['pdf' => 'PDF', 'forms' => 'Forms', 'tables' => 'Tables'],
             ['forms'],
         );
+        $stream->prepareLengthObject(9);
         $encryptor = new StandardObjectEncryptor(
             new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),

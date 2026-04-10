@@ -29,6 +29,7 @@ final class CheckboxAppearanceStreamTest extends TestCase
     public function it_writes_an_encrypted_checkbox_appearance_stream_consistently(): void
     {
         $stream = new CheckboxAppearanceStream(7, 12, 12, true);
+        $stream->prepareLengthObject(9);
         $encryptor = new StandardObjectEncryptor(
             new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),

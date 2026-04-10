@@ -34,6 +34,7 @@ final class FormFieldSignatureAppearanceStreamTest extends TestCase
     public function it_writes_an_encrypted_signature_appearance_stream_consistently(): void
     {
         $stream = new FormFieldSignatureAppearanceStream(7, 100, 30);
+        $stream->prepareLengthObject(9);
         $encryptor = new StandardObjectEncryptor(
             new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),

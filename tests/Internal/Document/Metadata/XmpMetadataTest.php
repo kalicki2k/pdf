@@ -79,6 +79,7 @@ final class XmpMetadataTest extends TestCase
         );
         $document->addKeyword('pdf')->addKeyword('tests');
         $metadata = new XmpMetadata(4, $document);
+        $metadata->prepareLengthObject(5);
         $output = new StringPdfOutput();
 
         $metadata->write($output);
@@ -98,6 +99,7 @@ final class XmpMetadataTest extends TestCase
         );
         $document->addKeyword('pdf')->addKeyword('tests');
         $metadata = new XmpMetadata(4, $document);
+        $metadata->prepareLengthObject(5);
         $encryptor = new StandardObjectEncryptor(
             new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),
