@@ -171,10 +171,6 @@ final class ResourcesTest extends TestCase
                 return 0.0;
             }
 
-            public function render(): string
-            {
-                return '';
-            }
         };
 
         $this->expectException(InvalidArgumentException::class);

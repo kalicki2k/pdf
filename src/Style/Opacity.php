@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\PdfType\DictionaryType;
-use Kalle\Pdf\Render\StringPdfOutput;
 
 final readonly class Opacity
 {
@@ -39,20 +37,21 @@ final readonly class Opacity
 
     public function renderExtGStateDictionary(): string
     {
-        $dictionary = new DictionaryType([]);
+        $entries = [];
 
         if ($this->fill !== null) {
-            $dictionary->add('ca', self::formatValue($this->fill));
+            $entries[] = '/ca ' . self::formatValue($this->fill);
         }
 
         if ($this->stroke !== null) {
-            $dictionary->add('CA', self::formatValue($this->stroke));
+            $entries[] = '/CA ' . self::formatValue($this->stroke);
         }
 
-        $output = new StringPdfOutput();
-        $dictionary->write($output);
+        if ($entries === []) {
+            return '<< >>';
+        }
 
-        return $output->contents();
+        return '<< ' . implode(' ', $entries) . ' >>';
     }
 
     private static function assertUnitInterval(float $value, string $name): void

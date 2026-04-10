@@ -81,10 +81,6 @@ final class AcroFormTest extends TestCase
                 return 0.0;
             }
 
-            public function render(): string
-            {
-                return '';
-            }
         });
     }
 

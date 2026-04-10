@@ -247,11 +247,6 @@ final class TextLayoutEngineTest extends TestCase
                         return $this->characterCount($text) * $size;
                     }
 
-                    public function render(): string
-                    {
-                        return '';
-                    }
-
                     private function characterCount(string $text): int
                     {
                         return count(preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: []);

@@ -58,16 +58,6 @@ abstract class IndirectObject
         $this->writeObject($output);
     }
 
-    protected function renderDictionaryObject(
-        DictionaryType $dictionary,
-        ?ObjectStringEncryptor $encryptor = null,
-    ): string {
-        $buffer = new StringPdfOutput();
-        $this->writeDictionaryObject($buffer, $dictionary, $encryptor);
-
-        return $buffer->contents();
-    }
-
     protected function writeDictionaryObject(
         PdfOutput $output,
         DictionaryType $dictionary,

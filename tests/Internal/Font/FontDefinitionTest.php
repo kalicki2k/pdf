@@ -39,10 +39,6 @@ final class FontDefinitionTest extends TestCase
                 return strlen($text) * $size;
             }
 
-            public function render(): string
-            {
-                return '42 0 obj';
-            }
         };
 
         self::assertInstanceOf(FontDefinition::class, $fontDefinition);
@@ -52,6 +48,5 @@ final class FontDefinitionTest extends TestCase
         self::assertFalse($fontDefinition->supportsText(''));
         self::assertSame('ABC', $fontDefinition->encodeText('abc'));
         self::assertSame(30.0, $fontDefinition->measureTextWidth('abc', 10));
-        self::assertSame('42 0 obj', $fontDefinition->render());
     }
 }
