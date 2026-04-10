@@ -12,8 +12,8 @@ use Kalle\Pdf\Internal\Page\Content\Instruction\LineInstruction;
 use Kalle\Pdf\Internal\Page\Content\Instruction\RawInstruction;
 use Kalle\Pdf\Internal\Page\Content\Instruction\RectangleInstruction;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Style\Color;
-use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Internal\Style\Opacity;
 
 /**
  * @internal Coordinates graphic primitives for a page.

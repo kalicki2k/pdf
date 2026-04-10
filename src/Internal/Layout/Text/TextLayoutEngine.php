@@ -9,8 +9,8 @@ use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Style\Color;
-use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Internal\Style\Opacity;
 use Kalle\Pdf\Text\TextSegment;
 
 /**

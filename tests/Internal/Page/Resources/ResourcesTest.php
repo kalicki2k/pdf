@@ -11,7 +11,7 @@ use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Font\StandardFont;
 use Kalle\Pdf\Internal\Page\Resources\ImageObject;
 use Kalle\Pdf\Internal\Page\Resources\Resources;
-use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\Internal\Style\Opacity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Internal\Layout\Table\Style;
 
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Style\Color;
-use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Internal\Style\Opacity;
 
 readonly class RowStyle
 {

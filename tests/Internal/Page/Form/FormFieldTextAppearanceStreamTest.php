@@ -15,7 +15,7 @@ use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Internal\Page\Form\FormFieldTextAppearanceStream;
 use Kalle\Pdf\Internal\Render\StringPdfOutput;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
-use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Internal\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

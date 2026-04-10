@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Style;
+namespace Kalle\Pdf\Internal\Page\Content\Style;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Style\Color;
-use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Internal\Style\Opacity;
 
 final readonly class PanelStyle
 {

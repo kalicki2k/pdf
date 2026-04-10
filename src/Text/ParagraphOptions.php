@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Text;
 
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
+use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Internal\Style\Opacity;
 use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
-use Kalle\Pdf\Style\Color;
-use Kalle\Pdf\Style\Opacity;
 
 final readonly class ParagraphOptions
 {

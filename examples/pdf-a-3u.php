@@ -6,8 +6,8 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Layout\Page\Units;
+use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Text\ParagraphOptions;
 use Kalle\Pdf\Text\TextOptions;
 

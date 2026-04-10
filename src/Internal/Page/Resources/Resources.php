@@ -9,7 +9,7 @@ use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Object\IndirectObject;
-use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\Internal\Style\Opacity;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\ReferenceType;
 

@@ -10,7 +10,7 @@ use Kalle\Pdf\Internal\Layout\Table\Style\TableBorder;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Page\Content\PageGraphics;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Internal\Style\Color;
 
 final readonly class CellBoxRenderer
 {

@@ -7,8 +7,8 @@ namespace Kalle\Pdf\Internal\Page\Content;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Page\Content\Instruction\PathInstruction;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Style\Color;
-use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Internal\Style\Opacity;
 
 final class PathBuilder
 {

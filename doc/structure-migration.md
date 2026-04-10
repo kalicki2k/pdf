@@ -31,7 +31,8 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen jetzt direkt unter `Internal/Document` und `Internal/Page`
 - wiederverwendbare Bytequellen liegen jetzt komplett unter `Internal/Binary`
 - der fruehere Root-Block `Layout` ist aufgeloest; Geometrie, Seitenmasse, Alignment und Overflow liegen jetzt unter `Internal/Layout`, TOC-Typen unter `Internal/Document/TableOfContents`
-- oeffentliche Stil-Primitiven `Color` und `Opacity` liegen jetzt unter `Style`
+- generische Stil-Primitiven `Color` und `Opacity` liegen jetzt unter `Internal/Style`
+- komponentennahe Styles fuer Badges, Panels und Callouts liegen jetzt unter `Internal/Page/Content/Style`
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
 - PDF-Annotation-Stiltypen und das Marker-Interface liegen jetzt unter `Internal/Page/Annotation`
 - `LinkTarget` liegt jetzt unter `Internal/Page/Link`, weil es die seitennahe Linkziel-Semantik fuer Text und Annotationen beschreibt
@@ -89,12 +90,13 @@ src/
       EncryptionPermissions.php
     Page/
       Annotation/
+      Content/
+        Style/
       Form/
       Link/
     Render/
     TaggedPdf/
-
-  Style/
+    Style/
   Types/
   Utilities/
 ```
@@ -143,19 +145,20 @@ Regeln:
 
 - Public-API-Typen bleiben schlanke Value-Types ohne Seiten- oder Dokumentzustand
 
-### Style
+### Internal/Style
 
-Das Root-Paket `Style` enthaelt oeffentliche Stil-Primitiven und kleine Style-Value-Types.
+Die generischen Stil-Primitiven liegen jetzt gesammelt unter `Internal/Style`.
 
 Beispiele:
 
-- `Color`, `Opacity`
-- `BadgeStyle`, `CalloutStyle`, `PanelStyle`
+- `Color`
+- `Opacity`
 
 Regeln:
 
-- bleibt oeffentliche API, weil Farben, Opacity und Style-Objekte direkt in Signaturen und Optionsobjekten verwendet werden
-- enthaelt nur deklarative Stilwerte, keine Render- oder Seitenlogik
+- enthaelt nur kleine technische Stil-Primitiven
+- keine Seiten- oder Komponentenlogik
+- kann von Text-, Tabellen-, Formular- und Zeichenpfaden gemeinsam verwendet werden
 
 ### Internal/Layout
 
@@ -213,6 +216,22 @@ Regeln:
 - formularspezifische Optionen fuer Seitenwidgets liegen intern nahe an der Widget-Erzeugung
 - konkrete Seitenobjekte und Builder liegen nahe am Seitenkern
 - dokumentweite Formularzustandsobjekte liegen im Dokumentkern statt im Ablaufcode
+
+### Internal/Page/Content/Style
+
+Die komponentenspezifischen Styles fuer seitennahe Bausteine liegen direkt bei der Content-Schicht.
+
+Beispiele:
+
+- `BadgeStyle`
+- `PanelStyle`
+- `CalloutStyle`
+
+Regeln:
+
+- enthaelt deklarative Stil-Value-Types fuer Badges, Panels und Callouts
+- liegt nahe an `PageComponents`, weil diese Typen nur dort fachlich Sinn ergeben
+- verwendet `Internal/Style` fuer gemeinsame Farb- und Opacity-Primitiven
 
 ### Internal/Font
 

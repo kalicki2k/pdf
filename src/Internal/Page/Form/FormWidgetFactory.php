@@ -24,7 +24,7 @@ use Kalle\Pdf\Internal\Page\Annotation\SignatureFieldAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Internal\Style\Color;
 
 /**
  * Builds form widgets so Page can stay focused on the public API surface.
