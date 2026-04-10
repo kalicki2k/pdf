@@ -26,7 +26,7 @@ trait HandlesPageForms
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addTextField(
+        $this->collaborators->forms()->addTextField(
             $name,
             $box,
             $value,
@@ -51,7 +51,7 @@ trait HandlesPageForms
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addCheckbox($name, $position, $size, $checked, $accessibleName, $fieldLabel);
+        $this->collaborators->forms()->addCheckbox($name, $position, $size, $checked, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -65,7 +65,7 @@ trait HandlesPageForms
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addRadioButton($name, $value, $position, $size, $checked, $accessibleName, $fieldLabel);
+        $this->collaborators->forms()->addRadioButton($name, $value, $position, $size, $checked, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -86,7 +86,7 @@ trait HandlesPageForms
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addComboBox(
+        $this->collaborators->forms()->addComboBox(
             $name,
             $box,
             $options,
@@ -121,7 +121,7 @@ trait HandlesPageForms
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addListBox(
+        $this->collaborators->forms()->addListBox(
             $name,
             $box,
             $options,
@@ -144,7 +144,7 @@ trait HandlesPageForms
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addSignatureField($name, $box, $accessibleName, $fieldLabel);
+        $this->collaborators->forms()->addSignatureField($name, $box, $accessibleName, $fieldLabel);
 
         return $this;
     }
@@ -160,7 +160,7 @@ trait HandlesPageForms
         ?string $accessibleName = null,
         ?FormFieldLabel $fieldLabel = null,
     ): self {
-        $this->pageForms()->addPushButton(
+        $this->collaborators->forms()->addPushButton(
             $name,
             $label,
             $box,

@@ -16,7 +16,7 @@ trait HandlesPageLinksAndImages
         string $url,
         ?string $accessibleName = null,
     ): self {
-        $this->pageLinks()->addLink($box, $url, $accessibleName);
+        $this->collaborators->links()->addLink($box, $url, $accessibleName);
 
         return $this;
     }
@@ -26,7 +26,7 @@ trait HandlesPageLinksAndImages
         string $destination,
         ?string $accessibleName = null,
     ): self {
-        $this->pageLinks()->addInternalLink($box, $destination, $accessibleName);
+        $this->collaborators->links()->addInternalLink($box, $destination, $accessibleName);
 
         return $this;
     }
@@ -38,6 +38,6 @@ trait HandlesPageLinksAndImages
         ?float $height = null,
         ImageOptions $options = new ImageOptions(),
     ): self {
-        return $this->pageImages()->addImage($image, $position, $width, $height, $options);
+        return $this->collaborators->images()->addImage($image, $position, $width, $height, $options);
     }
 }

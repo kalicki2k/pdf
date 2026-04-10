@@ -21,7 +21,7 @@ trait HandlesPageAnnotations
         string $icon = 'PushPin',
         ?string $contents = null,
     ): self {
-        $this->pageAnnotations()->addFileAttachmentAnnotation($box, $file, $icon, $contents);
+        $this->collaborators->annotations()->addFileAttachmentAnnotation($box, $file, $icon, $contents);
 
         return $this;
     }
@@ -33,7 +33,7 @@ trait HandlesPageAnnotations
         string $icon = 'Note',
         bool $open = false,
     ): self {
-        $this->pageAnnotations()->addTextAnnotation($box, $contents, $title, $icon, $open);
+        $this->collaborators->annotations()->addTextAnnotation($box, $contents, $title, $icon, $open);
 
         return $this;
     }
@@ -43,7 +43,7 @@ trait HandlesPageAnnotations
         Rect $box,
         bool $open = false,
     ): self {
-        $this->pageAnnotations()->addPopupAnnotation($parent, $box, $open);
+        $this->collaborators->annotations()->addPopupAnnotation($parent, $box, $open);
 
         return $this;
     }
@@ -58,7 +58,7 @@ trait HandlesPageAnnotations
         ?Color $fillColor = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addFreeTextAnnotation(
+        $this->collaborators->annotations()->addFreeTextAnnotation(
             $box,
             $contents,
             $baseFont,
@@ -78,7 +78,7 @@ trait HandlesPageAnnotations
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addHighlightAnnotation($box, $color, $contents, $title);
+        $this->collaborators->annotations()->addHighlightAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -89,7 +89,7 @@ trait HandlesPageAnnotations
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addUnderlineAnnotation($box, $color, $contents, $title);
+        $this->collaborators->annotations()->addUnderlineAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -100,7 +100,7 @@ trait HandlesPageAnnotations
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addStrikeOutAnnotation($box, $color, $contents, $title);
+        $this->collaborators->annotations()->addStrikeOutAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -111,7 +111,7 @@ trait HandlesPageAnnotations
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addSquigglyAnnotation($box, $color, $contents, $title);
+        $this->collaborators->annotations()->addSquigglyAnnotation($box, $color, $contents, $title);
 
         return $this;
     }
@@ -123,7 +123,7 @@ trait HandlesPageAnnotations
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addStampAnnotation($box, $icon, $color, $contents, $title);
+        $this->collaborators->annotations()->addStampAnnotation($box, $icon, $color, $contents, $title);
 
         return $this;
     }
@@ -136,7 +136,7 @@ trait HandlesPageAnnotations
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addSquareAnnotation(
+        $this->collaborators->annotations()->addSquareAnnotation(
             $box,
             $borderColor,
             $fillColor,
@@ -156,7 +156,7 @@ trait HandlesPageAnnotations
         ?string $title = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addCircleAnnotation(
+        $this->collaborators->annotations()->addCircleAnnotation(
             $box,
             $borderColor,
             $fillColor,
@@ -178,7 +178,7 @@ trait HandlesPageAnnotations
         ?string $contents = null,
         ?string $title = null,
     ): self {
-        $this->pageAnnotations()->addInkAnnotation($box, $paths, $color, $contents, $title);
+        $this->collaborators->annotations()->addInkAnnotation($box, $paths, $color, $contents, $title);
 
         return $this;
     }
@@ -194,7 +194,7 @@ trait HandlesPageAnnotations
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addLineAnnotation(
+        $this->collaborators->annotations()->addLineAnnotation(
             $from,
             $to,
             $color,
@@ -222,7 +222,7 @@ trait HandlesPageAnnotations
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addPolyLineAnnotation(
+        $this->collaborators->annotations()->addPolyLineAnnotation(
             $vertices,
             $color,
             $contents,
@@ -248,7 +248,7 @@ trait HandlesPageAnnotations
         ?string $subject = null,
         ?AnnotationBorderStyle $borderStyle = null,
     ): self {
-        $this->pageAnnotations()->addPolygonAnnotation(
+        $this->collaborators->annotations()->addPolygonAnnotation(
             $vertices,
             $borderColor,
             $fillColor,
@@ -267,7 +267,7 @@ trait HandlesPageAnnotations
         ?string $title = null,
         string $symbol = 'None',
     ): self {
-        $this->pageAnnotations()->addCaretAnnotation($box, $contents, $title, $symbol);
+        $this->collaborators->annotations()->addCaretAnnotation($box, $contents, $title, $symbol);
 
         return $this;
     }

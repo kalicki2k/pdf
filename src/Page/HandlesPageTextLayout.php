@@ -26,7 +26,7 @@ trait HandlesPageTextLayout
         int $size = 12,
         TextOptions $options = new TextOptions(),
     ): self {
-        return $this->pageTextElementRenderer()->render($text, $position, $fontName, $size, $options);
+        return $this->collaborators->textElementRenderer()->render($text, $position, $fontName, $size, $options);
     }
 
     /**
@@ -40,7 +40,7 @@ trait HandlesPageTextLayout
         int $size = 12,
         FlowTextOptions $options = new FlowTextOptions(),
     ): self {
-        return $this->pageParagraphRenderer()->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
+        return $this->collaborators->paragraphRenderer()->addFlowText($text, $position, $maxWidth, $fontName, $size, $options);
     }
 
     /**
@@ -53,7 +53,7 @@ trait HandlesPageTextLayout
         int $size = 12,
         TextBoxOptions $options = new TextBoxOptions(),
     ): self {
-        return $this->pageParagraphRenderer()->addTextBox($text, $box, $fontName, $size, $options);
+        return $this->collaborators->paragraphRenderer()->addTextBox($text, $box, $fontName, $size, $options);
     }
 
     /**
@@ -70,7 +70,7 @@ trait HandlesPageTextLayout
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): array {
-        return $this->pageParagraphRenderer()->layoutParagraphLines(
+        return $this->collaborators->paragraphRenderer()->layoutParagraphLines(
             $text,
             $baseFont,
             $size,
@@ -98,7 +98,7 @@ trait HandlesPageTextLayout
         ?float $bottomMargin = null,
         HorizontalAlign $align = HorizontalAlign::LEFT,
     ): self {
-        return $this->pageParagraphRenderer()->renderParagraphLines(
+        return $this->collaborators->paragraphRenderer()->renderParagraphLines(
             $lines,
             $x,
             $y,
@@ -124,11 +124,11 @@ trait HandlesPageTextLayout
         ?int $maxLines = null,
         TextOverflow $overflow = TextOverflow::CLIP,
     ): int {
-        return $this->pageParagraphRenderer()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
+        return $this->collaborators->paragraphRenderer()->countParagraphLines($text, $baseFont, $size, $maxWidth, $maxLines, $overflow);
     }
 
     public function measureTextWidth(string $text, string $baseFont, int $size): float
     {
-        return $this->pageFonts()->measureTextWidth($text, $baseFont, $size);
+        return $this->collaborators->fonts()->measureTextWidth($text, $baseFont, $size);
     }
 }

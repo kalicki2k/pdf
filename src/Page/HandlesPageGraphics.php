@@ -14,7 +14,7 @@ trait HandlesPageGraphics
 {
     public function addPath(): PathBuilder
     {
-        return $this->pageGraphics()->addPath();
+        return $this->collaborators->graphics()->addPath();
     }
 
     public function addLine(
@@ -24,7 +24,7 @@ trait HandlesPageGraphics
         ?Color $color = null,
         ?Opacity $opacity = null,
     ): self {
-        $this->pageGraphics()->addLine($from, $to, $width, $color, $opacity);
+        $this->collaborators->graphics()->addLine($from, $to, $width, $color, $opacity);
 
         return $this;
     }
@@ -36,7 +36,7 @@ trait HandlesPageGraphics
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        $this->pageGraphics()->addRectangle($box, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->collaborators->graphics()->addRectangle($box, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
@@ -49,7 +49,7 @@ trait HandlesPageGraphics
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        $this->pageGraphics()->addRoundedRectangle($box, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->collaborators->graphics()->addRoundedRectangle($box, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
@@ -63,7 +63,7 @@ trait HandlesPageGraphics
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        $this->pageGraphics()->addCircle($centerX, $centerY, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->collaborators->graphics()->addCircle($centerX, $centerY, $radius, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
@@ -78,7 +78,7 @@ trait HandlesPageGraphics
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        $this->pageGraphics()->addEllipse($centerX, $centerY, $radiusX, $radiusY, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->collaborators->graphics()->addEllipse($centerX, $centerY, $radiusX, $radiusY, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
@@ -93,7 +93,7 @@ trait HandlesPageGraphics
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        $this->pageGraphics()->addPolygon($points, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->collaborators->graphics()->addPolygon($points, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }
@@ -107,7 +107,7 @@ trait HandlesPageGraphics
         float $headLength = 10.0,
         float $headWidth = 8.0,
     ): self {
-        $this->pageGraphics()->addArrow($from, $to, $strokeWidth, $color, $opacity, $headLength, $headWidth);
+        $this->collaborators->graphics()->addArrow($from, $to, $strokeWidth, $color, $opacity, $headLength, $headWidth);
 
         return $this;
     }
@@ -123,7 +123,7 @@ trait HandlesPageGraphics
         ?Color $fillColor = null,
         ?Opacity $opacity = null,
     ): self {
-        $this->pageGraphics()->addStar($centerX, $centerY, $points, $outerRadius, $innerRadius, $strokeWidth, $strokeColor, $fillColor, $opacity);
+        $this->collaborators->graphics()->addStar($centerX, $centerY, $points, $outerRadius, $innerRadius, $strokeWidth, $strokeColor, $fillColor, $opacity);
 
         return $this;
     }

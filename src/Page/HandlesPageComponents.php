@@ -21,7 +21,7 @@ trait HandlesPageComponents
         ?BadgeStyle $style = null,
         ?LinkTarget $link = null,
     ): self {
-        $this->pageComponents()->addBadge($text, $position, $baseFont, $size, $style, $link);
+        $this->collaborators->components()->addBadge($text, $position, $baseFont, $size, $style, $link);
 
         return $this;
     }
@@ -41,7 +41,7 @@ trait HandlesPageComponents
         ?string $titleFont = null,
         ?LinkTarget $link = null,
     ): self {
-        $this->pageComponents()->addPanel($body, $x, $y, $width, $height, $title, $bodyFont, $style, $titleFont, $link);
+        $this->collaborators->components()->addPanel($body, $x, $y, $width, $height, $title, $bodyFont, $style, $titleFont, $link);
 
         return $this;
     }
@@ -63,7 +63,7 @@ trait HandlesPageComponents
         ?string $titleFont = null,
         ?LinkTarget $link = null,
     ): self {
-        $this->pageComponents()->addCallout($body, $x, $y, $width, $height, $pointerX, $pointerY, $title, $bodyFont, $style, $titleFont, $link);
+        $this->collaborators->components()->addCallout($body, $x, $y, $width, $height, $pointerX, $pointerY, $title, $bodyFont, $style, $titleFont, $link);
 
         return $this;
     }
