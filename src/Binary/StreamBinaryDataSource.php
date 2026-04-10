@@ -76,21 +76,6 @@ final class StreamBinaryDataSource implements BinaryDataSource
         });
     }
 
-    public function contents(): string
-    {
-        $this->ensureSeekableReplayStream();
-
-        return $this->withStreamFromStart(function (): string {
-            $contents = stream_get_contents($this->stream);
-
-            if ($contents === false) {
-                throw new RuntimeException('Unable to read binary data stream.');
-            }
-
-            return $contents;
-        });
-    }
-
     public function slice(int $offset, int $length): string
     {
         if ($offset < 0 || $length < 0) {

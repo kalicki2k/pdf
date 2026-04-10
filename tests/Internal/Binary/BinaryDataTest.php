@@ -17,8 +17,8 @@ final class BinaryDataTest extends TestCase
         $data = BinaryData::fromString('hello');
 
         self::assertSame(5, $data->length());
-        self::assertSame('hello', $data->contents());
-        self::assertSame('hello', $data->contents());
+        self::assertSame('hello', $data->slice(0, $data->length()));
+        self::assertSame('hello', $data->slice(0, $data->length()));
         self::assertSame('ell', $data->slice(1, 3));
     }
 
@@ -34,7 +34,7 @@ final class BinaryDataTest extends TestCase
             file_put_contents($path, 'changed');
 
             self::assertSame(7, $data->length());
-            self::assertSame('changed', $data->contents());
+            self::assertSame('changed', $data->slice(0, $data->length()));
             self::assertSame('ang', $data->slice(2, 3));
         } finally {
             @unlink($path);
@@ -67,7 +67,7 @@ final class BinaryDataTest extends TestCase
 
         self::assertSame('hello', $output->contents());
         self::assertSame(2, ftell($stream));
-        self::assertSame('hello', $data->contents());
+        self::assertSame('hello', $data->slice(0, $data->length()));
         self::assertSame('ell', $data->slice(1, 3));
         self::assertSame(2, ftell($stream));
 
@@ -95,7 +95,7 @@ final class BinaryDataTest extends TestCase
 
         self::assertSame(5, $data->length());
         self::assertSame('hello', $output->contents());
-        self::assertSame('hello', $data->contents());
+        self::assertSame('hello', $data->slice(0, $data->length()));
         self::assertSame('ell', $data->slice(1, 3));
 
         unset($data);
@@ -129,5 +129,34 @@ final class BinaryDataTest extends TestCase
         unset($data);
 
         self::assertFalse(is_resource($reader));
+    }
+
+    #[Test]
+    public function it_can_expose_a_segment_without_materializing_the_whole_source(): void
+    {
+        $data = BinaryData::fromString('hello world');
+        $segment = $data->segment(6, 5);
+
+        self::assertSame(5, $segment->length());
+        self::assertSame('world', $segment->slice(0, $segment->length()));
+        self::assertSame('orl', $segment->slice(1, 3));
+    }
+
+    #[Test]
+    public function it_can_concatenate_multiple_binary_segments(): void
+    {
+        $data = BinaryData::concatenate(
+            BinaryData::fromString('hello'),
+            BinaryData::fromString(' '),
+            BinaryData::fromString('world'),
+        );
+        $output = new StringPdfOutput();
+
+        $data->writeTo($output);
+
+        self::assertSame(11, $data->length());
+        self::assertSame('hello world', $data->slice(0, $data->length()));
+        self::assertSame('lo wo', $data->slice(3, 5));
+        self::assertSame('hello world', $output->contents());
     }
 }

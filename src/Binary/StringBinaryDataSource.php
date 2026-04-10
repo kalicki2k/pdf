@@ -18,11 +18,6 @@ final readonly class StringBinaryDataSource implements BinaryDataSource
         return strlen($this->bytes);
     }
 
-    public function contents(): string
-    {
-        return $this->bytes;
-    }
-
     public function slice(int $offset, int $length): string
     {
         if ($offset < 0) {

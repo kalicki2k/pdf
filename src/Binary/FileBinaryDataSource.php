@@ -40,17 +40,6 @@ final readonly class FileBinaryDataSource implements BinaryDataSource
         }
     }
 
-    public function contents(): string
-    {
-        $contents = @file_get_contents($this->path);
-
-        if ($contents === false) {
-            throw new RuntimeException("Unable to read binary data file '$this->path'.");
-        }
-
-        return $contents;
-    }
-
     public function slice(int $offset, int $length): string
     {
         if ($offset < 0 || $length < 0) {

@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Binary;
 
-use Kalle\Pdf\Binary\BinaryDataSource;
-use Kalle\Pdf\Binary\FileBinaryDataSource;
-use Kalle\Pdf\Binary\StreamBinaryDataSource;
-use Kalle\Pdf\Binary\StringBinaryDataSource;
 use Kalle\Pdf\Render\PdfOutput;
 
 final class BinaryData
@@ -35,19 +31,28 @@ final class BinaryData
         return new self(new StreamBinaryDataSource($stream, $length, $closeOnDestruct));
     }
 
+    public static function concatenate(self ...$segments): self
+    {
+        if ($segments === []) {
+            return self::fromString('');
+        }
+
+        return new self(new ConcatenatedBinaryDataSource(array_values($segments)));
+    }
+
     public function length(): int
     {
         return $this->source->length();
     }
 
-    public function contents(): string
-    {
-        return $this->source->contents();
-    }
-
     public function slice(int $offset, int $length): string
     {
         return $this->source->slice($offset, $length);
+    }
+
+    public function segment(int $offset, int $length): self
+    {
+        return new self(new SlicedBinaryDataSource($this, $offset, $length));
     }
 
     public function writeTo(PdfOutput $output): void

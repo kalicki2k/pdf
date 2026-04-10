@@ -13,8 +13,6 @@ interface BinaryDataSource
 {
     public function length(): int;
 
-    public function contents(): string;
-
     public function slice(int $offset, int $length): string;
 
     public function writeTo(PdfOutput $output): void;
