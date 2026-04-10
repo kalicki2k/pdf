@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Page\Annotation\PageAnnotation as PopupParentAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
@@ -16,6 +15,7 @@ use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Style\Color;
 
 /**
  * @internal Collects page annotations so Page can stay focused on its public API.

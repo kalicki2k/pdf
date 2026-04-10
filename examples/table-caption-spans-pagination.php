@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Table\Style\HeaderStyle;
 use Kalle\Pdf\Table\Style\TableBorder;
 use Kalle\Pdf\Table\Style\TablePadding;

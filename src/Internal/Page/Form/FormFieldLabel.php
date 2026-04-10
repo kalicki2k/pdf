@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Form;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\Position;
+use Kalle\Pdf\Style\Color;
 
 final readonly class FormFieldLabel
 {

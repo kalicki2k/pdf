@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Form;
 
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
@@ -16,6 +15,7 @@ use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

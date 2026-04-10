@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Form;
 
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Action\SetOcgStateAction;
 use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
@@ -20,6 +19,7 @@ use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Text\TextOptions;
 
 /**

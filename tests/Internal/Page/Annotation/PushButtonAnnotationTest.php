@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Action\GoToAction;
 use Kalle\Pdf\Internal\Action\GoToRemoteAction;
 use Kalle\Pdf\Internal\Action\HideAction;
@@ -29,6 +28,7 @@ use Kalle\Pdf\Internal\Page\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Internal\Page\Form\FormFieldTextAppearanceStream;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

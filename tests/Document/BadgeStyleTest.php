@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Style\BadgeStyle;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

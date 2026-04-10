@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Table;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Layout\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableRow;
@@ -31,6 +30,7 @@ use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Table\Style\FooterStyle;
 use Kalle\Pdf\Table\Style\HeaderStyle;
 use Kalle\Pdf\Table\Style\RowStyle;

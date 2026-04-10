@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Form;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
@@ -25,6 +24,7 @@ use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Model\Document\Form\AcroForm;
 use Kalle\Pdf\Model\Document\Form\RadioButtonField;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Style\Color;
 
 /**
  * Builds form widgets so Page can stay focused on the public API surface.

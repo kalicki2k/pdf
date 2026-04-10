@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Form;
 
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Font\UnicodeFont;
 use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;

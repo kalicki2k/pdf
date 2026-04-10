@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Page;
@@ -16,6 +15,7 @@ use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Style\Color;
 
 /**
  * Builds page annotations so Page can stay focused on the public API surface.

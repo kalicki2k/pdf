@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Action\GoToAction;
 use Kalle\Pdf\Internal\Action\GoToRemoteAction;
@@ -53,6 +51,8 @@ use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Style\BadgeStyle;
 use Kalle\Pdf\Style\CalloutStyle;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\Style\PanelStyle;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use Kalle\Pdf\Text\FlowTextOptions;

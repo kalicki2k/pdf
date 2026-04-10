@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\Insets;
 use Kalle\Pdf\Layout\PageSize;
@@ -15,6 +14,7 @@ use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Text\TextBoxOptions;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page;
 
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Document;
@@ -50,6 +48,8 @@ use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Style\BadgeStyle;
 use Kalle\Pdf\Style\CalloutStyle;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\Style\PanelStyle;
 use Kalle\Pdf\Text\FlowTextOptions;
 use Kalle\Pdf\Text\TextBoxOptions;

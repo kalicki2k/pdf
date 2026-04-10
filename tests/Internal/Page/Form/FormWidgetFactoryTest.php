@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Form;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Font\StandardFont;
@@ -27,6 +26,7 @@ use Kalle\Pdf\Layout\Rect;
 use Kalle\Pdf\Model\Document\Form\AcroForm;
 use Kalle\Pdf\Model\Document\Form\RadioButtonField;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;
 use PHPUnit\Framework\Attributes\Test;

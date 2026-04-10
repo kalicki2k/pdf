@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Position;
@@ -12,6 +11,7 @@ use Kalle\Pdf\Model\Page\ImageOptions;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Text\ListOptions;
 use Kalle\Pdf\Text\ParagraphOptions;
 use Kalle\Pdf\Text\TextOptions;

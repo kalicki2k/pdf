@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Internal\Page\Content\Instruction\LineInstruction;
 use Kalle\Pdf\Internal\Page\Content\Instruction\RawInstruction;
@@ -14,6 +12,8 @@ use Kalle\Pdf\Internal\Page\Content\Instruction\RectangleInstruction;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Layout\Rect;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 
 /**
  * @internal Coordinates graphic primitives for a page.

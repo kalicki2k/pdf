@@ -30,6 +30,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
 - oeffentliche Geometrie-Primitiven `Position`, `Rect` und `Insets` liegen jetzt unter `Layout`
+- oeffentliche Stil-Primitiven `Color` und `Opacity` liegen jetzt unter `Style`
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
 - PDF-Annotation-Stiltypen und das Marker-Interface liegen jetzt unter `Internal/Page/Annotation`
 - der technische Font-Kern liegt jetzt unter `Internal/Font`
@@ -87,11 +88,11 @@ src/
       Form/
     Page/
 
-  Graphics/
   Layout/
   Object/
   Render/
   Structure/
+  Style/
   Types/
   Utilities/
 ```
@@ -172,6 +173,20 @@ Regeln:
 
 - bleibt oeffentliche API, weil diese Typen direkt in Signaturen von `Document`, `Page`, `TextFrame` und `Table` verwendet werden
 - enthaelt nur kleine Value-Types und Layout-Helfer, keine Seiten- oder Dokumentzustandslogik
+
+### Style
+
+Das Root-Paket `Style` enthaelt oeffentliche Stil-Primitiven und kleine Style-Value-Types.
+
+Beispiele:
+
+- `Color`, `Opacity`
+- `BadgeStyle`, `CalloutStyle`, `PanelStyle`
+
+Regeln:
+
+- bleibt oeffentliche API, weil Farben, Opacity und Style-Objekte direkt in Signaturen und Optionsobjekten verwendet werden
+- enthaelt nur deklarative Stilwerte, keine Render- oder Seitenlogik
 
 ### Internal/Layout
 

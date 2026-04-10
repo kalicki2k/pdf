@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Model\Page;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\ReferenceType;
 

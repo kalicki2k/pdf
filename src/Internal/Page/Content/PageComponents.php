@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
@@ -16,6 +15,7 @@ use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Style\BadgeStyle;
 use Kalle\Pdf\Style\CalloutStyle;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\PanelStyle;
 use Kalle\Pdf\Text\TextBoxOptions;
 use Kalle\Pdf\Text\TextOptions;

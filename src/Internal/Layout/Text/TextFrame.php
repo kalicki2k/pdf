@@ -6,8 +6,6 @@ namespace Kalle\Pdf\Internal\Layout\Text;
 
 use Closure;
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Layout\BulletType;
 use Kalle\Pdf\Layout\HorizontalAlign;
@@ -15,6 +13,8 @@ use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\Text\FlowTextOptions;
 use Kalle\Pdf\Text\ListOptions;
 use Kalle\Pdf\Text\ParagraphOptions;

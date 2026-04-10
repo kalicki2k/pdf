@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Table\Style;
 
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Style\Color;
 
 final readonly class TableStyle
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Graphics;
+namespace Kalle\Pdf\Tests\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Opacity;
+use Kalle\Pdf\Style\Opacity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

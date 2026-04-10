@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\PageSize;
 use Kalle\Pdf\Layout\Position;
@@ -12,6 +11,7 @@ use Kalle\Pdf\Layout\Units;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Table\Style\CellStyle;
 use Kalle\Pdf\Table\Style\HeaderStyle;
 use Kalle\Pdf\Table\Style\RowStyle;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Graphics\Color;
-use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 
 final readonly class PanelStyle
 {

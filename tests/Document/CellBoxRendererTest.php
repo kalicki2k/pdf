@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Layout\Table\Rendering\CellBoxRenderer;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Table\Style\TableBorder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

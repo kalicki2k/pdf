@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
-use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Page\Annotation\StampAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
