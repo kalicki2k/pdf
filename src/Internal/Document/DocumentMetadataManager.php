@@ -7,8 +7,8 @@ namespace Kalle\Pdf\Internal\Document;
 use Composer\InstalledVersions;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Model\Document\IccProfileStream;
-use Kalle\Pdf\Model\Document\XmpMetadata;
+use Kalle\Pdf\Internal\Document\Metadata\IccProfileStream;
+use Kalle\Pdf\Internal\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Utilities\StringListNormalizer;
 
 /**

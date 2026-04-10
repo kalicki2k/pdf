@@ -8,7 +8,7 @@ use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Layout\Page\Units;
-use Kalle\Pdf\Model\Page\ImageOptions;
+use Kalle\Pdf\Internal\Page\Content\ImageOptions;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;

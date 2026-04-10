@@ -6,6 +6,8 @@ namespace Kalle\Pdf\Internal\Page\Form;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Action\ButtonAction;
+use Kalle\Pdf\Internal\Document\Form\AcroForm;
+use Kalle\Pdf\Internal\Document\Form\RadioButtonField;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
@@ -21,8 +23,6 @@ use Kalle\Pdf\Internal\Page\Annotation\SignatureFieldAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Model\Document\Form\AcroForm;
-use Kalle\Pdf\Model\Document\Form\RadioButtonField;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Style\Color;
 

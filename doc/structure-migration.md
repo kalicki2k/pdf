@@ -28,7 +28,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 
 - die dokumentweite Orchestrierung liegt jetzt unter `Internal/Document`
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
-- zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
+- zentrale Kernobjekte des Dokument- und Seitenzustands liegen jetzt direkt unter `Internal/Document` und `Internal/Page`
 - wiederverwendbare Bytequellen liegen jetzt komplett unter `Internal/Binary`
 - der fruehere Root-Block `Layout` ist aufgeloest; Geometrie, Seitenmasse, Alignment und Overflow liegen jetzt unter `Internal/Layout`, TOC-Typen unter `Internal/Document/TableOfContents`
 - oeffentliche Stil-Primitiven `Color` und `Opacity` liegen jetzt unter `Style`
@@ -37,7 +37,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - der technische Font-Kern liegt jetzt unter `Internal/Font`
 - gemeinsame Formularoptionen fuer Seitenwidgets liegen jetzt unter `Internal/Page/Form`
 - konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
-- `AcroForm` und `RadioButtonField` liegen unter `Model/Document/Form`
+- `AcroForm` und `RadioButtonField` liegen unter `Internal/Document/Form`
 - oeffentliche Text- und Tabellen-Value-Types liegen unter `src/Text` und `src/Table`
 - interne Text- und Tabellen-Layoutimplementierungen liegen unter `Internal/Layout/Text` und `Internal/Layout/Table`
 - `OptionalContent` und `Outline` liegen jetzt unter `Internal/Document`, weil sie dokumentweiten Zustand und Navigation modellieren
@@ -89,10 +89,6 @@ src/
       Annotation/
       Form/
 
-  Model/
-    Document/
-      Form/
-    Page/
   Object/
   Render/
   Structure/
@@ -132,23 +128,6 @@ Regeln:
 - kapselt internen mutierbaren Dokumentzustand
 - soll keine PDF-Typen oder Streamsyntax im Detail modellieren
 - soll lesbar den Ablauf erklaeren
-
-### Model
-
-Hier liegt der interne Dokumentzustand.
-
-Beispiele:
-
-- internes Dokumentaggregat
-- Seitenmodell
-- Catalog, Pages, Info, Resources, Contents
-- dokumentweite Formularobjekte wie `AcroForm`
-
-Regeln:
-
-- repraesentiert den Zustand des PDFs
-- trifft keine uebergeordneten Ablaufentscheidungen
-- soll moeglichst keine Public-API-Verantwortung tragen
 
 ### Text und Table
 
@@ -222,7 +201,7 @@ Beispiele:
 - `Internal/Page/Annotation/PageAnnotation` als gemeinsames Marker- und Related-Objects-Interface
 - `Internal/Page/Annotation` fuer konkrete Seitenannotationen und ihre Koordination
 - `Internal/Page/Form` fuer Widget-Erzeugung, Appearance-Streams und gemeinsame Formularoptionen
-- `Model/Document/Form` fuer dokumentweite AcroForm-Objekte
+- `Internal/Document/Form` fuer dokumentweite AcroForm-Objekte
 
 Regeln:
 
@@ -230,7 +209,7 @@ Regeln:
 - annotation-spezifische PDF-Typen liegen intern nahe an der Seitenannotation-Schicht
 - formularspezifische Optionen fuer Seitenwidgets liegen intern nahe an der Widget-Erzeugung
 - konkrete Seitenobjekte und Builder liegen nahe am Seitenkern
-- dokumentweite Formularzustandsobjekte liegen im Modell statt im Ablaufcode
+- dokumentweite Formularzustandsobjekte liegen im Dokumentkern statt im Ablaufcode
 
 ### Internal/Font
 

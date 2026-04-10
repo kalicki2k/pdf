@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Document\Form\RadioButtonField;
 use Kalle\Pdf\Internal\Page\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Internal\Page\Form\RadioButtonAppearanceStream;
-use Kalle\Pdf\Model\Document\Form\RadioButtonField;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

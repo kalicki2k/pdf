@@ -4,6 +4,10 @@ Dieses Paket enthaelt den internen Dokumentkern und die dokumentweite Ablaufsteu
 
 Die Struktur ist bewusst in kleine Teilpakete geschnitten:
 
+- `Attachment` fuer eingebettete Dateien und ihre PDF-Dateispezifikationen
+- `Form` fuer dokumentweite AcroForm-Objekte
+- `Metadata` fuer klassische PDF-Metadaten, XMP und Output-Intent-Profile
 - `Preparation` fuer Render-Vorbereitung, Guards, TOC- und Decorator-Vorbereitung
 - `Serialization` fuer Planaufbau und Writer-Orchestrierung
-- Root-Paket fuer den internen Dokumentzustand und dokumentweite Manager
+- `Structure` fuer Root-Objekte wie `Catalog` und `Pages`
+- Root-Paket fuer das interne Dokumentaggregat und dokumentweite Manager

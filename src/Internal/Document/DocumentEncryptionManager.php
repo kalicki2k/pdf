@@ -7,10 +7,10 @@ namespace Kalle\Pdf\Internal\Document;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionVersionResolver;
+use Kalle\Pdf\Internal\Encryption\Standard\EncryptDictionary;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandler;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;
-use Kalle\Pdf\Model\Document\EncryptDictionary;
 
 /**
  * @internal Manages document encryption state and lazy security handler data creation.

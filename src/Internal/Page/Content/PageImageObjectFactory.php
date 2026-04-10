@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Page\Content;
 
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Model\Page\ImageObject;
+use Kalle\Pdf\Internal\Page\Resources\ImageObject;
 
 /**
  * @internal Creates page image XObjects, including recursive soft-mask objects.

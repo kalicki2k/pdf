@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Internal\Document\Attachment\EmbeddedFileStream;
+use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Font\StandardFont;
@@ -29,8 +31,6 @@ use Kalle\Pdf\Internal\Page\Annotation\StrikeOutAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Model\Document\EmbeddedFileStream;
-use Kalle\Pdf\Model\Document\FileSpecification;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;

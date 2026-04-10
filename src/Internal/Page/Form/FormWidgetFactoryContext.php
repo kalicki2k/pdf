@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Form;
 
 use Closure;
+use Kalle\Pdf\Internal\Document\Form\AcroForm;
 use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Model\Document\Form\AcroForm;
 
 /**
  * @internal Provides object ids, AcroForms and fonts for page form widget building.

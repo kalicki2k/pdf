@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
+use Kalle\Pdf\Internal\Document\Form\RadioButtonField;
 use Kalle\Pdf\Internal\Page\Form\RadioButtonAppearanceStream;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Model\Document\Form\RadioButtonField;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
