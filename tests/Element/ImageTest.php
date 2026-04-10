@@ -8,28 +8,26 @@ require_once __DIR__ . '/Support/ImageGzcompressStub.php';
 
 use InvalidArgumentException;
 use Kalle\Pdf\Binary\BinaryData;
-
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
-
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
-
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Image\PngAlphaChannelSplitter;
 
 use function Kalle\Pdf\Image\setImageGzcompressFailure;
 
+use Kalle\Pdf\Page\Resources\ImageObject;
 use Kalle\Pdf\Render\StringPdfOutput;
-
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 
 use function Kalle\Pdf\Tests\Support\writeImageToString;
+use function Kalle\Pdf\Tests\Support\writeIndirectObjectToString;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use ReflectionMethod;
-use ReflectionProperty;
+use RuntimeException;
 use Throwable;
 
 final class ImageTest extends TestCase
@@ -200,11 +198,11 @@ final class ImageTest extends TestCase
             self::assertSame(1, $image->getWidth());
             self::assertSame(1, $image->getHeight());
             self::assertNotNull($softMask);
-            $renderedImage = writeImageToString($image, 9);
+            $renderedImage = writeIndirectObjectToString(new ImageObject(7, $image, new ImageObject(9, $softMask)));
 
             self::assertStringContainsString('/ColorSpace /DeviceRGB', $renderedImage);
             self::assertStringContainsString('/SMask 9 0 R', $renderedImage);
-            self::assertStringContainsString('/ColorSpace /DeviceGray', writeImageToString($softMask));
+            self::assertStringContainsString('/ColorSpace /DeviceGray', writeIndirectObjectToString(new ImageObject(9, $softMask)));
         } finally {
             @unlink($path);
         }
@@ -271,12 +269,12 @@ final class ImageTest extends TestCase
             $image = Image::fromFile($path);
             $softMask = $image->getSoftMask();
 
-            $renderedImage = writeImageToString($image, 9);
+            $renderedImage = writeIndirectObjectToString(new ImageObject(7, $image, new ImageObject(9, $softMask)));
 
             self::assertStringContainsString('/ColorSpace /DeviceGray', $renderedImage);
             self::assertStringContainsString('/SMask 9 0 R', $renderedImage);
             self::assertNotNull($softMask);
-            self::assertStringContainsString('/ColorSpace /DeviceGray', writeImageToString($softMask));
+            self::assertStringContainsString('/ColorSpace /DeviceGray', writeIndirectObjectToString(new ImageObject(9, $softMask)));
         } finally {
             @unlink($path);
         }
@@ -457,9 +455,10 @@ final class ImageTest extends TestCase
         self::assertNotFalse($compressed);
 
         [$colorData] = $splitPngAlphaChannels->invoke(null, 'alpha-length.png', BinaryData::fromString($compressed), 1, 1, 3);
+        $output = new StringPdfOutput();
 
         try {
-            $colorData->length();
+            $colorData->writeTo($output);
             self::fail('Expected exception for unexpected alpha image length.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -484,9 +483,10 @@ final class ImageTest extends TestCase
         }
 
         [$colorData] = $splitPngAlphaChannels->invoke(null, 'alpha.png', BinaryData::fromString('not-compressed'), 1, 1, 3);
+        $output = new StringPdfOutput();
 
         try {
-            $colorData->length();
+            $colorData->writeTo($output);
             self::fail('Expected exception for invalid compressed alpha data.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -507,9 +507,10 @@ final class ImageTest extends TestCase
         setImageGzcompressFailure(true);
 
         [$colorData] = $splitPngAlphaChannels->invoke(null, 'alpha-recompress.png', BinaryData::fromString($compressed), 1, 1, 3);
+        $output = new StringPdfOutput();
 
         try {
-            $colorData->length();
+            $colorData->writeTo($output);
             self::fail('Expected exception for failed PNG alpha recompression.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -521,7 +522,7 @@ final class ImageTest extends TestCase
     }
 
     #[Test]
-    public function it_streams_png_alpha_channels_from_replayable_sources(): void
+    public function it_streams_png_alpha_channels_from_stream_only_sources(): void
     {
         $compressed = gzcompress(chr(0) . chr(10) . chr(20) . chr(30) . chr(40));
         self::assertNotFalse($compressed);
@@ -540,14 +541,12 @@ final class ImageTest extends TestCase
         $colorData->writeTo($colorOutput);
         $alphaData->writeTo($alphaOutput);
 
-        self::assertSame($colorData->slice(0, $colorData->length()), $colorOutput->contents());
-        self::assertSame($alphaData->slice(0, $alphaData->length()), $alphaOutput->contents());
         self::assertSame("\x00\x0A\x14\x1E", gzuncompress($colorOutput->contents()));
         self::assertSame("\x00\x28", gzuncompress($alphaOutput->contents()));
     }
 
     #[Test]
-    public function it_defers_png_alpha_channel_length_measurement_until_needed(): void
+    public function it_rejects_random_access_on_stream_only_png_alpha_channels(): void
     {
         $compressed = gzcompress(chr(0) . chr(10) . chr(20) . chr(30) . chr(40));
         self::assertNotFalse($compressed);
@@ -560,13 +559,25 @@ final class ImageTest extends TestCase
             3,
         );
 
-        self::assertNull($this->binaryDataCachedLength($colorData));
-        self::assertNull($this->binaryDataCachedLength($alphaData));
+        try {
+            $colorData->length();
+            self::fail('Expected exception for direct alpha channel length inspection.');
+        } catch (RuntimeException $exception) {
+            self::assertSame(
+                'PNG alpha channel source Kalle\\Pdf\\Image\\PngAlphaChannelBinaryDataSource is stream-only and does not support direct length inspection.',
+                $exception->getMessage(),
+            );
+        }
 
-        self::assertGreaterThan(0, $colorData->length());
-        self::assertGreaterThan(0, $alphaData->length());
-        self::assertNotNull($this->binaryDataCachedLength($colorData));
-        self::assertNotNull($this->binaryDataCachedLength($alphaData));
+        try {
+            $alphaData->slice(0, 1);
+            self::fail('Expected exception for direct alpha channel slicing.');
+        } catch (RuntimeException $exception) {
+            self::assertSame(
+                'PNG alpha channel source Kalle\\Pdf\\Image\\PngAlphaChannelBinaryDataSource is stream-only and does not support random-access slicing.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     #[Test]
@@ -687,17 +698,5 @@ final class ImageTest extends TestCase
             . $this->createPngChunk('IHDR', pack('NNC5', $width, $height, 8, 4, 0, 0, 0))
             . $this->createPngChunk('IDAT', $compressed)
             . $this->createPngChunk('IEND', '');
-    }
-
-    private function binaryDataCachedLength(BinaryData $data): ?int
-    {
-        $binaryDataReflection = new ReflectionProperty(BinaryData::class, 'source');
-        $binaryDataReflection->setAccessible(true);
-        $source = $binaryDataReflection->getValue($data);
-
-        $lengthReflection = new ReflectionProperty($source, 'length');
-        $lengthReflection->setAccessible(true);
-
-        return $lengthReflection->getValue($source);
     }
 }

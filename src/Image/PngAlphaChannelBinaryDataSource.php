@@ -8,14 +8,12 @@ use DeflateContext;
 use InvalidArgumentException;
 use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Binary\BinaryDataSource;
-use Kalle\Pdf\Render\CountingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
+use RuntimeException;
 
 final class PngAlphaChannelBinaryDataSource implements BinaryDataSource
 {
     private const READ_CHUNK_BYTES = 8192;
-
-    private ?int $length = null;
 
     public function __construct(
         private readonly string $path,
@@ -29,70 +27,18 @@ final class PngAlphaChannelBinaryDataSource implements BinaryDataSource
 
     public function length(): int
     {
-        if ($this->length !== null) {
-            return $this->length;
-        }
-
-        $output = new CountingPdfOutput();
-        $this->writeTo($output);
-
-        return $this->length = $output->offset();
+        throw new RuntimeException(sprintf(
+            'PNG alpha channel source %s is stream-only and does not support direct length inspection.',
+            static::class,
+        ));
     }
 
     public function slice(int $offset, int $length): string
     {
-        if ($offset < 0 || $length < 0) {
-            throw new InvalidArgumentException('Binary data slice offset and length must not be negative.');
-        }
-
-        if ($length === 0) {
-            return '';
-        }
-
-        $output = new class ($offset, $length) implements PdfOutput {
-            private int $offset = 0;
-            private string $contents = '';
-
-            public function __construct(
-                private readonly int $start,
-                private readonly int $length,
-            ) {
-            }
-
-            public function write(string $bytes): void
-            {
-                if ($bytes === '') {
-                    return;
-                }
-
-                $chunkStart = $this->offset;
-                $chunkEnd = $chunkStart + strlen($bytes);
-                $sliceStart = max($this->start, $chunkStart);
-                $sliceEnd = min($this->start + $this->length, $chunkEnd);
-
-                if ($sliceStart < $sliceEnd) {
-                    $relativeOffset = $sliceStart - $chunkStart;
-                    $relativeLength = $sliceEnd - $sliceStart;
-                    $this->contents .= substr($bytes, $relativeOffset, $relativeLength);
-                }
-
-                $this->offset = $chunkEnd;
-            }
-
-            public function offset(): int
-            {
-                return $this->offset;
-            }
-
-            public function contents(): string
-            {
-                return $this->contents;
-            }
-        };
-
-        $this->writeTo($output);
-
-        return $output->contents();
+        throw new RuntimeException(sprintf(
+            'PNG alpha channel source %s is stream-only and does not support random-access slicing.',
+            static::class,
+        ));
     }
 
     public function writeTo(PdfOutput $output): void
