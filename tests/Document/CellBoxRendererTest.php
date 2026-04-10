@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Layout\Table\Rendering\CellBoxRenderer;
-use Kalle\Pdf\Internal\Layout\Table\Style\TableBorder;
-use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
+use Kalle\Pdf\Layout\Table\Rendering\CellBoxRenderer;
+use Kalle\Pdf\Layout\Table\Style\TableBorder;
+use Kalle\Pdf\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;

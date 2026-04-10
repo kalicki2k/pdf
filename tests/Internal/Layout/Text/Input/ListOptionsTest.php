@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Layout\Text\Input;
 
-use Kalle\Pdf\Internal\Layout\Text\Input\ListOptions;
+use Kalle\Pdf\Layout\Text\Input\ListOptions;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\TaggedPdf\StructureTag;

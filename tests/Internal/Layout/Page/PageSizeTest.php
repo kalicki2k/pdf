@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Layout\Page;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Layout\Page\PageSize;
+use Kalle\Pdf\Layout\Page\PageSize;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

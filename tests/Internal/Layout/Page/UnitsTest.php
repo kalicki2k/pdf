@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Layout\Page;
 
-use Kalle\Pdf\Internal\Layout\Page\Units;
+use Kalle\Pdf\Layout\Page\Units;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;

@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Document\Preparation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Page;
 
 /**

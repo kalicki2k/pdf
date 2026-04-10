@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Layout\Table\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
+use Kalle\Pdf\Layout\Table\Style\TablePadding;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

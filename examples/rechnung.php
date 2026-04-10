@@ -3,21 +3,21 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Layout\Geometry\Position;
-use Kalle\Pdf\Internal\Layout\Geometry\Rect;
-use Kalle\Pdf\Internal\Layout\Page\PageSize;
-use Kalle\Pdf\Internal\Layout\Page\Units;
-use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
-use Kalle\Pdf\Internal\Layout\Table\Style\CellStyle;
-use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
-use Kalle\Pdf\Internal\Layout\Table\Style\TableBorder;
-use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
-use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
-use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
+use Kalle\Pdf\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Geometry\Rect;
+use Kalle\Pdf\Layout\Page\PageSize;
+use Kalle\Pdf\Layout\Page\Units;
+use Kalle\Pdf\Layout\Table\Definition\TableCell;
+use Kalle\Pdf\Layout\Table\Style\CellStyle;
+use Kalle\Pdf\Layout\Table\Style\HeaderStyle;
+use Kalle\Pdf\Layout\Table\Style\TableBorder;
+use Kalle\Pdf\Layout\Table\Style\TablePadding;
+use Kalle\Pdf\Layout\Table\Style\TableStyle;
+use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
+use Kalle\Pdf\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Layout\Text\Input\TextSegment;
+use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Style\Color;
 

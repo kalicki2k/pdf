@@ -9,11 +9,11 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsStyle;
-use Kalle\Pdf\Internal\Layout\Geometry\Position;
-use Kalle\Pdf\Internal\Layout\Page\PageSize;
-use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
+use Kalle\Pdf\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Page\PageSize;
+use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 

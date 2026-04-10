@@ -7,11 +7,11 @@ use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsPlacement;
 use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsStyle;
-use Kalle\Pdf\Internal\Layout\Geometry\Position;
-use Kalle\Pdf\Internal\Layout\Page\PageSize;
-use Kalle\Pdf\Internal\Layout\Page\Units;
-use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Page\PageSize;
+use Kalle\Pdf\Layout\Page\Units;
+use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
+use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Style\Color;
 

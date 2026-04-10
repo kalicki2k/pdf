@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Tests\Layout;
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Internal\Document\Serialization\DocumentPdfWriter;
-use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Render\StringPdfOutput;

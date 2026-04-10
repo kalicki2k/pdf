@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Security\EncryptionOptions;

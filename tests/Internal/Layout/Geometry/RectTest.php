@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Layout\Geometry;
 
-use Kalle\Pdf\Internal\Layout\Geometry\Rect;
+use Kalle\Pdf\Layout\Geometry\Rect;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

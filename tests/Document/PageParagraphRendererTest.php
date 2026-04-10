@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Layout\Geometry\Insets;
-use Kalle\Pdf\Internal\Layout\Geometry\Rect;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
-use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
-use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
+use Kalle\Pdf\Layout\Geometry\Insets;
+use Kalle\Pdf\Layout\Geometry\Rect;
+use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
+use Kalle\Pdf\Layout\Text\PageParagraphRenderer;
+use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

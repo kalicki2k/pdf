@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Layout\Table\Definition\TableCaption;
-use Kalle\Pdf\Internal\Layout\Table\Rendering\TableCaptionRenderer;
+use Kalle\Pdf\Layout\Table\Definition\TableCaption;
+use Kalle\Pdf\Layout\Table\Rendering\TableCaptionRenderer;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

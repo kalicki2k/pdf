@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\Layout\Text\PageTextLineRenderer;
-use Kalle\Pdf\Internal\Layout\Text\TextLayoutEngine;
-use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
+use Kalle\Pdf\Layout\Text\Input\TextSegment;
+use Kalle\Pdf\Layout\Text\PageTextLineRenderer;
+use Kalle\Pdf\Layout\Text\TextLayoutEngine;
+use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

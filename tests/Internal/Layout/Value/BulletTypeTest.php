@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Layout\Value;
 
-use Kalle\Pdf\Internal\Layout\Value\BulletType;
+use Kalle\Pdf\Layout\Value\BulletType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

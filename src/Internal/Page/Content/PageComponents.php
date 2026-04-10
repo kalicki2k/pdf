@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Layout\Geometry\Position;
-use Kalle\Pdf\Internal\Layout\Geometry\Rect;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
-use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;
-use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Page\Content\Style\BadgeStyle;
 use Kalle\Pdf\Internal\Page\Content\Style\CalloutStyle;
 use Kalle\Pdf\Internal\Page\Content\Style\PanelStyle;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
+use Kalle\Pdf\Layout\Geometry\Position;
+use Kalle\Pdf\Layout\Geometry\Rect;
+use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
+use Kalle\Pdf\Layout\Text\Input\TextOptions;
+use Kalle\Pdf\Layout\Text\Input\TextSegment;
+use Kalle\Pdf\Layout\Text\PageParagraphRenderer;
+use Kalle\Pdf\Layout\Text\PageTextElementRenderer;
+use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 

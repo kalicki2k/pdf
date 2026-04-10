@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Layout\Text\Input;
 
-use Kalle\Pdf\Internal\Layout\Geometry\Insets;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextBoxOptions;
-use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
-use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
+use Kalle\Pdf\Layout\Geometry\Insets;
+use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
+use Kalle\Pdf\Layout\Value\HorizontalAlign;
+use Kalle\Pdf\Layout\Value\TextOverflow;
+use Kalle\Pdf\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\TaggedPdf\StructureTag;

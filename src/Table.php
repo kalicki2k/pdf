@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
-use Kalle\Pdf\Internal\Layout\Table\Definition\TableCaption;
-use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
-use Kalle\Pdf\Internal\Layout\Table\Style\FooterStyle;
-use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
-use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
-use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
-use Kalle\Pdf\Internal\Layout\Table\Table as InternalTable;
-use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
+use Kalle\Pdf\Layout\Table\Definition\TableCaption;
+use Kalle\Pdf\Layout\Table\Definition\TableCell;
+use Kalle\Pdf\Layout\Table\Style\FooterStyle;
+use Kalle\Pdf\Layout\Table\Style\HeaderStyle;
+use Kalle\Pdf\Layout\Table\Style\RowStyle;
+use Kalle\Pdf\Layout\Table\Style\TableStyle;
+use Kalle\Pdf\Layout\Table\Table as InternalTable;
+use Kalle\Pdf\Layout\Text\Input\TextSegment;
 
 /**
  * Public facade for table layout and rendering.

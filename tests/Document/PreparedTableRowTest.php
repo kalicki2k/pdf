@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Internal\Layout\Table\Definition\TableCell;
-use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
-use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableRow;
-use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
+use Kalle\Pdf\Layout\Table\Definition\TableCell;
+use Kalle\Pdf\Layout\Table\Layout\PreparedTableCell;
+use Kalle\Pdf\Layout\Table\Layout\PreparedTableRow;
+use Kalle\Pdf\Layout\Table\Style\TablePadding;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
