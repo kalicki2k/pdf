@@ -20,6 +20,7 @@ use Kalle\Pdf\Page\Resources\ImageObject;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 
+use function Kalle\Pdf\Tests\Support\writeEncryptedImageToString;
 use function Kalle\Pdf\Tests\Support\writeImageToString;
 use function Kalle\Pdf\Tests\Support\writeIndirectObjectToString;
 
@@ -61,31 +62,29 @@ final class ImageTest extends TestCase
     }
 
     #[Test]
-    public function it_writes_an_image_xobject_stream_to_a_pdf_output(): void
+    public function it_writes_image_stream_contents_to_a_pdf_output(): void
     {
         $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', BinaryData::fromString('abc123'));
         $output = new StringPdfOutput();
 
-        $image->write($output);
+        $image->writeStreamContents($output);
 
-        self::assertSame(writeImageToString($image), $output->contents());
+        self::assertSame('abc123', $output->contents());
     }
 
     #[Test]
     public function it_writes_an_encrypted_image_xobject_stream_consistently(): void
     {
-        $image = new Image(320, 200, 'DeviceRGB', 'DCTDecode', BinaryData::fromString('abc123'));
+        $plainImage = new Image(320, 200, 'DeviceRGB', 'DCTDecode', BinaryData::fromString('abc123'));
+        $encryptedImage = new Image(320, 200, 'DeviceRGB', 'DCTDecode', BinaryData::fromString('abc123'));
         $encryptor = new StandardObjectEncryptor(
             new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),
             new StandardSecurityHandlerData('', '', '1234567890123456', -4),
         );
-        $output = new StringPdfOutput();
-
-        $image->writeEncrypted($output, $encryptor, 9);
 
         self::assertSame(
-            $encryptor->encryptStreamObject("9 0 obj\n" . writeImageToString($image) . "endobj\n", 9),
-            "9 0 obj\n" . $output->contents() . "endobj\n",
+            $encryptor->encryptStreamObject("9 0 obj\n" . writeImageToString($plainImage) . "endobj\n", 9),
+            "9 0 obj\n" . writeEncryptedImageToString($encryptedImage, $encryptor, 9) . "endobj\n",
         );
     }
 

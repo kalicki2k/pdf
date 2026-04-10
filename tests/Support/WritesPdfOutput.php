@@ -6,12 +6,14 @@ namespace Kalle\Pdf\Tests\Support;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Object\HasDeferredStreamLengthObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\PdfType\Type;
+use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\StreamPdfOutput;
@@ -73,8 +75,40 @@ function writeIndirectObjectToString(IndirectObject $object, ?ObjectStringEncryp
 
 function writeImageToString(Image $image, ?int $softMaskObjectId = null): string
 {
-    return capturePdfOutput(static function ($stream) use ($image, $softMaskObjectId): void {
-        $image->write(new StreamPdfOutput($stream), $softMaskObjectId);
+    $payload = capturePdfOutput(static function ($stream) use ($image): void {
+        $image->writeStreamContents(new StreamPdfOutput($stream));
+    });
+
+    return capturePdfOutput(static function ($stream) use ($image, $softMaskObjectId, $payload): void {
+        $output = new StreamPdfOutput($stream);
+        $image->writeDictionary($output, $softMaskObjectId, strlen($payload));
+        $output->write('stream' . PHP_EOL);
+        $output->write($payload);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL);
+    });
+}
+
+function writeEncryptedImageToString(
+    Image $image,
+    StandardObjectEncryptor $objectEncryptor,
+    int $objectId,
+    ?int $softMaskObjectId = null,
+): string {
+    $payload = capturePdfOutput(static function ($stream) use ($image, $objectEncryptor, $objectId): void {
+        $encryptedOutput = new EncryptingPdfOutput(
+            new StreamPdfOutput($stream),
+            $objectEncryptor->createStreamEncryptor($objectId),
+        );
+        $image->writeStreamContents($encryptedOutput);
+        $encryptedOutput->finish();
+    });
+
+    return capturePdfOutput(static function ($stream) use ($image, $softMaskObjectId, $payload): void {
+        $output = new StreamPdfOutput($stream);
+        $image->writeDictionary($output, $softMaskObjectId, strlen($payload));
+        $output->write('stream' . PHP_EOL);
+        $output->write($payload);
+        $output->write(PHP_EOL . 'endstream' . PHP_EOL);
     });
 }
 

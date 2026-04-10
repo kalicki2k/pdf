@@ -81,16 +81,6 @@ class Image
         return $this->softMask;
     }
 
-    public function streamLength(): int
-    {
-        return $this->data->length();
-    }
-
-    public function encryptedStreamLength(StandardObjectEncryptor $objectEncryptor): int
-    {
-        return $objectEncryptor->encryptedByteLength($this->streamLength());
-    }
-
     public function dictionary(int | Type $length, ?int $softMaskObjectId): DictionaryType
     {
         $dictionary = new DictionaryType([
@@ -137,26 +127,6 @@ class Image
         );
         $this->data->writeTo($encryptedOutput);
         $encryptedOutput->finish();
-    }
-
-    public function write(PdfOutput $output, ?int $softMaskObjectId = null): void
-    {
-        $this->writeDictionary($output, $softMaskObjectId, $this->streamLength());
-        $output->write('stream' . PHP_EOL);
-        $this->writeStreamContents($output);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL);
-    }
-
-    public function writeEncrypted(
-        PdfOutput $output,
-        StandardObjectEncryptor $objectEncryptor,
-        int $objectId,
-        ?int $softMaskObjectId = null,
-    ): void {
-        $this->writeDictionary($output, $softMaskObjectId, $this->encryptedStreamLength($objectEncryptor));
-        $output->write('stream' . PHP_EOL);
-        $this->writeEncryptedStreamContents($output, $objectEncryptor, $objectId);
-        $output->write(PHP_EOL . 'endstream' . PHP_EOL);
     }
 
     /**
