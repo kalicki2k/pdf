@@ -13,7 +13,7 @@ use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\PdfType\StringType;
 
-final class TextAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
+final class TextAnnotation extends DictionaryIndirectObject implements AppearanceStreamAwareAnnotation, PageAnnotation, StructParentAwareAnnotation
 {
     use HasStructParent;
 

@@ -13,7 +13,7 @@ use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\PdfType\StringType;
 use Kalle\Pdf\Style\Color;
 
-final class HighlightAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
+final class HighlightAnnotation extends DictionaryIndirectObject implements AppearanceStreamAwareAnnotation, PageAnnotation, StructParentAwareAnnotation
 {
     use HasStructParent;
 
