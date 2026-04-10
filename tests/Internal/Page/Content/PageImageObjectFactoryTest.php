@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Tests\Internal\Page\Content;
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Image;
-use Kalle\Pdf\Internal\Page\Content\PageImageObjectFactory;
+use Kalle\Pdf\Page\Content\PageImageObjectFactory;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

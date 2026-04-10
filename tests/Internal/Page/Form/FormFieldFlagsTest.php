@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Form;
 
-use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
+use Kalle\Pdf\Page\Form\FormFieldFlags;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

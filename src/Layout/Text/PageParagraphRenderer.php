@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Layout\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Text\Input\FlowTextOptions;
@@ -14,6 +13,7 @@ use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\Page\Resources\PageFonts;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\TaggedPdf\StructElem;

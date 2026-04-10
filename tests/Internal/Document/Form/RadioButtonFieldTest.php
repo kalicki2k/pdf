@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Document\Form;
 
 use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Form\RadioButtonField;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Internal\Document\Form\RadioButtonField;
-use Kalle\Pdf\Internal\Page\Annotation\RadioButtonWidgetAnnotation;
-use Kalle\Pdf\Internal\Page\Form\RadioButtonAppearanceStream;
+use Kalle\Pdf\Page\Annotation\RadioButtonWidgetAnnotation;
+use Kalle\Pdf\Page\Form\RadioButtonAppearanceStream;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;

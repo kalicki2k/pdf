@@ -17,7 +17,11 @@
   "autoload": {
     "psr-4": {
       "Kalle\\Pdf\\": "src/"
-    }
+    },
+    "classmap": [
+      "src/Document/Document.php",
+      "src/Page/Page.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

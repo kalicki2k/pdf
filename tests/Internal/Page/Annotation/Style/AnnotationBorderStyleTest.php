@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyle;
-use Kalle\Pdf\Internal\Page\Annotation\Style\AnnotationBorderStyleType;
+use Kalle\Pdf\Page\Annotation\Style\AnnotationBorderStyle;
+use Kalle\Pdf\Page\Annotation\Style\AnnotationBorderStyleType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

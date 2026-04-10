@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Binary;
 
 use Kalle\Pdf\Binary\BinaryData;
+use Kalle\Pdf\Document\Attachment\EmbeddedFileStream;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Internal\Document\Attachment\EmbeddedFileStream;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;

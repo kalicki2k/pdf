@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Document\TableOfContents;
 
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsLeaderStyle;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsLeaderStyle;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

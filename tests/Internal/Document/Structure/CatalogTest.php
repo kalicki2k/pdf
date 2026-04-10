@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Document\Structure;
 
 use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Structure\Catalog;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Internal\Document\Attachment\AssociatedFileRelationship;
-use Kalle\Pdf\Internal\Document\Structure\Catalog;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;

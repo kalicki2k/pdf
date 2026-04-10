@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Document\Attachment;
 
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Attachment\EmbeddedFileStream;
+use Kalle\Pdf\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Internal\Document\Attachment\AssociatedFileRelationship;
-use Kalle\Pdf\Internal\Document\Attachment\EmbeddedFileStream;
-use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

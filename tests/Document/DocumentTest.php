@@ -6,23 +6,23 @@ namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+
+use Kalle\Pdf\Document\DocumentFontFactory;
+
+use function Kalle\Pdf\Document\setDocumentRandomBytesShouldThrow;
+
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsLeaderStyle;
+
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
+
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsPlacement;
+
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsStyle;
+
 use Kalle\Pdf\Font\OpenTypeFontParser;
 
 use Kalle\Pdf\Font\UnicodeFont;
-
-use Kalle\Pdf\Internal\Document\Attachment\AssociatedFileRelationship;
-
-use Kalle\Pdf\Internal\Document\DocumentFontFactory;
-
-use function Kalle\Pdf\Internal\Document\setDocumentRandomBytesShouldThrow;
-
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsLeaderStyle;
-
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
-
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsPlacement;
-
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsStyle;
 
 use Kalle\Pdf\Layout\Geometry\Position;
 

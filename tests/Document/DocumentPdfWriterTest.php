@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Document\Serialization\DocumentPdfWriter;
+use Kalle\Pdf\Document\Serialization\DocumentPdfWriter;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;

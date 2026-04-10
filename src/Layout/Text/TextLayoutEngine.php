@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Layout\Text;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\TextOverflow;
+use Kalle\Pdf\Page\Link\LinkTarget;
+use Kalle\Pdf\Page\Resources\PageFonts;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 

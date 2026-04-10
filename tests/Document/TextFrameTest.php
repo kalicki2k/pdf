@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Text\Input\ListOptions;
 use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
@@ -14,6 +13,7 @@ use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\BulletType;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\TextOverflow;
+use Kalle\Pdf\Page\Link\LinkTarget;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;

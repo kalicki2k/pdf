@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Internal\Page\Annotation\TextAnnotationAppearanceStream;
+use Kalle\Pdf\Page\Annotation\TextAnnotationAppearanceStream;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;

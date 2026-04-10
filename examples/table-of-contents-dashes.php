@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsLeaderStyle;
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsPlacement;
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsStyle;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsLeaderStyle;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsPlacement;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsStyle;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Layout\Page\Units;

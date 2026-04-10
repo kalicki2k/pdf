@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Tests\Internal\Page\Form;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Internal\Page\Form\FormFieldSignatureAppearanceStream;
+use Kalle\Pdf\Page\Form\FormFieldSignatureAppearanceStream;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Content\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Page\Content\Style\BadgeStyle;
+use Kalle\Pdf\Page\Content\Style\BadgeStyle;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use PHPUnit\Framework\Attributes\Test;

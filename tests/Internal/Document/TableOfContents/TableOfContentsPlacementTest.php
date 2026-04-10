@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Document\TableOfContents;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsPlacement;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsPlacement;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

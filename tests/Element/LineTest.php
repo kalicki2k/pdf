@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Element;
 
-use Kalle\Pdf\Internal\Page\Content\Instruction\LineInstruction;
+use Kalle\Pdf\Page\Content\Instruction\LineInstruction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

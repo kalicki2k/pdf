@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Page\Serialization\PageDictionaryBuilder;
 use Kalle\Pdf\Layout\Geometry\Rect;
+use Kalle\Pdf\Page\Serialization\PageDictionaryBuilder;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

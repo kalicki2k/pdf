@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Page\Annotation\PopupAnnotation;
-use Kalle\Pdf\Internal\Page\Annotation\TextAnnotation;
+use Kalle\Pdf\Page\Annotation\PopupAnnotation;
+use Kalle\Pdf\Page\Annotation\TextAnnotation;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

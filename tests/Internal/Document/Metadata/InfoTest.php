@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Document\Metadata;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Document\Metadata\Info;
+use Kalle\Pdf\Document\Metadata\Info;
 use Kalle\Pdf\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
