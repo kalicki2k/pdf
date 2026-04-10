@@ -153,20 +153,109 @@ class Image
 
     private static function fromPngData(string $path, BinaryData $data): self
     {
+        $png = self::readPngImageData($path, $data);
+
+        if ($png['compressionMethod'] !== 0 || $png['filterMethod'] !== 0) {
+            throw new InvalidArgumentException("Unsupported PNG compression settings in '$path'.");
+        }
+
+        if ($png['interlaceMethod'] !== 0) {
+            throw new InvalidArgumentException("Interlaced PNG images are not supported for '$path'.");
+        }
+
+        [$colorSpace, $colors] = match ($png['colorType']) {
+            0 => ['DeviceGray', 1],
+            2 => ['DeviceRGB', 3],
+            3 => throw new InvalidArgumentException("Indexed PNG images are not supported for '$path'."),
+            4 => ['DeviceGray', 1],
+            6 => ['DeviceRGB', 3],
+            default => throw new InvalidArgumentException("Unsupported PNG color type '{$png['colorType']}' in '$path'."),
+        };
+
+        if ($png['imageData']->length() === 0) {
+            throw new InvalidArgumentException("PNG file '$path' does not contain image data.");
+        }
+
+        if (in_array($png['colorType'], [4, 6], true)) {
+            if ($png['bitDepth'] !== 8) {
+                throw new InvalidArgumentException("PNG images with alpha channels currently require 8 bits per component for '$path'.");
+            }
+
+            [$colorData, $alphaData] = self::splitPngAlphaChannels(
+                $path,
+                $png['imageData'],
+                $png['width'],
+                $png['height'],
+                $colors,
+            );
+
+            return new self(
+                width: $png['width'],
+                height: $png['height'],
+                colorSpace: $colorSpace,
+                filter: 'FlateDecode',
+                data: $colorData,
+                bitsPerComponent: $png['bitDepth'],
+                decodeParameters: sprintf(
+                    '<< /Predictor 15 /Colors %d /BitsPerComponent %d /Columns %d >>',
+                    $colors,
+                    $png['bitDepth'],
+                    $png['width'],
+                ),
+                softMask: new self(
+                    width: $png['width'],
+                    height: $png['height'],
+                    colorSpace: 'DeviceGray',
+                    filter: 'FlateDecode',
+                    data: $alphaData,
+                    bitsPerComponent: $png['bitDepth'],
+                    decodeParameters: sprintf(
+                        '<< /Predictor 15 /Colors 1 /BitsPerComponent %d /Columns %d >>',
+                        $png['bitDepth'],
+                        $png['width'],
+                    ),
+                ),
+            );
+        }
+
+        return new self(
+            width: $png['width'],
+            height: $png['height'],
+            colorSpace: $colorSpace,
+            filter: 'FlateDecode',
+            data: $png['imageData'],
+            bitsPerComponent: $png['bitDepth'],
+            decodeParameters: sprintf(
+                '<< /Predictor 15 /Colors %d /BitsPerComponent %d /Columns %d >>',
+                $colors,
+                $png['bitDepth'],
+                $png['width'],
+            ),
+        );
+    }
+
+    /**
+     * @return array{
+     *     width:int,
+     *     height:int,
+     *     bitDepth:int,
+     *     colorType:int,
+     *     compressionMethod:int,
+     *     filterMethod:int,
+     *     interlaceMethod:int,
+     *     imageData:BinaryData
+     * }
+     */
+    private static function readPngImageData(string $path, BinaryData $data): array
+    {
         if ($data->slice(0, 8) !== "\x89PNG\x0D\x0A\x1A\x0A") {
             throw new InvalidArgumentException("Invalid PNG file '$path'.");
         }
 
         $offset = 8;
         $dataLength = $data->length();
-        $width = null;
-        $height = null;
-        $bitDepth = null;
-        $colorType = null;
-        $compressionMethod = null;
-        $filterMethod = null;
-        $interlaceMethod = null;
-        $imageData = '';
+        $header = null;
+        $imageDataChunks = [];
 
         while ($offset + 8 <= $dataLength) {
             $chunkHeader = $data->slice($offset, 8);
@@ -177,22 +266,18 @@ class Image
 
             $length = self::readUint32($chunkHeader, 0);
             $type = substr($chunkHeader, 4, 4);
-            $chunkData = $data->slice($offset + 8, $length);
+            $chunkData = $data->segment($offset + 8, $length);
             $offset += $length + 12;
 
             if ($type === 'IHDR') {
-                $width = self::readUint32($chunkData, 0);
-                $height = self::readUint32($chunkData, 4);
-                $bitDepth = ord($chunkData[8]);
-                $colorType = ord($chunkData[9]);
-                $compressionMethod = ord($chunkData[10]);
-                $filterMethod = ord($chunkData[11]);
-                $interlaceMethod = ord($chunkData[12]);
+                $header = $chunkData->slice(0, $chunkData->length());
+
                 continue;
             }
 
             if ($type === 'IDAT') {
-                $imageData .= $chunkData;
+                $imageDataChunks[] = $chunkData;
+
                 continue;
             }
 
@@ -201,81 +286,20 @@ class Image
             }
         }
 
-        if ($width === null || $height === null || $bitDepth === null || $colorType === null) {
+        if ($header === null || strlen($header) < 13) {
             throw new InvalidArgumentException("Invalid PNG file '$path'.");
         }
 
-        if ($compressionMethod !== 0 || $filterMethod !== 0) {
-            throw new InvalidArgumentException("Unsupported PNG compression settings in '$path'.");
-        }
-
-        if ($interlaceMethod !== 0) {
-            throw new InvalidArgumentException("Interlaced PNG images are not supported for '$path'.");
-        }
-
-        [$colorSpace, $colors] = match ($colorType) {
-            0 => ['DeviceGray', 1],
-            2 => ['DeviceRGB', 3],
-            3 => throw new InvalidArgumentException("Indexed PNG images are not supported for '$path'."),
-            4 => ['DeviceGray', 1],
-            6 => ['DeviceRGB', 3],
-            default => throw new InvalidArgumentException("Unsupported PNG color type '$colorType' in '$path'."),
-        };
-
-        if ($imageData === '') {
-            throw new InvalidArgumentException("PNG file '$path' does not contain image data.");
-        }
-
-        if (in_array($colorType, [4, 6], true)) {
-            if ($bitDepth !== 8) {
-                throw new InvalidArgumentException("PNG images with alpha channels currently require 8 bits per component for '$path'.");
-            }
-
-            [$colorData, $alphaData] = self::splitPngAlphaChannels($path, $imageData, $width, $height, $colors);
-
-            return new self(
-                width: $width,
-                height: $height,
-                colorSpace: $colorSpace,
-                filter: 'FlateDecode',
-                data: $colorData,
-                bitsPerComponent: $bitDepth,
-                decodeParameters: sprintf(
-                    '<< /Predictor 15 /Colors %d /BitsPerComponent %d /Columns %d >>',
-                    $colors,
-                    $bitDepth,
-                    $width,
-                ),
-                softMask: new self(
-                    width: $width,
-                    height: $height,
-                    colorSpace: 'DeviceGray',
-                    filter: 'FlateDecode',
-                    data: $alphaData,
-                    bitsPerComponent: $bitDepth,
-                    decodeParameters: sprintf(
-                        '<< /Predictor 15 /Colors 1 /BitsPerComponent %d /Columns %d >>',
-                        $bitDepth,
-                        $width,
-                    ),
-                ),
-            );
-        }
-
-        return new self(
-            width: $width,
-            height: $height,
-            colorSpace: $colorSpace,
-            filter: 'FlateDecode',
-            data: $imageData,
-            bitsPerComponent: $bitDepth,
-            decodeParameters: sprintf(
-                '<< /Predictor 15 /Colors %d /BitsPerComponent %d /Columns %d >>',
-                $colors,
-                $bitDepth,
-                $width,
-            ),
-        );
+        return [
+            'width' => self::readUint32($header, 0),
+            'height' => self::readUint32($header, 4),
+            'bitDepth' => ord($header[8]),
+            'colorType' => ord($header[9]),
+            'compressionMethod' => ord($header[10]),
+            'filterMethod' => ord($header[11]),
+            'interlaceMethod' => ord($header[12]),
+            'imageData' => BinaryData::concatenate(...$imageDataChunks),
+        ];
     }
 
     private static function readBinaryImageFile(string $path): BinaryData
@@ -312,11 +336,17 @@ class Image
     }
 
     /**
-     * @return array{0:string,1:string}
+     * @return array{0:BinaryData,1:BinaryData}
      */
-    private static function splitPngAlphaChannels(string $path, string $compressedData, int $width, int $height, int $colors): array
-    {
-        $decompressedData = @gzuncompress($compressedData);
+    private static function splitPngAlphaChannels(
+        string $path,
+        BinaryData $compressedData,
+        int $width,
+        int $height,
+        int $colors,
+    ): array {
+        $compressedBytes = $compressedData->slice(0, $compressedData->length());
+        $decompressedData = @gzuncompress($compressedBytes);
 
         if ($decompressedData === false) {
             throw new InvalidArgumentException("Unable to decompress PNG image data for '$path'.");
@@ -362,7 +392,10 @@ class Image
             throw new InvalidArgumentException('Failed to recompress PNG image data.');
         }
 
-        return [$compressedColorOutput, $compressedAlphaOutput];
+        return [
+            BinaryData::fromString($compressedColorOutput),
+            BinaryData::fromString($compressedAlphaOutput),
+        ];
     }
 
     /**

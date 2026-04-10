@@ -246,6 +246,29 @@ final class ImageTest extends TestCase
     }
 
     #[Test]
+    public function it_creates_an_image_from_a_png_file_with_multiple_idat_chunks(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf-image-split-idat-');
+
+        if ($path === false) {
+            self::fail('Unable to create temporary file.');
+        }
+
+        file_put_contents($path, $this->createSplitIdatRgbPng(width: 1, height: 1, red: 255, green: 0, blue: 127));
+
+        try {
+            $image = Image::fromFile($path);
+
+            self::assertSame(1, $image->getWidth());
+            self::assertSame(1, $image->getHeight());
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', writeImageToString($image));
+            self::assertNull($image->getSoftMask());
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    #[Test]
     public function it_creates_an_image_from_a_grayscale_alpha_png_file(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf-image-gray-alpha-');
@@ -446,7 +469,7 @@ final class ImageTest extends TestCase
         self::assertNotFalse($compressed);
 
         try {
-            $splitPngAlphaChannels->invoke(null, 'alpha-length.png', $compressed, 1, 1, 3);
+            $splitPngAlphaChannels->invoke(null, 'alpha-length.png', BinaryData::fromString($compressed), 1, 1, 3);
             self::fail('Expected exception for unexpected alpha image length.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -471,7 +494,7 @@ final class ImageTest extends TestCase
         }
 
         try {
-            $splitPngAlphaChannels->invoke(null, 'alpha.png', 'not-compressed', 1, 1, 3);
+            $splitPngAlphaChannels->invoke(null, 'alpha.png', BinaryData::fromString('not-compressed'), 1, 1, 3);
             self::fail('Expected exception for invalid compressed alpha data.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -492,7 +515,7 @@ final class ImageTest extends TestCase
         setImageGzcompressFailure(true);
 
         try {
-            $splitPngAlphaChannels->invoke(null, 'alpha-recompress.png', $compressed, 1, 1, 3);
+            $splitPngAlphaChannels->invoke(null, 'alpha-recompress.png', BinaryData::fromString($compressed), 1, 1, 3);
             self::fail('Expected exception for failed PNG alpha recompression.');
         } catch (ReflectionException $exception) {
             throw $exception;
@@ -585,6 +608,25 @@ final class ImageTest extends TestCase
         return "\x89PNG\x0D\x0A\x1A\x0A"
             . $this->createPngChunk('IHDR', pack('NNC5', $width, $height, 8, 2, 0, 0, 0))
             . $this->createPngChunk('IDAT', $compressed)
+            . $this->createPngChunk('IEND', '');
+    }
+
+    private function createSplitIdatRgbPng(int $width, int $height, int $red, int $green, int $blue): string
+    {
+        $scanline = chr(0) . str_repeat(chr($red) . chr($green) . chr($blue), $width);
+        $pixelData = str_repeat($scanline, $height);
+        $compressed = gzcompress($pixelData);
+
+        if ($compressed === false) {
+            self::fail('Unable to compress split IDAT PNG test data.');
+        }
+
+        $midpoint = intdiv(strlen($compressed), 2);
+
+        return "\x89PNG\x0D\x0A\x1A\x0A"
+            . $this->createPngChunk('IHDR', pack('NNC5', $width, $height, 8, 2, 0, 0, 0))
+            . $this->createPngChunk('IDAT', substr($compressed, 0, $midpoint))
+            . $this->createPngChunk('IDAT', substr($compressed, $midpoint))
             . $this->createPngChunk('IEND', '');
     }
 
