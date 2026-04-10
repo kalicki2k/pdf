@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 
 final class CidToGidMap extends StreamIndirectObject
@@ -18,7 +19,7 @@ final class CidToGidMap extends StreamIndirectObject
         parent::__construct($id);
     }
 
-    protected function streamDictionary(int $length): DictionaryType
+    protected function streamDictionary(int | ReferenceType $length): DictionaryType
     {
         return new DictionaryType([
             'Length' => $length,

@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\Metadata\IccProfileStream;
 use Kalle\Pdf\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Object\HasDeferredStreamLengthObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Traversable;
@@ -42,6 +43,27 @@ class DocumentObjectCollector implements IteratorAggregate
      */
     public function getIterator(): Traversable
     {
+        $deferredObjects = [];
+
+        foreach ($this->documentObjects() as $object) {
+            if ($object instanceof HasDeferredStreamLengthObject) {
+                $lengthObject = $object->getLengthObject() ?? $object->prepareLengthObject($this->document->getUniqObjectId());
+                $deferredObjects[$lengthObject->id] = $lengthObject;
+            }
+
+            yield $object;
+        }
+
+        foreach ($deferredObjects as $deferredObject) {
+            yield $deferredObject;
+        }
+    }
+
+    /**
+     * @return iterable<int, IndirectObject>
+     */
+    private function documentObjects(): iterable
+    {
         $xmpMetadata = $this->document->getXmpMetadata();
         $pdfaOutputIntentProfile = $this->document->getPdfAOutputIntentProfile();
 
@@ -57,7 +79,6 @@ class DocumentObjectCollector implements IteratorAggregate
         yield from $this->fontObjects();
         yield from $this->pageObjects();
         yield from $this->metadataObjects($xmpMetadata);
-        yield from $this->pageContentLengthObjects();
     }
 
     /**
@@ -189,7 +210,6 @@ class DocumentObjectCollector implements IteratorAggregate
     private function pageObjects(): iterable
     {
         foreach ($this->document->pages->pages as $page) {
-            $page->prepareContentsLengthObject();
             yield $page;
 
             foreach ($page->getAnnotations() as $annotation) {
@@ -216,16 +236,6 @@ class DocumentObjectCollector implements IteratorAggregate
     {
         if ($xmpMetadata !== null) {
             yield $xmpMetadata;
-        }
-    }
-
-    /**
-     * @return iterable<int, IndirectObject>
-     */
-    private function pageContentLengthObjects(): iterable
-    {
-        foreach ($this->document->pages->pages as $page) {
-            yield $page->prepareContentsLengthObject();
         }
     }
 }

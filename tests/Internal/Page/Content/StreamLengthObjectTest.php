@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Content;
 
-use Kalle\Pdf\Page\Content\StreamLengthObject;
+use Kalle\Pdf\Object\StreamLengthObject;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

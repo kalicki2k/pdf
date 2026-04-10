@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Document\Attachment;
 use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 
 class EmbeddedFileStream extends StreamIndirectObject
@@ -22,7 +23,7 @@ class EmbeddedFileStream extends StreamIndirectObject
 
     private readonly BinaryData $contents;
 
-    protected function streamDictionary(int $length): DictionaryType
+    protected function streamDictionary(int | ReferenceType $length): DictionaryType
     {
         $dictionary = new DictionaryType([
             'Type' => '/EmbeddedFile',

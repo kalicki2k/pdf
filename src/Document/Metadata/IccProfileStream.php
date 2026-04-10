@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
@@ -35,7 +36,7 @@ class IccProfileStream extends StreamIndirectObject
         return new self($id, $data, $colorComponents);
     }
 
-    protected function streamDictionary(int $length): DictionaryType
+    protected function streamDictionary(int | ReferenceType $length): DictionaryType
     {
         return new DictionaryType([
             'N' => $this->colorComponents,

@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Metadata;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\Object\DeferredLengthStreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 
-class XmpMetadata extends StreamIndirectObject
+class XmpMetadata extends DeferredLengthStreamIndirectObject
 {
     public function __construct(int $id, private readonly Document $document)
     {
         parent::__construct($id);
     }
 
-    protected function streamDictionary(int $length): DictionaryType
+    protected function streamDictionary(int | ReferenceType $length): DictionaryType
     {
         return new DictionaryType([
             'Type' => new NameType('Metadata'),

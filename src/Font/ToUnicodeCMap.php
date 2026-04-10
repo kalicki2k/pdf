@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\Object\DeferredLengthStreamIndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 
-final class ToUnicodeCMap extends StreamIndirectObject
+final class ToUnicodeCMap extends DeferredLengthStreamIndirectObject
 {
     public function __construct(
         int $id,
@@ -17,7 +18,7 @@ final class ToUnicodeCMap extends StreamIndirectObject
         parent::__construct($id);
     }
 
-    protected function streamDictionary(int $length): DictionaryType
+    protected function streamDictionary(int | ReferenceType $length): DictionaryType
     {
         return new DictionaryType([
             'Length' => $length,

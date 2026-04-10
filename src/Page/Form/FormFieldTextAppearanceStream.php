@@ -9,8 +9,8 @@ use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\VerticalAlign;
+use Kalle\Pdf\Object\DeferredLengthStreamIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Object\StreamIndirectObject;
 use Kalle\Pdf\PdfType\ArrayType;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
@@ -18,7 +18,7 @@ use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Style\Color;
 
-final class FormFieldTextAppearanceStream extends StreamIndirectObject
+final class FormFieldTextAppearanceStream extends DeferredLengthStreamIndirectObject
 {
     /** @var list<string> */
     private array $encodedLines;
@@ -58,7 +58,7 @@ final class FormFieldTextAppearanceStream extends StreamIndirectObject
         $this->updateUnicodeFontWidths();
     }
 
-    protected function streamDictionary(int $length): DictionaryType
+    protected function streamDictionary(int | ReferenceType $length): DictionaryType
     {
         return new DictionaryType([
             'Type' => new NameType('XObject'),

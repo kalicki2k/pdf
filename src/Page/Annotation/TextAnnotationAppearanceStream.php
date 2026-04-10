@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page\Annotation;
 
-use Kalle\Pdf\Object\StreamIndirectObject;
+use Kalle\Pdf\Object\DeferredLengthStreamIndirectObject;
 use Kalle\Pdf\PdfType\ArrayType;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
+use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
 
-final class TextAnnotationAppearanceStream extends StreamIndirectObject
+final class TextAnnotationAppearanceStream extends DeferredLengthStreamIndirectObject
 {
     public function __construct(
         int $id,
@@ -20,7 +21,7 @@ final class TextAnnotationAppearanceStream extends StreamIndirectObject
         parent::__construct($id);
     }
 
-    protected function streamDictionary(int $length): DictionaryType
+    protected function streamDictionary(int | ReferenceType $length): DictionaryType
     {
         return new DictionaryType([
             'Type' => new NameType('XObject'),
