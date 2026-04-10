@@ -42,7 +42,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - oeffentliche Text- und Tabellen-Value-Types liegen unter `src/Text` und `src/Table`
 - interne Text- und Tabellen-Layoutimplementierungen liegen unter `Internal/Layout/Text` und `Internal/Layout/Table`
 - `OptionalContent` und `Outline` liegen jetzt unter `Internal/Document`, weil sie dokumentweiten Zustand und Navigation modellieren
-- `StructureTag` liegt unter `Structure`, weil es Tagged-PDF-Semantik beschreibt
+- Tagged-PDF-Strukturtypen liegen jetzt unter `Internal/TaggedPdf`, weil sie technischer Dokumentkern und keine Root-Public-API sind
 - die alte `src/Document`-Struktur ist als internes Codepaket entfernt
 
 ## Zielbild
@@ -92,8 +92,8 @@ src/
       Form/
       Link/
     Render/
+    TaggedPdf/
 
-  Structure/
   Style/
   Types/
   Utilities/
@@ -230,19 +230,23 @@ Regeln:
 - Font-Presets, Parser, Width-Updates und konkrete PDF-Fontobjekte bleiben nah beieinander
 - seiten- und formularspezifische Nutzung erfolgt ueber `Internal/Page` statt ueber Root-Fassaden
 
-### Structure
+### Internal/TaggedPdf
 
-Hier liegen PDF-Struktur- und Tagged-PDF-Typen.
+Hier liegen Tagged-PDF-Strukturtypen und die Bausteine des Strukturbaums.
 
 Beispiele:
 
 - `StructElem`
+- `StructTreeRoot`
+- `ParentTree`
+- `MarkedContentReference`
 - `StructureTag`
 
 Regeln:
 
-- beschreibt Struktursemantik des PDFs
-- ist kein Text- oder Layout-Unterpaket
+- beschreibt Tagged-PDF-Semantik und Strukturbaum-Verknuepfungen
+- ist kein Public-API-Paket mehr
+- bleibt getrennt von `Internal/Document/Structure`, das Root-Objekte wie `Catalog` und `Pages` enthaelt
 
 ### Low-Level-Pakete
 
@@ -250,14 +254,15 @@ Diese technischen Bausteine bleiben erhalten, sind aber jetzt konsequent intern 
 
 - `Internal/Object`
 - `Internal/Render`
+- `Internal/TaggedPdf`
 - `Types`
-- `Structure`
 
 Grund:
 
 - sie sind relativ kohärent und bilden den PDF-Kern
 - `Object` ist keine Public API, sondern technische Basis fuer indirekte PDF-Objekte
 - `Render` ist keine Public API, sondern der technische Ausgabe- und Serialisierungskern
+- `TaggedPdf` ist keine Public API, sondern der technische Strukturbaum fuer PDF/UA- und Tagged-PDF-Pfade
 - `Security` enthaelt jetzt die Public-Konfiguration, `Internal/Encryption` den technischen Kryptokern
 
 ## Geplante Migrationsreihenfolge

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Structure;
+namespace Kalle\Pdf\Tests\Internal\TaggedPdf;
 
-use Kalle\Pdf\Structure\StructTreeRoot;
+use Kalle\Pdf\Internal\TaggedPdf\StructTreeRoot;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

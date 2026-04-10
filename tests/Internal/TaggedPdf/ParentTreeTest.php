@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Structure;
+namespace Kalle\Pdf\Tests\Internal\TaggedPdf;
 
-use Kalle\Pdf\Structure\ParentTree;
-use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Internal\TaggedPdf\ParentTree;
+use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

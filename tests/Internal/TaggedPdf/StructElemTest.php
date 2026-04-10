@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Structure;
+namespace Kalle\Pdf\Tests\Internal\TaggedPdf;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
@@ -13,8 +13,8 @@ use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Page\Annotation\LinkAnnotation;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Structure\StructElem;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

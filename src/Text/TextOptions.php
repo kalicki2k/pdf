@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Text;
 
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Structure\StructElem;
-use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Internal\TaggedPdf\StructElem;
+use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 

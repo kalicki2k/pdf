@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
-use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 

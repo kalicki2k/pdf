@@ -32,8 +32,8 @@ use Kalle\Pdf\Internal\Page\Annotation\TextAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Page;
+use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Structure\StructureTag;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

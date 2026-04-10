@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Content;
 
-use Kalle\Pdf\Structure\StructElem;
-use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Internal\TaggedPdf\StructElem;
+use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 
 readonly class ImageOptions
 {

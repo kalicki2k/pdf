@@ -14,7 +14,7 @@ use Kalle\Pdf\Internal\Page\Annotation\Style\LineEndingStyle;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Style\Color;
 
 /**

@@ -10,7 +10,7 @@ use Kalle\Pdf\Internal\Layout\Table\PendingRowspanCell;
 use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Structure\StructElem;
+use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Table\Style\FooterStyle;
 use Kalle\Pdf\Table\Style\HeaderStyle;
 use Kalle\Pdf\Table\Style\RowStyle;

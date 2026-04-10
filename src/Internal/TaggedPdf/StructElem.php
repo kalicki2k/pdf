@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Structure;
+namespace Kalle\Pdf\Internal\TaggedPdf;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Structure\StructureTag;
+use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;

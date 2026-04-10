@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Structure;
+namespace Kalle\Pdf\Internal\TaggedPdf;
 
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Render\PdfOutput;

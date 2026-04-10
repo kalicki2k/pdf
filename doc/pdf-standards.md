@@ -216,6 +216,6 @@ Fuer den aktuellen Standard-Pfad sind vor allem diese Stellen relevant:
 - `src/Document/Document.php`
 - `src/Document/Page.php`
 - `src/Document/Annotation/PageAnnotationFactory.php`
-- `src/Structure/StructElem.php`
+- `src/Internal/TaggedPdf/StructElem.php`
 - `bin/test-pdfa-regression.sh`
 - `bin/test-pdfua-regression.sh`
