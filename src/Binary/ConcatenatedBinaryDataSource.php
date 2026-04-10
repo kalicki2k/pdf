@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Binary;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
-final readonly class ConcatenatedBinaryDataSource implements BinaryDataSource
+final readonly class ConcatenatedBinaryDataSource implements RandomAccessBinaryDataSource
 {
     /**
      * @param list<BinaryData> $segments

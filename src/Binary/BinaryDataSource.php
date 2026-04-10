@@ -11,10 +11,6 @@ use Kalle\Pdf\Render\PdfOutput;
  */
 interface BinaryDataSource
 {
-    public function length(): int;
-
-    public function slice(int $offset, int $length): string;
-
     public function writeTo(PdfOutput $output): void;
 
     public function close(): void;

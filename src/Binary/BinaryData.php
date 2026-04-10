@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Binary;
 
 use Kalle\Pdf\Render\PdfOutput;
+use RuntimeException;
 
 final readonly class BinaryData
 {
@@ -32,7 +33,17 @@ final readonly class BinaryData
      */
     public static function fromStream($stream, ?int $length = null, bool $closeOnDestruct = false): self
     {
-        return new self(new StreamBinaryDataSource($stream, $length, $closeOnDestruct));
+        if (!is_resource($stream)) {
+            throw new RuntimeException('Binary data stream must be a valid resource.');
+        }
+
+        $metadata = stream_get_meta_data($stream);
+
+        return new self(
+            $metadata['seekable'] === true
+                ? new StreamBinaryDataSource($stream, $length, $closeOnDestruct)
+                : new OneShotStreamBinaryDataSource($stream, $length, $closeOnDestruct),
+        );
     }
 
     public static function concatenate(self ...$segments): self
@@ -46,16 +57,18 @@ final readonly class BinaryData
 
     public function length(): int
     {
-        return $this->source->length();
+        return $this->requireRandomAccessSource('length inspection')->length();
     }
 
     public function slice(int $offset, int $length): string
     {
-        return $this->source->slice($offset, $length);
+        return $this->requireRandomAccessSource('random-access slicing')->slice($offset, $length);
     }
 
     public function segment(int $offset, int $length): self
     {
+        $this->requireRandomAccessSource('segment creation');
+
         return new self(new SlicedBinaryDataSource($this, $offset, $length));
     }
 
@@ -67,5 +80,18 @@ final readonly class BinaryData
     public function __destruct()
     {
         $this->source->close();
+    }
+
+    private function requireRandomAccessSource(string $operation): RandomAccessBinaryDataSource
+    {
+        if ($this->source instanceof RandomAccessBinaryDataSource) {
+            return $this->source;
+        }
+
+        throw new RuntimeException(sprintf(
+            'Binary data source %s does not support %s.',
+            $this->source::class,
+            $operation,
+        ));
     }
 }

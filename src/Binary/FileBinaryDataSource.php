@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Binary;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
-final readonly class FileBinaryDataSource implements BinaryDataSource
+final readonly class FileBinaryDataSource implements RandomAccessBinaryDataSource
 {
     private const READ_CHUNK_BYTES = 8192;
 

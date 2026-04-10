@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Binary;
 
 use Kalle\Pdf\Render\PdfOutput;
 
-final readonly class StringBinaryDataSource implements BinaryDataSource
+final readonly class StringBinaryDataSource implements RandomAccessBinaryDataSource
 {
     public function __construct(
         private string $bytes,

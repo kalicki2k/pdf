@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Binary;
 use Kalle\Pdf\Render\PdfOutput;
 use RuntimeException;
 
-final class StreamBinaryDataSource implements BinaryDataSource
+final class StreamBinaryDataSource implements RandomAccessBinaryDataSource
 {
     private const READ_CHUNK_BYTES = 8192;
 
@@ -17,11 +17,7 @@ final class StreamBinaryDataSource implements BinaryDataSource
     /** @var list<resource> */
     private array $streamsToClose = [];
 
-    private bool $isSeekable;
-
     private ?int $length;
-
-    private bool $isConsumed = false;
 
     /**
      * @param resource $stream
@@ -46,8 +42,11 @@ final class StreamBinaryDataSource implements BinaryDataSource
             throw new RuntimeException('Binary data stream must be readable.');
         }
 
+        if ($metadata['seekable'] !== true) {
+            throw new RuntimeException('Binary data stream must be seekable for random-access operations.');
+        }
+
         $this->stream = $stream;
-        $this->isSeekable = $metadata['seekable'] === true;
         $this->length = $length;
 
         if ($closeOnDestruct) {
@@ -59,13 +58,6 @@ final class StreamBinaryDataSource implements BinaryDataSource
     {
         if ($this->length !== null) {
             return $this->length;
-        }
-
-        if (!$this->isSeekable) {
-            throw new RuntimeException(
-                'Unable to determine the length of a non-seekable binary stream without buffering it. '
-                . 'Provide the byte length explicitly.',
-            );
         }
 
         return $this->withStreamFromStart(function (): int {
@@ -93,10 +85,6 @@ final class StreamBinaryDataSource implements BinaryDataSource
             return '';
         }
 
-        if (!$this->isSeekable) {
-            throw new RuntimeException('Unable to slice a non-seekable binary stream without buffering it.');
-        }
-
         return $this->withStreamAtOffset($offset, function () use ($length): string {
             $bytes = '';
             $remaining = $length;
@@ -122,12 +110,6 @@ final class StreamBinaryDataSource implements BinaryDataSource
 
     public function writeTo(PdfOutput $output): void
     {
-        if (!$this->isSeekable) {
-            $this->writeNonSeekableStream($output);
-
-            return;
-        }
-
         $this->withStreamFromStart(function () use ($output): null {
             while (!feof($this->stream)) {
                 $chunk = fread($this->stream, self::READ_CHUNK_BYTES);
@@ -156,37 +138,6 @@ final class StreamBinaryDataSource implements BinaryDataSource
         }
 
         $this->streamsToClose = [];
-    }
-
-    private function writeNonSeekableStream(PdfOutput $output): void
-    {
-        if ($this->isConsumed) {
-            throw new RuntimeException('Unable to replay a non-seekable binary stream after it has been consumed.');
-        }
-
-        $length = 0;
-
-        while (!feof($this->stream)) {
-            $chunk = fread($this->stream, self::READ_CHUNK_BYTES);
-
-            if ($chunk === false) {
-                throw new RuntimeException('Unable to read binary data stream.');
-            }
-
-            if ($chunk === '') {
-                continue;
-            }
-
-            $length += strlen($chunk);
-            $output->write($chunk);
-        }
-
-        if ($this->length !== null && $this->length !== $length) {
-            throw new RuntimeException('Binary data stream length does not match the provided byte length.');
-        }
-
-        $this->length ??= $length;
-        $this->isConsumed = true;
     }
 
     /**

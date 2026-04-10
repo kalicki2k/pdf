@@ -563,7 +563,7 @@ final class ImageTest extends TestCase
             self::fail('Expected exception for direct alpha channel length inspection.');
         } catch (RuntimeException $exception) {
             self::assertSame(
-                'PNG alpha channel source Kalle\\Pdf\\Image\\PngAlphaChannelBinaryDataSource is stream-only and does not support direct length inspection.',
+                'Binary data source Kalle\\Pdf\\Image\\PngAlphaChannelBinaryDataSource does not support length inspection.',
                 $exception->getMessage(),
             );
         }
@@ -573,7 +573,7 @@ final class ImageTest extends TestCase
             self::fail('Expected exception for direct alpha channel slicing.');
         } catch (RuntimeException $exception) {
             self::assertSame(
-                'PNG alpha channel source Kalle\\Pdf\\Image\\PngAlphaChannelBinaryDataSource is stream-only and does not support random-access slicing.',
+                'Binary data source Kalle\\Pdf\\Image\\PngAlphaChannelBinaryDataSource does not support random-access slicing.',
                 $exception->getMessage(),
             );
         }

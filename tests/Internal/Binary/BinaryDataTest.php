@@ -95,15 +95,24 @@ final class BinaryDataTest extends TestCase
         $data->writeTo($output);
 
         try {
-            self::assertSame(5, $data->length());
             self::assertSame('hello', $output->contents());
 
             try {
-                $data->slice(0, 1);
-                self::fail('Expected non-seekable stream slicing to fail without buffering.');
+                $data->length();
+                self::fail('Expected non-seekable stream length inspection to fail.');
             } catch (RuntimeException $exception) {
                 self::assertSame(
-                    'Unable to slice a non-seekable binary stream without buffering it.',
+                    'Binary data source Kalle\\Pdf\\Binary\\OneShotStreamBinaryDataSource does not support length inspection.',
+                    $exception->getMessage(),
+                );
+            }
+
+            try {
+                $data->slice(0, 1);
+                self::fail('Expected non-seekable stream slicing to fail.');
+            } catch (RuntimeException $exception) {
+                self::assertSame(
+                    'Binary data source Kalle\\Pdf\\Binary\\OneShotStreamBinaryDataSource does not support random-access slicing.',
                     $exception->getMessage(),
                 );
             }
@@ -135,7 +144,16 @@ final class BinaryDataTest extends TestCase
 
         try {
             self::assertSame('hello', $output->contents());
-            self::assertSame(5, $data->length());
+
+            try {
+                $data->length();
+                self::fail('Expected one-shot source length inspection to fail.');
+            } catch (RuntimeException $exception) {
+                self::assertSame(
+                    'Binary data source Kalle\\Pdf\\Binary\\OneShotStreamBinaryDataSource does not support length inspection.',
+                    $exception->getMessage(),
+                );
+            }
 
             try {
                 $data->writeTo(new StringPdfOutput());
@@ -180,5 +198,35 @@ final class BinaryDataTest extends TestCase
         self::assertSame('hello world', $data->slice(0, $data->length()));
         self::assertSame('lo wo', $data->slice(3, 5));
         self::assertSame('hello world', $output->contents());
+    }
+
+    #[Test]
+    public function it_rejects_segment_creation_for_one_shot_stream_sources(): void
+    {
+        $streams = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+
+        if ($streams === false) {
+            self::markTestSkipped('stream_socket_pair is not available.');
+        }
+
+        [$reader, $writer] = $streams;
+        fwrite($writer, 'hello');
+        fclose($writer);
+
+        $data = BinaryData::fromStream($reader, closeOnDestruct: true);
+
+        try {
+            $data->segment(0, 1);
+            self::fail('Expected one-shot source segment creation to fail.');
+        } catch (RuntimeException $exception) {
+            self::assertSame(
+                'Binary data source Kalle\\Pdf\\Binary\\OneShotStreamBinaryDataSource does not support segment creation.',
+                $exception->getMessage(),
+            );
+        } finally {
+            unset($data);
+        }
+
+        self::assertFalse(is_resource($reader));
     }
 }
