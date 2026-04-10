@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf;
+namespace Kalle\Pdf\Text;
 
 use Kalle\Pdf\Layout\Text\Input\ListOptions;
 use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
@@ -10,6 +10,7 @@ use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Text\TextFrame as LayoutTextFrame;
 use Kalle\Pdf\Layout\Value\BulletType;
+use Kalle\Pdf\Page;
 
 /**
  * Public facade for flowing text across pages.

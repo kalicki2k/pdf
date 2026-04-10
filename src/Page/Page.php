@@ -52,8 +52,10 @@ use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\Table\Table;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructureTag;
+use Kalle\Pdf\Text\TextFrame;
 
 class Page extends IndirectObject
 {

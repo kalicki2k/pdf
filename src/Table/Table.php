@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf;
+namespace Kalle\Pdf\Table;
 
 use Kalle\Pdf\Layout\Table\Definition\TableCaption;
 use Kalle\Pdf\Layout\Table\Definition\TableCell;
@@ -12,6 +12,7 @@ use Kalle\Pdf\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Layout\Table\Table as LayoutTable;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
+use Kalle\Pdf\Page;
 
 /**
  * Public facade for table layout and rendering.
