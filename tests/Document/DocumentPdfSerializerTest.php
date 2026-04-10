@@ -10,7 +10,11 @@ use Kalle\Pdf\Document\Serialization\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\StringPdfOutput;
+
+use function Kalle\Pdf\Tests\Support\writePlanToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class DocumentPdfSerializerTest extends TestCase
@@ -19,7 +23,7 @@ final class DocumentPdfSerializerTest extends TestCase
     public function it_writes_a_document_using_the_serialization_plan_builder_and_renderer(): void
     {
         $document = new Document(profile: Profile::standard(1.4));
-        $expectedOutput = (new PdfRenderer())->render((new DocumentSerializationPlanBuilder())->build($document));
+        $expectedOutput = writePlanToString(new PdfRenderer(), (new DocumentSerializationPlanBuilder())->build($document));
         $output = new StringPdfOutput();
 
         (new DocumentPdfSerializer())->write($document, $output);

@@ -13,8 +13,12 @@ use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\Security\EncryptionPermissions;
+
+use function Kalle\Pdf\Tests\Support\writeDocumentToString;
+
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+
 use RuntimeException;
 
 final class EncryptDictionaryTest extends TestCase
@@ -70,7 +74,7 @@ final class EncryptDictionaryTest extends TestCase
             ownerPassword: 'owner',
         ));
 
-        $pdf = $document->render();
+        $pdf = writeDocumentToString($document);
 
         self::assertStringContainsString('/Encrypt ', $pdf);
         self::assertStringContainsString('/Filter /Standard', $pdf);

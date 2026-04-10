@@ -9,7 +9,11 @@ use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Security\EncryptionOptions;
+
+use function Kalle\Pdf\Tests\Support\writeDocumentToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class EncryptedPdfRenderTest extends TestCase
@@ -32,7 +36,7 @@ final class EncryptedPdfRenderTest extends TestCase
         $page = $document->addPage();
         $page->addText('Visible Secret', new Position(20, 20), 'Helvetica', 12);
 
-        $pdf = $document->render();
+        $pdf = writeDocumentToString($document);
 
         self::assertStringContainsString('/Encrypt ', $pdf);
         self::assertStringNotContainsString('Secret Title', $pdf);
@@ -58,7 +62,7 @@ final class EncryptedPdfRenderTest extends TestCase
         $page = $document->addPage();
         $page->addText('Visible AES Secret', new Position(20, 20), 'Helvetica', 12);
 
-        $encryptedPdf = $document->render();
+        $encryptedPdf = writeDocumentToString($document);
 
         self::assertStringNotContainsString('AES Secret Title', $encryptedPdf);
         self::assertStringNotContainsString('Visible AES Secret', $encryptedPdf);
@@ -111,7 +115,7 @@ final class EncryptedPdfRenderTest extends TestCase
         $page = $document->addPage();
         $page->addText('Visible AES256 Secret', new Position(20, 20), 'Helvetica', 12);
 
-        $encryptedPdf = $document->render();
+        $encryptedPdf = writeDocumentToString($document);
 
         self::assertStringNotContainsString('AES256 Secret Title', $encryptedPdf);
         self::assertStringNotContainsString('Visible AES256 Secret', $encryptedPdf);

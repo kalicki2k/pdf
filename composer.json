@@ -24,7 +24,8 @@
       "Kalle\\Pdf\\Tests\\": "tests/"
     },
     "files": [
-      "tests/Document/Support/DocumentRandomBytesStub.php"
+      "tests/Document/Support/DocumentRandomBytesStub.php",
+      "tests/Support/WritesPdfOutput.php"
     ]
   },
   "require-dev": {

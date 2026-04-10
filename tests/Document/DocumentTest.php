@@ -35,8 +35,12 @@ use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
+
+use function Kalle\Pdf\Tests\Support\writeDocumentToString;
+
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+
 use ReflectionMethod;
 
 final class DocumentTest extends TestCase
@@ -123,7 +127,7 @@ final class DocumentTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires a document title.');
 
-        $document->render();
+        writeDocumentToString($document);
     }
 
     #[Test]
@@ -135,7 +139,7 @@ final class DocumentTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires a document language.');
 
-        $document->render();
+        writeDocumentToString($document);
     }
 
     #[Test]
@@ -147,7 +151,7 @@ final class DocumentTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires tagged content in the current implementation.');
 
-        $document->render();
+        writeDocumentToString($document);
     }
 
     #[Test]
@@ -270,7 +274,7 @@ final class DocumentTest extends TestCase
 
         $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', self::pdfUaRegularFont(), 12, accessibleName: 'Customer name');
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Subtype /Widget', $rendered);
         self::assertStringContainsString('/FT /Tx', $rendered);
@@ -288,7 +292,7 @@ final class DocumentTest extends TestCase
 
         $page->addSignatureField('approval_signature', new Rect(10, 20, 80, 16), 'Approval signature');
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/FT /Sig', $rendered);
         self::assertStringContainsString('/T (approval_signature)', $rendered);
@@ -307,7 +311,7 @@ final class DocumentTest extends TestCase
 
         $page->addCheckbox('accept_terms', new Position(10, 20), 12, true, 'Accept terms');
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Subtype /Widget', $rendered);
         self::assertStringContainsString('/T (accept_terms)', $rendered);
@@ -325,7 +329,7 @@ final class DocumentTest extends TestCase
 
         $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16), self::pdfUaRegularFont(), 12, accessibleName: 'Save form');
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Subtype /Widget', $rendered);
         self::assertStringContainsString('/Ff 65536', $rendered);
@@ -346,7 +350,7 @@ final class DocumentTest extends TestCase
         $page->addRadioButton('delivery', 'standard', new Position(10, 20), 12, true, 'Standard delivery');
         $page->addRadioButton('delivery', 'express', new Position(30, 20), 12, false, 'Express delivery');
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/FT /Btn', $rendered);
         self::assertStringContainsString('/T (delivery)', $rendered);
@@ -375,7 +379,7 @@ final class DocumentTest extends TestCase
             accessibleName: 'Country selection',
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/FT /Ch', $rendered);
         self::assertStringContainsString('/T (country)', $rendered);
@@ -402,7 +406,7 @@ final class DocumentTest extends TestCase
             accessibleName: 'Topics selection',
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/FT /Ch', $rendered);
         self::assertStringContainsString('/T (topics)', $rendered);
@@ -743,7 +747,7 @@ final class DocumentTest extends TestCase
         $document->registerFont('Helvetica');
 
         self::assertStringContainsString('/Encoding ', $document->getFonts()[0]->render());
-        self::assertStringContainsString('/BaseEncoding /StandardEncoding', $document->render());
+        self::assertStringContainsString('/BaseEncoding /StandardEncoding', writeDocumentToString($document));
     }
 
     #[Test]
@@ -837,7 +841,7 @@ final class DocumentTest extends TestCase
             self::assertStringContainsString('/Desc (Imported attachment)', $document->getAttachments()[0]->render());
 
             file_put_contents($path, 'changed-after-import');
-            self::assertStringContainsString('changed-after-import', $document->render());
+            self::assertStringContainsString('changed-after-import', writeDocumentToString($document));
         } finally {
             @unlink($path);
         }
@@ -984,7 +988,7 @@ final class DocumentTest extends TestCase
 
         $firstPage = $document->addPage(100, 100);
         $secondPage = $document->addPage(100, 100);
-        $document->render();
+        writeDocumentToString($document);
 
         self::assertStringContainsString('(Header 1) Tj', $firstPage->getContents()->render());
         self::assertStringContainsString('(Footer 1) Tj', $firstPage->getContents()->render());
@@ -1005,7 +1009,7 @@ final class DocumentTest extends TestCase
         });
 
         $document->addPage(100, 100);
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Artifact BMC', $rendered);
         self::assertStringNotContainsString('/Type /StructElem /S /Artifact', $rendered);
@@ -1033,7 +1037,7 @@ final class DocumentTest extends TestCase
         $document->registerFont('Helvetica');
         $document->addPage();
 
-        $output = $document->render();
+        $output = writeDocumentToString($document);
 
         self::assertNull($document->getXmpMetadata());
         self::assertStringStartsWith("%PDF-1.3\n", $output);
@@ -1059,7 +1063,7 @@ final class DocumentTest extends TestCase
         $frame->addParagraph(str_repeat('Wort ', 80), 'Helvetica', 12, new ParagraphOptions(structureTag: StructureTag::Paragraph));
         $lastPage = $document->pages->pages[array_key_last($document->pages->pages)];
         $lastPageNumber = count($document->pages->pages);
-        $document->render();
+        writeDocumentToString($document);
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertStringContainsString('(Header 1) Tj', $firstPage->getContents()->render());
@@ -1077,7 +1081,7 @@ final class DocumentTest extends TestCase
         $document->addPage(100, 100);
 
         $document->addPageNumbers(new Position(10, 10));
-        $document->render();
+        writeDocumentToString($document);
 
         self::assertStringContainsString('(Seite 1 von 2) Tj', $document->pages->pages[0]->getContents()->render());
         self::assertStringContainsString('(Seite 2 von 2) Tj', $document->pages->pages[1]->getContents()->render());
@@ -1093,7 +1097,7 @@ final class DocumentTest extends TestCase
         $document->addPage(100, 100);
 
         $document->addPageNumbers(new Position(10, 90), 'Helvetica', 10, 'Seite {{page}} / {{pages}}', false);
-        $document->render();
+        writeDocumentToString($document);
 
         self::assertStringContainsString('(Seite 1 / 3) Tj', $document->pages->pages[0]->getContents()->render());
         self::assertStringContainsString('(Seite 3 / 3) Tj', $document->pages->pages[2]->getContents()->render());
@@ -1110,7 +1114,7 @@ final class DocumentTest extends TestCase
 
         $document->excludePageFromNumbering($coverPage);
         $document->addPageNumbers(new Position(10, 10), useLogicalPageNumbers: true);
-        $document->render();
+        writeDocumentToString($document);
 
         self::assertStringNotContainsString('(Seite', $coverPage->getContents()->render());
         self::assertStringContainsString('(Seite 1 von 2) Tj', $firstPage->getContents()->render());
@@ -1159,7 +1163,7 @@ final class DocumentTest extends TestCase
         self::assertStringContainsString('(1) Tj', $tocPage->getContents()->render());
         self::assertStringContainsString('(Zweite Seite) Tj', $tocPage->getContents()->render());
         self::assertStringContainsString('(2) Tj', $tocPage->getContents()->render());
-        self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] /toc-page-8 [8 0 R /Fit] >>', $document->render());
+        self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] /toc-page-8 [8 0 R /Fit] >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1201,7 +1205,7 @@ final class DocumentTest extends TestCase
 
         self::assertStringContainsString('(Erste Seite) Tj', $tocPage->getContents()->render());
         self::assertStringNotContainsString('(Fremde Seite) Tj', $tocPage->getContents()->render());
-        self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] >>', $document->render());
+        self::assertStringContainsString('/Dests << /toc-page-5 [5 0 R /Fit] >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1271,7 +1275,7 @@ final class DocumentTest extends TestCase
             ->addOutline('Zweite Seite', $secondPage);
 
         $tocPage = $document->addTableOfContents(PageSize::A6(), new TableOfContentsOptions(title: 'Inhalt', baseFont: 'Helvetica', titleSize: 16, entrySize: 10, margin: 10, placement: TableOfContentsPlacement::start()));
-        $document->render();
+        writeDocumentToString($document);
 
         self::assertStringContainsString('(Header 1) Tj', $tocPage->getContents()->render());
         self::assertStringContainsString('(Header 2) Tj', $firstPage->getContents()->render());
@@ -1573,9 +1577,9 @@ final class DocumentTest extends TestCase
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
-        self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /Outlines /Count 2 /First 11 0 R /Last 12 0 R >>', $document->render());
-        self::assertStringContainsString('11 0 obj' . "\n" . '<< /Title (Erste Seite) /Parent 10 0 R /Dest [4 0 R /Fit] /Next 12 0 R >>', $document->render());
-        self::assertStringContainsString('12 0 obj' . "\n" . '<< /Title (Zweite Seite) /Parent 10 0 R /Dest [7 0 R /Fit] /Prev 11 0 R >>', $document->render());
+        self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /Outlines /Count 2 /First 11 0 R /Last 12 0 R >>', writeDocumentToString($document));
+        self::assertStringContainsString('11 0 obj' . "\n" . '<< /Title (Erste Seite) /Parent 10 0 R /Dest [4 0 R /Fit] /Next 12 0 R >>', writeDocumentToString($document));
+        self::assertStringContainsString('12 0 obj' . "\n" . '<< /Title (Zweite Seite) /Parent 10 0 R /Dest [7 0 R /Fit] /Prev 11 0 R >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1598,7 +1602,7 @@ final class DocumentTest extends TestCase
 
         $document->addDestination('table-demo', $page);
 
-        self::assertStringContainsString('/Dests << /table-demo [4 0 R /Fit] >>', $document->render());
+        self::assertStringContainsString('/Dests << /table-demo [4 0 R /Fit] >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1855,10 +1859,10 @@ final class DocumentTest extends TestCase
             ->addKeyword('   ');
 
         self::assertSame(['pdf'], $document->getKeywords());
-        self::assertStringContainsString('/Keywords (pdf)', $document->render());
-        self::assertStringNotContainsString('/Keywords (,', $document->render());
-        self::assertStringNotContainsString('<rdf:li></rdf:li>', $document->render());
-        self::assertStringContainsString('<pdf:Keywords>pdf</pdf:Keywords>', $document->render());
+        self::assertStringContainsString('/Keywords (pdf)', writeDocumentToString($document));
+        self::assertStringNotContainsString('/Keywords (,', writeDocumentToString($document));
+        self::assertStringNotContainsString('<rdf:li></rdf:li>', writeDocumentToString($document));
+        self::assertStringContainsString('<pdf:Keywords>pdf</pdf:Keywords>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1873,8 +1877,8 @@ final class DocumentTest extends TestCase
             static fn (object $object): int => $object->id,
             $document->getDocumentObjects(),
         ));
-        self::assertStringContainsString('6 0 obj' . "\n" . '<< /Type /StructElem /S /Document /P 4 0 R /K [7 0 R] >>', $document->render());
-        self::assertStringContainsString('7 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 6 0 R /K [] >>', $document->render());
+        self::assertStringContainsString('6 0 obj' . "\n" . '<< /Type /StructElem /S /Document /P 4 0 R /K [7 0 R] >>', writeDocumentToString($document));
+        self::assertStringContainsString('7 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 6 0 R /K [] >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1887,7 +1891,7 @@ final class DocumentTest extends TestCase
         $item = $document->createStructElem(StructureTag::ListItem, parent: $list);
         $label = $document->createStructElem(StructureTag::Label, 0, $document->pages->pages[0], $item);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Type /StructElem /S /Document /P 7 0 R /K [10 0 R]', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /L /P 9 0 R /K [11 0 R]', $rendered);
@@ -1910,7 +1914,7 @@ final class DocumentTest extends TestCase
         $document->registerFont('Helvetica');
         $document->addPage();
 
-        $output = $document->render();
+        $output = writeDocumentToString($document);
 
         self::assertStringStartsWith("%PDF-1.4\n", $output);
         self::assertStringContainsString('/Title (Spec)', $output);
@@ -1937,7 +1941,7 @@ final class DocumentTest extends TestCase
         $document->registerFont('Helvetica');
         $document->addPage()->addText('Hello', new Position(10, 20), 'Helvetica', 12, new TextOptions(structureTag: StructureTag::Paragraph));
 
-        $output = $document->render();
+        $output = writeDocumentToString($document);
 
         self::assertStringContainsString('/Lang (de-DE)', $output);
         self::assertStringContainsString('/Metadata 12 0 R', $output);

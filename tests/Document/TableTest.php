@@ -23,7 +23,11 @@ use Kalle\Pdf\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
+
+use function Kalle\Pdf\Tests\Support\writeDocumentToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class TableTest extends TestCase
@@ -82,7 +86,7 @@ final class TableTest extends TestCase
             ->addRow(['Produkt A', '19,99 EUR'])
             ->addFooterRow(['Summe', '19,99 EUR']);
 
-        $contents = $document->render();
+        $contents = writeDocumentToString($document);
 
         self::assertStringContainsString("20 188 85 24 re\nf", $contents);
         self::assertStringContainsString("105 188 85 24 re\nf", $contents);
@@ -141,8 +145,8 @@ final class TableTest extends TestCase
         self::assertSame($page, $table->getPage());
         self::assertStringContainsString("20 236 50 24 re\nf", $page->getContents()->render());
         self::assertStringContainsString("20 236 50 24 re\nS", $page->getContents()->render());
-        self::assertStringContainsString('/BaseFont /Helvetica', $document->render());
-        self::assertStringContainsString('/BaseFont /Helvetica-Bold', $document->render());
+        self::assertStringContainsString('/BaseFont /Helvetica', writeDocumentToString($document));
+        self::assertStringContainsString('/BaseFont /Helvetica-Bold', writeDocumentToString($document));
         self::assertStringContainsString('(Produkt A) Tj', $page->getContents()->render());
         self::assertStringContainsString('(19,99) Tj', $page->getContents()->render());
     }
@@ -158,7 +162,7 @@ final class TableTest extends TestCase
             ->addHeaderRow(['Column A', 'Column B'])
             ->addRow(['Value A', 'Value B']);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Artifact BMC', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /Table', $rendered);
@@ -181,7 +185,7 @@ final class TableTest extends TestCase
                 '12 kg',
             ]);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Type /StructElem /S /TH', $rendered);
         self::assertStringContainsString('/Scope /Row', $rendered);
@@ -207,7 +211,7 @@ final class TableTest extends TestCase
                 '1',
             ]);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Scope /Both', $rendered);
         self::assertStringContainsString('/Scope /Row', $rendered);
@@ -225,7 +229,7 @@ final class TableTest extends TestCase
             ->addHeaderRow(['Q1', 'Q2'])
             ->addRow(['10', '12']);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Type /StructElem /S /Caption', $rendered);
         self::assertLessThan(
@@ -277,7 +281,7 @@ final class TableTest extends TestCase
             ]);
         }
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
@@ -338,7 +342,7 @@ final class TableTest extends TestCase
             ]);
         }
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
@@ -399,7 +403,7 @@ final class TableTest extends TestCase
             ]);
         }
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
@@ -518,7 +522,7 @@ final class TableTest extends TestCase
             ]);
         }
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
@@ -623,7 +627,7 @@ final class TableTest extends TestCase
             ]);
         }
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertGreaterThan(2, count($document->pages->pages));
         self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
@@ -674,7 +678,7 @@ final class TableTest extends TestCase
             ]);
         }
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertSame(1, substr_count($rendered, '/Type /StructElem /S /Caption'));
@@ -751,7 +755,7 @@ final class TableTest extends TestCase
             ->addRow(['Produkt A', '19,99 EUR'])
             ->addFooterRow(['Summe', '19,99 EUR']);
 
-        $contents = $document->render();
+        $contents = writeDocumentToString($document);
         $headerPosition = strpos($contents, '(Name) Tj');
         $bodyPosition = strpos($contents, '(Produkt A) Tj');
         $footerPosition = strrpos($contents, '(Summe) Tj');
@@ -781,7 +785,7 @@ final class TableTest extends TestCase
             $table->addRow(['Eintrag ' . $index, 'Wert ' . $index]);
         }
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertGreaterThan(1, substr_count($rendered, '(Bereich) Tj'));
@@ -806,7 +810,7 @@ final class TableTest extends TestCase
             $table->addRow(['Eintrag ' . $index, 'Wert ' . $index]);
         }
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
         $bodyPosition = strrpos($rendered, '(Eintrag 8) Tj');
         $footerPosition = strrpos($rendered, '(Summe) Tj');
 
@@ -1169,7 +1173,7 @@ final class TableTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Rowspan groups must be completed before footer rows are rendered.');
 
-        $document->render();
+        writeDocumentToString($document);
     }
 
     #[Test]
@@ -1191,7 +1195,7 @@ final class TableTest extends TestCase
             ->addRow(['Eintrag 2'])
             ->addRow(['Eintrag 3']);
 
-        $renderedDocument = $document->render();
+        $renderedDocument = writeDocumentToString($document);
 
         self::assertNotSame($page, $table->getPage());
         self::assertStringContainsString('/Count 4', $renderedDocument);
@@ -1226,7 +1230,7 @@ final class TableTest extends TestCase
             ->addRow(['Eintrag 3'])
             ->addRow(['Eintrag 4']);
 
-        $renderedDocument = $document->render();
+        $renderedDocument = writeDocumentToString($document);
 
         self::assertStringContainsString('(Alpha) Tj', $renderedDocument);
         self::assertStringContainsString('(Gamma) Tj', $renderedDocument);
@@ -1293,7 +1297,7 @@ final class TableTest extends TestCase
             ->addRow(['Eintrag 3'])
             ->addRow(['Eintrag 4']);
 
-        self::assertSame(1, substr_count($document->render(), '(G4) Tj'));
+        self::assertSame(1, substr_count(writeDocumentToString($document), '(G4) Tj'));
         self::assertCount(5, $document->pages->pages);
 
         foreach (array_slice($document->pages->pages, 1) as $page) {

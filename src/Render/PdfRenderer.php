@@ -11,14 +11,6 @@ class PdfRenderer
     ) {
     }
 
-    public function render(PdfSerializationPlan $plan): string
-    {
-        $output = new StringPdfOutput();
-        $this->write($plan, $output);
-
-        return $output->contents();
-    }
-
     public function write(PdfSerializationPlan $plan, PdfOutput $output): void
     {
         $this->planWriter->write($plan, $output);

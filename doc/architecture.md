@@ -49,7 +49,7 @@ Wichtige Methoden:
 - `encrypt()` aktiviert den Standard-Security-Handler mit Passwort, Permissions und passendem Verschluesselungsprofil
 - `registerFont()` registriert Fonts im Dokument
 - `addKeyword()` pflegt die Dokument-Keywords
-- `render()` delegiert an `PdfRenderer`
+- `writeToStream()` und `writeToFile()` delegieren an `PdfRenderer`
 - `getDocumentObjects()` liefert die Menge aller zu rendernden indirekten Objekte
 
 `Document` haelt die fachlichen Dokumentmetadaten zentral und stellt sie sowohl fuer das klassische PDF-Info-Dictionary als auch fuer den XMP-Metadata-Stream bereit. Der `Catalog` verweist ab PDF `1.4` ueber `/Metadata` auf den XMP-Stream.

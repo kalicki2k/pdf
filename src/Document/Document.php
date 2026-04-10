@@ -44,7 +44,6 @@ use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Render\AtomicFilePdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StreamPdfOutput;
-use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\TaggedPdf\ParentTree;
@@ -661,14 +660,6 @@ class Document
     public function shouldWriteInfoDictionary(): bool
     {
         return $this->profile->writesInfoDictionary();
-    }
-
-    public function render(): string
-    {
-        $output = new StringPdfOutput();
-        $this->writeToOutput($output);
-
-        return $output->contents();
     }
 
     /**

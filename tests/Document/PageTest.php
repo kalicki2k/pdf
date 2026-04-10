@@ -60,8 +60,12 @@ use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
+
+use function Kalle\Pdf\Tests\Support\writeDocumentToString;
+
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+
 use ReflectionMethod;
 
 final class PageTest extends TestCase
@@ -102,7 +106,7 @@ final class PageTest extends TestCase
         self::assertSame($page, $page->addImage($image, new Position(10, 20), 160, 100));
         self::assertStringContainsString('/XObject << /Im1 7 0 R >>', $page->getResources()->render());
         self::assertStringContainsString("160 0 0 100 10 20 cm\n/Im1 Do", $page->getContents()->render());
-        self::assertStringContainsString("7 0 obj\n<< /Type /XObject\n/Subtype /Image", $document->render());
+        self::assertStringContainsString("7 0 obj\n<< /Type /XObject\n/Subtype /Image", writeDocumentToString($document));
     }
 
     #[Test]
@@ -120,7 +124,7 @@ final class PageTest extends TestCase
             new ImageOptions(structureTag: StructureTag::Figure, altText: 'Schwarzes Pixel'),
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Figure << /MCID 0 >> BDC', $page->getContents()->render());
         self::assertStringContainsString('/Type /StructElem /S /Figure', $rendered);
@@ -161,7 +165,7 @@ final class PageTest extends TestCase
 
         $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA');
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Subtype /Text', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -176,7 +180,7 @@ final class PageTest extends TestCase
 
         $page->addText('Hello', new Position(10, 20), self::pdfUaRegularFont(), 12, new TextOptions(link: LinkTarget::externalUrl('https://example.com')));
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertMatchesRegularExpression('/\/Annots \[\d+ 0 R\]/', $page->render());
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -204,7 +208,7 @@ final class PageTest extends TestCase
             ),
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
         self::assertStringContainsString('/Contents (Hello)', $rendered);
@@ -228,7 +232,7 @@ final class PageTest extends TestCase
             new FlowTextOptions(structureTag: StructureTag::Paragraph),
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/P \/P \d+ 0 R \/K \[\d+ 0 R\]/', $rendered);
         self::assertStringContainsString('/Contents (Hello)', $rendered);
@@ -250,9 +254,9 @@ final class PageTest extends TestCase
         $result = $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Anhang');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /FileAttachment', $document->render());
-        self::assertStringContainsString('/FS 5 0 R', $document->render());
-        self::assertStringContainsString('/Name /Graph', $document->render());
+        self::assertStringContainsString('/Subtype /FileAttachment', writeDocumentToString($document));
+        self::assertStringContainsString('/FS 5 0 R', writeDocumentToString($document));
+        self::assertStringContainsString('/Name /Graph', writeDocumentToString($document));
     }
 
     #[Test]
@@ -286,8 +290,8 @@ final class PageTest extends TestCase
         $result = $page->addFileAttachment(new Rect(10, 20, 12, 14), $file, 'Graph', 'Anhang');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /FileAttachment', $document->render());
-        self::assertStringContainsString('/AFRelationship /Data', $document->render());
+        self::assertStringContainsString('/Subtype /FileAttachment', writeDocumentToString($document));
+        self::assertStringContainsString('/AFRelationship /Data', writeDocumentToString($document));
     }
 
     #[Test]
@@ -304,7 +308,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Subtype /FileAttachment', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -320,11 +324,11 @@ final class PageTest extends TestCase
         $result = $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA', 'Comment', true);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Text', $document->render());
-        self::assertStringContainsString('/Contents (Kommentar)', $document->render());
-        self::assertStringContainsString('/Name /Comment', $document->render());
-        self::assertStringContainsString('/Open true', $document->render());
-        self::assertStringContainsString('/T (QA)', $document->render());
+        self::assertStringContainsString('/Subtype /Text', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Kommentar)', writeDocumentToString($document));
+        self::assertStringContainsString('/Name /Comment', writeDocumentToString($document));
+        self::assertStringContainsString('/Open true', writeDocumentToString($document));
+        self::assertStringContainsString('/T (QA)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -339,9 +343,9 @@ final class PageTest extends TestCase
         $result = $page->addPopupAnnotation($annotation, new Rect(30, 40, 60, 40), true);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Popup', $document->render());
-        self::assertMatchesRegularExpression('/\/Parent 7 0 R/', $document->render());
-        self::assertMatchesRegularExpression('/\/Popup \d+ 0 R/', $document->render());
+        self::assertStringContainsString('/Subtype /Popup', writeDocumentToString($document));
+        self::assertMatchesRegularExpression('/\/Parent 7 0 R/', writeDocumentToString($document));
+        self::assertMatchesRegularExpression('/\/Popup \d+ 0 R/', writeDocumentToString($document));
     }
 
     #[Test]
@@ -356,9 +360,9 @@ final class PageTest extends TestCase
         $result = $page->addPopupAnnotation($annotation, new Rect(30, 40, 60, 40), true);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Popup', $document->render());
-        self::assertMatchesRegularExpression('/\/Parent 7 0 R/', $document->render());
-        self::assertMatchesRegularExpression('/\/Popup \d+ 0 R/', $document->render());
+        self::assertStringContainsString('/Subtype /Popup', writeDocumentToString($document));
+        self::assertMatchesRegularExpression('/\/Parent 7 0 R/', writeDocumentToString($document));
+        self::assertMatchesRegularExpression('/\/Popup \d+ 0 R/', writeDocumentToString($document));
     }
 
     #[Test]
@@ -380,11 +384,11 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /FreeText', $document->render());
-        self::assertStringContainsString('/Contents (Hinweistext)', $document->render());
-        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', $document->render());
-        self::assertStringContainsString('/C [0.5]', $document->render());
-        self::assertStringContainsString('/IC [0.9]', $document->render());
+        self::assertStringContainsString('/Subtype /FreeText', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Hinweistext)', writeDocumentToString($document));
+        self::assertStringContainsString('/DA (/F1 12 Tf 1 0 0 rg)', writeDocumentToString($document));
+        self::assertStringContainsString('/C [0.5]', writeDocumentToString($document));
+        self::assertStringContainsString('/IC [0.9]', writeDocumentToString($document));
     }
 
     #[Test]
@@ -396,10 +400,10 @@ final class PageTest extends TestCase
         $result = $page->addHighlightAnnotation(new Rect(10, 20, 80, 12), Color::rgb(255, 255, 0), 'Markiert', 'QA');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Highlight', $document->render());
-        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', $document->render());
-        self::assertStringContainsString('/C [1 1 0]', $document->render());
-        self::assertStringContainsString('/Contents (Markiert)', $document->render());
+        self::assertStringContainsString('/Subtype /Highlight', writeDocumentToString($document));
+        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', writeDocumentToString($document));
+        self::assertStringContainsString('/C [1 1 0]', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Markiert)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -411,10 +415,10 @@ final class PageTest extends TestCase
         $result = $page->addUnderlineAnnotation(new Rect(10, 20, 80, 12), Color::rgb(0, 0, 255), 'Unterstrichen', 'QA');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Underline', $document->render());
-        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', $document->render());
-        self::assertStringContainsString('/C [0 0 1]', $document->render());
-        self::assertStringContainsString('/Contents (Unterstrichen)', $document->render());
+        self::assertStringContainsString('/Subtype /Underline', writeDocumentToString($document));
+        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', writeDocumentToString($document));
+        self::assertStringContainsString('/C [0 0 1]', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Unterstrichen)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -426,10 +430,10 @@ final class PageTest extends TestCase
         $result = $page->addStrikeOutAnnotation(new Rect(10, 20, 80, 12), Color::rgb(255, 0, 0), 'Durchgestrichen', 'QA');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /StrikeOut', $document->render());
-        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', $document->render());
-        self::assertStringContainsString('/C [1 0 0]', $document->render());
-        self::assertStringContainsString('/Contents (Durchgestrichen)', $document->render());
+        self::assertStringContainsString('/Subtype /StrikeOut', writeDocumentToString($document));
+        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', writeDocumentToString($document));
+        self::assertStringContainsString('/C [1 0 0]', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Durchgestrichen)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -441,10 +445,10 @@ final class PageTest extends TestCase
         $result = $page->addSquigglyAnnotation(new Rect(10, 20, 80, 12), Color::rgb(255, 0, 255), 'Wellig', 'QA');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Squiggly', $document->render());
-        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', $document->render());
-        self::assertStringContainsString('/C [1 0 1]', $document->render());
-        self::assertStringContainsString('/Contents (Wellig)', $document->render());
+        self::assertStringContainsString('/Subtype /Squiggly', writeDocumentToString($document));
+        self::assertStringContainsString('/QuadPoints [10 32 90 32 10 20 90 20]', writeDocumentToString($document));
+        self::assertStringContainsString('/C [1 0 1]', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Wellig)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -456,10 +460,10 @@ final class PageTest extends TestCase
         $result = $page->addStampAnnotation(new Rect(10, 20, 80, 24), 'Approved', Color::rgb(0, 128, 0), 'Freigegeben', 'QA');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Stamp', $document->render());
-        self::assertStringContainsString('/Name /Approved', $document->render());
-        self::assertStringContainsString('/C [0 0.501961 0]', $document->render());
-        self::assertStringContainsString('/Contents (Freigegeben)', $document->render());
+        self::assertStringContainsString('/Subtype /Stamp', writeDocumentToString($document));
+        self::assertStringContainsString('/Name /Approved', writeDocumentToString($document));
+        self::assertStringContainsString('/C [0 0.501961 0]', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Freigegeben)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -471,9 +475,9 @@ final class PageTest extends TestCase
         $result = $page->addSquareAnnotation(new Rect(10, 20, 80, 24), Color::rgb(255, 0, 0), Color::gray(0.9), 'Kasten', 'QA');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Square', $document->render());
-        self::assertStringContainsString('/C [1 0 0]', $document->render());
-        self::assertStringContainsString('/IC [0.9]', $document->render());
+        self::assertStringContainsString('/Subtype /Square', writeDocumentToString($document));
+        self::assertStringContainsString('/C [1 0 0]', writeDocumentToString($document));
+        self::assertStringContainsString('/IC [0.9]', writeDocumentToString($document));
     }
 
     #[Test]
@@ -485,10 +489,10 @@ final class PageTest extends TestCase
         $result = $page->addCircleAnnotation(new Rect(10, 20, 80, 24), Color::rgb(0, 0, 255), Color::gray(0.9), 'Kreis', 'QA', AnnotationBorderStyle::dashed(1.5, [2.0, 1.0]));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Circle', $document->render());
-        self::assertStringContainsString('/C [0 0 1]', $document->render());
-        self::assertStringContainsString('/IC [0.9]', $document->render());
-        self::assertStringContainsString('/BS << /W 1.5 /S /D /D [2 1] >>', $document->render());
+        self::assertStringContainsString('/Subtype /Circle', writeDocumentToString($document));
+        self::assertStringContainsString('/C [0 0 1]', writeDocumentToString($document));
+        self::assertStringContainsString('/IC [0.9]', writeDocumentToString($document));
+        self::assertStringContainsString('/BS << /W 1.5 /S /D /D [2 1] >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -508,9 +512,9 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Ink', $document->render());
-        self::assertStringContainsString('/InkList [[10 20 20 30 30 20]]', $document->render());
-        self::assertStringContainsString('/Contents (Ink)', $document->render());
+        self::assertStringContainsString('/Subtype /Ink', writeDocumentToString($document));
+        self::assertStringContainsString('/InkList [[10 20 20 30 30 20]]', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Ink)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -532,12 +536,12 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Line', $document->render());
-        self::assertStringContainsString('/L [10 20 90 32]', $document->render());
-        self::assertStringContainsString('/LE [/OpenArrow /ClosedArrow]', $document->render());
-        self::assertStringContainsString('/Subj (Messlinie)', $document->render());
-        self::assertStringContainsString('/BS << /W 2 /S /D /D [4 2] >>', $document->render());
-        self::assertStringContainsString('/Contents (Linie)', $document->render());
+        self::assertStringContainsString('/Subtype /Line', writeDocumentToString($document));
+        self::assertStringContainsString('/L [10 20 90 32]', writeDocumentToString($document));
+        self::assertStringContainsString('/LE [/OpenArrow /ClosedArrow]', writeDocumentToString($document));
+        self::assertStringContainsString('/Subj (Messlinie)', writeDocumentToString($document));
+        self::assertStringContainsString('/BS << /W 2 /S /D /D [4 2] >>', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Linie)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -558,12 +562,12 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /PolyLine', $document->render());
-        self::assertStringContainsString('/Vertices [10 20 40 50 90 32]', $document->render());
-        self::assertStringContainsString('/LE [/Circle /Slash]', $document->render());
-        self::assertStringContainsString('/Subj (Korrekturpfad)', $document->render());
-        self::assertStringContainsString('/BS << /W 2.5 /S /S >>', $document->render());
-        self::assertStringContainsString('/Contents (PolyLine)', $document->render());
+        self::assertStringContainsString('/Subtype /PolyLine', writeDocumentToString($document));
+        self::assertStringContainsString('/Vertices [10 20 40 50 90 32]', writeDocumentToString($document));
+        self::assertStringContainsString('/LE [/Circle /Slash]', writeDocumentToString($document));
+        self::assertStringContainsString('/Subj (Korrekturpfad)', writeDocumentToString($document));
+        self::assertStringContainsString('/BS << /W 2.5 /S /S >>', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (PolyLine)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -575,11 +579,11 @@ final class PageTest extends TestCase
         $result = $page->addPolygonAnnotation([[10.0, 20.0], [40.0, 50.0], [90.0, 32.0]], Color::rgb(255, 0, 0), Color::gray(0.9), 'Polygon', 'QA', 'Flaechenhinweis', AnnotationBorderStyle::dashed());
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Polygon', $document->render());
-        self::assertStringContainsString('/Vertices [10 20 40 50 90 32]', $document->render());
-        self::assertStringContainsString('/IC [0.9]', $document->render());
-        self::assertStringContainsString('/Subj (Flaechenhinweis)', $document->render());
-        self::assertStringContainsString('/BS << /W 1 /S /D /D [3 2] >>', $document->render());
+        self::assertStringContainsString('/Subtype /Polygon', writeDocumentToString($document));
+        self::assertStringContainsString('/Vertices [10 20 40 50 90 32]', writeDocumentToString($document));
+        self::assertStringContainsString('/IC [0.9]', writeDocumentToString($document));
+        self::assertStringContainsString('/Subj (Flaechenhinweis)', writeDocumentToString($document));
+        self::assertStringContainsString('/BS << /W 1 /S /D /D [3 2] >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -592,8 +596,8 @@ final class PageTest extends TestCase
         $line = $page->getAnnotations()[0];
         $page->addPopupAnnotation($line, new Rect(20, 40, 60, 40), true);
 
-        self::assertStringContainsString('/Popup 8 0 R', $document->render());
-        self::assertStringContainsString('/Subtype /Popup', $document->render());
+        self::assertStringContainsString('/Popup 8 0 R', writeDocumentToString($document));
+        self::assertStringContainsString('/Subtype /Popup', writeDocumentToString($document));
     }
 
     #[Test]
@@ -606,7 +610,7 @@ final class PageTest extends TestCase
         $annotation = $page->getAnnotations()[0];
         $page->addPopupAnnotation($annotation, new Rect(30, 40, 60, 40), true);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Subtype /Text', $rendered);
         self::assertStringContainsString('/F 4', $rendered);
@@ -625,10 +629,10 @@ final class PageTest extends TestCase
         $result = $page->addCaretAnnotation(new Rect(10, 20, 16, 18), 'Einfuegen', 'QA', 'P');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Caret', $document->render());
-        self::assertStringContainsString('/Rect [10 20 26 38]', $document->render());
-        self::assertStringContainsString('/Sy /P', $document->render());
-        self::assertStringContainsString('/Contents (Einfuegen)', $document->render());
+        self::assertStringContainsString('/Subtype /Caret', writeDocumentToString($document));
+        self::assertStringContainsString('/Rect [10 20 26 38]', writeDocumentToString($document));
+        self::assertStringContainsString('/Sy /P', writeDocumentToString($document));
+        self::assertStringContainsString('/Contents (Einfuegen)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1148,7 +1152,7 @@ final class PageTest extends TestCase
             link: LinkTarget::externalUrl('https://example.com'),
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertMatchesRegularExpression('/\/Annots \[\d+ 0 R \d+ 0 R\]/', $page->render());
         self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
@@ -1256,7 +1260,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Annots [7 0 R]', $page->render());
-        self::assertStringContainsString('/Dest /table-demo', $document->render());
+        self::assertStringContainsString('/Dest /table-demo', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1269,7 +1273,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Subtype /Link', $rendered);
         self::assertStringContainsString('/Contents (Read more)', $rendered);
@@ -1287,7 +1291,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Dest /chapter-1', $rendered);
         self::assertStringContainsString('/Contents (Jump to chapter 1)', $rendered);
@@ -1303,7 +1307,7 @@ final class PageTest extends TestCase
 
         $page->addLink(new Rect(10, 20, 80, 12), '#table-demo');
 
-        self::assertStringContainsString('/Dest /table-demo', $document->render());
+        self::assertStringContainsString('/Dest /table-demo', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1386,7 +1390,7 @@ final class PageTest extends TestCase
             link: LinkTarget::externalUrl('https://example.com'),
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertSame(2, substr_count($rendered, '/Subtype /Link'));
         self::assertGreaterThanOrEqual(2, substr_count($rendered, '/Type /StructElem /S /Link'));
@@ -1834,8 +1838,8 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Annots [7 0 R]', $page->render());
-        self::assertStringContainsString('/Subtype /Link', $document->render());
-        self::assertStringContainsString('/URI (https://example.com)', $document->render());
+        self::assertStringContainsString('/Subtype /Link', writeDocumentToString($document));
+        self::assertStringContainsString('/URI (https://example.com)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1849,10 +1853,10 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
         self::assertStringContainsString('/Annots [9 0 R]', $page->render());
-        self::assertStringContainsString('/AcroForm 8 0 R', $document->render());
-        self::assertStringContainsString('/Subtype /Widget', $document->render());
-        self::assertStringContainsString('/FT /Tx', $document->render());
-        self::assertStringContainsString('/T (customer_name)', $document->render());
+        self::assertStringContainsString('/AcroForm 8 0 R', writeDocumentToString($document));
+        self::assertStringContainsString('/Subtype /Widget', writeDocumentToString($document));
+        self::assertStringContainsString('/FT /Tx', writeDocumentToString($document));
+        self::assertStringContainsString('/T (customer_name)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1865,10 +1869,10 @@ final class PageTest extends TestCase
         $result = $page->addTextField('notes', new Rect(10, 20, 80, 30), "Line 1\nLine 2", 'Helvetica', 12, true);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/FT /Tx', $document->render());
-        self::assertStringContainsString('/T (notes)', $document->render());
-        self::assertStringContainsString('/Ff 4096', $document->render());
-        self::assertStringContainsString('/V (Line 1\\nLine 2)', $document->render());
+        self::assertStringContainsString('/FT /Tx', writeDocumentToString($document));
+        self::assertStringContainsString('/T (notes)', writeDocumentToString($document));
+        self::assertStringContainsString('/Ff 4096', writeDocumentToString($document));
+        self::assertStringContainsString('/V (Line 1\\nLine 2)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1890,7 +1894,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Ff 8195', $document->render());
+        self::assertStringContainsString('/Ff 8195', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1903,8 +1907,8 @@ final class PageTest extends TestCase
         $result = $page->addTextField('customer_name', new Rect(10, 20, 80, 12), 'Ada', 'Helvetica', 12, defaultValue: 'Grace');
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/V (Ada)', $document->render());
-        self::assertStringContainsString('/DV (Grace)', $document->render());
+        self::assertStringContainsString('/V (Ada)', writeDocumentToString($document));
+        self::assertStringContainsString('/DV (Grace)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1917,7 +1921,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/TU (Customer name)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -1947,7 +1951,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/TU (Customer name)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -1965,11 +1969,11 @@ final class PageTest extends TestCase
         $result = $page->addCheckbox('accept_terms', new Position(10, 20), 12, true);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Subtype /Widget', $document->render());
-        self::assertStringContainsString('/FT /Btn', $document->render());
-        self::assertStringContainsString('/T (accept_terms)', $document->render());
-        self::assertStringContainsString('/V /Yes', $document->render());
-        self::assertStringContainsString('/AP << /N << /Off', $document->render());
+        self::assertStringContainsString('/Subtype /Widget', writeDocumentToString($document));
+        self::assertStringContainsString('/FT /Btn', writeDocumentToString($document));
+        self::assertStringContainsString('/T (accept_terms)', writeDocumentToString($document));
+        self::assertStringContainsString('/V /Yes', writeDocumentToString($document));
+        self::assertStringContainsString('/AP << /N << /Off', writeDocumentToString($document));
     }
 
     #[Test]
@@ -1982,7 +1986,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/TU (Accept terms)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -2000,13 +2004,13 @@ final class PageTest extends TestCase
         $result = $page->addRadioButton('delivery', 'express', new Position(30, 20), 12, false);
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/FT /Btn', $document->render());
-        self::assertStringContainsString('/T (delivery)', $document->render());
-        self::assertStringContainsString('/Ff 49152', $document->render());
-        self::assertStringContainsString('/V /standard', $document->render());
-        self::assertStringContainsString('/AS /standard', $document->render());
-        self::assertStringContainsString('/AS /Off', $document->render());
-        self::assertStringContainsString('/Kids [', $document->render());
+        self::assertStringContainsString('/FT /Btn', writeDocumentToString($document));
+        self::assertStringContainsString('/T (delivery)', writeDocumentToString($document));
+        self::assertStringContainsString('/Ff 49152', writeDocumentToString($document));
+        self::assertStringContainsString('/V /standard', writeDocumentToString($document));
+        self::assertStringContainsString('/AS /standard', writeDocumentToString($document));
+        self::assertStringContainsString('/AS /Off', writeDocumentToString($document));
+        self::assertStringContainsString('/Kids [', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2020,7 +2024,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/TU (delivery)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -2047,11 +2051,11 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/FT /Ch', $document->render());
-        self::assertStringContainsString('/Ff 131072', $document->render());
-        self::assertStringContainsString('/T (country)', $document->render());
-        self::assertStringContainsString('/Opt [[(de) (Deutschland)] [(at) (Oesterreich)]]', $document->render());
-        self::assertStringContainsString('/V (de)', $document->render());
+        self::assertStringContainsString('/FT /Ch', writeDocumentToString($document));
+        self::assertStringContainsString('/Ff 131072', writeDocumentToString($document));
+        self::assertStringContainsString('/T (country)', writeDocumentToString($document));
+        self::assertStringContainsString('/Opt [[(de) (Deutschland)] [(at) (Oesterreich)]]', writeDocumentToString($document));
+        self::assertStringContainsString('/V (de)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2072,7 +2076,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/TU (Country selection)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -2098,8 +2102,8 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/V (de)', $document->render());
-        self::assertStringContainsString('/DV (at)', $document->render());
+        self::assertStringContainsString('/V (de)', writeDocumentToString($document));
+        self::assertStringContainsString('/DV (at)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2120,7 +2124,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Ff 393216', $document->render());
+        self::assertStringContainsString('/Ff 393216', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2161,10 +2165,10 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/FT /Ch', $document->render());
-        self::assertStringContainsString('/T (topics)', $document->render());
-        self::assertStringContainsString('/Opt [[(pdf) (PDF)] [(forms) (Forms)] [(tables) (Tables)]]', $document->render());
-        self::assertStringContainsString('/V (forms)', $document->render());
+        self::assertStringContainsString('/FT /Ch', writeDocumentToString($document));
+        self::assertStringContainsString('/T (topics)', writeDocumentToString($document));
+        self::assertStringContainsString('/Opt [[(pdf) (PDF)] [(forms) (Forms)] [(tables) (Tables)]]', writeDocumentToString($document));
+        self::assertStringContainsString('/V (forms)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2185,7 +2189,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/TU (Topics selection)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -2211,8 +2215,8 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/V (forms)', $document->render());
-        self::assertStringContainsString('/DV (pdf)', $document->render());
+        self::assertStringContainsString('/V (forms)', writeDocumentToString($document));
+        self::assertStringContainsString('/DV (pdf)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2234,9 +2238,9 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/Ff 2097152', $document->render());
-        self::assertStringContainsString('/V [(pdf) (forms)]', $document->render());
-        self::assertStringContainsString('/DV [(forms) (tables)]', $document->render());
+        self::assertStringContainsString('/Ff 2097152', writeDocumentToString($document));
+        self::assertStringContainsString('/V [(pdf) (forms)]', writeDocumentToString($document));
+        self::assertStringContainsString('/DV [(forms) (tables)]', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2269,10 +2273,10 @@ final class PageTest extends TestCase
         $result = $page->addSignatureField('approval_signature', new Rect(10, 20, 100, 30));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/AcroForm 7 0 R', $document->render());
-        self::assertStringContainsString('/Subtype /Widget', $document->render());
-        self::assertStringContainsString('/FT /Sig', $document->render());
-        self::assertStringContainsString('/T (approval_signature)', $document->render());
+        self::assertStringContainsString('/AcroForm 7 0 R', writeDocumentToString($document));
+        self::assertStringContainsString('/Subtype /Widget', writeDocumentToString($document));
+        self::assertStringContainsString('/FT /Sig', writeDocumentToString($document));
+        self::assertStringContainsString('/T (approval_signature)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2285,7 +2289,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/TU (Approval signature)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -2303,11 +2307,11 @@ final class PageTest extends TestCase
         $result = $page->addPushButton('save_form', 'Speichern', new Rect(10, 20, 80, 16));
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/AcroForm 8 0 R', $document->render());
-        self::assertStringContainsString('/FT /Btn', $document->render());
-        self::assertStringContainsString('/Ff 65536', $document->render());
-        self::assertStringContainsString('/T (save_form)', $document->render());
-        self::assertStringContainsString('/CA (Speichern)', $document->render());
+        self::assertStringContainsString('/AcroForm 8 0 R', writeDocumentToString($document));
+        self::assertStringContainsString('/FT /Btn', writeDocumentToString($document));
+        self::assertStringContainsString('/Ff 65536', writeDocumentToString($document));
+        self::assertStringContainsString('/T (save_form)', writeDocumentToString($document));
+        self::assertStringContainsString('/CA (Speichern)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2320,7 +2324,7 @@ final class PageTest extends TestCase
 
         self::assertSame($page, $result);
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/TU (Save form)', $rendered);
         self::assertStringContainsString('/StructParent 1', $rendered);
@@ -2343,7 +2347,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /SubmitForm /F (https://example.com/submit) >>', $document->render());
+        self::assertStringContainsString('/A << /S /SubmitForm /F (https://example.com/submit) >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2361,7 +2365,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /ResetForm >>', $document->render());
+        self::assertStringContainsString('/A << /S /ResetForm >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2379,7 +2383,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString("/A << /S /JavaScript /JS (app.alert\\('Hallo'\\);) >>", $document->render());
+        self::assertStringContainsString("/A << /S /JavaScript /JS (app.alert\\('Hallo'\\);) >>", writeDocumentToString($document));
     }
 
     #[Test]
@@ -2397,7 +2401,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /Named /N /PrevPage >>', $document->render());
+        self::assertStringContainsString('/A << /S /Named /N /PrevPage >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2415,7 +2419,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /GoTo /D /table-demo >>', $document->render());
+        self::assertStringContainsString('/A << /S /GoTo /D /table-demo >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2433,7 +2437,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /GoToR /F (guide.pdf) /D /chapter-1 >>', $document->render());
+        self::assertStringContainsString('/A << /S /GoToR /F (guide.pdf) /D /chapter-1 >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2451,7 +2455,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /Launch /F (guide.pdf) >>', $document->render());
+        self::assertStringContainsString('/A << /S /Launch /F (guide.pdf) >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2469,7 +2473,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /URI /URI (https://example.com) >>', $document->render());
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com) >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2487,7 +2491,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /Hide /T (notes_panel) >>', $document->render());
+        self::assertStringContainsString('/A << /S /Hide /T (notes_panel) >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2505,7 +2509,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /ImportData /F (form-data.fdf) >>', $document->render());
+        self::assertStringContainsString('/A << /S /ImportData /F (form-data.fdf) >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2524,7 +2528,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle 5 0 R] /PreserveRB false >>', $document->render());
+        self::assertStringContainsString('/A << /S /SetOCGState /State [/Toggle 5 0 R] /PreserveRB false >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2561,7 +2565,7 @@ final class PageTest extends TestCase
         );
 
         self::assertSame($page, $result);
-        self::assertStringContainsString('/A << /S /Thread /D (article-1) /F (threads.pdf) >>', $document->render());
+        self::assertStringContainsString('/A << /S /Thread /D (article-1) /F (threads.pdf) >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2710,7 +2714,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString('(Hello) Tj', $page->getContents()->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
-        self::assertStringContainsString('/URI (https://example.com)', $document->render());
+        self::assertStringContainsString('/URI (https://example.com)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2732,7 +2736,7 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
-        self::assertSame(1, substr_count($document->render(), '/URI (https://example.com)'));
+        self::assertSame(1, substr_count(writeDocumentToString($document), '/URI (https://example.com)'));
     }
 
     #[Test]
@@ -2754,8 +2758,8 @@ final class PageTest extends TestCase
         );
 
         self::assertStringContainsString('/Annots [8 0 R 9 0 R]', $page->render());
-        self::assertStringContainsString('/URI (https://one.example)', $document->render());
-        self::assertStringContainsString('/URI (https://two.example)', $document->render());
+        self::assertStringContainsString('/URI (https://one.example)', writeDocumentToString($document));
+        self::assertStringContainsString('/URI (https://two.example)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2831,8 +2835,8 @@ final class PageTest extends TestCase
         self::assertStringContainsString('/Font << /F1 4 0 R >>', $page->getResources()->render());
         self::assertStringContainsString("/P << /MCID 0 >> BDC\nBT", $page->getContents()->render());
         self::assertStringContainsString('(Hello) Tj', $page->getContents()->render());
-        self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /StructElem /S /Document /P 8 0 R /K [11 0 R] >>', $document->render());
-        self::assertStringContainsString('11 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 10 0 R /Pg 5 0 R /K 0 >>', $document->render());
+        self::assertStringContainsString('10 0 obj' . "\n" . '<< /Type /StructElem /S /Document /P 8 0 R /K [11 0 R] >>', writeDocumentToString($document));
+        self::assertStringContainsString('11 0 obj' . "\n" . '<< /Type /StructElem /S /P /P 10 0 R /Pg 5 0 R /K 0 >>', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2891,7 +2895,7 @@ final class PageTest extends TestCase
         self::assertSame($page, $result);
         self::assertStringContainsString('(Hello) Tj', $page->getContents()->render());
         self::assertStringNotContainsString('BDC', $page->getContents()->render());
-        self::assertStringNotContainsString('/Type /StructElem /S /P', $document->render());
+        self::assertStringNotContainsString('/Type /StructElem /S /P', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2918,7 +2922,7 @@ final class PageTest extends TestCase
         self::assertStringContainsString("1 0 0 rg\n/GS1 gs\n(Hello) Tj", $page->getContents()->render());
         self::assertStringContainsString(' re f', $page->getContents()->render());
         self::assertStringContainsString('/Annots [8 0 R]', $page->render());
-        self::assertStringContainsString('/URI (https://example.com)', $document->render());
+        self::assertStringContainsString('/URI (https://example.com)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2931,7 +2935,7 @@ final class PageTest extends TestCase
         $page->addText('Hello', new Position(10, 20), options: new TextOptions(structureTag: StructureTag::Paragraph));
 
         self::assertStringContainsString('/P << /MCID 0 >> BDC', $page->getContents()->render());
-        self::assertStringContainsString('/Type /StructElem /S /P', $document->render());
+        self::assertStringContainsString('/Type /StructElem /S /P', writeDocumentToString($document));
     }
 
     #[Test]
@@ -2997,7 +3001,7 @@ final class PageTest extends TestCase
         $page->addText('Straße', new Position(10, 20), 'Helvetica', 12);
 
         self::assertStringContainsString("(Stra\xA7e) Tj", $page->getContents()->render());
-        self::assertStringContainsString('/BaseEncoding /StandardEncoding', $document->render());
+        self::assertStringContainsString('/BaseEncoding /StandardEncoding', writeDocumentToString($document));
     }
 
     #[Test]
@@ -3010,11 +3014,11 @@ final class PageTest extends TestCase
         $page->addText('ÄäÖöÜüßàáçèé', new Position(10, 20), 'Helvetica', 12);
 
         self::assertStringContainsString("(\x80\x8A\x85\x9A\x86\x9F\xA7\x88\x87\x8D\x8F\x8E) Tj", $page->getContents()->render());
-        self::assertStringContainsString('/Adieresis', $document->render());
-        self::assertStringContainsString('/adieresis', $document->render());
-        self::assertStringContainsString('/Odieresis', $document->render());
-        self::assertStringContainsString('/udieresis', $document->render());
-        self::assertStringContainsString('/germandbls', $document->render());
+        self::assertStringContainsString('/Adieresis', writeDocumentToString($document));
+        self::assertStringContainsString('/adieresis', writeDocumentToString($document));
+        self::assertStringContainsString('/Odieresis', writeDocumentToString($document));
+        self::assertStringContainsString('/udieresis', writeDocumentToString($document));
+        self::assertStringContainsString('/germandbls', writeDocumentToString($document));
     }
 
     #[Test]
@@ -3047,7 +3051,7 @@ final class PageTest extends TestCase
             "(\xC4\xD6\xDC\xE4\xF6\xFC\xDF\xE0\xE1\xE2\xE3\xE5\xE7\xE8\xE9\xEA\xEB\xED\xEC\xEE\xEF\xF1\xF3\xF2\xF4\xF5\xFA\xF9\xFB\xFC\x80\x8C\x9C\x8A\x9A\x8E\x9E\x9F\x84\x93\x94\x91\x92\x85\x96\x97\x95\x99) Tj",
             $page->getContents()->render(),
         );
-        self::assertStringContainsString('/Encoding /WinAnsiEncoding', $document->render());
+        self::assertStringContainsString('/Encoding /WinAnsiEncoding', writeDocumentToString($document));
     }
 
     #[Test]
@@ -3090,7 +3094,7 @@ final class PageTest extends TestCase
 
         self::assertStringContainsString('(Hello) Tj', $page->getContents()->render());
         self::assertStringNotContainsString('BDC', $page->getContents()->render());
-        self::assertStringNotContainsString('/Type /StructElem /S /P', $document->render());
+        self::assertStringNotContainsString('/Type /StructElem /S /P', writeDocumentToString($document));
     }
 
     #[Test]
@@ -3523,7 +3527,7 @@ final class PageTest extends TestCase
             10,
         );
 
-        self::assertStringContainsString('/BaseFont /Helvetica-Bold', $document->render());
+        self::assertStringContainsString('/BaseFont /Helvetica-Bold', writeDocumentToString($document));
     }
 
     #[Test]
@@ -3541,7 +3545,7 @@ final class PageTest extends TestCase
             10,
         );
 
-        self::assertStringContainsString('/BaseFont /Times-Italic', $document->render());
+        self::assertStringContainsString('/BaseFont /Times-Italic', writeDocumentToString($document));
     }
 
     #[Test]
@@ -3577,7 +3581,7 @@ final class PageTest extends TestCase
             10,
         );
 
-        self::assertStringContainsString('/BaseFont /CustomSans-Bold', $document->render());
+        self::assertStringContainsString('/BaseFont /CustomSans-Bold', writeDocumentToString($document));
     }
 
     #[Test]
@@ -3606,8 +3610,8 @@ final class PageTest extends TestCase
             10,
         );
 
-        self::assertStringContainsString('/BaseFont /CustomSans-Regular', $document->render());
-        self::assertStringNotContainsString('/BaseFont /CustomSans-Bold', $document->render());
+        self::assertStringContainsString('/BaseFont /CustomSans-Regular', writeDocumentToString($document));
+        self::assertStringNotContainsString('/BaseFont /CustomSans-Bold', writeDocumentToString($document));
     }
 
     #[Test]

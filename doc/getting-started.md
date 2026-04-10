@@ -49,7 +49,7 @@ $page = $document->addPage(PageSize::A4());
 $page->addText('Hello PDF', new Position(20, 800), 'Helvetica', 16);
 $page->addText('Das ist das erste erzeugte Dokument.', new Position(20, 775), 'Helvetica', 11);
 
-file_put_contents('hello.pdf', $document->render());
+$document->writeToFile('hello.pdf');
 ```
 
 Das erzeugt eine Datei `hello.pdf` im aktuellen Verzeichnis.
@@ -61,7 +61,7 @@ Das erzeugt eine Datei `hello.pdf` im aktuellen Verzeichnis.
 2. `registerFont('Helvetica')` macht die Schrift im Dokument verfuegbar.
 3. `addPage(PageSize::A4())` erzeugt eine neue Seite.
 4. `addText(...)` schreibt Inhalt auf die Seite.
-5. `render()` serialisiert das komplette PDF.
+5. `writeToFile(...)` serialisiert das PDF direkt in die Zieldatei.
 
 ## Profile und Standards
 

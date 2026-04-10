@@ -18,7 +18,11 @@ use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\TaggedPdf\StructureTag;
+
+use function Kalle\Pdf\Tests\Support\writeDocumentToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class TextFrameTest extends TestCase
@@ -242,7 +246,7 @@ final class TextFrameTest extends TestCase
         );
 
         self::assertStringContainsString('/Annots [8 0 R]', $frame->getPage()->render());
-        self::assertStringContainsString('/URI (https://example.com/docs)', $document->render());
+        self::assertStringContainsString('/URI (https://example.com/docs)', writeDocumentToString($document));
     }
 
     #[Test]
@@ -289,7 +293,7 @@ final class TextFrameTest extends TestCase
             new ListOptions(structureTag: StructureTag::List),
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', $page->getContents()->render());
         self::assertStringContainsString('/LBody << /MCID 1 >> BDC', $page->getContents()->render());
@@ -360,7 +364,7 @@ final class TextFrameTest extends TestCase
 
         self::assertGreaterThan(1, count($document->pages->pages));
         self::assertStringContainsString("10 25 Td\n(-) Tj", $document->pages->pages[1]->getContents()->render());
-        self::assertStringContainsString('(Second) Tj', $document->render());
+        self::assertStringContainsString('(Second) Tj', writeDocumentToString($document));
         self::assertStringContainsString('(item) Tj', $frame->getPage()->getContents()->render());
     }
 

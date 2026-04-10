@@ -25,7 +25,11 @@ use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\TaggedPdf\StructElem;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
+
+use function Kalle\Pdf\Tests\Support\writeDocumentToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class TableGroupRendererTest extends TestCase
@@ -77,7 +81,7 @@ final class TableGroupRendererTest extends TestCase
             ),
         );
 
-        $rendered = $document->render();
+        $rendered = writeDocumentToString($document);
 
         self::assertStringContainsString('/Type /StructElem /S /TR', $rendered);
         self::assertStringContainsString('/Type /StructElem /S /TH', $rendered);

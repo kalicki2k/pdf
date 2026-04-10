@@ -14,7 +14,6 @@ use Kalle\Pdf\Page\Content\ImageOptions;
 use Kalle\Pdf\Page\Form\FormFieldLabel;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\TaggedPdf\StructureTag;
-
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 if ($argc !== 2) {
@@ -31,115 +30,115 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 
 $fixtures = [
     $outputDir . '/pdf-ua-1-negative-missing-language.pdf' => fn (): string => mutatePdf(
-        createPdfUaBaselineFixture()->render(),
+        writeDocumentToString(createPdfUaBaselineFixture()),
         [
             ...blankPdfLiteral('/Lang ', 'en-US'),
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-missing-parent-tree.pdf' => fn (): string => mutatePdf(
-        createPdfUaBaselineFixture()->render(),
+        writeDocumentToString(createPdfUaBaselineFixture()),
         [
             '/ParentTree 20 0 R' => '/ParentTrex 20 0 R',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-missing-mark-info.pdf' => fn (): string => mutatePdf(
-        createPdfUaBaselineFixture()->render(),
+        writeDocumentToString(createPdfUaBaselineFixture()),
         [
             '/MarkInfo << /Marked true >>' => '/MarkInfo << /Markex true >>',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-missing-display-title.pdf' => fn (): string => mutatePdf(
-        createPdfUaBaselineFixture()->render(),
+        writeDocumentToString(createPdfUaBaselineFixture()),
         [
             '/DisplayDocTitle true' => '/DisplayDocTitle null',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-document-tag.pdf' => fn (): string => mutatePdf(
-        createPdfUaBaselineFixture()->render(),
+        writeDocumentToString(createPdfUaBaselineFixture()),
         [
             '/Type /StructElem /S /Document' => '/Type /StructElem /S /Documxnt',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-figure-without-alt.pdf' => fn (): string => mutatePdf(
-        createPdfUaBaselineFixture()->render(),
+        writeDocumentToString(createPdfUaBaselineFixture()),
         [
             '/Alt (Negative regression marker image)' => '/AIt (Negative regression marker image)',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-standalone-link-without-structure.pdf' => fn (): string => mutatePdf(
-        createPdfUaLinksFixture()->render(),
+        writeDocumentToString(createPdfUaLinksFixture()),
         [
             '/StructParent 1' => '/StrvctParent 1',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-standalone-link-tag.pdf' => fn (): string => mutatePdf(
-        createPdfUaLinksFixture()->render(),
+        writeDocumentToString(createPdfUaLinksFixture()),
         [
             '/Type /StructElem /S /Link /P 21 0 R /Pg 16 0 R /Alt (Open standalone guide)' => '/Type /StructElem /S /Llnk /P 21 0 R /Pg 16 0 R /Alt (Open standalone guide)',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-form-field-without-structure.pdf' => fn (): string => mutatePdf(
-        createPdfUaFormsFixture()->render(),
+        writeDocumentToString(createPdfUaFormsFixture()),
         [
             '/StructParent 1' => '/StrvctParent 1',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-form-page-without-tab-order.pdf' => fn (): string => mutatePdf(
-        createPdfUaFormsFixture()->render(),
+        writeDocumentToString(createPdfUaFormsFixture()),
         [
             '/Tabs /S' => '/Tabx /S',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-page-without-struct-parents.pdf' => fn (): string => mutatePdf(
-        createPdfUaBaselineFixture()->render(),
+        writeDocumentToString(createPdfUaBaselineFixture()),
         [
             '/StructParents 0' => '/StructParentx 0',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-form-struct-tag.pdf' => fn (): string => mutatePdf(
-        createPdfUaFormLabelFixture()->render(),
+        writeDocumentToString(createPdfUaFormLabelFixture()),
         [
             '/Type /StructElem /S /Form' => '/Type /StructElem /S /From',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-form-label-container-tag.pdf' => fn (): string => mutatePdf(
-        createPdfUaFormLabelFixture()->render(),
+        writeDocumentToString(createPdfUaFormLabelFixture()),
         [
             '/Type /StructElem /S /Div' => '/Type /StructElem /S /Dlv',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-annotation-without-structure.pdf' => fn (): string => mutatePdf(
-        createPdfUaAnnotationsFixture()->render(),
+        writeDocumentToString(createPdfUaAnnotationsFixture()),
         [
             '/StructParent 1' => '/StrvctParent 1',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-annotation-tag.pdf' => fn (): string => mutatePdf(
-        createPdfUaAnnotationsFixture()->render(),
+        writeDocumentToString(createPdfUaAnnotationsFixture()),
         [
             '/Type /StructElem /S /Annot /P 21 0 R /Pg 16 0 R /Alt (Review note)' => '/Type /StructElem /S /Anotx /P 21 0 R /Pg 16 0 R /Alt (Review note)',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-table-tag.pdf' => fn (): string => mutatePdf(
-        createPdfUaLayoutFixture()->render(),
+        writeDocumentToString(createPdfUaLayoutFixture()),
         [
             '/Type /StructElem /S /Table /P 21 0 R /K [24 0 R 27 0 R]' => '/Type /StructElem /S /Tblex /P 21 0 R /K [24 0 R 27 0 R]',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-table-row-tag.pdf' => fn (): string => mutatePdf(
-        createPdfUaLayoutFixture()->render(),
+        writeDocumentToString(createPdfUaLayoutFixture()),
         [
             '/Type /StructElem /S /TR /P 23 0 R /K [25 0 R]' => '/Type /StructElem /S /Tz /P 23 0 R /K [25 0 R]',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-table-header-without-scope.pdf' => fn (): string => mutatePdf(
-        createPdfUaLayoutFixture()->render(),
+        writeDocumentToString(createPdfUaLayoutFixture()),
         [
             '/Scope /Column' => '/Sc0pe /Column',
         ],
     ),
     $outputDir . '/pdf-ua-1-negative-list-without-label-tag.pdf' => fn (): string => mutatePdf(
-        createPdfUaListFixture()->render(),
+        writeDocumentToString(createPdfUaListFixture()),
         [
             '/S /Lbl' => '/S /Lzl',
         ],
@@ -149,6 +148,33 @@ $fixtures = [
 foreach ($fixtures as $path => $createFixture) {
     file_put_contents($path, $createFixture());
     fwrite(STDOUT, $path . PHP_EOL);
+}
+
+function writeDocumentToString(Document $document): string
+{
+    $stream = fopen('php://temp', 'w+b');
+
+    if ($stream === false) {
+        throw new RuntimeException('Unable to open temporary stream for PDF mutation.');
+    }
+
+    try {
+        $document->writeToStream($stream);
+
+        if (rewind($stream) === false) {
+            throw new RuntimeException('Unable to rewind temporary PDF stream.');
+        }
+
+        $writtenOutput = stream_get_contents($stream);
+
+        if ($writtenOutput === false) {
+            throw new RuntimeException('Unable to read temporary PDF stream.');
+        }
+
+        return $writtenOutput;
+    } finally {
+        fclose($stream);
+    }
 }
 
 function createPdfUaBaselineFixture(): Document

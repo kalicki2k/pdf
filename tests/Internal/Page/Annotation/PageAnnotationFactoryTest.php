@@ -34,7 +34,11 @@ use Kalle\Pdf\Page\Link\LinkTarget;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\TaggedPdf\StructureTag;
+
+use function Kalle\Pdf\Tests\Support\writeDocumentToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class PageAnnotationFactoryTest extends TestCase
@@ -105,7 +109,7 @@ final class PageAnnotationFactoryTest extends TestCase
         $annotation = $factory->createTextAnnotation(new Rect(10, 20, 80, 12), 'Kommentar', 'QA', 'Note', false);
 
         self::assertStringContainsString('/StructParent 1', $annotation->render());
-        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Annot \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', $document->render());
+        self::assertMatchesRegularExpression('/\/Type \/StructElem \/S \/Annot \/P \d+ 0 R \/Pg \d+ 0 R \/Alt \(Kommentar\) \/K \[<< \/Type \/OBJR \/Obj \d+ 0 R \/Pg \d+ 0 R >>\]/', writeDocumentToString($document));
     }
 
     #[Test]

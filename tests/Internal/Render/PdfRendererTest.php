@@ -11,7 +11,11 @@ use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\PdfSerializationPlan;
 use Kalle\Pdf\Render\PdfTrailer;
 use Kalle\Pdf\Render\StreamPdfOutput;
+
+use function Kalle\Pdf\Tests\Support\writePlanToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class PdfRendererTest extends TestCase
@@ -22,7 +26,7 @@ final class PdfRendererTest extends TestCase
         $renderer = new PdfRenderer();
         $plan = $this->serializationPlan(version: 1.0);
 
-        $output = $renderer->render($plan);
+        $output = writePlanToString($renderer, $plan);
 
         $catalogOffset = strpos($output, "1 0 obj\n");
         $pagesOffset = strpos($output, "2 0 obj\n");
@@ -46,7 +50,7 @@ final class PdfRendererTest extends TestCase
         $renderer = new PdfRenderer();
         $plan = $this->serializationPlan(version: 1.4);
 
-        $output = $renderer->render($plan);
+        $output = writePlanToString($renderer, $plan);
 
         self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $output);
     }
@@ -57,7 +61,7 @@ final class PdfRendererTest extends TestCase
         $renderer = new PdfRenderer();
         $plan = $this->serializationPlan(version: 2.0, infoObjectId: null);
 
-        $output = $renderer->render($plan);
+        $output = writePlanToString($renderer, $plan);
 
         self::assertStringStartsWith("%PDF-2.0\n%\xE2\xE3\xCF\xD3\n", $output);
         self::assertStringNotContainsString('/Info 3 0 R', $output);
@@ -77,7 +81,7 @@ final class PdfRendererTest extends TestCase
             ],
             version: 1.4,
         );
-        $output = $renderer->render($plan);
+        $output = writePlanToString($renderer, $plan);
         $catalogOffset = strpos($output, "1 0 obj\n");
         $pagesOffset = strpos($output, "2 0 obj\n");
         $infoOffset = strpos($output, "3 0 obj\n");
@@ -111,7 +115,7 @@ final class PdfRendererTest extends TestCase
     {
         $renderer = new PdfRenderer();
         $plan = $this->serializationPlan(version: 1.4);
-        $expectedOutput = $renderer->render($plan);
+        $expectedOutput = writePlanToString($renderer, $plan);
         $stream = fopen('php://temp', 'w+b');
 
         self::assertNotFalse($stream);
