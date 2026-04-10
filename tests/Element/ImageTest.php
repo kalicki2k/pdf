@@ -22,6 +22,8 @@ use Kalle\Pdf\Render\StringPdfOutput;
 
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 
+use function Kalle\Pdf\Tests\Support\writeImageToString;
+
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
@@ -47,7 +49,7 @@ final class ImageTest extends TestCase
             . "stream\n"
             . "abc123\n"
             . "endstream\n",
-            $image->render(),
+            writeImageToString($image),
         );
     }
 
@@ -68,7 +70,7 @@ final class ImageTest extends TestCase
             . "stream\n"
             . "abc123\n"
             . "endstream\n",
-            $image->render(),
+            writeImageToString($image),
         );
     }
 
@@ -80,7 +82,7 @@ final class ImageTest extends TestCase
 
         $image->write($output);
 
-        self::assertSame($image->render(), $output->contents());
+        self::assertSame(writeImageToString($image), $output->contents());
     }
 
     #[Test]
@@ -96,7 +98,7 @@ final class ImageTest extends TestCase
         $image->writeEncrypted($output, $encryptor, 9);
 
         self::assertSame(
-            $encryptor->encryptStreamObject("9 0 obj\n" . $image->render() . "endobj\n", 9),
+            $encryptor->encryptStreamObject("9 0 obj\n" . writeImageToString($image) . "endobj\n", 9),
             "9 0 obj\n" . $output->contents() . "endobj\n",
         );
     }
@@ -117,9 +119,11 @@ final class ImageTest extends TestCase
 
             self::assertSame(1, $image->getWidth());
             self::assertSame(1, $image->getHeight());
-            self::assertStringContainsString('/ColorSpace /DeviceGray', $image->render());
-            self::assertStringContainsString('/Filter /FlateDecode', $image->render());
-            self::assertStringContainsString('/DecodeParms << /Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 1 >>', $image->render());
+            $renderedImage = writeImageToString($image);
+
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $renderedImage);
+            self::assertStringContainsString('/Filter /FlateDecode', $renderedImage);
+            self::assertStringContainsString('/DecodeParms << /Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 1 >>', $renderedImage);
         } finally {
             @unlink($path);
         }
@@ -208,9 +212,11 @@ final class ImageTest extends TestCase
             self::assertSame(1, $image->getWidth());
             self::assertSame(1, $image->getHeight());
             self::assertNotNull($softMask);
-            self::assertStringContainsString('/ColorSpace /DeviceRGB', $image->render(9));
-            self::assertStringContainsString('/SMask 9 0 R', $image->render(9));
-            self::assertStringContainsString('/ColorSpace /DeviceGray', $softMask->render());
+            $renderedImage = writeImageToString($image, 9);
+
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $renderedImage);
+            self::assertStringContainsString('/SMask 9 0 R', $renderedImage);
+            self::assertStringContainsString('/ColorSpace /DeviceGray', writeImageToString($softMask));
         } finally {
             @unlink($path);
         }
@@ -232,7 +238,7 @@ final class ImageTest extends TestCase
 
             self::assertSame(1, $image->getWidth());
             self::assertSame(1, $image->getHeight());
-            self::assertStringContainsString('/ColorSpace /DeviceRGB', $image->render());
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', writeImageToString($image));
             self::assertNull($image->getSoftMask());
         } finally {
             @unlink($path);
@@ -254,10 +260,12 @@ final class ImageTest extends TestCase
             $image = Image::fromFile($path);
             $softMask = $image->getSoftMask();
 
-            self::assertStringContainsString('/ColorSpace /DeviceGray', $image->render(9));
-            self::assertStringContainsString('/SMask 9 0 R', $image->render(9));
+            $renderedImage = writeImageToString($image, 9);
+
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $renderedImage);
+            self::assertStringContainsString('/SMask 9 0 R', $renderedImage);
             self::assertNotNull($softMask);
-            self::assertStringContainsString('/ColorSpace /DeviceGray', $softMask->render());
+            self::assertStringContainsString('/ColorSpace /DeviceGray', writeImageToString($softMask));
         } finally {
             @unlink($path);
         }
@@ -287,9 +295,9 @@ final class ImageTest extends TestCase
             [0 => 30, 1 => 40, 'channels' => 4, 'bits' => 8],
         );
 
-        self::assertStringContainsString('/ColorSpace /DeviceGray', $gray->render());
-        self::assertStringContainsString('/ColorSpace /DeviceRGB', $rgb->render());
-        self::assertStringContainsString('/ColorSpace /DeviceCMYK', $cmyk->render());
+        self::assertStringContainsString('/ColorSpace /DeviceGray', writeImageToString($gray));
+        self::assertStringContainsString('/ColorSpace /DeviceRGB', writeImageToString($rgb));
+        self::assertStringContainsString('/ColorSpace /DeviceCMYK', writeImageToString($cmyk));
     }
 
     #[Test]

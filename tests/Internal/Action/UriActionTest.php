@@ -6,7 +6,11 @@ namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Action\UriAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class UriActionTest extends TestCase
@@ -18,7 +22,7 @@ final class UriActionTest extends TestCase
 
         self::assertSame(
             '<< /S /URI /URI (https://example.com) >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 

@@ -7,7 +7,11 @@ namespace Kalle\Pdf\Tests\Internal\PdfType;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\Render\PdfOutput;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class ReferenceTypeTest extends TestCase
@@ -22,6 +26,6 @@ final class ReferenceTypeTest extends TestCase
             }
         };
 
-        self::assertSame('15 0 R', new ReferenceType($object)->render());
+        self::assertSame('15 0 R', writePdfTypeToString(new ReferenceType($object)));
     }
 }

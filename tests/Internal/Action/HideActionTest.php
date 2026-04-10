@@ -6,7 +6,11 @@ namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Action\HideAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class HideActionTest extends TestCase
@@ -16,7 +20,7 @@ final class HideActionTest extends TestCase
     {
         $action = new HideAction('notes_panel');
 
-        self::assertSame('<< /S /Hide /T (notes_panel) >>', $action->toPdfDictionary()->render());
+        self::assertSame('<< /S /Hide /T (notes_panel) >>', writePdfTypeToString($action->toPdfDictionary()));
     }
 
     #[Test]
@@ -24,7 +28,7 @@ final class HideActionTest extends TestCase
     {
         $action = new HideAction('notes_panel', false);
 
-        self::assertSame('<< /S /Hide /T (notes_panel) /H false >>', $action->toPdfDictionary()->render());
+        self::assertSame('<< /S /Hide /T (notes_panel) /H false >>', writePdfTypeToString($action->toPdfDictionary()));
     }
 
     #[Test]

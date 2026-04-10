@@ -10,6 +10,4 @@ use Kalle\Pdf\Render\PdfOutput;
 interface Type
 {
     public function write(PdfOutput $output, ?ObjectStringEncryptor $encryptor = null): void;
-
-    public function render(?ObjectStringEncryptor $encryptor = null): string;
 }

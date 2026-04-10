@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Action;
 
 use Kalle\Pdf\Action\ResetFormAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class ResetFormActionTest extends TestCase
@@ -15,6 +19,6 @@ final class ResetFormActionTest extends TestCase
     {
         $action = new ResetFormAction();
 
-        self::assertSame('<< /S /ResetForm >>', $action->toPdfDictionary()->render());
+        self::assertSame('<< /S /ResetForm >>', writePdfTypeToString($action->toPdfDictionary()));
     }
 }

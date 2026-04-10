@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Style;
 
 use InvalidArgumentException;
 use Kalle\Pdf\PdfType\DictionaryType;
+use Kalle\Pdf\Render\StringPdfOutput;
 
 final readonly class Opacity
 {
@@ -48,7 +49,10 @@ final readonly class Opacity
             $dictionary->add('CA', self::formatValue($this->stroke));
         }
 
-        return $dictionary->render();
+        $output = new StringPdfOutput();
+        $dictionary->write($output);
+
+        return $output->contents();
     }
 
     private static function assertUnitInterval(float $value, string $name): void

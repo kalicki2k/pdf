@@ -6,7 +6,11 @@ namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Action\GoToRemoteAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class GoToRemoteActionTest extends TestCase
@@ -18,7 +22,7 @@ final class GoToRemoteActionTest extends TestCase
 
         self::assertSame(
             '<< /S /GoToR /F (guide.pdf) /D /chapter-1 >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 

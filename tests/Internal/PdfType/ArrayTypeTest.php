@@ -32,7 +32,7 @@ final class ArrayTypeTest extends TestCase
             new BooleanType(true),
         ]);
 
-        self::assertSame('[/Type 12 3.5 true]', $value->render());
+        self::assertSame('[/Type 12 3.5 true]', writePdfTypeToString($value));
     }
 
     #[Test]
@@ -45,7 +45,7 @@ final class ArrayTypeTest extends TestCase
             new BooleanType(true),
         ]);
 
-        self::assertSame($value->render(), writePdfTypeToString($value));
+        self::assertSame('[/Type 12 3.5 true]', writePdfTypeToString($value));
     }
 
     #[Test]
@@ -56,7 +56,8 @@ final class ArrayTypeTest extends TestCase
             new StringType('Hello'),
         ]);
 
-        $rendered = $value->render(
+        $rendered = writePdfTypeToString(
+            $value,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

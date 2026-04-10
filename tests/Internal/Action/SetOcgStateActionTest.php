@@ -7,7 +7,11 @@ namespace Kalle\Pdf\Tests\Internal\Action;
 use InvalidArgumentException;
 use Kalle\Pdf\Action\SetOcgStateAction;
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class SetOcgStateActionTest extends TestCase
@@ -20,7 +24,7 @@ final class SetOcgStateActionTest extends TestCase
 
         self::assertSame(
             '<< /S /SetOCGState /State [/Toggle 7 0 R] /PreserveRB false >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 
@@ -32,7 +36,7 @@ final class SetOcgStateActionTest extends TestCase
 
         self::assertSame(
             '<< /S /SetOCGState /State [/ON 7 0 R] >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 

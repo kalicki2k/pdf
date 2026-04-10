@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Action;
 
 use Kalle\Pdf\Action\SubmitFormAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class SubmitFormActionTest extends TestCase
@@ -17,7 +21,7 @@ final class SubmitFormActionTest extends TestCase
 
         self::assertSame(
             '<< /S /SubmitForm /F (https://example.com/submit) >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 
@@ -28,7 +32,7 @@ final class SubmitFormActionTest extends TestCase
 
         self::assertSame(
             '<< /S /SubmitForm /F (https://example.com/submit) /Flags 4 >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 }

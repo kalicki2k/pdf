@@ -21,8 +21,12 @@ use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Security\EncryptionOptions;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use LogicException;
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class PdfObjectSerializerTest extends TestCase
@@ -178,7 +182,7 @@ final class PdfObjectSerializerTest extends TestCase
             protected function writeObject(PdfOutput $output): void
             {
                 $output->write(
-                    $this->id . " 0 obj\n<< /Value " . (new StringType('plain-text'))->render() . " >>\nendobj\n",
+                    $this->id . " 0 obj\n<< /Value " . writePdfTypeToString(new StringType('plain-text')) . " >>\nendobj\n",
                 );
             }
 
@@ -186,7 +190,7 @@ final class PdfObjectSerializerTest extends TestCase
             {
                 $output->write(
                     $this->id . " 0 obj\n<< /Value "
-                    . (new StringType('plain-text'))->render($encryptor)
+                    . writePdfTypeToString(new StringType('plain-text'), $encryptor)
                     . " >>\nendobj\n",
                 );
             }

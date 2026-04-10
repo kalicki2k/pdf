@@ -24,7 +24,7 @@ final class StringTypeTest extends TestCase
     {
         $value = new StringType("\\(Line 1)\n\t" . chr(8) . "\f");
 
-        self::assertSame('(\\\\\\(Line 1\\)\\n\\t\\b\\f)', $value->render());
+        self::assertSame('(\\\\\\(Line 1\\)\\n\\t\\b\\f)', writePdfTypeToString($value));
     }
 
     #[Test]
@@ -32,13 +32,13 @@ final class StringTypeTest extends TestCase
     {
         $value = new StringType('漢');
 
-        self::assertSame('<FEFF6F22>', $value->render());
+        self::assertSame('<FEFF6F22>', writePdfTypeToString($value));
     }
 
     #[Test]
     public function it_renders_windows_1252_strings_as_encrypted_hex_when_an_object_encryptor_is_active(): void
     {
-        $rendered = (new StringType(
+        $rendered = writePdfTypeToString(new StringType(
             'Hello',
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
@@ -47,7 +47,7 @@ final class StringTypeTest extends TestCase
                 ),
                 7,
             ),
-        ))->render();
+        ));
 
         self::assertMatchesRegularExpression('/^<[0-9A-F]+>$/', $rendered);
         self::assertNotSame('<48656C6C6F>', $rendered);
@@ -56,7 +56,7 @@ final class StringTypeTest extends TestCase
     #[Test]
     public function it_renders_utf16_strings_as_encrypted_hex_when_an_object_encryptor_is_active(): void
     {
-        $rendered = (new StringType(
+        $rendered = writePdfTypeToString(new StringType(
             '漢',
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
@@ -65,7 +65,7 @@ final class StringTypeTest extends TestCase
                 ),
                 7,
             ),
-        ))->render();
+        ));
 
         self::assertMatchesRegularExpression('/^<[0-9A-F]+>$/', $rendered);
         self::assertNotSame('<FEFF6F22>', $rendered);
@@ -74,7 +74,7 @@ final class StringTypeTest extends TestCase
     #[Test]
     public function it_can_render_encrypted_strings_with_an_explicit_object_string_encryptor(): void
     {
-        $rendered = (new StringType(
+        $rendered = writePdfTypeToString(new StringType(
             'Hello',
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
@@ -83,7 +83,7 @@ final class StringTypeTest extends TestCase
                 ),
                 7,
             ),
-        ))->render();
+        ));
 
         self::assertMatchesRegularExpression('/^<[0-9A-F]+>$/', $rendered);
         self::assertNotSame('<48656C6C6F>', $rendered);
@@ -92,7 +92,7 @@ final class StringTypeTest extends TestCase
     #[Test]
     public function it_renders_plain_strings_without_an_explicit_encryptor(): void
     {
-        self::assertSame('(Hello)', (new StringType('Hello'))->render());
+        self::assertSame('(Hello)', writePdfTypeToString(new StringType('Hello')));
     }
 
     #[Test]
@@ -100,6 +100,6 @@ final class StringTypeTest extends TestCase
     {
         $value = new StringType('Hello');
 
-        self::assertSame($value->render(), writePdfTypeToString($value));
+        self::assertSame('(Hello)', writePdfTypeToString($value));
     }
 }

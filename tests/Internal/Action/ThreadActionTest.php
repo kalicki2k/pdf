@@ -6,7 +6,11 @@ namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Action\ThreadAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class ThreadActionTest extends TestCase
@@ -18,7 +22,7 @@ final class ThreadActionTest extends TestCase
 
         self::assertSame(
             '<< /S /Thread /D (article-1) >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 
@@ -29,7 +33,7 @@ final class ThreadActionTest extends TestCase
 
         self::assertSame(
             '<< /S /Thread /D (article-1) /F (threads.pdf) >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 

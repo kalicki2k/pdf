@@ -8,7 +8,11 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Page\Serialization\PageDictionaryBuilder;
 use Kalle\Pdf\Profile\Profile;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class PageDictionaryBuilderTest extends TestCase
@@ -23,7 +27,7 @@ final class PageDictionaryBuilderTest extends TestCase
 
         self::assertSame(
             '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 200] /Resources 6 0 R /Contents 5 0 R >>',
-            $dictionary->render(),
+            writePdfTypeToString($dictionary),
         );
     }
 
@@ -35,7 +39,7 @@ final class PageDictionaryBuilderTest extends TestCase
         $page->addTextAnnotation(new Rect(10, 20, 16, 18), 'Kommentar', 'QA');
 
         $dictionary = (new PageDictionaryBuilder())->build($page, true);
-        $rendered = $dictionary->render();
+        $rendered = writePdfTypeToString($dictionary);
 
         self::assertStringContainsString('/StructParents 0', $rendered);
         self::assertMatchesRegularExpression('/\/Annots \[\d+ 0 R\]/', $rendered);

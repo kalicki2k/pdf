@@ -6,7 +6,11 @@ namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Action\LaunchAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class LaunchActionTest extends TestCase
@@ -18,7 +22,7 @@ final class LaunchActionTest extends TestCase
 
         self::assertSame(
             '<< /S /Launch /F (guide.pdf) >>',
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 

@@ -7,7 +7,11 @@ namespace Kalle\Pdf\Tests\Internal\Page\Annotation\Style;
 use InvalidArgumentException;
 use Kalle\Pdf\Page\Annotation\Style\AnnotationBorderStyle;
 use Kalle\Pdf\Page\Annotation\Style\AnnotationBorderStyleType;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class AnnotationBorderStyleTest extends TestCase
@@ -20,7 +24,7 @@ final class AnnotationBorderStyleTest extends TestCase
         self::assertSame(2.5, $style->width);
         self::assertSame(AnnotationBorderStyleType::SOLID, $style->style);
         self::assertSame([], $style->dashPattern);
-        self::assertSame('<< /W 2.5 /S /S >>', $style->toPdfDictionary()->render());
+        self::assertSame('<< /W 2.5 /S /S >>', writePdfTypeToString($style->toPdfDictionary()));
     }
 
     #[Test]
@@ -31,7 +35,7 @@ final class AnnotationBorderStyleTest extends TestCase
         self::assertSame(1.5, $style->width);
         self::assertSame(AnnotationBorderStyleType::DASHED, $style->style);
         self::assertSame([2.0, 1.0], $style->dashPattern);
-        self::assertSame('<< /W 1.5 /S /D /D [2 1] >>', $style->toPdfDictionary()->render());
+        self::assertSame('<< /W 1.5 /S /D /D [2 1] >>', writePdfTypeToString($style->toPdfDictionary()));
     }
 
     #[Test]
@@ -39,7 +43,7 @@ final class AnnotationBorderStyleTest extends TestCase
     {
         $style = new AnnotationBorderStyle(1.0, AnnotationBorderStyleType::DASHED);
 
-        self::assertSame('<< /W 1 /S /D >>', $style->toPdfDictionary()->render());
+        self::assertSame('<< /W 1 /S /D >>', writePdfTypeToString($style->toPdfDictionary()));
     }
 
     #[Test]

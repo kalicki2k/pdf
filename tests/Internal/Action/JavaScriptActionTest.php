@@ -6,7 +6,11 @@ namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Action\JavaScriptAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class JavaScriptActionTest extends TestCase
@@ -18,7 +22,7 @@ final class JavaScriptActionTest extends TestCase
 
         self::assertSame(
             "<< /S /JavaScript /JS (app.alert\\('Hallo'\\);) >>",
-            $action->toPdfDictionary()->render(),
+            writePdfTypeToString($action->toPdfDictionary()),
         );
     }
 

@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Support;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Encryption\Object\ObjectStringEncryptor;
+use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
@@ -62,6 +63,13 @@ function writeIndirectObjectToString(IndirectObject $object, ?ObjectStringEncryp
         }
 
         $object->writeWithStringEncryptor($output, $encryptor);
+    });
+}
+
+function writeImageToString(Image $image, ?int $softMaskObjectId = null): string
+{
+    return capturePdfOutput(static function ($stream) use ($image, $softMaskObjectId): void {
+        $image->write(new StreamPdfOutput($stream), $softMaskObjectId);
     });
 }
 

@@ -32,7 +32,7 @@ final class DictionaryTypeTest extends TestCase
             'Version' => '1.4',
         ]);
 
-        self::assertSame('<< /Type /Catalog /Count 2 /Open true /Version 1.4 >>', $dictionary->render());
+        self::assertSame('<< /Type /Catalog /Count 2 /Open true /Version 1.4 >>', writePdfTypeToString($dictionary));
     }
 
     #[Test]
@@ -41,7 +41,7 @@ final class DictionaryTypeTest extends TestCase
         $dictionary = new DictionaryType(['Type' => new NameType('Pages')])
             ->add('Count', 3);
 
-        self::assertSame('<< /Type /Pages /Count 3 >>', $dictionary->render());
+        self::assertSame('<< /Type /Pages /Count 3 >>', writePdfTypeToString($dictionary));
     }
 
     #[Test]
@@ -53,7 +53,7 @@ final class DictionaryTypeTest extends TestCase
             'Open' => new BooleanType(true),
         ]);
 
-        self::assertSame($dictionary->render(), writePdfTypeToString($dictionary));
+        self::assertSame('<< /Type /Catalog /Count 2 /Open true >>', writePdfTypeToString($dictionary));
     }
 
     #[Test]
@@ -64,7 +64,8 @@ final class DictionaryTypeTest extends TestCase
             'Value' => new StringType('Hello'),
         ]);
 
-        $rendered = $dictionary->render(
+        $rendered = writePdfTypeToString(
+            $dictionary,
             new ObjectStringEncryptor(
                 new StandardObjectEncryptor(
                     new EncryptionProfile(EncryptionAlgorithm::RC4_128, 128, 2, 3),

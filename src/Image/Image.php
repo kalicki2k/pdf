@@ -9,7 +9,6 @@ use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Render\EncryptingPdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\StringPdfOutput;
 use RuntimeException;
 
 class Image
@@ -76,14 +75,6 @@ class Image
     public function getSoftMask(): ?self
     {
         return $this->softMask;
-    }
-
-    public function render(?int $softMaskObjectId = null): string
-    {
-        $output = new StringPdfOutput();
-        $this->write($output, $softMaskObjectId);
-
-        return $output->contents();
     }
 
     public function write(PdfOutput $output, ?int $softMaskObjectId = null): void

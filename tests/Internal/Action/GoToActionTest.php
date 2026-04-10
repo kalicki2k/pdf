@@ -6,7 +6,11 @@ namespace Kalle\Pdf\Tests\Internal\Action;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Action\GoToAction;
+
+use function Kalle\Pdf\Tests\Support\writePdfTypeToString;
+
 use PHPUnit\Framework\Attributes\Test;
+
 use PHPUnit\Framework\TestCase;
 
 final class GoToActionTest extends TestCase
@@ -16,7 +20,7 @@ final class GoToActionTest extends TestCase
     {
         $action = new GoToAction('table-demo');
 
-        self::assertSame('<< /S /GoTo /D /table-demo >>', $action->toPdfDictionary()->render());
+        self::assertSame('<< /S /GoTo /D /table-demo >>', writePdfTypeToString($action->toPdfDictionary()));
     }
 
     #[Test]
