@@ -22,8 +22,6 @@ class Page extends IndirectObject
     use HandlesPageLinksAndImages;
     use HandlesPageTextLayout;
 
-    private const float DEFAULT_BOTTOM_MARGIN = 20.0;
-
     private readonly PageCollaborators $collaborators;
     private readonly Contents $contents;
     private readonly Resources $resources;
