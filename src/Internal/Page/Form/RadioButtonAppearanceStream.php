@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Form;
 
 use Kalle\Pdf\Internal\Object\StreamIndirectObject;
-use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\PdfOutput;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\NameType;

@@ -8,7 +8,7 @@ use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Internal\Object\IndirectObject;
-use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\PdfOutput;
 
 class ImageObject extends IndirectObject implements EncryptableIndirectObject
 {

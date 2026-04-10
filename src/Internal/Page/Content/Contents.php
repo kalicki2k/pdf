@@ -9,9 +9,9 @@ use Kalle\Pdf\Internal\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Internal\Page\Content\StreamLengthObject;
-use Kalle\Pdf\Render\CountingPdfOutput;
-use Kalle\Pdf\Render\EncryptingPdfOutput;
-use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\CountingPdfOutput;
+use Kalle\Pdf\Internal\Render\EncryptingPdfOutput;
+use Kalle\Pdf\Internal\Render\PdfOutput;
 use Kalle\Pdf\Types\DictionaryType;
 use Kalle\Pdf\Types\ReferenceType;
 

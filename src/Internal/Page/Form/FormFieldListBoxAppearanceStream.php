@@ -9,7 +9,7 @@ use Kalle\Pdf\Internal\Font\UnicodeFont;
 use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Object\IndirectObject;
 use Kalle\Pdf\Internal\Object\StreamIndirectObject;
-use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\PdfOutput;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Types\ArrayType;
 use Kalle\Pdf\Types\DictionaryType;

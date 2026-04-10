@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Object;
 
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
-use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\PdfOutput;
 
 interface EncryptableIndirectObject
 {

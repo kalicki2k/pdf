@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Render;
+namespace Kalle\Pdf\Tests\Internal\Render;
 
 use Kalle\Pdf\Internal\Object\IndirectObject;
-use Kalle\Pdf\Render\PdfFileStructure;
-use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\PdfSerializationPlan;
-use Kalle\Pdf\Render\PdfSerializationPlanWriter;
-use Kalle\Pdf\Render\PdfTrailer;
-use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Internal\Render\PdfFileStructure;
+use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\PdfSerializationPlan;
+use Kalle\Pdf\Internal\Render\PdfSerializationPlanWriter;
+use Kalle\Pdf\Internal\Render\PdfTrailer;
+use Kalle\Pdf\Internal\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

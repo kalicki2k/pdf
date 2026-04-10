@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Document\Serialization;
 
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Render\PdfEncryption;
-use Kalle\Pdf\Render\PdfFileStructure;
-use Kalle\Pdf\Render\PdfSerializationPlan;
-use Kalle\Pdf\Render\PdfTrailer;
+use Kalle\Pdf\Internal\Render\PdfEncryption;
+use Kalle\Pdf\Internal\Render\PdfFileStructure;
+use Kalle\Pdf\Internal\Render\PdfSerializationPlan;
+use Kalle\Pdf\Internal\Render\PdfTrailer;
 
 /**
  * @internal Builds the serializer input from the prepared document state.

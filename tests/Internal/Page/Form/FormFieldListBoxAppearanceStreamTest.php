@@ -11,8 +11,8 @@ use Kalle\Pdf\Internal\Font\StandardFont;
 use Kalle\Pdf\Internal\Font\StandardFontName;
 use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Page\Form\FormFieldListBoxAppearanceStream;
+use Kalle\Pdf\Internal\Render\StringPdfOutput;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
-use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -91,8 +91,8 @@ src/
       Annotation/
       Form/
       Link/
+    Render/
 
-  Render/
   Structure/
   Style/
   Types/
@@ -249,7 +249,7 @@ Regeln:
 Diese technischen Bausteine bleiben erhalten, sind aber jetzt konsequent intern geschnitten:
 
 - `Internal/Object`
-- `Render`
+- `Internal/Render`
 - `Types`
 - `Structure`
 
@@ -257,6 +257,7 @@ Grund:
 
 - sie sind relativ kohärent und bilden den PDF-Kern
 - `Object` ist keine Public API, sondern technische Basis fuer indirekte PDF-Objekte
+- `Render` ist keine Public API, sondern der technische Ausgabe- und Serialisierungskern
 - `Security` enthaelt jetzt die Public-Konfiguration, `Internal/Encryption` den technischen Kryptokern
 
 ## Geplante Migrationsreihenfolge

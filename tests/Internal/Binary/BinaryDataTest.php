@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Binary;
 
 use Kalle\Pdf\Internal\Binary\BinaryData;
-use Kalle\Pdf\Render\StringPdfOutput;
+use Kalle\Pdf\Internal\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

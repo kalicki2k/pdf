@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Render;
+namespace Kalle\Pdf\Tests\Internal\Render;
 
-use Kalle\Pdf\Render\CountingPdfOutput;
+use Kalle\Pdf\Internal\Render\CountingPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

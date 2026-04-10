@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Render;
+namespace Kalle\Pdf\Internal\Render;
 
 use Kalle\Pdf\Internal\Encryption\Stream\StreamingByteEncryptor;
 

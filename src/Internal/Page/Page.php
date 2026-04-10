@@ -43,7 +43,7 @@ use Kalle\Pdf\Internal\Page\Resources\ImageObject;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Page\Resources\Resources;
 use Kalle\Pdf\Internal\Page\Serialization\PageObjectRenderer;
-use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\PdfOutput;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Style\BadgeStyle;

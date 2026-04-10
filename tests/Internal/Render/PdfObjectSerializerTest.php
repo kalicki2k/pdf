@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Tests\Render;
+namespace Kalle\Pdf\Tests\Internal\Render;
 
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\Metadata\Info;
@@ -13,13 +13,13 @@ use Kalle\Pdf\Internal\Encryption\Standard\EncryptDictionary;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Internal\Object\IndirectObject;
+use Kalle\Pdf\Internal\Render\PdfObjectOffsets;
+use Kalle\Pdf\Internal\Render\PdfObjectSerializer;
+use Kalle\Pdf\Internal\Render\PdfOutput;
+use Kalle\Pdf\Internal\Render\StringPdfOutput;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;
 use Kalle\Pdf\Profile;
-use Kalle\Pdf\Render\PdfObjectOffsets;
-use Kalle\Pdf\Render\PdfObjectSerializer;
-use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Types\StringType;
 use LogicException;
 use PHPUnit\Framework\Attributes\Test;
