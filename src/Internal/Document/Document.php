@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Internal\Document;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Internal\Document\DocumentAcroFormManager;
 use Kalle\Pdf\Internal\Document\DocumentAttachmentManager;
@@ -27,6 +26,7 @@ use Kalle\Pdf\Internal\Document\Serialization\DocumentObjectCollector;
 use Kalle\Pdf\Internal\Document\Serialization\DocumentPdfWriter;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;

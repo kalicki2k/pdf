@@ -31,6 +31,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
 - PDF-Annotation-Stiltypen und das Marker-Interface liegen jetzt unter `Internal/Page/Annotation`
+- der technische Font-Kern liegt jetzt unter `Internal/Font`
 - oeffentliche Formular-Value-Types liegen weiter unter `src/Form`
 - konkrete Seitenannotationen und Formular-Widgets liegen unter `Internal/Page/Annotation` und `Internal/Page/Form`
 - `AcroForm` und `RadioButtonField` liegen unter `Model/Document/Form`
@@ -69,6 +70,7 @@ src/
       Profile/
       Standard/
       Stream/
+    Font/
     Layout/
       Table/
       Text/
@@ -85,7 +87,6 @@ src/
       Form/
     Page/
 
-  Font/
   Graphics/
   Layout/
   Object/
@@ -118,6 +119,7 @@ Beispiele:
 - Writer-Orchestrierung
 - Dokumentweite Guards und Manager
 - interner Encryption-Kern
+- interner Font-Kern
 
 Regeln:
 
@@ -193,6 +195,22 @@ Regeln:
 - oeffentliche Formular-Value-Types bleiben ausserhalb von `Internal`
 - konkrete Seitenobjekte und Builder liegen nahe am Seitenkern
 - dokumentweite Formularzustandsobjekte liegen im Modell statt im Ablaufcode
+
+### Internal/Font
+
+Hier liegt der technische Font-Kern der PDF-Erzeugung.
+
+Beispiele:
+
+- `FontRegistry` und `FontPreset` fuer eingebaute Font-Presets
+- `StandardFont`, `UnicodeFont`, `CidFont` und ihre PDF-Hilfsobjekte
+- `OpenTypeFontParser`, `UnicodeGlyphMap` und `UnicodeFontWidthUpdater`
+
+Regeln:
+
+- keine eigene Public-API-Schicht, solange `Document::registerFont(...)` mit primitiven Werten auskommt
+- Font-Presets, Parser, Width-Updates und konkrete PDF-Fontobjekte bleiben nah beieinander
+- seiten- und formularspezifische Nutzung erfolgt ueber `Internal/Page` statt ueber Root-Fassaden
 
 ### Structure
 

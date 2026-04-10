@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Font\StandardFont;
-use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Font\StandardFont;
+use Kalle\Pdf\Internal\Font\StandardFontName;
 use Kalle\Pdf\Internal\Page\Annotation\CaretAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\CircleAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\FreeTextAnnotation;

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Font\StandardFont;
 use Kalle\Pdf\Model\Page\ImageObject;
 use Kalle\Pdf\Model\Page\Resources;
 use PHPUnit\Framework\Attributes\Test;

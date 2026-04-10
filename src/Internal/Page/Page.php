@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page;
 
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Form\FormFieldFlags;
 use Kalle\Pdf\Form\FormFieldLabel;
 use Kalle\Pdf\Geometry\Position;
@@ -15,6 +14,7 @@ use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Table\Table;
 use Kalle\Pdf\Internal\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Internal\Layout\Text\PageTextElementRenderer;

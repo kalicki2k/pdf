@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Form;
 
-use Kalle\Pdf\Font\FontDefinition;
-use Kalle\Pdf\Font\UnicodeFont;
-use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
+use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Font\UnicodeFont;
+use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Layout\HorizontalAlign;
 use Kalle\Pdf\Layout\VerticalAlign;
 use Kalle\Pdf\Object\IndirectObject;

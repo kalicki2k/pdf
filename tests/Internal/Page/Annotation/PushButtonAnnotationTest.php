@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
-use Kalle\Pdf\Font\StandardFont;
-use Kalle\Pdf\Font\StandardFontName;
-use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Internal\Action\GoToAction;
 use Kalle\Pdf\Internal\Action\GoToRemoteAction;
@@ -25,6 +22,9 @@ use Kalle\Pdf\Internal\Encryption\Object\ObjectStringEncryptor;
 use Kalle\Pdf\Internal\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Internal\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Internal\Encryption\Standard\StandardSecurityHandlerData;
+use Kalle\Pdf\Internal\Font\StandardFont;
+use Kalle\Pdf\Internal\Font\StandardFontName;
+use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Page\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Internal\Page\Form\FormFieldTextAppearanceStream;
 use Kalle\Pdf\Internal\Security\EncryptionAlgorithm;

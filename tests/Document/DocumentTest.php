@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Font\OpenTypeFontParser;
-use Kalle\Pdf\Font\UnicodeFont;
 use Kalle\Pdf\Geometry\Position;
 use Kalle\Pdf\Geometry\Rect;
 use Kalle\Pdf\Internal\Document\Document;
 use Kalle\Pdf\Internal\Document\DocumentFontFactory;
 
 use function Kalle\Pdf\Internal\Document\setDocumentRandomBytesShouldThrow;
+
+use Kalle\Pdf\Internal\Font\OpenTypeFontParser;
+
+use Kalle\Pdf\Internal\Font\UnicodeFont;
 
 use Kalle\Pdf\Internal\Page\Page;
 

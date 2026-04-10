@@ -808,11 +808,13 @@ Wenn der verwendete Font das Zeichen `…` unterstuetzt, wird dieses verwendet. 
 
 ## Font-Modell
 
-Das Font-System ist zweistufig aufgebaut.
+Das Font-System liegt jetzt komplett unter `Internal\\Font`. Die oeffentliche API bleibt bei
+`Document::registerFont(...)`, waehrend Presets, Parser und konkrete PDF-Fontobjekte intern bleiben.
 
 ### FontRegistry
 
-`FontRegistry` liest die eingebetteten Fontdefinitionen aus `DefaultFontPresetDefinitions`.
+`Internal\\Font\\FontRegistry` liest die eingebetteten Fontdefinitionen aus
+`Internal\\Font\\DefaultFontPresetDefinitions`.
 
 Sie arbeitet mit echten Fontnamen als Schluessel, zum Beispiel:
 

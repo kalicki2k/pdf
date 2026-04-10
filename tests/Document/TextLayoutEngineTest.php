@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Graphics\Color;
 use Kalle\Pdf\Graphics\Opacity;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Text\TextLayoutEngine;
 use Kalle\Pdf\Internal\Layout\Text\TextLayoutFontResolver;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
