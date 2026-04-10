@@ -60,8 +60,8 @@ The public entry points live in the root namespace:
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Layout\Position;
-use Kalle\Pdf\Layout\PageSize;
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Profile;
 
 require 'vendor/autoload.php';

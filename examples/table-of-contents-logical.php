@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\Position;
-use Kalle\Pdf\Layout\TableOfContentsOptions;
-use Kalle\Pdf\Layout\TableOfContentsPlacement;
-use Kalle\Pdf\Layout\Units;
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsPlacement;
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Internal\Layout\Page\PageSize;
+use Kalle\Pdf\Internal\Layout\Page\Units;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Style\Color;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Table\Style;
 
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 

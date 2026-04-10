@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Text;
 
 use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Page\Page;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\Position;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Text\TextOptions;

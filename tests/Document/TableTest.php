@@ -6,9 +6,9 @@ namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\Position;
-use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Table\Style\CellStyle;

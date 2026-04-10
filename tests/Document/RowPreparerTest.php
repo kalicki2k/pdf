@@ -10,7 +10,7 @@ use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
 use Kalle\Pdf\Internal\Layout\Table\Layout\RowPreparer;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
-use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Table\Style\CellStyle;
 use Kalle\Pdf\Table\Style\HeaderStyle;

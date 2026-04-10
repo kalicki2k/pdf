@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\Insets;
-use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\Position;
-use Kalle\Pdf\Layout\Rect;
-use Kalle\Pdf\Layout\TextOverflow;
-use Kalle\Pdf\Layout\Units;
-use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Internal\Layout\Geometry\Insets;
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Internal\Layout\Geometry\Rect;
+use Kalle\Pdf\Internal\Layout\Page\PageSize;
+use Kalle\Pdf\Internal\Layout\Page\Units;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
+use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;

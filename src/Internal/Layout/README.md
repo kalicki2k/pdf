@@ -1,11 +1,7 @@
-# Internal Layout
+Dieses Paket enthaelt die internen Layout-Primitiven und Layout-Implementierungen.
 
-Dieses Paket enthaelt die internen Layout-Implementierungen fuer Text- und Tabellenfluss.
-
+- `Geometry` enthaelt `Position`, `Rect` und `Insets`.
+- `Page` enthaelt `PageSize` und `Units`.
+- `Value` enthaelt Alignment-, Overflow- und Bullet-Enums.
 - `Text` enthaelt Absatz- und Textframe-Layout sowie die zugehoerigen Renderer.
 - `Table` enthaelt Tabellenzustand, Vorbereitung, Pagination und Rendering.
-
-Oeffentliche Value-Types und API-Eingaben liegen bewusst ausserhalb davon:
-
-- `src/Text` fuer Textoptionen und Segmente
-- `src/Table` fuer Tabellen-Value-Types und Styles

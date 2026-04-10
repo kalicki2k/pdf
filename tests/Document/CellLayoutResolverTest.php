@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Internal\Layout\Table\Layout\CellLayoutResolver;
 use Kalle\Pdf\Internal\Layout\Table\Layout\PreparedTableCell;
-use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Table\Style\TablePadding;
 use Kalle\Pdf\Table\TableCell;
 use PHPUnit\Framework\Attributes\Test;

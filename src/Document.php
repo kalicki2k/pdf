@@ -7,12 +7,12 @@ namespace Kalle\Pdf;
 use DateTimeImmutable;
 use Kalle\Pdf\Internal\Document\Document as InternalDocument;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Page\Page as InternalPage;
 use Kalle\Pdf\Internal\PageRegistry;
 use Kalle\Pdf\Internal\Security\EncryptionOptions;
-use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\Position;
-use Kalle\Pdf\Layout\TableOfContentsOptions;
 use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Model\Document\FileSpecification;
 

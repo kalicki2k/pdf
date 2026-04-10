@@ -10,25 +10,25 @@ use Kalle\Pdf\Internal\Document\DocumentFontFactory;
 
 use function Kalle\Pdf\Internal\Document\setDocumentRandomBytesShouldThrow;
 
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsLeaderStyle;
+
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
+
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsPlacement;
+
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsStyle;
+
 use Kalle\Pdf\Internal\Font\OpenTypeFontParser;
 
 use Kalle\Pdf\Internal\Font\UnicodeFont;
 
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+
+use Kalle\Pdf\Internal\Layout\Geometry\Rect;
+
+use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Page\Page;
-
 use Kalle\Pdf\Internal\Security\EncryptionOptions;
-
-use Kalle\Pdf\Layout\PageSize;
-
-use Kalle\Pdf\Layout\Position;
-
-use Kalle\Pdf\Layout\Rect;
-
-use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
-
-use Kalle\Pdf\Layout\TableOfContentsOptions;
-use Kalle\Pdf\Layout\TableOfContentsPlacement;
-use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Model\Document\AssociatedFileRelationship;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;

@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Internal\Layout\Text;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Layout\TextOverflow;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;

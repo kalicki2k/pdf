@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Style\Color;

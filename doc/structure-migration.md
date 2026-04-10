@@ -30,7 +30,7 @@ Diese Migrationsphase ist nach den letzten Strukturschritten in diesem Zustand:
 - Vorbereitung und Serialisierung sind dort in `Preparation` und `Serialization` geschnitten
 - zentrale Kernobjekte des Dokument- und Seitenzustands liegen unter `Model/Document` und `Model/Page`
 - wiederverwendbare Bytequellen liegen jetzt komplett unter `Internal/Binary`
-- oeffentliche Geometrie-Primitiven `Position`, `Rect` und `Insets` liegen jetzt unter `Layout`
+- der fruehere Root-Block `Layout` ist aufgeloest; Geometrie, Seitenmasse, Alignment und Overflow liegen jetzt unter `Internal/Layout`, TOC-Typen unter `Internal/Document/TableOfContents`
 - oeffentliche Stil-Primitiven `Color` und `Opacity` liegen jetzt unter `Style`
 - PDF-Action-Typen liegen jetzt unter `Internal/Action`
 - PDF-Annotation-Stiltypen und das Marker-Interface liegen jetzt unter `Internal/Page/Annotation`
@@ -67,6 +67,7 @@ src/
       Form/
       Preparation/
       Serialization/
+      TableOfContents/
     Encryption/
       Crypto/
       Object/
@@ -75,8 +76,11 @@ src/
       Stream/
     Font/
     Layout/
+      Geometry/
+      Page/
       Table/
       Text/
+      Value/
     Security/
       EncryptionAlgorithm.php
       EncryptionOptions.php
@@ -89,8 +93,6 @@ src/
     Document/
       Form/
     Page/
-
-  Layout/
   Object/
   Render/
   Structure/
@@ -162,20 +164,6 @@ Regeln:
 - Public-API-Typen bleiben schlanke Value-Types ohne Seiten- oder Dokumentzustand
 - Styles und Eingabemodelle sollen von den internen Layout-Renderern getrennt bleiben
 
-### Layout
-
-Das Root-Paket `Layout` enthaelt die oeffentlichen Layout- und Geometrie-Primitiven.
-
-Beispiele:
-
-- `PageSize`, `Units`, `HorizontalAlign`, `VerticalAlign`
-- `Position`, `Rect`, `Insets`
-
-Regeln:
-
-- bleibt oeffentliche API, weil diese Typen direkt in Signaturen von `Document`, `Page`, `TextFrame` und `Table` verwendet werden
-- enthaelt nur kleine Value-Types und Layout-Helfer, keine Seiten- oder Dokumentzustandslogik
-
 ### Style
 
 Das Root-Paket `Style` enthaelt oeffentliche Stil-Primitiven und kleine Style-Value-Types.
@@ -192,18 +180,36 @@ Regeln:
 
 ### Internal/Layout
 
-Hier liegen die internen Layout-Implementierungen fuer laengeren Textfluss und Tabellen.
+Hier liegen jetzt sowohl die kleinen Layout-Primitiven als auch die internen Layout-Implementierungen.
 
 Beispiele:
 
+- `Internal/Layout/Geometry` fuer `Position`, `Rect` und `Insets`
+- `Internal/Layout/Page` fuer `PageSize` und `Units`
+- `Internal/Layout/Value` fuer `HorizontalAlign`, `VerticalAlign`, `TextOverflow` und `BulletType`
 - `Internal/Layout/Text` fuer Absatzlayout, Textboxen und Textframes
 - `Internal/Layout/Table` fuer Tabellenzustand, Zeilengruppen, Pagination und Rendering
 
 Regeln:
 
-- kennt Seiten- und Dokumentkern, aber keine oeffentlichen Fassaden
+- kennt Seiten- und Dokumentkern und liefert auch die kleinen Layout-Primitiven fuer oeffentliche Signaturen
 - kapselt Layout- und Rendering-Details fuer mehrseitige Text- und Tabellenfluesse
 - verwendet die oeffentlichen Text- und Tabellen-Value-Types als Eingaben
+
+### Internal/Document/TableOfContents
+
+Die TOC-Konfiguration liegt jetzt nahe an der Dokumentvorbereitung statt in einem generischen Layout-Paket.
+
+Beispiele:
+
+- `TableOfContentsOptions`
+- `TableOfContentsPlacement`
+- `TableOfContentsStyle`
+
+Regeln:
+
+- beschreibt dokumentweite TOC-Konfiguration und Platzierung
+- liegt beim Dokumentkern, weil diese Typen direkt in die Vorbereitungsphase greifen
 
 ### Action, Annotation und Form
 

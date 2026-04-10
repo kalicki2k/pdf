@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Table\Style\CellStyle;
 use Kalle\Pdf\Table\TableCell;
 use Kalle\Pdf\Text\TextSegment;

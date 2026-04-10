@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Internal\Document\Preparation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsLeaderStyle;
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Internal\Document\TableOfContents\TableOfContentsStyle;
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Page\Page;
-use Kalle\Pdf\Layout\PageSize;
-use Kalle\Pdf\Layout\Position;
-use Kalle\Pdf\Layout\TableOfContentsLeaderStyle;
-use Kalle\Pdf\Layout\TableOfContentsOptions;
-use Kalle\Pdf\Layout\TableOfContentsStyle;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Structure\StructureTag;
 use Kalle\Pdf\Text\ParagraphOptions;

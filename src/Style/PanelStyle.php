@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Layout\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 

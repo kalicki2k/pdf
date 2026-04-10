@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Tests\Layout;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Document\Document;
-use Kalle\Pdf\Layout\BulletType;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\Position;
-use Kalle\Pdf\Layout\TextOverflow;
+use Kalle\Pdf\Internal\Layout\Geometry\Position;
+use Kalle\Pdf\Internal\Layout\Value\BulletType;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Navigation\LinkTarget;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructureTag;

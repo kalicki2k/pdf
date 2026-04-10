@@ -15,7 +15,7 @@ use Kalle\Pdf\Internal\Layout\Table\Rendering\TableGroupRenderer;
 use Kalle\Pdf\Internal\Layout\Table\Rendering\TableRenderContext;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableTextMetrics;
-use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Structure\StructElem;
 use Kalle\Pdf\Structure\StructureTag;

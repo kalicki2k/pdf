@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Table\Style\TableBorder;
 use Kalle\Pdf\Table\Style\TablePadding;

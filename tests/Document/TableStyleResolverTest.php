@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedBorderSide;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
-use Kalle\Pdf\Layout\HorizontalAlign;
-use Kalle\Pdf\Layout\VerticalAlign;
+use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
+use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\Table\Style\CellStyle;
