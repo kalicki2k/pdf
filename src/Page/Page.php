@@ -6,33 +6,28 @@ namespace Kalle\Pdf\Page;
 
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Layout\Text\PageTextElementRenderer;
 use Kalle\Pdf\Object\IndirectObject;
-use Kalle\Pdf\Object\StreamLengthObject;
-use Kalle\Pdf\Page\Annotation\PageAnnotation;
 use Kalle\Pdf\Page\Annotation\PageAnnotations;
 use Kalle\Pdf\Page\Content\Contents;
-use Kalle\Pdf\Page\Content\Instruction\ContentInstruction;
 use Kalle\Pdf\Page\Content\PageComponents;
 use Kalle\Pdf\Page\Content\PageGraphics;
 use Kalle\Pdf\Page\Content\PageImages;
 use Kalle\Pdf\Page\Content\PageLayers;
 use Kalle\Pdf\Page\Content\PageLinks;
 use Kalle\Pdf\Page\Form\PageForms;
-use Kalle\Pdf\Page\Resources\ImageObject;
 use Kalle\Pdf\Page\Resources\PageFonts;
 use Kalle\Pdf\Page\Resources\Resources;
 use Kalle\Pdf\Page\Serialization\PageObjectRenderer;
 use Kalle\Pdf\Render\PdfOutput;
-use Kalle\Pdf\Style\Opacity;
 
 class Page extends IndirectObject
 {
     use HandlesPageAnnotations;
     use HandlesPageBuilders;
     use HandlesPageComponents;
+    use HandlesPageContentsAndResources;
     use HandlesPageForms;
     use HandlesPageGraphics;
     use HandlesPageLinksAndImages;
@@ -86,60 +81,6 @@ class Page extends IndirectObject
     public function getDocument(): Document
     {
         return $this->document;
-    }
-
-    public function getResources(): Resources
-    {
-        return $this->resources;
-    }
-
-    public function getContents(): Contents
-    {
-        return $this->contents;
-    }
-
-    public function prepareContentsLengthObject(): StreamLengthObject
-    {
-        $lengthObject = $this->contents->getLengthObject();
-
-        if ($lengthObject !== null) {
-            return $lengthObject;
-        }
-
-        return $this->contents->prepareLengthObject($this->document->getUniqObjectId());
-    }
-
-    public function addContentElement(ContentInstruction $element): void
-    {
-        $this->contents->addElement($element);
-    }
-
-    public function addFontResource(FontDefinition $font): string
-    {
-        return $this->resources->addFont($font);
-    }
-
-    public function addImageResource(ImageObject $image): string
-    {
-        return $this->resources->addImage($image);
-    }
-
-    public function addPropertyResource(OptionalContentGroup $group): string
-    {
-        return $this->resources->addProperty($group);
-    }
-
-    public function addOpacityResource(Opacity $opacity): string
-    {
-        return $this->resources->addOpacity($opacity);
-    }
-
-    /**
-     * @return list<IndirectObject&PageAnnotation>
-     */
-    public function getAnnotations(): array
-    {
-        return $this->collaborators->existingAnnotations()?->all() ?? [];
     }
 
     private function pageFonts(): PageFonts
