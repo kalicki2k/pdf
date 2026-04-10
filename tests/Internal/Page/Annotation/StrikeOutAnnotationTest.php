@@ -8,7 +8,7 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Page\Annotation\PopupAnnotation;
 use Kalle\Pdf\Page\Annotation\StrikeOutAnnotation;
 use Kalle\Pdf\Page\Annotation\TextAnnotationAppearanceStream;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

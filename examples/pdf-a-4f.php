@@ -8,7 +8,7 @@ use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Layout\Page\Units;
 use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 
 require __DIR__ . '/../vendor/autoload.php';

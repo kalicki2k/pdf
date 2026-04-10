@@ -15,7 +15,7 @@ use Kalle\Pdf\Layout\Table\Style\TablePadding;
 use Kalle\Pdf\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 

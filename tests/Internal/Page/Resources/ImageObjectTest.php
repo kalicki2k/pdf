@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Tests\Internal\Page\Resources;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Image;
+use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Page\Resources\ImageObject;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;

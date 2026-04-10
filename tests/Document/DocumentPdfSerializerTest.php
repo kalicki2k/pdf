@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Serialization\DocumentPdfSerializer;
 use Kalle\Pdf\Document\Serialization\DocumentSerializationPlanBuilder;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Render\PdfRenderer;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;

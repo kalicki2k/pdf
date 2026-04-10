@@ -11,7 +11,7 @@ use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Page\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Page\Form\FormFieldFlags;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;

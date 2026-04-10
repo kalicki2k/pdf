@@ -19,7 +19,7 @@ use Kalle\Pdf\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

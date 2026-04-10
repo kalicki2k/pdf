@@ -13,7 +13,7 @@ use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page\Annotation\TextFieldAnnotation;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

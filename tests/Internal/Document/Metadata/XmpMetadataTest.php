@@ -9,7 +9,7 @@ use Kalle\Pdf\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Render\StringPdfOutput;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use PHPUnit\Framework\Attributes\Test;

@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Tests\Internal\Document\Structure;
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Structure\Pages;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

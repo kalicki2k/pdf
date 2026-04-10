@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Tests\Layout;
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Layout\Geometry\Position;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Security\EncryptionOptions;
 use PHPUnit\Framework\Attributes\Test;

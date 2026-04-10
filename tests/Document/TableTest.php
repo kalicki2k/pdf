@@ -20,7 +20,7 @@ use Kalle\Pdf\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;

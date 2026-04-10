@@ -18,7 +18,7 @@ use Kalle\Pdf\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Layout\Table\Support\TableTextMetrics;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

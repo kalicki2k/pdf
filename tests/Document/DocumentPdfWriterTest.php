@@ -8,7 +8,7 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Serialization\DocumentPdfWriter;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Page;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Render\StringPdfOutput;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

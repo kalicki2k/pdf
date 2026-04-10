@@ -15,7 +15,7 @@ use Kalle\Pdf\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Layout\Table\Support\TableTextMetrics;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

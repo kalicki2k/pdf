@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page\Content;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Image;
+use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Content\ImageOptions;

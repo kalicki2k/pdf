@@ -8,7 +8,7 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Form\RadioButtonField;
 use Kalle\Pdf\Page\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Page\Form\RadioButtonAppearanceStream;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

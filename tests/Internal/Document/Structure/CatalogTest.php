@@ -15,7 +15,7 @@ use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Page;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;

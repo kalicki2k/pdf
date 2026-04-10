@@ -26,7 +26,7 @@ use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Page\Annotation\PushButtonAnnotation;
 use Kalle\Pdf\Page\Form\FormFieldTextAppearanceStream;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;

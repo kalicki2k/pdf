@@ -10,7 +10,7 @@ use Kalle\Pdf\Layout\Text\PageTextLineRenderer;
 use Kalle\Pdf\Layout\Text\TextLayoutEngine;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Page\Resources\PageFonts;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

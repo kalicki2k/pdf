@@ -31,7 +31,7 @@ use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Page;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;

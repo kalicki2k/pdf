@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Layout\Table\Rendering\CellRenderResult;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

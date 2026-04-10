@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Support;
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 
 trait CreatesPdfUaTestDocument
 {

@@ -16,7 +16,7 @@ use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Layout\Value\VerticalAlign;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Link\LinkTarget;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 
 require __DIR__ . '/../vendor/autoload.php';

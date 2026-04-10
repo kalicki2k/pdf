@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf;
+namespace Kalle\Pdf\Image;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Binary\BinaryData;

@@ -27,7 +27,7 @@ use Kalle\Pdf\Page\Form\FormWidgetFactory;
 use Kalle\Pdf\Page\Form\FormWidgetFactoryContext;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

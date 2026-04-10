@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Page\Annotation\CaretAnnotation;
 use Kalle\Pdf\Page\Annotation\TextAnnotationAppearanceStream;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

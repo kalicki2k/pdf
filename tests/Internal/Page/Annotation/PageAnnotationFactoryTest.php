@@ -32,7 +32,7 @@ use Kalle\Pdf\Page\Annotation\StrikeOutAnnotation;
 use Kalle\Pdf\Page\Annotation\TextAnnotation;
 use Kalle\Pdf\Page\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Page\Link\LinkTarget;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

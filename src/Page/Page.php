@@ -8,6 +8,7 @@ use Kalle\Pdf\Action\ButtonAction;
 use Kalle\Pdf\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Layout\Table\Table as LayoutTable;

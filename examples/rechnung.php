@@ -18,7 +18,7 @@ use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 
 require __DIR__ . '/../vendor/autoload.php';

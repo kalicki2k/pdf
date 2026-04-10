@@ -50,7 +50,7 @@ Fuer `PDF/UA-1` gibt es aktuell eine validierte Baseline fuer die heute freigege
 Das Profil ist verfuegbar ueber:
 
 ```php
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 
 $profile = Profile::pdfUa1();
 ```

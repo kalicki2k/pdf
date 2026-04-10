@@ -11,7 +11,7 @@ use Kalle\Pdf\Layout\Text\Input\TextBoxOptions;
 use Kalle\Pdf\Layout\Text\PageParagraphRenderer;
 use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Page\Resources\PageFonts;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

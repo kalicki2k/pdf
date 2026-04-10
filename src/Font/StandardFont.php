@@ -10,7 +10,7 @@ use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\PdfType\PdfStringEscaper;
 use Kalle\Pdf\PdfType\ReferenceType;
-use Kalle\Pdf\PdfVersion;
+use Kalle\Pdf\Profile\PdfVersion;
 
 final class StandardFont extends DictionaryIndirectObject implements FontDefinition
 {

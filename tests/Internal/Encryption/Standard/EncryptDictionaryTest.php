@@ -9,7 +9,7 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Profile\EncryptionVersionResolver;
 use Kalle\Pdf\Encryption\Standard\EncryptDictionary;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
 use Kalle\Pdf\Security\EncryptionOptions;
 use Kalle\Pdf\Security\EncryptionPermissions;

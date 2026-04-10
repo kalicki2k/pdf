@@ -14,11 +14,13 @@ use Kalle\Pdf\Encryption\Object\StandardObjectEncryptor;
 use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
-use Kalle\Pdf\Image;
-use Kalle\Pdf\Render\StringPdfOutput;
-use Kalle\Pdf\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Image\Image;
 
-use function Kalle\Pdf\setImageGzcompressFailure;
+use function Kalle\Pdf\Image\setImageGzcompressFailure;
+
+use Kalle\Pdf\Render\StringPdfOutput;
+
+use Kalle\Pdf\Security\EncryptionAlgorithm;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

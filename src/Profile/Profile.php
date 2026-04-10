@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf;
+namespace Kalle\Pdf\Profile;
 
 use InvalidArgumentException;
 

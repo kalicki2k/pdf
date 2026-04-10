@@ -14,7 +14,7 @@ use Kalle\Pdf\Page\Content\PageGraphics;
 use Kalle\Pdf\Page\Content\PageLinks;
 use Kalle\Pdf\Page\Content\PageMarkedContentIds;
 use Kalle\Pdf\Page\Resources\PageFonts;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Tests\Support\CreatesPdfUaTestDocument;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

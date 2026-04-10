@@ -39,6 +39,7 @@ use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Object\IndirectObject;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Render\AtomicFilePdfOutput;
 use Kalle\Pdf\Render\PdfOutput;
 use Kalle\Pdf\Render\StreamPdfOutput;

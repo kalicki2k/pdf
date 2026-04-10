@@ -8,7 +8,7 @@ use Kalle\Pdf\Document;
 use Kalle\Pdf\Layout\Table\Rendering\CellBoxRenderer;
 use Kalle\Pdf\Layout\Table\Style\TableBorder;
 use Kalle\Pdf\Layout\Table\Support\TableStyleResolver;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

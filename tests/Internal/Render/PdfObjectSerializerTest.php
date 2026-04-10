@@ -14,7 +14,7 @@ use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Object\EncryptableIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\PdfType\StringType;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Render\PdfObjectOffsets;
 use Kalle\Pdf\Render\PdfObjectSerializer;
 use Kalle\Pdf\Render\PdfOutput;

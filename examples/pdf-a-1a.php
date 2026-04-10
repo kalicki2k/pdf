@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Image;
+use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Page\PageSize;
 use Kalle\Pdf\Layout\Page\Units;
@@ -12,7 +12,7 @@ use Kalle\Pdf\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Page\Content\ImageOptions;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\TaggedPdf\StructureTag;
 

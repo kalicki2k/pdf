@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Tests\Layout;
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Page\Serialization\PageDictionaryBuilder;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

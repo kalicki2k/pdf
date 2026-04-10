@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Tests\Internal\Document\Metadata;
 
 use Kalle\Pdf\Document;
 use Kalle\Pdf\Document\Metadata\Info;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

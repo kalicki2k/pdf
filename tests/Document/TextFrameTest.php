@@ -14,7 +14,7 @@ use Kalle\Pdf\Layout\Value\BulletType;
 use Kalle\Pdf\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Layout\Value\TextOverflow;
 use Kalle\Pdf\Page\Link\LinkTarget;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 use Kalle\Pdf\Style\Color;
 use Kalle\Pdf\Style\Opacity;
 use Kalle\Pdf\TaggedPdf\StructureTag;

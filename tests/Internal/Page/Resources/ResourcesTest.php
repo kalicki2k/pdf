@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\OptionalContent\OptionalContentGroup;
 use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\StandardFont;
-use Kalle\Pdf\Image;
+use Kalle\Pdf\Image\Image;
 use Kalle\Pdf\Page\Resources\ImageObject;
 use Kalle\Pdf\Page\Resources\Resources;
 use Kalle\Pdf\Style\Opacity;

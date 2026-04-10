@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Document\Preparation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Page;
-use Kalle\Pdf\Profile;
+use Kalle\Pdf\Profile\Profile;
 
 /**
  * @internal Applies document render-time lifecycle steps before the PDF is serialized.
