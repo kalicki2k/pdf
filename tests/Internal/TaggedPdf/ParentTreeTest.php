@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\TaggedPdf;
 
-use Kalle\Pdf\Internal\TaggedPdf\ParentTree;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\ParentTree;
+use Kalle\Pdf\TaggedPdf\StructElem;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

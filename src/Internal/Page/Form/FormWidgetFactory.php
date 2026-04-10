@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Form;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Form\AcroForm;
 use Kalle\Pdf\Internal\Document\Form\RadioButtonField;
-use Kalle\Pdf\Internal\Font\FontDefinition;
-use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
@@ -22,9 +22,9 @@ use Kalle\Pdf\Internal\Page\Annotation\RadioButtonWidgetAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\SignatureFieldAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
-use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\Style\Color;
 
 /**
  * Builds form widgets so Page can stay focused on the public API surface.

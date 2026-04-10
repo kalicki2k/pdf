@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Font;
 
-use Kalle\Pdf\Internal\Font\FontDescriptor;
-use Kalle\Pdf\Internal\Font\FontFileStream;
+use Kalle\Pdf\Font\FontDescriptor;
+use Kalle\Pdf\Font\FontFileStream;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

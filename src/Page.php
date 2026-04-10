@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf;
 
+use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
-use Kalle\Pdf\Internal\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Table\Table as InternalTable;
@@ -47,12 +47,12 @@ use Kalle\Pdf\Internal\Page\Resources\ImageObject;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Internal\Page\Resources\Resources;
 use Kalle\Pdf\Internal\Page\Serialization\PageObjectRenderer;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Render\PdfOutput;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 class Page extends IndirectObject
 {

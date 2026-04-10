@@ -7,8 +7,8 @@ namespace Kalle\Pdf\Tests\Internal\Page\Content\Style;
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Page\Content\Style\PanelStyle;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\Style\Opacity;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -15,8 +15,8 @@ use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Internal\Layout\Table\Support\TableStyleResolver;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\TaggedPdf\StructElem;
 
 /**
  * @internal Renders table row-group segments and tracks rowspan continuations across page breaks.

@@ -8,7 +8,7 @@ use Kalle\Pdf\Internal\Layout\Table\Style\FooterStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\HeaderStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\RowStyle;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\StructElem;
 
 /**
  * @internal Bundles shared table render dependencies for prepared row-group rendering.

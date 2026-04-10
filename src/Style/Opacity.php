@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Style;
+namespace Kalle\Pdf\Style;
 
 use InvalidArgumentException;
 use Kalle\Pdf\PdfType\DictionaryType;

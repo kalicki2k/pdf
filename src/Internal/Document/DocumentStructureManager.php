@@ -6,11 +6,11 @@ namespace Kalle\Pdf\Internal\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\TaggedPdf\ParentTree;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
-use Kalle\Pdf\Internal\TaggedPdf\StructTreeRoot;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\TaggedPdf\ParentTree;
+use Kalle\Pdf\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\StructTreeRoot;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**
  * @internal Manages document structure initialization and StructElem registration.

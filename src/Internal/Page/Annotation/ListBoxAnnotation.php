@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Internal\Page\Annotation;
 
 use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormFieldListBoxAppearanceStream;
-use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\PdfType\ArrayType;
@@ -14,6 +13,7 @@ use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\PdfType\StringType;
+use Kalle\Pdf\Style\Color;
 
 final class ListBoxAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {

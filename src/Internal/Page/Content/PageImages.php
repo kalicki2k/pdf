@@ -9,8 +9,8 @@ use Kalle\Pdf\Image;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Page\Content\ImageOptions;
 use Kalle\Pdf\Internal\Page\Content\Instruction\DrawImageInstruction;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**
  * @internal Coordinates image rendering for a page.

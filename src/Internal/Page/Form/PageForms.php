@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Page\Form;
 
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Action\SetOcgStateAction;
-use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
@@ -16,11 +16,11 @@ use Kalle\Pdf\Internal\Page\Annotation\StructParentAwareAnnotation;
 use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormFieldLabel;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**
  * @internal Coordinates form widgets and accessibility bindings for a page.

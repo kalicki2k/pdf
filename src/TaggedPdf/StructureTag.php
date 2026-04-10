@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\TaggedPdf;
+namespace Kalle\Pdf\TaggedPdf;
 
 enum StructureTag: string
 {

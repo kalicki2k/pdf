@@ -12,8 +12,8 @@ use Kalle\Pdf\Internal\Layout\Table\Support\ResolvedTableCellStyle;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\Style\Opacity;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -8,10 +8,10 @@ use Kalle\Pdf\Internal\Layout\Geometry\Insets;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**
  * Controls how text is rendered inside a fixed rectangle.

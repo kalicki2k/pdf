@@ -6,7 +6,7 @@ namespace Kalle\Pdf\Internal\Layout\Table\Definition;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Style\Color;
 
 final readonly class TableCaption
 {

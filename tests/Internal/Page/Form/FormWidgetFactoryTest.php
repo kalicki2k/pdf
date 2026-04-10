@@ -6,12 +6,12 @@ namespace Kalle\Pdf\Tests\Internal\Page\Form;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontName;
+use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Action\ButtonAction;
 use Kalle\Pdf\Internal\Document\Form\AcroForm;
 use Kalle\Pdf\Internal\Document\Form\RadioButtonField;
-use Kalle\Pdf\Internal\Font\StandardFont;
-use Kalle\Pdf\Internal\Font\StandardFontName;
-use Kalle\Pdf\Internal\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Page\Annotation\CheckboxAnnotation;
@@ -24,11 +24,11 @@ use Kalle\Pdf\Internal\Page\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Internal\Page\Form\FormFieldFlags;
 use Kalle\Pdf\Internal\Page\Form\FormWidgetFactory;
 use Kalle\Pdf\Internal\Page\Form\FormWidgetFactoryContext;
-use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -12,9 +12,9 @@ use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Page\Content\ImageOptions;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 require __DIR__ . '/../vendor/autoload.php';
 

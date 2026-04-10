@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\PdfType\ArrayType;
@@ -13,6 +12,7 @@ use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\NameType;
 use Kalle\Pdf\PdfType\ReferenceType;
 use Kalle\Pdf\PdfType\StringType;
+use Kalle\Pdf\Style\Color;
 
 final class InkAnnotation extends DictionaryIndirectObject implements PageAnnotation, StructParentAwareAnnotation
 {

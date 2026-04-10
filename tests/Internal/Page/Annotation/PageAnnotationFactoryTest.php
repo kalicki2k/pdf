@@ -6,11 +6,11 @@ namespace Kalle\Pdf\Tests\Internal\Page\Annotation;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
+use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Internal\Document\Attachment\EmbeddedFileStream;
 use Kalle\Pdf\Internal\Document\Attachment\FileSpecification;
-use Kalle\Pdf\Internal\Font\FontDefinition;
-use Kalle\Pdf\Internal\Font\StandardFont;
-use Kalle\Pdf\Internal\Font\StandardFontName;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Page\Annotation\CaretAnnotation;
@@ -31,9 +31,9 @@ use Kalle\Pdf\Internal\Page\Annotation\StrikeOutAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\UnderlineAnnotation;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Page;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

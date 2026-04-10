@@ -11,9 +11,9 @@ use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Page\Annotation\FreeTextAnnotation;
 use Kalle\Pdf\Internal\Page\Annotation\TextAnnotationAppearanceStream;
-use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
+use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

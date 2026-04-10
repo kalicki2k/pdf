@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Font;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Font\OpenTypeFontParser;
+use Kalle\Pdf\Font\OpenTypeFontParser;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

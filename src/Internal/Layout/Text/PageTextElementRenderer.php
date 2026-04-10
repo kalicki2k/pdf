@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Layout\Text;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
@@ -15,10 +15,10 @@ use Kalle\Pdf\Internal\Page\Content\PageLinks;
 use Kalle\Pdf\Internal\Page\Content\PageMarkedContentIds;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**
  * @internal Renders a single text run onto a page.

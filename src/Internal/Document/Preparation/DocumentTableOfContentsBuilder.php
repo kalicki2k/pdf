@@ -14,8 +14,8 @@ use Kalle\Pdf\Internal\Layout\Page\PageSize;
 use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**
  * @internal Builds and inserts the table of contents pages for a document.

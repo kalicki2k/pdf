@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Font;
 
-use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Font\FontDefinition;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

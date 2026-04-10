@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Internal\Style;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Internal\Style\Color;
+use Kalle\Pdf\Style\Color;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

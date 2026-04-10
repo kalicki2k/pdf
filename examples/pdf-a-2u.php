@@ -9,8 +9,8 @@ use Kalle\Pdf\Internal\Layout\Page\Units;
 use Kalle\Pdf\Internal\Layout\Text\Input\ParagraphOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
-use Kalle\Pdf\Internal\Style\Color;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
 
 require __DIR__ . '/../vendor/autoload.php';
 

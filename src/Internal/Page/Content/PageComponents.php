@@ -18,8 +18,8 @@ use Kalle\Pdf\Internal\Page\Content\Style\CalloutStyle;
 use Kalle\Pdf\Internal\Page\Content\Style\PanelStyle;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**
  * @internal Coordinates high-level page components such as badges, panels and callouts.

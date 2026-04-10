@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\TaggedPdf;
 
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -12,9 +12,9 @@ use Kalle\Pdf\Encryption\Profile\EncryptionProfile;
 use Kalle\Pdf\Encryption\Standard\StandardSecurityHandlerData;
 use Kalle\Pdf\Internal\Page\Annotation\LinkAnnotation;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
 use Kalle\Pdf\Profile;
 use Kalle\Pdf\Security\EncryptionAlgorithm;
+use Kalle\Pdf\TaggedPdf\StructElem;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -6,16 +6,16 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Text\TextLayoutEngine;
 use Kalle\Pdf\Internal\Layout\Text\TextLayoutFontResolver;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
 use Kalle\Pdf\Internal\Page\Link\LinkTarget;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\Style\Opacity;
 use Kalle\Pdf\Profile;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

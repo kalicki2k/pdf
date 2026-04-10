@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Resources;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Internal\Document\OptionalContent\OptionalContentGroup;
-use Kalle\Pdf\Internal\Font\FontDefinition;
-use Kalle\Pdf\Internal\Style\Opacity;
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\PdfType\DictionaryType;
 use Kalle\Pdf\PdfType\ReferenceType;
+use Kalle\Pdf\Style\Opacity;
 
 class Resources extends DictionaryIndirectObject
 {

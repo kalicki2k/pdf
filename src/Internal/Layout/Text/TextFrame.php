@@ -15,11 +15,11 @@ use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\BulletType;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\TextOverflow;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\Style\Opacity;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
+use Kalle\Pdf\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 final class TextFrame
 {

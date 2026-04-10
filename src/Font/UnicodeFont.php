@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Internal\Font;
+namespace Kalle\Pdf\Font;
 
 use Kalle\Pdf\Object\DictionaryIndirectObject;
 use Kalle\Pdf\PdfType\ArrayType;

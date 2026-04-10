@@ -7,17 +7,17 @@ namespace Kalle\Pdf\Internal\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Binary\BinaryData;
 use Kalle\Pdf\Document;
-use Kalle\Pdf\Internal\Font\CidFont;
-use Kalle\Pdf\Internal\Font\CidToGidMap;
-use Kalle\Pdf\Internal\Font\EncodingDictionary;
-use Kalle\Pdf\Internal\Font\FontDescriptor;
-use Kalle\Pdf\Internal\Font\FontFileStream;
-use Kalle\Pdf\Internal\Font\FontRegistry;
-use Kalle\Pdf\Internal\Font\OpenTypeFontParser;
-use Kalle\Pdf\Internal\Font\StandardFont;
-use Kalle\Pdf\Internal\Font\ToUnicodeCMap;
-use Kalle\Pdf\Internal\Font\UnicodeFont;
-use Kalle\Pdf\Internal\Font\UnicodeGlyphMap;
+use Kalle\Pdf\Font\CidFont;
+use Kalle\Pdf\Font\CidToGidMap;
+use Kalle\Pdf\Font\EncodingDictionary;
+use Kalle\Pdf\Font\FontDescriptor;
+use Kalle\Pdf\Font\FontFileStream;
+use Kalle\Pdf\Font\FontRegistry;
+use Kalle\Pdf\Font\OpenTypeFontParser;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\ToUnicodeCMap;
+use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Font\UnicodeGlyphMap;
 use RuntimeException;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Internal\Page\Annotation;
 
 use Closure;
-use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
 use Kalle\Pdf\Page;
 

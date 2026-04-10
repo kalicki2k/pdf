@@ -14,8 +14,8 @@ use Kalle\Pdf\Internal\Layout\Table\Style\TablePadding;
 use Kalle\Pdf\Internal\Layout\Table\Style\TableStyle;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Internal\Style\Color;
-use Kalle\Pdf\Internal\Style\Opacity;
+use Kalle\Pdf\Style\Color;
+use Kalle\Pdf\Style\Opacity;
 
 final class TableStyleResolver
 {

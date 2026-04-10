@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Internal\Font;
 
-use Kalle\Pdf\Internal\Font\CidFont;
-use Kalle\Pdf\Internal\Font\FontDescriptor;
-use Kalle\Pdf\Internal\Font\FontFileStream;
-use Kalle\Pdf\Internal\Font\ToUnicodeCMap;
-use Kalle\Pdf\Internal\Font\UnicodeFont;
-use Kalle\Pdf\Internal\Font\UnicodeGlyphMap;
+use Kalle\Pdf\Font\CidFont;
+use Kalle\Pdf\Font\FontDescriptor;
+use Kalle\Pdf\Font\FontFileStream;
+use Kalle\Pdf\Font\ToUnicodeCMap;
+use Kalle\Pdf\Font\UnicodeFont;
+use Kalle\Pdf\Font\UnicodeGlyphMap;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

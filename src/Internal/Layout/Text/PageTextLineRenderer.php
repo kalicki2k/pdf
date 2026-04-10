@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Internal\Layout\Text;
 
-use Kalle\Pdf\Internal\Font\FontDefinition;
+use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Internal\Layout\Geometry\Position;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextOptions;
 use Kalle\Pdf\Internal\Layout\Text\Input\TextSegment;
 use Kalle\Pdf\Internal\Layout\Value\HorizontalAlign;
 use Kalle\Pdf\Internal\Page\Resources\PageFonts;
-use Kalle\Pdf\Internal\TaggedPdf\StructElem;
-use Kalle\Pdf\Internal\TaggedPdf\StructureTag;
 use Kalle\Pdf\Page;
+use Kalle\Pdf\TaggedPdf\StructElem;
+use Kalle\Pdf\TaggedPdf\StructureTag;
 
 /**
  * @internal Renders already prepared text lines onto a page.

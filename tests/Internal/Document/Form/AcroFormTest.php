@@ -6,10 +6,10 @@ namespace Kalle\Pdf\Tests\Internal\Document\Form;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document;
+use Kalle\Pdf\Font\FontDefinition;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontName;
 use Kalle\Pdf\Internal\Document\Form\AcroForm;
-use Kalle\Pdf\Internal\Font\FontDefinition;
-use Kalle\Pdf\Internal\Font\StandardFont;
-use Kalle\Pdf\Internal\Font\StandardFontName;
 use Kalle\Pdf\Internal\Layout\Geometry\Rect;
 use Kalle\Pdf\Internal\Page\Annotation\TextFieldAnnotation;
 use Kalle\Pdf\Object\IndirectObject;
