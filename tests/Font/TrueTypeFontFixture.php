@@ -196,6 +196,62 @@ final class TrueTypeFontFixture
         ]);
     }
 
+    public static function minimalBengaliGsubTrueTypeFontBytes(): string
+    {
+        $head = self::buildSubsettableHeadTable();
+        $hhea = self::buildBengaliHheaTable();
+        $maxp = self::buildBengaliMaxpTable();
+        $hmtx = self::buildBengaliHmtxTable();
+        $name = self::buildNameTable();
+        $post = self::buildPostTable();
+        $cmap = self::buildBengaliCmapTable();
+        [$glyf, $loca] = self::buildBengaliGlyphTables();
+        $gsub = self::buildBengaliGsubTable();
+        $gpos = self::buildBengaliGposTable();
+
+        return self::buildSfnt("\x00\x01\x00\x00", [
+            'GPOS' => $gpos,
+            'GSUB' => $gsub,
+            'cmap' => $cmap,
+            'glyf' => $glyf,
+            'head' => $head,
+            'hhea' => $hhea,
+            'hmtx' => $hmtx,
+            'loca' => $loca,
+            'maxp' => $maxp,
+            'name' => $name,
+            'post' => $post,
+        ]);
+    }
+
+    public static function minimalGujaratiGsubTrueTypeFontBytes(): string
+    {
+        $head = self::buildSubsettableHeadTable();
+        $hhea = self::buildGujaratiHheaTable();
+        $maxp = self::buildGujaratiMaxpTable();
+        $hmtx = self::buildGujaratiHmtxTable();
+        $name = self::buildNameTable();
+        $post = self::buildPostTable();
+        $cmap = self::buildGujaratiCmapTable();
+        [$glyf, $loca] = self::buildGujaratiGlyphTables();
+        $gsub = self::buildGujaratiGsubTable();
+        $gpos = self::buildGujaratiGposTable();
+
+        return self::buildSfnt("\x00\x01\x00\x00", [
+            'GPOS' => $gpos,
+            'GSUB' => $gsub,
+            'cmap' => $cmap,
+            'glyf' => $glyf,
+            'head' => $head,
+            'hhea' => $hhea,
+            'hmtx' => $hmtx,
+            'loca' => $loca,
+            'maxp' => $maxp,
+            'name' => $name,
+            'post' => $post,
+        ]);
+    }
+
     private static function minimalSfntFontBytes(string $signature): string
     {
         $head = self::buildHeadTable();
@@ -408,6 +464,20 @@ final class TrueTypeFontFixture
         return substr_replace($table, pack('n', 10), 34, 2);
     }
 
+    private static function buildBengaliHheaTable(): string
+    {
+        $table = self::buildHheaTable();
+
+        return substr_replace($table, pack('n', 10), 34, 2);
+    }
+
+    private static function buildGujaratiHheaTable(): string
+    {
+        $table = self::buildHheaTable();
+
+        return substr_replace($table, pack('n', 10), 34, 2);
+    }
+
     private static function buildUnicodeCmapTable(): string
     {
         $subtable = pack('n', 12)
@@ -526,6 +596,80 @@ final class TrueTypeFontFixture
             . $subtable;
     }
 
+    private static function buildBengaliCmapTable(): string
+    {
+        $subtable = pack('n', 12)
+            . pack('n', 0)
+            . pack('N', 100)
+            . pack('N', 0)
+            . pack('N', 7)
+            . pack('N', 0x09B8)
+            . pack('N', 0x09B8)
+            . pack('N', 1)
+            . pack('N', 0x09A4)
+            . pack('N', 0x09A4)
+            . pack('N', 2)
+            . pack('N', 0x0995)
+            . pack('N', 0x0995)
+            . pack('N', 3)
+            . pack('N', 0x09B0)
+            . pack('N', 0x09B0)
+            . pack('N', 4)
+            . pack('N', 0x09BF)
+            . pack('N', 0x09BF)
+            . pack('N', 5)
+            . pack('N', 0x0982)
+            . pack('N', 0x0982)
+            . pack('N', 10)
+            . pack('N', 0x09BC)
+            . pack('N', 0x09BC)
+            . pack('N', 11);
+
+        return pack('n', 0)
+            . pack('n', 1)
+            . pack('n', 3)
+            . pack('n', 10)
+            . pack('N', 12)
+            . $subtable;
+    }
+
+    private static function buildGujaratiCmapTable(): string
+    {
+        $subtable = pack('n', 12)
+            . pack('n', 0)
+            . pack('N', 100)
+            . pack('N', 0)
+            . pack('N', 7)
+            . pack('N', 0x0AB8)
+            . pack('N', 0x0AB8)
+            . pack('N', 1)
+            . pack('N', 0x0AA4)
+            . pack('N', 0x0AA4)
+            . pack('N', 2)
+            . pack('N', 0x0A95)
+            . pack('N', 0x0A95)
+            . pack('N', 3)
+            . pack('N', 0x0AB0)
+            . pack('N', 0x0AB0)
+            . pack('N', 4)
+            . pack('N', 0x0ABF)
+            . pack('N', 0x0ABF)
+            . pack('N', 5)
+            . pack('N', 0x0A82)
+            . pack('N', 0x0A82)
+            . pack('N', 10)
+            . pack('N', 0x0ABC)
+            . pack('N', 0x0ABC)
+            . pack('N', 11);
+
+        return pack('n', 0)
+            . pack('n', 1)
+            . pack('n', 3)
+            . pack('n', 10)
+            . pack('N', 12)
+            . $subtable;
+    }
+
     private static function buildArabicMaxpTable(): string
     {
         return pack('N', 0x00010000) . pack('n', 11);
@@ -537,6 +681,16 @@ final class TrueTypeFontFixture
     }
 
     private static function buildDevanagariMaxpTable(): string
+    {
+        return pack('N', 0x00010000) . pack('n', 12);
+    }
+
+    private static function buildBengaliMaxpTable(): string
+    {
+        return pack('N', 0x00010000) . pack('n', 12);
+    }
+
+    private static function buildGujaratiMaxpTable(): string
     {
         return pack('N', 0x00010000) . pack('n', 12);
     }
@@ -573,6 +727,38 @@ final class TrueTypeFontFixture
     }
 
     private static function buildDevanagariHmtxTable(): string
+    {
+        return pack('n', 500) . pack('n', 0)
+            . pack('n', 510) . pack('n', 0)
+            . pack('n', 520) . pack('n', 0)
+            . pack('n', 530) . pack('n', 0)
+            . pack('n', 540) . pack('n', 0)
+            . pack('n', 200) . pack('n', 0)
+            . pack('n', 210) . pack('n', 0)
+            . pack('n', 220) . pack('n', 0)
+            . pack('n', 230) . pack('n', 0)
+            . pack('n', 240) . pack('n', 0)
+            . pack('n', 120) . pack('n', 0)
+            . pack('n', 100) . pack('n', 0);
+    }
+
+    private static function buildBengaliHmtxTable(): string
+    {
+        return pack('n', 500) . pack('n', 0)
+            . pack('n', 510) . pack('n', 0)
+            . pack('n', 520) . pack('n', 0)
+            . pack('n', 530) . pack('n', 0)
+            . pack('n', 540) . pack('n', 0)
+            . pack('n', 200) . pack('n', 0)
+            . pack('n', 210) . pack('n', 0)
+            . pack('n', 220) . pack('n', 0)
+            . pack('n', 230) . pack('n', 0)
+            . pack('n', 240) . pack('n', 0)
+            . pack('n', 120) . pack('n', 0)
+            . pack('n', 100) . pack('n', 0);
+    }
+
+    private static function buildGujaratiHmtxTable(): string
     {
         return pack('n', 500) . pack('n', 0)
             . pack('n', 510) . pack('n', 0)
@@ -704,6 +890,74 @@ final class TrueTypeFontFixture
      * @return array{0: string, 1: string}
      */
     private static function buildDevanagariGlyphTables(): array
+    {
+        $glyphs = [];
+
+        for ($glyphId = 0; $glyphId < 12; $glyphId++) {
+            $glyphs[] = pack('nnnnn', 0, 0, 0, 300 + ($glyphId * 10), 700);
+        }
+
+        $glyf = '';
+        $offsets = [];
+
+        foreach ($glyphs as $glyph) {
+            $offsets[] = strlen($glyf);
+            $glyf .= $glyph;
+
+            while (strlen($glyf) % 4 !== 0) {
+                $glyf .= "\x00";
+            }
+        }
+
+        $offsets[] = strlen($glyf);
+
+        $loca = '';
+
+        foreach ($offsets as $offset) {
+            $loca .= pack('N', $offset);
+        }
+
+        return [$glyf, $loca];
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private static function buildBengaliGlyphTables(): array
+    {
+        $glyphs = [];
+
+        for ($glyphId = 0; $glyphId < 12; $glyphId++) {
+            $glyphs[] = pack('nnnnn', 0, 0, 0, 300 + ($glyphId * 10), 700);
+        }
+
+        $glyf = '';
+        $offsets = [];
+
+        foreach ($glyphs as $glyph) {
+            $offsets[] = strlen($glyf);
+            $glyf .= $glyph;
+
+            while (strlen($glyf) % 4 !== 0) {
+                $glyf .= "\x00";
+            }
+        }
+
+        $offsets[] = strlen($glyf);
+
+        $loca = '';
+
+        foreach ($offsets as $offset) {
+            $loca .= pack('N', $offset);
+        }
+
+        return [$glyf, $loca];
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private static function buildGujaratiGlyphTables(): array
     {
         $glyphs = [];
 
@@ -872,6 +1126,198 @@ final class TrueTypeFontFixture
     }
 
     private static function buildDevanagariGposTable(): string
+    {
+        $scriptList = pack('n', 0);
+        $featureTags = ['mark', 'mkmk'];
+        $featureTables = [
+            pack('n', 0) . pack('n', 1) . pack('n', 0),
+            pack('n', 0) . pack('n', 1) . pack('n', 1),
+        ];
+        $featureList = pack('n', count($featureTags));
+        $featureOffsets = [];
+        $featureOffset = 2 + (count($featureTags) * 6);
+
+        foreach ($featureTables as $table) {
+            $featureOffsets[] = $featureOffset;
+            $featureOffset += strlen($table);
+        }
+
+        foreach ($featureTags as $index => $tag) {
+            $featureList .= $tag . pack('n', $featureOffsets[$index]);
+        }
+
+        foreach ($featureTables as $table) {
+            $featureList .= $table;
+        }
+
+        $lookupList = self::buildLookupList([
+            self::buildMarkToBasePositioningLookup(
+                marks: [
+                    10 => ['class' => 0, 'x' => 20, 'y' => 40],
+                    11 => ['class' => 0, 'x' => 30, 'y' => 50],
+                ],
+                bases: [
+                    3 => [0 => ['x' => 250, 'y' => 620]],
+                ],
+            ),
+            self::buildMarkToMarkPositioningLookup(
+                marks: [
+                    11 => ['class' => 0, 'x' => 30, 'y' => 50],
+                ],
+                baseMarks: [
+                    10 => [0 => ['x' => 100, 'y' => 160]],
+                ],
+            ),
+        ]);
+
+        return pack('N', 0x00010000)
+            . pack('n', 10)
+            . pack('n', 10 + strlen($scriptList))
+            . pack('n', 10 + strlen($scriptList) + strlen($featureList))
+            . $scriptList
+            . $featureList
+            . $lookupList;
+    }
+
+    private static function buildBengaliGsubTable(): string
+    {
+        $scriptList = pack('n', 0);
+        $featureTags = ['half', 'pref', 'rphf'];
+        $featureTables = [
+            pack('n', 0) . pack('n', 2) . pack('n', 0) . pack('n', 1),
+            pack('n', 0) . pack('n', 1) . pack('n', 2),
+            pack('n', 0) . pack('n', 1) . pack('n', 3),
+        ];
+        $featureList = pack('n', count($featureTags));
+        $featureOffsets = [];
+        $featureOffset = 2 + (count($featureTags) * 6);
+
+        foreach ($featureTables as $table) {
+            $featureOffsets[] = $featureOffset;
+            $featureOffset += strlen($table);
+        }
+
+        foreach ($featureTags as $index => $tag) {
+            $featureList .= $tag . pack('n', $featureOffsets[$index]);
+        }
+
+        foreach ($featureTables as $table) {
+            $featureList .= $table;
+        }
+
+        $lookupList = self::buildLookupList([
+            self::buildSingleSubstitutionLookup(1, 6),
+            self::buildSingleSubstitutionLookup(3, 9),
+            self::buildSingleSubstitutionLookup(2, 7),
+            self::buildSingleSubstitutionLookup(4, 8),
+        ]);
+
+        return pack('N', 0x00010000)
+            . pack('n', 10)
+            . pack('n', 10 + strlen($scriptList))
+            . pack('n', 10 + strlen($scriptList) + strlen($featureList))
+            . $scriptList
+            . $featureList
+            . $lookupList;
+    }
+
+    private static function buildBengaliGposTable(): string
+    {
+        $scriptList = pack('n', 0);
+        $featureTags = ['mark', 'mkmk'];
+        $featureTables = [
+            pack('n', 0) . pack('n', 1) . pack('n', 0),
+            pack('n', 0) . pack('n', 1) . pack('n', 1),
+        ];
+        $featureList = pack('n', count($featureTags));
+        $featureOffsets = [];
+        $featureOffset = 2 + (count($featureTags) * 6);
+
+        foreach ($featureTables as $table) {
+            $featureOffsets[] = $featureOffset;
+            $featureOffset += strlen($table);
+        }
+
+        foreach ($featureTags as $index => $tag) {
+            $featureList .= $tag . pack('n', $featureOffsets[$index]);
+        }
+
+        foreach ($featureTables as $table) {
+            $featureList .= $table;
+        }
+
+        $lookupList = self::buildLookupList([
+            self::buildMarkToBasePositioningLookup(
+                marks: [
+                    10 => ['class' => 0, 'x' => 20, 'y' => 40],
+                    11 => ['class' => 0, 'x' => 30, 'y' => 50],
+                ],
+                bases: [
+                    3 => [0 => ['x' => 250, 'y' => 620]],
+                ],
+            ),
+            self::buildMarkToMarkPositioningLookup(
+                marks: [
+                    11 => ['class' => 0, 'x' => 30, 'y' => 50],
+                ],
+                baseMarks: [
+                    10 => [0 => ['x' => 100, 'y' => 160]],
+                ],
+            ),
+        ]);
+
+        return pack('N', 0x00010000)
+            . pack('n', 10)
+            . pack('n', 10 + strlen($scriptList))
+            . pack('n', 10 + strlen($scriptList) + strlen($featureList))
+            . $scriptList
+            . $featureList
+            . $lookupList;
+    }
+
+    private static function buildGujaratiGsubTable(): string
+    {
+        $scriptList = pack('n', 0);
+        $featureTags = ['half', 'pref', 'rphf'];
+        $featureTables = [
+            pack('n', 0) . pack('n', 2) . pack('n', 0) . pack('n', 1),
+            pack('n', 0) . pack('n', 1) . pack('n', 2),
+            pack('n', 0) . pack('n', 1) . pack('n', 3),
+        ];
+        $featureList = pack('n', count($featureTags));
+        $featureOffsets = [];
+        $featureOffset = 2 + (count($featureTags) * 6);
+
+        foreach ($featureTables as $table) {
+            $featureOffsets[] = $featureOffset;
+            $featureOffset += strlen($table);
+        }
+
+        foreach ($featureTags as $index => $tag) {
+            $featureList .= $tag . pack('n', $featureOffsets[$index]);
+        }
+
+        foreach ($featureTables as $table) {
+            $featureList .= $table;
+        }
+
+        $lookupList = self::buildLookupList([
+            self::buildSingleSubstitutionLookup(1, 6),
+            self::buildSingleSubstitutionLookup(3, 9),
+            self::buildSingleSubstitutionLookup(2, 7),
+            self::buildSingleSubstitutionLookup(4, 8),
+        ]);
+
+        return pack('N', 0x00010000)
+            . pack('n', 10)
+            . pack('n', 10 + strlen($scriptList))
+            . pack('n', 10 + strlen($scriptList) + strlen($featureList))
+            . $scriptList
+            . $featureList
+            . $lookupList;
+    }
+
+    private static function buildGujaratiGposTable(): string
     {
         $scriptList = pack('n', 0);
         $featureTags = ['mark', 'mkmk'];
@@ -1400,7 +1846,7 @@ final class TrueTypeFontFixture
         return pack('n', count($items))
             . "\x01"
             . implode('', array_map(static function (int $offset): string {
-                if ($offset < 0 || $offset > 255) {
+                if ($offset > 255) {
                     throw new \InvalidArgumentException('CFF index offset must fit into a single byte.');
                 }
 

@@ -236,4 +236,78 @@ final class SimpleFontRunMapperTest extends TestCase
         self::assertEquals(10.3, $mapped->positionedFragments[3]->xOffset);
         self::assertEquals(6.9, $mapped->positionedFragments[3]->yOffset);
     }
+
+    public function testItBuildsPositionedFragmentsForBengaliMarks(): void
+    {
+        $mapper = new SimpleFontRunMapper();
+        $font = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalBengaliGsubTrueTypeFontBytes()),
+        );
+        $pageFont = PageFont::embeddedUnicode($font, [
+            new EmbeddedGlyph(5, 0x09BF, 'ি'),
+            new EmbeddedGlyph(3, 0x0995, 'ক'),
+            new EmbeddedGlyph(10, 0x0982, 'ং'),
+            new EmbeddedGlyph(11, 0x09BC, '়'),
+        ]);
+        $run = new ShapedTextRun(TextDirection::LTR, TextScript::BENGALI, [
+            new ShapedGlyph('ি', 1, glyphName: 'indic.prebase', glyphId: 5, unicodeCodePoint: 0x09BF, unicodeText: 'ি'),
+            new ShapedGlyph('ক', 0, glyphName: 'indic.base', glyphId: 3, unicodeCodePoint: 0x0995, unicodeText: 'ক'),
+            new ShapedGlyph('ং', 2, xAdvance: -240.0, xOffset: 230.0, yOffset: 580.0, glyphName: 'gpos.mark', glyphId: 10, unicodeCodePoint: 0x0982, unicodeText: 'ং'),
+            new ShapedGlyph('়', 3, xAdvance: -240.0, xOffset: 300.0, yOffset: 690.0, glyphName: 'gpos.mkmk', glyphId: 11, unicodeCodePoint: 0x09BC, unicodeText: '়'),
+        ]);
+
+        $mapped = $mapper->map(
+            $run,
+            $font,
+            new TextOptions(embeddedFont: $font->source, fontSize: 10),
+            1.4,
+            $pageFont,
+            true,
+        );
+
+        self::assertCount(4, $mapped->positionedFragments);
+        self::assertSame("\x00\x03", $mapped->positionedFragments[2]->encodedText);
+        self::assertEquals(9.6, $mapped->positionedFragments[2]->xOffset);
+        self::assertEquals(5.8, $mapped->positionedFragments[2]->yOffset);
+        self::assertSame("\x00\x04", $mapped->positionedFragments[3]->encodedText);
+        self::assertEquals(10.3, $mapped->positionedFragments[3]->xOffset);
+        self::assertEquals(6.9, $mapped->positionedFragments[3]->yOffset);
+    }
+
+    public function testItBuildsPositionedFragmentsForGujaratiMarks(): void
+    {
+        $mapper = new SimpleFontRunMapper();
+        $font = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalGujaratiGsubTrueTypeFontBytes()),
+        );
+        $pageFont = PageFont::embeddedUnicode($font, [
+            new EmbeddedGlyph(5, 0x0ABF, 'િ'),
+            new EmbeddedGlyph(3, 0x0A95, 'ક'),
+            new EmbeddedGlyph(10, 0x0A82, 'ં'),
+            new EmbeddedGlyph(11, 0x0ABC, '઼'),
+        ]);
+        $run = new ShapedTextRun(TextDirection::LTR, TextScript::GUJARATI, [
+            new ShapedGlyph('િ', 1, glyphName: 'indic.prebase', glyphId: 5, unicodeCodePoint: 0x0ABF, unicodeText: 'િ'),
+            new ShapedGlyph('ક', 0, glyphName: 'indic.base', glyphId: 3, unicodeCodePoint: 0x0A95, unicodeText: 'ક'),
+            new ShapedGlyph('ં', 2, xAdvance: -240.0, xOffset: 230.0, yOffset: 580.0, glyphName: 'gpos.mark', glyphId: 10, unicodeCodePoint: 0x0A82, unicodeText: 'ં'),
+            new ShapedGlyph('઼', 3, xAdvance: -240.0, xOffset: 300.0, yOffset: 690.0, glyphName: 'gpos.mkmk', glyphId: 11, unicodeCodePoint: 0x0ABC, unicodeText: '઼'),
+        ]);
+
+        $mapped = $mapper->map(
+            $run,
+            $font,
+            new TextOptions(embeddedFont: $font->source, fontSize: 10),
+            1.4,
+            $pageFont,
+            true,
+        );
+
+        self::assertCount(4, $mapped->positionedFragments);
+        self::assertSame("\x00\x03", $mapped->positionedFragments[2]->encodedText);
+        self::assertEquals(9.6, $mapped->positionedFragments[2]->xOffset);
+        self::assertEquals(5.8, $mapped->positionedFragments[2]->yOffset);
+        self::assertSame("\x00\x04", $mapped->positionedFragments[3]->encodedText);
+        self::assertEquals(10.3, $mapped->positionedFragments[3]->xOffset);
+        self::assertEquals(6.9, $mapped->positionedFragments[3]->yOffset);
+    }
 }

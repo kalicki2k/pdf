@@ -10,6 +10,8 @@ enum TextScript: string
     case ARABIC = 'arabic';
     case HEBREW = 'hebrew';
     case DEVANAGARI = 'devanagari';
+    case BENGALI = 'bengali';
+    case GUJARATI = 'gujarati';
     case COMMON = 'common';
     case INHERITED = 'inherited';
     case UNKNOWN = 'unknown';

@@ -79,6 +79,8 @@ final readonly class SimpleScriptResolver implements ScriptResolver
             preg_match('/[\x{0590}-\x{05FF}]/u', $character) === 1 => TextScript::HEBREW,
             preg_match('/[\x{0600}-\x{08FF}\x{FB50}-\x{FDFF}\x{FE70}-\x{FEFC}]/u', $character) === 1 => TextScript::ARABIC,
             preg_match('/[\x{0900}-\x{097F}]/u', $character) === 1 => TextScript::DEVANAGARI,
+            preg_match('/[\x{0980}-\x{09FF}]/u', $character) === 1 => TextScript::BENGALI,
+            preg_match('/[\x{0A80}-\x{0AFF}]/u', $character) === 1 => TextScript::GUJARATI,
             preg_match('/[\p{Common}]/u', $character) === 1 => TextScript::COMMON,
             preg_match('/[\p{Inherited}]/u', $character) === 1 => TextScript::INHERITED,
             default => TextScript::UNKNOWN,

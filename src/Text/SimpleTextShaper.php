@@ -18,11 +18,15 @@ final readonly class SimpleTextShaper implements TextShaper
         private ScriptResolver $scriptResolver = new SimpleScriptResolver(),
         ?ArabicScriptTextShaper $arabicTextShaper = null,
         ?DevanagariScriptTextShaper $devanagariTextShaper = null,
+        ?BengaliScriptTextShaper $bengaliTextShaper = null,
+        ?GujaratiScriptTextShaper $gujaratiTextShaper = null,
         ?DefaultScriptTextShaper $defaultScriptTextShaper = null,
     ) {
         $this->scriptShapers = [
             $arabicTextShaper ?? new ArabicScriptTextShaper(),
             $devanagariTextShaper ?? new DevanagariScriptTextShaper(),
+            $bengaliTextShaper ?? new BengaliScriptTextShaper(),
+            $gujaratiTextShaper ?? new GujaratiScriptTextShaper(),
             $defaultScriptTextShaper ?? new DefaultScriptTextShaper(),
         ];
     }

@@ -138,4 +138,50 @@ final class OpenTypeFontParserTest extends TestCase
             $parser->gposMarkToMarkPlacementWithFeature('mkmk', 10, 11),
         );
     }
+
+    public function testItResolvesBengaliIndicGsubSingleSubstitutions(): void
+    {
+        $parser = new OpenTypeFontParser(TrueTypeFontFixture::minimalBengaliGsubTrueTypeFontBytes());
+
+        self::assertTrue($parser->hasGsubFeature('half'));
+        self::assertTrue($parser->hasGsubFeature('pref'));
+        self::assertTrue($parser->hasGsubFeature('rphf'));
+        self::assertTrue($parser->hasGposFeature('mark'));
+        self::assertTrue($parser->hasGposFeature('mkmk'));
+        self::assertSame(6, $parser->substituteGlyphIdWithFeature('half', 1));
+        self::assertSame(9, $parser->substituteGlyphIdWithFeature('half', 3));
+        self::assertSame(7, $parser->substituteGlyphIdWithFeature('pref', 2));
+        self::assertSame(8, $parser->substituteGlyphIdWithFeature('rphf', 4));
+        self::assertSame(
+            ['xOffset' => 230, 'yOffset' => 580],
+            $parser->gposMarkToBasePlacementWithFeature('mark', 3, 10),
+        );
+        self::assertSame(
+            ['xOffset' => 70, 'yOffset' => 110],
+            $parser->gposMarkToMarkPlacementWithFeature('mkmk', 10, 11),
+        );
+    }
+
+    public function testItResolvesGujaratiIndicGsubSingleSubstitutions(): void
+    {
+        $parser = new OpenTypeFontParser(TrueTypeFontFixture::minimalGujaratiGsubTrueTypeFontBytes());
+
+        self::assertTrue($parser->hasGsubFeature('half'));
+        self::assertTrue($parser->hasGsubFeature('pref'));
+        self::assertTrue($parser->hasGsubFeature('rphf'));
+        self::assertTrue($parser->hasGposFeature('mark'));
+        self::assertTrue($parser->hasGposFeature('mkmk'));
+        self::assertSame(6, $parser->substituteGlyphIdWithFeature('half', 1));
+        self::assertSame(9, $parser->substituteGlyphIdWithFeature('half', 3));
+        self::assertSame(7, $parser->substituteGlyphIdWithFeature('pref', 2));
+        self::assertSame(8, $parser->substituteGlyphIdWithFeature('rphf', 4));
+        self::assertSame(
+            ['xOffset' => 230, 'yOffset' => 580],
+            $parser->gposMarkToBasePlacementWithFeature('mark', 3, 10),
+        );
+        self::assertSame(
+            ['xOffset' => 70, 'yOffset' => 110],
+            $parser->gposMarkToMarkPlacementWithFeature('mkmk', 10, 11),
+        );
+    }
 }

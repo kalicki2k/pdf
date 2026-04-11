@@ -61,6 +61,30 @@ final class SimpleTextShaperTest extends TestCase
         self::assertSame(['indic.prebase', 'indic.base'], $runs[0]->glyphNames());
     }
 
+    public function testItUsesBengaliReorderingForIndicRuns(): void
+    {
+        $shaper = new SimpleTextShaper();
+        $runs = $shaper->shape('কি');
+
+        self::assertCount(1, $runs);
+        self::assertSame(TextDirection::LTR, $runs[0]->direction);
+        self::assertSame(TextScript::BENGALI, $runs[0]->script);
+        self::assertSame('িক', $runs[0]->text());
+        self::assertSame(['indic.prebase', 'indic.base'], $runs[0]->glyphNames());
+    }
+
+    public function testItUsesGujaratiReorderingForIndicRuns(): void
+    {
+        $shaper = new SimpleTextShaper();
+        $runs = $shaper->shape('કિ');
+
+        self::assertCount(1, $runs);
+        self::assertSame(TextDirection::LTR, $runs[0]->direction);
+        self::assertSame(TextScript::GUJARATI, $runs[0]->script);
+        self::assertSame('િક', $runs[0]->text());
+        self::assertSame(['indic.prebase', 'indic.base'], $runs[0]->glyphNames());
+    }
+
     public function testItShapesMixedDirectionalTextIntoSeparateRuns(): void
     {
         $shaper = new SimpleTextShaper();

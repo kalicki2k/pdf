@@ -60,4 +60,28 @@ final class SimpleScriptResolverTest extends TestCase
         self::assertSame(TextScript::HEBREW, $runs[1]->script);
         self::assertSame('def', $runs[2]->text);
     }
+
+    public function testItDetectsBengaliRuns(): void
+    {
+        $resolver = new SimpleScriptResolver();
+        $runs = $resolver->resolve('Hello বাংলা');
+
+        self::assertCount(2, $runs);
+        self::assertSame('Hello ', $runs[0]->text);
+        self::assertSame(TextScript::LATIN, $runs[0]->script);
+        self::assertSame('বাংলা', $runs[1]->text);
+        self::assertSame(TextScript::BENGALI, $runs[1]->script);
+    }
+
+    public function testItDetectsGujaratiRuns(): void
+    {
+        $resolver = new SimpleScriptResolver();
+        $runs = $resolver->resolve('Hello ગુજરાતી');
+
+        self::assertCount(2, $runs);
+        self::assertSame('Hello ', $runs[0]->text);
+        self::assertSame(TextScript::LATIN, $runs[0]->script);
+        self::assertSame('ગુજરાતી', $runs[1]->text);
+        self::assertSame(TextScript::GUJARATI, $runs[1]->script);
+    }
 }
