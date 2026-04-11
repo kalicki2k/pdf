@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Font\StandardFontGlyphRun;
+use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
@@ -27,6 +28,8 @@ interface DocumentBuilder
 
     public function pageSize(PageSize $size): self;
 
+    public function margin(Margin $margin): self;
+
     public function content(string $content): self;
 
     public function text(string $text, ?TextOptions $options = null): self;
@@ -38,9 +41,4 @@ interface DocumentBuilder
     public function build(): Document;
 
     public function save(string $path): string;
-    //
-    //    public function margin(int|float $margin): self;
-    //    public function page(callable $callback): self;
-    //
-    //    public function save(string $path): string;
 }

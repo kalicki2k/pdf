@@ -38,6 +38,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /** @var array<string, PageFont> */
     private array $currentPageFontResources = [];
     private ?Margin $currentPageMargin = null;
+    private ?float $currentPageCursorY = null;
     private ?Color $currentPageBackgroundColor = null;
     private ?string $currentPageLabel = null;
     private ?string $currentPageName = null;
@@ -118,6 +119,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function margin(Margin $margin): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->currentPageMargin = $margin;
+        $clone->currentPageCursorY = null;
+
+        return $clone;
+    }
+
     public function content(string $content): DocumentBuilder
     {
         $clone = clone $this;
@@ -136,17 +146,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $options->fontEncoding,
         );
         $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding);
+        $placement = $clone->resolveTextPlacement($options);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->buildTextContent(
                 $text,
                 $options,
+                $placement['x'],
+                $placement['y'],
                 $fontAlias,
                 $font,
                 ($this->profile ?? Profile::standard())->version(),
             ),
         );
+        $clone->advanceCursor($options, $placement['y']);
 
         return $clone;
     }
@@ -170,18 +184,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $options->fontEncoding,
         );
         $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding, $glyphRun->differences);
+        $placement = $clone->resolveTextPlacement($options);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->buildEncodedTextContent(
                 $glyphRun->bytes,
                 $options,
+                $placement['x'],
+                $placement['y'],
                 $fontAlias,
                 $font,
                 $glyphRun->glyphNames,
                 $glyphRun->useHexString,
             ),
         );
+        $clone->advanceCursor($options, $placement['y']);
 
         return $clone;
     }
@@ -244,6 +262,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageContents = '';
         $this->currentPageFontResources = [];
         $this->currentPageMargin = $options?->margin;
+        $this->currentPageCursorY = null;
         $this->currentPageBackgroundColor = $options?->backgroundColor;
         $this->currentPageLabel = $options?->label;
         $this->currentPageName = $options?->name;
@@ -267,6 +286,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function buildTextContent(
         string $text,
         TextOptions $options,
+        float $x,
+        float $y,
         string $fontAlias,
         StandardFontDefinition $font,
         float $pdfVersion,
@@ -274,6 +295,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->buildEncodedTextContent(
             $font->encodeText($text, $pdfVersion, $options->fontEncoding),
             $options,
+            $x,
+            $y,
             $fontAlias,
             $font,
             $options->kerning ? $font->glyphNamesForText($text, $pdfVersion, $options->fontEncoding) : [],
@@ -283,6 +306,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function buildEncodedTextContent(
         string $encodedText,
         TextOptions $options,
+        float $x,
+        float $y,
         string $fontAlias,
         StandardFontDefinition $font,
         array $glyphNames = [],
@@ -300,7 +325,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $lines = [
             ...$lines,
             '/' . $fontAlias . ' ' . $this->formatNumber($options->fontSize) . ' Tf',
-            $this->formatNumber($options->x) . ' ' . $this->formatNumber($options->y) . ' Td',
+            $this->formatNumber($x) . ' ' . $this->formatNumber($y) . ' Td',
             $this->buildTextShowOperator($encodedText, $font, $glyphNames, $useHexString),
             'ET',
         ];
@@ -406,6 +431,34 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $formatted = number_format($value, 3, '.', '');
 
         return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    /**
+     * @return array{x: float, y: float}
+     */
+    private function resolveTextPlacement(TextOptions $options): array
+    {
+        $page = $this->buildCurrentPage();
+        $contentArea = $page->contentArea();
+
+        $x = $options->x
+            ?? ($page->margin !== null ? $contentArea->left : 72.0);
+
+        $y = $options->y
+            ?? $this->currentPageCursorY
+            ?? ($page->margin !== null ? $contentArea->top : 720.0);
+
+        return [
+            'x' => $x,
+            'y' => $y,
+        ];
+    }
+
+    private function advanceCursor(TextOptions $options, float $resolvedY): void
+    {
+        $lineHeight = $options->lineHeight ?? ($options->fontSize * 1.2);
+
+        $this->currentPageCursorY = $resolvedY - $lineHeight;
     }
 
     private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding, array $differences = []): string

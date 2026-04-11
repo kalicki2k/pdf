@@ -106,6 +106,29 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertStringContainsString('] TJ', $document->pages[0]->contents);
     }
 
+    public function testItUsesTheConfiguredFirstPageMarginForImplicitTextPlacement(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Hello')
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 785.197 Td\n[", $document->pages[0]->contents);
+        self::assertSame(Units::mm(20), $document->pages[0]->margin?->top);
+    }
+
+    public function testItAdvancesImplicitTextPlacementBelowThePreviousLine(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Line 1')
+            ->text('Line 2')
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 785.197 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 763.597 Td\n[", $document->pages[0]->contents);
+    }
+
     public function testItAppliesAfmKerningForWesternCoreText(): void
     {
         $document = DefaultDocumentBuilder::make()

@@ -8,6 +8,7 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DocumentBuilder;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Pdf;
@@ -25,6 +26,7 @@ $copyColor = Color::hex('#334155');
 $mutedColor = Color::hex('#64748b');
 $accentColor = Color::hex('#0f766e');
 $pageTwoBackground = Color::hex('#f8fafc');
+$pageMargin = Margin::all(Units::mm(20));
 
 $latinUpper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜ';
 $latinLower = 'abcdefghijklmnopqrstuvwxyz äöüß';
@@ -52,19 +54,20 @@ $document = Pdf::document()
     ->subject('Professional specimen page for PDF standard fonts')
     ->creator('examples/alphabet.php')
     ->creatorTool('pdf2')
+    ->margin($pageMargin)
     ->pageSize(PageSize::A4());
 
 $placeText = static function (
     DocumentBuilder $builder,
     string $text,
-    float $xMm,
+    ?float $xMm,
     float $yMm,
     float $fontSize,
     string $fontName,
     ?Color $color = null,
 ): DocumentBuilder {
     return $builder->text($text, new TextOptions(
-        x: Units::mm($xMm),
+        x: $xMm === null ? null : Units::mm($xMm),
         y: Units::mm($yMm),
         fontSize: $fontSize,
         fontName: $fontName,
@@ -75,7 +78,7 @@ $placeText = static function (
 $document = $placeText(
     $document,
     'PDF Standard Font Specimen',
-    20,
+    null,
     281,
     24,
     StandardFont::HELVETICA_BOLD->value,
@@ -84,7 +87,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'Referenzseite für Schriftschnitt, Zeichenumfang und Lesegrößen',
-    20,
+    null,
     272,
     10,
     StandardFont::HELVETICA->value,
@@ -93,7 +96,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'Familienübersicht',
-    20,
+    null,
     258,
     12,
     StandardFont::HELVETICA_BOLD->value,
@@ -101,8 +104,8 @@ $document = $placeText(
 );
 $document = $placeText(
     $document,
-    'Diese Seiten zeigen alle Standard-PDF-Fonts mit einem konsistenten Mustertext für schnelle visuelle Vergleiche.',
-    20,
+    'Diese Seiten zeigen alle Standard-PDF-Fonts mit einem konsistenten Mustertext innerhalb eines 20-mm-Satzspiegels.',
+    null,
     251,
     9,
     StandardFont::HELVETICA->value,
@@ -120,7 +123,7 @@ foreach ($firstPageFonts as $index => $fontName) {
     $document = $placeText(
         $document,
         $fontName,
-        20,
+        null,
         $baseline + 8,
         11,
         StandardFont::HELVETICA_BOLD->value,
@@ -129,7 +132,7 @@ foreach ($firstPageFonts as $index => $fontName) {
     $document = $placeText(
         $document,
         $sampleSentence,
-        20,
+        null,
         $baseline,
         13,
         $fontName,
@@ -138,7 +141,7 @@ foreach ($firstPageFonts as $index => $fontName) {
     $document = $placeText(
         $document,
         $latinUpper,
-        20,
+        null,
         $baseline - 7,
         9,
         $fontName,
@@ -147,7 +150,7 @@ foreach ($firstPageFonts as $index => $fontName) {
     $document = $placeText(
         $document,
         $latinLower . '    ' . $numeralsAndPunctuation,
-        20,
+        null,
         $baseline - 13,
         8.5,
         $fontName,
@@ -157,13 +160,14 @@ foreach ($firstPageFonts as $index => $fontName) {
 
 $document = $document->newPage(new PageOptions(
     pageSize: PageSize::A4(),
+    margin: $pageMargin,
     backgroundColor: $pageTwoBackground,
 ));
 
 $document = $placeText(
     $document,
     'Weitere Standardschnitte',
-    20,
+    null,
     281,
     20,
     StandardFont::HELVETICA_BOLD->value,
@@ -171,8 +175,8 @@ $document = $placeText(
 );
 $document = $placeText(
     $document,
-    'Die restlichen Kernfonts der Standard-14-Familie mit identischem Mustertext.',
-    20,
+    'Die restlichen Kernfonts der Standard-14-Familie mit identischem Mustertext im selben Seitenrahmen.',
+    null,
     272,
     10,
     StandardFont::HELVETICA->value,
@@ -185,7 +189,7 @@ foreach ($secondPageFonts as $index => $fontName) {
     $document = $placeText(
         $document,
         $fontName,
-        20,
+        null,
         $baseline + 8,
         11,
         StandardFont::HELVETICA_BOLD->value,
@@ -194,7 +198,7 @@ foreach ($secondPageFonts as $index => $fontName) {
     $document = $placeText(
         $document,
         $sampleSentence,
-        20,
+        null,
         $baseline,
         13,
         $fontName,
@@ -203,7 +207,7 @@ foreach ($secondPageFonts as $index => $fontName) {
     $document = $placeText(
         $document,
         $latinUpper,
-        20,
+        null,
         $baseline - 7,
         9,
         $fontName,
@@ -212,7 +216,7 @@ foreach ($secondPageFonts as $index => $fontName) {
     $document = $placeText(
         $document,
         $latinLower . '    ' . $numeralsAndPunctuation,
-        20,
+        null,
         $baseline - 13,
         8.5,
         $fontName,
@@ -222,12 +226,13 @@ foreach ($secondPageFonts as $index => $fontName) {
 
 $document = $document->newPage(new PageOptions(
     pageSize: PageSize::A4(),
+    margin: $pageMargin,
 ));
 
 $document = $placeText(
     $document,
     'Größen, Laufweite und Sonderzeichen',
-    20,
+    null,
     281,
     20,
     StandardFont::HELVETICA_BOLD->value,
@@ -236,7 +241,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'Punktgrößen',
-    20,
+    null,
     266,
     12,
     StandardFont::HELVETICA_BOLD->value,
@@ -256,7 +261,7 @@ foreach ($sizeRows as [$label, $size, $y]) {
     $document = $placeText(
         $document,
         $label,
-        20,
+        null,
         $y,
         9,
         StandardFont::HELVETICA_BOLD->value,
@@ -276,7 +281,7 @@ foreach ($sizeRows as [$label, $size, $y]) {
 $document = $placeText(
     $document,
     'Monospace-Vergleich',
-    20,
+    null,
     156,
     12,
     StandardFont::HELVETICA_BOLD->value,
@@ -285,7 +290,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'Courier eignet sich für tabellarische Ausrichtung und technische Ausgaben.',
-    20,
+    null,
     149,
     9,
     StandardFont::HELVETICA->value,
@@ -294,7 +299,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'SKU-2048    17 pcs    EUR 129.90    OK',
-    20,
+    null,
     139,
     11,
     StandardFont::COURIER->value,
@@ -303,7 +308,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'SKU-2048    17 pcs    EUR 129.90    OK',
-    20,
+    null,
     132,
     11,
     StandardFont::COURIER_BOLD->value,
@@ -313,7 +318,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'Symbol-Fonts',
-    20,
+    null,
     117,
     12,
     StandardFont::HELVETICA_BOLD->value,
@@ -322,7 +327,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'Symbol und ZapfDingbats werden separat gezeigt, da ihr Zeichenvorrat nicht dem lateinischen Alphabet entspricht.',
-    20,
+    null,
     110,
     9,
     StandardFont::HELVETICA->value,
@@ -331,7 +336,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     'ΑΒΓΔΕ ΦΓΩ αβγδε φγω ←↑→↓ ⇔ ⇒ ∞ ± ≤ ≥ × ∂ ≈ ∑ ∫',
-    20,
+    null,
     100,
     12,
     StandardFont::SYMBOL->value,
@@ -340,7 +345,7 @@ $document = $placeText(
 $document = $placeText(
     $document,
     '✁ ✂ ✃ ✄ ☎ ✈ ✉ ✓ ✔ ✕ ✖ ★ ✿ ❤ ❥ ① ② ③ ④ ⑤ ➛ ➜ ➝ ➞ ➟ ➠ ➡',
-    20,
+    null,
     90,
     12,
     StandardFont::ZAPF_DINGBATS->value,
@@ -349,8 +354,8 @@ $document = $placeText(
 
 $document = $placeText(
     $document,
-    'Hinweis: Die Musterseiten arbeiten ausschließlich mit PDF-Standardfonts und der aktuellen Text-API des Projekts.',
-    20,
+    'Hinweis: Die Musterseiten arbeiten ausschließlich mit PDF-Standardfonts und orientieren sich an einem 20-mm-Seitenrand.',
+    null,
     24,
     8.5,
     StandardFont::HELVETICA->value,

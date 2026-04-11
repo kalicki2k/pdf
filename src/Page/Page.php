@@ -24,4 +24,16 @@ final readonly class Page
         public ?string $name = null,
     ) {
     }
+
+    public function contentArea(): ContentArea
+    {
+        $margin = $this->margin ?? Margin::all(0.0);
+
+        return new ContentArea(
+            left: $margin->left,
+            right: $this->size->width() - $margin->right,
+            top: $this->size->height() - $margin->top,
+            bottom: $margin->bottom,
+        );
+    }
 }
