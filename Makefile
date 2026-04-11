@@ -1,38 +1,69 @@
+UID := $(shell id -u)
+GID := $(shell id -g)
+DOCKER_COMPOSE := env UID=$(UID) GID=$(GID) docker compose
+
 build:
-	docker compose build php
+	$(DOCKER_COMPOSE) build php
 
 rebuild:
-	docker compose build --no-cache php
+	$(DOCKER_COMPOSE) build --no-cache php
 
 composer-install:
-	docker compose run --rm php composer install
+	$(DOCKER_COMPOSE) run --rm php composer install
 
 phpstan:
-	docker compose run --rm php composer phpstan
+	$(DOCKER_COMPOSE) run --rm php composer phpstan
 
 cs:
-	docker compose run --rm php composer cs
+	$(DOCKER_COMPOSE) run --rm php composer cs
 
 cs-check:
-	docker compose run --rm php composer cs:check
+	$(DOCKER_COMPOSE) run --rm php composer cs:check
 
 test:
-	docker compose run --rm php composer test
+	$(DOCKER_COMPOSE) run --rm php composer test
 
 coverage:
-	docker compose run --rm -e XDEBUG_MODE=coverage php composer test:coverage
+	$(DOCKER_COMPOSE) run --rm -e XDEBUG_MODE=coverage php composer test:coverage
 
 coverage-html:
-	docker compose run --rm -e XDEBUG_MODE=coverage php composer test:coverage-html
+	$(DOCKER_COMPOSE) run --rm -e XDEBUG_MODE=coverage php composer test:coverage-html
 
 shell:
-	docker compose run --rm php sh
+	$(DOCKER_COMPOSE) run --rm php sh
 
 php-version:
-	docker compose run --rm php php -v
+	$(DOCKER_COMPOSE) run --rm php php -v
+
+qpdf-version:
+	$(DOCKER_COMPOSE) run --rm qpdf qpdf --version
+
+# verapdf-version:
+# 	$(DOCKER_COMPOSE) run --rm verapdf --version
+
+check-qpdf:
+	@if [ -z "$(PDF)" ]; then echo "Usage: make check-qpdf PDF=path/to/file.pdf"; exit 1; fi
+	$(DOCKER_COMPOSE) run --rm qpdf qpdf --check "$(PDF)"
+
+# check-verapdf:
+# 	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-verapdf PDF=path/to/file.pdf"; exit 1; fi
+# 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose "/app/$(PDF)"
+
+# validate-pdfa:
+# 	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-pdfa PDF=path/to/file.pdf"; exit 1; fi
+# 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose "/app/$(PDF)"
+
+# validate-pdfua:
+# 	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-pdfua PDF=path/to/file.pdf"; exit 1; fi
+# 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose --defaultflavour ua1 --flavour ua1 "/app/$(PDF)"
+
+# check-pdf:
+# 	@if [ -z "$(PDF)" ]; then echo "Usage: make check-pdf PDF=path/to/file.pdf"; exit 1; fi
+# 	$(MAKE) check-qpdf PDF="$(PDF)"
+# 	$(MAKE) check-verapdf PDF="$(PDF)"
 
 up:
-	docker compose up
+	$(DOCKER_COMPOSE) up
 
 down:
-	docker compose down
+	$(DOCKER_COMPOSE) down
