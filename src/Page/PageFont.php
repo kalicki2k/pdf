@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Page;
 use JsonException;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
+use RuntimeException;
 
 final readonly class PageFont
 {
@@ -26,6 +27,9 @@ final readonly class PageFont
         return StandardFontDefinition::from($this->name);
     }
 
+    /**
+     * @param array<int, string> $differences
+     */
     public function matches(string $fontName, StandardFontEncoding $encoding, array $differences = []): bool
     {
         return $this->name === $fontName
@@ -41,7 +45,7 @@ final readonly class PageFont
         try {
             return $this->name . '|' . $this->encoding->value . '|' . json_encode($this->differences, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
-            throw new \RuntimeException('Unable to build a stable page font key.', previous: $exception);
+            throw new RuntimeException('Unable to build a stable page font key.', previous: $exception);
         }
     }
 

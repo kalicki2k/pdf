@@ -130,7 +130,7 @@ final class StandardFontWesternGlyphMap
         '‹' => 'guilsinglleft',
         '›' => 'guilsinglright',
         '€' => 'Euro',
-        '™' => 'trademark'
+        '™' => 'trademark',
     ];
 
     public static function glyphName(string $character): ?string

@@ -273,7 +273,7 @@ enum StandardFontEncoding: string
     }
 
     /**
-     * @param array<string, string> $byteMap
+     * @param array<array-key, string> $byteMap
      */
     private function supportsMappedText(string $text, array $byteMap): bool
     {
@@ -291,7 +291,7 @@ enum StandardFontEncoding: string
     }
 
     /**
-     * @param array<string, string> $byteMap
+     * @param array<array-key, string> $byteMap
      */
     private function encodeMappedText(string $text, array $byteMap): string
     {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use function ord;
-
 use InvalidArgumentException;
+
+use function ord;
 
 final readonly class StandardFontDefinition
 {
@@ -15,7 +15,7 @@ final readonly class StandardFontDefinition
     ) {
     }
 
-    public static function from(string|StandardFont $font): self
+    public static function from(string | StandardFont $font): self
     {
         $fontName = $font instanceof StandardFont
             ? $font->value

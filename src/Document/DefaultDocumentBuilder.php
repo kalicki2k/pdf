@@ -285,7 +285,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageSize = $this->resolvePageSize($options);
         $this->currentPageContents = '';
         $this->currentPageFontResources = [];
-        $this->currentPageMargin = $options?->margin ?? $this->defaultPageMargin;
+        $this->currentPageMargin = $options !== null
+            ? $options->margin ?? $this->defaultPageMargin
+            : $this->defaultPageMargin;
         $this->currentPageCursorY = null;
         $this->currentPageBackgroundColor = $options?->backgroundColor;
         $this->currentPageLabel = $options?->label;
@@ -294,7 +296,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function resolvePageSize(?PageOptions $options): ?PageSize
     {
-        $pageSize = $options?->pageSize ?? $this->defaultPageSize;
+        $pageSize = $options !== null
+            ? $options->pageSize ?? $this->defaultPageSize
+            : $this->defaultPageSize;
 
         if ($pageSize === null) {
             return null;
@@ -360,6 +364,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return new TextBlockBuilder();
     }
 
+    /**
+     * @param array<int, string> $differences
+     */
     private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding, array $differences = []): string
     {
         StandardFontDefinition::from($fontName);

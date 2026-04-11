@@ -78,13 +78,13 @@ final class StandardFontCoreKerning
                 'w' => -19,
                 'y' => -35,
                 'yacute' => -35,
-                'z' => 15
+                'z' => 15,
             ],
             'AE' => [
                 'T' => -8,
                 'V' => -13,
                 'W' => -9,
-                'Z' => -2
+                'Z' => -2,
             ],
             'Aacute' => [
                 'C' => -35,
@@ -116,7 +116,7 @@ final class StandardFontCoreKerning
                 'u' => -11,
                 'v' => -30,
                 'w' => -19,
-                'y' => -35
+                'y' => -35,
             ],
             'Abreve' => [
                 'T' => -93,
@@ -125,7 +125,7 @@ final class StandardFontCoreKerning
                 'Y' => -94,
                 'Yacute' => -94,
                 'y' => -35,
-                'yacute' => -35
+                'yacute' => -35,
             ],
             'Acircumflex' => [
                 'C' => -35,
@@ -144,7 +144,7 @@ final class StandardFontCoreKerning
                 'period' => 5,
                 'v' => -30,
                 'w' => -19,
-                'yacute' => -35
+                'yacute' => -35,
             ],
             'Adieresis' => [
                 'C' => -35,
@@ -174,7 +174,7 @@ final class StandardFontCoreKerning
                 'u' => -11,
                 'v' => -30,
                 'w' => -19,
-                'y' => -35
+                'y' => -35,
             ],
             'Agrave' => [
                 'C' => -35,
@@ -187,7 +187,7 @@ final class StandardFontCoreKerning
                 'W' => -48,
                 'Y' => -94,
                 'comma' => 5,
-                'period' => 5
+                'period' => 5,
             ],
             'Alpha' => [
                 'O' => -34,
@@ -207,13 +207,13 @@ final class StandardFontCoreKerning
                 'phi' => -13,
                 'sigma' => -24,
                 'upsilon' => -14,
-                'upsilontonos' => -14
+                'upsilontonos' => -14,
             ],
             'Alphatonos' => [
                 'gamma' => -39,
                 'nu' => -31,
                 'phi' => -13,
-                'sigma' => -24
+                'sigma' => -24,
             ],
             'Aogonek' => [
                 'C' => -36,
@@ -226,7 +226,7 @@ final class StandardFontCoreKerning
                 'comma' => 3,
                 'period' => 3,
                 'y' => 24,
-                'yacute' => 24
+                'yacute' => 24,
             ],
             'Aring' => [
                 'C' => -35,
@@ -257,7 +257,7 @@ final class StandardFontCoreKerning
                 'u' => -11,
                 'v' => -30,
                 'w' => -19,
-                'y' => -35
+                'y' => -35,
             ],
             'Atilde' => [
                 'C' => -35,
@@ -270,7 +270,7 @@ final class StandardFontCoreKerning
                 'W' => -48,
                 'Y' => -94,
                 'comma' => 5,
-                'period' => 5
+                'period' => 5,
             ],
             'B' => [
                 'A' => -22,
@@ -296,13 +296,13 @@ final class StandardFontCoreKerning
                 'Y' => -45,
                 'Z' => -16,
                 'lambda' => -22,
-                'y' => -11
+                'y' => -11,
             ],
             'Beta' => [
                 'A' => -22,
                 'Alpha' => -22,
                 'Delta' => -18,
-                'lambda' => -22
+                'lambda' => -22,
             ],
             'C' => [
                 'A' => -33,
@@ -342,13 +342,13 @@ final class StandardFontCoreKerning
                 'quotesingle' => -1,
                 's' => -10,
                 'semicolon' => -2,
-                'y' => -4
+                'y' => -4,
             ],
             'Ccaron' => [
-                'O' => -8
+                'O' => -8,
             ],
             'Ccedilla' => [
-                'A' => -33
+                'A' => -33,
             ],
             'Chi' => [
                 'O' => -41,
@@ -361,7 +361,7 @@ final class StandardFontCoreKerning
                 'omega' => -50,
                 'omicron' => -35,
                 'omicrontonos' => -35,
-                'tau' => -42
+                'tau' => -42,
             ],
             'D' => [
                 'A' => -39,
@@ -388,7 +388,7 @@ final class StandardFontCoreKerning
                 'o' => -1,
                 'odieresis' => -1,
                 'oe' => -3,
-                'y' => -9
+                'y' => -9,
             ],
             'Delta' => [
                 'O' => -25,
@@ -401,7 +401,7 @@ final class StandardFontCoreKerning
                 'o' => -14,
                 'omegatonos' => -35,
                 'omicron' => -17,
-                'upsilon' => -15
+                'upsilon' => -15,
             ],
             'E' => [
                 'A' => 1,
@@ -447,7 +447,7 @@ final class StandardFontCoreKerning
                 'v' => -28,
                 'w' => -23,
                 'y' => -34,
-                'z' => -4
+                'z' => -4,
             ],
             'Epsilon' => [
                 'O' => -26,
@@ -457,10 +457,10 @@ final class StandardFontCoreKerning
                 'delta' => -28,
                 'gamma' => -34,
                 'nu' => -29,
-                'tau' => -14
+                'tau' => -14,
             ],
             'Epsilontonos' => [
-                'nu' => -51
+                'nu' => -51,
             ],
             'F' => [
                 'A' => -70,
@@ -512,7 +512,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -34,
                 'uacute' => -34,
                 'uring' => -34,
-                'y' => -31
+                'y' => -31,
             ],
             'G' => [
                 'A' => -6,
@@ -546,7 +546,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => -11,
                 'semicolon' => 12,
                 'w' => -5,
-                'y' => -14
+                'y' => -14,
             ],
             'Gamma' => [
                 'A' => -89,
@@ -568,7 +568,7 @@ final class StandardFontCoreKerning
                 'period' => -161,
                 'rho' => -153,
                 'upsilon' => -149,
-                'upsilontonos' => -54
+                'upsilontonos' => -54,
             ],
             'H' => [
                 'A' => -11,
@@ -579,7 +579,7 @@ final class StandardFontCoreKerning
                 'a' => -7,
                 'adieresis' => -7,
                 'ae' => -3,
-                'y' => -11
+                'y' => -11,
             ],
             'I' => [
                 'A' => -14,
@@ -591,7 +591,7 @@ final class StandardFontCoreKerning
                 'X' => -16,
                 'Y' => -13,
                 'Z' => -19,
-                'y' => -14
+                'y' => -14,
             ],
             'J' => [
                 'A' => -30,
@@ -600,7 +600,7 @@ final class StandardFontCoreKerning
                 'Aring' => -30,
                 'K' => -2,
                 'Y' => -8,
-                'y' => -9
+                'y' => -9,
             ],
             'K' => [
                 'A' => 22,
@@ -664,7 +664,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -25,
                 'upsilontonos' => -25,
                 'w' => -44,
-                'y' => -65
+                'y' => -65,
             ],
             'Kappa' => [
                 'O' => -45,
@@ -681,7 +681,7 @@ final class StandardFontCoreKerning
                 'period' => -9,
                 'semicolon' => -24,
                 'upsilon' => -25,
-                'upsilontonos' => -25
+                'upsilontonos' => -25,
             ],
             'L' => [
                 'A' => 16,
@@ -729,7 +729,7 @@ final class StandardFontCoreKerning
                 'u' => -7,
                 'udieresis' => -7,
                 'y' => -58,
-                'yacute' => -58
+                'yacute' => -58,
             ],
             'Lambda' => [
                 'O' => -35,
@@ -749,7 +749,7 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -16,
                 'period' => 4,
                 'quoteright' => -66,
-                'upsilon' => -15
+                'upsilon' => -15,
             ],
             'Lcaron' => [
                 'O' => -41,
@@ -760,7 +760,7 @@ final class StandardFontCoreKerning
                 'Y' => -63,
                 'Yacute' => -63,
                 'v' => -55,
-                'yacute' => -58
+                'yacute' => -58,
             ],
             'Lslash' => [
                 'O' => -32,
@@ -777,7 +777,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -20,
                 'v' => -45,
                 'w' => -30,
-                'yacute' => -49
+                'yacute' => -49,
             ],
             'M' => [
                 'A' => -8,
@@ -789,10 +789,10 @@ final class StandardFontCoreKerning
                 'Z' => -13,
                 'epsilon' => 11,
                 'j' => 1,
-                'y' => -8
+                'y' => -8,
             ],
             'Mu' => [
-                'epsilon' => 11
+                'epsilon' => 11,
             ],
             'N' => [
                 'A' => -10,
@@ -824,7 +824,7 @@ final class StandardFontCoreKerning
                 'period' => -8,
                 'u' => -1,
                 'udieresis' => -1,
-                'y' => -10
+                'y' => -10,
             ],
             'Nu' => [
                 'A' => -10,
@@ -832,7 +832,7 @@ final class StandardFontCoreKerning
                 'epsilon' => 9,
                 'epsilontonos' => 9,
                 'o' => 3,
-                'omega' => -21
+                'omega' => -21,
             ],
             'O' => [
                 'A' => -34,
@@ -869,14 +869,14 @@ final class StandardFontCoreKerning
                 'w' => 6,
                 'x' => -7,
                 'y' => -3,
-                'z' => -9
+                'z' => -9,
             ],
             'OE' => [
                 'T' => 3,
                 'V' => -2,
                 'W' => 2,
                 'X' => 5,
-                'Z' => 2
+                'Z' => 2,
             ],
             'Oacute' => [
                 'A' => -34,
@@ -888,12 +888,12 @@ final class StandardFontCoreKerning
                 'colon' => 8,
                 'comma' => -24,
                 'period' => -24,
-                'semicolon' => 11
+                'semicolon' => 11,
             ],
             'Ocircumflex' => [
                 'T' => -43,
                 'V' => -45,
-                'Y' => -59
+                'Y' => -59,
             ],
             'Odieresis' => [
                 'A' => -34,
@@ -905,12 +905,12 @@ final class StandardFontCoreKerning
                 'colon' => 8,
                 'comma' => -24,
                 'period' => -24,
-                'semicolon' => 11
+                'semicolon' => 11,
             ],
             'Ograve' => [
                 'T' => -43,
                 'V' => -45,
-                'Y' => -59
+                'Y' => -59,
             ],
             'Omicron' => [
                 'A' => -34,
@@ -923,18 +923,18 @@ final class StandardFontCoreKerning
                 'Upsilon' => -59,
                 'Y' => -59,
                 'Zeta' => -40,
-                'lambda' => -23
+                'lambda' => -23,
             ],
             'Omicrontonos' => [
-                'lambda' => -22
+                'lambda' => -22,
             ],
             'Oslash' => [
-                'A' => -31
+                'A' => -31,
             ],
             'Otilde' => [
                 'T' => -43,
                 'V' => -45,
-                'Y' => -59
+                'Y' => -59,
             ],
             'P' => [
                 'A' => -77,
@@ -1004,7 +1004,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => 14,
                 't' => 6,
                 'w' => 10,
-                'y' => 2
+                'y' => 2,
             ],
             'Phi' => [
                 'A' => -63,
@@ -1019,19 +1019,19 @@ final class StandardFontCoreKerning
                 'omega' => -46,
                 'omegatonos' => -46,
                 'omicron' => -22,
-                'omicrontonos' => -22
+                'omicrontonos' => -22,
             ],
             'Pi' => [
                 'epsilontonos' => 7,
                 'lambda' => -13,
                 'o' => 1,
-                'omicron' => -1
+                'omicron' => -1,
             ],
             'Psi' => [
                 'A' => -57,
                 'Alpha' => -57,
                 'O' => -17,
-                'Omicron' => -17
+                'Omicron' => -17,
             ],
             'Q' => [
                 'R' => -4,
@@ -1041,7 +1041,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 30,
                 'parenright' => 17,
                 'u' => 8,
-                'udieresis' => 8
+                'udieresis' => 8,
             ],
             'R' => [
                 'A' => 6,
@@ -1101,7 +1101,7 @@ final class StandardFontCoreKerning
                 'uacute' => -9,
                 'udieresis' => -9,
                 'y' => -8,
-                'yacute' => -8
+                'yacute' => -8,
             ],
             'Rho' => [
                 'A' => -77,
@@ -1123,7 +1123,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -57,
                 'omicron' => -29,
                 'omicrontonos' => -29,
-                'period' => -132
+                'period' => -132,
             ],
             'S' => [
                 'A' => -22,
@@ -1159,7 +1159,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -8,
                 't' => -4,
                 'v' => -3,
-                'y' => -8
+                'y' => -8,
             ],
             'Sigma' => [
                 'O' => -51,
@@ -1168,7 +1168,7 @@ final class StandardFontCoreKerning
                 'chi' => -49,
                 'o' => -20,
                 'omicron' => -22,
-                'tau' => -60
+                'tau' => -60,
             ],
             'T' => [
                 'A' => -96,
@@ -1281,7 +1281,7 @@ final class StandardFontCoreKerning
                 'w' => -93,
                 'y' => -101,
                 'yacute' => -35,
-                'zeta' => -13
+                'zeta' => -13,
             ],
             'Tau' => [
                 'A' => -96,
@@ -1312,7 +1312,7 @@ final class StandardFontCoreKerning
                 'sigma' => -103,
                 'upsilon' => -90,
                 'upsilontonos' => -61,
-                'zeta' => -13
+                'zeta' => -13,
             ],
             'Tcaron' => [
                 'A' => -96,
@@ -1345,7 +1345,7 @@ final class StandardFontCoreKerning
                 'yacute' => -35,
                 'zacute' => -55,
                 'zcaron' => -29,
-                'zdotaccent' => -55
+                'zdotaccent' => -55,
             ],
             'Tcommaaccent' => [
                 'Aacute' => -96,
@@ -1371,14 +1371,14 @@ final class StandardFontCoreKerning
                 'yacute' => -35,
                 'zacute' => -55,
                 'zcaron' => -29,
-                'zdotaccent' => -55
+                'zdotaccent' => -55,
             ],
             'Theta' => [
                 'A' => -34,
                 'Alpha' => -34,
                 'Lambda' => -34,
                 'Upsilon' => -60,
-                'Y' => -60
+                'Y' => -60,
             ],
             'U' => [
                 'A' => -35,
@@ -1406,7 +1406,7 @@ final class StandardFontCoreKerning
                 'w' => -3,
                 'x' => -15,
                 'y' => -11,
-                'z' => -26
+                'z' => -26,
             ],
             'Uacute' => [
                 'A' => -35,
@@ -1415,10 +1415,10 @@ final class StandardFontCoreKerning
                 'n' => -6,
                 'p' => 2,
                 'period' => -23,
-                'r' => -5
+                'r' => -5,
             ],
             'Ucircumflex' => [
-                'A' => -35
+                'A' => -35,
             ],
             'Udieresis' => [
                 'A' => -35,
@@ -1428,10 +1428,10 @@ final class StandardFontCoreKerning
                 'n' => -6,
                 'p' => 2,
                 'period' => -23,
-                'r' => -5
+                'r' => -5,
             ],
             'Ugrave' => [
-                'A' => -35
+                'A' => -35,
             ],
             'Upsilon' => [
                 'A' => -92,
@@ -1447,10 +1447,10 @@ final class StandardFontCoreKerning
                 'guillemotright' => -105,
                 'omicrontonos' => -83,
                 'period' => -110,
-                'pi' => -64
+                'pi' => -64,
             ],
             'Upsilontonos' => [
-                'sigma' => -125
+                'sigma' => -125,
             ],
             'V' => [
                 'A' => -68,
@@ -1528,7 +1528,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -40,
                 'uring' => -40,
                 'y' => -19,
-                'yacute' => -17
+                'yacute' => -17,
             ],
             'W' => [
                 'A' => -50,
@@ -1619,7 +1619,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -27,
                 'uring' => -27,
                 'y' => -6,
-                'yacute' => -4
+                'yacute' => -4,
             ],
             'X' => [
                 'A' => 17,
@@ -1654,12 +1654,12 @@ final class StandardFontCoreKerning
                 'tau' => -42,
                 'u' => -24,
                 'udieresis' => -24,
-                'y' => -58
+                'y' => -58,
             ],
             'Xi' => [
                 'alpha' => -28,
                 'alphatonos' => -15,
-                'upsilontonos' => -30
+                'upsilontonos' => -30,
             ],
             'Y' => [
                 'A' => -92,
@@ -1742,7 +1742,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -60,
                 'v' => -37,
                 'w' => -34,
-                'z' => -57
+                'z' => -57,
             ],
             'Yacute' => [
                 'Aacute' => -92,
@@ -1762,7 +1762,7 @@ final class StandardFontCoreKerning
                 'period' => -111,
                 'scedilla' => -78,
                 'semicolon' => -72,
-                'uacute' => -61
+                'uacute' => -61,
             ],
             'Z' => [
                 'A' => 14,
@@ -1797,14 +1797,14 @@ final class StandardFontCoreKerning
                 'semicolon' => -32,
                 'v' => -33,
                 'w' => -31,
-                'y' => -34
+                'y' => -34,
             ],
             'Zeta' => [
                 'O' => -44,
                 'Omicron' => -44,
                 'epsilon' => 9,
                 'o' => -13,
-                'omicron' => -15
+                'omicron' => -15,
             ],
             'a' => [
                 'comma' => -8,
@@ -1819,7 +1819,7 @@ final class StandardFontCoreKerning
                 'w' => -13,
                 'x' => 21,
                 'y' => -27,
-                'z' => 14
+                'z' => 14,
             ],
             'adieresis' => [
                 'comma' => -8,
@@ -1834,18 +1834,18 @@ final class StandardFontCoreKerning
                 'w' => -13,
                 'x' => 21,
                 'y' => -27,
-                'z' => 14
+                'z' => 14,
             ],
             'aacute' => [
                 'v' => -20,
                 'w' => -13,
-                'y' => -27
+                'y' => -27,
             ],
             'ae' => [
                 'r' => -5,
                 'v' => -15,
                 'w' => -10,
-                'y' => -21
+                'y' => -21,
             ],
             'afii10017' => [
                 'afii10025' => -25,
@@ -1877,7 +1877,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -35,
                 'hyphen' => -2,
                 'period' => 4,
-                'semicolon' => 1
+                'semicolon' => 1,
             ],
             'afii10018' => [
                 'afii10017' => -16,
@@ -1893,7 +1893,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -30,
                 'afii10092' => -32,
                 'afii10106' => -13,
-                'afii10110' => -32
+                'afii10110' => -32,
             ],
             'afii10019' => [
                 'afii10017' => -20,
@@ -1910,7 +1910,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -15,
                 'afii10092' => 11,
                 'afii10106' => -16,
-                'afii10110' => -12
+                'afii10110' => -12,
             ],
             'afii10020' => [
                 'afii10021' => -59,
@@ -1956,10 +1956,10 @@ final class StandardFontCoreKerning
                 'comma' => -149,
                 'hyphen' => -129,
                 'period' => -149,
-                'semicolon' => -136
+                'semicolon' => -136,
             ],
             'afii10022' => [
-                'afii10038' => -23
+                'afii10038' => -23,
             ],
             'afii10024' => [
                 'afii10025' => -26,
@@ -1977,7 +1977,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -46,
                 'afii10089' => -64,
                 'afii10101' => -10,
-                'afii10110' => -31
+                'afii10110' => -31,
             ],
             'afii10025' => [
                 'afii10017' => -29,
@@ -2000,7 +2000,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -24,
                 'afii10097' => -13,
                 'afii10106' => -21,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10028' => [
                 'afii10025' => -48,
@@ -2019,7 +2019,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -68,
                 'afii10089' => -86,
                 'afii10101' => -32,
-                'afii10110' => -53
+                'afii10110' => -53,
             ],
             'afii10032' => [
                 'afii10017' => -34,
@@ -2037,7 +2037,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -42,
                 'afii10062' => -48,
                 'afii10077' => -13,
-                'afii10106' => -13
+                'afii10106' => -13,
             ],
             'afii10034' => [
                 'afii10017' => -76,
@@ -2063,7 +2063,7 @@ final class StandardFontCoreKerning
                 'comma' => -132,
                 'hyphen' => -39,
                 'period' => -132,
-                'semicolon' => -41
+                'semicolon' => -41,
             ],
             'afii10035' => [
                 'afii10017' => -26,
@@ -2083,7 +2083,7 @@ final class StandardFontCoreKerning
                 'afii10084' => -4,
                 'afii10089' => -11,
                 'afii10106' => -21,
-                'afii10110' => -1
+                'afii10110' => -1,
             ],
             'afii10036' => [
                 'afii10017' => -96,
@@ -2132,7 +2132,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -107,
                 'hyphen' => -76,
                 'period' => -96,
-                'semicolon' => -78
+                'semicolon' => -78,
             ],
             'afii10037' => [
                 'afii10017' => -75,
@@ -2180,7 +2180,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -80,
                 'hyphen' => -47,
                 'period' => -106,
-                'semicolon' => -57
+                'semicolon' => -57,
             ],
             'afii10038' => [
                 'afii10017' => -38,
@@ -2196,7 +2196,7 @@ final class StandardFontCoreKerning
                 'afii10062' => -50,
                 'afii10069' => -31,
                 'afii10077' => -19,
-                'afii10106' => -19
+                'afii10106' => -19,
             ],
             'afii10039' => [
                 'afii10025' => -43,
@@ -2213,7 +2213,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -60,
                 'afii10086' => -64,
                 'afii10089' => -80,
-                'afii10101' => -27
+                'afii10101' => -27,
             ],
             'afii10044' => [
                 'afii10036' => -108,
@@ -2222,7 +2222,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -97,
                 'afii10060' => -104,
                 'afii10062' => -63,
-                'afii10092' => -29
+                'afii10092' => -29,
             ],
             'afii10046' => [
                 'afii10036' => -110,
@@ -2231,7 +2231,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -99,
                 'afii10060' => -106,
                 'afii10062' => -65,
-                'afii10092' => -31
+                'afii10092' => -31,
             ],
             'afii10047' => [
                 'afii10017' => -22,
@@ -2245,7 +2245,7 @@ final class StandardFontCoreKerning
                 'afii10058' => -19,
                 'afii10060' => -32,
                 'afii10062' => -37,
-                'afii10106' => -2
+                'afii10106' => -2,
             ],
             'afii10048' => [
                 'afii10017' => -36,
@@ -2263,7 +2263,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -41,
                 'afii10062' => -49,
                 'afii10077' => -16,
-                'afii10106' => -16
+                'afii10106' => -16,
             ],
             'afii10050' => [
                 'afii10021' => -54,
@@ -2305,7 +2305,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -134,
                 'afii10101' => -122,
                 'afii10106' => -140,
-                'afii10110' => -8
+                'afii10110' => -8,
             ],
             'afii10052' => [
                 'afii10021' => -58,
@@ -2346,7 +2346,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -145,
                 'afii10101' => -133,
                 'afii10106' => -156,
-                'afii10110' => -14
+                'afii10110' => -14,
             ],
             'afii10058' => [
                 'afii10036' => -105,
@@ -2355,7 +2355,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -95,
                 'afii10060' => -101,
                 'afii10062' => -61,
-                'afii10092' => -27
+                'afii10092' => -27,
             ],
             'afii10059' => [
                 'afii10036' => -105,
@@ -2364,7 +2364,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -94,
                 'afii10060' => -101,
                 'afii10062' => -60,
-                'afii10092' => -26
+                'afii10092' => -26,
             ],
             'afii10061' => [
                 'afii10025' => -47,
@@ -2383,7 +2383,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -67,
                 'afii10089' => -85,
                 'afii10101' => -31,
-                'afii10110' => -52
+                'afii10110' => -52,
             ],
             'afii10062' => [
                 'afii10017' => -86,
@@ -2423,14 +2423,14 @@ final class StandardFontCoreKerning
                 'afii10096' => -33,
                 'afii10097' => -54,
                 'afii10101' => -55,
-                'afii10106' => -66
+                'afii10106' => -66,
             ],
             'afii10065' => [
                 'afii10084' => -21,
                 'afii10085' => -28,
                 'afii10089' => -30,
                 'afii10106' => 15,
-                'afii10110' => -23
+                'afii10110' => -23,
             ],
             'afii10066' => [
                 'afii10072' => -12,
@@ -2440,7 +2440,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -30,
                 'afii10089' => -13,
                 'afii10097' => -8,
-                'afii10110' => -22
+                'afii10110' => -22,
             ],
             'afii10067' => [
                 'afii10072' => 8,
@@ -2449,7 +2449,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -13,
                 'afii10087' => -14,
                 'afii10089' => -12,
-                'afii10110' => -11
+                'afii10110' => -11,
             ],
             'afii10068' => [
                 'afii10069' => -38,
@@ -2465,7 +2465,7 @@ final class StandardFontCoreKerning
                 'comma' => -90,
                 'hyphen' => -69,
                 'period' => -90,
-                'semicolon' => -11
+                'semicolon' => -11,
             ],
             'afii10070' => [
                 'afii10072' => -8,
@@ -2475,7 +2475,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -29,
                 'afii10089' => -9,
                 'afii10097' => -5,
-                'afii10110' => -18
+                'afii10110' => -18,
             ],
             'afii10072' => [
                 'afii10066' => -8,
@@ -2485,7 +2485,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -1,
                 'afii10086' => -29,
                 'afii10101' => -1,
-                'afii10110' => 11
+                'afii10110' => 11,
             ],
             'afii10073' => [
                 'afii10072' => 1,
@@ -2496,10 +2496,10 @@ final class StandardFontCoreKerning
                 'afii10089' => -15,
                 'afii10097' => -5,
                 'afii10106' => -2,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10075' => [
-                'afii10106' => -14
+                'afii10106' => -14,
             ],
             'afii10076' => [
                 'afii10065' => 13,
@@ -2509,7 +2509,7 @@ final class StandardFontCoreKerning
                 'afii10083' => 3,
                 'afii10086' => -21,
                 'afii10101' => 7,
-                'afii10110' => 19
+                'afii10110' => 19,
             ],
             'afii10080' => [
                 'afii10072' => -8,
@@ -2520,7 +2520,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -26,
                 'afii10092' => 8,
                 'afii10106' => -17,
-                'afii10110' => -18
+                'afii10110' => -18,
             ],
             'afii10082' => [
                 'afii10072' => -2,
@@ -2535,7 +2535,7 @@ final class StandardFontCoreKerning
                 'comma' => -16,
                 'hyphen' => 23,
                 'period' => -16,
-                'semicolon' => 1
+                'semicolon' => 1,
             ],
             'afii10083' => [
                 'afii10062' => -56,
@@ -2549,7 +2549,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -18,
                 'afii10089' => -2,
                 'afii10097' => 4,
-                'afii10106' => -1
+                'afii10106' => -1,
             ],
             'afii10084' => [
                 'afii10065' => -15,
@@ -2572,7 +2572,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -78,
                 'hyphen' => -53,
                 'period' => -73,
-                'semicolon' => -34
+                'semicolon' => -34,
             ],
             'afii10085' => [
                 'afii10065' => -22,
@@ -2593,7 +2593,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -38,
                 'hyphen' => -17,
                 'period' => -70,
-                'semicolon' => -20
+                'semicolon' => -20,
             ],
             'afii10086' => [
                 'afii10068' => -14,
@@ -2608,7 +2608,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -11,
                 'afii10097' => -19,
                 'afii10106' => -37,
-                'afii10110' => -39
+                'afii10110' => -39,
             ],
             'afii10087' => [
                 'afii10065' => -17,
@@ -2618,7 +2618,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -20,
                 'afii10086' => -48,
                 'afii10101' => -16,
-                'afii10110' => 12
+                'afii10110' => 12,
             ],
             'afii10092' => [
                 'afii10070' => 7,
@@ -2627,7 +2627,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -36,
                 'afii10089' => -11,
                 'afii10092' => -59,
-                'afii10110' => -37
+                'afii10110' => -37,
             ],
             'afii10094' => [
                 'afii10083' => 6,
@@ -2635,7 +2635,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -44,
                 'afii10089' => -19,
                 'afii10092' => -66,
-                'afii10110' => -45
+                'afii10110' => -45,
             ],
             'afii10095' => [
                 'afii10077' => -5,
@@ -2644,7 +2644,7 @@ final class StandardFontCoreKerning
                 'afii10092' => 16,
                 'afii10097' => 3,
                 'afii10106' => -8,
-                'afii10110' => -9
+                'afii10110' => -9,
             ],
             'afii10096' => [
                 'afii10073' => 3,
@@ -2654,7 +2654,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -17,
                 'afii10092' => 17,
                 'afii10106' => -7,
-                'afii10110' => -9
+                'afii10110' => -9,
             ],
             'afii10098' => [
                 'afii10069' => -45,
@@ -2664,7 +2664,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -28,
                 'afii10097' => 4,
                 'afii10101' => 2,
-                'afii10106' => -19
+                'afii10106' => -19,
             ],
             'afii10100' => [
                 'afii10069' => -36,
@@ -2674,14 +2674,14 @@ final class StandardFontCoreKerning
                 'afii10086' => -17,
                 'afii10097' => 15,
                 'afii10101' => 13,
-                'afii10106' => -8
+                'afii10106' => -8,
             ],
             'afii10106' => [
                 'afii10084' => -83,
                 'afii10085' => -57,
                 'afii10089' => -32,
                 'afii10092' => -80,
-                'afii10110' => -58
+                'afii10110' => -58,
             ],
             'afii10107' => [
                 'afii10070' => 8,
@@ -2691,7 +2691,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -11,
                 'afii10092' => -59,
                 'afii10101' => 18,
-                'afii10110' => -37
+                'afii10110' => -37,
             ],
             'afii10109' => [
                 'afii10065' => 11,
@@ -2702,7 +2702,7 @@ final class StandardFontCoreKerning
                 'afii10083' => 9,
                 'afii10086' => -15,
                 'afii10101' => 13,
-                'afii10110' => 19
+                'afii10110' => 19,
             ],
             'afii10110' => [
                 'afii10065' => -24,
@@ -2716,12 +2716,12 @@ final class StandardFontCoreKerning
                 'afii10086' => -43,
                 'afii10089' => -3,
                 'afii10097' => -17,
-                'afii10101' => -11
+                'afii10101' => -11,
             ],
             'agrave' => [
                 'v' => -20,
                 'w' => -13,
-                'y' => -27
+                'y' => -27,
             ],
             'alpha' => [
                 'colon' => 21,
@@ -2744,7 +2744,7 @@ final class StandardFontCoreKerning
                 'upsilondieresis' => 14,
                 'upsilontonos' => 14,
                 'xi' => 10,
-                'zeta' => 8
+                'zeta' => 8,
             ],
             'alphatonos' => [
                 'colon' => 20,
@@ -2760,15 +2760,15 @@ final class StandardFontCoreKerning
                 'semicolon' => 23,
                 'theta' => 17,
                 'xi' => 9,
-                'zeta' => 7
+                'zeta' => 7,
             ],
             'aring' => [
                 'v' => -20,
                 'w' => -13,
-                'y' => -27
+                'y' => -27,
             ],
             'asterisk' => [
-                'period' => -57
+                'period' => -57,
             ],
             'b' => [
                 'asterisk' => -12,
@@ -2780,7 +2780,7 @@ final class StandardFontCoreKerning
                 'v' => -11,
                 'w' => -5,
                 'y' => -17,
-                'z' => -14
+                'z' => -14,
             ],
             'backslash' => [
                 'A' => 27,
@@ -2815,11 +2815,11 @@ final class StandardFontCoreKerning
                 'g' => 47,
                 'i' => 51,
                 'j' => 48,
-                'l' => 50
+                'l' => 50,
             ],
             'beta' => [
                 'gamma' => -14,
-                'lambda' => -22
+                'lambda' => -22,
             ],
             'braceleft' => [
                 'A' => -8,
@@ -2842,7 +2842,7 @@ final class StandardFontCoreKerning
                 'l' => 15,
                 'p' => 22,
                 'quoteleft' => 33,
-                'y' => -2
+                'y' => -2,
             ],
             'bracketleft' => [
                 'A' => -2,
@@ -2866,7 +2866,7 @@ final class StandardFontCoreKerning
                 'l' => 21,
                 'p' => 28,
                 'quoteleft' => 40,
-                'y' => 4
+                'y' => 4,
             ],
             'c' => [
                 'J' => 18,
@@ -2897,11 +2897,11 @@ final class StandardFontCoreKerning
                 't' => 8,
                 'u' => 1,
                 'udieresis' => 1,
-                'y' => -6
+                'y' => -6,
             ],
             'ccaron' => [
                 'e' => 6,
-                'o' => 8
+                'o' => 8,
             ],
             'chi' => [
                 'alpha' => -38,
@@ -2914,13 +2914,13 @@ final class StandardFontCoreKerning
                 'omicron' => -42,
                 'omicrontonos' => -42,
                 'theta' => -10,
-                'upsilontonos' => -15
+                'upsilontonos' => -15,
             ],
             'comma' => [
                 'endash' => 4,
                 'hyphen' => -21,
                 'quotedblright' => -45,
-                'quoteright' => -56
+                'quoteright' => -56,
             ],
             'd' => [
                 'a' => -4,
@@ -2936,7 +2936,7 @@ final class StandardFontCoreKerning
                 'v' => 4,
                 'w' => 6,
                 'y' => -1,
-                'z' => -5
+                'z' => -5,
             ],
             'dcaron' => [
                 'a' => -40,
@@ -2959,10 +2959,10 @@ final class StandardFontCoreKerning
                 'uring' => -8,
                 'y' => 13,
                 'yacute' => 18,
-                'z' => -6
+                'z' => -6,
             ],
             'delta' => [
-                'nu' => -17
+                'nu' => -17,
             ],
             'e' => [
                 'a' => -7,
@@ -2991,7 +2991,7 @@ final class StandardFontCoreKerning
                 'x' => -29,
                 'y' => -21,
                 'z' => -15,
-                'zcaron' => -15
+                'zcaron' => -15,
             ],
             'eacute' => [
                 'b' => 2,
@@ -3013,12 +3013,12 @@ final class StandardFontCoreKerning
                 'v' => -15,
                 'w' => -9,
                 'y' => -21,
-                'z' => -15
+                'z' => -15,
             ],
             'ecircumflex' => [
                 'v' => -15,
                 'w' => -9,
-                'y' => -21
+                'y' => -21,
             ],
             'endash' => [
                 'a' => 10,
@@ -3049,10 +3049,10 @@ final class StandardFontCoreKerning
                 'w' => 26,
                 'x' => -18,
                 'y' => 10,
-                'z' => -30
+                'z' => -30,
             ],
             'eogonek' => [
-                'zdotaccent' => -14
+                'zdotaccent' => -14,
             ],
             'epsilon' => [
                 'alpha' => 22,
@@ -3074,7 +3074,7 @@ final class StandardFontCoreKerning
                 'upsilon' => 10,
                 'upsilontonos' => 10,
                 'xi' => 26,
-                'zeta' => 20
+                'zeta' => 20,
             ],
             'epsilontonos' => [
                 'alpha' => 22,
@@ -3087,11 +3087,11 @@ final class StandardFontCoreKerning
                 'semicolon' => 12,
                 'tau' => 32,
                 'theta' => 11,
-                'zeta' => 20
+                'zeta' => 20,
             ],
             'exclam' => [
                 'quotedblright' => 15,
-                'quoteright' => 7
+                'quoteright' => 7,
             ],
             'f' => [
                 'a' => -8,
@@ -3140,7 +3140,7 @@ final class StandardFontCoreKerning
                 'w' => 27,
                 'y' => 18,
                 'yacute' => 19,
-                'z' => 4
+                'z' => 4,
             ],
             'g' => [
                 'a' => -11,
@@ -3178,7 +3178,7 @@ final class StandardFontCoreKerning
                 't' => -4,
                 'v' => -3,
                 'y' => -8,
-                'z' => -12
+                'z' => -12,
             ],
             'gamma' => [
                 'alpha' => -17,
@@ -3194,13 +3194,13 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -20,
                 'rho' => -24,
                 'upsilontonos' => 2,
-                'xi' => -2
+                'xi' => -2,
             ],
             'germandbls' => [
                 'e' => -8,
                 'k' => -8,
                 't' => -12,
-                'w' => -9
+                'w' => -9,
             ],
             'guillemotleft' => [
                 'Alpha' => -37,
@@ -3221,7 +3221,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -39,
                 'afii10089' => -40,
                 'nu' => -33,
-                'tau' => -53
+                'tau' => -53,
             ],
             'guillemotright' => [
                 'A' => -49,
@@ -3232,7 +3232,7 @@ final class StandardFontCoreKerning
                 'T' => -122,
                 'V' => -88,
                 'W' => -63,
-                'Y' => -128
+                'Y' => -128,
             ],
             'guilsinglright' => [
                 'A' => -44,
@@ -3243,7 +3243,7 @@ final class StandardFontCoreKerning
                 'T' => -116,
                 'V' => -82,
                 'W' => -57,
-                'Y' => -123
+                'Y' => -123,
             ],
             'h' => [
                 'asterisk' => -16,
@@ -3251,7 +3251,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -18,
                 'v' => -14,
                 'y' => -20,
-                'yacute' => -20
+                'yacute' => -20,
             ],
             'hyphen' => [
                 'A' => -4,
@@ -3285,7 +3285,7 @@ final class StandardFontCoreKerning
                 'v' => -11,
                 'x' => -45,
                 'y' => -16,
-                'z' => -57
+                'z' => -57,
             ],
             'i' => [
                 'T' => -8,
@@ -3300,13 +3300,13 @@ final class StandardFontCoreKerning
                 'quoteright' => -11,
                 'v' => -1,
                 'w' => 1,
-                'z' => -11
+                'z' => -11,
             ],
             'iacute' => [
-                'v' => -16
+                'v' => -16,
             ],
             'iotatonos' => [
-                'delta' => -3
+                'delta' => -3,
             ],
             'j' => [
                 'asterisk' => -9,
@@ -3317,7 +3317,7 @@ final class StandardFontCoreKerning
                 'oacute' => 1,
                 'odieresis' => 1,
                 'parenright' => 5,
-                'y' => -5
+                'y' => -5,
             ],
             'k' => [
                 'a' => -3,
@@ -3366,7 +3366,7 @@ final class StandardFontCoreKerning
                 'w' => 22,
                 'x' => 31,
                 'y' => 13,
-                'z' => 24
+                'z' => 24,
             ],
             'kappa' => [
                 'alpha' => -19,
@@ -3385,7 +3385,7 @@ final class StandardFontCoreKerning
                 'phi' => -23,
                 'sigma' => -32,
                 'theta' => -1,
-                'upsilontonos' => -6
+                'upsilontonos' => -6,
             ],
             'l' => [
                 'comma' => -17,
@@ -3394,7 +3394,7 @@ final class StandardFontCoreKerning
                 'period' => -17,
                 'w' => 2,
                 'y' => -5,
-                'z' => -10
+                'z' => -10,
             ],
             'lambda' => [
                 'alphatonos' => -5,
@@ -3416,7 +3416,7 @@ final class StandardFontCoreKerning
                 'tau' => -41,
                 'upsilon' => -20,
                 'upsilontonos' => -20,
-                'xi' => -13
+                'xi' => -13,
             ],
             'lcaron' => [
                 'a' => -40,
@@ -3444,7 +3444,7 @@ final class StandardFontCoreKerning
                 'uring' => -8,
                 'v' => 12,
                 'z' => -8,
-                'zcaron' => -1
+                'zcaron' => -1,
             ],
             'm' => [
                 'endash' => 28,
@@ -3453,7 +3453,7 @@ final class StandardFontCoreKerning
                 'v' => -14,
                 'w' => -9,
                 'y' => -20,
-                'z' => -10
+                'z' => -10,
             ],
             'n' => [
                 'T' => -94,
@@ -3464,7 +3464,7 @@ final class StandardFontCoreKerning
                 'v' => -13,
                 'w' => -8,
                 'y' => -20,
-                'z' => -9
+                'z' => -9,
             ],
             'nu' => [
                 'alpha' => -16,
@@ -3485,7 +3485,7 @@ final class StandardFontCoreKerning
                 'quoteright' => 2,
                 'semicolon' => -16,
                 'sigma' => -28,
-                'upsilontonos' => 2
+                'upsilontonos' => 2,
             ],
             'o' => [
                 'T' => -98,
@@ -3510,7 +3510,7 @@ final class StandardFontCoreKerning
                 'w' => -12,
                 'x' => -27,
                 'y' => -24,
-                'z' => -18
+                'z' => -18,
             ],
             'odieresis' => [
                 'T' => -47,
@@ -3527,24 +3527,24 @@ final class StandardFontCoreKerning
                 'w' => -12,
                 'x' => -27,
                 'y' => -24,
-                'z' => -18
+                'z' => -18,
             ],
             'oacute' => [
                 'v' => -18,
                 'w' => -12,
                 'y' => -24,
-                'zacute' => -18
+                'zacute' => -18,
             ],
             'ocircumflex' => [
-                't' => -9
+                't' => -9,
             ],
             'oe' => [
-                'u' => -4
+                'u' => -4,
             ],
             'ograve' => [
                 'v' => -18,
                 'w' => -12,
-                'y' => -24
+                'y' => -24,
             ],
             'omega' => [
                 'chi' => -62,
@@ -3552,7 +3552,7 @@ final class StandardFontCoreKerning
                 'lambda' => -41,
                 'nu' => -43,
                 'pi' => -57,
-                'tau' => -21
+                'tau' => -21,
             ],
             'omegatonos' => [
                 'chi' => -62,
@@ -3560,7 +3560,7 @@ final class StandardFontCoreKerning
                 'lambda' => -41,
                 'nu' => -43,
                 'pi' => -57,
-                'tau' => -21
+                'tau' => -21,
             ],
             'omicron' => [
                 'alpha' => 4,
@@ -3569,14 +3569,14 @@ final class StandardFontCoreKerning
                 'lambda' => -21,
                 'nu' => -17,
                 'pi' => -33,
-                'tau' => 6
+                'tau' => 6,
             ],
             'omicrontonos' => [
                 'chi' => -38,
                 'gamma' => -21,
                 'nu' => -17,
                 'pi' => -33,
-                'tau' => 6
+                'tau' => 6,
             ],
             'p' => [
                 'asterisk' => -15,
@@ -3587,7 +3587,7 @@ final class StandardFontCoreKerning
                 'w' => -5,
                 'y' => -18,
                 'yacute' => -18,
-                'z' => -12
+                'z' => -12,
             ],
             'parenleft' => [
                 'A' => -13,
@@ -3610,7 +3610,7 @@ final class StandardFontCoreKerning
                 'l' => 4,
                 'p' => 11,
                 'quoteleft' => 36,
-                'y' => -11
+                'y' => -11,
             ],
             'period' => [
                 'asterisk' => -53,
@@ -3621,10 +3621,10 @@ final class StandardFontCoreKerning
                 'quoteright' => -56,
                 'quotesingle' => -57,
                 'threesuperior' => -14,
-                'twosuperior' => -7
+                'twosuperior' => -7,
             ],
             'phi' => [
-                'tau' => 2
+                'tau' => 2,
             ],
             'pi' => [
                 'alphatonos' => -19,
@@ -3634,19 +3634,19 @@ final class StandardFontCoreKerning
                 'omicron' => -33,
                 'omicrontonos' => -33,
                 'quoteright' => -24,
-                'upsilontonos' => -25
+                'upsilontonos' => -25,
             ],
             'q' => [
                 'braceright' => 30,
                 'bracketright' => 27,
                 'c' => 6,
                 'endash' => 33,
-                'parenright' => 9
+                'parenright' => 9,
             ],
             'question' => [
                 'quotedblright' => 19,
                 'quoteright' => 11,
-                'quotesingle' => 15
+                'quotesingle' => 15,
             ],
             'quotedblbase' => [
                 'A' => 29,
@@ -3669,7 +3669,7 @@ final class StandardFontCoreKerning
                 'v' => -34,
                 'w' => -21,
                 'y' => -39,
-                'z' => 22
+                'z' => 22,
             ],
             'quotedblleft' => [
                 'A' => -50,
@@ -3706,7 +3706,7 @@ final class StandardFontCoreKerning
                 'w' => 27,
                 'x' => 6,
                 'y' => 18,
-                'z' => -4
+                'z' => -4,
             ],
             'quotedblright' => [
                 'A' => -53,
@@ -3717,7 +3717,7 @@ final class StandardFontCoreKerning
                 'T' => 10,
                 'V' => 16,
                 'W' => 27,
-                'Y' => 6
+                'Y' => 6,
             ],
             'quoteleft' => [
                 'A' => -65,
@@ -3756,7 +3756,7 @@ final class StandardFontCoreKerning
                 'w' => 12,
                 'x' => -8,
                 'y' => 3,
-                'z' => -19
+                'z' => -19,
             ],
             'quoteright' => [
                 'A' => -70,
@@ -3779,7 +3779,7 @@ final class StandardFontCoreKerning
                 'scedilla' => -19,
                 't' => -9,
                 'v' => -5,
-                'y' => -10
+                'y' => -10,
             ],
             'quotesinglbase' => [
                 'A' => 13,
@@ -3799,7 +3799,7 @@ final class StandardFontCoreKerning
                 'v' => -49,
                 'w' => -36,
                 'y' => -54,
-                'z' => 7
+                'z' => 7,
             ],
             'quotesingle' => [
                 'A' => -62,
@@ -3808,7 +3808,7 @@ final class StandardFontCoreKerning
                 'W' => 16,
                 'X' => -15,
                 'Y' => -2,
-                'Z' => -16
+                'Z' => -16,
             ],
             'r' => [
                 'a' => -4,
@@ -3870,7 +3870,7 @@ final class StandardFontCoreKerning
                 'z' => 8,
                 'zacute' => 8,
                 'zcaron' => 8,
-                'zdotaccent' => 8
+                'zdotaccent' => 8,
             ],
             'racute' => [
                 'a' => -4,
@@ -3881,7 +3881,7 @@ final class StandardFontCoreKerning
                 's' => 5,
                 't' => 27,
                 'v' => 28,
-                'z' => 8
+                'z' => 8,
             ],
             'rcaron' => [
                 'a' => -4,
@@ -3901,7 +3901,7 @@ final class StandardFontCoreKerning
                 'u' => 2,
                 'uacute' => 2,
                 'uring' => 2,
-                'v' => 28
+                'v' => 28,
             ],
             'rho' => [
                 'chi' => -39,
@@ -3911,7 +3911,7 @@ final class StandardFontCoreKerning
                 'lambda' => -22,
                 'nu' => -17,
                 'pi' => -35,
-                'tau' => 6
+                'tau' => 6,
             ],
             's' => [
                 'a' => -1,
@@ -3935,17 +3935,17 @@ final class StandardFontCoreKerning
                 'v' => -12,
                 'w' => -8,
                 'y' => -18,
-                'z' => -1
+                'z' => -1,
             ],
             'sacute' => [
-                'w' => -8
+                'w' => -8,
             ],
             'scaron' => [
                 'k' => -2,
-                't' => -3
+                't' => -3,
             ],
             'sigma' => [
-                'lambda' => -39
+                'lambda' => -39,
             ],
             'slash' => [
                 'B' => 38,
@@ -3979,7 +3979,7 @@ final class StandardFontCoreKerning
                 'l' => 21,
                 'slash' => 18,
                 't' => 19,
-                'y' => 3
+                'y' => 3,
             ],
             't' => [
                 'S' => -8,
@@ -4023,7 +4023,7 @@ final class StandardFontCoreKerning
                 'v' => 22,
                 'w' => 25,
                 'y' => 16,
-                'z' => 13
+                'z' => 13,
             ],
             'tau' => [
                 'alpha' => 7,
@@ -4045,7 +4045,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -8,
                 'sigma' => -3,
                 'tau' => 58,
-                'upsilontonos' => 17
+                'upsilontonos' => 17,
             ],
             'tcaron' => [
                 'a' => -21,
@@ -4069,7 +4069,7 @@ final class StandardFontCoreKerning
                 'y' => -3,
                 'yacute' => -2,
                 'z' => -6,
-                'zcaron' => -6
+                'zcaron' => -6,
             ],
             'u' => [
                 'comma' => -19,
@@ -4080,7 +4080,7 @@ final class StandardFontCoreKerning
                 'v' => -2,
                 'x' => -5,
                 'y' => -9,
-                'z' => -12
+                'z' => -12,
             ],
             'udieresis' => [
                 'comma' => -19,
@@ -4092,16 +4092,16 @@ final class StandardFontCoreKerning
                 'v' => -2,
                 'x' => -5,
                 'y' => -9,
-                'z' => -12
+                'z' => -12,
             ],
             'upsilon' => [
                 'chi' => -15,
                 'gamma' => -1,
                 'lambda' => -20,
-                'tau' => 17
+                'tau' => 17,
             ],
             'upsilondieresis' => [
-                'nu' => 1
+                'nu' => 1,
             ],
             'upsilontonos' => [
                 'chi' => -15,
@@ -4109,7 +4109,7 @@ final class StandardFontCoreKerning
                 'lambda' => -20,
                 'nu' => 1,
                 'pi' => -25,
-                'tau' => 17
+                'tau' => 17,
             ],
             'v' => [
                 'a' => -17,
@@ -4144,7 +4144,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -17,
                 'u' => 1,
                 'udieresis' => 1,
-                'y' => 21
+                'y' => 21,
             ],
             'w' => [
                 'a' => -14,
@@ -4187,7 +4187,7 @@ final class StandardFontCoreKerning
                 'u' => 1,
                 'udieresis' => 1,
                 'y' => 21,
-                'z' => 7
+                'z' => 7,
             ],
             'x' => [
                 'a' => -18,
@@ -4208,7 +4208,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => -2,
                 'quoteright' => -10,
                 'semicolon' => -14,
-                'y' => 12
+                'y' => 12,
             ],
             'xi' => [
                 'alpha' => -9,
@@ -4219,7 +4219,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -27,
                 'omicron' => -12,
                 'omicrontonos' => -12,
-                'upsilontonos' => -7
+                'upsilontonos' => -7,
             ],
             'y' => [
                 'a' => -22,
@@ -4257,12 +4257,12 @@ final class StandardFontCoreKerning
                 'quotesingle' => -3,
                 's' => -13,
                 'sacute' => -13,
-                'semicolon' => -21
+                'semicolon' => -21,
             ],
             'yacute' => [
                 'ccaron' => -20,
                 'comma' => -71,
-                'period' => -71
+                'period' => -71,
             ],
             'z' => [
                 'a' => -7,
@@ -4280,18 +4280,18 @@ final class StandardFontCoreKerning
                 'period' => -26,
                 'semicolon' => -24,
                 'u' => -16,
-                'udieresis' => -16
+                'udieresis' => -16,
             ],
             'zacute' => [
                 'colon' => -28,
                 'comma' => -26,
-                'semicolon' => -24
+                'semicolon' => -24,
             ],
             'zcaron' => [
                 'colon' => -28,
                 'comma' => -26,
                 'e' => -23,
-                'semicolon' => -24
+                'semicolon' => -24,
             ],
             'zdotaccent' => [
                 'c' => -19,
@@ -4299,7 +4299,7 @@ final class StandardFontCoreKerning
                 'comma' => -26,
                 'e' => -23,
                 'oacute' => -21,
-                'semicolon' => -24
+                'semicolon' => -24,
             ],
             'zeta' => [
                 'alpha' => -9,
@@ -4311,7 +4311,7 @@ final class StandardFontCoreKerning
                 'omicron' => -13,
                 'omicrontonos' => -13,
                 'upsilon' => -7,
-                'upsilontonos' => -7
+                'upsilontonos' => -7,
             ],
         ],
         'Helvetica-Bold' => [
@@ -4380,14 +4380,14 @@ final class StandardFontCoreKerning
                 'w' => -26,
                 'y' => -37,
                 'yacute' => -37,
-                'z' => 17
+                'z' => 17,
             ],
             'AE' => [
                 'T' => 3,
                 'V' => -2,
                 'W' => 3,
                 'X' => 9,
-                'Z' => 5
+                'Z' => 5,
             ],
             'Aacute' => [
                 'C' => -37,
@@ -4419,7 +4419,7 @@ final class StandardFontCoreKerning
                 'u' => -14,
                 'v' => -39,
                 'w' => -26,
-                'y' => -37
+                'y' => -37,
             ],
             'Abreve' => [
                 'T' => -83,
@@ -4428,7 +4428,7 @@ final class StandardFontCoreKerning
                 'Y' => -89,
                 'Yacute' => -89,
                 'y' => -37,
-                'yacute' => -37
+                'yacute' => -37,
             ],
             'Acircumflex' => [
                 'C' => -37,
@@ -4447,7 +4447,7 @@ final class StandardFontCoreKerning
                 'period' => 14,
                 'v' => -39,
                 'w' => -26,
-                'yacute' => -37
+                'yacute' => -37,
             ],
             'Adieresis' => [
                 'C' => -37,
@@ -4477,7 +4477,7 @@ final class StandardFontCoreKerning
                 'u' => -14,
                 'v' => -39,
                 'w' => -26,
-                'y' => -41
+                'y' => -41,
             ],
             'Agrave' => [
                 'C' => -37,
@@ -4490,7 +4490,7 @@ final class StandardFontCoreKerning
                 'W' => -52,
                 'Y' => -89,
                 'comma' => 14,
-                'period' => 14
+                'period' => 14,
             ],
             'Alpha' => [
                 'O' => -35,
@@ -4510,13 +4510,13 @@ final class StandardFontCoreKerning
                 'phi' => -20,
                 'sigma' => -36,
                 'upsilon' => -13,
-                'upsilontonos' => -13
+                'upsilontonos' => -13,
             ],
             'Alphatonos' => [
                 'gamma' => -44,
                 'nu' => -41,
                 'phi' => -17,
-                'sigma' => -36
+                'sigma' => -36,
             ],
             'Aogonek' => [
                 'C' => -35,
@@ -4530,7 +4530,7 @@ final class StandardFontCoreKerning
                 'period' => 14,
                 'semicolon' => 10,
                 'y' => -4,
-                'yacute' => -4
+                'yacute' => -4,
             ],
             'Aring' => [
                 'C' => -37,
@@ -4561,7 +4561,7 @@ final class StandardFontCoreKerning
                 'u' => -14,
                 'v' => -39,
                 'w' => -22,
-                'y' => -37
+                'y' => -37,
             ],
             'Atilde' => [
                 'C' => -37,
@@ -4574,7 +4574,7 @@ final class StandardFontCoreKerning
                 'W' => -52,
                 'Y' => -89,
                 'comma' => 14,
-                'period' => 14
+                'period' => 14,
             ],
             'B' => [
                 'A' => -31,
@@ -4601,13 +4601,13 @@ final class StandardFontCoreKerning
                 'Y' => -50,
                 'Z' => -13,
                 'lambda' => -28,
-                'y' => -6
+                'y' => -6,
             ],
             'Beta' => [
                 'A' => -31,
                 'Alpha' => -31,
                 'Delta' => -24,
-                'lambda' => -28
+                'lambda' => -28,
             ],
             'C' => [
                 'A' => -28,
@@ -4643,13 +4643,13 @@ final class StandardFontCoreKerning
                 'quotesingle' => 6,
                 's' => -2,
                 'semicolon' => 18,
-                'y' => 8
+                'y' => 8,
             ],
             'Ccaron' => [
-                'O' => -6
+                'O' => -6,
             ],
             'Ccedilla' => [
-                'A' => -30
+                'A' => -30,
             ],
             'Chi' => [
                 'O' => -38,
@@ -4662,7 +4662,7 @@ final class StandardFontCoreKerning
                 'omega' => -43,
                 'omicron' => -35,
                 'omicrontonos' => -35,
-                'tau' => -40
+                'tau' => -40,
             ],
             'D' => [
                 'A' => -39,
@@ -4688,7 +4688,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 35,
                 'o' => 2,
                 'odieresis' => 2,
-                'oe' => 8
+                'oe' => 8,
             ],
             'Delta' => [
                 'O' => -28,
@@ -4701,7 +4701,7 @@ final class StandardFontCoreKerning
                 'o' => -17,
                 'omegatonos' => -30,
                 'omicron' => -19,
-                'upsilon' => -12
+                'upsilon' => -12,
             ],
             'E' => [
                 'A' => 3,
@@ -4743,7 +4743,7 @@ final class StandardFontCoreKerning
                 'v' => -32,
                 'w' => -19,
                 'y' => -31,
-                'z' => 5
+                'z' => 5,
             ],
             'Epsilon' => [
                 'O' => -21,
@@ -4753,10 +4753,10 @@ final class StandardFontCoreKerning
                 'delta' => -14,
                 'gamma' => -35,
                 'nu' => -33,
-                'tau' => -12
+                'tau' => -12,
             ],
             'Epsilontonos' => [
-                'nu' => -59
+                'nu' => -59,
             ],
             'F' => [
                 'A' => -63,
@@ -4808,7 +4808,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -25,
                 'uacute' => -25,
                 'uring' => -25,
-                'y' => -21
+                'y' => -21,
             ],
             'G' => [
                 'A' => -9,
@@ -4843,7 +4843,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => -8,
                 'semicolon' => 24,
                 'w' => -1,
-                'y' => -4
+                'y' => -4,
             ],
             'Gamma' => [
                 'A' => -90,
@@ -4865,7 +4865,7 @@ final class StandardFontCoreKerning
                 'period' => -145,
                 'rho' => -132,
                 'upsilon' => -71,
-                'upsilontonos' => -26
+                'upsilontonos' => -26,
             ],
             'H' => [
                 'A' => -8,
@@ -4875,7 +4875,7 @@ final class StandardFontCoreKerning
                 'Y' => -10,
                 'a' => 8,
                 'adieresis' => 8,
-                'ae' => 9
+                'ae' => 9,
             ],
             'I' => [
                 'A' => -8,
@@ -4886,7 +4886,7 @@ final class StandardFontCoreKerning
                 'W' => -2,
                 'X' => -6,
                 'Y' => -10,
-                'Z' => -4
+                'Z' => -4,
             ],
             'J' => [
                 'A' => -33,
@@ -4894,7 +4894,7 @@ final class StandardFontCoreKerning
                 'Adieresis' => -33,
                 'Aring' => -33,
                 'Y' => -12,
-                'y' => -2
+                'y' => -2,
             ],
             'K' => [
                 'A' => 20,
@@ -4955,7 +4955,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -25,
                 'upsilontonos' => -25,
                 'w' => -43,
-                'y' => -67
+                'y' => -67,
             ],
             'Kappa' => [
                 'O' => -55,
@@ -4972,7 +4972,7 @@ final class StandardFontCoreKerning
                 'period' => 1,
                 'semicolon' => -23,
                 'upsilon' => -25,
-                'upsilontonos' => -25
+                'upsilontonos' => -25,
             ],
             'L' => [
                 'A' => 8,
@@ -5020,7 +5020,7 @@ final class StandardFontCoreKerning
                 'u' => -8,
                 'udieresis' => -8,
                 'y' => -59,
-                'yacute' => -59
+                'yacute' => -59,
             ],
             'Lambda' => [
                 'O' => -26,
@@ -5040,7 +5040,7 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -9,
                 'period' => 26,
                 'quoteright' => -57,
-                'upsilon' => -1
+                'upsilon' => -1,
             ],
             'Lcaron' => [
                 'O' => -29,
@@ -5051,7 +5051,7 @@ final class StandardFontCoreKerning
                 'Y' => -57,
                 'Yacute' => -57,
                 'v' => -57,
-                'yacute' => -54
+                'yacute' => -54,
             ],
             'Lslash' => [
                 'O' => -20,
@@ -5066,7 +5066,7 @@ final class StandardFontCoreKerning
                 'period' => 21,
                 'v' => -48,
                 'w' => -30,
-                'yacute' => -50
+                'yacute' => -50,
             ],
             'M' => [
                 'A' => -4,
@@ -5077,10 +5077,10 @@ final class StandardFontCoreKerning
                 'Y' => -6,
                 'epsilon' => 19,
                 'j' => 7,
-                'y' => 3
+                'y' => 3,
             ],
             'Mu' => [
-                'epsilon' => 19
+                'epsilon' => 19,
             ],
             'N' => [
                 'A' => -6,
@@ -5116,7 +5116,7 @@ final class StandardFontCoreKerning
                 'period' => 10,
                 'u' => 8,
                 'udieresis' => 8,
-                'y' => 1
+                'y' => 1,
             ],
             'Nu' => [
                 'A' => -6,
@@ -5126,7 +5126,7 @@ final class StandardFontCoreKerning
                 'o' => 7,
                 'omega' => -8,
                 'omicron' => 5,
-                'omicrontonos' => 5
+                'omicrontonos' => 5,
             ],
             'O' => [
                 'A' => -40,
@@ -5163,13 +5163,13 @@ final class StandardFontCoreKerning
                 'w' => 2,
                 'x' => -7,
                 'y' => -1,
-                'z' => -2
+                'z' => -2,
             ],
             'OE' => [
                 'T' => 6,
                 'W' => 6,
                 'X' => 11,
-                'Z' => 7
+                'Z' => 7,
             ],
             'Oacute' => [
                 'A' => -40,
@@ -5181,12 +5181,12 @@ final class StandardFontCoreKerning
                 'colon' => 25,
                 'comma' => -12,
                 'period' => -12,
-                'semicolon' => 25
+                'semicolon' => 25,
             ],
             'Ocircumflex' => [
                 'T' => -22,
                 'V' => -39,
-                'Y' => -57
+                'Y' => -57,
             ],
             'Odieresis' => [
                 'A' => -40,
@@ -5198,12 +5198,12 @@ final class StandardFontCoreKerning
                 'colon' => 25,
                 'comma' => -12,
                 'period' => -12,
-                'semicolon' => 25
+                'semicolon' => 25,
             ],
             'Ograve' => [
                 'T' => -22,
                 'V' => -39,
-                'Y' => -57
+                'Y' => -57,
             ],
             'Omicron' => [
                 'A' => -40,
@@ -5216,18 +5216,18 @@ final class StandardFontCoreKerning
                 'Upsilon' => -57,
                 'Y' => -57,
                 'Zeta' => -26,
-                'lambda' => -24
+                'lambda' => -24,
             ],
             'Omicrontonos' => [
-                'lambda' => -26
+                'lambda' => -26,
             ],
             'Oslash' => [
-                'A' => -34
+                'A' => -34,
             ],
             'Otilde' => [
                 'T' => -22,
                 'V' => -39,
-                'Y' => -57
+                'Y' => -57,
             ],
             'P' => [
                 'A' => -69,
@@ -5295,7 +5295,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => 18,
                 't' => 13,
                 'w' => 17,
-                'y' => 14
+                'y' => 14,
             ],
             'Phi' => [
                 'A' => -58,
@@ -5310,19 +5310,19 @@ final class StandardFontCoreKerning
                 'omega' => -29,
                 'omegatonos' => -29,
                 'omicron' => -14,
-                'omicrontonos' => -14
+                'omicrontonos' => -14,
             ],
             'Pi' => [
                 'epsilontonos' => 18,
                 'lambda' => -4,
                 'o' => 4,
-                'omicron' => 2
+                'omicron' => 2,
             ],
             'Psi' => [
                 'A' => -52,
                 'Alpha' => -52,
                 'O' => -10,
-                'Omicron' => -10
+                'Omicron' => -10,
             ],
             'Q' => [
                 'R' => 3,
@@ -5332,7 +5332,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 38,
                 'parenright' => 28,
                 'u' => 14,
-                'udieresis' => 14
+                'udieresis' => 14,
             ],
             'R' => [
                 'A' => 2,
@@ -5382,7 +5382,7 @@ final class StandardFontCoreKerning
                 'uacute' => -1,
                 'udieresis' => -1,
                 'y' => 4,
-                'yacute' => 4
+                'yacute' => 4,
             ],
             'Rho' => [
                 'A' => -69,
@@ -5403,7 +5403,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -33,
                 'omicron' => -16,
                 'omicrontonos' => -16,
-                'period' => -94
+                'period' => -94,
             ],
             'S' => [
                 'A' => -20,
@@ -5439,7 +5439,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => -10,
                 'quoteright' => -6,
                 'v' => -1,
-                'w' => 3
+                'w' => 3,
             ],
             'Sigma' => [
                 'O' => -24,
@@ -5448,7 +5448,7 @@ final class StandardFontCoreKerning
                 'chi' => -34,
                 'o' => -2,
                 'omicron' => -4,
-                'tau' => -49
+                'tau' => -49,
             ],
             'T' => [
                 'A' => -88,
@@ -5561,7 +5561,7 @@ final class StandardFontCoreKerning
                 'w' => -78,
                 'y' => -80,
                 'yacute' => -1,
-                'zeta' => -3
+                'zeta' => -3,
             ],
             'Tau' => [
                 'A' => -88,
@@ -5592,7 +5592,7 @@ final class StandardFontCoreKerning
                 'sigma' => -91,
                 'upsilon' => -67,
                 'upsilontonos' => -25,
-                'zeta' => -3
+                'zeta' => -3,
             ],
             'Tcaron' => [
                 'A' => -88,
@@ -5626,7 +5626,7 @@ final class StandardFontCoreKerning
                 'yacute' => -1,
                 'zacute' => -19,
                 'zcaron' => -19,
-                'zdotaccent' => -19
+                'zdotaccent' => -19,
             ],
             'Tcommaaccent' => [
                 'Aacute' => -90,
@@ -5653,14 +5653,14 @@ final class StandardFontCoreKerning
                 'yacute' => -5,
                 'zacute' => -24,
                 'zcaron' => -22,
-                'zdotaccent' => -24
+                'zdotaccent' => -24,
             ],
             'Theta' => [
                 'A' => -40,
                 'Alpha' => -40,
                 'Lambda' => -25,
                 'Upsilon' => -57,
-                'Y' => -57
+                'Y' => -57,
             ],
             'U' => [
                 'A' => -37,
@@ -5685,17 +5685,17 @@ final class StandardFontCoreKerning
                 'v' => -4,
                 'x' => -7,
                 'y' => -1,
-                'z' => -11
+                'z' => -11,
             ],
             'Uacute' => [
                 'A' => -37,
                 'comma' => -6,
                 'm' => 2,
                 'p' => 3,
-                'period' => -6
+                'period' => -6,
             ],
             'Ucircumflex' => [
-                'A' => -37
+                'A' => -37,
             ],
             'Udieresis' => [
                 'A' => -37,
@@ -5703,10 +5703,10 @@ final class StandardFontCoreKerning
                 'comma' => -6,
                 'm' => 2,
                 'p' => 3,
-                'period' => -6
+                'period' => -6,
             ],
             'Ugrave' => [
-                'A' => -37
+                'A' => -37,
             ],
             'Upsilon' => [
                 'A' => -87,
@@ -5722,10 +5722,10 @@ final class StandardFontCoreKerning
                 'guillemotright' => -76,
                 'omicrontonos' => -73,
                 'period' => -81,
-                'pi' => -54
+                'pi' => -54,
             ],
             'Upsilontonos' => [
-                'sigma' => -127
+                'sigma' => -127,
             ],
             'V' => [
                 'A' => -73,
@@ -5803,7 +5803,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -32,
                 'uring' => -32,
                 'y' => -9,
-                'yacute' => -7
+                'yacute' => -7,
             ],
             'W' => [
                 'A' => -59,
@@ -5892,7 +5892,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -22,
                 'uhungarumlaut' => -22,
                 'uring' => -22,
-                'yacute' => 2
+                'yacute' => 2,
             ],
             'X' => [
                 'A' => 16,
@@ -5927,10 +5927,10 @@ final class StandardFontCoreKerning
                 'tau' => -40,
                 'u' => -24,
                 'udieresis' => -24,
-                'y' => -37
+                'y' => -37,
             ],
             'Xi' => [
-                'alpha' => 1
+                'alpha' => 1,
             ],
             'Y' => [
                 'A' => -87,
@@ -6013,7 +6013,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -46,
                 'v' => -27,
                 'w' => -22,
-                'z' => -39
+                'z' => -39,
             ],
             'Yacute' => [
                 'Aacute' => -87,
@@ -6033,7 +6033,7 @@ final class StandardFontCoreKerning
                 'period' => -81,
                 'scedilla' => -68,
                 'semicolon' => -46,
-                'uacute' => -46
+                'uacute' => -46,
             ],
             'Z' => [
                 'A' => 8,
@@ -6069,14 +6069,14 @@ final class StandardFontCoreKerning
                 'semicolon' => 3,
                 'v' => -15,
                 'w' => -10,
-                'y' => -8
+                'y' => -8,
             ],
             'Zeta' => [
                 'O' => -26,
                 'Omicron' => -26,
                 'epsilon' => 11,
                 'o' => -8,
-                'omicron' => -10
+                'omicron' => -10,
             ],
             'a' => [
                 'comma' => 3,
@@ -6092,7 +6092,7 @@ final class StandardFontCoreKerning
                 'w' => -8,
                 'x' => 13,
                 'y' => -20,
-                'z' => 11
+                'z' => 11,
             ],
             'adieresis' => [
                 'comma' => 3,
@@ -6108,18 +6108,18 @@ final class StandardFontCoreKerning
                 'w' => -8,
                 'x' => 13,
                 'y' => -20,
-                'z' => 11
+                'z' => 11,
             ],
             'aacute' => [
                 'v' => -19,
                 'w' => -8,
-                'y' => -20
+                'y' => -20,
             ],
             'ae' => [
                 'r' => 1,
                 'v' => -19,
                 'w' => -8,
-                'y' => -19
+                'y' => -19,
             ],
             'afii10017' => [
                 'afii10025' => -28,
@@ -6149,7 +6149,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -31,
                 'hyphen' => 5,
                 'period' => 12,
-                'semicolon' => 8
+                'semicolon' => 8,
             ],
             'afii10018' => [
                 'afii10017' => -28,
@@ -6165,7 +6165,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -44,
                 'afii10092' => -59,
                 'afii10106' => -16,
-                'afii10110' => -43
+                'afii10110' => -43,
             ],
             'afii10019' => [
                 'afii10017' => -31,
@@ -6182,7 +6182,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -16,
                 'afii10092' => -14,
                 'afii10106' => -18,
-                'afii10110' => -12
+                'afii10110' => -12,
             ],
             'afii10020' => [
                 'afii10021' => -69,
@@ -6228,10 +6228,10 @@ final class StandardFontCoreKerning
                 'comma' => -107,
                 'hyphen' => -88,
                 'period' => -107,
-                'semicolon' => -86
+                'semicolon' => -86,
             ],
             'afii10022' => [
-                'afii10038' => -27
+                'afii10038' => -27,
             ],
             'afii10024' => [
                 'afii10025' => -15,
@@ -6250,7 +6250,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -25,
                 'afii10089' => -31,
                 'afii10101' => -1,
-                'afii10110' => -21
+                'afii10110' => -21,
             ],
             'afii10025' => [
                 'afii10017' => -29,
@@ -6272,7 +6272,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -14,
                 'afii10097' => -13,
                 'afii10106' => -16,
-                'afii10110' => -9
+                'afii10110' => -9,
             ],
             'afii10028' => [
                 'afii10025' => -26,
@@ -6291,7 +6291,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -36,
                 'afii10089' => -43,
                 'afii10101' => -13,
-                'afii10110' => -33
+                'afii10110' => -33,
             ],
             'afii10032' => [
                 'afii10017' => -40,
@@ -6308,7 +6308,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -47,
                 'afii10062' => -32,
                 'afii10077' => -19,
-                'afii10106' => -17
+                'afii10106' => -17,
             ],
             'afii10034' => [
                 'afii10017' => -71,
@@ -6333,7 +6333,7 @@ final class StandardFontCoreKerning
                 'comma' => -98,
                 'hyphen' => -4,
                 'period' => -98,
-                'semicolon' => -10
+                'semicolon' => -10,
             ],
             'afii10035' => [
                 'afii10017' => -29,
@@ -6354,7 +6354,7 @@ final class StandardFontCoreKerning
                 'afii10085' => 3,
                 'afii10089' => -3,
                 'afii10106' => -17,
-                'afii10110' => 4
+                'afii10110' => 4,
             ],
             'afii10036' => [
                 'afii10017' => -87,
@@ -6403,7 +6403,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -91,
                 'hyphen' => -51,
                 'period' => -70,
-                'semicolon' => -54
+                'semicolon' => -54,
             ],
             'afii10037' => [
                 'afii10017' => -81,
@@ -6451,7 +6451,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -59,
                 'hyphen' => -33,
                 'period' => -91,
-                'semicolon' => -41
+                'semicolon' => -41,
             ],
             'afii10038' => [
                 'afii10017' => -49,
@@ -6467,7 +6467,7 @@ final class StandardFontCoreKerning
                 'afii10062' => -46,
                 'afii10069' => -34,
                 'afii10077' => -34,
-                'afii10106' => -32
+                'afii10106' => -32,
             ],
             'afii10039' => [
                 'afii10025' => -38,
@@ -6484,7 +6484,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -42,
                 'afii10086' => -57,
                 'afii10089' => -55,
-                'afii10101' => -31
+                'afii10101' => -31,
             ],
             'afii10044' => [
                 'afii10036' => -102,
@@ -6493,7 +6493,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -114,
                 'afii10060' => -115,
                 'afii10062' => -28,
-                'afii10092' => -53
+                'afii10092' => -53,
             ],
             'afii10046' => [
                 'afii10036' => -107,
@@ -6502,7 +6502,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -119,
                 'afii10060' => -121,
                 'afii10062' => -33,
-                'afii10092' => -58
+                'afii10092' => -58,
             ],
             'afii10047' => [
                 'afii10017' => -35,
@@ -6514,7 +6514,7 @@ final class StandardFontCoreKerning
                 'afii10058' => -6,
                 'afii10060' => -42,
                 'afii10062' => -28,
-                'afii10106' => -13
+                'afii10106' => -13,
             ],
             'afii10048' => [
                 'afii10017' => -41,
@@ -6532,7 +6532,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -49,
                 'afii10062' => -34,
                 'afii10077' => -21,
-                'afii10106' => -19
+                'afii10106' => -19,
             ],
             'afii10050' => [
                 'afii10021' => -49,
@@ -6574,7 +6574,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -88,
                 'afii10101' => -81,
                 'afii10106' => -104,
-                'afii10110' => -4
+                'afii10110' => -4,
             ],
             'afii10052' => [
                 'afii10021' => -69,
@@ -6615,7 +6615,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -109,
                 'afii10101' => -101,
                 'afii10106' => -122,
-                'afii10110' => -24
+                'afii10110' => -24,
             ],
             'afii10058' => [
                 'afii10036' => -102,
@@ -6624,7 +6624,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -114,
                 'afii10060' => -115,
                 'afii10062' => -28,
-                'afii10092' => -53
+                'afii10092' => -53,
             ],
             'afii10059' => [
                 'afii10036' => -84,
@@ -6633,7 +6633,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -96,
                 'afii10060' => -97,
                 'afii10062' => -9,
-                'afii10092' => -36
+                'afii10092' => -36,
             ],
             'afii10061' => [
                 'afii10025' => -44,
@@ -6652,7 +6652,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -55,
                 'afii10089' => -57,
                 'afii10101' => -31,
-                'afii10110' => -47
+                'afii10110' => -47,
             ],
             'afii10062' => [
                 'afii10017' => -91,
@@ -6692,14 +6692,14 @@ final class StandardFontCoreKerning
                 'afii10096' => -26,
                 'afii10097' => -51,
                 'afii10101' => -53,
-                'afii10106' => -64
+                'afii10106' => -64,
             ],
             'afii10065' => [
                 'afii10084' => -2,
                 'afii10085' => -23,
                 'afii10089' => -13,
                 'afii10106' => 5,
-                'afii10110' => -20
+                'afii10110' => -20,
             ],
             'afii10066' => [
                 'afii10073' => -4,
@@ -6708,7 +6708,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -30,
                 'afii10089' => -3,
                 'afii10097' => -9,
-                'afii10110' => -25
+                'afii10110' => -25,
             ],
             'afii10067' => [
                 'afii10072' => -2,
@@ -6718,7 +6718,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -31,
                 'afii10089' => -17,
                 'afii10097' => -15,
-                'afii10110' => -26
+                'afii10110' => -26,
             ],
             'afii10068' => [
                 'afii10069' => -39,
@@ -6734,7 +6734,7 @@ final class StandardFontCoreKerning
                 'comma' => -66,
                 'hyphen' => -47,
                 'period' => -66,
-                'semicolon' => -21
+                'semicolon' => -21,
             ],
             'afii10070' => [
                 'afii10072' => 8,
@@ -6743,7 +6743,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -19,
                 'afii10087' => -18,
                 'afii10089' => 4,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10072' => [
                 'afii10066' => 4,
@@ -6752,7 +6752,7 @@ final class StandardFontCoreKerning
                 'afii10083' => 1,
                 'afii10086' => -16,
                 'afii10101' => 5,
-                'afii10110' => 16
+                'afii10110' => 16,
             ],
             'afii10073' => [
                 'afii10072' => 5,
@@ -6763,10 +6763,10 @@ final class StandardFontCoreKerning
                 'afii10089' => -7,
                 'afii10097' => -4,
                 'afii10106' => -1,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10075' => [
-                'afii10106' => -13
+                'afii10106' => -13,
             ],
             'afii10076' => [
                 'afii10065' => -6,
@@ -6777,7 +6777,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -12,
                 'afii10086' => -30,
                 'afii10101' => -8,
-                'afii10110' => 2
+                'afii10110' => 2,
             ],
             'afii10080' => [
                 'afii10072' => 1,
@@ -6788,7 +6788,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -24,
                 'afii10092' => -11,
                 'afii10106' => -12,
-                'afii10110' => -23
+                'afii10110' => -23,
             ],
             'afii10082' => [
                 'afii10072' => 3,
@@ -6803,7 +6803,7 @@ final class StandardFontCoreKerning
                 'comma' => -4,
                 'hyphen' => 30,
                 'period' => -4,
-                'semicolon' => 14
+                'semicolon' => 14,
             ],
             'afii10083' => [
                 'afii10062' => -10,
@@ -6817,7 +6817,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -25,
                 'afii10089' => 1,
                 'afii10097' => -3,
-                'afii10106' => -3
+                'afii10106' => -3,
             ],
             'afii10084' => [
                 'afii10065' => 4,
@@ -6840,7 +6840,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -14,
                 'hyphen' => -36,
                 'period' => -55,
-                'semicolon' => -11
+                'semicolon' => -11,
             ],
             'afii10085' => [
                 'afii10065' => -11,
@@ -6859,7 +6859,7 @@ final class StandardFontCoreKerning
                 'comma' => -47,
                 'guillemotright' => -21,
                 'hyphen' => 2,
-                'period' => -47
+                'period' => -47,
             ],
             'afii10086' => [
                 'afii10068' => -17,
@@ -6874,7 +6874,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -21,
                 'afii10097' => -15,
                 'afii10106' => -32,
-                'afii10110' => -34
+                'afii10110' => -34,
             ],
             'afii10087' => [
                 'afii10065' => -9,
@@ -6884,7 +6884,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -24,
                 'afii10086' => -41,
                 'afii10101' => -17,
-                'afii10110' => 15
+                'afii10110' => 15,
             ],
             'afii10092' => [
                 'afii10070' => -8,
@@ -6893,7 +6893,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -60,
                 'afii10089' => -20,
                 'afii10092' => -86,
-                'afii10110' => -56
+                'afii10110' => -56,
             ],
             'afii10094' => [
                 'afii10070' => -7,
@@ -6902,7 +6902,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -59,
                 'afii10089' => -19,
                 'afii10092' => -85,
-                'afii10110' => -55
+                'afii10110' => -55,
             ],
             'afii10095' => [
                 'afii10077' => -7,
@@ -6911,7 +6911,7 @@ final class StandardFontCoreKerning
                 'afii10089' => 6,
                 'afii10092' => -2,
                 'afii10106' => -5,
-                'afii10110' => -15
+                'afii10110' => -15,
             ],
             'afii10096' => [
                 'afii10072' => 4,
@@ -6921,7 +6921,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -22,
                 'afii10092' => -8,
                 'afii10106' => -10,
-                'afii10110' => -20
+                'afii10110' => -20,
             ],
             'afii10098' => [
                 'afii10069' => -47,
@@ -6931,7 +6931,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -20,
                 'afii10097' => -3,
                 'afii10101' => -5,
-                'afii10106' => -37
+                'afii10106' => -37,
             ],
             'afii10100' => [
                 'afii10069' => -39,
@@ -6941,14 +6941,14 @@ final class StandardFontCoreKerning
                 'afii10086' => -13,
                 'afii10097' => 3,
                 'afii10101' => 2,
-                'afii10106' => -30
+                'afii10106' => -30,
             ],
             'afii10106' => [
                 'afii10084' => -67,
                 'afii10085' => -54,
                 'afii10089' => -14,
                 'afii10092' => -80,
-                'afii10110' => -50
+                'afii10110' => -50,
             ],
             'afii10107' => [
                 'afii10070' => 3,
@@ -6957,7 +6957,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -8,
                 'afii10092' => -74,
                 'afii10101' => 7,
-                'afii10110' => -44
+                'afii10110' => -44,
             ],
             'afii10109' => [
                 'afii10065' => -3,
@@ -6968,7 +6968,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -8,
                 'afii10086' => -26,
                 'afii10101' => -4,
-                'afii10110' => 3
+                'afii10110' => 3,
             ],
             'afii10110' => [
                 'afii10065' => -11,
@@ -6982,12 +6982,12 @@ final class StandardFontCoreKerning
                 'afii10086' => -26,
                 'afii10089' => 10,
                 'afii10097' => -13,
-                'afii10101' => -7
+                'afii10101' => -7,
             ],
             'agrave' => [
                 'v' => -19,
                 'w' => -8,
-                'y' => -20
+                'y' => -20,
             ],
             'alpha' => [
                 'colon' => 26,
@@ -7010,7 +7010,7 @@ final class StandardFontCoreKerning
                 'upsilondieresis' => 11,
                 'upsilontonos' => 11,
                 'xi' => 10,
-                'zeta' => 5
+                'zeta' => 5,
             ],
             'alphatonos' => [
                 'colon' => 32,
@@ -7027,15 +7027,15 @@ final class StandardFontCoreKerning
                 'sigma' => -7,
                 'theta' => 27,
                 'xi' => 16,
-                'zeta' => 11
+                'zeta' => 11,
             ],
             'aring' => [
                 'v' => -19,
                 'w' => -8,
-                'y' => -20
+                'y' => -20,
             ],
             'asterisk' => [
-                'period' => -26
+                'period' => -26,
             ],
             'b' => [
                 'asterisk' => -4,
@@ -7048,7 +7048,7 @@ final class StandardFontCoreKerning
                 'v' => -21,
                 'w' => -6,
                 'y' => -21,
-                'z' => -5
+                'z' => -5,
             ],
             'backslash' => [
                 'A' => 27,
@@ -7083,11 +7083,11 @@ final class StandardFontCoreKerning
                 'g' => 46,
                 'i' => 51,
                 'j' => 50,
-                'l' => 51
+                'l' => 51,
             ],
             'beta' => [
                 'gamma' => -11,
-                'lambda' => -18
+                'lambda' => -18,
             ],
             'braceleft' => [
                 'A' => -21,
@@ -7111,7 +7111,7 @@ final class StandardFontCoreKerning
                 'l' => 8,
                 'p' => 12,
                 'quoteleft' => 26,
-                'y' => -9
+                'y' => -9,
             ],
             'bracketleft' => [
                 'A' => -6,
@@ -7135,7 +7135,7 @@ final class StandardFontCoreKerning
                 'l' => 19,
                 'p' => 23,
                 'quoteleft' => 44,
-                'y' => 1
+                'y' => 1,
             ],
             'c' => [
                 'J' => 8,
@@ -7163,10 +7163,10 @@ final class StandardFontCoreKerning
                 't' => 1,
                 'u' => -1,
                 'udieresis' => -1,
-                'y' => -14
+                'y' => -14,
             ],
             'ccaron' => [
-                'e' => 7
+                'e' => 7,
             ],
             'chi' => [
                 'alpha' => -31,
@@ -7178,13 +7178,13 @@ final class StandardFontCoreKerning
                 'omegatonos' => -52,
                 'omicron' => -40,
                 'omicrontonos' => -40,
-                'theta' => 8
+                'theta' => 8,
             ],
             'comma' => [
                 'endash' => 28,
                 'hyphen' => 11,
                 'quotedblright' => -37,
-                'quoteright' => -34
+                'quoteright' => -34,
             ],
             'd' => [
                 'a' => 3,
@@ -7199,7 +7199,7 @@ final class StandardFontCoreKerning
                 'period' => -1,
                 'v' => -3,
                 'w' => 1,
-                'z' => -5
+                'z' => -5,
             ],
             'dcaron' => [
                 'a' => -45,
@@ -7222,10 +7222,10 @@ final class StandardFontCoreKerning
                 'uring' => -12,
                 'y' => 11,
                 'yacute' => 14,
-                'z' => -6
+                'z' => -6,
             ],
             'delta' => [
-                'nu' => -22
+                'nu' => -22,
             ],
             'e' => [
                 'a' => 5,
@@ -7252,7 +7252,7 @@ final class StandardFontCoreKerning
                 'v' => -18,
                 'w' => -7,
                 'x' => -23,
-                'y' => -18
+                'y' => -18,
             ],
             'eacute' => [
                 'b' => 5,
@@ -7273,12 +7273,12 @@ final class StandardFontCoreKerning
                 't' => -4,
                 'v' => -18,
                 'w' => -7,
-                'y' => -18
+                'y' => -18,
             ],
             'ecircumflex' => [
                 'v' => -18,
                 'w' => -7,
-                'y' => -18
+                'y' => -18,
             ],
             'endash' => [
                 'a' => 29,
@@ -7308,10 +7308,10 @@ final class StandardFontCoreKerning
                 'v' => 10,
                 'w' => 23,
                 'x' => -15,
-                'y' => 9
+                'y' => 9,
             ],
             'eogonek' => [
-                'zdotaccent' => -1
+                'zdotaccent' => -1,
             ],
             'epsilon' => [
                 'alpha' => 32,
@@ -7333,7 +7333,7 @@ final class StandardFontCoreKerning
                 'upsilon' => 22,
                 'upsilontonos' => 22,
                 'xi' => 39,
-                'zeta' => 33
+                'zeta' => 33,
             ],
             'epsilontonos' => [
                 'alpha' => 38,
@@ -7346,10 +7346,10 @@ final class StandardFontCoreKerning
                 'semicolon' => 40,
                 'tau' => 37,
                 'theta' => 40,
-                'zeta' => 39
+                'zeta' => 39,
             ],
             'exclam' => [
-                'quoteright' => 4
+                'quoteright' => 4,
             ],
             'f' => [
                 'aogonek' => 2,
@@ -7391,7 +7391,7 @@ final class StandardFontCoreKerning
                 'w' => 24,
                 'y' => 20,
                 'yacute' => 22,
-                'z' => 8
+                'z' => 8,
             ],
             'g' => [
                 'a' => -2,
@@ -7430,7 +7430,7 @@ final class StandardFontCoreKerning
                 'v' => -9,
                 'w' => -4,
                 'y' => -6,
-                'z' => -11
+                'z' => -11,
             ],
             'gamma' => [
                 'alpha' => -17,
@@ -7446,13 +7446,13 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -26,
                 'rho' => -32,
                 'upsilontonos' => 5,
-                'xi' => -1
+                'xi' => -1,
             ],
             'germandbls' => [
                 'e' => 8,
                 'k' => 2,
                 't' => -5,
-                'w' => -5
+                'w' => -5,
             ],
             'guillemotleft' => [
                 'Alpha' => -34,
@@ -7473,7 +7473,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -26,
                 'afii10089' => -23,
                 'nu' => -24,
-                'tau' => -11
+                'tau' => -11,
             ],
             'guillemotright' => [
                 'A' => -57,
@@ -7484,7 +7484,7 @@ final class StandardFontCoreKerning
                 'T' => -109,
                 'V' => -81,
                 'W' => -63,
-                'Y' => -111
+                'Y' => -111,
             ],
             'guilsinglright' => [
                 'A' => -53,
@@ -7495,7 +7495,7 @@ final class StandardFontCoreKerning
                 'T' => -105,
                 'V' => -77,
                 'W' => -59,
-                'Y' => -107
+                'Y' => -107,
             ],
             'h' => [
                 'asterisk' => -6,
@@ -7503,7 +7503,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -17,
                 'v' => -25,
                 'y' => -24,
-                'yacute' => -24
+                'yacute' => -24,
             ],
             'hyphen' => [
                 'A' => -4,
@@ -7538,7 +7538,7 @@ final class StandardFontCoreKerning
                 'w' => 8,
                 'x' => -29,
                 'y' => -5,
-                'z' => -18
+                'z' => -18,
             ],
             'i' => [
                 'T' => -4,
@@ -7552,13 +7552,13 @@ final class StandardFontCoreKerning
                 'quotedblright' => -10,
                 'quoteright' => -7,
                 'v' => -5,
-                'z' => -7
+                'z' => -7,
             ],
             'iacute' => [
-                'v' => -5
+                'v' => -5,
             ],
             'iotatonos' => [
-                'delta' => -2
+                'delta' => -2,
             ],
             'j' => [
                 'asterisk' => 4,
@@ -7569,7 +7569,7 @@ final class StandardFontCoreKerning
                 'oacute' => -1,
                 'odieresis' => -1,
                 'parenright' => 13,
-                'y' => -1
+                'y' => -1,
             ],
             'k' => [
                 'a' => -3,
@@ -7616,7 +7616,7 @@ final class StandardFontCoreKerning
                 'w' => 24,
                 'x' => 24,
                 'y' => 20,
-                'z' => 21
+                'z' => 21,
             ],
             'kappa' => [
                 'alpha' => -16,
@@ -7634,7 +7634,7 @@ final class StandardFontCoreKerning
                 'phi' => -25,
                 'sigma' => -40,
                 'theta' => 11,
-                'upsilontonos' => 1
+                'upsilontonos' => 1,
             ],
             'l' => [
                 'comma' => -3,
@@ -7644,7 +7644,7 @@ final class StandardFontCoreKerning
                 'period' => -3,
                 'v' => -5,
                 'y' => -3,
-                'z' => -7
+                'z' => -7,
             ],
             'lambda' => [
                 'alphatonos' => -13,
@@ -7666,7 +7666,7 @@ final class StandardFontCoreKerning
                 'tau' => -45,
                 'upsilon' => -16,
                 'upsilontonos' => -16,
-                'xi' => -5
+                'xi' => -5,
             ],
             'lcaron' => [
                 'a' => -44,
@@ -7694,7 +7694,7 @@ final class StandardFontCoreKerning
                 'uring' => -10,
                 'v' => 6,
                 'z' => -4,
-                'zcaron' => -1
+                'zcaron' => -1,
             ],
             'm' => [
                 'endash' => 35,
@@ -7704,7 +7704,7 @@ final class StandardFontCoreKerning
                 'v' => -20,
                 'w' => -9,
                 'y' => -20,
-                'z' => -5
+                'z' => -5,
             ],
             'n' => [
                 'T' => -80,
@@ -7716,7 +7716,7 @@ final class StandardFontCoreKerning
                 'v' => -22,
                 'w' => -9,
                 'y' => -22,
-                'z' => -5
+                'z' => -5,
             ],
             'nu' => [
                 'alpha' => -15,
@@ -7737,7 +7737,7 @@ final class StandardFontCoreKerning
                 'quoteright' => 5,
                 'semicolon' => -4,
                 'sigma' => -39,
-                'upsilontonos' => 4
+                'upsilontonos' => 4,
             ],
             'o' => [
                 'T' => -83,
@@ -7763,7 +7763,7 @@ final class StandardFontCoreKerning
                 'w' => -13,
                 'x' => -25,
                 'y' => -24,
-                'z' => -8
+                'z' => -8,
             ],
             'odieresis' => [
                 'T' => -49,
@@ -7781,24 +7781,24 @@ final class StandardFontCoreKerning
                 'w' => -13,
                 'x' => -25,
                 'y' => -24,
-                'z' => -8
+                'z' => -8,
             ],
             'oacute' => [
                 'v' => -24,
                 'w' => -13,
                 'y' => -24,
-                'zacute' => -8
+                'zacute' => -8,
             ],
             'ocircumflex' => [
-                't' => -8
+                't' => -8,
             ],
             'oe' => [
-                'u' => 5
+                'u' => 5,
             ],
             'ograve' => [
                 'v' => -24,
                 'w' => -13,
-                'y' => -24
+                'y' => -24,
             ],
             'omega' => [
                 'chi' => -52,
@@ -7806,7 +7806,7 @@ final class StandardFontCoreKerning
                 'lambda' => -35,
                 'nu' => -36,
                 'pi' => -47,
-                'tau' => -20
+                'tau' => -20,
             ],
             'omegatonos' => [
                 'chi' => -52,
@@ -7814,7 +7814,7 @@ final class StandardFontCoreKerning
                 'lambda' => -35,
                 'nu' => -36,
                 'pi' => -47,
-                'tau' => -20
+                'tau' => -20,
             ],
             'omicron' => [
                 'alpha' => 8,
@@ -7824,14 +7824,14 @@ final class StandardFontCoreKerning
                 'nu' => -23,
                 'pi' => -33,
                 'tau' => -4,
-                'upsilon' => 4
+                'upsilon' => 4,
             ],
             'omicrontonos' => [
                 'chi' => -39,
                 'gamma' => -26,
                 'nu' => -23,
                 'pi' => -33,
-                'tau' => -4
+                'tau' => -4,
             ],
             'p' => [
                 'asterisk' => -4,
@@ -7842,7 +7842,7 @@ final class StandardFontCoreKerning
                 'w' => -7,
                 'y' => -22,
                 'yacute' => -22,
-                'z' => -5
+                'z' => -5,
             ],
             'parenleft' => [
                 'A' => -14,
@@ -7866,7 +7866,7 @@ final class StandardFontCoreKerning
                 'l' => 9,
                 'p' => 14,
                 'quoteleft' => 36,
-                'y' => -5
+                'y' => -5,
             ],
             'period' => [
                 'asterisk' => -24,
@@ -7877,7 +7877,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -34,
                 'quotesingle' => -37,
                 'threesuperior' => 5,
-                'twosuperior' => 12
+                'twosuperior' => 12,
             ],
             'pi' => [
                 'alphatonos' => -26,
@@ -7887,18 +7887,18 @@ final class StandardFontCoreKerning
                 'omicron' => -34,
                 'omicrontonos' => -34,
                 'quoteright' => -14,
-                'upsilontonos' => -21
+                'upsilontonos' => -21,
             ],
             'q' => [
                 'braceright' => 8,
                 'bracketright' => 22,
                 'c' => 1,
                 'endash' => 34,
-                'parenright' => 13
+                'parenright' => 13,
             ],
             'question' => [
                 'quoteright' => 4,
-                'quotesingle' => 7
+                'quotesingle' => 7,
             ],
             'quotedblbase' => [
                 'A' => 7,
@@ -7922,7 +7922,7 @@ final class StandardFontCoreKerning
                 'v' => -56,
                 'w' => -36,
                 'y' => -47,
-                'z' => 16
+                'z' => 16,
             ],
             'quotedblleft' => [
                 'A' => -71,
@@ -7962,7 +7962,7 @@ final class StandardFontCoreKerning
                 'w' => 16,
                 'x' => -5,
                 'y' => 8,
-                'z' => -11
+                'z' => -11,
             ],
             'quotedblright' => [
                 'A' => -74,
@@ -7972,7 +7972,7 @@ final class StandardFontCoreKerning
                 'Aring' => -74,
                 'V' => 3,
                 'W' => 13,
-                'Y' => -7
+                'Y' => -7,
             ],
             'quoteleft' => [
                 'A' => -75,
@@ -8011,7 +8011,7 @@ final class StandardFontCoreKerning
                 'w' => 11,
                 'x' => -9,
                 'y' => 4,
-                'z' => -15
+                'z' => -15,
             ],
             'quoteright' => [
                 'A' => -82,
@@ -8035,7 +8035,7 @@ final class StandardFontCoreKerning
                 't' => -7,
                 'v' => -9,
                 'w' => -2,
-                'y' => -9
+                'y' => -9,
             ],
             'quotesinglbase' => [
                 'A' => 2,
@@ -8054,7 +8054,7 @@ final class StandardFontCoreKerning
                 'v' => -60,
                 'w' => -41,
                 'y' => -51,
-                'z' => 12
+                'z' => 12,
             ],
             'quotesingle' => [
                 'A' => -69,
@@ -8063,7 +8063,7 @@ final class StandardFontCoreKerning
                 'W' => 18,
                 'X' => -4,
                 'Y' => -2,
-                'Z' => -2
+                'Z' => -2,
             ],
             'r' => [
                 'a' => 5,
@@ -8127,7 +8127,7 @@ final class StandardFontCoreKerning
                 'z' => 8,
                 'zacute' => 8,
                 'zcaron' => 8,
-                'zdotaccent' => 8
+                'zdotaccent' => 8,
             ],
             'racute' => [
                 'a' => 5,
@@ -8138,7 +8138,7 @@ final class StandardFontCoreKerning
                 's' => 2,
                 't' => 21,
                 'v' => 20,
-                'z' => 8
+                'z' => 8,
             ],
             'rcaron' => [
                 'a' => 5,
@@ -8153,7 +8153,7 @@ final class StandardFontCoreKerning
                 'oacute' => -1,
                 'period' => -59,
                 'semicolon' => -11,
-                'v' => 20
+                'v' => 20,
             ],
             'rho' => [
                 'chi' => -39,
@@ -8163,7 +8163,7 @@ final class StandardFontCoreKerning
                 'lambda' => -23,
                 'nu' => -23,
                 'pi' => -33,
-                'tau' => -3
+                'tau' => -3,
             ],
             's' => [
                 'a' => 5,
@@ -8188,18 +8188,18 @@ final class StandardFontCoreKerning
                 'v' => -17,
                 'w' => -9,
                 'y' => -17,
-                'z' => 6
+                'z' => 6,
             ],
             'sacute' => [
-                'w' => -9
+                'w' => -9,
             ],
             'scaron' => [
                 'k' => 1,
                 'p' => 1,
-                't' => -1
+                't' => -1,
             ],
             'sigma' => [
-                'lambda' => -43
+                'lambda' => -43,
             ],
             'slash' => [
                 'B' => 36,
@@ -8232,7 +8232,7 @@ final class StandardFontCoreKerning
                 'l' => 23,
                 'slash' => 20,
                 't' => 23,
-                'y' => 7
+                'y' => 7,
             ],
             't' => [
                 'a' => 5,
@@ -8272,7 +8272,7 @@ final class StandardFontCoreKerning
                 'v' => 13,
                 'w' => 18,
                 'y' => 14,
-                'z' => 11
+                'z' => 11,
             ],
             'tau' => [
                 'alpha' => 4,
@@ -8294,7 +8294,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -4,
                 'sigma' => -19,
                 'tau' => 27,
-                'upsilontonos' => 7
+                'upsilontonos' => 7,
             ],
             'tcaron' => [
                 'a' => -22,
@@ -8318,7 +8318,7 @@ final class StandardFontCoreKerning
                 'y' => -13,
                 'yacute' => -11,
                 'z' => -16,
-                'zcaron' => -4
+                'zcaron' => -4,
             ],
             'u' => [
                 'comma' => -3,
@@ -8330,7 +8330,7 @@ final class StandardFontCoreKerning
                 'v' => -5,
                 'x' => -5,
                 'y' => -4,
-                'z' => -7
+                'z' => -7,
             ],
             'udieresis' => [
                 'comma' => -3,
@@ -8342,16 +8342,16 @@ final class StandardFontCoreKerning
                 'v' => -5,
                 'x' => -5,
                 'y' => -4,
-                'z' => -7
+                'z' => -7,
             ],
             'upsilon' => [
                 'chi' => -3,
                 'gamma' => 3,
                 'lambda' => -18,
-                'tau' => 7
+                'tau' => 7,
             ],
             'upsilondieresis' => [
-                'nu' => 3
+                'nu' => 3,
             ],
             'upsilontonos' => [
                 'chi' => -3,
@@ -8359,7 +8359,7 @@ final class StandardFontCoreKerning
                 'lambda' => -18,
                 'nu' => 3,
                 'pi' => -21,
-                'tau' => 7
+                'tau' => 7,
             ],
             'v' => [
                 'a' => -15,
@@ -8396,7 +8396,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -6,
                 'u' => -1,
                 'udieresis' => -1,
-                'y' => 20
+                'y' => 20,
             ],
             'w' => [
                 'a' => -8,
@@ -8440,7 +8440,7 @@ final class StandardFontCoreKerning
                 'u' => 2,
                 'udieresis' => 2,
                 'y' => 24,
-                'z' => 12
+                'z' => 12,
             ],
             'x' => [
                 'a' => -11,
@@ -8461,7 +8461,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => -12,
                 'quoteright' => -8,
                 'semicolon' => -1,
-                'y' => 18
+                'y' => 18,
             ],
             'xi' => [
                 'alpha' => 4,
@@ -8472,7 +8472,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -15,
                 'omicron' => -3,
                 'omicrontonos' => -3,
-                'upsilontonos' => 2
+                'upsilontonos' => 2,
             ],
             'y' => [
                 'a' => -16,
@@ -8509,12 +8509,12 @@ final class StandardFontCoreKerning
                 'quoteright' => 2,
                 's' => -18,
                 'sacute' => -18,
-                'semicolon' => -5
+                'semicolon' => -5,
             ],
             'yacute' => [
                 'ccaron' => -22,
                 'comma' => -52,
-                'period' => -52
+                'period' => -52,
             ],
             'z' => [
                 'a' => 6,
@@ -8533,18 +8533,18 @@ final class StandardFontCoreKerning
                 'semicolon' => 13,
                 'u' => -8,
                 'udieresis' => -8,
-                'y' => 10
+                'y' => 10,
             ],
             'zacute' => [
                 'colon' => 13,
                 'comma' => 2,
-                'semicolon' => 13
+                'semicolon' => 13,
             ],
             'zcaron' => [
                 'colon' => 13,
                 'comma' => 2,
                 'e' => -3,
-                'semicolon' => 13
+                'semicolon' => 13,
             ],
             'zdotaccent' => [
                 'c' => -8,
@@ -8552,7 +8552,7 @@ final class StandardFontCoreKerning
                 'comma' => 2,
                 'e' => -3,
                 'oacute' => -10,
-                'semicolon' => 13
+                'semicolon' => 13,
             ],
             'zeta' => [
                 'alpha' => 2,
@@ -8562,7 +8562,7 @@ final class StandardFontCoreKerning
                 'omega' => -17,
                 'omegatonos' => -17,
                 'omicron' => -8,
-                'omicrontonos' => -8
+                'omicrontonos' => -8,
             ],
         ],
         'Helvetica-Oblique' => [
@@ -8631,14 +8631,14 @@ final class StandardFontCoreKerning
                 'w' => -20,
                 'y' => -36,
                 'yacute' => -36,
-                'z' => 5
+                'z' => 5,
             ],
             'AE' => [
                 'T' => -16,
                 'V' => -23,
                 'W' => -18,
                 'X' => -9,
-                'Z' => -11
+                'Z' => -11,
             ],
             'Aacute' => [
                 'C' => -32,
@@ -8669,7 +8669,7 @@ final class StandardFontCoreKerning
                 'u' => -10,
                 'v' => -30,
                 'w' => -20,
-                'y' => -32
+                'y' => -32,
             ],
             'Abreve' => [
                 'T' => -104,
@@ -8678,7 +8678,7 @@ final class StandardFontCoreKerning
                 'Y' => -94,
                 'Yacute' => -94,
                 'y' => -34,
-                'yacute' => -34
+                'yacute' => -34,
             ],
             'Acircumflex' => [
                 'C' => -33,
@@ -8697,7 +8697,7 @@ final class StandardFontCoreKerning
                 'period' => 5,
                 'v' => -30,
                 'w' => -20,
-                'yacute' => -36
+                'yacute' => -36,
             ],
             'Adieresis' => [
                 'C' => -32,
@@ -8726,7 +8726,7 @@ final class StandardFontCoreKerning
                 'u' => -11,
                 'v' => -30,
                 'w' => -21,
-                'y' => -35
+                'y' => -35,
             ],
             'Agrave' => [
                 'C' => -33,
@@ -8739,7 +8739,7 @@ final class StandardFontCoreKerning
                 'W' => -49,
                 'Y' => -93,
                 'comma' => 4,
-                'period' => 5
+                'period' => 5,
             ],
             'Alpha' => [
                 'O' => -29,
@@ -8759,13 +8759,13 @@ final class StandardFontCoreKerning
                 'phi' => -9,
                 'sigma' => -15,
                 'upsilon' => -13,
-                'upsilontonos' => -13
+                'upsilontonos' => -13,
             ],
             'Alphatonos' => [
                 'gamma' => -38,
                 'nu' => -30,
                 'phi' => -9,
-                'sigma' => -15
+                'sigma' => -15,
             ],
             'Aogonek' => [
                 'C' => -34,
@@ -8779,7 +8779,7 @@ final class StandardFontCoreKerning
                 'period' => 3,
                 'semicolon' => -5,
                 'y' => 19,
-                'yacute' => 19
+                'yacute' => 19,
             ],
             'Aring' => [
                 'C' => -33,
@@ -8809,7 +8809,7 @@ final class StandardFontCoreKerning
                 'u' => -10,
                 'v' => -32,
                 'w' => -20,
-                'y' => -36
+                'y' => -36,
             ],
             'Atilde' => [
                 'C' => -32,
@@ -8822,7 +8822,7 @@ final class StandardFontCoreKerning
                 'W' => -48,
                 'Y' => -96,
                 'comma' => 2,
-                'period' => 4
+                'period' => 4,
             ],
             'B' => [
                 'A' => -29,
@@ -8849,13 +8849,13 @@ final class StandardFontCoreKerning
                 'Y' => -57,
                 'Z' => -22,
                 'lambda' => -20,
-                'y' => -20
+                'y' => -20,
             ],
             'Beta' => [
                 'A' => -29,
                 'Alpha' => -29,
                 'Delta' => 5,
-                'lambda' => -20
+                'lambda' => -20,
             ],
             'C' => [
                 'A' => -41,
@@ -8895,13 +8895,13 @@ final class StandardFontCoreKerning
                 'quotesingle' => 1,
                 's' => -10,
                 'semicolon' => -6,
-                'y' => -15
+                'y' => -15,
             ],
             'Ccaron' => [
-                'O' => -11
+                'O' => -11,
             ],
             'Ccedilla' => [
-                'A' => -41
+                'A' => -41,
             ],
             'Chi' => [
                 'O' => -40,
@@ -8914,7 +8914,7 @@ final class StandardFontCoreKerning
                 'omega' => -62,
                 'omicron' => -41,
                 'omicrontonos' => -41,
-                'tau' => -54
+                'tau' => -54,
             ],
             'D' => [
                 'A' => -41,
@@ -8939,7 +8939,7 @@ final class StandardFontCoreKerning
                 'e' => -2,
                 'hyphen' => 24,
                 'oe' => -2,
-                'y' => -21
+                'y' => -21,
             ],
             'Delta' => [
                 'O' => -52,
@@ -8952,7 +8952,7 @@ final class StandardFontCoreKerning
                 'o' => -35,
                 'omegatonos' => -54,
                 'omicron' => -37,
-                'upsilon' => -35
+                'upsilon' => -35,
             ],
             'E' => [
                 'A' => -8,
@@ -8998,7 +8998,7 @@ final class StandardFontCoreKerning
                 'v' => -40,
                 'w' => -32,
                 'y' => -45,
-                'z' => -13
+                'z' => -13,
             ],
             'Epsilon' => [
                 'O' => -34,
@@ -9008,10 +9008,10 @@ final class StandardFontCoreKerning
                 'delta' => -29,
                 'gamma' => -43,
                 'nu' => -40,
-                'tau' => -35
+                'tau' => -35,
             ],
             'Epsilontonos' => [
-                'nu' => -64
+                'nu' => -64,
             ],
             'F' => [
                 'A' => -78,
@@ -9062,7 +9062,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -43,
                 'uacute' => -43,
                 'uring' => -43,
-                'y' => -41
+                'y' => -41,
             ],
             'G' => [
                 'A' => -15,
@@ -9095,7 +9095,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => -5,
                 'semicolon' => 7,
                 'w' => -5,
-                'y' => -17
+                'y' => -17,
             ],
             'Gamma' => [
                 'A' => -96,
@@ -9117,7 +9117,7 @@ final class StandardFontCoreKerning
                 'period' => -169,
                 'rho' => -160,
                 'upsilon' => -163,
-                'upsilontonos' => -64
+                'upsilontonos' => -64,
             ],
             'H' => [
                 'A' => -20,
@@ -9128,7 +9128,7 @@ final class StandardFontCoreKerning
                 'a' => -5,
                 'adieresis' => -5,
                 'ae' => -2,
-                'y' => -18
+                'y' => -18,
             ],
             'I' => [
                 'A' => -23,
@@ -9140,7 +9140,7 @@ final class StandardFontCoreKerning
                 'X' => -26,
                 'Y' => -23,
                 'Z' => -28,
-                'y' => -21
+                'y' => -21,
             ],
             'J' => [
                 'A' => -30,
@@ -9148,7 +9148,7 @@ final class StandardFontCoreKerning
                 'Adieresis' => -30,
                 'Aring' => -30,
                 'Y' => -18,
-                'y' => -20
+                'y' => -20,
             ],
             'K' => [
                 'A' => 12,
@@ -9213,7 +9213,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -40,
                 'upsilontonos' => -40,
                 'w' => -54,
-                'y' => -69
+                'y' => -69,
             ],
             'Kappa' => [
                 'O' => -41,
@@ -9230,7 +9230,7 @@ final class StandardFontCoreKerning
                 'period' => -12,
                 'semicolon' => -34,
                 'upsilon' => -40,
-                'upsilontonos' => -40
+                'upsilontonos' => -40,
             ],
             'L' => [
                 'A' => 7,
@@ -9278,7 +9278,7 @@ final class StandardFontCoreKerning
                 'u' => -18,
                 'udieresis' => -18,
                 'y' => -69,
-                'yacute' => -69
+                'yacute' => -69,
             ],
             'Lambda' => [
                 'O' => -29,
@@ -9298,7 +9298,7 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -9,
                 'period' => 4,
                 'quoteright' => -60,
-                'upsilon' => -14
+                'upsilon' => -14,
             ],
             'Lcaron' => [
                 'O' => -52,
@@ -9309,7 +9309,7 @@ final class StandardFontCoreKerning
                 'Y' => -72,
                 'Yacute' => -72,
                 'v' => -66,
-                'yacute' => -69
+                'yacute' => -69,
             ],
             'Lslash' => [
                 'O' => -42,
@@ -9326,7 +9326,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -28,
                 'v' => -57,
                 'w' => -40,
-                'yacute' => -60
+                'yacute' => -60,
             ],
             'M' => [
                 'A' => -17,
@@ -9338,10 +9338,10 @@ final class StandardFontCoreKerning
                 'Z' => -22,
                 'epsilon' => 16,
                 'j' => 5,
-                'y' => -15
+                'y' => -15,
             ],
             'Mu' => [
-                'epsilon' => 16
+                'epsilon' => 16,
             ],
             'N' => [
                 'A' => -19,
@@ -9377,7 +9377,7 @@ final class StandardFontCoreKerning
                 'period' => -6,
                 'u' => -1,
                 'udieresis' => -1,
-                'y' => -17
+                'y' => -17,
             ],
             'Nu' => [
                 'A' => -19,
@@ -9385,7 +9385,7 @@ final class StandardFontCoreKerning
                 'epsilon' => 13,
                 'epsilontonos' => 13,
                 'o' => 2,
-                'omega' => -20
+                'omega' => -20,
             ],
             'O' => [
                 'A' => -35,
@@ -9423,14 +9423,14 @@ final class StandardFontCoreKerning
                 'w' => 4,
                 'x' => -17,
                 'y' => -15,
-                'z' => -22
+                'z' => -22,
             ],
             'OE' => [
                 'T' => -5,
                 'V' => -12,
                 'W' => -8,
                 'X' => -5,
-                'Z' => -7
+                'Z' => -7,
             ],
             'Oacute' => [
                 'A' => -35,
@@ -9442,12 +9442,12 @@ final class StandardFontCoreKerning
                 'colon' => -3,
                 'comma' => -21,
                 'period' => -24,
-                'semicolon' => 8
+                'semicolon' => 8,
             ],
             'Ocircumflex' => [
                 'T' => -54,
                 'V' => -40,
-                'Y' => -64
+                'Y' => -64,
             ],
             'Odieresis' => [
                 'A' => -35,
@@ -9459,12 +9459,12 @@ final class StandardFontCoreKerning
                 'colon' => -3,
                 'comma' => -21,
                 'period' => -24,
-                'semicolon' => 8
+                'semicolon' => 8,
             ],
             'Ograve' => [
                 'T' => -54,
                 'V' => -40,
-                'Y' => -64
+                'Y' => -64,
             ],
             'Omicron' => [
                 'A' => -35,
@@ -9477,18 +9477,18 @@ final class StandardFontCoreKerning
                 'Upsilon' => -64,
                 'Y' => -64,
                 'Zeta' => -47,
-                'lambda' => -17
+                'lambda' => -17,
             ],
             'Omicrontonos' => [
-                'lambda' => -22
+                'lambda' => -22,
             ],
             'Oslash' => [
-                'A' => -32
+                'A' => -32,
             ],
             'Otilde' => [
                 'T' => -54,
                 'V' => -40,
-                'Y' => -64
+                'Y' => -64,
             ],
             'P' => [
                 'A' => -77,
@@ -9557,7 +9557,7 @@ final class StandardFontCoreKerning
                 'quoteright' => 12,
                 'quotesingle' => 17,
                 't' => -1,
-                'y' => -7
+                'y' => -7,
             ],
             'Phi' => [
                 'A' => -59,
@@ -9572,18 +9572,18 @@ final class StandardFontCoreKerning
                 'omega' => -40,
                 'omegatonos' => -40,
                 'omicron' => -13,
-                'omicrontonos' => -13
+                'omicrontonos' => -13,
             ],
             'Pi' => [
                 'epsilontonos' => 11,
                 'lambda' => -20,
-                'omicron' => -1
+                'omicron' => -1,
             ],
             'Psi' => [
                 'A' => -51,
                 'Alpha' => -51,
                 'O' => -19,
-                'Omicron' => -19
+                'Omicron' => -19,
             ],
             'Q' => [
                 'R' => -4,
@@ -9593,7 +9593,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 32,
                 'parenright' => 16,
                 'u' => 8,
-                'udieresis' => 8
+                'udieresis' => 8,
             ],
             'R' => [
                 'A' => -3,
@@ -9652,7 +9652,7 @@ final class StandardFontCoreKerning
                 'uacute' => -5,
                 'udieresis' => -5,
                 'y' => -17,
-                'yacute' => -16
+                'yacute' => -16,
             ],
             'Rho' => [
                 'A' => -77,
@@ -9674,7 +9674,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -66,
                 'omicron' => -33,
                 'omicrontonos' => -33,
-                'period' => -130
+                'period' => -130,
             ],
             'S' => [
                 'A' => -31,
@@ -9712,7 +9712,7 @@ final class StandardFontCoreKerning
                 't' => -7,
                 'v' => -18,
                 'w' => -11,
-                'y' => -18
+                'y' => -18,
             ],
             'Sigma' => [
                 'O' => -53,
@@ -9721,7 +9721,7 @@ final class StandardFontCoreKerning
                 'chi' => -54,
                 'o' => -23,
                 'omicron' => -27,
-                'tau' => -55
+                'tau' => -55,
             ],
             'T' => [
                 'A' => -105,
@@ -9835,7 +9835,7 @@ final class StandardFontCoreKerning
                 'w' => -92,
                 'y' => -108,
                 'yacute' => -45,
-                'zeta' => -26
+                'zeta' => -26,
             ],
             'Tau' => [
                 'A' => -105,
@@ -9866,7 +9866,7 @@ final class StandardFontCoreKerning
                 'sigma' => -94,
                 'upsilon' => -92,
                 'upsilontonos' => -72,
-                'zeta' => -26
+                'zeta' => -26,
             ],
             'Tcaron' => [
                 'A' => -105,
@@ -9900,7 +9900,7 @@ final class StandardFontCoreKerning
                 'yacute' => -45,
                 'zacute' => -66,
                 'zcaron' => -37,
-                'zdotaccent' => -66
+                'zdotaccent' => -66,
             ],
             'Tcommaaccent' => [
                 'Aacute' => -105,
@@ -9927,14 +9927,14 @@ final class StandardFontCoreKerning
                 'yacute' => -45,
                 'zacute' => -66,
                 'zcaron' => -37,
-                'zdotaccent' => -66
+                'zdotaccent' => -66,
             ],
             'Theta' => [
                 'A' => -36,
                 'Alpha' => -36,
                 'Lambda' => -36,
                 'Upsilon' => -66,
-                'Y' => -66
+                'Y' => -66,
             ],
             'U' => [
                 'A' => -37,
@@ -9962,7 +9962,7 @@ final class StandardFontCoreKerning
                 'w' => -8,
                 'x' => -26,
                 'y' => -21,
-                'z' => -36
+                'z' => -36,
             ],
             'Uacute' => [
                 'A' => -37,
@@ -9971,10 +9971,10 @@ final class StandardFontCoreKerning
                 'n' => -7,
                 'p' => 2,
                 'period' => -23,
-                'r' => -7
+                'r' => -7,
             ],
             'Ucircumflex' => [
-                'A' => -37
+                'A' => -37,
             ],
             'Udieresis' => [
                 'A' => -37,
@@ -9983,10 +9983,10 @@ final class StandardFontCoreKerning
                 'n' => -7,
                 'p' => 2,
                 'period' => -23,
-                'r' => -7
+                'r' => -7,
             ],
             'Ugrave' => [
-                'A' => -37
+                'A' => -37,
             ],
             'Upsilon' => [
                 'A' => -93,
@@ -10002,10 +10002,10 @@ final class StandardFontCoreKerning
                 'guillemotright' => -106,
                 'omicrontonos' => -81,
                 'period' => -108,
-                'pi' => -69
+                'pi' => -69,
             ],
             'Upsilontonos' => [
-                'sigma' => -119
+                'sigma' => -119,
             ],
             'V' => [
                 'A' => -68,
@@ -10083,7 +10083,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -50,
                 'uring' => -50,
                 'y' => -29,
-                'yacute' => -26
+                'yacute' => -26,
             ],
             'W' => [
                 'A' => -46,
@@ -10174,7 +10174,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -26,
                 'uring' => -26,
                 'y' => -16,
-                'yacute' => -14
+                'yacute' => -14,
             ],
             'X' => [
                 'A' => 8,
@@ -10209,12 +10209,12 @@ final class StandardFontCoreKerning
                 'tau' => -54,
                 'u' => -36,
                 'udieresis' => -36,
-                'y' => -66
+                'y' => -66,
             ],
             'Xi' => [
                 'alpha' => -27,
                 'alphatonos' => -29,
-                'upsilontonos' => -35
+                'upsilontonos' => -35,
             ],
             'Y' => [
                 'A' => -93,
@@ -10297,7 +10297,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -70,
                 'v' => -48,
                 'w' => -46,
-                'z' => -68
+                'z' => -68,
             ],
             'Yacute' => [
                 'Aacute' => -93,
@@ -10317,7 +10317,7 @@ final class StandardFontCoreKerning
                 'period' => -108,
                 'scedilla' => -82,
                 'semicolon' => -81,
-                'uacute' => -70
+                'uacute' => -70,
             ],
             'Z' => [
                 'A' => 5,
@@ -10351,14 +10351,14 @@ final class StandardFontCoreKerning
                 'semicolon' => -40,
                 'v' => -44,
                 'w' => -42,
-                'y' => -44
+                'y' => -44,
             ],
             'Zeta' => [
                 'O' => -46,
                 'Omicron' => -46,
                 'epsilon' => -1,
                 'o' => -24,
-                'omicron' => -28
+                'omicron' => -28,
             ],
             'a' => [
                 'comma' => -7,
@@ -10373,7 +10373,7 @@ final class StandardFontCoreKerning
                 'w' => -8,
                 'x' => 14,
                 'y' => -24,
-                'z' => 7
+                'z' => 7,
             ],
             'adieresis' => [
                 'comma' => -7,
@@ -10388,18 +10388,18 @@ final class StandardFontCoreKerning
                 'w' => -8,
                 'x' => 14,
                 'y' => -24,
-                'z' => 7
+                'z' => 7,
             ],
             'aacute' => [
                 'v' => -18,
                 'w' => -9,
-                'y' => -23
+                'y' => -23,
             ],
             'ae' => [
                 'r' => -3,
                 'v' => -18,
                 'w' => -8,
-                'y' => -25
+                'y' => -25,
             ],
             'afii10017' => [
                 'afii10025' => -41,
@@ -10430,7 +10430,7 @@ final class StandardFontCoreKerning
                 'comma' => 3,
                 'guillemotright' => -32,
                 'period' => 4,
-                'semicolon' => -2
+                'semicolon' => -2,
             ],
             'afii10018' => [
                 'afii10017' => -23,
@@ -10446,7 +10446,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -25,
                 'afii10092' => -44,
                 'afii10106' => -29,
-                'afii10110' => -29
+                'afii10110' => -29,
             ],
             'afii10019' => [
                 'afii10017' => -26,
@@ -10463,7 +10463,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -27,
                 'afii10092' => 3,
                 'afii10106' => -21,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10020' => [
                 'afii10021' => -72,
@@ -10507,10 +10507,10 @@ final class StandardFontCoreKerning
                 'comma' => -148,
                 'hyphen' => -127,
                 'period' => -150,
-                'semicolon' => -140
+                'semicolon' => -140,
             ],
             'afii10022' => [
-                'afii10038' => -43
+                'afii10038' => -43,
             ],
             'afii10024' => [
                 'afii10025' => -35,
@@ -10529,7 +10529,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -59,
                 'afii10089' => -70,
                 'afii10101' => -22,
-                'afii10110' => -34
+                'afii10110' => -34,
             ],
             'afii10025' => [
                 'afii10017' => -36,
@@ -10552,7 +10552,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -37,
                 'afii10097' => -9,
                 'afii10106' => -29,
-                'afii10110' => -23
+                'afii10110' => -23,
             ],
             'afii10028' => [
                 'afii10025' => -52,
@@ -10571,7 +10571,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -81,
                 'afii10089' => -87,
                 'afii10101' => -43,
-                'afii10110' => -38
+                'afii10110' => -38,
             ],
             'afii10032' => [
                 'afii10017' => -32,
@@ -10589,7 +10589,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -73,
                 'afii10062' => -61,
                 'afii10077' => -20,
-                'afii10106' => -21
+                'afii10106' => -21,
             ],
             'afii10034' => [
                 'afii10017' => -77,
@@ -10615,7 +10615,7 @@ final class StandardFontCoreKerning
                 'comma' => -128,
                 'hyphen' => -34,
                 'period' => -131,
-                'semicolon' => -52
+                'semicolon' => -52,
             ],
             'afii10035' => [
                 'afii10017' => -32,
@@ -10636,7 +10636,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -9,
                 'afii10089' => -21,
                 'afii10106' => -27,
-                'afii10110' => -11
+                'afii10110' => -11,
             ],
             'afii10036' => [
                 'afii10017' => -105,
@@ -10685,7 +10685,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -107,
                 'hyphen' => -71,
                 'period' => -96,
-                'semicolon' => -88
+                'semicolon' => -88,
             ],
             'afii10037' => [
                 'afii10017' => -74,
@@ -10733,7 +10733,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -83,
                 'hyphen' => -48,
                 'period' => -103,
-                'semicolon' => -62
+                'semicolon' => -62,
             ],
             'afii10038' => [
                 'afii10017' => -54,
@@ -10749,7 +10749,7 @@ final class StandardFontCoreKerning
                 'afii10062' => -76,
                 'afii10069' => -31,
                 'afii10077' => -35,
-                'afii10106' => -36
+                'afii10106' => -36,
             ],
             'afii10039' => [
                 'afii10025' => -51,
@@ -10766,7 +10766,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -64,
                 'afii10086' => -80,
                 'afii10089' => -86,
-                'afii10101' => -42
+                'afii10101' => -42,
             ],
             'afii10044' => [
                 'afii10036' => -108,
@@ -10775,7 +10775,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -101,
                 'afii10060' => -105,
                 'afii10062' => -72,
-                'afii10092' => -45
+                'afii10092' => -45,
             ],
             'afii10046' => [
                 'afii10036' => -107,
@@ -10784,7 +10784,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -100,
                 'afii10060' => -104,
                 'afii10062' => -71,
-                'afii10092' => -44
+                'afii10092' => -44,
             ],
             'afii10047' => [
                 'afii10017' => -30,
@@ -10798,7 +10798,7 @@ final class StandardFontCoreKerning
                 'afii10058' => -29,
                 'afii10060' => -69,
                 'afii10062' => -59,
-                'afii10106' => -19
+                'afii10106' => -19,
             ],
             'afii10048' => [
                 'afii10017' => -38,
@@ -10816,7 +10816,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -79,
                 'afii10062' => -67,
                 'afii10077' => -26,
-                'afii10106' => -27
+                'afii10106' => -27,
             ],
             'afii10050' => [
                 'afii10021' => -59,
@@ -10858,7 +10858,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -130,
                 'afii10101' => -127,
                 'afii10106' => -152,
-                'afii10110' => -8
+                'afii10110' => -8,
             ],
             'afii10052' => [
                 'afii10021' => -70,
@@ -10899,7 +10899,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -145,
                 'afii10101' => -137,
                 'afii10106' => -164,
-                'afii10110' => -22
+                'afii10110' => -22,
             ],
             'afii10058' => [
                 'afii10036' => -113,
@@ -10908,7 +10908,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -106,
                 'afii10060' => -110,
                 'afii10062' => -77,
-                'afii10092' => -50
+                'afii10092' => -50,
             ],
             'afii10059' => [
                 'afii10036' => -112,
@@ -10917,7 +10917,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -105,
                 'afii10060' => -108,
                 'afii10062' => -76,
-                'afii10092' => -48
+                'afii10092' => -48,
             ],
             'afii10061' => [
                 'afii10025' => -61,
@@ -10936,7 +10936,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -87,
                 'afii10089' => -95,
                 'afii10101' => -49,
-                'afii10110' => -57
+                'afii10110' => -57,
             ],
             'afii10062' => [
                 'afii10017' => -87,
@@ -10974,14 +10974,14 @@ final class StandardFontCoreKerning
                 'afii10096' => -44,
                 'afii10097' => -59,
                 'afii10101' => -67,
-                'afii10106' => -86
+                'afii10106' => -86,
             ],
             'afii10065' => [
                 'afii10084' => -19,
                 'afii10085' => -30,
                 'afii10089' => -37,
                 'afii10106' => -3,
-                'afii10110' => -24
+                'afii10110' => -24,
             ],
             'afii10066' => [
                 'afii10072' => -5,
@@ -10991,7 +10991,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -25,
                 'afii10089' => -19,
                 'afii10097' => -4,
-                'afii10110' => -17
+                'afii10110' => -17,
             ],
             'afii10067' => [
                 'afii10072' => 2,
@@ -11000,7 +11000,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -14,
                 'afii10089' => -18,
                 'afii10097' => 4,
-                'afii10110' => -6
+                'afii10110' => -6,
             ],
             'afii10068' => [
                 'afii10069' => -72,
@@ -11016,7 +11016,7 @@ final class StandardFontCoreKerning
                 'comma' => -119,
                 'hyphen' => -100,
                 'period' => -123,
-                'semicolon' => -52
+                'semicolon' => -52,
             ],
             'afii10070' => [
                 'afii10072' => -9,
@@ -11026,7 +11026,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -25,
                 'afii10089' => -16,
                 'afii10097' => -5,
-                'afii10110' => -17
+                'afii10110' => -17,
             ],
             'afii10072' => [
                 'afii10066' => -1,
@@ -11036,7 +11036,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -2,
                 'afii10086' => -42,
                 'afii10101' => -2,
-                'afii10110' => 1
+                'afii10110' => 1,
             ],
             'afii10073' => [
                 'afii10072' => -7,
@@ -11047,10 +11047,10 @@ final class StandardFontCoreKerning
                 'afii10089' => -26,
                 'afii10097' => -3,
                 'afii10106' => -22,
-                'afii10110' => -18
+                'afii10110' => -18,
             ],
             'afii10075' => [
-                'afii10106' => -29
+                'afii10106' => -29,
             ],
             'afii10076' => [
                 'afii10065' => -32,
@@ -11061,7 +11061,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -24,
                 'afii10086' => -63,
                 'afii10101' => -23,
-                'afii10110' => -20
+                'afii10110' => -20,
             ],
             'afii10080' => [
                 'afii10072' => -6,
@@ -11072,7 +11072,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -26,
                 'afii10092' => -3,
                 'afii10106' => -24,
-                'afii10110' => -13
+                'afii10110' => -13,
             ],
             'afii10082' => [
                 'afii10072' => -1,
@@ -11089,7 +11089,7 @@ final class StandardFontCoreKerning
                 'comma' => -13,
                 'hyphen' => 26,
                 'period' => -11,
-                'semicolon' => 1
+                'semicolon' => 1,
             ],
             'afii10083' => [
                 'afii10062' => -63,
@@ -11103,7 +11103,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -23,
                 'afii10089' => -11,
                 'afii10097' => -1,
-                'afii10106' => -18
+                'afii10106' => -18,
             ],
             'afii10084' => [
                 'afii10065' => -8,
@@ -11126,7 +11126,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -66,
                 'hyphen' => -30,
                 'period' => -49,
-                'semicolon' => -26
+                'semicolon' => -26,
             ],
             'afii10085' => [
                 'afii10065' => -30,
@@ -11147,7 +11147,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -51,
                 'hyphen' => -14,
                 'period' => -68,
-                'semicolon' => -29
+                'semicolon' => -29,
             ],
             'afii10086' => [
                 'afii10068' => -62,
@@ -11162,7 +11162,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -35,
                 'afii10097' => -34,
                 'afii10106' => -57,
-                'afii10110' => -46
+                'afii10110' => -46,
             ],
             'afii10087' => [
                 'afii10065' => -25,
@@ -11172,7 +11172,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -21,
                 'afii10086' => -56,
                 'afii10101' => -19,
-                'afii10110' => 3
+                'afii10110' => 3,
             ],
             'afii10092' => [
                 'afii10070' => -12,
@@ -11181,7 +11181,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -48,
                 'afii10089' => -33,
                 'afii10092' => -68,
-                'afii10110' => -42
+                'afii10110' => -42,
             ],
             'afii10094' => [
                 'afii10070' => -13,
@@ -11190,7 +11190,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -49,
                 'afii10089' => -34,
                 'afii10092' => -69,
-                'afii10110' => -43
+                'afii10110' => -43,
             ],
             'afii10095' => [
                 'afii10077' => -16,
@@ -11200,7 +11200,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -1,
                 'afii10097' => 3,
                 'afii10106' => -21,
-                'afii10110' => -10
+                'afii10110' => -10,
             ],
             'afii10096' => [
                 'afii10072' => -13,
@@ -11212,7 +11212,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -24,
                 'afii10092' => -10,
                 'afii10106' => -31,
-                'afii10110' => -20
+                'afii10110' => -20,
             ],
             'afii10098' => [
                 'afii10069' => -34,
@@ -11222,7 +11222,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -30,
                 'afii10097' => 16,
                 'afii10101' => 7,
-                'afii10106' => -23
+                'afii10106' => -23,
             ],
             'afii10100' => [
                 'afii10069' => -41,
@@ -11231,14 +11231,14 @@ final class StandardFontCoreKerning
                 'afii10083' => -1,
                 'afii10086' => -38,
                 'afii10097' => 9,
-                'afii10106' => -30
+                'afii10106' => -30,
             ],
             'afii10106' => [
                 'afii10084' => -62,
                 'afii10085' => -57,
                 'afii10089' => -42,
                 'afii10092' => -77,
-                'afii10110' => -51
+                'afii10110' => -51,
             ],
             'afii10107' => [
                 'afii10070' => -7,
@@ -11248,7 +11248,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -29,
                 'afii10092' => -64,
                 'afii10101' => -5,
-                'afii10110' => -38
+                'afii10110' => -38,
             ],
             'afii10109' => [
                 'afii10065' => -21,
@@ -11259,7 +11259,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -13,
                 'afii10086' => -53,
                 'afii10101' => -16,
-                'afii10110' => -18
+                'afii10110' => -18,
             ],
             'afii10110' => [
                 'afii10065' => -26,
@@ -11273,12 +11273,12 @@ final class StandardFontCoreKerning
                 'afii10086' => -52,
                 'afii10089' => -12,
                 'afii10097' => -20,
-                'afii10101' => -15
+                'afii10101' => -15,
             ],
             'agrave' => [
                 'v' => -19,
                 'w' => -8,
-                'y' => -24
+                'y' => -24,
             ],
             'alpha' => [
                 'colon' => 3,
@@ -11301,7 +11301,7 @@ final class StandardFontCoreKerning
                 'upsilondieresis' => 13,
                 'upsilontonos' => 13,
                 'xi' => 12,
-                'zeta' => 3
+                'zeta' => 3,
             ],
             'alphatonos' => [
                 'colon' => 3,
@@ -11318,15 +11318,15 @@ final class StandardFontCoreKerning
                 'sigma' => 8,
                 'theta' => 18,
                 'xi' => 12,
-                'zeta' => 3
+                'zeta' => 3,
             ],
             'aring' => [
                 'v' => -19,
                 'w' => -8,
-                'y' => -24
+                'y' => -24,
             ],
             'asterisk' => [
-                'period' => -54
+                'period' => -54,
             ],
             'b' => [
                 'asterisk' => -10,
@@ -11341,7 +11341,7 @@ final class StandardFontCoreKerning
                 'v' => -12,
                 'w' => -3,
                 'y' => -18,
-                'z' => -22
+                'z' => -22,
             ],
             'backslash' => [
                 'A' => 18,
@@ -11376,11 +11376,11 @@ final class StandardFontCoreKerning
                 'g' => 56,
                 'i' => 53,
                 'j' => 50,
-                'l' => 52
+                'l' => 52,
             ],
             'beta' => [
                 'gamma' => -20,
-                'lambda' => -25
+                'lambda' => -25,
             ],
             'braceleft' => [
                 'A' => -12,
@@ -11404,7 +11404,7 @@ final class StandardFontCoreKerning
                 'l' => 16,
                 'p' => 21,
                 'quoteleft' => 36,
-                'y' => -1
+                'y' => -1,
             ],
             'bracketleft' => [
                 'A' => -3,
@@ -11428,7 +11428,7 @@ final class StandardFontCoreKerning
                 'l' => 26,
                 'p' => 30,
                 'quoteleft' => 41,
-                'y' => 7
+                'y' => 7,
             ],
             'c' => [
                 'J' => 11,
@@ -11458,11 +11458,11 @@ final class StandardFontCoreKerning
                 'semicolon' => 1,
                 'u' => 1,
                 'udieresis' => 1,
-                'y' => -16
+                'y' => -16,
             ],
             'ccaron' => [
                 'e' => 1,
-                'o' => 6
+                'o' => 6,
             ],
             'chi' => [
                 'alpha' => -41,
@@ -11475,13 +11475,13 @@ final class StandardFontCoreKerning
                 'omicron' => -44,
                 'omicrontonos' => -44,
                 'theta' => -21,
-                'upsilontonos' => -31
+                'upsilontonos' => -31,
             ],
             'comma' => [
                 'endash' => 8,
                 'hyphen' => -17,
                 'quotedblright' => -41,
-                'quoteright' => -49
+                'quoteright' => -49,
             ],
             'd' => [
                 'a' => -3,
@@ -11496,7 +11496,7 @@ final class StandardFontCoreKerning
                 'period' => -8,
                 'v' => -7,
                 'y' => -11,
-                'z' => -16
+                'z' => -16,
             ],
             'dcaron' => [
                 'a' => -47,
@@ -11519,10 +11519,10 @@ final class StandardFontCoreKerning
                 'uring' => -17,
                 'y' => 2,
                 'yacute' => 9,
-                'z' => -19
+                'z' => -19,
             ],
             'delta' => [
-                'nu' => -17
+                'nu' => -17,
             ],
             'e' => [
                 'a' => -11,
@@ -11552,7 +11552,7 @@ final class StandardFontCoreKerning
                 'x' => -26,
                 'y' => -22,
                 'z' => -23,
-                'zcaron' => -23
+                'zcaron' => -23,
             ],
             'eacute' => [
                 'b' => 3,
@@ -11574,12 +11574,12 @@ final class StandardFontCoreKerning
                 'v' => -19,
                 'w' => -7,
                 'y' => -22,
-                'z' => -23
+                'z' => -23,
             ],
             'ecircumflex' => [
                 'v' => -19,
                 'w' => -7,
-                'y' => -22
+                'y' => -22,
             ],
             'endash' => [
                 'a' => 16,
@@ -11610,10 +11610,10 @@ final class StandardFontCoreKerning
                 'w' => 28,
                 'x' => -18,
                 'y' => 16,
-                'z' => -30
+                'z' => -30,
             ],
             'eogonek' => [
-                'zdotaccent' => -23
+                'zdotaccent' => -23,
             ],
             'epsilon' => [
                 'alpha' => 18,
@@ -11635,7 +11635,7 @@ final class StandardFontCoreKerning
                 'upsilon' => 9,
                 'upsilontonos' => 9,
                 'xi' => 21,
-                'zeta' => 8
+                'zeta' => 8,
             ],
             'epsilontonos' => [
                 'alpha' => 18,
@@ -11648,11 +11648,11 @@ final class StandardFontCoreKerning
                 'semicolon' => 9,
                 'tau' => 8,
                 'theta' => 16,
-                'zeta' => 8
+                'zeta' => 8,
             ],
             'exclam' => [
                 'quotedblright' => 18,
-                'quoteright' => 10
+                'quoteright' => 10,
             ],
             'f' => [
                 'a' => -18,
@@ -11701,7 +11701,7 @@ final class StandardFontCoreKerning
                 'w' => 16,
                 'y' => 9,
                 'yacute' => 9,
-                'z' => -5
+                'z' => -5,
             ],
             'g' => [
                 'a' => -8,
@@ -11735,7 +11735,7 @@ final class StandardFontCoreKerning
                 'v' => -11,
                 'w' => -3,
                 'y' => -14,
-                'z' => -19
+                'z' => -19,
             ],
             'gamma' => [
                 'alpha' => -19,
@@ -11751,13 +11751,13 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -22,
                 'rho' => -25,
                 'upsilontonos' => -9,
-                'xi' => -11
+                'xi' => -11,
             ],
             'germandbls' => [
                 'e' => -15,
                 'k' => -8,
                 't' => -15,
-                'w' => -19
+                'w' => -19,
             ],
             'guillemotleft' => [
                 'Alpha' => -35,
@@ -11778,7 +11778,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -46,
                 'afii10089' => -45,
                 'nu' => -42,
-                'tau' => -65
+                'tau' => -65,
             ],
             'guillemotright' => [
                 'A' => -46,
@@ -11789,7 +11789,7 @@ final class StandardFontCoreKerning
                 'T' => -121,
                 'V' => -87,
                 'W' => -60,
-                'Y' => -126
+                'Y' => -126,
             ],
             'guilsinglright' => [
                 'A' => -40,
@@ -11800,7 +11800,7 @@ final class StandardFontCoreKerning
                 'T' => -115,
                 'V' => -82,
                 'W' => -55,
-                'Y' => -120
+                'Y' => -120,
             ],
             'h' => [
                 'asterisk' => -13,
@@ -11808,7 +11808,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -11,
                 'v' => -16,
                 'y' => -21,
-                'yacute' => -21
+                'yacute' => -21,
             ],
             'hyphen' => [
                 'A' => -1,
@@ -11843,7 +11843,7 @@ final class StandardFontCoreKerning
                 'w' => 1,
                 'x' => -45,
                 'y' => -10,
-                'z' => -57
+                'z' => -57,
             ],
             'i' => [
                 'T' => -16,
@@ -11857,13 +11857,13 @@ final class StandardFontCoreKerning
                 'quoteright' => -5,
                 'v' => -13,
                 'w' => -6,
-                'z' => -21
+                'z' => -21,
             ],
             'iacute' => [
-                'v' => -27
+                'v' => -27,
             ],
             'iotatonos' => [
-                'delta' => -4
+                'delta' => -4,
             ],
             'j' => [
                 'asterisk' => -8,
@@ -11872,7 +11872,7 @@ final class StandardFontCoreKerning
                 'endash' => 33,
                 'eogonek' => -1,
                 'parenright' => 11,
-                'y' => -16
+                'y' => -16,
             ],
             'k' => [
                 'a' => -15,
@@ -11920,7 +11920,7 @@ final class StandardFontCoreKerning
                 'w' => 12,
                 'x' => 21,
                 'y' => 4,
-                'z' => 14
+                'z' => 14,
             ],
             'kappa' => [
                 'alpha' => -16,
@@ -11939,7 +11939,7 @@ final class StandardFontCoreKerning
                 'phi' => -22,
                 'sigma' => -27,
                 'theta' => -3,
-                'upsilontonos' => -14
+                'upsilontonos' => -14,
             ],
             'l' => [
                 'comma' => -13,
@@ -11949,7 +11949,7 @@ final class StandardFontCoreKerning
                 'v' => -12,
                 'w' => -5,
                 'y' => -16,
-                'z' => -20
+                'z' => -20,
             ],
             'lambda' => [
                 'alphatonos' => -16,
@@ -11971,7 +11971,7 @@ final class StandardFontCoreKerning
                 'tau' => -46,
                 'upsilon' => -22,
                 'upsilontonos' => -22,
-                'xi' => -20
+                'xi' => -20,
             ],
             'lcaron' => [
                 'a' => -46,
@@ -11999,7 +11999,7 @@ final class StandardFontCoreKerning
                 'uring' => -16,
                 'v' => 1,
                 'z' => -18,
-                'zcaron' => -10
+                'zcaron' => -10,
             ],
             'm' => [
                 'endash' => 33,
@@ -12009,7 +12009,7 @@ final class StandardFontCoreKerning
                 'v' => -16,
                 'w' => -7,
                 'y' => -20,
-                'z' => -18
+                'z' => -18,
             ],
             'n' => [
                 'T' => -94,
@@ -12021,7 +12021,7 @@ final class StandardFontCoreKerning
                 'v' => -16,
                 'w' => -7,
                 'y' => -21,
-                'z' => -18
+                'z' => -18,
             ],
             'nu' => [
                 'alpha' => -15,
@@ -12042,7 +12042,7 @@ final class StandardFontCoreKerning
                 'quoteright' => 7,
                 'semicolon' => -25,
                 'sigma' => -25,
-                'upsilontonos' => -8
+                'upsilontonos' => -8,
             ],
             'o' => [
                 'T' => -93,
@@ -12068,7 +12068,7 @@ final class StandardFontCoreKerning
                 'w' => -9,
                 'x' => -24,
                 'y' => -24,
-                'z' => -28
+                'z' => -28,
             ],
             'odieresis' => [
                 'T' => -57,
@@ -12086,24 +12086,24 @@ final class StandardFontCoreKerning
                 'w' => -9,
                 'x' => -24,
                 'y' => -24,
-                'z' => -28
+                'z' => -28,
             ],
             'oacute' => [
                 'v' => -18,
                 'w' => -9,
                 'y' => -24,
-                'zacute' => -28
+                'zacute' => -28,
             ],
             'ocircumflex' => [
-                't' => -5
+                't' => -5,
             ],
             'oe' => [
-                'u' => -5
+                'u' => -5,
             ],
             'ograve' => [
                 'v' => -18,
                 'w' => -9,
-                'y' => -24
+                'y' => -24,
             ],
             'omega' => [
                 'chi' => -63,
@@ -12111,7 +12111,7 @@ final class StandardFontCoreKerning
                 'lambda' => -39,
                 'nu' => -36,
                 'pi' => -49,
-                'tau' => -43
+                'tau' => -43,
             ],
             'omegatonos' => [
                 'chi' => -63,
@@ -12119,7 +12119,7 @@ final class StandardFontCoreKerning
                 'lambda' => -39,
                 'nu' => -36,
                 'pi' => -49,
-                'tau' => -43
+                'tau' => -43,
             ],
             'omicron' => [
                 'alpha' => 9,
@@ -12129,14 +12129,14 @@ final class StandardFontCoreKerning
                 'nu' => -16,
                 'pi' => -26,
                 'tau' => -20,
-                'upsilon' => -1
+                'upsilon' => -1,
             ],
             'omicrontonos' => [
                 'chi' => -42,
                 'gamma' => -21,
                 'nu' => -16,
                 'pi' => -26,
-                'tau' => -20
+                'tau' => -20,
             ],
             'p' => [
                 'asterisk' => -9,
@@ -12147,7 +12147,7 @@ final class StandardFontCoreKerning
                 'w' => -1,
                 'y' => -19,
                 'yacute' => -19,
-                'z' => -20
+                'z' => -20,
             ],
             'parenleft' => [
                 'A' => -16,
@@ -12171,7 +12171,7 @@ final class StandardFontCoreKerning
                 'l' => 9,
                 'p' => 18,
                 'quoteleft' => 38,
-                'y' => -11
+                'y' => -11,
             ],
             'period' => [
                 'asterisk' => -52,
@@ -12182,10 +12182,10 @@ final class StandardFontCoreKerning
                 'quoteright' => -50,
                 'quotesingle' => -52,
                 'threesuperior' => -15,
-                'twosuperior' => -5
+                'twosuperior' => -5,
             ],
             'phi' => [
-                'tau' => -22
+                'tau' => -22,
             ],
             'pi' => [
                 'alphatonos' => -23,
@@ -12195,7 +12195,7 @@ final class StandardFontCoreKerning
                 'omicron' => -24,
                 'omicrontonos' => -24,
                 'quoteright' => -15,
-                'upsilontonos' => -29
+                'upsilontonos' => -29,
             ],
             'q' => [
                 'braceright' => 35,
@@ -12204,12 +12204,12 @@ final class StandardFontCoreKerning
                 'endash' => 36,
                 'parenright' => 16,
                 'u' => 3,
-                'udieresis' => 3
+                'udieresis' => 3,
             ],
             'question' => [
                 'quotedblright' => 20,
                 'quoteright' => 12,
-                'quotesingle' => 17
+                'quotesingle' => 17,
             ],
             'quotedblbase' => [
                 'A' => 30,
@@ -12233,7 +12233,7 @@ final class StandardFontCoreKerning
                 'v' => -32,
                 'w' => -17,
                 'y' => -37,
-                'z' => 19
+                'z' => 19,
             ],
             'quotedblleft' => [
                 'A' => -46,
@@ -12271,7 +12271,7 @@ final class StandardFontCoreKerning
                 'v' => 22,
                 'w' => 27,
                 'y' => 17,
-                'z' => -15
+                'z' => -15,
             ],
             'quotedblright' => [
                 'A' => -50,
@@ -12282,7 +12282,7 @@ final class StandardFontCoreKerning
                 'T' => 2,
                 'V' => 18,
                 'W' => 29,
-                'Y' => 5
+                'Y' => 5,
             ],
             'quoteleft' => [
                 'A' => -61,
@@ -12320,7 +12320,7 @@ final class StandardFontCoreKerning
                 'w' => 9,
                 'x' => -15,
                 'y' => -1,
-                'z' => -32
+                'z' => -32,
             ],
             'quoteright' => [
                 'A' => -66,
@@ -12344,7 +12344,7 @@ final class StandardFontCoreKerning
                 't' => -8,
                 'v' => -3,
                 'w' => 1,
-                'y' => -6
+                'y' => -6,
             ],
             'quotesinglbase' => [
                 'A' => 14,
@@ -12364,7 +12364,7 @@ final class StandardFontCoreKerning
                 'v' => -48,
                 'w' => -33,
                 'y' => -52,
-                'z' => 4
+                'z' => 4,
             ],
             'quotesingle' => [
                 'A' => -53,
@@ -12373,7 +12373,7 @@ final class StandardFontCoreKerning
                 'W' => 20,
                 'X' => -28,
                 'Y' => -6,
-                'Z' => -24
+                'Z' => -24,
             ],
             'r' => [
                 'a' => -15,
@@ -12446,7 +12446,7 @@ final class StandardFontCoreKerning
                 'z' => -1,
                 'zacute' => -1,
                 'zcaron' => -1,
-                'zdotaccent' => -1
+                'zdotaccent' => -1,
             ],
             'racute' => [
                 'a' => -15,
@@ -12458,7 +12458,7 @@ final class StandardFontCoreKerning
                 's' => -2,
                 't' => 20,
                 'v' => 18,
-                'z' => -1
+                'z' => -1,
             ],
             'rcaron' => [
                 'a' => -15,
@@ -12478,7 +12478,7 @@ final class StandardFontCoreKerning
                 'u' => -7,
                 'uacute' => -7,
                 'uring' => -7,
-                'v' => 18
+                'v' => 18,
             ],
             'rho' => [
                 'chi' => -44,
@@ -12488,7 +12488,7 @@ final class StandardFontCoreKerning
                 'lambda' => -20,
                 'nu' => -18,
                 'pi' => -31,
-                'tau' => -23
+                'tau' => -23,
             ],
             's' => [
                 'a' => -8,
@@ -12511,19 +12511,19 @@ final class StandardFontCoreKerning
                 'v' => -23,
                 'w' => -13,
                 'y' => -28,
-                'z' => -10
+                'z' => -10,
             ],
             'sacute' => [
                 'c' => -3,
-                'w' => -15
+                'w' => -15,
             ],
             'scaron' => [
                 'k' => -3,
                 'p' => -1,
-                't' => -9
+                't' => -9,
             ],
             'sigma' => [
-                'lambda' => -28
+                'lambda' => -28,
             ],
             'slash' => [
                 'B' => 36,
@@ -12556,7 +12556,7 @@ final class StandardFontCoreKerning
                 'l' => 20,
                 'slash' => 20,
                 't' => 16,
-                'y' => -2
+                'y' => -2,
             ],
             't' => [
                 'S' => -16,
@@ -12601,7 +12601,7 @@ final class StandardFontCoreKerning
                 'v' => 11,
                 'w' => 14,
                 'y' => 7,
-                'z' => 3
+                'z' => 3,
             ],
             'tau' => [
                 'alpha' => -6,
@@ -12623,7 +12623,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -26,
                 'sigma' => -15,
                 'tau' => 27,
-                'upsilontonos' => -4
+                'upsilontonos' => -4,
             ],
             'tcaron' => [
                 'a' => -31,
@@ -12647,7 +12647,7 @@ final class StandardFontCoreKerning
                 'y' => -13,
                 'yacute' => -13,
                 'z' => -17,
-                'zcaron' => -17
+                'zcaron' => -17,
             ],
             'u' => [
                 'comma' => -15,
@@ -12660,7 +12660,7 @@ final class StandardFontCoreKerning
                 'w' => -7,
                 'x' => -15,
                 'y' => -18,
-                'z' => -22
+                'z' => -22,
             ],
             'udieresis' => [
                 'comma' => -15,
@@ -12673,16 +12673,16 @@ final class StandardFontCoreKerning
                 'w' => -7,
                 'x' => -15,
                 'y' => -18,
-                'z' => -22
+                'z' => -22,
             ],
             'upsilon' => [
                 'chi' => -30,
                 'gamma' => -11,
                 'lambda' => -21,
-                'tau' => -4
+                'tau' => -4,
             ],
             'upsilondieresis' => [
-                'nu' => -10
+                'nu' => -10,
             ],
             'upsilontonos' => [
                 'chi' => -30,
@@ -12690,7 +12690,7 @@ final class StandardFontCoreKerning
                 'lambda' => -21,
                 'nu' => -10,
                 'pi' => -28,
-                'tau' => -4
+                'tau' => -4,
             ],
             'v' => [
                 'a' => -27,
@@ -12727,7 +12727,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -26,
                 'u' => -8,
                 'udieresis' => -8,
-                'y' => 11
+                'y' => 11,
             ],
             'w' => [
                 'a' => -18,
@@ -12771,7 +12771,7 @@ final class StandardFontCoreKerning
                 'u' => -8,
                 'udieresis' => -8,
                 'y' => 11,
-                'z' => -2
+                'z' => -2,
             ],
             'x' => [
                 'a' => -30,
@@ -12792,7 +12792,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => -5,
                 'quoteright' => -13,
                 'semicolon' => -23,
-                'y' => 4
+                'y' => 4,
             ],
             'xi' => [
                 'alpha' => -17,
@@ -12803,7 +12803,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -46,
                 'omicron' => -21,
                 'omicrontonos' => -21,
-                'upsilontonos' => -28
+                'upsilontonos' => -28,
             ],
             'y' => [
                 'a' => -35,
@@ -12840,12 +12840,12 @@ final class StandardFontCoreKerning
                 'quotedblright' => 8,
                 's' => -22,
                 'sacute' => -22,
-                'semicolon' => -30
+                'semicolon' => -30,
             ],
             'yacute' => [
                 'ccaron' => -19,
                 'comma' => -74,
-                'period' => -74
+                'period' => -74,
             ],
             'z' => [
                 'a' => -18,
@@ -12864,18 +12864,18 @@ final class StandardFontCoreKerning
                 'semicolon' => -36,
                 'u' => -28,
                 'udieresis' => -28,
-                'y' => -9
+                'y' => -9,
             ],
             'zacute' => [
                 'colon' => -46,
                 'comma' => -35,
-                'semicolon' => -36
+                'semicolon' => -36,
             ],
             'zcaron' => [
                 'colon' => -46,
                 'comma' => -35,
                 'e' => -36,
-                'semicolon' => -36
+                'semicolon' => -36,
             ],
             'zdotaccent' => [
                 'c' => -29,
@@ -12883,7 +12883,7 @@ final class StandardFontCoreKerning
                 'comma' => -35,
                 'e' => -36,
                 'oacute' => -33,
-                'semicolon' => -36
+                'semicolon' => -36,
             ],
             'zeta' => [
                 'alpha' => -33,
@@ -12896,7 +12896,7 @@ final class StandardFontCoreKerning
                 'omicron' => -40,
                 'omicrontonos' => -40,
                 'upsilon' => -34,
-                'upsilontonos' => -34
+                'upsilontonos' => -34,
             ],
         ],
         'Helvetica-BoldOblique' => [
@@ -12966,14 +12966,14 @@ final class StandardFontCoreKerning
                 'w' => -22,
                 'y' => -34,
                 'yacute' => -34,
-                'z' => 8
+                'z' => 8,
             ],
             'AE' => [
                 'T' => -3,
                 'V' => -10,
                 'W' => -4,
                 'X' => 1,
-                'Z' => -2
+                'Z' => -2,
             ],
             'Aacute' => [
                 'C' => -31,
@@ -13005,7 +13005,7 @@ final class StandardFontCoreKerning
                 'u' => -12,
                 'v' => -35,
                 'w' => -22,
-                'y' => -34
+                'y' => -34,
             ],
             'Abreve' => [
                 'T' => -89,
@@ -13014,7 +13014,7 @@ final class StandardFontCoreKerning
                 'Y' => -89,
                 'Yacute' => -89,
                 'y' => -34,
-                'yacute' => -34
+                'yacute' => -34,
             ],
             'Acircumflex' => [
                 'C' => -28,
@@ -13033,7 +13033,7 @@ final class StandardFontCoreKerning
                 'period' => 19,
                 'v' => -36,
                 'w' => -22,
-                'yacute' => -34
+                'yacute' => -34,
             ],
             'Adieresis' => [
                 'C' => -29,
@@ -13063,7 +13063,7 @@ final class StandardFontCoreKerning
                 'u' => -11,
                 'v' => -34,
                 'w' => -22,
-                'y' => -32
+                'y' => -32,
             ],
             'Agrave' => [
                 'C' => -28,
@@ -13076,7 +13076,7 @@ final class StandardFontCoreKerning
                 'W' => -50,
                 'Y' => -89,
                 'comma' => 17,
-                'period' => 19
+                'period' => 19,
             ],
             'Alpha' => [
                 'O' => -31,
@@ -13096,13 +13096,13 @@ final class StandardFontCoreKerning
                 'phi' => -6,
                 'sigma' => -26,
                 'upsilon' => -10,
-                'upsilontonos' => -10
+                'upsilontonos' => -10,
             ],
             'Alphatonos' => [
                 'gamma' => -39,
                 'nu' => -36,
                 'phi' => -6,
-                'sigma' => -26
+                'sigma' => -26,
             ],
             'Aogonek' => [
                 'C' => -29,
@@ -13116,7 +13116,7 @@ final class StandardFontCoreKerning
                 'period' => 19,
                 'semicolon' => 12,
                 'y' => -6,
-                'yacute' => -6
+                'yacute' => -6,
             ],
             'Aring' => [
                 'C' => -29,
@@ -13147,7 +13147,7 @@ final class StandardFontCoreKerning
                 'u' => -11,
                 'v' => -37,
                 'w' => -22,
-                'y' => -34
+                'y' => -34,
             ],
             'Atilde' => [
                 'C' => -30,
@@ -13160,7 +13160,7 @@ final class StandardFontCoreKerning
                 'W' => -50,
                 'Y' => -87,
                 'comma' => 16,
-                'period' => 16
+                'period' => 16,
             ],
             'B' => [
                 'A' => -38,
@@ -13186,13 +13186,13 @@ final class StandardFontCoreKerning
                 'Y' => -60,
                 'Z' => -23,
                 'lambda' => -29,
-                'y' => -15
+                'y' => -15,
             ],
             'Beta' => [
                 'A' => -38,
                 'Alpha' => -38,
                 'Delta' => 4,
-                'lambda' => -29
+                'lambda' => -29,
             ],
             'C' => [
                 'A' => -33,
@@ -13228,13 +13228,13 @@ final class StandardFontCoreKerning
                 'quoteright' => 10,
                 'quotesingle' => 14,
                 'semicolon' => 25,
-                'y' => 1
+                'y' => 1,
             ],
             'Ccaron' => [
-                'O' => -3
+                'O' => -3,
             ],
             'Ccedilla' => [
-                'A' => -33
+                'A' => -33,
             ],
             'Chi' => [
                 'O' => -31,
@@ -13247,7 +13247,7 @@ final class StandardFontCoreKerning
                 'omega' => -45,
                 'omicron' => -36,
                 'omicrontonos' => -36,
-                'tau' => -46
+                'tau' => -46,
             ],
             'D' => [
                 'A' => -31,
@@ -13274,7 +13274,7 @@ final class StandardFontCoreKerning
                 'o' => 8,
                 'odieresis' => 8,
                 'oe' => 14,
-                'y' => -5
+                'y' => -5,
             ],
             'Delta' => [
                 'O' => -52,
@@ -13287,7 +13287,7 @@ final class StandardFontCoreKerning
                 'o' => -38,
                 'omegatonos' => -53,
                 'omicron' => -39,
-                'upsilon' => -35
+                'upsilon' => -35,
             ],
             'E' => [
                 'A' => -6,
@@ -13333,7 +13333,7 @@ final class StandardFontCoreKerning
                 'v' => -27,
                 'w' => -14,
                 'y' => -27,
-                'z' => -1
+                'z' => -1,
             ],
             'Epsilon' => [
                 'O' => -14,
@@ -13343,10 +13343,10 @@ final class StandardFontCoreKerning
                 'delta' => -13,
                 'gamma' => -31,
                 'nu' => -26,
-                'tau' => -22
+                'tau' => -22,
             ],
             'Epsilontonos' => [
-                'nu' => -52
+                'nu' => -52,
             ],
             'F' => [
                 'A' => -61,
@@ -13397,7 +13397,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -32,
                 'uacute' => -32,
                 'uring' => -32,
-                'y' => -28
+                'y' => -28,
             ],
             'G' => [
                 'A' => -18,
@@ -13430,7 +13430,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -7,
                 'quotesingle' => -1,
                 'semicolon' => 27,
-                'y' => -12
+                'y' => -12,
             ],
             'Gamma' => [
                 'A' => -100,
@@ -13452,7 +13452,7 @@ final class StandardFontCoreKerning
                 'period' => -144,
                 'rho' => -131,
                 'upsilon' => -86,
-                'upsilontonos' => -40
+                'upsilontonos' => -40,
             ],
             'H' => [
                 'A' => -17,
@@ -13463,7 +13463,7 @@ final class StandardFontCoreKerning
                 'a' => 9,
                 'adieresis' => 9,
                 'ae' => 11,
-                'y' => -8
+                'y' => -8,
             ],
             'I' => [
                 'A' => -17,
@@ -13475,7 +13475,7 @@ final class StandardFontCoreKerning
                 'X' => -15,
                 'Y' => -20,
                 'Z' => -6,
-                'y' => -5
+                'y' => -5,
             ],
             'J' => [
                 'A' => -31,
@@ -13484,7 +13484,7 @@ final class StandardFontCoreKerning
                 'Aring' => -31,
                 'K' => 4,
                 'Y' => -22,
-                'y' => -11
+                'y' => -11,
             ],
             'K' => [
                 'A' => 10,
@@ -13549,7 +13549,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -41,
                 'upsilontonos' => -41,
                 'w' => -53,
-                'y' => -70
+                'y' => -70,
             ],
             'Kappa' => [
                 'O' => -48,
@@ -13566,7 +13566,7 @@ final class StandardFontCoreKerning
                 'period' => 1,
                 'semicolon' => -28,
                 'upsilon' => -41,
-                'upsilontonos' => -41
+                'upsilontonos' => -41,
             ],
             'L' => [
                 'A' => -1,
@@ -13612,7 +13612,7 @@ final class StandardFontCoreKerning
                 'u' => -18,
                 'udieresis' => -18,
                 'y' => -66,
-                'yacute' => -66
+                'yacute' => -66,
             ],
             'Lambda' => [
                 'O' => -19,
@@ -13632,7 +13632,7 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -2,
                 'period' => 29,
                 'quoteright' => -52,
-                'upsilon' => 1
+                'upsilon' => 1,
             ],
             'Lcaron' => [
                 'O' => -41,
@@ -13643,7 +13643,7 @@ final class StandardFontCoreKerning
                 'Y' => -66,
                 'Yacute' => -66,
                 'v' => -64,
-                'yacute' => -61
+                'yacute' => -61,
             ],
             'Lslash' => [
                 'O' => -32,
@@ -13659,7 +13659,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -3,
                 'v' => -48,
                 'w' => -34,
-                'yacute' => -48
+                'yacute' => -48,
             ],
             'M' => [
                 'A' => -13,
@@ -13670,10 +13670,10 @@ final class StandardFontCoreKerning
                 'Z' => -6,
                 'epsilon' => 21,
                 'j' => 14,
-                'y' => -4
+                'y' => -4,
             ],
             'Mu' => [
-                'epsilon' => 21
+                'epsilon' => 21,
             ],
             'N' => [
                 'A' => -15,
@@ -13711,7 +13711,7 @@ final class StandardFontCoreKerning
                 'period' => 17,
                 'u' => 11,
                 'udieresis' => 11,
-                'y' => -3
+                'y' => -3,
             ],
             'Nu' => [
                 'A' => -15,
@@ -13721,7 +13721,7 @@ final class StandardFontCoreKerning
                 'o' => 11,
                 'omega' => -5,
                 'omicron' => 9,
-                'omicrontonos' => 9
+                'omicrontonos' => 9,
             ],
             'O' => [
                 'A' => -33,
@@ -13757,14 +13757,14 @@ final class StandardFontCoreKerning
                 'w' => 7,
                 'x' => -10,
                 'y' => -7,
-                'z' => -8
+                'z' => -8,
             ],
             'OE' => [
                 'T' => -1,
                 'V' => -9,
                 'W' => -3,
                 'X' => 2,
-                'Z' => -1
+                'Z' => -1,
             ],
             'Oacute' => [
                 'A' => -33,
@@ -13776,12 +13776,12 @@ final class StandardFontCoreKerning
                 'colon' => 29,
                 'comma' => -6,
                 'period' => -3,
-                'semicolon' => 28
+                'semicolon' => 28,
             ],
             'Ocircumflex' => [
                 'T' => -33,
                 'V' => -30,
-                'Y' => -55
+                'Y' => -55,
             ],
             'Odieresis' => [
                 'A' => -33,
@@ -13793,12 +13793,12 @@ final class StandardFontCoreKerning
                 'colon' => 29,
                 'comma' => -6,
                 'period' => -3,
-                'semicolon' => 28
+                'semicolon' => 28,
             ],
             'Ograve' => [
                 'T' => -33,
                 'V' => -30,
-                'Y' => -55
+                'Y' => -55,
             ],
             'Omicron' => [
                 'A' => -33,
@@ -13811,18 +13811,18 @@ final class StandardFontCoreKerning
                 'Upsilon' => -55,
                 'Y' => -55,
                 'Zeta' => -21,
-                'lambda' => -19
+                'lambda' => -19,
             ],
             'Omicrontonos' => [
-                'lambda' => -26
+                'lambda' => -26,
             ],
             'Oslash' => [
-                'A' => -26
+                'A' => -26,
             ],
             'Otilde' => [
                 'T' => -33,
                 'V' => -30,
-                'Y' => -55
+                'Y' => -55,
             ],
             'P' => [
                 'A' => -62,
@@ -13892,7 +13892,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => 22,
                 't' => 6,
                 'w' => 7,
-                'y' => 5
+                'y' => 5,
             ],
             'Phi' => [
                 'A' => -55,
@@ -13907,19 +13907,19 @@ final class StandardFontCoreKerning
                 'omega' => -23,
                 'omegatonos' => -23,
                 'omicron' => -9,
-                'omicrontonos' => -9
+                'omicrontonos' => -9,
             ],
             'Pi' => [
                 'epsilontonos' => 13,
                 'lambda' => -13,
                 'o' => 9,
-                'omicron' => 8
+                'omicron' => 8,
             ],
             'Psi' => [
                 'A' => -50,
                 'Alpha' => -50,
                 'O' => -11,
-                'Omicron' => -11
+                'Omicron' => -11,
             ],
             'Q' => [
                 'R' => 4,
@@ -13929,7 +13929,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 44,
                 'parenright' => 31,
                 'u' => 14,
-                'udieresis' => 14
+                'udieresis' => 14,
             ],
             'R' => [
                 'A' => -7,
@@ -13983,7 +13983,7 @@ final class StandardFontCoreKerning
                 'uacute' => 3,
                 'udieresis' => 3,
                 'y' => -4,
-                'yacute' => -3
+                'yacute' => -3,
             ],
             'Rho' => [
                 'A' => -62,
@@ -14005,7 +14005,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -36,
                 'omicron' => -19,
                 'omicrontonos' => -19,
-                'period' => -86
+                'period' => -86,
             ],
             'S' => [
                 'A' => -24,
@@ -14041,7 +14041,7 @@ final class StandardFontCoreKerning
                 't' => 7,
                 'v' => -9,
                 'w' => 3,
-                'y' => -6
+                'y' => -6,
             ],
             'Sigma' => [
                 'O' => -23,
@@ -14050,7 +14050,7 @@ final class StandardFontCoreKerning
                 'chi' => -35,
                 'o' => -5,
                 'omicron' => -8,
-                'tau' => -40
+                'tau' => -40,
             ],
             'T' => [
                 'A' => -87,
@@ -14164,7 +14164,7 @@ final class StandardFontCoreKerning
                 'w' => -77,
                 'y' => -89,
                 'yacute' => -9,
-                'zeta' => -17
+                'zeta' => -17,
             ],
             'Tau' => [
                 'A' => -80,
@@ -14195,7 +14195,7 @@ final class StandardFontCoreKerning
                 'sigma' => -83,
                 'upsilon' => -67,
                 'upsilontonos' => -37,
-                'zeta' => -17
+                'zeta' => -17,
             ],
             'Tcaron' => [
                 'A' => -80,
@@ -14229,7 +14229,7 @@ final class StandardFontCoreKerning
                 'yacute' => -9,
                 'zacute' => -29,
                 'zcaron' => -29,
-                'zdotaccent' => -29
+                'zdotaccent' => -29,
             ],
             'Tcommaaccent' => [
                 'Aacute' => -80,
@@ -14256,14 +14256,14 @@ final class StandardFontCoreKerning
                 'yacute' => -9,
                 'zacute' => -29,
                 'zcaron' => -29,
-                'zdotaccent' => -29
+                'zdotaccent' => -29,
             ],
             'Theta' => [
                 'A' => -33,
                 'Alpha' => -33,
                 'Lambda' => -18,
                 'Upsilon' => -55,
-                'Y' => -55
+                'Y' => -55,
             ],
             'U' => [
                 'A' => -30,
@@ -14290,7 +14290,7 @@ final class StandardFontCoreKerning
                 'v' => -13,
                 'x' => -15,
                 'y' => -10,
-                'z' => -8
+                'z' => -8,
             ],
             'Uacute' => [
                 'A' => -30,
@@ -14299,10 +14299,10 @@ final class StandardFontCoreKerning
                 'n' => 1,
                 'p' => 6,
                 'period' => -1,
-                'r' => 1
+                'r' => 1,
             ],
             'Ucircumflex' => [
-                'A' => -30
+                'A' => -30,
             ],
             'Udieresis' => [
                 'A' => -30,
@@ -14312,10 +14312,10 @@ final class StandardFontCoreKerning
                 'n' => 1,
                 'p' => 6,
                 'period' => -1,
-                'r' => 1
+                'r' => 1,
             ],
             'Ugrave' => [
-                'A' => -30
+                'A' => -30,
             ],
             'Upsilon' => [
                 'A' => -82,
@@ -14331,10 +14331,10 @@ final class StandardFontCoreKerning
                 'guillemotright' => -77,
                 'omicrontonos' => -67,
                 'period' => -76,
-                'pi' => -47
+                'pi' => -47,
             ],
             'Upsilontonos' => [
-                'sigma' => -119
+                'sigma' => -119,
             ],
             'V' => [
                 'A' => -64,
@@ -14412,7 +14412,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -41,
                 'uring' => -41,
                 'y' => -17,
-                'yacute' => -14
+                'yacute' => -14,
             ],
             'W' => [
                 'A' => -48,
@@ -14502,7 +14502,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -23,
                 'uring' => -23,
                 'y' => -7,
-                'yacute' => -5
+                'yacute' => -5,
             ],
             'X' => [
                 'A' => 7,
@@ -14537,11 +14537,11 @@ final class StandardFontCoreKerning
                 'tau' => -46,
                 'u' => -32,
                 'udieresis' => -32,
-                'y' => -45
+                'y' => -45,
             ],
             'Xi' => [
                 'alpha' => -3,
-                'alphatonos' => -6
+                'alphatonos' => -6,
             ],
             'Y' => [
                 'A' => -82,
@@ -14623,7 +14623,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -55,
                 'v' => -37,
                 'w' => -32,
-                'z' => -47
+                'z' => -47,
             ],
             'Yacute' => [
                 'Aacute' => -82,
@@ -14643,7 +14643,7 @@ final class StandardFontCoreKerning
                 'period' => -76,
                 'scedilla' => -67,
                 'semicolon' => -44,
-                'uacute' => -55
+                'uacute' => -55,
             ],
             'Z' => [
                 'A' => -1,
@@ -14677,13 +14677,13 @@ final class StandardFontCoreKerning
                 'semicolon' => -5,
                 'v' => -25,
                 'w' => -20,
-                'y' => -18
+                'y' => -18,
             ],
             'Zeta' => [
                 'O' => -23,
                 'Omicron' => -23,
                 'o' => -18,
-                'omicron' => -21
+                'omicron' => -21,
             ],
             'a' => [
                 'comma' => 7,
@@ -14698,7 +14698,7 @@ final class StandardFontCoreKerning
                 'w' => -4,
                 'x' => 4,
                 'y' => -14,
-                'z' => 2
+                'z' => 2,
             ],
             'adieresis' => [
                 'comma' => 8,
@@ -14712,18 +14712,18 @@ final class StandardFontCoreKerning
                 'w' => -3,
                 'x' => 4,
                 'y' => -17,
-                'z' => 2
+                'z' => 2,
             ],
             'aacute' => [
                 'v' => -17,
                 'w' => -2,
-                'y' => -14
+                'y' => -14,
             ],
             'ae' => [
                 'r' => 4,
                 'v' => -13,
                 'w' => -1,
-                'y' => -14
+                'y' => -14,
             ],
             'afii10017' => [
                 'afii10025' => -39,
@@ -14754,7 +14754,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -25,
                 'hyphen' => 9,
                 'period' => 18,
-                'semicolon' => 11
+                'semicolon' => 11,
             ],
             'afii10018' => [
                 'afii10017' => -28,
@@ -14770,7 +14770,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -33,
                 'afii10092' => -52,
                 'afii10106' => -14,
-                'afii10110' => -33
+                'afii10110' => -33,
             ],
             'afii10019' => [
                 'afii10017' => -32,
@@ -14787,7 +14787,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -24,
                 'afii10092' => -17,
                 'afii10106' => -17,
-                'afii10110' => -20
+                'afii10110' => -20,
             ],
             'afii10020' => [
                 'afii10021' => -97,
@@ -14833,10 +14833,10 @@ final class StandardFontCoreKerning
                 'comma' => -138,
                 'hyphen' => -119,
                 'period' => -143,
-                'semicolon' => -112
+                'semicolon' => -112,
             ],
             'afii10022' => [
-                'afii10038' => -21
+                'afii10038' => -21,
             ],
             'afii10024' => [
                 'afii10025' => -12,
@@ -14853,7 +14853,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -29,
                 'afii10089' => -33,
                 'afii10101' => 3,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10025' => [
                 'afii10017' => -37,
@@ -14876,7 +14876,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -29,
                 'afii10097' => -11,
                 'afii10106' => -22,
-                'afii10110' => -21
+                'afii10110' => -21,
             ],
             'afii10028' => [
                 'afii10025' => -27,
@@ -14895,7 +14895,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -45,
                 'afii10089' => -49,
                 'afii10101' => -12,
-                'afii10110' => -32
+                'afii10110' => -32,
             ],
             'afii10032' => [
                 'afii10017' => -35,
@@ -14913,7 +14913,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -47,
                 'afii10062' => -40,
                 'afii10077' => -11,
-                'afii10106' => -13
+                'afii10106' => -13,
             ],
             'afii10034' => [
                 'afii10017' => -65,
@@ -14939,7 +14939,7 @@ final class StandardFontCoreKerning
                 'comma' => -91,
                 'hyphen' => 3,
                 'period' => -91,
-                'semicolon' => -14
+                'semicolon' => -14,
             ],
             'afii10035' => [
                 'afii10017' => -36,
@@ -14959,7 +14959,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -7,
                 'afii10089' => -13,
                 'afii10106' => -16,
-                'afii10110' => -8
+                'afii10110' => -8,
             ],
             'afii10036' => [
                 'afii10017' => -85,
@@ -15008,7 +15008,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -81,
                 'hyphen' => -47,
                 'period' => -67,
-                'semicolon' => -49
+                'semicolon' => -49,
             ],
             'afii10037' => [
                 'afii10017' => -84,
@@ -15055,7 +15055,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -80,
                 'hyphen' => -41,
                 'period' => -98,
-                'semicolon' => -48
+                'semicolon' => -48,
             ],
             'afii10038' => [
                 'afii10017' => -51,
@@ -15071,7 +15071,7 @@ final class StandardFontCoreKerning
                 'afii10062' => -50,
                 'afii10069' => -30,
                 'afii10077' => -21,
-                'afii10106' => -22
+                'afii10106' => -22,
             ],
             'afii10039' => [
                 'afii10025' => -43,
@@ -15088,7 +15088,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -51,
                 'afii10086' => -61,
                 'afii10089' => -65,
-                'afii10101' => -31
+                'afii10101' => -31,
             ],
             'afii10044' => [
                 'afii10036' => -95,
@@ -15097,7 +15097,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -101,
                 'afii10060' => -86,
                 'afii10062' => -44,
-                'afii10092' => -56
+                'afii10092' => -56,
             ],
             'afii10046' => [
                 'afii10036' => -102,
@@ -15106,7 +15106,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -108,
                 'afii10060' => -93,
                 'afii10062' => -51,
-                'afii10092' => -63
+                'afii10092' => -63,
             ],
             'afii10047' => [
                 'afii10017' => -30,
@@ -15119,7 +15119,7 @@ final class StandardFontCoreKerning
                 'afii10058' => -3,
                 'afii10060' => -42,
                 'afii10062' => -35,
-                'afii10106' => -8
+                'afii10106' => -8,
             ],
             'afii10048' => [
                 'afii10017' => -35,
@@ -15137,7 +15137,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -47,
                 'afii10062' => -40,
                 'afii10077' => -11,
-                'afii10106' => -13
+                'afii10106' => -13,
             ],
             'afii10050' => [
                 'afii10021' => -87,
@@ -15179,7 +15179,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -110,
                 'afii10101' => -99,
                 'afii10106' => -123,
-                'afii10110' => -35
+                'afii10110' => -35,
             ],
             'afii10052' => [
                 'afii10021' => -97,
@@ -15220,7 +15220,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -141,
                 'afii10101' => -132,
                 'afii10106' => -146,
-                'afii10110' => -44
+                'afii10110' => -44,
             ],
             'afii10058' => [
                 'afii10036' => -98,
@@ -15229,7 +15229,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -104,
                 'afii10060' => -90,
                 'afii10062' => -48,
-                'afii10092' => -60
+                'afii10092' => -60,
             ],
             'afii10059' => [
                 'afii10036' => -83,
@@ -15238,7 +15238,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -89,
                 'afii10060' => -75,
                 'afii10062' => -32,
-                'afii10092' => -45
+                'afii10092' => -45,
             ],
             'afii10061' => [
                 'afii10025' => -37,
@@ -15257,7 +15257,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -51,
                 'afii10089' => -55,
                 'afii10101' => -17,
-                'afii10110' => -43
+                'afii10110' => -43,
             ],
             'afii10062' => [
                 'afii10017' => -96,
@@ -15295,14 +15295,14 @@ final class StandardFontCoreKerning
                 'afii10096' => -51,
                 'afii10097' => -69,
                 'afii10101' => -70,
-                'afii10106' => -86
+                'afii10106' => -86,
             ],
             'afii10065' => [
                 'afii10084' => -12,
                 'afii10085' => -19,
                 'afii10089' => -18,
                 'afii10106' => -3,
-                'afii10110' => -14
+                'afii10110' => -14,
             ],
             'afii10066' => [
                 'afii10072' => 1,
@@ -15312,7 +15312,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -24,
                 'afii10089' => -13,
                 'afii10097' => -4,
-                'afii10110' => -20
+                'afii10110' => -20,
             ],
             'afii10067' => [
                 'afii10073' => -10,
@@ -15321,7 +15321,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -23,
                 'afii10089' => -25,
                 'afii10097' => -9,
-                'afii10110' => -21
+                'afii10110' => -21,
             ],
             'afii10068' => [
                 'afii10069' => -80,
@@ -15337,7 +15337,7 @@ final class StandardFontCoreKerning
                 'comma' => -123,
                 'hyphen' => -102,
                 'period' => -123,
-                'semicolon' => -63
+                'semicolon' => -63,
             ],
             'afii10070' => [
                 'afii10072' => 10,
@@ -15346,7 +15346,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -20,
                 'afii10087' => -17,
                 'afii10089' => -5,
-                'afii10110' => -15
+                'afii10110' => -15,
             ],
             'afii10072' => [
                 'afii10066' => 6,
@@ -15355,7 +15355,7 @@ final class StandardFontCoreKerning
                 'afii10083' => 3,
                 'afii10086' => -20,
                 'afii10101' => 11,
-                'afii10110' => 8
+                'afii10110' => 8,
             ],
             'afii10073' => [
                 'afii10072' => 4,
@@ -15366,10 +15366,10 @@ final class StandardFontCoreKerning
                 'afii10089' => -20,
                 'afii10097' => -4,
                 'afii10106' => -7,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10075' => [
-                'afii10106' => -12
+                'afii10106' => -12,
             ],
             'afii10076' => [
                 'afii10066' => -1,
@@ -15378,7 +15378,7 @@ final class StandardFontCoreKerning
                 'afii10080' => -2,
                 'afii10083' => -4,
                 'afii10086' => -28,
-                'afii10101' => 3
+                'afii10101' => 3,
             ],
             'afii10080' => [
                 'afii10072' => 3,
@@ -15389,7 +15389,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -19,
                 'afii10092' => -18,
                 'afii10106' => -17,
-                'afii10110' => -17
+                'afii10110' => -17,
             ],
             'afii10082' => [
                 'afii10072' => 9,
@@ -15404,7 +15404,7 @@ final class StandardFontCoreKerning
                 'colon' => 18,
                 'hyphen' => 34,
                 'period' => 2,
-                'semicolon' => 18
+                'semicolon' => 18,
             ],
             'afii10083' => [
                 'afii10062' => -30,
@@ -15418,7 +15418,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -20,
                 'afii10089' => -8,
                 'afii10097' => -4,
-                'afii10106' => -9
+                'afii10106' => -9,
             ],
             'afii10084' => [
                 'afii10065' => -3,
@@ -15440,7 +15440,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -24,
                 'hyphen' => -12,
                 'period' => -27,
-                'semicolon' => -3
+                'semicolon' => -3,
             ],
             'afii10085' => [
                 'afii10065' => -16,
@@ -15460,7 +15460,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -30,
                 'hyphen' => 1,
                 'period' => -46,
-                'semicolon' => -2
+                'semicolon' => -2,
             ],
             'afii10086' => [
                 'afii10068' => -26,
@@ -15475,7 +15475,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -36,
                 'afii10097' => -28,
                 'afii10106' => -43,
-                'afii10110' => -41
+                'afii10110' => -41,
             ],
             'afii10087' => [
                 'afii10065' => -14,
@@ -15485,7 +15485,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -18,
                 'afii10086' => -47,
                 'afii10101' => -14,
-                'afii10110' => 6
+                'afii10110' => 6,
             ],
             'afii10092' => [
                 'afii10070' => -12,
@@ -15494,7 +15494,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -56,
                 'afii10089' => -29,
                 'afii10092' => -71,
-                'afii10110' => -51
+                'afii10110' => -51,
             ],
             'afii10094' => [
                 'afii10070' => -10,
@@ -15503,7 +15503,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -55,
                 'afii10089' => -27,
                 'afii10092' => -70,
-                'afii10110' => -49
+                'afii10110' => -49,
             ],
             'afii10095' => [
                 'afii10077' => -8,
@@ -15513,7 +15513,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -10,
                 'afii10097' => 2,
                 'afii10106' => -10,
-                'afii10110' => -9
+                'afii10110' => -9,
             ],
             'afii10096' => [
                 'afii10072' => 1,
@@ -15525,7 +15525,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -13,
                 'afii10092' => -20,
                 'afii10106' => -19,
-                'afii10110' => -19
+                'afii10110' => -19,
             ],
             'afii10098' => [
                 'afii10069' => -64,
@@ -15535,7 +15535,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -41,
                 'afii10097' => -14,
                 'afii10101' => -15,
-                'afii10106' => -51
+                'afii10106' => -51,
             ],
             'afii10100' => [
                 'afii10069' => -64,
@@ -15545,14 +15545,14 @@ final class StandardFontCoreKerning
                 'afii10086' => -41,
                 'afii10097' => -15,
                 'afii10101' => -16,
-                'afii10106' => -51
+                'afii10106' => -51,
             ],
             'afii10106' => [
                 'afii10084' => -50,
                 'afii10085' => -57,
                 'afii10089' => -29,
                 'afii10092' => -72,
-                'afii10110' => -51
+                'afii10110' => -51,
             ],
             'afii10107' => [
                 'afii10070' => -5,
@@ -15562,7 +15562,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -22,
                 'afii10092' => -64,
                 'afii10101' => -4,
-                'afii10110' => -44
+                'afii10110' => -44,
             ],
             'afii10109' => [
                 'afii10065' => 6,
@@ -15573,7 +15573,7 @@ final class StandardFontCoreKerning
                 'afii10083' => 5,
                 'afii10086' => -22,
                 'afii10101' => 9,
-                'afii10110' => 1
+                'afii10110' => 1,
             ],
             'afii10110' => [
                 'afii10065' => -11,
@@ -15586,12 +15586,12 @@ final class StandardFontCoreKerning
                 'afii10084' => 13,
                 'afii10086' => -35,
                 'afii10097' => -14,
-                'afii10101' => -6
+                'afii10101' => -6,
             ],
             'agrave' => [
                 'v' => -16,
                 'w' => -4,
-                'y' => -14
+                'y' => -14,
             ],
             'alpha' => [
                 'colon' => 26,
@@ -15614,7 +15614,7 @@ final class StandardFontCoreKerning
                 'upsilondieresis' => 13,
                 'upsilontonos' => 13,
                 'xi' => 13,
-                'zeta' => 1
+                'zeta' => 1,
             ],
             'alphatonos' => [
                 'colon' => 26,
@@ -15631,15 +15631,15 @@ final class StandardFontCoreKerning
                 'sigma' => -4,
                 'theta' => 18,
                 'xi' => 13,
-                'zeta' => 2
+                'zeta' => 2,
             ],
             'aring' => [
                 'v' => -16,
                 'w' => -4,
-                'y' => -14
+                'y' => -14,
             ],
             'asterisk' => [
-                'period' => -26
+                'period' => -26,
             ],
             'b' => [
                 'asterisk' => 1,
@@ -15654,7 +15654,7 @@ final class StandardFontCoreKerning
                 'v' => -17,
                 'w' => -3,
                 'y' => -15,
-                'z' => -11
+                'z' => -11,
             ],
             'backslash' => [
                 'A' => 18,
@@ -15688,11 +15688,11 @@ final class StandardFontCoreKerning
                 'g' => 52,
                 'i' => 56,
                 'j' => 51,
-                'l' => 56
+                'l' => 56,
             ],
             'beta' => [
                 'gamma' => -20,
-                'lambda' => -25
+                'lambda' => -25,
             ],
             'braceleft' => [
                 'A' => -16,
@@ -15716,7 +15716,7 @@ final class StandardFontCoreKerning
                 'l' => 11,
                 'p' => 19,
                 'quoteleft' => 32,
-                'y' => -4
+                'y' => -4,
             ],
             'bracketleft' => [
                 'A' => -5,
@@ -15739,7 +15739,7 @@ final class StandardFontCoreKerning
                 'l' => 24,
                 'p' => 26,
                 'quoteleft' => 45,
-                'y' => 7
+                'y' => 7,
             ],
             'c' => [
                 'a' => 2,
@@ -15765,11 +15765,11 @@ final class StandardFontCoreKerning
                 's' => -2,
                 'semicolon' => 16,
                 't' => -3,
-                'y' => -21
+                'y' => -21,
             ],
             'ccaron' => [
                 'e' => 7,
-                'o' => -1
+                'o' => -1,
             ],
             'chi' => [
                 'alpha' => -32,
@@ -15782,13 +15782,13 @@ final class StandardFontCoreKerning
                 'omicron' => -36,
                 'omicrontonos' => -36,
                 'theta' => -3,
-                'upsilontonos' => -12
+                'upsilontonos' => -12,
             ],
             'comma' => [
                 'endash' => 32,
                 'hyphen' => 14,
                 'quotedblright' => -34,
-                'quoteright' => -30
+                'quoteright' => -30,
             ],
             'd' => [
                 'a' => 4,
@@ -15804,7 +15804,7 @@ final class StandardFontCoreKerning
                 'v' => -12,
                 'w' => -1,
                 'y' => -8,
-                'z' => -7
+                'z' => -7,
             ],
             'dcaron' => [
                 'a' => -41,
@@ -15827,10 +15827,10 @@ final class StandardFontCoreKerning
                 'uring' => -12,
                 'y' => 11,
                 'yacute' => 15,
-                'z' => -6
+                'z' => -6,
             ],
             'delta' => [
-                'nu' => -18
+                'nu' => -18,
             ],
             'e' => [
                 'a' => 3,
@@ -15858,7 +15858,7 @@ final class StandardFontCoreKerning
                 'x' => -18,
                 'y' => -16,
                 'z' => -5,
-                'zcaron' => -5
+                'zcaron' => -5,
             ],
             'eacute' => [
                 'b' => 5,
@@ -15878,12 +15878,12 @@ final class StandardFontCoreKerning
                 'v' => -14,
                 'w' => -2,
                 'y' => -16,
-                'z' => -5
+                'z' => -5,
             ],
             'ecircumflex' => [
                 'v' => -14,
                 'w' => -2,
-                'y' => -16
+                'y' => -16,
             ],
             'endash' => [
                 'a' => 34,
@@ -15914,10 +15914,10 @@ final class StandardFontCoreKerning
                 'w' => 26,
                 'x' => -7,
                 'y' => 14,
-                'z' => -1
+                'z' => -1,
             ],
             'eogonek' => [
-                'zdotaccent' => -8
+                'zdotaccent' => -8,
             ],
             'epsilon' => [
                 'alpha' => 17,
@@ -15939,7 +15939,7 @@ final class StandardFontCoreKerning
                 'upsilon' => 18,
                 'upsilontonos' => 18,
                 'xi' => 26,
-                'zeta' => 15
+                'zeta' => 15,
             ],
             'epsilontonos' => [
                 'alpha' => 17,
@@ -15952,11 +15952,11 @@ final class StandardFontCoreKerning
                 'semicolon' => 33,
                 'tau' => 19,
                 'theta' => 26,
-                'zeta' => 15
+                'zeta' => 15,
             ],
             'exclam' => [
                 'quotedblright' => 5,
-                'quoteright' => 9
+                'quoteright' => 9,
             ],
             'f' => [
                 'a' => -6,
@@ -16001,7 +16001,7 @@ final class StandardFontCoreKerning
                 'uring' => -6,
                 'w' => 14,
                 'y' => 12,
-                'yacute' => 12
+                'yacute' => 12,
             ],
             'g' => [
                 'a' => 1,
@@ -16036,7 +16036,7 @@ final class StandardFontCoreKerning
                 'v' => -15,
                 'w' => -2,
                 'y' => -11,
-                'z' => -11
+                'z' => -11,
             ],
             'gamma' => [
                 'alpha' => -20,
@@ -16052,12 +16052,12 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -24,
                 'rho' => -27,
                 'upsilontonos' => -4,
-                'xi' => -8
+                'xi' => -8,
             ],
             'germandbls' => [
                 'e' => 10,
                 'k' => 6,
-                'w' => -3
+                'w' => -3,
             ],
             'guillemotleft' => [
                 'Alpha' => -32,
@@ -16078,7 +16078,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -35,
                 'afii10089' => -30,
                 'nu' => -31,
-                'tau' => -22
+                'tau' => -22,
             ],
             'guillemotright' => [
                 'A' => -51,
@@ -16089,7 +16089,7 @@ final class StandardFontCoreKerning
                 'T' => -109,
                 'V' => -76,
                 'W' => -58,
-                'Y' => -107
+                'Y' => -107,
             ],
             'guilsinglright' => [
                 'A' => -46,
@@ -16100,14 +16100,14 @@ final class StandardFontCoreKerning
                 'T' => -104,
                 'V' => -71,
                 'W' => -53,
-                'Y' => -102
+                'Y' => -102,
             ],
             'h' => [
                 'endash' => 39,
                 'quoteright' => -9,
                 'v' => -18,
                 'y' => -16,
-                'yacute' => -16
+                'yacute' => -16,
             ],
             'hyphen' => [
                 'AE' => 9,
@@ -16137,7 +16137,7 @@ final class StandardFontCoreKerning
                 'v' => -2,
                 'w' => 11,
                 'x' => -27,
-                'z' => -28
+                'z' => -28,
             ],
             'i' => [
                 'T' => -12,
@@ -16151,13 +16151,13 @@ final class StandardFontCoreKerning
                 'quoteright' => -1,
                 'v' => -14,
                 'w' => -4,
-                'z' => -10
+                'z' => -10,
             ],
             'iacute' => [
-                'v' => -14
+                'v' => -14,
             ],
             'iotatonos' => [
-                'delta' => -2
+                'delta' => -2,
             ],
             'j' => [
                 'asterisk' => 9,
@@ -16168,7 +16168,7 @@ final class StandardFontCoreKerning
                 'oacute' => -1,
                 'odieresis' => -1,
                 'parenright' => 20,
-                'y' => -10
+                'y' => -10,
             ],
             'k' => [
                 'a' => -14,
@@ -16217,7 +16217,7 @@ final class StandardFontCoreKerning
                 'w' => 16,
                 'x' => 15,
                 'y' => 13,
-                'z' => 13
+                'z' => 13,
             ],
             'kappa' => [
                 'alpha' => -20,
@@ -16236,7 +16236,7 @@ final class StandardFontCoreKerning
                 'phi' => -17,
                 'sigma' => -37,
                 'theta' => 5,
-                'upsilontonos' => -4
+                'upsilontonos' => -4,
             ],
             'l' => [
                 'comma' => 3,
@@ -16246,7 +16246,7 @@ final class StandardFontCoreKerning
                 'v' => -14,
                 'w' => -4,
                 'y' => -11,
-                'z' => -10
+                'z' => -10,
             ],
             'lambda' => [
                 'alphatonos' => -21,
@@ -16268,7 +16268,7 @@ final class StandardFontCoreKerning
                 'tau' => -41,
                 'upsilon' => -17,
                 'upsilontonos' => -17,
-                'xi' => -17
+                'xi' => -17,
             ],
             'lcaron' => [
                 'a' => -44,
@@ -16296,7 +16296,7 @@ final class StandardFontCoreKerning
                 'uring' => -15,
                 'v' => 1,
                 'z' => -8,
-                'zcaron' => -5
+                'zcaron' => -5,
             ],
             'm' => [
                 'endash' => 39,
@@ -16305,7 +16305,7 @@ final class StandardFontCoreKerning
                 'v' => -16,
                 'w' => -4,
                 'y' => -14,
-                'z' => -10
+                'z' => -10,
             ],
             'n' => [
                 'T' => -80,
@@ -16316,7 +16316,7 @@ final class StandardFontCoreKerning
                 'v' => -18,
                 'w' => -4,
                 'y' => -16,
-                'z' => -12
+                'z' => -12,
             ],
             'nu' => [
                 'alpha' => -19,
@@ -16337,7 +16337,7 @@ final class StandardFontCoreKerning
                 'quoteright' => 8,
                 'semicolon' => -3,
                 'sigma' => -31,
-                'upsilontonos' => -7
+                'upsilontonos' => -7,
             ],
             'o' => [
                 'T' => -82,
@@ -16362,7 +16362,7 @@ final class StandardFontCoreKerning
                 'w' => -6,
                 'x' => -20,
                 'y' => -22,
-                'z' => -14
+                'z' => -14,
             ],
             'odieresis' => [
                 'T' => -57,
@@ -16380,24 +16380,24 @@ final class StandardFontCoreKerning
                 'w' => -6,
                 'x' => -20,
                 'y' => -22,
-                'z' => -14
+                'z' => -14,
             ],
             'oacute' => [
                 'v' => -20,
                 'w' => -6,
                 'y' => -22,
-                'zacute' => -14
+                'zacute' => -14,
             ],
             'ocircumflex' => [
-                't' => -4
+                't' => -4,
             ],
             'oe' => [
-                'u' => 6
+                'u' => 6,
             ],
             'ograve' => [
                 'v' => -20,
                 'w' => -6,
-                'y' => -22
+                'y' => -22,
             ],
             'omega' => [
                 'chi' => -48,
@@ -16405,7 +16405,7 @@ final class StandardFontCoreKerning
                 'lambda' => -36,
                 'nu' => -31,
                 'pi' => -30,
-                'tau' => -32
+                'tau' => -32,
             ],
             'omegatonos' => [
                 'chi' => -48,
@@ -16413,7 +16413,7 @@ final class StandardFontCoreKerning
                 'lambda' => -36,
                 'nu' => -31,
                 'pi' => -30,
-                'tau' => -32
+                'tau' => -32,
             ],
             'omicron' => [
                 'alpha' => 5,
@@ -16423,14 +16423,14 @@ final class StandardFontCoreKerning
                 'nu' => -18,
                 'pi' => -15,
                 'tau' => -19,
-                'upsilon' => 3
+                'upsilon' => 3,
             ],
             'omicrontonos' => [
                 'chi' => -36,
                 'gamma' => -22,
                 'nu' => -18,
                 'pi' => -15,
-                'tau' => -19
+                'tau' => -19,
             ],
             'p' => [
                 'asterisk' => -1,
@@ -16442,7 +16442,7 @@ final class StandardFontCoreKerning
                 'w' => -2,
                 'y' => -16,
                 'yacute' => -16,
-                'z' => -12
+                'z' => -12,
             ],
             'parenleft' => [
                 'A' => -7,
@@ -16464,7 +16464,7 @@ final class StandardFontCoreKerning
                 'k' => 21,
                 'l' => 17,
                 'p' => 24,
-                'quoteleft' => 43
+                'quoteleft' => 43,
             ],
             'period' => [
                 'asterisk' => -20,
@@ -16475,10 +16475,10 @@ final class StandardFontCoreKerning
                 'quoteright' => -31,
                 'quotesingle' => -35,
                 'threesuperior' => 5,
-                'twosuperior' => 16
+                'twosuperior' => 16,
             ],
             'phi' => [
-                'tau' => -12
+                'tau' => -12,
             ],
             'pi' => [
                 'alphatonos' => -14,
@@ -16487,7 +16487,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -30,
                 'omicron' => -15,
                 'omicrontonos' => -15,
-                'upsilontonos' => -13
+                'upsilontonos' => -13,
             ],
             'q' => [
                 'braceright' => 13,
@@ -16496,12 +16496,12 @@ final class StandardFontCoreKerning
                 'endash' => 37,
                 'parenright' => 18,
                 'u' => 3,
-                'udieresis' => 3
+                'udieresis' => 3,
             ],
             'question' => [
                 'quotedblright' => 5,
                 'quoteright' => 9,
-                'quotesingle' => 12
+                'quotesingle' => 12,
             ],
             'quotedblbase' => [
                 'A' => 13,
@@ -16525,7 +16525,7 @@ final class StandardFontCoreKerning
                 'v' => -49,
                 'w' => -29,
                 'y' => -49,
-                'z' => 20
+                'z' => 20,
             ],
             'quotedblleft' => [
                 'A' => -63,
@@ -16563,7 +16563,7 @@ final class StandardFontCoreKerning
                 'w' => 15,
                 'x' => -6,
                 'y' => 9,
-                'z' => -18
+                'z' => -18,
             ],
             'quotedblright' => [
                 'A' => -66,
@@ -16574,7 +16574,7 @@ final class StandardFontCoreKerning
                 'T' => -7,
                 'V' => 8,
                 'W' => 18,
-                'Y' => -6
+                'Y' => -6,
             ],
             'quoteleft' => [
                 'A' => -68,
@@ -16614,7 +16614,7 @@ final class StandardFontCoreKerning
                 'w' => 10,
                 'x' => -11,
                 'y' => 4,
-                'z' => -23
+                'z' => -23,
             ],
             'quoteright' => [
                 'A' => -74,
@@ -16638,7 +16638,7 @@ final class StandardFontCoreKerning
                 't' => -4,
                 'v' => -8,
                 'w' => -1,
-                'y' => -4
+                'y' => -4,
             ],
             'quotesinglbase' => [
                 'A' => 7,
@@ -16658,7 +16658,7 @@ final class StandardFontCoreKerning
                 'v' => -55,
                 'w' => -35,
                 'y' => -55,
-                'z' => 14
+                'z' => 14,
             ],
             'quotesingle' => [
                 'A' => -61,
@@ -16667,7 +16667,7 @@ final class StandardFontCoreKerning
                 'W' => 23,
                 'X' => -15,
                 'Y' => -1,
-                'Z' => -10
+                'Z' => -10,
             ],
             'r' => [
                 'a' => -1,
@@ -16740,7 +16740,7 @@ final class StandardFontCoreKerning
                 'z' => 1,
                 'zacute' => 1,
                 'zcaron' => 1,
-                'zdotaccent' => 1
+                'zdotaccent' => 1,
             ],
             'racute' => [
                 'a' => -1,
@@ -16753,7 +16753,7 @@ final class StandardFontCoreKerning
                 's' => -4,
                 't' => 15,
                 'v' => 11,
-                'z' => 2
+                'z' => 2,
             ],
             'rcaron' => [
                 'a' => -1,
@@ -16773,7 +16773,7 @@ final class StandardFontCoreKerning
                 'u' => -8,
                 'uacute' => -8,
                 'uring' => -8,
-                'v' => 11
+                'v' => 11,
             ],
             'rho' => [
                 'chi' => -31,
@@ -16783,7 +16783,7 @@ final class StandardFontCoreKerning
                 'lambda' => -18,
                 'nu' => -11,
                 'pi' => -11,
-                'tau' => -14
+                'tau' => -14,
             ],
             's' => [
                 'a' => 5,
@@ -16806,19 +16806,19 @@ final class StandardFontCoreKerning
                 'v' => -18,
                 'w' => -6,
                 'y' => -17,
-                'z' => 1
+                'z' => 1,
             ],
             'sacute' => [
                 'c' => 1,
-                'w' => -6
+                'w' => -6,
             ],
             'scaron' => [
                 'k' => 5,
                 'p' => 3,
-                't' => -3
+                't' => -3,
             ],
             'sigma' => [
-                'lambda' => -32
+                'lambda' => -32,
             ],
             'slash' => [
                 'B' => 37,
@@ -16852,7 +16852,7 @@ final class StandardFontCoreKerning
                 'l' => 29,
                 'slash' => 24,
                 't' => 27,
-                'y' => 11
+                'y' => 11,
             ],
             't' => [
                 'S' => -3,
@@ -16888,7 +16888,7 @@ final class StandardFontCoreKerning
                 'v' => 3,
                 'w' => 8,
                 'y' => 6,
-                'z' => 3
+                'z' => 3,
             ],
             'tau' => [
                 'alpha' => -9,
@@ -16911,7 +16911,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -3,
                 'sigma' => -25,
                 'tau' => 12,
-                'upsilontonos' => -7
+                'upsilontonos' => -7,
             ],
             'tcaron' => [
                 'a' => -30,
@@ -16935,7 +16935,7 @@ final class StandardFontCoreKerning
                 'y' => -21,
                 'yacute' => -20,
                 'z' => -24,
-                'zcaron' => -13
+                'zcaron' => -13,
             ],
             'u' => [
                 'endash' => 36,
@@ -16946,7 +16946,7 @@ final class StandardFontCoreKerning
                 'w' => -2,
                 'x' => -13,
                 'y' => -11,
-                'z' => -7
+                'z' => -7,
             ],
             'udieresis' => [
                 'endash' => 36,
@@ -16957,16 +16957,16 @@ final class StandardFontCoreKerning
                 'w' => -2,
                 'x' => -13,
                 'y' => -11,
-                'z' => -7
+                'z' => -7,
             ],
             'upsilon' => [
                 'chi' => -13,
                 'gamma' => -6,
                 'lambda' => -19,
-                'tau' => -3
+                'tau' => -3,
             ],
             'upsilondieresis' => [
-                'nu' => -5
+                'nu' => -5,
             ],
             'upsilontonos' => [
                 'chi' => -13,
@@ -16974,7 +16974,7 @@ final class StandardFontCoreKerning
                 'lambda' => -19,
                 'nu' => -5,
                 'pi' => -10,
-                'tau' => -3
+                'tau' => -3,
             ],
             'v' => [
                 'a' => -14,
@@ -17010,7 +17010,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -2,
                 'u' => -9,
                 'udieresis' => -9,
-                'y' => 13
+                'y' => 13,
             ],
             'w' => [
                 'a' => -1,
@@ -17054,7 +17054,7 @@ final class StandardFontCoreKerning
                 'u' => -3,
                 'udieresis' => -3,
                 'y' => 17,
-                'z' => 4
+                'z' => 4,
             ],
             'x' => [
                 'a' => -16,
@@ -17075,7 +17075,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => -11,
                 'quoteright' => -7,
                 'semicolon' => -4,
-                'y' => 11
+                'y' => 11,
             ],
             'xi' => [
                 'alpha' => -9,
@@ -17085,7 +17085,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -28,
                 'omicron' => -10,
                 'omicrontonos' => -10,
-                'upsilontonos' => -14
+                'upsilontonos' => -14,
             ],
             'y' => [
                 'a' => -18,
@@ -17124,12 +17124,12 @@ final class StandardFontCoreKerning
                 'quotesingle' => 1,
                 's' => -23,
                 'sacute' => -23,
-                'semicolon' => -6
+                'semicolon' => -6,
             ],
             'yacute' => [
                 'ccaron' => -18,
                 'comma' => -48,
-                'period' => -50
+                'period' => -50,
             ],
             'z' => [
                 'asterisk' => 19,
@@ -17146,18 +17146,18 @@ final class StandardFontCoreKerning
                 'semicolon' => 6,
                 'u' => -6,
                 'udieresis' => -6,
-                'y' => 2
+                'y' => 2,
             ],
             'zacute' => [
                 'colon' => 6,
                 'comma' => -1,
-                'semicolon' => 6
+                'semicolon' => 6,
             ],
             'zcaron' => [
                 'colon' => 6,
                 'comma' => -1,
                 'e' => -2,
-                'semicolon' => 6
+                'semicolon' => 6,
             ],
             'zdotaccent' => [
                 'c' => -8,
@@ -17165,7 +17165,7 @@ final class StandardFontCoreKerning
                 'comma' => -1,
                 'e' => -2,
                 'oacute' => -11,
-                'semicolon' => 6
+                'semicolon' => 6,
             ],
             'zeta' => [
                 'alpha' => -30,
@@ -17178,7 +17178,7 @@ final class StandardFontCoreKerning
                 'omicron' => -33,
                 'omicrontonos' => -33,
                 'upsilon' => -25,
-                'upsilontonos' => -25
+                'upsilontonos' => -25,
             ],
         ],
         'Times-Roman' => [
@@ -17248,14 +17248,14 @@ final class StandardFontCoreKerning
                 'w' => -72,
                 'y' => -84,
                 'yacute' => -84,
-                'z' => 9
+                'z' => 9,
             ],
             'AE' => [
                 'T' => -12,
                 'V' => -11,
                 'W' => -5,
                 'X' => -3,
-                'Z' => -3
+                'Z' => -3,
             ],
             'Aacute' => [
                 'C' => -58,
@@ -17287,7 +17287,7 @@ final class StandardFontCoreKerning
                 'u' => -27,
                 'v' => -81,
                 'w' => -72,
-                'y' => -84
+                'y' => -84,
             ],
             'Abreve' => [
                 'T' => -54,
@@ -17296,7 +17296,7 @@ final class StandardFontCoreKerning
                 'Y' => -81,
                 'Yacute' => -81,
                 'y' => -84,
-                'yacute' => -84
+                'yacute' => -84,
             ],
             'Acircumflex' => [
                 'C' => -58,
@@ -17315,7 +17315,7 @@ final class StandardFontCoreKerning
                 'period' => -11,
                 'v' => -81,
                 'w' => -72,
-                'yacute' => -84
+                'yacute' => -84,
             ],
             'Adieresis' => [
                 'C' => -58,
@@ -17345,7 +17345,7 @@ final class StandardFontCoreKerning
                 'u' => -27,
                 'v' => -81,
                 'w' => -72,
-                'y' => -84
+                'y' => -84,
             ],
             'Agrave' => [
                 'C' => -58,
@@ -17358,7 +17358,7 @@ final class StandardFontCoreKerning
                 'W' => -111,
                 'Y' => -81,
                 'comma' => -4,
-                'period' => -11
+                'period' => -11,
             ],
             'Alpha' => [
                 'O' => -59,
@@ -17378,13 +17378,13 @@ final class StandardFontCoreKerning
                 'phi' => -41,
                 'sigma' => -33,
                 'upsilon' => -46,
-                'upsilontonos' => -46
+                'upsilontonos' => -46,
             ],
             'Alphatonos' => [
                 'gamma' => -61,
                 'nu' => -68,
                 'phi' => -41,
-                'sigma' => -33
+                'sigma' => -33,
             ],
             'Aogonek' => [
                 'C' => -54,
@@ -17398,7 +17398,7 @@ final class StandardFontCoreKerning
                 'period' => -10,
                 'semicolon' => 7,
                 'y' => 32,
-                'yacute' => 32
+                'yacute' => 32,
             ],
             'Aring' => [
                 'C' => -58,
@@ -17429,7 +17429,7 @@ final class StandardFontCoreKerning
                 'u' => -27,
                 'v' => -81,
                 'w' => -72,
-                'y' => -84
+                'y' => -84,
             ],
             'Atilde' => [
                 'C' => -58,
@@ -17442,7 +17442,7 @@ final class StandardFontCoreKerning
                 'W' => -111,
                 'Y' => -81,
                 'comma' => -4,
-                'period' => -11
+                'period' => -11,
             ],
             'B' => [
                 'A' => -52,
@@ -17469,13 +17469,13 @@ final class StandardFontCoreKerning
                 'Y' => -68,
                 'Z' => -29,
                 'lambda' => -46,
-                'y' => -31
+                'y' => -31,
             ],
             'Beta' => [
                 'A' => -53,
                 'Alpha' => -48,
                 'Delta' => -51,
-                'lambda' => -47
+                'lambda' => -47,
             ],
             'C' => [
                 'A' => -28,
@@ -17514,13 +17514,13 @@ final class StandardFontCoreKerning
                 'quotesingle' => 13,
                 's' => -12,
                 'semicolon' => 11,
-                'y' => 1
+                'y' => 1,
             ],
             'Ccaron' => [
-                'O' => -12
+                'O' => -12,
             ],
             'Ccedilla' => [
-                'A' => -33
+                'A' => -33,
             ],
             'Chi' => [
                 'O' => -58,
@@ -17533,7 +17533,7 @@ final class StandardFontCoreKerning
                 'omega' => -33,
                 'omicron' => -36,
                 'omicrontonos' => -36,
-                'tau' => -54
+                'tau' => -54,
             ],
             'D' => [
                 'A' => -68,
@@ -17559,7 +17559,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 25,
                 'o' => -1,
                 'odieresis' => -1,
-                'y' => -1
+                'y' => -1,
             ],
             'Delta' => [
                 'O' => -48,
@@ -17572,7 +17572,7 @@ final class StandardFontCoreKerning
                 'o' => -26,
                 'omegatonos' => -36,
                 'omicron' => -28,
-                'upsilon' => -44
+                'upsilon' => -44,
             ],
             'E' => [
                 'C' => -2,
@@ -17615,7 +17615,7 @@ final class StandardFontCoreKerning
                 'v' => -39,
                 'w' => -36,
                 'y' => -37,
-                'z' => -8
+                'z' => -8,
             ],
             'Epsilon' => [
                 'O' => -9,
@@ -17625,10 +17625,10 @@ final class StandardFontCoreKerning
                 'delta' => 11,
                 'gamma' => -24,
                 'nu' => -40,
-                'tau' => -29
+                'tau' => -29,
             ],
             'Epsilontonos' => [
-                'nu' => -35
+                'nu' => -35,
             ],
             'F' => [
                 'A' => -69,
@@ -17680,7 +17680,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -9,
                 'uacute' => -9,
                 'uring' => -9,
-                'y' => -12
+                'y' => -12,
             ],
             'G' => [
                 'A' => -32,
@@ -17714,7 +17714,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => -2,
                 'semicolon' => 22,
                 'w' => -15,
-                'y' => -21
+                'y' => -21,
             ],
             'Gamma' => [
                 'A' => -100,
@@ -17735,7 +17735,7 @@ final class StandardFontCoreKerning
                 'period' => -130,
                 'rho' => -63,
                 'upsilon' => -11,
-                'upsilontonos' => -11
+                'upsilontonos' => -11,
             ],
             'H' => [
                 'A' => 16,
@@ -17746,7 +17746,7 @@ final class StandardFontCoreKerning
                 'a' => -7,
                 'adieresis' => -7,
                 'ae' => -9,
-                'y' => -29
+                'y' => -29,
             ],
             'I' => [
                 'A' => 17,
@@ -17758,7 +17758,7 @@ final class StandardFontCoreKerning
                 'X' => 19,
                 'Y' => 13,
                 'Z' => 20,
-                'y' => -33
+                'y' => -33,
             ],
             'J' => [
                 'A' => -58,
@@ -17767,7 +17767,7 @@ final class StandardFontCoreKerning
                 'Aring' => -58,
                 'K' => 7,
                 'Y' => 13,
-                'y' => -31
+                'y' => -31,
             ],
             'K' => [
                 'A' => 26,
@@ -17831,7 +17831,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -44,
                 'upsilontonos' => -44,
                 'w' => -74,
-                'y' => -86
+                'y' => -86,
             ],
             'Kappa' => [
                 'O' => -47,
@@ -17848,7 +17848,7 @@ final class StandardFontCoreKerning
                 'period' => 7,
                 'semicolon' => 2,
                 'upsilon' => -34,
-                'upsilontonos' => -34
+                'upsilontonos' => -34,
             ],
             'L' => [
                 'A' => -1,
@@ -17895,7 +17895,7 @@ final class StandardFontCoreKerning
                 'u' => -10,
                 'udieresis' => -10,
                 'y' => -58,
-                'yacute' => -58
+                'yacute' => -58,
             ],
             'Lambda' => [
                 'O' => -59,
@@ -17915,7 +17915,7 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -37,
                 'period' => -5,
                 'quoteright' => -119,
-                'upsilon' => -46
+                'upsilon' => -46,
             ],
             'Lcaron' => [
                 'O' => -6,
@@ -17926,7 +17926,7 @@ final class StandardFontCoreKerning
                 'Y' => -33,
                 'Yacute' => -33,
                 'v' => -51,
-                'yacute' => -48
+                'yacute' => -48,
             ],
             'Lslash' => [
                 'O' => -6,
@@ -17943,7 +17943,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 8,
                 'v' => -56,
                 'w' => -48,
-                'yacute' => -58
+                'yacute' => -58,
             ],
             'M' => [
                 'A' => 13,
@@ -17955,10 +17955,10 @@ final class StandardFontCoreKerning
                 'Z' => 16,
                 'epsilon' => -22,
                 'j' => -27,
-                'y' => -32
+                'y' => -32,
             ],
             'Mu' => [
-                'epsilon' => -29
+                'epsilon' => -29,
             ],
             'N' => [
                 'A' => -29,
@@ -17996,7 +17996,7 @@ final class StandardFontCoreKerning
                 'period' => -23,
                 'u' => -22,
                 'udieresis' => -22,
-                'y' => -30
+                'y' => -30,
             ],
             'Nu' => [
                 'A' => -24,
@@ -18006,7 +18006,7 @@ final class StandardFontCoreKerning
                 'o' => -14,
                 'omega' => -24,
                 'omicron' => -16,
-                'omicrontonos' => -16
+                'omicrontonos' => -16,
             ],
             'O' => [
                 'A' => -63,
@@ -18042,13 +18042,13 @@ final class StandardFontCoreKerning
                 'semicolon' => 24,
                 'w' => -1,
                 'x' => -3,
-                'z' => -12
+                'z' => -12,
             ],
             'OE' => [
                 'T' => -1,
                 'W' => 5,
                 'X' => 6,
-                'Z' => 7
+                'Z' => 7,
             ],
             'Oacute' => [
                 'A' => -63,
@@ -18060,12 +18060,12 @@ final class StandardFontCoreKerning
                 'colon' => 20,
                 'comma' => -13,
                 'period' => -20,
-                'semicolon' => 24
+                'semicolon' => 24,
             ],
             'Ocircumflex' => [
                 'T' => -7,
                 'V' => -66,
-                'Y' => -69
+                'Y' => -69,
             ],
             'Odieresis' => [
                 'A' => -63,
@@ -18077,12 +18077,12 @@ final class StandardFontCoreKerning
                 'colon' => 20,
                 'comma' => -13,
                 'period' => -20,
-                'semicolon' => 24
+                'semicolon' => 24,
             ],
             'Ograve' => [
                 'T' => -7,
                 'V' => -66,
-                'Y' => -69
+                'Y' => -69,
             ],
             'Omicron' => [
                 'A' => -71,
@@ -18095,18 +18095,18 @@ final class StandardFontCoreKerning
                 'Upsilon' => -63,
                 'Y' => -67,
                 'Zeta' => -27,
-                'lambda' => -36
+                'lambda' => -36,
             ],
             'Omicrontonos' => [
-                'lambda' => -28
+                'lambda' => -28,
             ],
             'Oslash' => [
-                'A' => -59
+                'A' => -59,
             ],
             'Otilde' => [
                 'T' => -7,
                 'V' => -66,
-                'Y' => -69
+                'Y' => -69,
             ],
             'P' => [
                 'A' => -92,
@@ -18175,7 +18175,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => 22,
                 't' => 14,
                 'w' => 12,
-                'y' => 16
+                'y' => 16,
             ],
             'Phi' => [
                 'A' => -68,
@@ -18190,19 +18190,19 @@ final class StandardFontCoreKerning
                 'omega' => -15,
                 'omegatonos' => -15,
                 'omicron' => -3,
-                'omicrontonos' => -3
+                'omicrontonos' => -3,
             ],
             'Pi' => [
                 'epsilontonos' => -22,
                 'lambda' => 10,
                 'o' => -15,
-                'omicron' => -21
+                'omicron' => -21,
             ],
             'Psi' => [
                 'A' => -86,
                 'Alpha' => -82,
                 'O' => -26,
-                'Omicron' => -30
+                'Omicron' => -30,
             ],
             'Q' => [
                 'R' => -14,
@@ -18212,7 +18212,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 28,
                 'parenright' => 7,
                 'u' => 3,
-                'udieresis' => 3
+                'udieresis' => 3,
             ],
             'R' => [
                 'A' => 22,
@@ -18272,7 +18272,7 @@ final class StandardFontCoreKerning
                 'uacute' => -23,
                 'udieresis' => -23,
                 'y' => -36,
-                'yacute' => -36
+                'yacute' => -36,
             ],
             'Rho' => [
                 'A' => -91,
@@ -18294,7 +18294,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -41,
                 'omicron' => -31,
                 'omicrontonos' => -31,
-                'period' => -98
+                'period' => -98,
             ],
             'S' => [
                 'A' => -43,
@@ -18332,7 +18332,7 @@ final class StandardFontCoreKerning
                 't' => -21,
                 'v' => -30,
                 'w' => -31,
-                'y' => -23
+                'y' => -23,
             ],
             'Sigma' => [
                 'O' => 10,
@@ -18341,7 +18341,7 @@ final class StandardFontCoreKerning
                 'chi' => 1,
                 'o' => 17,
                 'omicron' => 15,
-                'tau' => -11
+                'tau' => -11,
             ],
             'T' => [
                 'A' => -53,
@@ -18450,7 +18450,7 @@ final class StandardFontCoreKerning
                 'w' => -106,
                 'y' => -103,
                 'yacute' => 1,
-                'zeta' => -12
+                'zeta' => -12,
             ],
             'Tau' => [
                 'A' => -55,
@@ -18481,7 +18481,7 @@ final class StandardFontCoreKerning
                 'sigma' => -72,
                 'upsilon' => -32,
                 'upsilontonos' => -32,
-                'zeta' => -16
+                'zeta' => -16,
             ],
             'Tcaron' => [
                 'A' => -53,
@@ -18513,7 +18513,7 @@ final class StandardFontCoreKerning
                 'yacute' => 1,
                 'zacute' => -23,
                 'zcaron' => -19,
-                'zdotaccent' => -23
+                'zdotaccent' => -23,
             ],
             'Tcommaaccent' => [
                 'Aacute' => -53,
@@ -18540,14 +18540,14 @@ final class StandardFontCoreKerning
                 'yacute' => -2,
                 'zacute' => -28,
                 'zcaron' => -16,
-                'zdotaccent' => -28
+                'zdotaccent' => -28,
             ],
             'Theta' => [
                 'A' => -64,
                 'Alpha' => -60,
                 'Lambda' => -61,
                 'Upsilon' => -63,
-                'Y' => -67
+                'Y' => -67,
             ],
             'U' => [
                 'A' => -71,
@@ -18575,7 +18575,7 @@ final class StandardFontCoreKerning
                 'w' => -34,
                 'x' => -36,
                 'y' => -31,
-                'z' => -44
+                'z' => -44,
             ],
             'Uacute' => [
                 'A' => -71,
@@ -18584,10 +18584,10 @@ final class StandardFontCoreKerning
                 'n' => -30,
                 'p' => -28,
                 'period' => -38,
-                'r' => -27
+                'r' => -27,
             ],
             'Ucircumflex' => [
-                'A' => -71
+                'A' => -71,
             ],
             'Udieresis' => [
                 'A' => -71,
@@ -18597,10 +18597,10 @@ final class StandardFontCoreKerning
                 'n' => -30,
                 'p' => -28,
                 'period' => -38,
-                'r' => -27
+                'r' => -27,
             ],
             'Ugrave' => [
-                'A' => -71
+                'A' => -71,
             ],
             'Upsilon' => [
                 'A' => -75,
@@ -18616,10 +18616,10 @@ final class StandardFontCoreKerning
                 'guillemotright' => -98,
                 'omicrontonos' => -79,
                 'period' => -104,
-                'pi' => -72
+                'pi' => -72,
             ],
             'Upsilontonos' => [
-                'sigma' => -98
+                'sigma' => -98,
             ],
             'V' => [
                 'A' => -120,
@@ -18697,7 +18697,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -50,
                 'uring' => -50,
                 'y' => -52,
-                'yacute' => -50
+                'yacute' => -50,
             ],
             'W' => [
                 'A' => -114,
@@ -18788,7 +18788,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -42,
                 'uring' => -42,
                 'y' => -44,
-                'yacute' => -42
+                'yacute' => -42,
             ],
             'X' => [
                 'A' => 17,
@@ -18823,12 +18823,12 @@ final class StandardFontCoreKerning
                 'tau' => -62,
                 'u' => -28,
                 'udieresis' => -28,
-                'y' => -95
+                'y' => -95,
             ],
             'Xi' => [
                 'alpha' => -9,
                 'alphatonos' => -9,
-                'upsilontonos' => -37
+                'upsilontonos' => -37,
             ],
             'Y' => [
                 'A' => -75,
@@ -18909,7 +18909,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -68,
                 'v' => -83,
                 'w' => -84,
-                'z' => -83
+                'z' => -83,
             ],
             'Yacute' => [
                 'Aacute' => -75,
@@ -18929,7 +18929,7 @@ final class StandardFontCoreKerning
                 'period' => -104,
                 'scedilla' => -95,
                 'semicolon' => -83,
-                'uacute' => -68
+                'uacute' => -68,
             ],
             'Z' => [
                 'A' => 8,
@@ -18963,13 +18963,13 @@ final class StandardFontCoreKerning
                 'semicolon' => 18,
                 'v' => -52,
                 'w' => -44,
-                'y' => -49
+                'y' => -49,
             ],
             'Zeta' => [
                 'O' => -7,
                 'Omicron' => -14,
                 'o' => 5,
-                'omicron' => 3
+                'omicron' => 3,
             ],
             'a' => [
                 'comma' => 9,
@@ -18985,7 +18985,7 @@ final class StandardFontCoreKerning
                 'w' => -38,
                 'x' => 14,
                 'y' => -39,
-                'z' => 10
+                'z' => 10,
             ],
             'adieresis' => [
                 'comma' => 9,
@@ -19001,18 +19001,18 @@ final class StandardFontCoreKerning
                 'w' => -38,
                 'x' => 14,
                 'y' => -39,
-                'z' => 10
+                'z' => 10,
             ],
             'aacute' => [
                 'v' => -37,
                 'w' => -38,
-                'y' => -39
+                'y' => -39,
             ],
             'ae' => [
                 'r' => -13,
                 'v' => -32,
                 'w' => -33,
-                'y' => -34
+                'y' => -34,
             ],
             'afii10017' => [
                 'afii10025' => -9,
@@ -19044,7 +19044,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -25,
                 'hyphen' => -27,
                 'period' => -4,
-                'semicolon' => -10
+                'semicolon' => -10,
             ],
             'afii10018' => [
                 'afii10017' => -24,
@@ -19059,7 +19059,7 @@ final class StandardFontCoreKerning
                 'afii10084' => -5,
                 'afii10085' => -44,
                 'afii10106' => -16,
-                'afii10110' => -32
+                'afii10110' => -32,
             ],
             'afii10019' => [
                 'afii10017' => -48,
@@ -19076,7 +19076,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -24,
                 'afii10092' => -32,
                 'afii10106' => -41,
-                'afii10110' => -32
+                'afii10110' => -32,
             ],
             'afii10020' => [
                 'afii10021' => -43,
@@ -19122,10 +19122,10 @@ final class StandardFontCoreKerning
                 'comma' => -116,
                 'hyphen' => -87,
                 'period' => -123,
-                'semicolon' => -54
+                'semicolon' => -54,
             ],
             'afii10022' => [
-                'afii10038' => -21
+                'afii10038' => -21,
             ],
             'afii10024' => [
                 'afii10025' => -2,
@@ -19144,7 +19144,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -18,
                 'afii10089' => -85,
                 'afii10101' => -28,
-                'afii10110' => -75
+                'afii10110' => -75,
             ],
             'afii10025' => [
                 'afii10017' => -26,
@@ -19167,7 +19167,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -10,
                 'afii10097' => -10,
                 'afii10106' => -19,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10028' => [
                 'afii10025' => 16,
@@ -19185,7 +19185,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -58,
                 'afii10089' => -66,
                 'afii10101' => -9,
-                'afii10110' => -56
+                'afii10110' => -56,
             ],
             'afii10032' => [
                 'afii10017' => -68,
@@ -19203,7 +19203,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -5,
                 'afii10062' => -60,
                 'afii10077' => -29,
-                'afii10106' => -46
+                'afii10106' => -46,
             ],
             'afii10034' => [
                 'afii10017' => -93,
@@ -19229,7 +19229,7 @@ final class StandardFontCoreKerning
                 'comma' => -91,
                 'hyphen' => -37,
                 'period' => -98,
-                'semicolon' => -20
+                'semicolon' => -20,
             ],
             'afii10035' => [
                 'afii10017' => -38,
@@ -19249,7 +19249,7 @@ final class StandardFontCoreKerning
                 'afii10084' => -2,
                 'afii10085' => -2,
                 'afii10089' => 9,
-                'afii10106' => -30
+                'afii10106' => -30,
             ],
             'afii10036' => [
                 'afii10017' => -50,
@@ -19298,7 +19298,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -45,
                 'hyphen' => -68,
                 'period' => -84,
-                'semicolon' => -43
+                'semicolon' => -43,
             ],
             'afii10037' => [
                 'afii10017' => -140,
@@ -19346,7 +19346,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -88,
                 'hyphen' => -88,
                 'period' => -137,
-                'semicolon' => -87
+                'semicolon' => -87,
             ],
             'afii10038' => [
                 'afii10017' => -74,
@@ -19362,7 +19362,7 @@ final class StandardFontCoreKerning
                 'afii10062' => -82,
                 'afii10069' => -38,
                 'afii10077' => -26,
-                'afii10106' => -43
+                'afii10106' => -43,
             ],
             'afii10039' => [
                 'afii10025' => -7,
@@ -19379,7 +19379,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -83,
                 'afii10086' => -24,
                 'afii10089' => -91,
-                'afii10101' => -34
+                'afii10101' => -34,
             ],
             'afii10044' => [
                 'afii10036' => -77,
@@ -19388,7 +19388,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -69,
                 'afii10060' => -53,
                 'afii10062' => -67,
-                'afii10092' => -7
+                'afii10092' => -7,
             ],
             'afii10046' => [
                 'afii10036' => -68,
@@ -19397,7 +19397,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -60,
                 'afii10060' => -44,
                 'afii10062' => -58,
-                'afii10092' => 1
+                'afii10092' => 1,
             ],
             'afii10047' => [
                 'afii10017' => -66,
@@ -19410,7 +19410,7 @@ final class StandardFontCoreKerning
                 'afii10049' => -42,
                 'afii10058' => -30,
                 'afii10062' => -58,
-                'afii10106' => -39
+                'afii10106' => -39,
             ],
             'afii10048' => [
                 'afii10017' => -71,
@@ -19428,7 +19428,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -7,
                 'afii10062' => -62,
                 'afii10077' => -30,
-                'afii10106' => -47
+                'afii10106' => -47,
             ],
             'afii10050' => [
                 'afii10021' => -19,
@@ -19470,7 +19470,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -25,
                 'afii10101' => -73,
                 'afii10106' => -44,
-                'afii10110' => -31
+                'afii10110' => -31,
             ],
             'afii10052' => [
                 'afii10021' => -45,
@@ -19511,7 +19511,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -66,
                 'afii10101' => -65,
                 'afii10106' => -64,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10058' => [
                 'afii10036' => -62,
@@ -19520,7 +19520,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -54,
                 'afii10060' => -38,
                 'afii10062' => -52,
-                'afii10092' => 7
+                'afii10092' => 7,
             ],
             'afii10059' => [
                 'afii10036' => -67,
@@ -19529,7 +19529,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -59,
                 'afii10060' => -47,
                 'afii10062' => -55,
-                'afii10092' => -4
+                'afii10092' => -4,
             ],
             'afii10061' => [
                 'afii10025' => 14,
@@ -19547,7 +19547,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -2,
                 'afii10089' => -69,
                 'afii10101' => -12,
-                'afii10110' => -58
+                'afii10110' => -58,
             ],
             'afii10062' => [
                 'afii10017' => -142,
@@ -19587,14 +19587,14 @@ final class StandardFontCoreKerning
                 'afii10096' => -70,
                 'afii10097' => -106,
                 'afii10101' => -103,
-                'afii10106' => -114
+                'afii10106' => -114,
             ],
             'afii10065' => [
                 'afii10084' => -21,
                 'afii10085' => -43,
                 'afii10089' => -27,
                 'afii10106' => 10,
-                'afii10110' => -41
+                'afii10110' => -41,
             ],
             'afii10066' => [
                 'afii10072' => -32,
@@ -19604,7 +19604,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -50,
                 'afii10089' => -35,
                 'afii10097' => -22,
-                'afii10110' => -49
+                'afii10110' => -49,
             ],
             'afii10067' => [
                 'afii10072' => -15,
@@ -19614,7 +19614,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -33,
                 'afii10089' => -32,
                 'afii10097' => -16,
-                'afii10110' => -46
+                'afii10110' => -46,
             ],
             'afii10068' => [
                 'afii10069' => -32,
@@ -19629,7 +19629,7 @@ final class StandardFontCoreKerning
                 'comma' => -76,
                 'hyphen' => -26,
                 'period' => -83,
-                'semicolon' => -22
+                'semicolon' => -22,
             ],
             'afii10070' => [
                 'afii10072' => -19,
@@ -19639,7 +19639,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -40,
                 'afii10089' => -22,
                 'afii10097' => -14,
-                'afii10110' => -36
+                'afii10110' => -36,
             ],
             'afii10072' => [
                 'afii10066' => -6,
@@ -19649,7 +19649,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -28,
                 'afii10086' => -17,
                 'afii10101' => -17,
-                'afii10110' => 18
+                'afii10110' => 18,
             ],
             'afii10073' => [
                 'afii10072' => -8,
@@ -19660,10 +19660,10 @@ final class StandardFontCoreKerning
                 'afii10089' => -11,
                 'afii10097' => -13,
                 'afii10106' => -12,
-                'afii10110' => -25
+                'afii10110' => -25,
             ],
             'afii10075' => [
-                'afii10106' => 10
+                'afii10106' => 10,
             ],
             'afii10076' => [
                 'afii10065' => 5,
@@ -19674,7 +19674,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -25,
                 'afii10086' => -14,
                 'afii10101' => -14,
-                'afii10110' => 21
+                'afii10110' => 21,
             ],
             'afii10080' => [
                 'afii10072' => -26,
@@ -19684,7 +19684,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -44,
                 'afii10092' => 4,
                 'afii10106' => -34,
-                'afii10110' => -40
+                'afii10110' => -40,
             ],
             'afii10082' => [
                 'afii10072' => -22,
@@ -19701,7 +19701,7 @@ final class StandardFontCoreKerning
                 'comma' => -13,
                 'hyphen' => 22,
                 'period' => -20,
-                'semicolon' => 10
+                'semicolon' => 10,
             ],
             'afii10083' => [
                 'afii10062' => -71,
@@ -19716,7 +19716,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -28,
                 'afii10089' => -9,
                 'afii10097' => -18,
-                'afii10106' => -26
+                'afii10106' => -26,
             ],
             'afii10084' => [
                 'afii10065' => -5,
@@ -19738,7 +19738,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -3,
                 'hyphen' => -25,
                 'period' => -57,
-                'semicolon' => -6
+                'semicolon' => -6,
             ],
             'afii10085' => [
                 'afii10065' => -29,
@@ -19759,7 +19759,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -24,
                 'hyphen' => -30,
                 'period' => -77,
-                'semicolon' => -20
+                'semicolon' => -20,
             ],
             'afii10086' => [
                 'afii10068' => -18,
@@ -19773,7 +19773,7 @@ final class StandardFontCoreKerning
                 'afii10092' => 7,
                 'afii10097' => -6,
                 'afii10106' => -24,
-                'afii10110' => -38
+                'afii10110' => -38,
             ],
             'afii10087' => [
                 'afii10065' => -14,
@@ -19783,7 +19783,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -44,
                 'afii10086' => -34,
                 'afii10101' => -37,
-                'afii10110' => -9
+                'afii10110' => -9,
             ],
             'afii10092' => [
                 'afii10070' => -6,
@@ -19792,7 +19792,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -70,
                 'afii10089' => -44,
                 'afii10092' => -42,
-                'afii10110' => -58
+                'afii10110' => -58,
             ],
             'afii10094' => [
                 'afii10070' => -9,
@@ -19801,7 +19801,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -73,
                 'afii10089' => -47,
                 'afii10092' => -45,
-                'afii10110' => -61
+                'afii10110' => -61,
             ],
             'afii10095' => [
                 'afii10077' => -7,
@@ -19811,7 +19811,7 @@ final class StandardFontCoreKerning
                 'afii10092' => 12,
                 'afii10097' => -5,
                 'afii10106' => -24,
-                'afii10110' => -33
+                'afii10110' => -33,
             ],
             'afii10096' => [
                 'afii10072' => -28,
@@ -19823,7 +19823,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -30,
                 'afii10092' => 2,
                 'afii10106' => -37,
-                'afii10110' => -43
+                'afii10110' => -43,
             ],
             'afii10098' => [
                 'afii10069' => -17,
@@ -19833,7 +19833,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -22,
                 'afii10097' => -11,
                 'afii10101' => -10,
-                'afii10106' => -23
+                'afii10106' => -23,
             ],
             'afii10100' => [
                 'afii10069' => -34,
@@ -19843,14 +19843,14 @@ final class StandardFontCoreKerning
                 'afii10086' => -2,
                 'afii10097' => -5,
                 'afii10101' => 6,
-                'afii10106' => -39
+                'afii10106' => -39,
             ],
             'afii10106' => [
                 'afii10084' => -59,
                 'afii10085' => -82,
                 'afii10089' => -55,
                 'afii10092' => -54,
-                'afii10110' => -70
+                'afii10110' => -70,
             ],
             'afii10107' => [
                 'afii10070' => -2,
@@ -19859,7 +19859,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -40,
                 'afii10092' => -39,
                 'afii10101' => 9,
-                'afii10110' => -55
+                'afii10110' => -55,
             ],
             'afii10109' => [
                 'afii10065' => 7,
@@ -19869,7 +19869,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -13,
                 'afii10086' => -9,
                 'afii10101' => -2,
-                'afii10110' => 24
+                'afii10110' => 24,
             ],
             'afii10110' => [
                 'afii10065' => -26,
@@ -19882,12 +19882,12 @@ final class StandardFontCoreKerning
                 'afii10086' => -31,
                 'afii10089' => 19,
                 'afii10097' => -31,
-                'afii10101' => -24
+                'afii10101' => -24,
             ],
             'agrave' => [
                 'v' => -37,
                 'w' => -38,
-                'y' => -39
+                'y' => -39,
             ],
             'alpha' => [
                 'colon' => 21,
@@ -19907,7 +19907,7 @@ final class StandardFontCoreKerning
                 'upsilondieresis' => 4,
                 'upsilontonos' => 4,
                 'xi' => -6,
-                'zeta' => 3
+                'zeta' => 3,
             ],
             'alphatonos' => [
                 'colon' => 21,
@@ -19922,15 +19922,15 @@ final class StandardFontCoreKerning
                 'semicolon' => 25,
                 'theta' => 2,
                 'xi' => -6,
-                'zeta' => 3
+                'zeta' => 3,
             ],
             'aring' => [
                 'v' => -37,
                 'w' => -38,
-                'y' => -39
+                'y' => -39,
             ],
             'asterisk' => [
-                'period' => -40
+                'period' => -40,
             ],
             'b' => [
                 'asterisk' => -10,
@@ -19945,7 +19945,7 @@ final class StandardFontCoreKerning
                 'v' => -32,
                 'w' => -33,
                 'y' => -34,
-                'z' => -19
+                'z' => -19,
             ],
             'backslash' => [
                 'A' => 28,
@@ -19980,11 +19980,11 @@ final class StandardFontCoreKerning
                 'g' => 33,
                 'i' => 43,
                 'j' => 34,
-                'l' => 38
+                'l' => 38,
             ],
             'beta' => [
                 'gamma' => -13,
-                'lambda' => -34
+                'lambda' => -34,
             ],
             'braceleft' => [
                 'A' => -84,
@@ -20007,7 +20007,7 @@ final class StandardFontCoreKerning
                 'l' => -42,
                 'p' => -31,
                 'quoteleft' => -44,
-                'y' => -49
+                'y' => -49,
             ],
             'bracketleft' => [
                 'A' => -52,
@@ -20028,7 +20028,7 @@ final class StandardFontCoreKerning
                 'k' => 10,
                 'l' => 4,
                 'quoteleft' => -12,
-                'y' => -1
+                'y' => -1,
             ],
             'c' => [
                 'J' => -5,
@@ -20060,11 +20060,11 @@ final class StandardFontCoreKerning
                 't' => -14,
                 'u' => -16,
                 'udieresis' => -16,
-                'y' => -23
+                'y' => -23,
             ],
             'ccaron' => [
                 'e' => -2,
-                'o' => -6
+                'o' => -6,
             ],
             'chi' => [
                 'alpha' => -23,
@@ -20077,13 +20077,13 @@ final class StandardFontCoreKerning
                 'omicron' => -29,
                 'omicrontonos' => -29,
                 'theta' => 6,
-                'upsilontonos' => 7
+                'upsilontonos' => 7,
             ],
             'comma' => [
                 'endash' => 17,
                 'hyphen' => -2,
                 'quotedblright' => -30,
-                'quoteright' => -55
+                'quoteright' => -55,
             ],
             'd' => [
                 'a' => 3,
@@ -20098,7 +20098,7 @@ final class StandardFontCoreKerning
                 'v' => -18,
                 'w' => -19,
                 'y' => -16,
-                'z' => 4
+                'z' => 4,
             ],
             'dcaron' => [
                 'a' => -51,
@@ -20121,10 +20121,10 @@ final class StandardFontCoreKerning
                 'uring' => -13,
                 'y' => -17,
                 'yacute' => -11,
-                'z' => -45
+                'z' => -45,
             ],
             'delta' => [
-                'nu' => -15
+                'nu' => -15,
             ],
             'e' => [
                 'a' => -5,
@@ -20154,7 +20154,7 @@ final class StandardFontCoreKerning
                 'x' => -34,
                 'y' => -34,
                 'z' => -20,
-                'zcaron' => -20
+                'zcaron' => -20,
             ],
             'eacute' => [
                 'b' => -8,
@@ -20176,12 +20176,12 @@ final class StandardFontCoreKerning
                 'v' => -32,
                 'w' => -33,
                 'y' => -34,
-                'z' => -20
+                'z' => -20,
             ],
             'ecircumflex' => [
                 'v' => -32,
                 'w' => -33,
-                'y' => -34
+                'y' => -34,
             ],
             'endash' => [
                 'a' => 5,
@@ -20212,10 +20212,10 @@ final class StandardFontCoreKerning
                 'w' => -7,
                 'x' => -28,
                 'y' => -14,
-                'z' => -21
+                'z' => -21,
             ],
             'eogonek' => [
-                'zdotaccent' => -19
+                'zdotaccent' => -19,
             ],
             'epsilon' => [
                 'alpha' => 2,
@@ -20233,7 +20233,7 @@ final class StandardFontCoreKerning
                 'theta' => -10,
                 'upsilon' => -14,
                 'upsilontonos' => -14,
-                'xi' => -8
+                'xi' => -8,
             ],
             'epsilontonos' => [
                 'alpha' => 2,
@@ -20244,10 +20244,10 @@ final class StandardFontCoreKerning
                 'phi' => 1,
                 'semicolon' => 5,
                 'tau' => -9,
-                'theta' => -10
+                'theta' => -10,
             ],
             'exclam' => [
-                'quoteright' => -25
+                'quoteright' => -25,
             ],
             'f' => [
                 'a' => -26,
@@ -20296,7 +20296,7 @@ final class StandardFontCoreKerning
                 'w' => 6,
                 'y' => 9,
                 'yacute' => 9,
-                'z' => -10
+                'z' => -10,
             ],
             'g' => [
                 'a' => -23,
@@ -20335,7 +20335,7 @@ final class StandardFontCoreKerning
                 'v' => 4,
                 'w' => 3,
                 'y' => 6,
-                'z' => -9
+                'z' => -9,
             ],
             'gamma' => [
                 'alpha' => -8,
@@ -20351,12 +20351,12 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -11,
                 'rho' => -24,
                 'upsilontonos' => 7,
-                'xi' => -30
+                'xi' => -30,
             ],
             'germandbls' => [
                 'k' => -15,
                 't' => -12,
-                'w' => -36
+                'w' => -36,
             ],
             'guillemotleft' => [
                 'Alpha' => -30,
@@ -20375,7 +20375,7 @@ final class StandardFontCoreKerning
                 'afii10077' => 13,
                 'afii10084' => -3,
                 'afii10085' => -31,
-                'afii10089' => -23
+                'afii10089' => -23,
             ],
             'guillemotright' => [
                 'A' => -66,
@@ -20386,7 +20386,7 @@ final class StandardFontCoreKerning
                 'T' => -114,
                 'V' => -115,
                 'W' => -92,
-                'Y' => -140
+                'Y' => -140,
             ],
             'guilsinglright' => [
                 'A' => -77,
@@ -20397,7 +20397,7 @@ final class StandardFontCoreKerning
                 'T' => -125,
                 'V' => -126,
                 'W' => -102,
-                'Y' => -150
+                'Y' => -150,
             ],
             'h' => [
                 'asterisk' => -22,
@@ -20405,7 +20405,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -39,
                 'v' => -33,
                 'y' => -35,
-                'yacute' => -35
+                'yacute' => -35,
             ],
             'hyphen' => [
                 'A' => -30,
@@ -20440,7 +20440,7 @@ final class StandardFontCoreKerning
                 'w' => -28,
                 'x' => -52,
                 'y' => -38,
-                'z' => -45
+                'z' => -45,
             ],
             'i' => [
                 'T' => -28,
@@ -20455,13 +20455,13 @@ final class StandardFontCoreKerning
                 'quoteright' => -45,
                 'v' => -30,
                 'w' => -31,
-                'z' => 2
+                'z' => 2,
             ],
             'iacute' => [
-                'v' => -30
+                'v' => -30,
             ],
             'iotatonos' => [
-                'delta' => -11
+                'delta' => -11,
             ],
             'j' => [
                 'asterisk' => -22,
@@ -20472,7 +20472,7 @@ final class StandardFontCoreKerning
                 'oacute' => -12,
                 'odieresis' => -12,
                 'parenright' => -20,
-                'y' => -20
+                'y' => -20,
             ],
             'k' => [
                 'a' => 2,
@@ -20520,7 +20520,7 @@ final class StandardFontCoreKerning
                 'w' => 8,
                 'x' => 22,
                 'y' => 11,
-                'z' => 17
+                'z' => 17,
             ],
             'kappa' => [
                 'alpha' => -20,
@@ -20539,7 +20539,7 @@ final class StandardFontCoreKerning
                 'phi' => -32,
                 'sigma' => -28,
                 'theta' => -15,
-                'upsilontonos' => -11
+                'upsilontonos' => -11,
             ],
             'l' => [
                 'comma' => -8,
@@ -20550,7 +20550,7 @@ final class StandardFontCoreKerning
                 'v' => -28,
                 'w' => -29,
                 'y' => -26,
-                'z' => 4
+                'z' => 4,
             ],
             'lambda' => [
                 'alphatonos' => -17,
@@ -20572,7 +20572,7 @@ final class StandardFontCoreKerning
                 'tau' => -61,
                 'upsilon' => -43,
                 'upsilontonos' => -43,
-                'xi' => -32
+                'xi' => -32,
             ],
             'lcaron' => [
                 'a' => -60,
@@ -20600,7 +20600,7 @@ final class StandardFontCoreKerning
                 'uring' => -12,
                 'v' => -26,
                 'z' => -44,
-                'zcaron' => -28
+                'zcaron' => -28,
             ],
             'm' => [
                 'endash' => 22,
@@ -20610,7 +20610,7 @@ final class StandardFontCoreKerning
                 'v' => -34,
                 'w' => -35,
                 'y' => -35,
-                'z' => 13
+                'z' => 13,
             ],
             'n' => [
                 'T' => -56,
@@ -20622,7 +20622,7 @@ final class StandardFontCoreKerning
                 'v' => -34,
                 'w' => -35,
                 'y' => -36,
-                'z' => 7
+                'z' => 7,
             ],
             'nu' => [
                 'alpha' => -17,
@@ -20642,7 +20642,7 @@ final class StandardFontCoreKerning
                 'phi' => -13,
                 'quoteright' => -16,
                 'semicolon' => -2,
-                'sigma' => -22
+                'sigma' => -22,
             ],
             'o' => [
                 'T' => -87,
@@ -20668,7 +20668,7 @@ final class StandardFontCoreKerning
                 'w' => -35,
                 'x' => -37,
                 'y' => -41,
-                'z' => -21
+                'z' => -21,
             ],
             'odieresis' => [
                 'T' => -28,
@@ -20686,24 +20686,24 @@ final class StandardFontCoreKerning
                 'w' => -35,
                 'x' => -37,
                 'y' => -41,
-                'z' => -21
+                'z' => -21,
             ],
             'oacute' => [
                 'v' => -39,
                 'w' => -35,
                 'y' => -41,
-                'zacute' => -21
+                'zacute' => -21,
             ],
             'ocircumflex' => [
-                't' => -8
+                't' => -8,
             ],
             'oe' => [
-                'u' => -15
+                'u' => -15,
             ],
             'ograve' => [
                 'v' => -39,
                 'w' => -35,
-                'y' => -41
+                'y' => -41,
             ],
             'omega' => [
                 'chi' => -8,
@@ -20711,7 +20711,7 @@ final class StandardFontCoreKerning
                 'lambda' => -39,
                 'nu' => -20,
                 'pi' => 11,
-                'tau' => 3
+                'tau' => 3,
             ],
             'omegatonos' => [
                 'chi' => -8,
@@ -20719,7 +20719,7 @@ final class StandardFontCoreKerning
                 'lambda' => -39,
                 'nu' => -21,
                 'pi' => 11,
-                'tau' => 3
+                'tau' => 3,
             ],
             'omicron' => [
                 'alpha' => 2,
@@ -20729,14 +20729,14 @@ final class StandardFontCoreKerning
                 'nu' => -20,
                 'pi' => 16,
                 'tau' => 10,
-                'upsilon' => -23
+                'upsilon' => -23,
             ],
             'omicrontonos' => [
                 'chi' => -8,
                 'gamma' => -2,
                 'nu' => -20,
                 'pi' => 16,
-                'tau' => 10
+                'tau' => 10,
             ],
             'p' => [
                 'asterisk' => -5,
@@ -20748,7 +20748,7 @@ final class StandardFontCoreKerning
                 'w' => -26,
                 'y' => -27,
                 'yacute' => -27,
-                'z' => -16
+                'z' => -16,
             ],
             'parenleft' => [
                 'A' => -52,
@@ -20771,7 +20771,7 @@ final class StandardFontCoreKerning
                 'k' => 2,
                 'l' => -3,
                 'p' => -8,
-                'quoteleft' => -4
+                'quoteleft' => -4,
             ],
             'period' => [
                 'asterisk' => -40,
@@ -20782,10 +20782,10 @@ final class StandardFontCoreKerning
                 'quoteright' => -62,
                 'quotesingle' => -50,
                 'threesuperior' => -3,
-                'twosuperior' => 3
+                'twosuperior' => 3,
             ],
             'phi' => [
-                'tau' => 15
+                'tau' => 15,
             ],
             'pi' => [
                 'lambda' => -2,
@@ -20794,7 +20794,7 @@ final class StandardFontCoreKerning
                 'omicron' => -8,
                 'omicrontonos' => -8,
                 'quoteright' => -7,
-                'upsilontonos' => 25
+                'upsilontonos' => 25,
             ],
             'q' => [
                 'braceright' => -35,
@@ -20803,11 +20803,11 @@ final class StandardFontCoreKerning
                 'endash' => 20,
                 'parenright' => -15,
                 'u' => -13,
-                'udieresis' => -13
+                'udieresis' => -13,
             ],
             'question' => [
                 'quotedblright' => 25,
-                'quotesingle' => 16
+                'quotesingle' => 16,
             ],
             'quotedblbase' => [
                 'A' => 12,
@@ -20830,7 +20830,7 @@ final class StandardFontCoreKerning
                 'v' => -64,
                 'w' => -52,
                 'y' => -13,
-                'z' => 10
+                'z' => 10,
             ],
             'quotedblleft' => [
                 'A' => -89,
@@ -20865,7 +20865,7 @@ final class StandardFontCoreKerning
                 't' => 7,
                 'v' => 3,
                 'w' => 6,
-                'y' => 5
+                'y' => 5,
             ],
             'quotedblright' => [
                 'A' => -96,
@@ -20875,7 +20875,7 @@ final class StandardFontCoreKerning
                 'Aring' => -96,
                 'T' => 11,
                 'W' => 6,
-                'Y' => -2
+                'Y' => -2,
             ],
             'quoteleft' => [
                 'A' => -114,
@@ -20915,7 +20915,7 @@ final class StandardFontCoreKerning
                 'w' => -18,
                 'x' => -23,
                 'y' => -18,
-                'z' => -23
+                'z' => -23,
             ],
             'quoteright' => [
                 'A' => -132,
@@ -20939,7 +20939,7 @@ final class StandardFontCoreKerning
                 't' => -42,
                 'v' => -47,
                 'w' => -46,
-                'y' => -45
+                'y' => -45,
             ],
             'quotesinglbase' => [
                 'A' => -31,
@@ -20959,7 +20959,7 @@ final class StandardFontCoreKerning
                 'v' => -107,
                 'w' => -95,
                 'y' => -57,
-                'z' => -32
+                'z' => -32,
             ],
             'quotesingle' => [
                 'A' => -98,
@@ -20968,7 +20968,7 @@ final class StandardFontCoreKerning
                 'W' => 7,
                 'X' => -1,
                 'Y' => -1,
-                'Z' => 16
+                'Z' => 16,
             ],
             'r' => [
                 'a' => -3,
@@ -21043,7 +21043,7 @@ final class StandardFontCoreKerning
                 'z' => 2,
                 'zacute' => 2,
                 'zcaron' => 2,
-                'zdotaccent' => 2
+                'zdotaccent' => 2,
             ],
             'racute' => [
                 'a' => -3,
@@ -21056,7 +21056,7 @@ final class StandardFontCoreKerning
                 's' => -1,
                 't' => 23,
                 'v' => 19,
-                'z' => 2
+                'z' => 2,
             ],
             'rcaron' => [
                 'a' => -3,
@@ -21076,7 +21076,7 @@ final class StandardFontCoreKerning
                 'u' => 24,
                 'uacute' => 24,
                 'uring' => 24,
-                'v' => 19
+                'v' => 19,
             ],
             'rho' => [
                 'chi' => -9,
@@ -21086,7 +21086,7 @@ final class StandardFontCoreKerning
                 'lambda' => -34,
                 'nu' => -21,
                 'pi' => 14,
-                'tau' => 8
+                'tau' => 8,
             ],
             's' => [
                 'a' => -10,
@@ -21110,19 +21110,19 @@ final class StandardFontCoreKerning
                 'v' => -19,
                 'w' => -20,
                 'y' => -17,
-                'z' => -25
+                'z' => -25,
             ],
             'sacute' => [
                 'c' => -7,
-                'w' => -20
+                'w' => -20,
             ],
             'scaron' => [
                 'k' => -3,
                 'p' => -12,
-                't' => -13
+                't' => -13,
             ],
             'sigma' => [
-                'lambda' => -43
+                'lambda' => -43,
             ],
             'slash' => [
                 'B' => 27,
@@ -21155,7 +21155,7 @@ final class StandardFontCoreKerning
                 'l' => 22,
                 'slash' => 21,
                 't' => 16,
-                'y' => -6
+                'y' => -6,
             ],
             't' => [
                 'S' => 1,
@@ -21196,7 +21196,7 @@ final class StandardFontCoreKerning
                 'v' => 7,
                 'w' => 6,
                 'y' => 10,
-                'z' => 2
+                'z' => 2,
             ],
             'tau' => [
                 'alpha' => 2,
@@ -21218,7 +21218,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 1,
                 'sigma' => -7,
                 'tau' => 30,
-                'upsilontonos' => 25
+                'upsilontonos' => 25,
             ],
             'tcaron' => [
                 'a' => -43,
@@ -21242,7 +21242,7 @@ final class StandardFontCoreKerning
                 'y' => -40,
                 'yacute' => -32,
                 'z' => -50,
-                'zcaron' => -47
+                'zcaron' => -47,
             ],
             'u' => [
                 'comma' => -6,
@@ -21254,7 +21254,7 @@ final class StandardFontCoreKerning
                 'v' => -22,
                 'w' => -23,
                 'y' => -19,
-                'z' => 1
+                'z' => 1,
             ],
             'udieresis' => [
                 'comma' => -6,
@@ -21266,16 +21266,16 @@ final class StandardFontCoreKerning
                 'v' => -22,
                 'w' => -23,
                 'y' => -19,
-                'z' => 1
+                'z' => 1,
             ],
             'upsilon' => [
                 'chi' => -3,
                 'gamma' => 3,
                 'lambda' => -42,
-                'tau' => 5
+                'tau' => 5,
             ],
             'upsilondieresis' => [
-                'nu' => -16
+                'nu' => -16,
             ],
             'upsilontonos' => [
                 'chi' => -3,
@@ -21283,7 +21283,7 @@ final class StandardFontCoreKerning
                 'lambda' => -42,
                 'nu' => -16,
                 'pi' => 14,
-                'tau' => 5
+                'tau' => 5,
             ],
             'v' => [
                 'a' => -32,
@@ -21320,7 +21320,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -21,
                 'u' => 12,
                 'udieresis' => 12,
-                'y' => 10
+                'y' => 10,
             ],
             'w' => [
                 'a' => -35,
@@ -21365,7 +21365,7 @@ final class StandardFontCoreKerning
                 'u' => 10,
                 'udieresis' => 10,
                 'y' => 7,
-                'z' => -13
+                'z' => -13,
             ],
             'x' => [
                 'a' => -10,
@@ -21386,7 +21386,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => -27,
                 'quoteright' => -52,
                 'semicolon' => -20,
-                'y' => -11
+                'y' => -11,
             ],
             'xi' => [
                 'alpha' => -24,
@@ -21397,7 +21397,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -37,
                 'omicron' => -35,
                 'omicrontonos' => -35,
-                'upsilontonos' => -14
+                'upsilontonos' => -14,
             ],
             'y' => [
                 'a' => -38,
@@ -21435,12 +21435,12 @@ final class StandardFontCoreKerning
                 'quotesingle' => -18,
                 's' => -33,
                 'sacute' => -33,
-                'semicolon' => -18
+                'semicolon' => -18,
             ],
             'yacute' => [
                 'ccaron' => -35,
                 'comma' => -68,
-                'period' => -75
+                'period' => -75,
             ],
             'z' => [
                 'a' => -4,
@@ -21458,23 +21458,23 @@ final class StandardFontCoreKerning
                 'semicolon' => 15,
                 'u' => 3,
                 'udieresis' => 3,
-                'y' => 1
+                'y' => 1,
             ],
             'zacute' => [
                 'colon' => 12,
                 'comma' => 12,
-                'semicolon' => 15
+                'semicolon' => 15,
             ],
             'zcaron' => [
                 'colon' => 12,
                 'comma' => 12,
-                'semicolon' => 15
+                'semicolon' => 15,
             ],
             'zdotaccent' => [
                 'colon' => 12,
                 'comma' => 12,
                 'oacute' => -4,
-                'semicolon' => 15
+                'semicolon' => 15,
             ],
             'zeta' => [
                 'alpha' => -18,
@@ -21487,7 +21487,7 @@ final class StandardFontCoreKerning
                 'omicron' => -29,
                 'omicrontonos' => -29,
                 'upsilon' => -44,
-                'upsilontonos' => -44
+                'upsilontonos' => -44,
             ],
         ],
         'Times-Bold' => [
@@ -21555,14 +21555,14 @@ final class StandardFontCoreKerning
                 'w' => -79,
                 'y' => -85,
                 'yacute' => -85,
-                'z' => 2
+                'z' => 2,
             ],
             'AE' => [
                 'T' => -26,
                 'V' => -19,
                 'W' => -20,
                 'X' => -15,
-                'Z' => -22
+                'Z' => -22,
             ],
             'Aacute' => [
                 'C' => -76,
@@ -21594,7 +21594,7 @@ final class StandardFontCoreKerning
                 'u' => -32,
                 'v' => -88,
                 'w' => -79,
-                'y' => -85
+                'y' => -85,
             ],
             'Abreve' => [
                 'T' => -60,
@@ -21603,7 +21603,7 @@ final class StandardFontCoreKerning
                 'Y' => -74,
                 'Yacute' => -74,
                 'y' => -85,
-                'yacute' => -85
+                'yacute' => -85,
             ],
             'Acircumflex' => [
                 'C' => -76,
@@ -21622,7 +21622,7 @@ final class StandardFontCoreKerning
                 'period' => -2,
                 'v' => -88,
                 'w' => -79,
-                'yacute' => -85
+                'yacute' => -85,
             ],
             'Adieresis' => [
                 'C' => -76,
@@ -21652,7 +21652,7 @@ final class StandardFontCoreKerning
                 'u' => -32,
                 'v' => -88,
                 'w' => -79,
-                'y' => -85
+                'y' => -85,
             ],
             'Agrave' => [
                 'C' => -76,
@@ -21665,7 +21665,7 @@ final class StandardFontCoreKerning
                 'W' => -120,
                 'Y' => -74,
                 'comma' => -1,
-                'period' => -2
+                'period' => -2,
             ],
             'Alpha' => [
                 'O' => -66,
@@ -21685,13 +21685,13 @@ final class StandardFontCoreKerning
                 'phi' => -46,
                 'sigma' => -49,
                 'upsilon' => -65,
-                'upsilontonos' => -65
+                'upsilontonos' => -65,
             ],
             'Alphatonos' => [
                 'gamma' => -82,
                 'nu' => -77,
                 'phi' => -46,
-                'sigma' => -49
+                'sigma' => -49,
             ],
             'Aogonek' => [
                 'C' => -76,
@@ -21705,7 +21705,7 @@ final class StandardFontCoreKerning
                 'period' => -5,
                 'semicolon' => 14,
                 'y' => 70,
-                'yacute' => 70
+                'yacute' => 70,
             ],
             'Aring' => [
                 'C' => -76,
@@ -21736,7 +21736,7 @@ final class StandardFontCoreKerning
                 'u' => -32,
                 'v' => -88,
                 'w' => -79,
-                'y' => -85
+                'y' => -85,
             ],
             'Atilde' => [
                 'C' => -76,
@@ -21749,7 +21749,7 @@ final class StandardFontCoreKerning
                 'W' => -120,
                 'Y' => -74,
                 'comma' => -1,
-                'period' => -2
+                'period' => -2,
             ],
             'B' => [
                 'A' => -35,
@@ -21776,13 +21776,13 @@ final class StandardFontCoreKerning
                 'Y' => -45,
                 'Z' => -25,
                 'lambda' => -42,
-                'y' => -24
+                'y' => -24,
             ],
             'Beta' => [
                 'A' => -33,
                 'Alpha' => -59,
                 'Delta' => -40,
-                'lambda' => -44
+                'lambda' => -44,
             ],
             'C' => [
                 'A' => -29,
@@ -21820,13 +21820,13 @@ final class StandardFontCoreKerning
                 'quotesingle' => -4,
                 's' => -2,
                 'semicolon' => 15,
-                'y' => -5
+                'y' => -5,
             ],
             'Ccaron' => [
-                'O' => -14
+                'O' => -14,
             ],
             'Ccedilla' => [
-                'A' => -33
+                'A' => -33,
             ],
             'Chi' => [
                 'O' => -62,
@@ -21839,7 +21839,7 @@ final class StandardFontCoreKerning
                 'omega' => -64,
                 'omicron' => -65,
                 'omicrontonos' => -65,
-                'tau' => -84
+                'tau' => -84,
             ],
             'D' => [
                 'A' => -56,
@@ -21865,7 +21865,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 24,
                 'o' => 1,
                 'odieresis' => 1,
-                'oe' => 2
+                'oe' => 2,
             ],
             'Delta' => [
                 'O' => -48,
@@ -21878,7 +21878,7 @@ final class StandardFontCoreKerning
                 'o' => -26,
                 'omegatonos' => -49,
                 'omicron' => -38,
-                'upsilon' => -53
+                'upsilon' => -53,
             ],
             'E' => [
                 'C' => -12,
@@ -21922,7 +21922,7 @@ final class StandardFontCoreKerning
                 'v' => -31,
                 'w' => -32,
                 'y' => -24,
-                'z' => -10
+                'z' => -10,
             ],
             'Epsilon' => [
                 'O' => -16,
@@ -21932,10 +21932,10 @@ final class StandardFontCoreKerning
                 'delta' => -16,
                 'gamma' => -59,
                 'nu' => -51,
-                'tau' => -33
+                'tau' => -33,
             ],
             'Epsilontonos' => [
-                'nu' => -59
+                'nu' => -59,
             ],
             'F' => [
                 'A' => -79,
@@ -21986,7 +21986,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -1,
                 'uacute' => -1,
                 'uring' => -1,
-                'y' => -1
+                'y' => -1,
             ],
             'G' => [
                 'A' => -27,
@@ -22021,7 +22021,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => -32,
                 'semicolon' => 23,
                 'w' => -35,
-                'y' => -39
+                'y' => -39,
             ],
             'Gamma' => [
                 'A' => -91,
@@ -22043,7 +22043,7 @@ final class StandardFontCoreKerning
                 'period' => -105,
                 'rho' => -60,
                 'upsilon' => -28,
-                'upsilontonos' => -26
+                'upsilontonos' => -26,
             ],
             'H' => [
                 'A' => 20,
@@ -22054,7 +22054,7 @@ final class StandardFontCoreKerning
                 'a' => -1,
                 'adieresis' => -1,
                 'ae' => -3,
-                'y' => -32
+                'y' => -32,
             ],
             'I' => [
                 'A' => 20,
@@ -22066,7 +22066,7 @@ final class StandardFontCoreKerning
                 'X' => 17,
                 'Y' => 17,
                 'Z' => 11,
-                'y' => -35
+                'y' => -35,
             ],
             'J' => [
                 'A' => -31,
@@ -22075,7 +22075,7 @@ final class StandardFontCoreKerning
                 'Aring' => -31,
                 'K' => 9,
                 'Y' => 16,
-                'y' => -33
+                'y' => -33,
             ],
             'K' => [
                 'A' => 25,
@@ -22139,7 +22139,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -49,
                 'upsilontonos' => -49,
                 'w' => -80,
-                'y' => -85
+                'y' => -85,
             ],
             'Kappa' => [
                 'O' => -81,
@@ -22156,7 +22156,7 @@ final class StandardFontCoreKerning
                 'period' => -22,
                 'semicolon' => -37,
                 'upsilon' => -80,
-                'upsilontonos' => -80
+                'upsilontonos' => -80,
             ],
             'L' => [
                 'A' => -2,
@@ -22203,7 +22203,7 @@ final class StandardFontCoreKerning
                 'u' => -13,
                 'udieresis' => -13,
                 'y' => -51,
-                'yacute' => -51
+                'yacute' => -51,
             ],
             'Lambda' => [
                 'O' => -68,
@@ -22223,7 +22223,7 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -60,
                 'period' => -5,
                 'quoteright' => -109,
-                'upsilon' => -68
+                'upsilon' => -68,
             ],
             'Lcaron' => [
                 'O' => -4,
@@ -22234,7 +22234,7 @@ final class StandardFontCoreKerning
                 'Y' => -13,
                 'Yacute' => -13,
                 'v' => -45,
-                'yacute' => -38
+                'yacute' => -38,
             ],
             'Lslash' => [
                 'O' => -4,
@@ -22251,7 +22251,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 23,
                 'v' => -49,
                 'w' => -46,
-                'yacute' => -51
+                'yacute' => -51,
             ],
             'M' => [
                 'A' => 18,
@@ -22263,10 +22263,10 @@ final class StandardFontCoreKerning
                 'Z' => 9,
                 'epsilon' => -23,
                 'j' => -38,
-                'y' => -34
+                'y' => -34,
             ],
             'Mu' => [
-                'epsilon' => -31
+                'epsilon' => -31,
             ],
             'N' => [
                 'A' => -19,
@@ -22303,7 +22303,7 @@ final class StandardFontCoreKerning
                 'period' => -1,
                 'u' => -16,
                 'udieresis' => -16,
-                'y' => -28
+                'y' => -28,
             ],
             'Nu' => [
                 'A' => -25,
@@ -22313,7 +22313,7 @@ final class StandardFontCoreKerning
                 'o' => -21,
                 'omega' => -44,
                 'omicron' => -33,
-                'omicrontonos' => -33
+                'omicrontonos' => -33,
             ],
             'O' => [
                 'A' => -57,
@@ -22351,14 +22351,14 @@ final class StandardFontCoreKerning
                 'w' => -4,
                 'x' => 1,
                 'y' => -1,
-                'z' => -7
+                'z' => -7,
             ],
             'OE' => [
                 'T' => -11,
                 'V' => -3,
                 'W' => -5,
                 'X' => -1,
-                'Z' => -7
+                'Z' => -7,
             ],
             'Oacute' => [
                 'A' => -57,
@@ -22370,12 +22370,12 @@ final class StandardFontCoreKerning
                 'colon' => 34,
                 'comma' => -4,
                 'period' => -5,
-                'semicolon' => 34
+                'semicolon' => 34,
             ],
             'Ocircumflex' => [
                 'T' => -10,
                 'V' => -61,
-                'Y' => -60
+                'Y' => -60,
             ],
             'Odieresis' => [
                 'A' => -57,
@@ -22387,12 +22387,12 @@ final class StandardFontCoreKerning
                 'colon' => 34,
                 'comma' => -4,
                 'period' => -5,
-                'semicolon' => 34
+                'semicolon' => 34,
             ],
             'Ograve' => [
                 'T' => -10,
                 'V' => -61,
-                'Y' => -60
+                'Y' => -60,
             ],
             'Omicron' => [
                 'A' => -63,
@@ -22405,18 +22405,18 @@ final class StandardFontCoreKerning
                 'Upsilon' => -81,
                 'Y' => -75,
                 'Zeta' => -39,
-                'lambda' => -47
+                'lambda' => -47,
             ],
             'Omicrontonos' => [
-                'lambda' => -28
+                'lambda' => -28,
             ],
             'Oslash' => [
-                'A' => -53
+                'A' => -53,
             ],
             'Otilde' => [
                 'T' => -10,
                 'V' => -61,
-                'Y' => -60
+                'Y' => -60,
             ],
             'P' => [
                 'A' => -81,
@@ -22486,7 +22486,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => 9,
                 't' => 11,
                 'w' => 9,
-                'y' => 14
+                'y' => 14,
             ],
             'Phi' => [
                 'A' => -59,
@@ -22500,26 +22500,26 @@ final class StandardFontCoreKerning
                 'omega' => -26,
                 'omegatonos' => -26,
                 'omicron' => -12,
-                'omicrontonos' => -14
+                'omicrontonos' => -14,
             ],
             'Pi' => [
                 'epsilontonos' => -30,
                 'lambda' => -3,
                 'o' => -22,
-                'omicron' => -34
+                'omicron' => -34,
             ],
             'Psi' => [
                 'A' => -89,
                 'Alpha' => -109,
                 'O' => -27,
-                'Omicron' => -39
+                'Omicron' => -39,
             ],
             'Q' => [
                 'R' => -21,
                 'U' => -19,
                 'bracketright' => 6,
                 'hyphen' => 24,
-                'parenright' => 9
+                'parenright' => 9,
             ],
             'R' => [
                 'A' => 26,
@@ -22579,7 +22579,7 @@ final class StandardFontCoreKerning
                 'uacute' => -19,
                 'udieresis' => -19,
                 'y' => -26,
-                'yacute' => -25
+                'yacute' => -25,
             ],
             'Rho' => [
                 'A' => -81,
@@ -22600,7 +22600,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -56,
                 'omicron' => -42,
                 'omicrontonos' => -42,
-                'period' => -87
+                'period' => -87,
             ],
             'S' => [
                 'A' => -25,
@@ -22635,7 +22635,7 @@ final class StandardFontCoreKerning
                 't' => -9,
                 'v' => -26,
                 'w' => -27,
-                'y' => -19
+                'y' => -19,
             ],
             'Sigma' => [
                 'O' => -14,
@@ -22644,7 +22644,7 @@ final class StandardFontCoreKerning
                 'chi' => -31,
                 'o' => -6,
                 'omicron' => -18,
-                'tau' => -21
+                'tau' => -21,
             ],
             'T' => [
                 'A' => -47,
@@ -22757,7 +22757,7 @@ final class StandardFontCoreKerning
                 'w' => -108,
                 'y' => -104,
                 'yacute' => 1,
-                'zeta' => -16
+                'zeta' => -16,
             ],
             'Tau' => [
                 'A' => -50,
@@ -22788,7 +22788,7 @@ final class StandardFontCoreKerning
                 'sigma' => -78,
                 'upsilon' => -62,
                 'upsilontonos' => -60,
-                'zeta' => -25
+                'zeta' => -25,
             ],
             'Tcaron' => [
                 'A' => -47,
@@ -22822,7 +22822,7 @@ final class StandardFontCoreKerning
                 'yacute' => 1,
                 'zacute' => -17,
                 'zcaron' => -17,
-                'zdotaccent' => -17
+                'zdotaccent' => -17,
             ],
             'Tcommaaccent' => [
                 'Aacute' => -47,
@@ -22849,14 +22849,14 @@ final class StandardFontCoreKerning
                 'yacute' => -3,
                 'zacute' => -22,
                 'zcaron' => -22,
-                'zdotaccent' => -22
+                'zdotaccent' => -22,
             ],
             'Theta' => [
                 'A' => -64,
                 'Alpha' => -83,
                 'Lambda' => -78,
                 'Upsilon' => -77,
-                'Y' => -71
+                'Y' => -71,
             ],
             'U' => [
                 'A' => -55,
@@ -22884,7 +22884,7 @@ final class StandardFontCoreKerning
                 'w' => -31,
                 'x' => -26,
                 'y' => -28,
-                'z' => -29
+                'z' => -29,
             ],
             'Uacute' => [
                 'A' => -55,
@@ -22893,10 +22893,10 @@ final class StandardFontCoreKerning
                 'n' => -25,
                 'p' => -28,
                 'period' => -14,
-                'r' => -29
+                'r' => -29,
             ],
             'Ucircumflex' => [
-                'A' => -55
+                'A' => -55,
             ],
             'Udieresis' => [
                 'A' => -55,
@@ -22906,10 +22906,10 @@ final class StandardFontCoreKerning
                 'n' => -25,
                 'p' => -28,
                 'period' => -14,
-                'r' => -29
+                'r' => -29,
             ],
             'Ugrave' => [
-                'A' => -55
+                'A' => -55,
             ],
             'Upsilon' => [
                 'A' => -66,
@@ -22925,10 +22925,10 @@ final class StandardFontCoreKerning
                 'guillemotright' => -91,
                 'omicrontonos' => -104,
                 'period' => -86,
-                'pi' => -84
+                'pi' => -84,
             ],
             'Upsilontonos' => [
-                'sigma' => -102
+                'sigma' => -102,
             ],
             'V' => [
                 'A' => -114,
@@ -23006,7 +23006,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -54,
                 'uring' => -54,
                 'y' => -54,
-                'yacute' => -52
+                'yacute' => -52,
             ],
             'W' => [
                 'A' => -102,
@@ -23097,7 +23097,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -44,
                 'uring' => -44,
                 'y' => -44,
-                'yacute' => -43
+                'yacute' => -43,
             ],
             'X' => [
                 'A' => 18,
@@ -23132,12 +23132,12 @@ final class StandardFontCoreKerning
                 'tau' => -70,
                 'u' => -27,
                 'udieresis' => -27,
-                'y' => -92
+                'y' => -92,
             ],
             'Xi' => [
                 'alpha' => -8,
                 'alphatonos' => -8,
-                'upsilontonos' => -47
+                'upsilontonos' => -47,
             ],
             'Y' => [
                 'A' => -65,
@@ -23219,7 +23219,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -70,
                 'v' => -75,
                 'w' => -76,
-                'z' => -76
+                'z' => -76,
             ],
             'Yacute' => [
                 'Aacute' => -65,
@@ -23239,7 +23239,7 @@ final class StandardFontCoreKerning
                 'period' => -82,
                 'scedilla' => -78,
                 'semicolon' => -58,
-                'uacute' => -70
+                'uacute' => -70,
             ],
             'Z' => [
                 'A' => 2,
@@ -23273,14 +23273,14 @@ final class StandardFontCoreKerning
                 'semicolon' => 27,
                 'v' => -47,
                 'w' => -44,
-                'y' => -45
+                'y' => -45,
             ],
             'Zeta' => [
                 'O' => -4,
                 'Omicron' => -14,
                 'epsilon' => -12,
                 'o' => 1,
-                'omicron' => -10
+                'omicron' => -10,
             ],
             'a' => [
                 'comma' => 10,
@@ -23296,7 +23296,7 @@ final class StandardFontCoreKerning
                 'w' => -40,
                 'x' => 6,
                 'y' => -41,
-                'z' => 3
+                'z' => 3,
             ],
             'adieresis' => [
                 'comma' => 10,
@@ -23312,18 +23312,18 @@ final class StandardFontCoreKerning
                 'w' => -40,
                 'x' => 6,
                 'y' => -41,
-                'z' => 3
+                'z' => 3,
             ],
             'aacute' => [
                 'v' => -39,
                 'w' => -40,
-                'y' => -41
+                'y' => -41,
             ],
             'ae' => [
                 'r' => -19,
                 'v' => -33,
                 'w' => -34,
-                'y' => -35
+                'y' => -35,
             ],
             'afii10017' => [
                 'afii10025' => -33,
@@ -23355,7 +23355,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -20,
                 'hyphen' => -29,
                 'period' => -2,
-                'semicolon' => -6
+                'semicolon' => -6,
             ],
             'afii10018' => [
                 'afii10017' => -58,
@@ -23371,7 +23371,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -58,
                 'afii10092' => -34,
                 'afii10106' => -36,
-                'afii10110' => -44
+                'afii10110' => -44,
             ],
             'afii10019' => [
                 'afii10017' => -59,
@@ -23388,7 +23388,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -48,
                 'afii10092' => -39,
                 'afii10106' => -37,
-                'afii10110' => -25
+                'afii10110' => -25,
             ],
             'afii10020' => [
                 'afii10021' => -57,
@@ -23434,10 +23434,10 @@ final class StandardFontCoreKerning
                 'comma' => -112,
                 'hyphen' => -94,
                 'period' => -113,
-                'semicolon' => -58
+                'semicolon' => -58,
             ],
             'afii10022' => [
-                'afii10038' => -30
+                'afii10038' => -30,
             ],
             'afii10024' => [
                 'afii10025' => -25,
@@ -23456,7 +23456,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -30,
                 'afii10089' => -114,
                 'afii10101' => -39,
-                'afii10110' => -83
+                'afii10110' => -83,
             ],
             'afii10025' => [
                 'afii10017' => -47,
@@ -23479,7 +23479,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -39,
                 'afii10097' => -22,
                 'afii10106' => -24,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10028' => [
                 'afii10025' => -34,
@@ -23498,7 +23498,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -39,
                 'afii10089' => -123,
                 'afii10101' => -48,
-                'afii10110' => -92
+                'afii10110' => -92,
             ],
             'afii10032' => [
                 'afii10017' => -84,
@@ -23516,7 +23516,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -16,
                 'afii10062' => -86,
                 'afii10077' => -52,
-                'afii10106' => -54
+                'afii10106' => -54,
             ],
             'afii10034' => [
                 'afii10017' => -103,
@@ -23542,7 +23542,7 @@ final class StandardFontCoreKerning
                 'comma' => -86,
                 'hyphen' => -37,
                 'period' => -87,
-                'semicolon' => -11
+                'semicolon' => -11,
             ],
             'afii10035' => [
                 'afii10017' => -71,
@@ -23563,7 +23563,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -37,
                 'afii10089' => -52,
                 'afii10106' => -46,
-                'afii10110' => -23
+                'afii10110' => -23,
             ],
             'afii10036' => [
                 'afii10017' => -74,
@@ -23612,7 +23612,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -46,
                 'hyphen' => -71,
                 'period' => -72,
-                'semicolon' => -36
+                'semicolon' => -36,
             ],
             'afii10037' => [
                 'afii10017' => -155,
@@ -23660,7 +23660,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -84,
                 'hyphen' => -91,
                 'period' => -127,
-                'semicolon' => -76
+                'semicolon' => -76,
             ],
             'afii10038' => [
                 'afii10017' => -88,
@@ -23676,7 +23676,7 @@ final class StandardFontCoreKerning
                 'afii10062' => -91,
                 'afii10069' => -43,
                 'afii10077' => -56,
-                'afii10106' => -58
+                'afii10106' => -58,
             ],
             'afii10039' => [
                 'afii10025' => -28,
@@ -23693,7 +23693,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -108,
                 'afii10086' => -43,
                 'afii10089' => -127,
-                'afii10101' => -52
+                'afii10101' => -52,
             ],
             'afii10044' => [
                 'afii10036' => -85,
@@ -23702,7 +23702,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -79,
                 'afii10060' => -67,
                 'afii10062' => -68,
-                'afii10092' => -28
+                'afii10092' => -28,
             ],
             'afii10046' => [
                 'afii10036' => -90,
@@ -23711,7 +23711,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -85,
                 'afii10060' => -73,
                 'afii10062' => -74,
-                'afii10092' => -33
+                'afii10092' => -33,
             ],
             'afii10047' => [
                 'afii10017' => -77,
@@ -23725,7 +23725,7 @@ final class StandardFontCoreKerning
                 'afii10058' => -49,
                 'afii10060' => -12,
                 'afii10062' => -80,
-                'afii10106' => -48
+                'afii10106' => -48,
             ],
             'afii10048' => [
                 'afii10017' => -92,
@@ -23743,7 +23743,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -24,
                 'afii10062' => -94,
                 'afii10077' => -60,
-                'afii10106' => -62
+                'afii10106' => -62,
             ],
             'afii10050' => [
                 'afii10021' => -17,
@@ -23785,7 +23785,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -75,
                 'afii10101' => -96,
                 'afii10106' => -88,
-                'afii10110' => -31
+                'afii10110' => -31,
             ],
             'afii10052' => [
                 'afii10021' => -53,
@@ -23826,7 +23826,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -88,
                 'afii10101' => -80,
                 'afii10106' => -98,
-                'afii10110' => -24
+                'afii10110' => -24,
             ],
             'afii10058' => [
                 'afii10036' => -95,
@@ -23835,7 +23835,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -89,
                 'afii10060' => -73,
                 'afii10062' => -78,
-                'afii10092' => -37
+                'afii10092' => -37,
             ],
             'afii10059' => [
                 'afii10036' => -77,
@@ -23844,7 +23844,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -72,
                 'afii10060' => -55,
                 'afii10062' => -60,
-                'afii10092' => -19
+                'afii10092' => -19,
             ],
             'afii10061' => [
                 'afii10025' => -39,
@@ -23863,7 +23863,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -45,
                 'afii10089' => -131,
                 'afii10101' => -54,
-                'afii10110' => -102
+                'afii10110' => -102,
             ],
             'afii10062' => [
                 'afii10017' => -157,
@@ -23902,14 +23902,14 @@ final class StandardFontCoreKerning
                 'afii10096' => -92,
                 'afii10097' => -123,
                 'afii10101' => -113,
-                'afii10106' => -143
+                'afii10106' => -143,
             ],
             'afii10065' => [
                 'afii10084' => -38,
                 'afii10085' => -54,
                 'afii10089' => -69,
                 'afii10106' => -16,
-                'afii10110' => -48
+                'afii10110' => -48,
             ],
             'afii10066' => [
                 'afii10072' => -43,
@@ -23919,7 +23919,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -45,
                 'afii10089' => -54,
                 'afii10097' => -38,
-                'afii10110' => -47
+                'afii10110' => -47,
             ],
             'afii10067' => [
                 'afii10072' => -45,
@@ -23929,7 +23929,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -50,
                 'afii10089' => -79,
                 'afii10097' => -53,
-                'afii10110' => -65
+                'afii10110' => -65,
             ],
             'afii10068' => [
                 'afii10069' => -53,
@@ -23945,7 +23945,7 @@ final class StandardFontCoreKerning
                 'comma' => -75,
                 'hyphen' => -24,
                 'period' => -76,
-                'semicolon' => -20
+                'semicolon' => -20,
             ],
             'afii10070' => [
                 'afii10072' => -36,
@@ -23955,7 +23955,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -41,
                 'afii10089' => -51,
                 'afii10097' => -35,
-                'afii10110' => -48
+                'afii10110' => -48,
             ],
             'afii10072' => [
                 'afii10066' => -25,
@@ -23965,7 +23965,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -39,
                 'afii10086' => -30,
                 'afii10101' => -34,
-                'afii10110' => -4
+                'afii10110' => -4,
             ],
             'afii10073' => [
                 'afii10072' => -21,
@@ -23976,10 +23976,10 @@ final class StandardFontCoreKerning
                 'afii10089' => -53,
                 'afii10097' => -29,
                 'afii10106' => -22,
-                'afii10110' => -32
+                'afii10110' => -32,
             ],
             'afii10075' => [
-                'afii10106' => -36
+                'afii10106' => -36,
             ],
             'afii10076' => [
                 'afii10065' => -47,
@@ -23990,7 +23990,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -64,
                 'afii10086' => -55,
                 'afii10101' => -59,
-                'afii10110' => -29
+                'afii10110' => -29,
             ],
             'afii10080' => [
                 'afii10072' => -42,
@@ -24001,7 +24001,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -44,
                 'afii10092' => -24,
                 'afii10106' => -43,
-                'afii10110' => -46
+                'afii10110' => -46,
             ],
             'afii10082' => [
                 'afii10072' => -51,
@@ -24016,7 +24016,7 @@ final class StandardFontCoreKerning
                 'afii10110' => -59,
                 'comma' => -17,
                 'hyphen' => -7,
-                'period' => -18
+                'period' => -18,
             ],
             'afii10083' => [
                 'afii10062' => -68,
@@ -24031,7 +24031,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -27,
                 'afii10089' => -50,
                 'afii10097' => -37,
-                'afii10106' => -29
+                'afii10106' => -29,
             ],
             'afii10084' => [
                 'afii10065' => -30,
@@ -24054,7 +24054,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -4,
                 'hyphen' => -11,
                 'period' => -52,
-                'semicolon' => -1
+                'semicolon' => -1,
             ],
             'afii10085' => [
                 'afii10065' => -56,
@@ -24075,7 +24075,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -26,
                 'hyphen' => -41,
                 'period' => -66,
-                'semicolon' => -21
+                'semicolon' => -21,
             ],
             'afii10086' => [
                 'afii10068' => -24,
@@ -24090,7 +24090,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -17,
                 'afii10097' => -28,
                 'afii10106' => -33,
-                'afii10110' => -37
+                'afii10110' => -37,
             ],
             'afii10087' => [
                 'afii10065' => -32,
@@ -24100,7 +24100,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -47,
                 'afii10086' => -39,
                 'afii10101' => -40,
-                'afii10110' => -11
+                'afii10110' => -11,
             ],
             'afii10092' => [
                 'afii10070' => -30,
@@ -24109,7 +24109,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -86,
                 'afii10089' => -83,
                 'afii10092' => -76,
-                'afii10110' => -76
+                'afii10110' => -76,
             ],
             'afii10094' => [
                 'afii10070' => -39,
@@ -24118,7 +24118,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -95,
                 'afii10089' => -92,
                 'afii10092' => -85,
-                'afii10110' => -85
+                'afii10110' => -85,
             ],
             'afii10095' => [
                 'afii10077' => -29,
@@ -24128,7 +24128,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -12,
                 'afii10097' => -25,
                 'afii10106' => -31,
-                'afii10110' => -34
+                'afii10110' => -34,
             ],
             'afii10096' => [
                 'afii10072' => -57,
@@ -24140,7 +24140,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -68,
                 'afii10092' => -38,
                 'afii10106' => -58,
-                'afii10110' => -61
+                'afii10110' => -61,
             ],
             'afii10098' => [
                 'afii10069' => -34,
@@ -24150,7 +24150,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -35,
                 'afii10097' => -46,
                 'afii10101' => -38,
-                'afii10106' => -68
+                'afii10106' => -68,
             ],
             'afii10100' => [
                 'afii10069' => -53,
@@ -24160,14 +24160,14 @@ final class StandardFontCoreKerning
                 'afii10086' => -27,
                 'afii10097' => -44,
                 'afii10101' => -23,
-                'afii10106' => -87
+                'afii10106' => -87,
             ],
             'afii10106' => [
                 'afii10084' => -89,
                 'afii10085' => -99,
                 'afii10089' => -96,
                 'afii10092' => -88,
-                'afii10110' => -88
+                'afii10110' => -88,
             ],
             'afii10107' => [
                 'afii10070' => -46,
@@ -24177,7 +24177,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -100,
                 'afii10092' => -92,
                 'afii10101' => -38,
-                'afii10110' => -92
+                'afii10110' => -92,
             ],
             'afii10109' => [
                 'afii10065' => -42,
@@ -24188,7 +24188,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -48,
                 'afii10086' => -40,
                 'afii10101' => -41,
-                'afii10110' => -24
+                'afii10110' => -24,
             ],
             'afii10110' => [
                 'afii10065' => -51,
@@ -24202,12 +24202,12 @@ final class StandardFontCoreKerning
                 'afii10086' => -38,
                 'afii10089' => -23,
                 'afii10097' => -54,
-                'afii10101' => -36
+                'afii10101' => -36,
             ],
             'agrave' => [
                 'v' => -39,
                 'w' => -40,
-                'y' => -41
+                'y' => -41,
             ],
             'alpha' => [
                 'colon' => 23,
@@ -24230,7 +24230,7 @@ final class StandardFontCoreKerning
                 'upsilondieresis' => -18,
                 'upsilontonos' => -18,
                 'xi' => -15,
-                'zeta' => -8
+                'zeta' => -8,
             ],
             'alphatonos' => [
                 'colon' => 23,
@@ -24247,15 +24247,15 @@ final class StandardFontCoreKerning
                 'sigma' => -17,
                 'theta' => -15,
                 'xi' => -15,
-                'zeta' => -8
+                'zeta' => -8,
             ],
             'aring' => [
                 'v' => -39,
                 'w' => -40,
-                'y' => -41
+                'y' => -41,
             ],
             'asterisk' => [
-                'period' => -14
+                'period' => -14,
             ],
             'b' => [
                 'asterisk' => -7,
@@ -24270,7 +24270,7 @@ final class StandardFontCoreKerning
                 'v' => -38,
                 'w' => -39,
                 'y' => -40,
-                'z' => -16
+                'z' => -16,
             ],
             'backslash' => [
                 'A' => 39,
@@ -24305,11 +24305,11 @@ final class StandardFontCoreKerning
                 'g' => 57,
                 'i' => 59,
                 'j' => 29,
-                'l' => 59
+                'l' => 59,
             ],
             'beta' => [
                 'gamma' => -37,
-                'lambda' => -45
+                'lambda' => -45,
             ],
             'braceleft' => [
                 'A' => -42,
@@ -24330,7 +24330,7 @@ final class StandardFontCoreKerning
                 'l' => -1,
                 'p' => -2,
                 'quoteleft' => 7,
-                'y' => -12
+                'y' => -12,
             ],
             'bracketleft' => [
                 'A' => -42,
@@ -24353,7 +24353,7 @@ final class StandardFontCoreKerning
                 'k' => 2,
                 'l' => 5,
                 'quoteleft' => 8,
-                'y' => 5
+                'y' => 5,
             ],
             'c' => [
                 'J' => 14,
@@ -24384,11 +24384,11 @@ final class StandardFontCoreKerning
                 't' => -8,
                 'u' => -11,
                 'udieresis' => -11,
-                'y' => -15
+                'y' => -15,
             ],
             'ccaron' => [
                 'e' => -11,
-                'o' => -12
+                'o' => -12,
             ],
             'chi' => [
                 'alpha' => -29,
@@ -24401,13 +24401,13 @@ final class StandardFontCoreKerning
                 'omicron' => -44,
                 'omicrontonos' => -44,
                 'theta' => -22,
-                'upsilontonos' => -24
+                'upsilontonos' => -24,
             ],
             'comma' => [
                 'endash' => 35,
                 'hyphen' => 15,
                 'quotedblright' => 6,
-                'quoteright' => -25
+                'quoteright' => -25,
             ],
             'd' => [
                 'a' => -5,
@@ -24423,7 +24423,7 @@ final class StandardFontCoreKerning
                 'v' => -27,
                 'w' => -28,
                 'y' => -24,
-                'z' => 2
+                'z' => 2,
             ],
             'dcaron' => [
                 'a' => -66,
@@ -24446,10 +24446,10 @@ final class StandardFontCoreKerning
                 'uring' => -20,
                 'y' => -21,
                 'yacute' => -16,
-                'z' => -40
+                'z' => -40,
             ],
             'delta' => [
-                'nu' => -36
+                'nu' => -36,
             ],
             'e' => [
                 'a' => 2,
@@ -24479,7 +24479,7 @@ final class StandardFontCoreKerning
                 'x' => -25,
                 'y' => -31,
                 'z' => -11,
-                'zcaron' => -11
+                'zcaron' => -11,
             ],
             'eacute' => [
                 'b' => -8,
@@ -24499,12 +24499,12 @@ final class StandardFontCoreKerning
                 'v' => -29,
                 'w' => -30,
                 'y' => -31,
-                'z' => -11
+                'z' => -11,
             ],
             'ecircumflex' => [
                 'v' => -29,
                 'w' => -30,
-                'y' => -31
+                'y' => -31,
             ],
             'endash' => [
                 'a' => 19,
@@ -24535,10 +24535,10 @@ final class StandardFontCoreKerning
                 'w' => -7,
                 'x' => -19,
                 'y' => -14,
-                'z' => -6
+                'z' => -6,
             ],
             'eogonek' => [
-                'zdotaccent' => -11
+                'zdotaccent' => -11,
             ],
             'epsilon' => [
                 'chi' => -1,
@@ -24558,7 +24558,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -32,
                 'upsilontonos' => -31,
                 'xi' => -12,
-                'zeta' => -7
+                'zeta' => -7,
             ],
             'epsilontonos' => [
                 'delta' => -11,
@@ -24570,11 +24570,11 @@ final class StandardFontCoreKerning
                 'semicolon' => 20,
                 'tau' => -16,
                 'theta' => -20,
-                'zeta' => -7
+                'zeta' => -7,
             ],
             'exclam' => [
                 'quotedblright' => 8,
-                'quoteright' => -24
+                'quoteright' => -24,
             ],
             'f' => [
                 'a' => -18,
@@ -24623,7 +24623,7 @@ final class StandardFontCoreKerning
                 'w' => -5,
                 'y' => -2,
                 'yacute' => 1,
-                'z' => -7
+                'z' => -7,
             ],
             'g' => [
                 'a' => -16,
@@ -24660,7 +24660,7 @@ final class StandardFontCoreKerning
                 't' => 4,
                 'v' => 4,
                 'w' => 3,
-                'y' => 6
+                'y' => 6,
             ],
             'gamma' => [
                 'alpha' => -7,
@@ -24676,13 +24676,13 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -21,
                 'rho' => -27,
                 'upsilontonos' => -14,
-                'xi' => -28
+                'xi' => -28,
             ],
             'germandbls' => [
                 'e' => -8,
                 'k' => -19,
                 't' => -21,
-                'w' => -44
+                'w' => -44,
             ],
             'guillemotleft' => [
                 'Alpha' => -30,
@@ -24702,7 +24702,7 @@ final class StandardFontCoreKerning
                 'afii10084' => -6,
                 'afii10085' => -22,
                 'afii10089' => -34,
-                'tau' => -4
+                'tau' => -4,
             ],
             'guillemotright' => [
                 'A' => -43,
@@ -24713,7 +24713,7 @@ final class StandardFontCoreKerning
                 'T' => -103,
                 'V' => -101,
                 'W' => -82,
-                'Y' => -107
+                'Y' => -107,
             ],
             'guilsinglright' => [
                 'A' => -57,
@@ -24724,7 +24724,7 @@ final class StandardFontCoreKerning
                 'T' => -117,
                 'V' => -115,
                 'W' => -96,
-                'Y' => -121
+                'Y' => -121,
             ],
             'h' => [
                 'asterisk' => -16,
@@ -24732,7 +24732,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -31,
                 'v' => -35,
                 'y' => -37,
-                'yacute' => -37
+                'yacute' => -37,
             ],
             'hyphen' => [
                 'A' => -18,
@@ -24766,7 +24766,7 @@ final class StandardFontCoreKerning
                 'w' => -30,
                 'x' => -38,
                 'y' => -33,
-                'z' => -15
+                'z' => -15,
             ],
             'i' => [
                 'T' => -18,
@@ -24779,13 +24779,13 @@ final class StandardFontCoreKerning
                 'quoteright' => -23,
                 'v' => -21,
                 'w' => -22,
-                'z' => 1
+                'z' => 1,
             ],
             'iacute' => [
-                'v' => -21
+                'v' => -21,
             ],
             'iotatonos' => [
-                'delta' => -31
+                'delta' => -31,
             ],
             'j' => [
                 'asterisk' => -13,
@@ -24796,7 +24796,7 @@ final class StandardFontCoreKerning
                 'oacute' => -10,
                 'odieresis' => -10,
                 'parenright' => -3,
-                'y' => -20
+                'y' => -20,
             ],
             'k' => [
                 'a' => -4,
@@ -24844,7 +24844,7 @@ final class StandardFontCoreKerning
                 'w' => -9,
                 'x' => 10,
                 'y' => -5,
-                'z' => 6
+                'z' => 6,
             ],
             'kappa' => [
                 'alpha' => -23,
@@ -24863,7 +24863,7 @@ final class StandardFontCoreKerning
                 'phi' => -38,
                 'sigma' => -37,
                 'theta' => -31,
-                'upsilontonos' => -27
+                'upsilontonos' => -27,
             ],
             'l' => [
                 'comma' => 5,
@@ -24874,7 +24874,7 @@ final class StandardFontCoreKerning
                 'v' => -22,
                 'w' => -23,
                 'y' => -20,
-                'z' => 1
+                'z' => 1,
             ],
             'lambda' => [
                 'alphatonos' => -23,
@@ -24896,7 +24896,7 @@ final class StandardFontCoreKerning
                 'tau' => -63,
                 'upsilon' => -59,
                 'upsilontonos' => -59,
-                'xi' => -35
+                'xi' => -35,
             ],
             'lcaron' => [
                 'a' => -65,
@@ -24924,7 +24924,7 @@ final class StandardFontCoreKerning
                 'uring' => -19,
                 'v' => -28,
                 'z' => -39,
-                'zcaron' => -34
+                'zcaron' => -34,
             ],
             'm' => [
                 'endash' => 22,
@@ -24934,7 +24934,7 @@ final class StandardFontCoreKerning
                 'v' => -34,
                 'w' => -35,
                 'y' => -36,
-                'z' => 3
+                'z' => 3,
             ],
             'n' => [
                 'T' => -57,
@@ -24946,7 +24946,7 @@ final class StandardFontCoreKerning
                 'v' => -33,
                 'w' => -34,
                 'y' => -35,
-                'z' => 4
+                'z' => 4,
             ],
             'nu' => [
                 'alpha' => -12,
@@ -24967,7 +24967,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -6,
                 'semicolon' => 14,
                 'sigma' => -21,
-                'upsilontonos' => -19
+                'upsilontonos' => -19,
             ],
             'o' => [
                 'T' => -88,
@@ -24993,7 +24993,7 @@ final class StandardFontCoreKerning
                 'w' => -38,
                 'x' => -29,
                 'y' => -42,
-                'z' => -13
+                'z' => -13,
             ],
             'odieresis' => [
                 'T' => -27,
@@ -25011,24 +25011,24 @@ final class StandardFontCoreKerning
                 'w' => -38,
                 'x' => -29,
                 'y' => -42,
-                'z' => -13
+                'z' => -13,
             ],
             'oacute' => [
                 'v' => -40,
                 'w' => -38,
                 'y' => -42,
-                'zacute' => -13
+                'zacute' => -13,
             ],
             'ocircumflex' => [
-                't' => -10
+                't' => -10,
             ],
             'oe' => [
-                'u' => -11
+                'u' => -11,
             ],
             'ograve' => [
                 'v' => -40,
                 'w' => -38,
-                'y' => -42
+                'y' => -42,
             ],
             'omega' => [
                 'chi' => -28,
@@ -25036,7 +25036,7 @@ final class StandardFontCoreKerning
                 'lambda' => -59,
                 'nu' => -45,
                 'pi' => -7,
-                'tau' => -13
+                'tau' => -13,
             ],
             'omegatonos' => [
                 'chi' => -28,
@@ -25044,7 +25044,7 @@ final class StandardFontCoreKerning
                 'lambda' => -62,
                 'nu' => -45,
                 'pi' => -7,
-                'tau' => -13
+                'tau' => -13,
             ],
             'omicron' => [
                 'alpha' => -7,
@@ -25053,13 +25053,13 @@ final class StandardFontCoreKerning
                 'lambda' => -50,
                 'nu' => -40,
                 'pi' => 5,
-                'upsilon' => -44
+                'upsilon' => -44,
             ],
             'omicrontonos' => [
                 'chi' => -20,
                 'gamma' => -35,
                 'nu' => -40,
-                'pi' => 5
+                'pi' => 5,
             ],
             'p' => [
                 'asterisk' => -3,
@@ -25071,7 +25071,7 @@ final class StandardFontCoreKerning
                 'w' => -33,
                 'y' => -34,
                 'yacute' => -34,
-                'z' => -14
+                'z' => -14,
             ],
             'parenleft' => [
                 'A' => -39,
@@ -25094,7 +25094,7 @@ final class StandardFontCoreKerning
                 'l' => 7,
                 'p' => -1,
                 'quoteleft' => 17,
-                'y' => 6
+                'y' => 6,
             ],
             'period' => [
                 'asterisk' => -15,
@@ -25105,10 +25105,10 @@ final class StandardFontCoreKerning
                 'quoteright' => -29,
                 'quotesingle' => -44,
                 'threesuperior' => 20,
-                'twosuperior' => 23
+                'twosuperior' => 23,
             ],
             'phi' => [
-                'tau' => 7
+                'tau' => 7,
             ],
             'pi' => [
                 'alphatonos' => -5,
@@ -25118,7 +25118,7 @@ final class StandardFontCoreKerning
                 'omicron' => -18,
                 'omicrontonos' => -18,
                 'quoteright' => -5,
-                'upsilontonos' => -9
+                'upsilontonos' => -9,
             ],
             'q' => [
                 'braceright' => -7,
@@ -25127,12 +25127,12 @@ final class StandardFontCoreKerning
                 'endash' => 19,
                 'parenright' => -6,
                 'u' => -16,
-                'udieresis' => -16
+                'udieresis' => -16,
             ],
             'question' => [
                 'quotedblright' => 17,
                 'quoteright' => -14,
-                'quotesingle' => -12
+                'quotesingle' => -12,
             ],
             'quotedblbase' => [
                 'A' => 14,
@@ -25156,7 +25156,7 @@ final class StandardFontCoreKerning
                 'v' => -60,
                 'w' => -53,
                 'y' => -5,
-                'z' => 9
+                'z' => 9,
             ],
             'quotedblleft' => [
                 'A' => -62,
@@ -25196,7 +25196,7 @@ final class StandardFontCoreKerning
                 'w' => 17,
                 'x' => 16,
                 'y' => 17,
-                'z' => 22
+                'z' => 22,
             ],
             'quotedblright' => [
                 'A' => -71,
@@ -25207,7 +25207,7 @@ final class StandardFontCoreKerning
                 'T' => 3,
                 'V' => 6,
                 'W' => 3,
-                'Y' => 6
+                'Y' => 6,
             ],
             'quoteleft' => [
                 'A' => -94,
@@ -25246,7 +25246,7 @@ final class StandardFontCoreKerning
                 'w' => -14,
                 'x' => -15,
                 'y' => -15,
-                'z' => -9
+                'z' => -9,
             ],
             'quoteright' => [
                 'A' => -90,
@@ -25270,7 +25270,7 @@ final class StandardFontCoreKerning
                 't' => -20,
                 'v' => -26,
                 'w' => -24,
-                'y' => -23
+                'y' => -23,
             ],
             'quotesinglbase' => [
                 'A' => -4,
@@ -25290,7 +25290,7 @@ final class StandardFontCoreKerning
                 'v' => -79,
                 'w' => -72,
                 'y' => -24,
-                'z' => -9
+                'z' => -9,
             ],
             'quotesingle' => [
                 'A' => -97,
@@ -25299,7 +25299,7 @@ final class StandardFontCoreKerning
                 'W' => -14,
                 'X' => -12,
                 'Y' => -11,
-                'Z' => -13
+                'Z' => -13,
             ],
             'r' => [
                 'a' => -5,
@@ -25374,7 +25374,7 @@ final class StandardFontCoreKerning
                 'z' => -1,
                 'zacute' => -1,
                 'zcaron' => -1,
-                'zdotaccent' => -1
+                'zdotaccent' => -1,
             ],
             'racute' => [
                 'a' => -5,
@@ -25387,7 +25387,7 @@ final class StandardFontCoreKerning
                 's' => 1,
                 't' => 7,
                 'v' => 5,
-                'z' => -1
+                'z' => -1,
             ],
             'rcaron' => [
                 'a' => -5,
@@ -25407,7 +25407,7 @@ final class StandardFontCoreKerning
                 'u' => 7,
                 'uacute' => 7,
                 'uring' => 7,
-                'v' => 5
+                'v' => 5,
             ],
             'rho' => [
                 'chi' => -24,
@@ -25417,7 +25417,7 @@ final class StandardFontCoreKerning
                 'lambda' => -54,
                 'nu' => -44,
                 'pi' => 2,
-                'tau' => -3
+                'tau' => -3,
             ],
             's' => [
                 'a' => -2,
@@ -25442,19 +25442,19 @@ final class StandardFontCoreKerning
                 'v' => -11,
                 'w' => -12,
                 'y' => -8,
-                'z' => -10
+                'z' => -10,
             ],
             'sacute' => [
                 'c' => -2,
-                'w' => -12
+                'w' => -12,
             ],
             'scaron' => [
                 'k' => -7,
                 'p' => -9,
-                't' => -6
+                't' => -6,
             ],
             'sigma' => [
-                'lambda' => -49
+                'lambda' => -49,
             ],
             'slash' => [
                 'B' => 35,
@@ -25488,7 +25488,7 @@ final class StandardFontCoreKerning
                 'l' => 29,
                 'slash' => 32,
                 't' => 18,
-                'y' => -4
+                'y' => -4,
             ],
             't' => [
                 'S' => 10,
@@ -25526,7 +25526,7 @@ final class StandardFontCoreKerning
                 'udieresis' => 2,
                 'w' => -1,
                 'y' => 2,
-                'z' => -4
+                'z' => -4,
             ],
             'tau' => [
                 'alpha' => 1,
@@ -25548,7 +25548,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 9,
                 'sigma' => -4,
                 'tau' => 17,
-                'upsilontonos' => -2
+                'upsilontonos' => -2,
             ],
             'tcaron' => [
                 'a' => -55,
@@ -25572,7 +25572,7 @@ final class StandardFontCoreKerning
                 'y' => -23,
                 'yacute' => -19,
                 'z' => -43,
-                'zcaron' => -38
+                'zcaron' => -38,
             ],
             'u' => [
                 'comma' => 3,
@@ -25585,7 +25585,7 @@ final class StandardFontCoreKerning
                 'w' => -25,
                 'x' => 7,
                 'y' => -21,
-                'z' => 3
+                'z' => 3,
             ],
             'udieresis' => [
                 'comma' => 3,
@@ -25598,16 +25598,16 @@ final class StandardFontCoreKerning
                 'w' => -25,
                 'x' => 7,
                 'y' => -21,
-                'z' => 3
+                'z' => 3,
             ],
             'upsilon' => [
                 'chi' => -18,
                 'gamma' => -30,
                 'lambda' => -58,
-                'tau' => -7
+                'tau' => -7,
             ],
             'upsilondieresis' => [
-                'nu' => -34
+                'nu' => -34,
             ],
             'upsilontonos' => [
                 'chi' => -17,
@@ -25615,7 +25615,7 @@ final class StandardFontCoreKerning
                 'lambda' => -58,
                 'nu' => -34,
                 'pi' => -1,
-                'tau' => -7
+                'tau' => -7,
             ],
             'v' => [
                 'a' => -23,
@@ -25652,7 +25652,7 @@ final class StandardFontCoreKerning
                 'semicolon' => -8,
                 'u' => 8,
                 'udieresis' => 8,
-                'y' => 8
+                'y' => 8,
             ],
             'w' => [
                 'a' => -23,
@@ -25697,7 +25697,7 @@ final class StandardFontCoreKerning
                 'u' => 8,
                 'udieresis' => 8,
                 'y' => 8,
-                'z' => -5
+                'z' => -5,
             ],
             'x' => [
                 'a' => -5,
@@ -25717,7 +25717,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => 1,
                 'quoteright' => -30,
                 'semicolon' => 5,
-                'y' => 4
+                'y' => 4,
             ],
             'xi' => [
                 'alpha' => -22,
@@ -25728,7 +25728,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -50,
                 'omicron' => -34,
                 'omicrontonos' => -34,
-                'upsilontonos' => -19
+                'upsilontonos' => -19,
             ],
             'y' => [
                 'a' => -30,
@@ -25767,12 +25767,12 @@ final class StandardFontCoreKerning
                 'quotesingle' => -31,
                 's' => -23,
                 'sacute' => -23,
-                'semicolon' => -11
+                'semicolon' => -11,
             ],
             'yacute' => [
                 'ccaron' => -41,
                 'comma' => -59,
-                'period' => -56
+                'period' => -56,
             ],
             'z' => [
                 'asterisk' => -10,
@@ -25788,18 +25788,18 @@ final class StandardFontCoreKerning
                 'semicolon' => 29,
                 'u' => 1,
                 'udieresis' => 1,
-                'y' => 1
+                'y' => 1,
             ],
             'zacute' => [
                 'colon' => 29,
                 'comma' => 18,
-                'semicolon' => 29
+                'semicolon' => 29,
             ],
             'zcaron' => [
                 'colon' => 29,
                 'comma' => 18,
                 'e' => -2,
-                'semicolon' => 29
+                'semicolon' => 29,
             ],
             'zdotaccent' => [
                 'c' => -3,
@@ -25807,7 +25807,7 @@ final class StandardFontCoreKerning
                 'comma' => 18,
                 'e' => -3,
                 'oacute' => -4,
-                'semicolon' => 28
+                'semicolon' => 28,
             ],
             'zeta' => [
                 'alpha' => -17,
@@ -25820,7 +25820,7 @@ final class StandardFontCoreKerning
                 'omicron' => -38,
                 'omicrontonos' => -38,
                 'upsilon' => -53,
-                'upsilontonos' => -53
+                'upsilontonos' => -53,
             ],
         ],
         'Times-Italic' => [
@@ -25889,14 +25889,14 @@ final class StandardFontCoreKerning
                 'w' => -28,
                 'y' => -54,
                 'yacute' => -54,
-                'z' => 8
+                'z' => 8,
             ],
             'AE' => [
                 'T' => 7,
                 'V' => 13,
                 'W' => 16,
                 'X' => 13,
-                'Z' => 12
+                'Z' => 12,
             ],
             'Aacute' => [
                 'C' => -37,
@@ -25927,7 +25927,7 @@ final class StandardFontCoreKerning
                 'u' => -10,
                 'v' => -35,
                 'w' => -28,
-                'y' => -54
+                'y' => -54,
             ],
             'Abreve' => [
                 'T' => -15,
@@ -25936,7 +25936,7 @@ final class StandardFontCoreKerning
                 'Y' => -21,
                 'Yacute' => -21,
                 'y' => -54,
-                'yacute' => -54
+                'yacute' => -54,
             ],
             'Acircumflex' => [
                 'C' => -37,
@@ -25955,7 +25955,7 @@ final class StandardFontCoreKerning
                 'period' => 20,
                 'v' => -35,
                 'w' => -28,
-                'yacute' => -54
+                'yacute' => -54,
             ],
             'Adieresis' => [
                 'C' => -41,
@@ -25984,7 +25984,7 @@ final class StandardFontCoreKerning
                 'u' => -10,
                 'v' => -35,
                 'w' => -28,
-                'y' => -54
+                'y' => -54,
             ],
             'Agrave' => [
                 'C' => -37,
@@ -25997,7 +25997,7 @@ final class StandardFontCoreKerning
                 'W' => -61,
                 'Y' => -21,
                 'comma' => 19,
-                'period' => 20
+                'period' => 20,
             ],
             'Alpha' => [
                 'O' => -31,
@@ -26017,13 +26017,13 @@ final class StandardFontCoreKerning
                 'phi' => -20,
                 'sigma' => -14,
                 'upsilon' => -27,
-                'upsilontonos' => -27
+                'upsilontonos' => -27,
             ],
             'Alphatonos' => [
                 'gamma' => -28,
                 'nu' => -54,
                 'phi' => -20,
-                'sigma' => -14
+                'sigma' => -14,
             ],
             'Aogonek' => [
                 'C' => -42,
@@ -26037,7 +26037,7 @@ final class StandardFontCoreKerning
                 'period' => 18,
                 'semicolon' => 71,
                 'y' => 82,
-                'yacute' => 82
+                'yacute' => 82,
             ],
             'Aring' => [
                 'C' => -41,
@@ -26067,7 +26067,7 @@ final class StandardFontCoreKerning
                 'u' => -10,
                 'v' => -35,
                 'w' => -28,
-                'y' => -54
+                'y' => -54,
             ],
             'Atilde' => [
                 'C' => -40,
@@ -26080,7 +26080,7 @@ final class StandardFontCoreKerning
                 'W' => -60,
                 'Y' => -21,
                 'comma' => 20,
-                'period' => 21
+                'period' => 21,
             ],
             'B' => [
                 'A' => -22,
@@ -26100,13 +26100,13 @@ final class StandardFontCoreKerning
                 'Y' => -35,
                 'Z' => 6,
                 'lambda' => -22,
-                'y' => 7
+                'y' => 7,
             ],
             'Beta' => [
                 'A' => -18,
                 'Alpha' => -24,
                 'Delta' => -30,
-                'lambda' => -18
+                'lambda' => -18,
             ],
             'C' => [
                 'A' => -15,
@@ -26145,13 +26145,13 @@ final class StandardFontCoreKerning
                 'quotesingle' => 20,
                 's' => -16,
                 'semicolon' => 11,
-                'y' => 3
+                'y' => 3,
             ],
             'Ccaron' => [
-                'O' => -3
+                'O' => -3,
             ],
             'Ccedilla' => [
-                'A' => -18
+                'A' => -18,
             ],
             'Chi' => [
                 'O' => -32,
@@ -26164,7 +26164,7 @@ final class StandardFontCoreKerning
                 'omega' => -50,
                 'omicron' => -48,
                 'omicrontonos' => -48,
-                'tau' => -39
+                'tau' => -39,
             ],
             'D' => [
                 'A' => -21,
@@ -26191,7 +26191,7 @@ final class StandardFontCoreKerning
                 'o' => 4,
                 'odieresis' => 4,
                 'oe' => 11,
-                'y' => 15
+                'y' => 15,
             ],
             'Delta' => [
                 'O' => -35,
@@ -26204,7 +26204,7 @@ final class StandardFontCoreKerning
                 'o' => -4,
                 'omegatonos' => -16,
                 'omicron' => -15,
-                'upsilon' => -15
+                'upsilon' => -15,
             ],
             'E' => [
                 'A' => 18,
@@ -26249,7 +26249,7 @@ final class StandardFontCoreKerning
                 'v' => -18,
                 'w' => -11,
                 'y' => -17,
-                'z' => -11
+                'z' => -11,
             ],
             'Epsilon' => [
                 'O' => 1,
@@ -26259,10 +26259,10 @@ final class StandardFontCoreKerning
                 'delta' => 16,
                 'gamma' => -11,
                 'nu' => -32,
-                'tau' => -2
+                'tau' => -2,
             ],
             'Epsilontonos' => [
-                'nu' => -25
+                'nu' => -25,
             ],
             'F' => [
                 'A' => -57,
@@ -26314,7 +26314,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -44,
                 'uacute' => -44,
                 'uring' => -44,
-                'y' => -12
+                'y' => -12,
             ],
             'G' => [
                 'A' => -12,
@@ -26349,7 +26349,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => 4,
                 'semicolon' => 29,
                 'w' => -1,
-                'y' => -4
+                'y' => -4,
             ],
             'Gamma' => [
                 'A' => -59,
@@ -26371,7 +26371,7 @@ final class StandardFontCoreKerning
                 'period' => -98,
                 'rho' => -79,
                 'upsilon' => -45,
-                'upsilontonos' => -45
+                'upsilontonos' => -45,
             ],
             'H' => [
                 'A' => 19,
@@ -26382,7 +26382,7 @@ final class StandardFontCoreKerning
                 'a' => -9,
                 'adieresis' => -9,
                 'ae' => -12,
-                'y' => -8
+                'y' => -8,
             ],
             'I' => [
                 'A' => 17,
@@ -26394,7 +26394,7 @@ final class StandardFontCoreKerning
                 'X' => 28,
                 'Y' => 20,
                 'Z' => 10,
-                'y' => -5
+                'y' => -5,
             ],
             'J' => [
                 'A' => -31,
@@ -26403,7 +26403,7 @@ final class StandardFontCoreKerning
                 'Aring' => -31,
                 'K' => -8,
                 'Y' => 18,
-                'y' => -7
+                'y' => -7,
             ],
             'K' => [
                 'A' => 41,
@@ -26468,7 +26468,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -43,
                 'upsilontonos' => -43,
                 'w' => -50,
-                'y' => -81
+                'y' => -81,
             ],
             'Kappa' => [
                 'O' => -38,
@@ -26485,7 +26485,7 @@ final class StandardFontCoreKerning
                 'period' => 13,
                 'semicolon' => -7,
                 'upsilon' => -34,
-                'upsilontonos' => -34
+                'upsilontonos' => -34,
             ],
             'L' => [
                 'A' => 43,
@@ -26533,7 +26533,7 @@ final class StandardFontCoreKerning
                 'u' => 24,
                 'udieresis' => 24,
                 'y' => -15,
-                'yacute' => -15
+                'yacute' => -15,
             ],
             'Lambda' => [
                 'O' => -29,
@@ -26553,7 +26553,7 @@ final class StandardFontCoreKerning
                 'omicrontonos' => -29,
                 'period' => 10,
                 'quoteright' => -48,
-                'upsilon' => -25
+                'upsilon' => -25,
             ],
             'Lcaron' => [
                 'O' => 20,
@@ -26564,7 +26564,7 @@ final class StandardFontCoreKerning
                 'Y' => 11,
                 'Yacute' => 11,
                 'v' => 3,
-                'yacute' => -8
+                'yacute' => -8,
             ],
             'Lslash' => [
                 'O' => 10,
@@ -26581,7 +26581,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 48,
                 'v' => 1,
                 'w' => 7,
-                'yacute' => -15
+                'yacute' => -15,
             ],
             'M' => [
                 'A' => 16,
@@ -26593,10 +26593,10 @@ final class StandardFontCoreKerning
                 'Z' => 4,
                 'epsilon' => -11,
                 'j' => -29,
-                'y' => -11
+                'y' => -11,
             ],
             'Mu' => [
-                'epsilon' => -11
+                'epsilon' => -11,
             ],
             'N' => [
                 'A' => -22,
@@ -26634,7 +26634,7 @@ final class StandardFontCoreKerning
                 'period' => -4,
                 'u' => -10,
                 'udieresis' => -10,
-                'y' => -3
+                'y' => -3,
             ],
             'Nu' => [
                 'A' => -18,
@@ -26644,7 +26644,7 @@ final class StandardFontCoreKerning
                 'o' => -9,
                 'omega' => -21,
                 'omicron' => -18,
-                'omicrontonos' => -18
+                'omicrontonos' => -18,
             ],
             'O' => [
                 'A' => -27,
@@ -26680,14 +26680,14 @@ final class StandardFontCoreKerning
                 'w' => 15,
                 'x' => -9,
                 'y' => 15,
-                'z' => -16
+                'z' => -16,
             ],
             'OE' => [
                 'T' => 7,
                 'V' => 12,
                 'W' => 14,
                 'X' => 12,
-                'Z' => 15
+                'Z' => 15,
             ],
             'Oacute' => [
                 'A' => -27,
@@ -26699,12 +26699,12 @@ final class StandardFontCoreKerning
                 'colon' => 11,
                 'comma' => -7,
                 'period' => -9,
-                'semicolon' => 18
+                'semicolon' => 18,
             ],
             'Ocircumflex' => [
                 'T' => -4,
                 'V' => -30,
-                'Y' => -39
+                'Y' => -39,
             ],
             'Odieresis' => [
                 'A' => -27,
@@ -26716,12 +26716,12 @@ final class StandardFontCoreKerning
                 'colon' => 11,
                 'comma' => -7,
                 'period' => -9,
-                'semicolon' => 18
+                'semicolon' => 18,
             ],
             'Ograve' => [
                 'T' => -4,
                 'V' => -30,
-                'Y' => -39
+                'Y' => -39,
             ],
             'Omicron' => [
                 'A' => -24,
@@ -26734,18 +26734,18 @@ final class StandardFontCoreKerning
                 'Upsilon' => -52,
                 'Y' => -37,
                 'Zeta' => -2,
-                'lambda' => -24
+                'lambda' => -24,
             ],
             'Omicrontonos' => [
-                'lambda' => -7
+                'lambda' => -7,
             ],
             'Oslash' => [
-                'A' => -27
+                'A' => -27,
             ],
             'Otilde' => [
                 'T' => -4,
                 'V' => -30,
-                'Y' => -39
+                'Y' => -39,
             ],
             'P' => [
                 'A' => -64,
@@ -26814,7 +26814,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => 17,
                 't' => -6,
                 'w' => 15,
-                'y' => 17
+                'y' => 17,
             ],
             'Phi' => [
                 'A' => -19,
@@ -26829,26 +26829,26 @@ final class StandardFontCoreKerning
                 'omega' => -5,
                 'omegatonos' => -3,
                 'omicron' => -2,
-                'omicrontonos' => -2
+                'omicrontonos' => -2,
             ],
             'Pi' => [
                 'epsilontonos' => -7,
                 'lambda' => 8,
                 'o' => -13,
-                'omicron' => -23
+                'omicron' => -23,
             ],
             'Psi' => [
                 'A' => -41,
                 'Alpha' => -68,
                 'O' => -18,
-                'Omicron' => -27
+                'Omicron' => -27,
             ],
             'Q' => [
                 'R' => -7,
                 'U' => -14,
                 'bracketright' => -3,
                 'hyphen' => 29,
-                'parenright' => 9
+                'parenright' => 9,
             ],
             'R' => [
                 'A' => 44,
@@ -26905,7 +26905,7 @@ final class StandardFontCoreKerning
                 'uacute' => -9,
                 'udieresis' => -9,
                 'y' => 6,
-                'yacute' => 6
+                'yacute' => 6,
             ],
             'Rho' => [
                 'A' => -54,
@@ -26927,7 +26927,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -57,
                 'omicron' => -58,
                 'omicrontonos' => -58,
-                'period' => -87
+                'period' => -87,
             ],
             'S' => [
                 'A' => -2,
@@ -26960,7 +26960,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -1,
                 'v' => -16,
                 'w' => -9,
-                'y' => -11
+                'y' => -11,
             ],
             'Sigma' => [
                 'O' => -11,
@@ -26968,7 +26968,7 @@ final class StandardFontCoreKerning
                 'chi' => -41,
                 'o' => -11,
                 'omicron' => -22,
-                'tau' => -14
+                'tau' => -14,
             ],
             'T' => [
                 'A' => -34,
@@ -27082,7 +27082,7 @@ final class StandardFontCoreKerning
                 'w' => -70,
                 'y' => -68,
                 'yacute' => 9,
-                'zeta' => -13
+                'zeta' => -13,
             ],
             'Tau' => [
                 'A' => -21,
@@ -27113,7 +27113,7 @@ final class StandardFontCoreKerning
                 'sigma' => -42,
                 'upsilon' => -28,
                 'upsilontonos' => -28,
-                'zeta' => 4
+                'zeta' => 4,
             ],
             'Tcaron' => [
                 'A' => -34,
@@ -27147,7 +27147,7 @@ final class StandardFontCoreKerning
                 'yacute' => 9,
                 'zacute' => -30,
                 'zcaron' => 3,
-                'zdotaccent' => -30
+                'zdotaccent' => -30,
             ],
             'Tcommaaccent' => [
                 'Aacute' => -34,
@@ -27174,14 +27174,14 @@ final class StandardFontCoreKerning
                 'yacute' => 3,
                 'zacute' => -36,
                 'zcaron' => 7,
-                'zdotaccent' => -36
+                'zdotaccent' => -36,
             ],
             'Theta' => [
                 'A' => -1,
                 'Alpha' => -34,
                 'Lambda' => -32,
                 'Upsilon' => -29,
-                'Y' => -14
+                'Y' => -14,
             ],
             'U' => [
                 'A' => -33,
@@ -27209,7 +27209,7 @@ final class StandardFontCoreKerning
                 'w' => -12,
                 'x' => -38,
                 'y' => -10,
-                'z' => -36
+                'z' => -36,
             ],
             'Uacute' => [
                 'A' => -33,
@@ -27218,10 +27218,10 @@ final class StandardFontCoreKerning
                 'n' => -18,
                 'p' => -22,
                 'period' => -22,
-                'r' => -34
+                'r' => -34,
             ],
             'Ucircumflex' => [
-                'A' => -33
+                'A' => -33,
             ],
             'Udieresis' => [
                 'A' => -33,
@@ -27231,10 +27231,10 @@ final class StandardFontCoreKerning
                 'n' => -18,
                 'p' => -22,
                 'period' => -22,
-                'r' => -34
+                'r' => -34,
             ],
             'Ugrave' => [
-                'A' => -33
+                'A' => -33,
             ],
             'Upsilon' => [
                 'A' => -14,
@@ -27250,10 +27250,10 @@ final class StandardFontCoreKerning
                 'guillemotright' => -71,
                 'omicrontonos' => -58,
                 'period' => -38,
-                'pi' => -39
+                'pi' => -39,
             ],
             'Upsilontonos' => [
-                'sigma' => -33
+                'sigma' => -33,
             ],
             'V' => [
                 'A' => -54,
@@ -27331,7 +27331,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -38,
                 'uring' => -38,
                 'y' => -10,
-                'yacute' => -10
+                'yacute' => -10,
             ],
             'W' => [
                 'A' => -43,
@@ -27422,7 +27422,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -33,
                 'uring' => -33,
                 'y' => -6,
-                'yacute' => -6
+                'yacute' => -6,
             ],
             'X' => [
                 'A' => 44,
@@ -27457,12 +27457,12 @@ final class StandardFontCoreKerning
                 'tau' => -28,
                 'u' => -9,
                 'udieresis' => -9,
-                'y' => -59
+                'y' => -59,
             ],
             'Xi' => [
                 'alpha' => -4,
                 'alphatonos' => -4,
-                'upsilontonos' => -11
+                'upsilontonos' => -11,
             ],
             'Y' => [
                 'A' => -28,
@@ -27545,7 +27545,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -55,
                 'v' => -32,
                 'w' => -30,
-                'z' => -62
+                'z' => -62,
             ],
             'Yacute' => [
                 'Aacute' => -28,
@@ -27565,7 +27565,7 @@ final class StandardFontCoreKerning
                 'period' => -49,
                 'scedilla' => -59,
                 'semicolon' => -37,
-                'uacute' => -55
+                'uacute' => -55,
             ],
             'Z' => [
                 'A' => 41,
@@ -27601,14 +27601,14 @@ final class StandardFontCoreKerning
                 'quotesingle' => 7,
                 'semicolon' => 45,
                 'w' => 7,
-                'y' => -16
+                'y' => -16,
             ],
             'Zeta' => [
                 'O' => 15,
                 'Omicron' => 4,
                 'epsilon' => 25,
                 'o' => 23,
-                'omicron' => 12
+                'omicron' => 12,
             ],
             'a' => [
                 'comma' => 29,
@@ -27623,7 +27623,7 @@ final class StandardFontCoreKerning
                 'w' => 1,
                 'x' => 13,
                 'y' => 3,
-                'z' => -10
+                'z' => -10,
             ],
             'adieresis' => [
                 'comma' => 28,
@@ -27637,17 +27637,17 @@ final class StandardFontCoreKerning
                 'w' => 1,
                 'x' => 13,
                 'y' => 3,
-                'z' => -14
+                'z' => -14,
             ],
             'aacute' => [
                 'w' => 1,
-                'y' => 3
+                'y' => 3,
             ],
             'ae' => [
                 'r' => -16,
                 'v' => 3,
                 'w' => 5,
-                'y' => 4
+                'y' => 4,
             ],
             'afii10017' => [
                 'afii10025' => -22,
@@ -27678,7 +27678,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -44,
                 'hyphen' => -2,
                 'period' => 8,
-                'semicolon' => 6
+                'semicolon' => 6,
             ],
             'afii10018' => [
                 'afii10017' => -13,
@@ -27694,7 +27694,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -24,
                 'afii10092' => -23,
                 'afii10106' => -11,
-                'afii10110' => -2
+                'afii10110' => -2,
             ],
             'afii10019' => [
                 'afii10017' => -23,
@@ -27711,7 +27711,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -17,
                 'afii10092' => -26,
                 'afii10106' => -20,
-                'afii10110' => -3
+                'afii10110' => -3,
             ],
             'afii10020' => [
                 'afii10021' => -30,
@@ -27757,10 +27757,10 @@ final class StandardFontCoreKerning
                 'comma' => -96,
                 'hyphen' => -71,
                 'period' => -98,
-                'semicolon' => -48
+                'semicolon' => -48,
             ],
             'afii10022' => [
-                'afii10038' => -10
+                'afii10038' => -10,
             ],
             'afii10024' => [
                 'afii10025' => 3,
@@ -27779,7 +27779,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -34,
                 'afii10089' => -78,
                 'afii10101' => -33,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10025' => [
                 'afii10021' => -7,
@@ -27797,7 +27797,7 @@ final class StandardFontCoreKerning
                 'afii10087' => 6,
                 'afii10089' => -5,
                 'afii10097' => 9,
-                'afii10110' => 14
+                'afii10110' => 14,
             ],
             'afii10028' => [
                 'afii10025' => -8,
@@ -27816,7 +27816,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -29,
                 'afii10089' => -95,
                 'afii10101' => -28,
-                'afii10110' => -39
+                'afii10110' => -39,
             ],
             'afii10032' => [
                 'afii10017' => -56,
@@ -27834,7 +27834,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -35,
                 'afii10062' => -97,
                 'afii10077' => -21,
-                'afii10106' => -27
+                'afii10106' => -27,
             ],
             'afii10034' => [
                 'afii10017' => -91,
@@ -27860,7 +27860,7 @@ final class StandardFontCoreKerning
                 'comma' => -96,
                 'hyphen' => -50,
                 'period' => -99,
-                'semicolon' => -38
+                'semicolon' => -38,
             ],
             'afii10035' => [
                 'afii10017' => -10,
@@ -27879,7 +27879,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -20,
                 'afii10089' => -22,
                 'afii10106' => -9,
-                'afii10110' => 2
+                'afii10110' => 2,
             ],
             'afii10036' => [
                 'afii10017' => -22,
@@ -27928,7 +27928,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -42,
                 'hyphen' => -36,
                 'period' => -49,
-                'semicolon' => -12
+                'semicolon' => -12,
             ],
             'afii10037' => [
                 'afii10017' => -78,
@@ -27975,7 +27975,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -73,
                 'hyphen' => -30,
                 'period' => -62,
-                'semicolon' => -32
+                'semicolon' => -32,
             ],
             'afii10038' => [
                 'afii10017' => -58,
@@ -27991,7 +27991,7 @@ final class StandardFontCoreKerning
                 'afii10062' => -97,
                 'afii10069' => -9,
                 'afii10077' => -25,
-                'afii10106' => -31
+                'afii10106' => -31,
             ],
             'afii10039' => [
                 'afii10025' => 1,
@@ -28008,7 +28008,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -67,
                 'afii10086' => -47,
                 'afii10089' => -80,
-                'afii10101' => -46
+                'afii10101' => -46,
             ],
             'afii10044' => [
                 'afii10036' => -41,
@@ -28017,7 +28017,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -42,
                 'afii10060' => -57,
                 'afii10062' => -77,
-                'afii10092' => -21
+                'afii10092' => -21,
             ],
             'afii10046' => [
                 'afii10036' => -42,
@@ -28026,7 +28026,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -44,
                 'afii10060' => -62,
                 'afii10062' => -79,
-                'afii10092' => -23
+                'afii10092' => -23,
             ],
             'afii10047' => [
                 'afii10017' => -54,
@@ -28040,7 +28040,7 @@ final class StandardFontCoreKerning
                 'afii10058' => -46,
                 'afii10060' => -32,
                 'afii10062' => -91,
-                'afii10106' => -24
+                'afii10106' => -24,
             ],
             'afii10048' => [
                 'afii10017' => -53,
@@ -28058,7 +28058,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -35,
                 'afii10062' => -94,
                 'afii10077' => -17,
-                'afii10106' => -23
+                'afii10106' => -23,
             ],
             'afii10050' => [
                 'afii10021' => 20,
@@ -28099,7 +28099,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -35,
                 'afii10101' => -54,
                 'afii10106' => -33,
-                'afii10110' => 37
+                'afii10110' => 37,
             ],
             'afii10052' => [
                 'afii10021' => -32,
@@ -28140,7 +28140,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -70,
                 'afii10101' => -88,
                 'afii10106' => -98,
-                'afii10110' => -15
+                'afii10110' => -15,
             ],
             'afii10058' => [
                 'afii10036' => -47,
@@ -28149,7 +28149,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -48,
                 'afii10060' => -63,
                 'afii10062' => -83,
-                'afii10092' => -27
+                'afii10092' => -27,
             ],
             'afii10059' => [
                 'afii10036' => -32,
@@ -28158,7 +28158,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -38,
                 'afii10060' => -52,
                 'afii10062' => -68,
-                'afii10092' => -13
+                'afii10092' => -13,
             ],
             'afii10061' => [
                 'afii10025' => -14,
@@ -28176,7 +28176,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -35,
                 'afii10089' => -107,
                 'afii10101' => -34,
-                'afii10110' => -48
+                'afii10110' => -48,
             ],
             'afii10062' => [
                 'afii10017' => -86,
@@ -28216,14 +28216,14 @@ final class StandardFontCoreKerning
                 'afii10096' => -55,
                 'afii10097' => -71,
                 'afii10101' => -71,
-                'afii10106' => -88
+                'afii10106' => -88,
             ],
             'afii10065' => [
                 'afii10084' => -1,
                 'afii10085' => -14,
                 'afii10089' => -24,
                 'afii10106' => 6,
-                'afii10110' => -8
+                'afii10110' => -8,
             ],
             'afii10066' => [
                 'afii10072' => -29,
@@ -28233,7 +28233,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -26,
                 'afii10089' => -41,
                 'afii10097' => -16,
-                'afii10110' => -17
+                'afii10110' => -17,
             ],
             'afii10067' => [
                 'afii10072' => -13,
@@ -28243,7 +28243,7 @@ final class StandardFontCoreKerning
                 'afii10087' => 7,
                 'afii10089' => -11,
                 'afii10097' => 1,
-                'afii10110' => 10
+                'afii10110' => 10,
             ],
             'afii10068' => [
                 'afii10069' => -27,
@@ -28258,7 +28258,7 @@ final class StandardFontCoreKerning
                 'colon' => -7,
                 'comma' => -2,
                 'hyphen' => -25,
-                'period' => -4
+                'period' => -4,
             ],
             'afii10070' => [
                 'afii10072' => -25,
@@ -28267,7 +28267,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -4,
                 'afii10089' => -20,
                 'afii10097' => -8,
-                'afii10110' => 1
+                'afii10110' => 1,
             ],
             'afii10072' => [
                 'afii10066' => -26,
@@ -28277,7 +28277,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -32,
                 'afii10086' => -33,
                 'afii10101' => -29,
-                'afii10110' => -6
+                'afii10110' => -6,
             ],
             'afii10073' => [
                 'afii10072' => -13,
@@ -28287,10 +28287,10 @@ final class StandardFontCoreKerning
                 'afii10087' => 2,
                 'afii10089' => -25,
                 'afii10097' => 7,
-                'afii10106' => 5
+                'afii10106' => 5,
             ],
             'afii10075' => [
-                'afii10106' => 7
+                'afii10106' => 7,
             ],
             'afii10076' => [
                 'afii10065' => 14,
@@ -28300,7 +28300,7 @@ final class StandardFontCoreKerning
                 'afii10080' => 3,
                 'afii10083' => 1,
                 'afii10101' => 4,
-                'afii10110' => 19
+                'afii10110' => 19,
             ],
             'afii10080' => [
                 'afii10072' => -30,
@@ -28311,7 +28311,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -27,
                 'afii10092' => -36,
                 'afii10106' => -32,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10082' => [
                 'afii10072' => -31,
@@ -28328,7 +28328,7 @@ final class StandardFontCoreKerning
                 'comma' => -11,
                 'hyphen' => 18,
                 'period' => -12,
-                'semicolon' => 7
+                'semicolon' => 7,
             ],
             'afii10083' => [
                 'afii10062' => -81,
@@ -28343,7 +28343,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -5,
                 'afii10089' => -25,
                 'afii10097' => -7,
-                'afii10106' => -9
+                'afii10106' => -9,
             ],
             'afii10084' => [
                 'afii10065' => 5,
@@ -28366,7 +28366,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -12,
                 'hyphen' => 14,
                 'period' => 30,
-                'semicolon' => 24
+                'semicolon' => 24,
             ],
             'afii10085' => [
                 'afii10065' => -11,
@@ -28387,7 +28387,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -30,
                 'hyphen' => 12,
                 'period' => -28,
-                'semicolon' => 8
+                'semicolon' => 8,
             ],
             'afii10086' => [
                 'afii10068' => -25,
@@ -28402,7 +28402,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -34,
                 'afii10097' => -17,
                 'afii10106' => -33,
-                'afii10110' => -16
+                'afii10110' => -16,
             ],
             'afii10087' => [
                 'afii10065' => 3,
@@ -28412,7 +28412,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -12,
                 'afii10086' => -12,
                 'afii10101' => -9,
-                'afii10110' => 17
+                'afii10110' => 17,
             ],
             'afii10092' => [
                 'afii10070' => -28,
@@ -28421,7 +28421,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -55,
                 'afii10089' => -55,
                 'afii10092' => -52,
-                'afii10110' => -33
+                'afii10110' => -33,
             ],
             'afii10094' => [
                 'afii10070' => -18,
@@ -28430,7 +28430,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -45,
                 'afii10089' => -44,
                 'afii10092' => -45,
-                'afii10110' => -28
+                'afii10110' => -28,
             ],
             'afii10095' => [
                 'afii10077' => -16,
@@ -28439,7 +28439,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -30,
                 'afii10097' => -8,
                 'afii10106' => -22,
-                'afii10110' => -10
+                'afii10110' => -10,
             ],
             'afii10096' => [
                 'afii10072' => -26,
@@ -28450,7 +28450,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -31,
                 'afii10092' => -29,
                 'afii10106' => -27,
-                'afii10110' => -10
+                'afii10110' => -10,
             ],
             'afii10098' => [
                 'afii10069' => -28,
@@ -28460,7 +28460,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -36,
                 'afii10097' => -9,
                 'afii10101' => -34,
-                'afii10106' => -32
+                'afii10106' => -32,
             ],
             'afii10100' => [
                 'afii10069' => -23,
@@ -28469,14 +28469,14 @@ final class StandardFontCoreKerning
                 'afii10086' => -30,
                 'afii10097' => -4,
                 'afii10101' => -27,
-                'afii10106' => -6
+                'afii10106' => -6,
             ],
             'afii10106' => [
                 'afii10084' => -29,
                 'afii10085' => -62,
                 'afii10089' => -62,
                 'afii10092' => -62,
-                'afii10110' => -45
+                'afii10110' => -45,
             ],
             'afii10107' => [
                 'afii10070' => -26,
@@ -28486,7 +28486,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -51,
                 'afii10092' => -54,
                 'afii10101' => -26,
-                'afii10110' => -34
+                'afii10110' => -34,
             ],
             'afii10109' => [
                 'afii10065' => 31,
@@ -28497,7 +28497,7 @@ final class StandardFontCoreKerning
                 'afii10083' => 19,
                 'afii10086' => 18,
                 'afii10101' => 22,
-                'afii10110' => 25
+                'afii10110' => 25,
             ],
             'afii10110' => [
                 'afii10069' => -2,
@@ -28510,11 +28510,11 @@ final class StandardFontCoreKerning
                 'afii10086' => -8,
                 'afii10089' => -8,
                 'afii10097' => -3,
-                'afii10101' => -4
+                'afii10101' => -4,
             ],
             'agrave' => [
                 'w' => 1,
-                'y' => 3
+                'y' => 3,
             ],
             'alpha' => [
                 'colon' => 16,
@@ -28535,7 +28535,7 @@ final class StandardFontCoreKerning
                 'tau' => 7,
                 'theta' => 1,
                 'xi' => 3,
-                'zeta' => 13
+                'zeta' => 13,
             ],
             'alphatonos' => [
                 'colon' => 16,
@@ -28552,14 +28552,14 @@ final class StandardFontCoreKerning
                 'sigma' => 15,
                 'theta' => 1,
                 'xi' => 3,
-                'zeta' => 13
+                'zeta' => 13,
             ],
             'aring' => [
                 'w' => 1,
-                'y' => 3
+                'y' => 3,
             ],
             'asterisk' => [
-                'period' => -3
+                'period' => -3,
             ],
             'b' => [
                 'asterisk' => 3,
@@ -28574,7 +28574,7 @@ final class StandardFontCoreKerning
                 'v' => -6,
                 'w' => -3,
                 'y' => -6,
-                'z' => -17
+                'z' => -17,
             ],
             'backslash' => [
                 'A' => 81,
@@ -28609,11 +28609,11 @@ final class StandardFontCoreKerning
                 'g' => 51,
                 'i' => 74,
                 'j' => 56,
-                'l' => 75
+                'l' => 75,
             ],
             'beta' => [
                 'gamma' => 2,
-                'lambda' => -25
+                'lambda' => -25,
             ],
             'braceleft' => [
                 'A' => -14,
@@ -28636,7 +28636,7 @@ final class StandardFontCoreKerning
                 'l' => -5,
                 'p' => -2,
                 'quoteleft' => 5,
-                'y' => -33
+                'y' => -33,
             ],
             'bracketleft' => [
                 'A' => -16,
@@ -28658,7 +28658,7 @@ final class StandardFontCoreKerning
                 'j' => 9,
                 'l' => -7,
                 'p' => 1,
-                'y' => -36
+                'y' => -36,
             ],
             'c' => [
                 'J' => -4,
@@ -28688,11 +28688,11 @@ final class StandardFontCoreKerning
                 't' => -13,
                 'u' => -13,
                 'udieresis' => -13,
-                'y' => 4
+                'y' => 4,
             ],
             'ccaron' => [
                 'e' => -28,
-                'o' => -22
+                'o' => -22,
             ],
             'chi' => [
                 'alpha' => -31,
@@ -28705,13 +28705,13 @@ final class StandardFontCoreKerning
                 'omicron' => -44,
                 'omicrontonos' => -44,
                 'theta' => -32,
-                'upsilontonos' => -24
+                'upsilontonos' => -24,
             ],
             'comma' => [
                 'endash' => 35,
                 'hyphen' => 8,
                 'quotedblright' => -33,
-                'quoteright' => -33
+                'quoteright' => -33,
             ],
             'd' => [
                 'a' => 7,
@@ -28727,7 +28727,7 @@ final class StandardFontCoreKerning
                 'v' => -1,
                 'w' => 1,
                 'y' => 3,
-                'z' => -12
+                'z' => -12,
             ],
             'dcaron' => [
                 'a' => -34,
@@ -28750,10 +28750,10 @@ final class StandardFontCoreKerning
                 'uring' => -18,
                 'y' => 9,
                 'yacute' => 13,
-                'z' => -56
+                'z' => -56,
             ],
             'delta' => [
-                'nu' => -2
+                'nu' => -2,
             ],
             'e' => [
                 'a' => -14,
@@ -28781,7 +28781,7 @@ final class StandardFontCoreKerning
                 'x' => -10,
                 'y' => 2,
                 'z' => -24,
-                'zcaron' => -24
+                'zcaron' => -24,
             ],
             'eacute' => [
                 'b' => -13,
@@ -28801,12 +28801,12 @@ final class StandardFontCoreKerning
                 't' => -16,
                 'w' => 3,
                 'y' => 2,
-                'z' => -24
+                'z' => -24,
             ],
             'ecircumflex' => [
                 'v' => 1,
                 'w' => 3,
-                'y' => 2
+                'y' => 2,
             ],
             'endash' => [
                 'a' => 57,
@@ -28837,10 +28837,10 @@ final class StandardFontCoreKerning
                 'w' => 26,
                 'x' => -9,
                 'y' => 2,
-                'z' => -9
+                'z' => -9,
             ],
             'eogonek' => [
-                'zdotaccent' => -24
+                'zdotaccent' => -24,
             ],
             'epsilon' => [
                 'alpha' => 4,
@@ -28861,7 +28861,7 @@ final class StandardFontCoreKerning
                 'upsilon' => 1,
                 'upsilontonos' => 1,
                 'xi' => -2,
-                'zeta' => 11
+                'zeta' => 11,
             ],
             'epsilontonos' => [
                 'alpha' => 4,
@@ -28873,11 +28873,11 @@ final class StandardFontCoreKerning
                 'phi' => 6,
                 'semicolon' => 22,
                 'tau' => 31,
-                'zeta' => 11
+                'zeta' => 11,
             ],
             'exclam' => [
                 'quotedblright' => -16,
-                'quoteright' => -16
+                'quoteright' => -16,
             ],
             'f' => [
                 'a' => -12,
@@ -28926,7 +28926,7 @@ final class StandardFontCoreKerning
                 'w' => 39,
                 'y' => 41,
                 'yacute' => 41,
-                'z' => 2
+                'z' => 2,
             ],
             'g' => [
                 'a' => -28,
@@ -28967,7 +28967,7 @@ final class StandardFontCoreKerning
                 'v' => 4,
                 'w' => 6,
                 'y' => 7,
-                'z' => -25
+                'z' => -25,
             ],
             'gamma' => [
                 'alpha' => 15,
@@ -28983,12 +28983,12 @@ final class StandardFontCoreKerning
                 'omicrontonos' => 7,
                 'rho' => 6,
                 'upsilontonos' => 27,
-                'xi' => 3
+                'xi' => 3,
             ],
             'germandbls' => [
                 'e' => -5,
                 't' => -5,
-                'w' => -17
+                'w' => -17,
             ],
             'guillemotleft' => [
                 'Alpha' => -34,
@@ -29009,7 +29009,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -12,
                 'afii10089' => -53,
                 'nu' => -33,
-                'tau' => -3
+                'tau' => -3,
             ],
             'guillemotright' => [
                 'A' => -17,
@@ -29020,7 +29020,7 @@ final class StandardFontCoreKerning
                 'T' => -67,
                 'V' => -62,
                 'W' => -55,
-                'Y' => -67
+                'Y' => -67,
             ],
             'guilsinglright' => [
                 'A' => -16,
@@ -29031,7 +29031,7 @@ final class StandardFontCoreKerning
                 'T' => -66,
                 'V' => -61,
                 'W' => -54,
-                'Y' => -66
+                'Y' => -66,
             ],
             'h' => [
                 'asterisk' => -7,
@@ -29039,7 +29039,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -22,
                 'v' => -8,
                 'y' => -7,
-                'yacute' => -7
+                'yacute' => -7,
             ],
             'hyphen' => [
                 'A' => 18,
@@ -29073,7 +29073,7 @@ final class StandardFontCoreKerning
                 'w' => -1,
                 'x' => -37,
                 'y' => -30,
-                'z' => -37
+                'z' => -37,
             ],
             'i' => [
                 'T' => -12,
@@ -29088,13 +29088,13 @@ final class StandardFontCoreKerning
                 'quoteright' => -28,
                 'v' => -8,
                 'w' => -5,
-                'z' => -15
+                'z' => -15,
             ],
             'iacute' => [
-                'v' => -8
+                'v' => -8,
             ],
             'iotatonos' => [
-                'delta' => 4
+                'delta' => 4,
             ],
             'j' => [
                 'asterisk' => -6,
@@ -29105,7 +29105,7 @@ final class StandardFontCoreKerning
                 'oacute' => -8,
                 'odieresis' => -8,
                 'parenright' => -2,
-                'y' => 3
+                'y' => 3,
             ],
             'k' => [
                 'a' => 12,
@@ -29150,7 +29150,7 @@ final class StandardFontCoreKerning
                 'w' => 29,
                 'x' => 22,
                 'y' => 29,
-                'z' => -7
+                'z' => -7,
             ],
             'kappa' => [
                 'alpha' => 2,
@@ -29168,7 +29168,7 @@ final class StandardFontCoreKerning
                 'period' => 29,
                 'sigma' => 6,
                 'theta' => -5,
-                'upsilontonos' => -5
+                'upsilontonos' => -5,
             ],
             'l' => [
                 'comma' => 28,
@@ -29179,7 +29179,7 @@ final class StandardFontCoreKerning
                 'v' => -14,
                 'w' => -12,
                 'y' => -10,
-                'z' => -16
+                'z' => -16,
             ],
             'lambda' => [
                 'alphatonos' => -7,
@@ -29200,7 +29200,7 @@ final class StandardFontCoreKerning
                 'tau' => -13,
                 'upsilon' => -17,
                 'upsilontonos' => -17,
-                'xi' => -9
+                'xi' => -9,
             ],
             'lcaron' => [
                 'a' => -16,
@@ -29228,7 +29228,7 @@ final class StandardFontCoreKerning
                 'uring' => -14,
                 'v' => 2,
                 'z' => -40,
-                'zcaron' => 6
+                'zcaron' => 6,
             ],
             'm' => [
                 'endash' => 42,
@@ -29238,7 +29238,7 @@ final class StandardFontCoreKerning
                 'v' => -7,
                 'w' => -4,
                 'y' => -5,
-                'z' => -6
+                'z' => -6,
             ],
             'n' => [
                 'T' => -43,
@@ -29250,7 +29250,7 @@ final class StandardFontCoreKerning
                 'v' => -11,
                 'w' => -7,
                 'y' => -10,
-                'z' => -9
+                'z' => -9,
             ],
             'nu' => [
                 'alpha' => -6,
@@ -29271,7 +29271,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -6,
                 'semicolon' => 9,
                 'sigma' => -2,
-                'upsilontonos' => -4
+                'upsilontonos' => -4,
             ],
             'o' => [
                 'T' => -51,
@@ -29295,7 +29295,7 @@ final class StandardFontCoreKerning
                 'w' => -10,
                 'x' => -24,
                 'y' => -13,
-                'z' => -16
+                'z' => -16,
             ],
             'odieresis' => [
                 'T' => -6,
@@ -29313,31 +29313,31 @@ final class StandardFontCoreKerning
                 'w' => -10,
                 'x' => -28,
                 'y' => -13,
-                'z' => -18
+                'z' => -18,
             ],
             'oacute' => [
                 'v' => -12,
                 'w' => -10,
                 'y' => -13,
-                'zacute' => -19
+                'zacute' => -19,
             ],
             'ocircumflex' => [
-                't' => -5
+                't' => -5,
             ],
             'oe' => [
-                'u' => -11
+                'u' => -11,
             ],
             'ograve' => [
                 'v' => -12,
                 'w' => -10,
-                'y' => -13
+                'y' => -13,
             ],
             'omega' => [
                 'chi' => -35,
                 'lambda' => -28,
                 'nu' => -29,
                 'pi' => 1,
-                'tau' => 9
+                'tau' => 9,
             ],
             'omegatonos' => [
                 'chi' => -33,
@@ -29345,7 +29345,7 @@ final class StandardFontCoreKerning
                 'lambda' => -26,
                 'nu' => -27,
                 'pi' => 3,
-                'tau' => 11
+                'tau' => 11,
             ],
             'omicron' => [
                 'alpha' => -4,
@@ -29355,14 +29355,14 @@ final class StandardFontCoreKerning
                 'nu' => -27,
                 'pi' => 1,
                 'tau' => 10,
-                'upsilon' => -13
+                'upsilon' => -13,
             ],
             'omicrontonos' => [
                 'chi' => -32,
                 'gamma' => 2,
                 'nu' => -27,
                 'pi' => 1,
-                'tau' => 10
+                'tau' => 10,
             ],
             'p' => [
                 'asterisk' => 1,
@@ -29374,7 +29374,7 @@ final class StandardFontCoreKerning
                 'w' => -4,
                 'y' => -7,
                 'yacute' => -7,
-                'z' => -19
+                'z' => -19,
             ],
             'parenleft' => [
                 'A' => -14,
@@ -29397,7 +29397,7 @@ final class StandardFontCoreKerning
                 'l' => -3,
                 'p' => -2,
                 'quoteleft' => 6,
-                'y' => -34
+                'y' => -34,
             ],
             'period' => [
                 'asterisk' => -17,
@@ -29408,10 +29408,10 @@ final class StandardFontCoreKerning
                 'quoteright' => -33,
                 'quotesingle' => -22,
                 'threesuperior' => 16,
-                'twosuperior' => 19
+                'twosuperior' => 19,
             ],
             'phi' => [
-                'tau' => 25
+                'tau' => 25,
             ],
             'pi' => [
                 'lambda' => 3,
@@ -29419,18 +29419,18 @@ final class StandardFontCoreKerning
                 'omicron' => -10,
                 'omicrontonos' => -10,
                 'quoteright' => 16,
-                'upsilontonos' => 25
+                'upsilontonos' => 25,
             ],
             'q' => [
                 'braceright' => 6,
                 'bracketright' => -2,
                 'endash' => 41,
-                'parenright' => 5
+                'parenright' => 5,
             ],
             'question' => [
                 'quotedblright' => -10,
                 'quoteright' => -10,
-                'quotesingle' => 1
+                'quotesingle' => 1,
             ],
             'quotedblbase' => [
                 'A' => 12,
@@ -29454,7 +29454,7 @@ final class StandardFontCoreKerning
                 'v' => -60,
                 'w' => -51,
                 'y' => -64,
-                'z' => -22
+                'z' => -22,
             ],
             'quotedblleft' => [
                 'A' => -76,
@@ -29494,7 +29494,7 @@ final class StandardFontCoreKerning
                 'w' => -17,
                 'x' => -48,
                 'y' => -18,
-                'z' => -27
+                'z' => -27,
             ],
             'quotedblright' => [
                 'A' => -83,
@@ -29505,7 +29505,7 @@ final class StandardFontCoreKerning
                 'T' => -6,
                 'V' => -9,
                 'W' => -6,
-                'Y' => -26
+                'Y' => -26,
             ],
             'quoteleft' => [
                 'A' => -66,
@@ -29545,7 +29545,7 @@ final class StandardFontCoreKerning
                 'w' => -7,
                 'x' => -38,
                 'y' => -8,
-                'z' => -18
+                'z' => -18,
             ],
             'quoteright' => [
                 'A' => -76,
@@ -29569,7 +29569,7 @@ final class StandardFontCoreKerning
                 't' => -39,
                 'v' => -27,
                 'w' => -25,
-                'y' => -26
+                'y' => -26,
             ],
             'quotesinglbase' => [
                 'A' => 13,
@@ -29589,7 +29589,7 @@ final class StandardFontCoreKerning
                 'v' => -59,
                 'w' => -50,
                 'y' => -63,
-                'z' => -22
+                'z' => -22,
             ],
             'quotesingle' => [
                 'A' => -47,
@@ -29598,7 +29598,7 @@ final class StandardFontCoreKerning
                 'W' => 26,
                 'X' => 17,
                 'Y' => 9,
-                'Z' => 39
+                'Z' => 39,
             ],
             'r' => [
                 'a' => -25,
@@ -29669,7 +29669,7 @@ final class StandardFontCoreKerning
                 'w' => 32,
                 'x' => 7,
                 'y' => 32,
-                'yacute' => 32
+                'yacute' => 32,
             ],
             'racute' => [
                 'a' => -25,
@@ -29681,7 +29681,7 @@ final class StandardFontCoreKerning
                 'period' => -57,
                 's' => -16,
                 't' => 11,
-                'v' => 29
+                'v' => 29,
             ],
             'rcaron' => [
                 'a' => -25,
@@ -29701,7 +29701,7 @@ final class StandardFontCoreKerning
                 'u' => 11,
                 'uacute' => 11,
                 'uring' => 11,
-                'v' => 29
+                'v' => 29,
             ],
             'rho' => [
                 'chi' => -24,
@@ -29711,7 +29711,7 @@ final class StandardFontCoreKerning
                 'lambda' => -17,
                 'nu' => -19,
                 'pi' => 9,
-                'tau' => 18
+                'tau' => 18,
             ],
             's' => [
                 'a' => -3,
@@ -29736,19 +29736,19 @@ final class StandardFontCoreKerning
                 'v' => 5,
                 'w' => 8,
                 'y' => 9,
-                'z' => -20
+                'z' => -20,
             ],
             'sacute' => [
                 'c' => -7,
-                'w' => 8
+                'w' => 8,
             ],
             'scaron' => [
                 'k' => 5,
                 'p' => -3,
-                't' => -6
+                't' => -6,
             ],
             'sigma' => [
-                'lambda' => -9
+                'lambda' => -9,
             ],
             'slash' => [
                 'B' => 50,
@@ -29782,7 +29782,7 @@ final class StandardFontCoreKerning
                 'l' => 29,
                 'slash' => 49,
                 't' => 31,
-                'y' => 18
+                'y' => 18,
             ],
             't' => [
                 'S' => 3,
@@ -29823,7 +29823,7 @@ final class StandardFontCoreKerning
                 'v' => 26,
                 'w' => 29,
                 'y' => 30,
-                'z' => -7
+                'z' => -7,
             ],
             'tau' => [
                 'alpha' => 5,
@@ -29845,7 +29845,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 2,
                 'sigma' => 2,
                 'tau' => 55,
-                'upsilontonos' => 32
+                'upsilontonos' => 32,
             ],
             'tcaron' => [
                 'a' => -24,
@@ -29869,7 +29869,7 @@ final class StandardFontCoreKerning
                 'y' => 6,
                 'yacute' => 8,
                 'z' => -31,
-                'zcaron' => -1
+                'zcaron' => -1,
             ],
             'u' => [
                 'comma' => 33,
@@ -29881,7 +29881,7 @@ final class StandardFontCoreKerning
                 'w' => 3,
                 'x' => 10,
                 'y' => 3,
-                'z' => -8
+                'z' => -8,
             ],
             'udieresis' => [
                 'comma' => 32,
@@ -29893,16 +29893,16 @@ final class StandardFontCoreKerning
                 'w' => 3,
                 'x' => 11,
                 'y' => 3,
-                'z' => -7
+                'z' => -7,
             ],
             'upsilon' => [
                 'chi' => -16,
                 'gamma' => 15,
                 'lambda' => -16,
-                'tau' => 25
+                'tau' => 25,
             ],
             'upsilondieresis' => [
-                'nu' => -14
+                'nu' => -14,
             ],
             'upsilontonos' => [
                 'chi' => -16,
@@ -29910,7 +29910,7 @@ final class StandardFontCoreKerning
                 'lambda' => -16,
                 'nu' => -14,
                 'pi' => 17,
-                'tau' => 25
+                'tau' => 25,
             ],
             'v' => [
                 'a' => -11,
@@ -29947,7 +29947,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 2,
                 'u' => -10,
                 'udieresis' => -10,
-                'y' => 9
+                'y' => 9,
             ],
             'w' => [
                 'a' => -12,
@@ -29992,7 +29992,7 @@ final class StandardFontCoreKerning
                 'u' => -10,
                 'udieresis' => -10,
                 'y' => 10,
-                'z' => -19
+                'z' => -19,
             ],
             'x' => [
                 'a' => 6,
@@ -30009,7 +30009,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => -20,
                 'quoteright' => -20,
                 'semicolon' => 12,
-                'y' => 22
+                'y' => 22,
             ],
             'xi' => [
                 'alpha' => -29,
@@ -30020,7 +30020,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -39,
                 'omicron' => -40,
                 'omicrontonos' => -40,
-                'upsilontonos' => -2
+                'upsilontonos' => -2,
             ],
             'y' => [
                 'a' => -4,
@@ -30057,12 +30057,12 @@ final class StandardFontCoreKerning
                 'quotesingle' => 4,
                 's' => -11,
                 'sacute' => -11,
-                'semicolon' => 11
+                'semicolon' => 11,
             ],
             'yacute' => [
                 'ccaron' => -5,
                 'comma' => -15,
-                'period' => -18
+                'period' => -18,
             ],
             'z' => [
                 'a' => -6,
@@ -30081,18 +30081,18 @@ final class StandardFontCoreKerning
                 'semicolon' => -12,
                 'u' => -6,
                 'udieresis' => -6,
-                'y' => 16
+                'y' => 16,
             ],
             'zacute' => [
                 'colon' => -7,
                 'comma' => 11,
-                'semicolon' => -13
+                'semicolon' => -13,
             ],
             'zcaron' => [
                 'colon' => -7,
                 'comma' => 11,
                 'e' => -20,
-                'semicolon' => -13
+                'semicolon' => -13,
             ],
             'zdotaccent' => [
                 'c' => -23,
@@ -30100,7 +30100,7 @@ final class StandardFontCoreKerning
                 'comma' => 11,
                 'e' => -20,
                 'oacute' => -20,
-                'semicolon' => -12
+                'semicolon' => -12,
             ],
             'zeta' => [
                 'alpha' => -44,
@@ -30113,7 +30113,7 @@ final class StandardFontCoreKerning
                 'omicron' => -53,
                 'omicrontonos' => -53,
                 'upsilon' => -57,
-                'upsilontonos' => -57
+                'upsilontonos' => -57,
             ],
         ],
         'Times-BoldItalic' => [
@@ -30182,14 +30182,14 @@ final class StandardFontCoreKerning
                 'w' => -46,
                 'y' => -52,
                 'yacute' => -52,
-                'z' => 10
+                'z' => 10,
             ],
             'AE' => [
                 'T' => -32,
                 'V' => -17,
                 'W' => -17,
                 'X' => -30,
-                'Z' => -13
+                'Z' => -13,
             ],
             'Aacute' => [
                 'C' => -50,
@@ -30221,7 +30221,7 @@ final class StandardFontCoreKerning
                 'u' => -18,
                 'v' => -42,
                 'w' => -46,
-                'y' => -52
+                'y' => -52,
             ],
             'Abreve' => [
                 'T' => -33,
@@ -30230,7 +30230,7 @@ final class StandardFontCoreKerning
                 'Y' => -45,
                 'Yacute' => -45,
                 'y' => -52,
-                'yacute' => -52
+                'yacute' => -52,
             ],
             'Acircumflex' => [
                 'C' => -50,
@@ -30249,7 +30249,7 @@ final class StandardFontCoreKerning
                 'period' => 17,
                 'v' => -42,
                 'w' => -46,
-                'yacute' => -52
+                'yacute' => -52,
             ],
             'Adieresis' => [
                 'C' => -50,
@@ -30279,7 +30279,7 @@ final class StandardFontCoreKerning
                 'u' => -18,
                 'v' => -42,
                 'w' => -46,
-                'y' => -52
+                'y' => -52,
             ],
             'Agrave' => [
                 'C' => -50,
@@ -30292,7 +30292,7 @@ final class StandardFontCoreKerning
                 'W' => -93,
                 'Y' => -45,
                 'comma' => 11,
-                'period' => 17
+                'period' => 17,
             ],
             'Alpha' => [
                 'O' => -36,
@@ -30311,13 +30311,13 @@ final class StandardFontCoreKerning
                 'phi' => -33,
                 'sigma' => -38,
                 'upsilon' => -51,
-                'upsilontonos' => -54
+                'upsilontonos' => -54,
             ],
             'Alphatonos' => [
                 'gamma' => -54,
                 'nu' => -62,
                 'phi' => -33,
-                'sigma' => -38
+                'sigma' => -38,
             ],
             'Aogonek' => [
                 'C' => -49,
@@ -30331,7 +30331,7 @@ final class StandardFontCoreKerning
                 'period' => 11,
                 'semicolon' => 46,
                 'y' => 101,
-                'yacute' => 101
+                'yacute' => 101,
             ],
             'Aring' => [
                 'C' => -50,
@@ -30362,7 +30362,7 @@ final class StandardFontCoreKerning
                 'u' => -18,
                 'v' => -42,
                 'w' => -46,
-                'y' => -52
+                'y' => -52,
             ],
             'Atilde' => [
                 'C' => -50,
@@ -30375,7 +30375,7 @@ final class StandardFontCoreKerning
                 'W' => -93,
                 'Y' => -45,
                 'comma' => 11,
-                'period' => 17
+                'period' => 17,
             ],
             'B' => [
                 'A' => -35,
@@ -30402,13 +30402,13 @@ final class StandardFontCoreKerning
                 'Y' => -47,
                 'Z' => -9,
                 'lambda' => -37,
-                'y' => -8
+                'y' => -8,
             ],
             'Beta' => [
                 'A' => -28,
                 'Alpha' => -57,
                 'Delta' => -53,
-                'lambda' => -38
+                'lambda' => -38,
             ],
             'C' => [
                 'A' => -25,
@@ -30448,13 +30448,13 @@ final class StandardFontCoreKerning
                 'quotesingle' => -1,
                 's' => -8,
                 'semicolon' => 13,
-                'y' => -4
+                'y' => -4,
             ],
             'Ccaron' => [
-                'O' => -10
+                'O' => -10,
             ],
             'Ccedilla' => [
-                'A' => -31
+                'A' => -31,
             ],
             'Chi' => [
                 'O' => -30,
@@ -30467,7 +30467,7 @@ final class StandardFontCoreKerning
                 'omega' => -71,
                 'omicron' => -55,
                 'omicrontonos' => -55,
-                'tau' => -50
+                'tau' => -50,
             ],
             'D' => [
                 'A' => -44,
@@ -30494,7 +30494,7 @@ final class StandardFontCoreKerning
                 'o' => 7,
                 'odieresis' => 7,
                 'oe' => 2,
-                'y' => 2
+                'y' => 2,
             ],
             'Delta' => [
                 'O' => -31,
@@ -30507,7 +30507,7 @@ final class StandardFontCoreKerning
                 'o' => 2,
                 'omegatonos' => -37,
                 'omicron' => -20,
-                'upsilon' => -26
+                'upsilon' => -26,
             ],
             'E' => [
                 'A' => -2,
@@ -30552,7 +30552,7 @@ final class StandardFontCoreKerning
                 'v' => -20,
                 'w' => -24,
                 'y' => -24,
-                'z' => -12
+                'z' => -12,
             ],
             'Epsilon' => [
                 'O' => -6,
@@ -30562,10 +30562,10 @@ final class StandardFontCoreKerning
                 'delta' => -15,
                 'gamma' => -34,
                 'nu' => -44,
-                'tau' => -30
+                'tau' => -30,
             ],
             'Epsilontonos' => [
-                'nu' => -39
+                'nu' => -39,
             ],
             'F' => [
                 'A' => -81,
@@ -30617,7 +30617,7 @@ final class StandardFontCoreKerning
                 'udieresis' => -37,
                 'uacute' => -37,
                 'uring' => -37,
-                'y' => -21
+                'y' => -21,
             ],
             'G' => [
                 'A' => -14,
@@ -30652,7 +30652,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => -14,
                 'semicolon' => 40,
                 'w' => -2,
-                'y' => -12
+                'y' => -12,
             ],
             'Gamma' => [
                 'A' => -72,
@@ -30674,7 +30674,7 @@ final class StandardFontCoreKerning
                 'period' => -101,
                 'rho' => -80,
                 'upsilon' => -45,
-                'upsilontonos' => -45
+                'upsilontonos' => -45,
             ],
             'H' => [
                 'A' => 1,
@@ -30684,7 +30684,7 @@ final class StandardFontCoreKerning
                 'a' => -11,
                 'adieresis' => -11,
                 'ae' => -19,
-                'y' => -25
+                'y' => -25,
             ],
             'I' => [
                 'AE' => -2,
@@ -30694,7 +30694,7 @@ final class StandardFontCoreKerning
                 'W' => 4,
                 'X' => -13,
                 'Z' => -18,
-                'y' => -27
+                'y' => -27,
             ],
             'J' => [
                 'A' => -39,
@@ -30703,7 +30703,7 @@ final class StandardFontCoreKerning
                 'Aring' => -39,
                 'K' => -19,
                 'Y' => 4,
-                'y' => -23
+                'y' => -23,
             ],
             'K' => [
                 'A' => 34,
@@ -30763,7 +30763,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -53,
                 'upsilontonos' => -53,
                 'w' => -47,
-                'y' => -61
+                'y' => -61,
             ],
             'Kappa' => [
                 'O' => -33,
@@ -30780,7 +30780,7 @@ final class StandardFontCoreKerning
                 'period' => 13,
                 'semicolon' => -2,
                 'upsilon' => -59,
-                'upsilontonos' => -59
+                'upsilontonos' => -59,
             ],
             'L' => [
                 'A' => 28,
@@ -30825,7 +30825,7 @@ final class StandardFontCoreKerning
                 'u' => 17,
                 'udieresis' => 17,
                 'y' => -10,
-                'yacute' => -10
+                'yacute' => -10,
             ],
             'Lambda' => [
                 'O' => -36,
@@ -30844,7 +30844,7 @@ final class StandardFontCoreKerning
                 'omicron' => -50,
                 'omicrontonos' => -53,
                 'quoteright' => -55,
-                'upsilon' => -51
+                'upsilon' => -51,
             ],
             'Lcaron' => [
                 'O' => 21,
@@ -30854,7 +30854,7 @@ final class StandardFontCoreKerning
                 'V' => 14,
                 'Y' => 10,
                 'Yacute' => 10,
-                'v' => 6
+                'v' => 6,
             ],
             'Lslash' => [
                 'O' => 3,
@@ -30871,7 +30871,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 45,
                 'v' => 1,
                 'w' => -1,
-                'yacute' => -10
+                'yacute' => -10,
             ],
             'M' => [
                 'A' => 5,
@@ -30883,10 +30883,10 @@ final class StandardFontCoreKerning
                 'Z' => -13,
                 'epsilon' => -25,
                 'j' => -11,
-                'y' => -21
+                'y' => -21,
             ],
             'Mu' => [
-                'epsilon' => -19
+                'epsilon' => -19,
             ],
             'N' => [
                 'A' => -41,
@@ -30924,7 +30924,7 @@ final class StandardFontCoreKerning
                 'period' => -10,
                 'u' => -17,
                 'udieresis' => -17,
-                'y' => -23
+                'y' => -23,
             ],
             'Nu' => [
                 'A' => -27,
@@ -30934,7 +30934,7 @@ final class StandardFontCoreKerning
                 'o' => -5,
                 'omega' => -44,
                 'omicron' => -32,
-                'omicrontonos' => -32
+                'omicrontonos' => -32,
             ],
             'O' => [
                 'A' => -41,
@@ -30971,13 +30971,13 @@ final class StandardFontCoreKerning
                 'w' => 4,
                 'x' => -8,
                 'y' => 5,
-                'z' => -3
+                'z' => -3,
             ],
             'OE' => [
                 'T' => -19,
                 'V' => -3,
                 'W' => -3,
-                'X' => -17
+                'X' => -17,
             ],
             'Oacute' => [
                 'A' => -41,
@@ -30989,12 +30989,12 @@ final class StandardFontCoreKerning
                 'colon' => 29,
                 'comma' => -4,
                 'period' => -4,
-                'semicolon' => 28
+                'semicolon' => 28,
             ],
             'Ocircumflex' => [
                 'T' => -19,
                 'V' => -41,
-                'Y' => -45
+                'Y' => -45,
             ],
             'Odieresis' => [
                 'A' => -41,
@@ -31006,12 +31006,12 @@ final class StandardFontCoreKerning
                 'colon' => 29,
                 'comma' => -4,
                 'period' => -4,
-                'semicolon' => 28
+                'semicolon' => 28,
             ],
             'Ograve' => [
                 'T' => -19,
                 'V' => -41,
-                'Y' => -45
+                'Y' => -45,
             ],
             'Omicron' => [
                 'A' => -36,
@@ -31024,18 +31024,18 @@ final class StandardFontCoreKerning
                 'Upsilon' => -61,
                 'Y' => -40,
                 'Zeta' => -16,
-                'lambda' => -31
+                'lambda' => -31,
             ],
             'Omicrontonos' => [
-                'lambda' => -5
+                'lambda' => -5,
             ],
             'Oslash' => [
-                'A' => -46
+                'A' => -46,
             ],
             'Otilde' => [
                 'T' => -19,
                 'V' => -41,
-                'Y' => -45
+                'Y' => -45,
             ],
             'P' => [
                 'A' => -70,
@@ -31105,7 +31105,7 @@ final class StandardFontCoreKerning
                 'quotesingle' => 9,
                 't' => 7,
                 'w' => 12,
-                'y' => 17
+                'y' => 17,
             ],
             'Phi' => [
                 'A' => -22,
@@ -31120,19 +31120,19 @@ final class StandardFontCoreKerning
                 'omega' => -11,
                 'omegatonos' => -11,
                 'omicron' => 5,
-                'omicrontonos' => 2
+                'omicrontonos' => 2,
             ],
             'Pi' => [
                 'epsilontonos' => -23,
                 'lambda' => -12,
                 'o' => -9,
-                'omicron' => -36
+                'omicron' => -36,
             ],
             'Psi' => [
                 'A' => -55,
                 'Alpha' => -91,
                 'O' => -13,
-                'Omicron' => -35
+                'Omicron' => -35,
             ],
             'Q' => [
                 'R' => -15,
@@ -31142,7 +31142,7 @@ final class StandardFontCoreKerning
                 'hyphen' => 28,
                 'parenright' => 13,
                 'u' => -2,
-                'udieresis' => -2
+                'udieresis' => -2,
             ],
             'R' => [
                 'A' => 29,
@@ -31202,7 +31202,7 @@ final class StandardFontCoreKerning
                 'uacute' => -13,
                 'udieresis' => -13,
                 'y' => -9,
-                'yacute' => -9
+                'yacute' => -9,
             ],
             'Rho' => [
                 'A' => -60,
@@ -31224,7 +31224,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -74,
                 'omicron' => -61,
                 'omicrontonos' => -61,
-                'period' => -77
+                'period' => -77,
             ],
             'S' => [
                 'A' => -11,
@@ -31260,7 +31260,7 @@ final class StandardFontCoreKerning
                 't' => 7,
                 'v' => -20,
                 'w' => -20,
-                'y' => -30
+                'y' => -30,
             ],
             'Sigma' => [
                 'O' => 3,
@@ -31269,7 +31269,7 @@ final class StandardFontCoreKerning
                 'chi' => -33,
                 'o' => 6,
                 'omicron' => -16,
-                'tau' => -17
+                'tau' => -17,
             ],
             'T' => [
                 'A' => -53,
@@ -31381,7 +31381,7 @@ final class StandardFontCoreKerning
                 'w' => -88,
                 'y' => -84,
                 'yacute' => 5,
-                'zeta' => -38
+                'zeta' => -38,
             ],
             'Tau' => [
                 'A' => -34,
@@ -31412,7 +31412,7 @@ final class StandardFontCoreKerning
                 'sigma' => -66,
                 'upsilon' => -73,
                 'upsilontonos' => -73,
-                'zeta' => -38
+                'zeta' => -38,
             ],
             'Tcaron' => [
                 'A' => -53,
@@ -31446,7 +31446,7 @@ final class StandardFontCoreKerning
                 'yacute' => 5,
                 'zacute' => -15,
                 'zcaron' => -3,
-                'zdotaccent' => -15
+                'zdotaccent' => -15,
             ],
             'Tcommaaccent' => [
                 'Aacute' => -53,
@@ -31472,14 +31472,14 @@ final class StandardFontCoreKerning
                 'uring' => -16,
                 'zacute' => -20,
                 'zcaron' => -2,
-                'zdotaccent' => -20
+                'zdotaccent' => -20,
             ],
             'Theta' => [
                 'A' => -39,
                 'Alpha' => -72,
                 'Lambda' => -72,
                 'Upsilon' => -69,
-                'Y' => -48
+                'Y' => -48,
             ],
             'U' => [
                 'A' => -54,
@@ -31507,7 +31507,7 @@ final class StandardFontCoreKerning
                 'w' => -28,
                 'x' => -39,
                 'y' => -24,
-                'z' => -29
+                'z' => -29,
             ],
             'Uacute' => [
                 'A' => -60,
@@ -31516,10 +31516,10 @@ final class StandardFontCoreKerning
                 'n' => -27,
                 'p' => -18,
                 'period' => -22,
-                'r' => -20
+                'r' => -20,
             ],
             'Ucircumflex' => [
-                'A' => -60
+                'A' => -60,
             ],
             'Udieresis' => [
                 'A' => -60,
@@ -31529,10 +31529,10 @@ final class StandardFontCoreKerning
                 'n' => -27,
                 'p' => -18,
                 'period' => -22,
-                'r' => -20
+                'r' => -20,
             ],
             'Ugrave' => [
-                'A' => -60
+                'A' => -60,
             ],
             'Upsilon' => [
                 'A' => -30,
@@ -31548,10 +31548,10 @@ final class StandardFontCoreKerning
                 'guillemotright' => -63,
                 'omicrontonos' => -67,
                 'period' => -35,
-                'pi' => -46
+                'pi' => -46,
             ],
             'Upsilontonos' => [
-                'sigma' => -67
+                'sigma' => -67,
             ],
             'V' => [
                 'A' => -80,
@@ -31629,7 +31629,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -44,
                 'uring' => -44,
                 'y' => -31,
-                'yacute' => -31
+                'yacute' => -31,
             ],
             'W' => [
                 'A' => -65,
@@ -31718,7 +31718,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -36,
                 'uring' => -36,
                 'y' => -23,
-                'yacute' => -23
+                'yacute' => -23,
             ],
             'X' => [
                 'A' => 21,
@@ -31753,12 +31753,12 @@ final class StandardFontCoreKerning
                 'tau' => -63,
                 'u' => -21,
                 'udieresis' => -21,
-                'y' => -72
+                'y' => -72,
             ],
             'Xi' => [
                 'alpha' => -20,
                 'alphatonos' => -21,
-                'upsilontonos' => -26
+                'upsilontonos' => -26,
             ],
             'Y' => [
                 'A' => -46,
@@ -31841,7 +31841,7 @@ final class StandardFontCoreKerning
                 'uhungarumlaut' => -56,
                 'v' => -51,
                 'w' => -51,
-                'z' => -60
+                'z' => -60,
             ],
             'Yacute' => [
                 'Aacute' => -46,
@@ -31861,7 +31861,7 @@ final class StandardFontCoreKerning
                 'period' => -52,
                 'scedilla' => -51,
                 'semicolon' => -31,
-                'uacute' => -56
+                'uacute' => -56,
             ],
             'Z' => [
                 'A' => 9,
@@ -31896,14 +31896,14 @@ final class StandardFontCoreKerning
                 'semicolon' => 28,
                 'v' => -16,
                 'w' => -20,
-                'y' => -25
+                'y' => -25,
             ],
             'Zeta' => [
                 'O' => 2,
                 'Omicron' => -19,
                 'epsilon' => -7,
                 'o' => 5,
-                'omicron' => -21
+                'omicron' => -21,
             ],
             'a' => [
                 'comma' => 30,
@@ -31919,7 +31919,7 @@ final class StandardFontCoreKerning
                 'w' => -6,
                 'x' => 13,
                 'y' => -3,
-                'z' => 4
+                'z' => 4,
             ],
             'adieresis' => [
                 'comma' => 31,
@@ -31935,18 +31935,18 @@ final class StandardFontCoreKerning
                 'w' => -6,
                 'x' => 13,
                 'y' => -3,
-                'z' => 4
+                'z' => 4,
             ],
             'aacute' => [
                 'v' => -4,
                 'w' => -6,
-                'y' => -3
+                'y' => -3,
             ],
             'ae' => [
                 'r' => -1,
                 'v' => -6,
                 'w' => -6,
-                'y' => -8
+                'y' => -8,
             ],
             'afii10017' => [
                 'afii10025' => -50,
@@ -31976,7 +31976,7 @@ final class StandardFontCoreKerning
                 'colon' => 3,
                 'comma' => -2,
                 'guillemotright' => -41,
-                'hyphen' => -7
+                'hyphen' => -7,
             ],
             'afii10018' => [
                 'afii10017' => -42,
@@ -31992,7 +31992,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -23,
                 'afii10092' => -36,
                 'afii10106' => -16,
-                'afii10110' => -9
+                'afii10110' => -9,
             ],
             'afii10019' => [
                 'afii10017' => -57,
@@ -32009,7 +32009,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -54,
                 'afii10092' => -43,
                 'afii10106' => -33,
-                'afii10110' => -22
+                'afii10110' => -22,
             ],
             'afii10020' => [
                 'afii10021' => -41,
@@ -32055,10 +32055,10 @@ final class StandardFontCoreKerning
                 'comma' => -73,
                 'hyphen' => -54,
                 'period' => -79,
-                'semicolon' => -34
+                'semicolon' => -34,
             ],
             'afii10022' => [
-                'afii10038' => -35
+                'afii10038' => -35,
             ],
             'afii10024' => [
                 'afii10025' => -14,
@@ -32077,7 +32077,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -43,
                 'afii10089' => -86,
                 'afii10101' => -46,
-                'afii10110' => -3
+                'afii10110' => -3,
             ],
             'afii10025' => [
                 'afii10017' => -40,
@@ -32100,7 +32100,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -33,
                 'afii10097' => -10,
                 'afii10106' => -14,
-                'afii10110' => 7
+                'afii10110' => 7,
             ],
             'afii10028' => [
                 'afii10025' => -32,
@@ -32119,7 +32119,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -48,
                 'afii10089' => -98,
                 'afii10101' => -52,
-                'afii10110' => -21
+                'afii10110' => -21,
             ],
             'afii10032' => [
                 'afii10017' => -70,
@@ -32137,7 +32137,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -41,
                 'afii10062' => -68,
                 'afii10077' => -44,
-                'afii10106' => -36
+                'afii10106' => -36,
             ],
             'afii10034' => [
                 'afii10017' => -101,
@@ -32163,7 +32163,7 @@ final class StandardFontCoreKerning
                 'comma' => -76,
                 'hyphen' => -23,
                 'period' => -77,
-                'semicolon' => -13
+                'semicolon' => -13,
             ],
             'afii10035' => [
                 'afii10017' => -53,
@@ -32183,7 +32183,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -39,
                 'afii10089' => -59,
                 'afii10106' => -24,
-                'afii10110' => -19
+                'afii10110' => -19,
             ],
             'afii10036' => [
                 'afii10017' => -59,
@@ -32232,7 +32232,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -73,
                 'hyphen' => -40,
                 'period' => -46,
-                'semicolon' => -23
+                'semicolon' => -23,
             ],
             'afii10037' => [
                 'afii10017' => -121,
@@ -32279,7 +32279,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -79,
                 'hyphen' => -41,
                 'period' => -86,
-                'semicolon' => -41
+                'semicolon' => -41,
             ],
             'afii10038' => [
                 'afii10017' => -72,
@@ -32295,7 +32295,7 @@ final class StandardFontCoreKerning
                 'afii10062' => -69,
                 'afii10069' => -13,
                 'afii10077' => -40,
-                'afii10106' => -38
+                'afii10106' => -38,
             ],
             'afii10039' => [
                 'afii10025' => -35,
@@ -32312,7 +32312,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -63,
                 'afii10086' => -49,
                 'afii10089' => -91,
-                'afii10101' => -51
+                'afii10101' => -51,
             ],
             'afii10044' => [
                 'afii10036' => -90,
@@ -32321,7 +32321,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -102,
                 'afii10060' => -82,
                 'afii10062' => -67,
-                'afii10092' => -46
+                'afii10092' => -46,
             ],
             'afii10046' => [
                 'afii10036' => -87,
@@ -32330,7 +32330,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -99,
                 'afii10060' => -79,
                 'afii10062' => -64,
-                'afii10092' => -43
+                'afii10092' => -43,
             ],
             'afii10047' => [
                 'afii10017' => -66,
@@ -32344,7 +32344,7 @@ final class StandardFontCoreKerning
                 'afii10058' => -22,
                 'afii10060' => -42,
                 'afii10062' => -65,
-                'afii10106' => -33
+                'afii10106' => -33,
             ],
             'afii10048' => [
                 'afii10017' => -71,
@@ -32362,7 +32362,7 @@ final class StandardFontCoreKerning
                 'afii10060' => -41,
                 'afii10062' => -68,
                 'afii10077' => -44,
-                'afii10106' => -37
+                'afii10106' => -37,
             ],
             'afii10050' => [
                 'afii10021' => 25,
@@ -32404,7 +32404,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -35,
                 'afii10101' => -46,
                 'afii10106' => -36,
-                'afii10110' => 56
+                'afii10110' => 56,
             ],
             'afii10052' => [
                 'afii10021' => -41,
@@ -32445,7 +32445,7 @@ final class StandardFontCoreKerning
                 'afii10097' => -88,
                 'afii10101' => -82,
                 'afii10106' => -104,
-                'afii10110' => -11
+                'afii10110' => -11,
             ],
             'afii10058' => [
                 'afii10036' => -96,
@@ -32454,7 +32454,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -107,
                 'afii10060' => -88,
                 'afii10062' => -73,
-                'afii10092' => -52
+                'afii10092' => -52,
             ],
             'afii10059' => [
                 'afii10036' => -75,
@@ -32463,7 +32463,7 @@ final class StandardFontCoreKerning
                 'afii10044' => -91,
                 'afii10060' => -72,
                 'afii10062' => -52,
-                'afii10092' => -31
+                'afii10092' => -31,
             ],
             'afii10061' => [
                 'afii10025' => -32,
@@ -32482,7 +32482,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -49,
                 'afii10089' => -106,
                 'afii10101' => -52,
-                'afii10110' => -22
+                'afii10110' => -22,
             ],
             'afii10062' => [
                 'afii10017' => -122,
@@ -32522,14 +32522,14 @@ final class StandardFontCoreKerning
                 'afii10096' => -79,
                 'afii10097' => -106,
                 'afii10101' => -96,
-                'afii10106' => -120
+                'afii10106' => -120,
             ],
             'afii10065' => [
                 'afii10084' => -12,
                 'afii10085' => -21,
                 'afii10089' => -44,
                 'afii10106' => 1,
-                'afii10110' => -10
+                'afii10110' => -10,
             ],
             'afii10066' => [
                 'afii10072' => -39,
@@ -32539,7 +32539,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -16,
                 'afii10089' => -40,
                 'afii10097' => -11,
-                'afii10110' => -3
+                'afii10110' => -3,
             ],
             'afii10067' => [
                 'afii10072' => -35,
@@ -32549,7 +32549,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -11,
                 'afii10089' => -28,
                 'afii10097' => -2,
-                'afii10110' => -1
+                'afii10110' => -1,
             ],
             'afii10068' => [
                 'afii10069' => -19,
@@ -32565,7 +32565,7 @@ final class StandardFontCoreKerning
                 'comma' => 13,
                 'hyphen' => 10,
                 'period' => 9,
-                'semicolon' => 28
+                'semicolon' => 28,
             ],
             'afii10070' => [
                 'afii10072' => -42,
@@ -32575,7 +32575,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -9,
                 'afii10089' => -32,
                 'afii10097' => -2,
-                'afii10110' => -5
+                'afii10110' => -5,
             ],
             'afii10072' => [
                 'afii10066' => -39,
@@ -32585,7 +32585,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -38,
                 'afii10086' => -29,
                 'afii10101' => -33,
-                'afii10110' => -21
+                'afii10110' => -21,
             ],
             'afii10073' => [
                 'afii10072' => -30,
@@ -32594,10 +32594,10 @@ final class StandardFontCoreKerning
                 'afii10085' => -6,
                 'afii10087' => -3,
                 'afii10089' => -33,
-                'afii10097' => 6
+                'afii10097' => 6,
             ],
             'afii10075' => [
-                'afii10106' => -14
+                'afii10106' => -14,
             ],
             'afii10076' => [
                 'afii10065' => 3,
@@ -32606,7 +32606,7 @@ final class StandardFontCoreKerning
                 'afii10073' => 9,
                 'afii10080' => -6,
                 'afii10083' => -4,
-                'afii10110' => 10
+                'afii10110' => 10,
             ],
             'afii10080' => [
                 'afii10072' => -51,
@@ -32617,7 +32617,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -29,
                 'afii10092' => -30,
                 'afii10106' => -31,
-                'afii10110' => -13
+                'afii10110' => -13,
             ],
             'afii10082' => [
                 'afii10072' => -45,
@@ -32634,7 +32634,7 @@ final class StandardFontCoreKerning
                 'comma' => 10,
                 'hyphen' => 33,
                 'period' => 8,
-                'semicolon' => 27
+                'semicolon' => 27,
             ],
             'afii10083' => [
                 'afii10062' => -51,
@@ -32649,7 +32649,7 @@ final class StandardFontCoreKerning
                 'afii10087' => -14,
                 'afii10089' => -33,
                 'afii10097' => -6,
-                'afii10106' => -9
+                'afii10106' => -9,
             ],
             'afii10084' => [
                 'afii10065' => -15,
@@ -32671,7 +32671,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -20,
                 'hyphen' => 9,
                 'period' => 17,
-                'semicolon' => 23
+                'semicolon' => 23,
             ],
             'afii10085' => [
                 'afii10065' => -8,
@@ -32692,7 +32692,7 @@ final class StandardFontCoreKerning
                 'guillemotright' => -14,
                 'hyphen' => 26,
                 'period' => -7,
-                'semicolon' => 25
+                'semicolon' => 25,
             ],
             'afii10086' => [
                 'afii10068' => -10,
@@ -32707,7 +32707,7 @@ final class StandardFontCoreKerning
                 'afii10092' => -26,
                 'afii10097' => -13,
                 'afii10106' => -19,
-                'afii10110' => -7
+                'afii10110' => -7,
             ],
             'afii10087' => [
                 'afii10065' => -19,
@@ -32717,7 +32717,7 @@ final class StandardFontCoreKerning
                 'afii10083' => -28,
                 'afii10086' => -22,
                 'afii10101' => -26,
-                'afii10110' => -10
+                'afii10110' => -10,
             ],
             'afii10092' => [
                 'afii10070' => -26,
@@ -32726,7 +32726,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -45,
                 'afii10089' => -63,
                 'afii10092' => -53,
-                'afii10110' => -32
+                'afii10110' => -32,
             ],
             'afii10094' => [
                 'afii10070' => -13,
@@ -32735,7 +32735,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -29,
                 'afii10089' => -47,
                 'afii10092' => -37,
-                'afii10110' => -21
+                'afii10110' => -21,
             ],
             'afii10095' => [
                 'afii10077' => -18,
@@ -32744,7 +32744,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -29,
                 'afii10092' => -19,
                 'afii10097' => -6,
-                'afii10106' => -10
+                'afii10106' => -10,
             ],
             'afii10096' => [
                 'afii10072' => -46,
@@ -32756,7 +32756,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -39,
                 'afii10092' => -26,
                 'afii10106' => -26,
-                'afii10110' => -8
+                'afii10110' => -8,
             ],
             'afii10098' => [
                 'afii10069' => -26,
@@ -32766,7 +32766,7 @@ final class StandardFontCoreKerning
                 'afii10086' => -18,
                 'afii10097' => -21,
                 'afii10101' => -25,
-                'afii10106' => -51
+                'afii10106' => -51,
             ],
             'afii10100' => [
                 'afii10069' => -28,
@@ -32775,14 +32775,14 @@ final class StandardFontCoreKerning
                 'afii10083' => -25,
                 'afii10086' => -18,
                 'afii10097' => 4,
-                'afii10101' => -18
+                'afii10101' => -18,
             ],
             'afii10106' => [
                 'afii10084' => -33,
                 'afii10085' => -47,
                 'afii10089' => -64,
                 'afii10092' => -55,
-                'afii10110' => -34
+                'afii10110' => -34,
             ],
             'afii10107' => [
                 'afii10070' => -22,
@@ -32792,7 +32792,7 @@ final class StandardFontCoreKerning
                 'afii10089' => -56,
                 'afii10092' => -50,
                 'afii10101' => -22,
-                'afii10110' => -30
+                'afii10110' => -30,
             ],
             'afii10109' => [
                 'afii10065' => 15,
@@ -32803,7 +32803,7 @@ final class StandardFontCoreKerning
                 'afii10083' => 7,
                 'afii10086' => 13,
                 'afii10101' => 12,
-                'afii10110' => 12
+                'afii10110' => 12,
             ],
             'afii10110' => [
                 'afii10069' => -10,
@@ -32816,12 +32816,12 @@ final class StandardFontCoreKerning
                 'afii10086' => -3,
                 'afii10089' => -25,
                 'afii10097' => -14,
-                'afii10101' => -6
+                'afii10101' => -6,
             ],
             'agrave' => [
                 'v' => -5,
                 'w' => -6,
-                'y' => -3
+                'y' => -3,
             ],
             'alpha' => [
                 'colon' => 26,
@@ -32844,7 +32844,7 @@ final class StandardFontCoreKerning
                 'upsilondieresis' => -23,
                 'upsilontonos' => -23,
                 'xi' => -18,
-                'zeta' => -13
+                'zeta' => -13,
             ],
             'alphatonos' => [
                 'colon' => 27,
@@ -32861,15 +32861,15 @@ final class StandardFontCoreKerning
                 'sigma' => -9,
                 'theta' => -20,
                 'xi' => -17,
-                'zeta' => -12
+                'zeta' => -12,
             ],
             'aring' => [
                 'v' => -5,
                 'w' => -6,
-                'y' => -3
+                'y' => -3,
             ],
             'asterisk' => [
-                'period' => -14
+                'period' => -14,
             ],
             'b' => [
                 'asterisk' => 10,
@@ -32884,7 +32884,7 @@ final class StandardFontCoreKerning
                 'v' => -14,
                 'w' => -14,
                 'y' => -19,
-                'z' => -8
+                'z' => -8,
             ],
             'backslash' => [
                 'A' => 59,
@@ -32919,11 +32919,11 @@ final class StandardFontCoreKerning
                 'g' => 70,
                 'i' => 82,
                 'j' => 71,
-                'l' => 79
+                'l' => 79,
             ],
             'beta' => [
                 'gamma' => -10,
-                'lambda' => -33
+                'lambda' => -33,
             ],
             'braceleft' => [
                 'A' => 2,
@@ -32946,7 +32946,7 @@ final class StandardFontCoreKerning
                 'l' => 35,
                 'p' => 39,
                 'quoteleft' => 36,
-                'y' => 7
+                'y' => 7,
             ],
             'bracketleft' => [
                 'A' => -20,
@@ -32970,7 +32970,7 @@ final class StandardFontCoreKerning
                 'l' => 16,
                 'p' => 22,
                 'quoteleft' => 11,
-                'y' => 3
+                'y' => 3,
             ],
             'c' => [
                 'J' => -29,
@@ -33002,11 +33002,11 @@ final class StandardFontCoreKerning
                 't' => -1,
                 'u' => -11,
                 'udieresis' => -11,
-                'y' => -11
+                'y' => -11,
             ],
             'ccaron' => [
                 'e' => -13,
-                'o' => -9
+                'o' => -9,
             ],
             'chi' => [
                 'alpha' => -42,
@@ -33019,13 +33019,13 @@ final class StandardFontCoreKerning
                 'omicron' => -48,
                 'omicrontonos' => -48,
                 'theta' => -38,
-                'upsilontonos' => -34
+                'upsilontonos' => -34,
             ],
             'comma' => [
                 'endash' => 43,
                 'hyphen' => 21,
                 'quotedblright' => 4,
-                'quoteright' => -18
+                'quoteright' => -18,
             ],
             'd' => [
                 'a' => 13,
@@ -33041,7 +33041,7 @@ final class StandardFontCoreKerning
                 'v' => -8,
                 'w' => -8,
                 'y' => -4,
-                'z' => 3
+                'z' => 3,
             ],
             'dcaron' => [
                 'a' => -43,
@@ -33064,10 +33064,10 @@ final class StandardFontCoreKerning
                 'uring' => -13,
                 'y' => 2,
                 'yacute' => 2,
-                'z' => -23
+                'z' => -23,
             ],
             'delta' => [
-                'nu' => -18
+                'nu' => -18,
             ],
             'e' => [
                 'a' => 3,
@@ -33095,7 +33095,7 @@ final class StandardFontCoreKerning
                 'x' => -15,
                 'y' => -7,
                 'z' => -7,
-                'zcaron' => -7
+                'zcaron' => -7,
             ],
             'eacute' => [
                 'c' => -4,
@@ -33116,12 +33116,12 @@ final class StandardFontCoreKerning
                 'v' => -4,
                 'w' => -4,
                 'y' => -7,
-                'z' => -5
+                'z' => -5,
             ],
             'ecircumflex' => [
                 'v' => -4,
                 'w' => -4,
-                'y' => -7
+                'y' => -7,
             ],
             'endash' => [
                 'a' => 51,
@@ -33152,10 +33152,10 @@ final class StandardFontCoreKerning
                 'w' => 8,
                 'x' => -19,
                 'y' => 4,
-                'z' => 10
+                'z' => 10,
             ],
             'eogonek' => [
-                'zdotaccent' => -4
+                'zdotaccent' => -4,
             ],
             'epsilon' => [
                 'alpha' => -10,
@@ -33175,7 +33175,7 @@ final class StandardFontCoreKerning
                 'upsilon' => -13,
                 'upsilontonos' => -13,
                 'xi' => -9,
-                'zeta' => -6
+                'zeta' => -6,
             ],
             'epsilontonos' => [
                 'alpha' => -10,
@@ -33188,11 +33188,11 @@ final class StandardFontCoreKerning
                 'semicolon' => 31,
                 'tau' => 2,
                 'theta' => -14,
-                'zeta' => -6
+                'zeta' => -6,
             ],
             'exclam' => [
                 'quotedblright' => 11,
-                'quoteright' => -10
+                'quoteright' => -10,
             ],
             'f' => [
                 'a' => -14,
@@ -33241,7 +33241,7 @@ final class StandardFontCoreKerning
                 'w' => 14,
                 'y' => 17,
                 'yacute' => 17,
-                'z' => -2
+                'z' => -2,
             ],
             'g' => [
                 'a' => -18,
@@ -33280,7 +33280,7 @@ final class StandardFontCoreKerning
                 't' => 1,
                 'v' => 8,
                 'w' => 8,
-                'y' => 9
+                'y' => 9,
             ],
             'gamma' => [
                 'alpha' => 5,
@@ -33294,12 +33294,12 @@ final class StandardFontCoreKerning
                 'omegatonos' => -13,
                 'rho' => -3,
                 'upsilontonos' => 16,
-                'xi' => 1
+                'xi' => 1,
             ],
             'germandbls' => [
                 'e' => -3,
                 't' => 7,
-                'w' => -19
+                'w' => -19,
             ],
             'guillemotleft' => [
                 'Alpha' => -30,
@@ -33320,7 +33320,7 @@ final class StandardFontCoreKerning
                 'afii10085' => -8,
                 'afii10089' => -49,
                 'nu' => -23,
-                'tau' => -13
+                'tau' => -13,
             ],
             'guillemotright' => [
                 'A' => -15,
@@ -33331,7 +33331,7 @@ final class StandardFontCoreKerning
                 'T' => -60,
                 'V' => -62,
                 'W' => -58,
-                'Y' => -66
+                'Y' => -66,
             ],
             'guilsinglright' => [
                 'A' => -25,
@@ -33342,7 +33342,7 @@ final class StandardFontCoreKerning
                 'T' => -70,
                 'V' => -72,
                 'W' => -68,
-                'Y' => -76
+                'Y' => -76,
             ],
             'h' => [
                 'asterisk' => -2,
@@ -33350,7 +33350,7 @@ final class StandardFontCoreKerning
                 'quoteright' => -23,
                 'v' => -15,
                 'y' => -22,
-                'yacute' => -22
+                'yacute' => -22,
             ],
             'hyphen' => [
                 'AE' => -9,
@@ -33381,7 +33381,7 @@ final class StandardFontCoreKerning
                 'w' => -11,
                 'x' => -39,
                 'y' => -15,
-                'z' => -7
+                'z' => -7,
             ],
             'i' => [
                 'T' => -22,
@@ -33395,13 +33395,13 @@ final class StandardFontCoreKerning
                 'quoteright' => -19,
                 'v' => -6,
                 'w' => -10,
-                'z' => 4
+                'z' => 4,
             ],
             'iacute' => [
-                'v' => -6
+                'v' => -6,
             ],
             'iotatonos' => [
-                'delta' => 13
+                'delta' => 13,
             ],
             'j' => [
                 'asterisk' => 9,
@@ -33412,7 +33412,7 @@ final class StandardFontCoreKerning
                 'oacute' => -4,
                 'odieresis' => -4,
                 'parenright' => 5,
-                'y' => -2
+                'y' => -2,
             ],
             'k' => [
                 'a' => 9,
@@ -33454,7 +33454,7 @@ final class StandardFontCoreKerning
                 'w' => 11,
                 'x' => 12,
                 'y' => 12,
-                'z' => -4
+                'z' => -4,
             ],
             'kappa' => [
                 'alpha' => -13,
@@ -33472,7 +33472,7 @@ final class StandardFontCoreKerning
                 'period' => 27,
                 'sigma' => -8,
                 'theta' => -16,
-                'upsilontonos' => -12
+                'upsilontonos' => -12,
             ],
             'l' => [
                 'comma' => 34,
@@ -33482,7 +33482,7 @@ final class StandardFontCoreKerning
                 'v' => -8,
                 'w' => -8,
                 'y' => -7,
-                'z' => 5
+                'z' => 5,
             ],
             'lambda' => [
                 'alphatonos' => -18,
@@ -33503,7 +33503,7 @@ final class StandardFontCoreKerning
                 'tau' => -24,
                 'upsilon' => -29,
                 'upsilontonos' => -29,
-                'xi' => -9
+                'xi' => -9,
             ],
             'lcaron' => [
                 'a' => -42,
@@ -33530,7 +33530,7 @@ final class StandardFontCoreKerning
                 'uacute' => -3,
                 'uring' => -3,
                 'z' => -13,
-                'zcaron' => 2
+                'zcaron' => 2,
             ],
             'm' => [
                 'endash' => 38,
@@ -33539,7 +33539,7 @@ final class StandardFontCoreKerning
                 'p' => 11,
                 'v' => -12,
                 'w' => -12,
-                'y' => -18
+                'y' => -18,
             ],
             'n' => [
                 'T' => -60,
@@ -33551,7 +33551,7 @@ final class StandardFontCoreKerning
                 'v' => -16,
                 'w' => -16,
                 'y' => -22,
-                'z' => -3
+                'z' => -3,
             ],
             'nu' => [
                 'alpha' => -11,
@@ -33572,7 +33572,7 @@ final class StandardFontCoreKerning
                 'quoteright' => 14,
                 'semicolon' => 22,
                 'sigma' => -9,
-                'upsilontonos' => -4
+                'upsilontonos' => -4,
             ],
             'o' => [
                 'T' => -64,
@@ -33597,7 +33597,7 @@ final class StandardFontCoreKerning
                 'w' => -18,
                 'x' => -24,
                 'y' => -27,
-                'z' => -6
+                'z' => -6,
             ],
             'odieresis' => [
                 'T' => -28,
@@ -33615,24 +33615,24 @@ final class StandardFontCoreKerning
                 'w' => -19,
                 'x' => -25,
                 'y' => -27,
-                'z' => -9
+                'z' => -9,
             ],
             'oacute' => [
                 'v' => -17,
                 'w' => -17,
                 'y' => -26,
-                'zacute' => -6
+                'zacute' => -6,
             ],
             'ocircumflex' => [
-                't' => 6
+                't' => 6,
             ],
             'oe' => [
-                'u' => -6
+                'u' => -6,
             ],
             'ograve' => [
                 'v' => -18,
                 'w' => -18,
-                'y' => -27
+                'y' => -27,
             ],
             'omega' => [
                 'chi' => -50,
@@ -33640,7 +33640,7 @@ final class StandardFontCoreKerning
                 'lambda' => -46,
                 'nu' => -39,
                 'pi' => -15,
-                'tau' => -12
+                'tau' => -12,
             ],
             'omegatonos' => [
                 'chi' => -50,
@@ -33648,7 +33648,7 @@ final class StandardFontCoreKerning
                 'lambda' => -46,
                 'nu' => -39,
                 'pi' => -15,
-                'tau' => -12
+                'tau' => -12,
             ],
             'omicron' => [
                 'alpha' => -15,
@@ -33657,13 +33657,13 @@ final class StandardFontCoreKerning
                 'lambda' => -35,
                 'nu' => -24,
                 'tau' => 3,
-                'upsilon' => -21
+                'upsilon' => -21,
             ],
             'omicrontonos' => [
                 'chi' => -39,
                 'gamma' => -10,
                 'nu' => -24,
-                'tau' => 3
+                'tau' => 3,
             ],
             'p' => [
                 'asterisk' => 11,
@@ -33675,7 +33675,7 @@ final class StandardFontCoreKerning
                 'w' => -12,
                 'y' => -16,
                 'yacute' => -16,
-                'z' => -7
+                'z' => -7,
             ],
             'parenleft' => [
                 'A' => -18,
@@ -33699,7 +33699,7 @@ final class StandardFontCoreKerning
                 'l' => 10,
                 'p' => 17,
                 'quoteleft' => 11,
-                'y' => 4
+                'y' => 4,
             ],
             'period' => [
                 'asterisk' => 1,
@@ -33709,10 +33709,10 @@ final class StandardFontCoreKerning
                 'quoteright' => -22,
                 'quotesingle' => -35,
                 'threesuperior' => 16,
-                'twosuperior' => 21
+                'twosuperior' => 21,
             ],
             'phi' => [
-                'tau' => 14
+                'tau' => 14,
             ],
             'pi' => [
                 'alphatonos' => -18,
@@ -33721,7 +33721,7 @@ final class StandardFontCoreKerning
                 'omicron' => -25,
                 'omicrontonos' => -25,
                 'quoteright' => 19,
-                'upsilontonos' => 4
+                'upsilontonos' => 4,
             ],
             'q' => [
                 'braceright' => 38,
@@ -33730,12 +33730,12 @@ final class StandardFontCoreKerning
                 'endash' => 39,
                 'parenright' => 10,
                 'u' => 3,
-                'udieresis' => 3
+                'udieresis' => 3,
             ],
             'question' => [
                 'quotedblright' => 8,
                 'quoteright' => -13,
-                'quotesingle' => -12
+                'quotesingle' => -12,
             ],
             'quotedblbase' => [
                 'A' => 35,
@@ -33759,7 +33759,7 @@ final class StandardFontCoreKerning
                 'v' => -19,
                 'w' => -22,
                 'y' => -1,
-                'z' => 12
+                'z' => 12,
             ],
             'quotedblleft' => [
                 'A' => -65,
@@ -33798,7 +33798,7 @@ final class StandardFontCoreKerning
                 'w' => 14,
                 'x' => -5,
                 'y' => 13,
-                'z' => 22
+                'z' => 22,
             ],
             'quotedblright' => [
                 'A' => -59,
@@ -33809,7 +33809,7 @@ final class StandardFontCoreKerning
                 'T' => 10,
                 'V' => 9,
                 'W' => 12,
-                'Y' => 2
+                'Y' => 2,
             ],
             'quoteleft' => [
                 'A' => -72,
@@ -33848,7 +33848,7 @@ final class StandardFontCoreKerning
                 'w' => 7,
                 'x' => -12,
                 'y' => 6,
-                'z' => 15
+                'z' => 15,
             ],
             'quoteright' => [
                 'A' => -81,
@@ -33872,7 +33872,7 @@ final class StandardFontCoreKerning
                 't' => -11,
                 'v' => -10,
                 'w' => -10,
-                'y' => -13
+                'y' => -13,
             ],
             'quotesinglbase' => [
                 'A' => 16,
@@ -33891,7 +33891,7 @@ final class StandardFontCoreKerning
                 'v' => -38,
                 'w' => -40,
                 'y' => -19,
-                'z' => -6
+                'z' => -6,
             ],
             'quotesingle' => [
                 'A' => -83,
@@ -33900,7 +33900,7 @@ final class StandardFontCoreKerning
                 'W' => -5,
                 'X' => -25,
                 'Y' => -11,
-                'Z' => 7
+                'Z' => 7,
             ],
             'r' => [
                 'a' => -10,
@@ -33975,7 +33975,7 @@ final class StandardFontCoreKerning
                 'z' => 10,
                 'zacute' => 10,
                 'zcaron' => 10,
-                'zdotaccent' => 10
+                'zdotaccent' => 10,
             ],
             'racute' => [
                 'a' => -10,
@@ -33988,7 +33988,7 @@ final class StandardFontCoreKerning
                 's' => 2,
                 't' => 12,
                 'v' => 19,
-                'z' => 10
+                'z' => 10,
             ],
             'rcaron' => [
                 'a' => -10,
@@ -34008,7 +34008,7 @@ final class StandardFontCoreKerning
                 'u' => 11,
                 'uacute' => 10,
                 'uring' => 10,
-                'v' => 20
+                'v' => 20,
             ],
             'rho' => [
                 'chi' => -42,
@@ -34018,7 +34018,7 @@ final class StandardFontCoreKerning
                 'lambda' => -33,
                 'nu' => -27,
                 'pi' => -2,
-                'tau' => 1
+                'tau' => 1,
             ],
             's' => [
                 'a' => -2,
@@ -34042,19 +34042,19 @@ final class StandardFontCoreKerning
                 'v' => -10,
                 'w' => -10,
                 'y' => -8,
-                'z' => -13
+                'z' => -13,
             ],
             'sacute' => [
                 'c' => -6,
-                'w' => -10
+                'w' => -10,
             ],
             'scaron' => [
                 'k' => 8,
                 'p' => -2,
-                't' => 3
+                't' => 3,
             ],
             'sigma' => [
-                'lambda' => -26
+                'lambda' => -26,
             ],
             'slash' => [
                 'B' => 35,
@@ -34088,7 +34088,7 @@ final class StandardFontCoreKerning
                 'l' => 34,
                 'slash' => 44,
                 't' => 45,
-                'y' => 15
+                'y' => 15,
             ],
             't' => [
                 'S' => -1,
@@ -34129,7 +34129,7 @@ final class StandardFontCoreKerning
                 'v' => 21,
                 'w' => 21,
                 'y' => 22,
-                'z' => 7
+                'z' => 7,
             ],
             'tau' => [
                 'alpha' => -19,
@@ -34152,7 +34152,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 2,
                 'sigma' => -18,
                 'tau' => 18,
-                'upsilontonos' => 2
+                'upsilontonos' => 2,
             ],
             'tcaron' => [
                 'a' => -39,
@@ -34176,7 +34176,7 @@ final class StandardFontCoreKerning
                 'y' => 4,
                 'yacute' => 4,
                 'z' => -21,
-                'zcaron' => -5
+                'zcaron' => -5,
             ],
             'u' => [
                 'comma' => 23,
@@ -34189,7 +34189,7 @@ final class StandardFontCoreKerning
                 'w' => -16,
                 'x' => 5,
                 'y' => -13,
-                'z' => -5
+                'z' => -5,
             ],
             'udieresis' => [
                 'comma' => 21,
@@ -34202,16 +34202,16 @@ final class StandardFontCoreKerning
                 'w' => -16,
                 'x' => 5,
                 'y' => -13,
-                'z' => -4
+                'z' => -4,
             ],
             'upsilon' => [
                 'chi' => -27,
                 'gamma' => -3,
                 'lambda' => -28,
-                'tau' => 9
+                'tau' => 9,
             ],
             'upsilondieresis' => [
-                'nu' => -17
+                'nu' => -17,
             ],
             'upsilontonos' => [
                 'chi' => -27,
@@ -34219,7 +34219,7 @@ final class StandardFontCoreKerning
                 'lambda' => -28,
                 'nu' => -17,
                 'pi' => 6,
-                'tau' => 9
+                'tau' => 9,
             ],
             'v' => [
                 'a' => -9,
@@ -34256,7 +34256,7 @@ final class StandardFontCoreKerning
                 'semicolon' => 1,
                 'u' => -11,
                 'udieresis' => -11,
-                'y' => -3
+                'y' => -3,
             ],
             'w' => [
                 'a' => -14,
@@ -34301,7 +34301,7 @@ final class StandardFontCoreKerning
                 'u' => -16,
                 'udieresis' => -16,
                 'y' => -7,
-                'z' => -16
+                'z' => -16,
             ],
             'x' => [
                 'a' => -2,
@@ -34322,7 +34322,7 @@ final class StandardFontCoreKerning
                 'quotedblright' => 8,
                 'quoteright' => -14,
                 'semicolon' => 11,
-                'y' => 4
+                'y' => 4,
             ],
             'xi' => [
                 'alpha' => -30,
@@ -34333,7 +34333,7 @@ final class StandardFontCoreKerning
                 'omegatonos' => -51,
                 'omicron' => -38,
                 'omicrontonos' => -38,
-                'upsilontonos' => -10
+                'upsilontonos' => -10,
             ],
             'y' => [
                 'a' => -3,
@@ -34372,12 +34372,12 @@ final class StandardFontCoreKerning
                 'quotesingle' => -21,
                 's' => -4,
                 'sacute' => -4,
-                'semicolon' => 10
+                'semicolon' => 10,
             ],
             'yacute' => [
                 'ccaron' => -8,
                 'comma' => -14,
-                'period' => -17
+                'period' => -17,
             ],
             'z' => [
                 'a' => 6,
@@ -34395,18 +34395,18 @@ final class StandardFontCoreKerning
                 'period' => 13,
                 'semicolon' => 2,
                 'u' => -2,
-                'y' => 10
+                'y' => 10,
             ],
             'zacute' => [
                 'colon' => 2,
                 'comma' => 15,
-                'semicolon' => 1
+                'semicolon' => 1,
             ],
             'zcaron' => [
                 'colon' => 4,
                 'comma' => 15,
                 'e' => -13,
-                'semicolon' => 2
+                'semicolon' => 2,
             ],
             'zdotaccent' => [
                 'c' => -8,
@@ -34414,7 +34414,7 @@ final class StandardFontCoreKerning
                 'comma' => 15,
                 'e' => -13,
                 'oacute' => -11,
-                'semicolon' => 2
+                'semicolon' => 2,
             ],
             'zeta' => [
                 'alpha' => -51,
@@ -34427,7 +34427,7 @@ final class StandardFontCoreKerning
                 'omicron' => -53,
                 'omicrontonos' => -53,
                 'upsilon' => -66,
-                'upsilontonos' => -66
+                'upsilontonos' => -66,
             ],
         ],
         'Courier' => [

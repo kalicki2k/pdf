@@ -19,6 +19,9 @@ final readonly class Document
     public ?string $creator;
     public ?string $creatorTool;
 
+    /**
+     * @param list<Page>|null $pages
+     */
     public function __construct(
         ?Profile $profile = null,
         ?array $pages = null,

@@ -867,7 +867,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 500,
             'zdotaccent' => 500,
             'zerosuperior' => 333,
-            'zeta' => 441
+            'zeta' => 441,
         ],
         'Helvetica-Bold' => [
             'space' => 278,
@@ -1724,7 +1724,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 500,
             'zdotaccent' => 500,
             'zerosuperior' => 333,
-            'zeta' => 460
+            'zeta' => 460,
         ],
         'Helvetica-Oblique' => [
             'space' => 278,
@@ -2581,7 +2581,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 500,
             'zdotaccent' => 500,
             'zerosuperior' => 333,
-            'zeta' => 463
+            'zeta' => 463,
         ],
         'Helvetica-BoldOblique' => [
             'space' => 278,
@@ -3438,7 +3438,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 500,
             'zdotaccent' => 500,
             'zerosuperior' => 333,
-            'zeta' => 492
+            'zeta' => 492,
         ],
         'Times-Roman' => [
             'space' => 250,
@@ -4295,7 +4295,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 444,
             'zdotaccent' => 444,
             'zerosuperior' => 300,
-            'zeta' => 414
+            'zeta' => 414,
         ],
         'Times-Bold' => [
             'space' => 250,
@@ -5152,7 +5152,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 444,
             'zdotaccent' => 444,
             'zerosuperior' => 300,
-            'zeta' => 413
+            'zeta' => 413,
         ],
         'Times-Italic' => [
             'space' => 250,
@@ -6009,7 +6009,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 389,
             'zdotaccent' => 389,
             'zerosuperior' => 300,
-            'zeta' => 405
+            'zeta' => 405,
         ],
         'Times-BoldItalic' => [
             'space' => 250,
@@ -6866,7 +6866,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 389,
             'zdotaccent' => 389,
             'zerosuperior' => 300,
-            'zeta' => 441
+            'zeta' => 441,
         ],
         'Courier' => [
             'space' => 600,
@@ -7723,7 +7723,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 600,
             'zdotaccent' => 600,
             'zerosuperior' => 600,
-            'zeta' => 600
+            'zeta' => 600,
         ],
         'Courier-Bold' => [
             'space' => 600,
@@ -8580,7 +8580,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 600,
             'zdotaccent' => 600,
             'zerosuperior' => 600,
-            'zeta' => 600
+            'zeta' => 600,
         ],
         'Courier-Oblique' => [
             'space' => 600,
@@ -9437,7 +9437,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 600,
             'zdotaccent' => 600,
             'zerosuperior' => 600,
-            'zeta' => 600
+            'zeta' => 600,
         ],
         'Courier-BoldOblique' => [
             'space' => 600,
@@ -10294,7 +10294,7 @@ final class StandardFontCoreGlyphMetrics
             'zcaron' => 600,
             'zdotaccent' => 600,
             'zerosuperior' => 600,
-            'zeta' => 600
+            'zeta' => 600,
         ],
     ];
 

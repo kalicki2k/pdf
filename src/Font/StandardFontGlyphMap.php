@@ -580,6 +580,13 @@ final class StandardFontGlyphMap
                 ? $baseCode
                 : self::allocateCoreGlyphCode($baseCodeToName, $assigned);
 
+            if ($code < 0 || $code > 255) {
+                throw new InvalidArgumentException(sprintf(
+                    "Glyph '%s' could not be assigned a valid PDF byte code.",
+                    $glyphName,
+                ));
+            }
+
             $assigned[$code] = $glyphName;
             $bytes .= chr($code);
         }

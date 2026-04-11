@@ -867,7 +867,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Helvetica-Bold' => [
             'space' => 32,
@@ -1724,7 +1724,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Helvetica-Oblique' => [
             'space' => 32,
@@ -2581,7 +2581,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Helvetica-BoldOblique' => [
             'space' => 32,
@@ -3438,7 +3438,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Times-Roman' => [
             'space' => 32,
@@ -4295,7 +4295,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Times-Bold' => [
             'space' => 32,
@@ -5152,7 +5152,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Times-Italic' => [
             'space' => 32,
@@ -6009,7 +6009,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Times-BoldItalic' => [
             'space' => 32,
@@ -6866,7 +6866,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Courier' => [
             'space' => 32,
@@ -7723,7 +7723,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Courier-Bold' => [
             'space' => 32,
@@ -8580,7 +8580,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Courier-Oblique' => [
             'space' => 32,
@@ -9437,7 +9437,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
         'Courier-BoldOblique' => [
             'space' => 32,
@@ -10294,7 +10294,7 @@ final class StandardFontCoreGlyphMap
             'zcaron' => -1,
             'zdotaccent' => -1,
             'zerosuperior' => -1,
-            'zeta' => -1
+            'zeta' => -1,
         ],
     ];
 
@@ -10451,7 +10451,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Helvetica-Bold' => [
             32 => 'space',
@@ -10602,7 +10602,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Helvetica-Oblique' => [
             32 => 'space',
@@ -10753,7 +10753,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Helvetica-BoldOblique' => [
             32 => 'space',
@@ -10904,7 +10904,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Times-Roman' => [
             32 => 'space',
@@ -11055,7 +11055,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Times-Bold' => [
             32 => 'space',
@@ -11206,7 +11206,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Times-Italic' => [
             32 => 'space',
@@ -11357,7 +11357,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Times-BoldItalic' => [
             32 => 'space',
@@ -11508,7 +11508,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Courier' => [
             32 => 'space',
@@ -11659,7 +11659,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Courier-Bold' => [
             32 => 'space',
@@ -11810,7 +11810,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Courier-Oblique' => [
             32 => 'space',
@@ -11961,7 +11961,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
         'Courier-BoldOblique' => [
             32 => 'space',
@@ -12112,7 +12112,7 @@ final class StandardFontCoreGlyphMap
             248 => 'lslash',
             249 => 'oslash',
             250 => 'oe',
-            251 => 'germandbls'
+            251 => 'germandbls',
         ],
     ];
 

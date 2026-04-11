@@ -10,8 +10,6 @@ final class StandardFontMetrics
 
     /**
      * Widths are stored in 1000-unit text space for printable ASCII characters.
-     *
-     * @var array<string, array<string, int>>
      */
     private const WIDTHS = [
         'Helvetica' => [
@@ -643,7 +641,7 @@ final class StandardFontMetrics
     }
 
     /**
-     * @param array<string, string> $byteMap
+     * @param array<array-key, string> $byteMap
      * @param array<int, int> $widths
      */
     private static function measureMappedTextWidth(string $text, float $size, array $byteMap, array $widths): float

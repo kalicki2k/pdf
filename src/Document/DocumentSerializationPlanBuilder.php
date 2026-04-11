@@ -204,6 +204,10 @@ final class DocumentSerializationPlanBuilder
     {
         $color = $page->backgroundColor;
 
+        if ($color === null) {
+            return '';
+        }
+
         return implode("\n", [
             'q',
             $this->buildFillColorOperator($color),

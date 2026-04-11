@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -85,6 +84,40 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame([245 / 255, 245 / 255, 245 / 255], $document->pages[1]->backgroundColor?->components());
         self::assertSame('appendix', $document->pages[1]->label);
         self::assertSame('appendix-a', $document->pages[1]->name);
+    }
+
+    public function testNewPageWithoutOptionsKeepsDocumentPageDefaults(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->text('Page 1')
+            ->newPage()
+            ->text('Page 2')
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertSame(PageSize::A5()->width(), $document->pages[1]->size->width());
+        self::assertSame(PageSize::A5()->height(), $document->pages[1]->size->height());
+        self::assertSame(24.0, $document->pages[1]->margin?->top);
+    }
+
+    public function testNewPageOptionsOverrideOnlyExplicitFieldsOnTopOfDefaults(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->text('Page 1')
+            ->newPage(new PageOptions(
+                orientation: PageOrientation::LANDSCAPE,
+            ))
+            ->text('Page 2')
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertSame(PageSize::A5()->landscape()->width(), $document->pages[1]->size->width());
+        self::assertSame(PageSize::A5()->landscape()->height(), $document->pages[1]->size->height());
+        self::assertSame(24.0, $document->pages[1]->margin?->top);
     }
 
     public function testItBuildsADocumentWithAnExplicitProfile(): void

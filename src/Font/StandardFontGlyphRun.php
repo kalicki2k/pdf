@@ -8,6 +8,7 @@ final readonly class StandardFontGlyphRun
 {
     /**
      * @param array<int, string> $differences
+     * @param list<?string> $glyphNames
      */
     private function __construct(
         public string $fontName,
@@ -46,6 +47,7 @@ final readonly class StandardFontGlyphRun
             ? $font->value
             : $font;
         $glyphEncoding = StandardFontGlyphMap::encodeGlyphCodes($fontName, $glyphCodes);
+        /** @var list<?string> $glyphNames */
         $glyphNames = [];
 
         if (isset(StandardFontCoreGlyphMap::CODE_TO_NAME[$fontName])) {

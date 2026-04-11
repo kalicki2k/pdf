@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function implode;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Font\StandardFontDefinition;
+
 use Kalle\Pdf\Text\TextOptions;
 
-use function implode;
 use function number_format;
 use function str_replace;
 use function strlen;
