@@ -191,6 +191,30 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         self::assertStringContainsString('<00010002> Tj', $document->pages[0]->contents);
     }
 
+    public function testItBuildsGeneralCaltChainingSubstitutionsUsingShapedEmbeddedGlyphIds(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('fi', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalLatinChainingContextualTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->usesUnicodeCids());
+        self::assertSame([3, 2], array_map(
+            static fn ($glyph): int => $glyph->glyphId,
+            $font->embeddedGlyphs,
+        ));
+        self::assertSame(['f', 'i'], array_map(
+            static fn ($glyph): string => $glyph->unicodeText,
+            $font->embeddedGlyphs,
+        ));
+        self::assertStringContainsString('<00010002> Tj', $document->pages[0]->contents);
+    }
+
     public function testItBuildsStackedArabicMarksUsingPositionedFragments(): void
     {
         $document = DefaultDocumentBuilder::make()

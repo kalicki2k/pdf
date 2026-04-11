@@ -876,13 +876,15 @@ final class OpenTypeFontParser
         $lookupType = $this->readUInt16($lookupOffset);
         $subtableCount = $this->readUInt16($lookupOffset + 4);
 
-        if ($lookupType !== 5) {
+        if ($lookupType !== 5 && $lookupType !== 6) {
             return null;
         }
 
         for ($subtableIndex = 0; $subtableIndex < $subtableCount; $subtableIndex++) {
             $subtableOffset = $lookupOffset + $this->readUInt16($lookupOffset + 6 + ($subtableIndex * 2));
-            $substitution = $this->applyContextSubstitutionSubtable($lookupListOffset, $subtableOffset, $glyphIds);
+            $substitution = $lookupType === 5
+                ? $this->applyContextSubstitutionSubtable($lookupListOffset, $subtableOffset, $glyphIds)
+                : $this->applyChainingContextSubstitutionSubtable($lookupListOffset, $subtableOffset, $glyphIds);
 
             if ($substitution !== null) {
                 return $substitution;
@@ -979,6 +981,115 @@ final class OpenTypeFontParser
      * @param list<int> $glyphIds
      * @return array{substitutedGlyphId: int, matchedGlyphCount: int}|null
      */
+    private function applyChainingContextSubstitutionSubtable(int $lookupListOffset, int $subtableOffset, array $glyphIds): ?array
+    {
+        $substFormat = $this->readUInt16($subtableOffset);
+
+        if ($substFormat !== 3 || $glyphIds === []) {
+            return null;
+        }
+
+        $backtrackGlyphCount = $this->readUInt16($subtableOffset + 2);
+
+        if ($backtrackGlyphCount !== 0) {
+            return null;
+        }
+
+        $offset = $subtableOffset + 4 + ($backtrackGlyphCount * 2);
+        $inputGlyphCount = $this->readUInt16($offset);
+
+        if ($inputGlyphCount < 1 || count($glyphIds) < $inputGlyphCount) {
+            return null;
+        }
+
+        $offset += 2;
+
+        for ($index = 0; $index < $inputGlyphCount; $index++) {
+            $coverageOffset = $subtableOffset + $this->readUInt16($offset + ($index * 2));
+            $coveredGlyphIds = $this->coverageGlyphIds($coverageOffset);
+
+            if (!in_array($glyphIds[$index], $coveredGlyphIds, true)) {
+                return null;
+            }
+        }
+
+        $offset += $inputGlyphCount * 2;
+        $lookaheadGlyphCount = $this->readUInt16($offset);
+
+        if (count($glyphIds) < $inputGlyphCount + $lookaheadGlyphCount) {
+            return null;
+        }
+
+        $offset += 2;
+
+        for ($index = 0; $index < $lookaheadGlyphCount; $index++) {
+            $coverageOffset = $subtableOffset + $this->readUInt16($offset + ($index * 2));
+            $coveredGlyphIds = $this->coverageGlyphIds($coverageOffset);
+
+            if (!in_array($glyphIds[$inputGlyphCount + $index], $coveredGlyphIds, true)) {
+                return null;
+            }
+        }
+
+        $offset += $lookaheadGlyphCount * 2;
+        $substitutionCount = $this->readUInt16($offset);
+
+        if ($substitutionCount < 1) {
+            return null;
+        }
+
+        return $this->applyNestedSingleSubstitutionLookup(
+            $lookupListOffset,
+            $offset + 2,
+            $glyphIds,
+            $inputGlyphCount,
+        );
+    }
+
+    /**
+     * @param list<int> $glyphIds
+     * @return array{substitutedGlyphId: int, matchedGlyphCount: int}|null
+     */
+    private function applyNestedSingleSubstitutionLookup(
+        int $lookupListOffset,
+        int $lookupRecordOffset,
+        array $glyphIds,
+        int $matchedGlyphCount,
+    ): ?array {
+        $sequenceIndex = $this->readUInt16($lookupRecordOffset);
+        $nestedLookupIndex = $this->readUInt16($lookupRecordOffset + 2);
+
+        if (!isset($glyphIds[$sequenceIndex])) {
+            return null;
+        }
+
+        $nestedLookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($nestedLookupIndex * 2));
+        $nestedLookupType = $this->readUInt16($nestedLookupOffset);
+        $nestedSubtableCount = $this->readUInt16($nestedLookupOffset + 4);
+
+        if ($nestedLookupType !== 1 || $nestedSubtableCount < 1) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $nestedSubtableCount; $subtableIndex++) {
+            $nestedSubtableOffset = $nestedLookupOffset + $this->readUInt16($nestedLookupOffset + 6 + ($subtableIndex * 2));
+            $substitutedGlyphId = $this->applySingleSubstitutionSubtable($nestedSubtableOffset, $glyphIds[$sequenceIndex]);
+
+            if ($substitutedGlyphId !== null) {
+                return [
+                    'substitutedGlyphId' => $substitutedGlyphId,
+                    'matchedGlyphCount' => $matchedGlyphCount,
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<int> $glyphIds
+     * @return array{substitutedGlyphId: int, matchedGlyphCount: int}|null
+     */
     private function applyContextSubstitutionSubtable(int $lookupListOffset, int $subtableOffset, array $glyphIds): ?array
     {
         $substFormat = $this->readUInt16($subtableOffset);
@@ -1003,35 +1114,12 @@ final class OpenTypeFontParser
             }
         }
 
-        $lookupRecordOffset = $subtableOffset + 6 + ($glyphCount * 2);
-        $sequenceIndex = $this->readUInt16($lookupRecordOffset);
-        $nestedLookupIndex = $this->readUInt16($lookupRecordOffset + 2);
-
-        if (!isset($glyphIds[$sequenceIndex])) {
-            return null;
-        }
-
-        $nestedLookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($nestedLookupIndex * 2));
-        $nestedLookupType = $this->readUInt16($nestedLookupOffset);
-        $nestedSubtableCount = $this->readUInt16($nestedLookupOffset + 4);
-
-        if ($nestedLookupType !== 1 || $nestedSubtableCount < 1) {
-            return null;
-        }
-
-        for ($subtableIndex = 0; $subtableIndex < $nestedSubtableCount; $subtableIndex++) {
-            $nestedSubtableOffset = $nestedLookupOffset + $this->readUInt16($nestedLookupOffset + 6 + ($subtableIndex * 2));
-            $substitutedGlyphId = $this->applySingleSubstitutionSubtable($nestedSubtableOffset, $glyphIds[$sequenceIndex]);
-
-            if ($substitutedGlyphId !== null) {
-                return [
-                    'substitutedGlyphId' => $substitutedGlyphId,
-                    'matchedGlyphCount' => $glyphCount,
-                ];
-            }
-        }
-
-        return null;
+        return $this->applyNestedSingleSubstitutionLookup(
+            $lookupListOffset,
+            $subtableOffset + 6 + ($glyphCount * 2),
+            $glyphIds,
+            $glyphCount,
+        );
     }
 
     /**

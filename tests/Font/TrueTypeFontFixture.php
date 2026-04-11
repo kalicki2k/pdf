@@ -140,6 +140,32 @@ final class TrueTypeFontFixture
         ]);
     }
 
+    public static function minimalLatinChainingContextualTrueTypeFontBytes(): string
+    {
+        $head = self::buildSubsettableHeadTable();
+        $hhea = self::buildLatinLigaHheaTable();
+        $maxp = self::buildLatinLigaMaxpTable();
+        $hmtx = self::buildLatinContextualHmtxTable();
+        $name = self::buildNameTable();
+        $post = self::buildPostTable();
+        $cmap = self::buildLatinLigaCmapTable();
+        [$glyf, $loca] = self::buildLatinLigaGlyphTables();
+        $gsub = self::buildLatinChainingContextualGsubTable();
+
+        return self::buildSfnt("\x00\x01\x00\x00", [
+            'GSUB' => $gsub,
+            'cmap' => $cmap,
+            'glyf' => $glyf,
+            'head' => $head,
+            'hhea' => $hhea,
+            'hmtx' => $hmtx,
+            'loca' => $loca,
+            'maxp' => $maxp,
+            'name' => $name,
+            'post' => $post,
+        ]);
+    }
+
     public static function minimalArabicGsubTrueTypeFontBytes(): string
     {
         $head = self::buildSubsettableHeadTable();
@@ -1083,6 +1109,34 @@ final class TrueTypeFontFixture
             . $lookupList;
     }
 
+    private static function buildLatinChainingContextualGsubTable(): string
+    {
+        $scriptList = pack('n', 0);
+        $featureList = pack('n', 1)
+            . 'calt'
+            . pack('n', 8)
+            . pack('n', 0)
+            . pack('n', 1)
+            . pack('n', 0);
+        $lookupList = self::buildLookupList([
+            self::buildChainingContextSubstitutionLookupFormat3(
+                inputCoverageGlyphIds: [1],
+                lookaheadCoverageGlyphIds: [2],
+                sequenceIndex: 0,
+                nestedLookupIndex: 1,
+            ),
+            self::buildSingleSubstitutionLookup(1, 3),
+        ]);
+
+        return pack('N', 0x00010000)
+            . pack('n', 10)
+            . pack('n', 10 + strlen($scriptList))
+            . pack('n', 10 + strlen($scriptList) + strlen($featureList))
+            . $scriptList
+            . $featureList
+            . $lookupList;
+    }
+
     private static function buildDevanagariGsubTable(): string
     {
         $scriptList = pack('n', 0);
@@ -1539,6 +1593,57 @@ final class TrueTypeFontFixture
             . $coverageBody;
 
         return pack('n', 5)
+            . pack('n', 0)
+            . pack('n', 1)
+            . pack('n', 8)
+            . $subtable;
+    }
+
+    /**
+     * @param list<int> $inputCoverageGlyphIds
+     * @param list<int> $lookaheadCoverageGlyphIds
+     */
+    private static function buildChainingContextSubstitutionLookupFormat3(
+        array $inputCoverageGlyphIds,
+        array $lookaheadCoverageGlyphIds,
+        int $sequenceIndex,
+        int $nestedLookupIndex,
+    ): string {
+        $coverages = [];
+        $coverageBody = '';
+        $coverageOffset = 10 + (count($inputCoverageGlyphIds) * 2) + (count($lookaheadCoverageGlyphIds) * 2) + 4;
+
+        foreach ([$inputCoverageGlyphIds, $lookaheadCoverageGlyphIds] as $glyphIds) {
+            foreach ($glyphIds as $glyphId) {
+                $coverage = pack('n', 1)
+                    . pack('n', 1)
+                    . pack('n', $glyphId);
+                $coverages[] = $coverageOffset;
+                $coverageBody .= $coverage;
+                $coverageOffset += strlen($coverage);
+            }
+        }
+
+        $subtable = pack('n', 3)
+            . pack('n', 0)
+            . pack('n', count($inputCoverageGlyphIds));
+
+        for ($index = 0; $index < count($inputCoverageGlyphIds); $index++) {
+            $subtable .= pack('n', $coverages[$index]);
+        }
+
+        $subtable .= pack('n', count($lookaheadCoverageGlyphIds));
+
+        for ($index = 0; $index < count($lookaheadCoverageGlyphIds); $index++) {
+            $subtable .= pack('n', $coverages[count($inputCoverageGlyphIds) + $index]);
+        }
+
+        $subtable .= pack('n', 1)
+            . pack('n', $sequenceIndex)
+            . pack('n', $nestedLookupIndex)
+            . $coverageBody;
+
+        return pack('n', 6)
             . pack('n', 0)
             . pack('n', 1)
             . pack('n', 8)

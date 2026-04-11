@@ -146,4 +146,22 @@ final class SimpleTextShaperTest extends TestCase
         self::assertNull($runs[0]->glyphs[1]->glyphId);
         self::assertNull($runs[0]->glyphs[1]->glyphName);
     }
+
+    public function testItUsesGeneralCaltChainingContextualSubstitutionsWhenAvailable(): void
+    {
+        $shaper = new SimpleTextShaper();
+        $font = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalLatinChainingContextualTrueTypeFontBytes()),
+        );
+        $runs = $shaper->shape('fi', TextDirection::LTR, $font);
+
+        self::assertCount(1, $runs);
+        self::assertCount(2, $runs[0]->glyphs);
+        self::assertSame('fi', $runs[0]->text());
+        self::assertSame(3, $runs[0]->glyphs[0]->glyphId);
+        self::assertSame('gsub.calt', $runs[0]->glyphs[0]->glyphName);
+        self::assertSame('f', $runs[0]->glyphs[0]->unicodeText);
+        self::assertNull($runs[0]->glyphs[1]->glyphId);
+        self::assertNull($runs[0]->glyphs[1]->glyphName);
+    }
 }

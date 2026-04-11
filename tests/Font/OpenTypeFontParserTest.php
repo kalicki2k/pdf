@@ -116,6 +116,19 @@ final class OpenTypeFontParserTest extends TestCase
         );
     }
 
+    public function testItResolvesGeneralCaltChainingContextualSubstitutions(): void
+    {
+        $parser = new OpenTypeFontParser(TrueTypeFontFixture::minimalLatinChainingContextualTrueTypeFontBytes());
+
+        self::assertTrue($parser->hasGsubFeature('calt'));
+        self::assertSame(1, $parser->getGlyphIdForCharacter('f'));
+        self::assertSame(2, $parser->getGlyphIdForCharacter('i'));
+        self::assertSame(
+            ['substitutedGlyphId' => 3, 'matchedGlyphCount' => 1],
+            $parser->substituteContextualGlyphSequenceWithFeature('calt', [1, 2]),
+        );
+    }
+
     public function testItResolvesDevanagariIndicGsubSingleSubstitutions(): void
     {
         $parser = new OpenTypeFontParser(TrueTypeFontFixture::minimalDevanagariGsubTrueTypeFontBytes());
