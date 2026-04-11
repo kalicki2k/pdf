@@ -20,17 +20,16 @@ use Kalle\Pdf\TaggedPdf\StructElem;
  */
 final readonly class PageAnnotationFactory
 {
-    private PageAnnotationFinalizer $finalizer;
+    private PageInteractiveAnnotationFactory $interactiveAnnotations;
     private PageBoxAnnotationFactory $boxAnnotations;
     private PageGeometricAnnotationFactory $geometricAnnotations;
 
-    public function __construct(
-        private Page $page,
-        private PageAnnotationFactoryContext $context,
-    ) {
-        $this->finalizer = new PageAnnotationFinalizer($page, $context);
-        $this->boxAnnotations = new PageBoxAnnotationFactory($page, $context, $this->finalizer);
-        $this->geometricAnnotations = new PageGeometricAnnotationFactory($page, $context, $this->finalizer);
+    public function __construct(Page $page, PageAnnotationFactoryContext $context)
+    {
+        $finalizer = new PageAnnotationFinalizer($page, $context);
+        $this->interactiveAnnotations = new PageInteractiveAnnotationFactory($page, $context, $finalizer);
+        $this->boxAnnotations = new PageBoxAnnotationFactory($page, $context, $finalizer);
+        $this->geometricAnnotations = new PageGeometricAnnotationFactory($page, $context, $finalizer);
     }
 
     public function createLinkAnnotation(
@@ -39,39 +38,7 @@ final readonly class PageAnnotationFactory
         ?StructElem $linkStructElem = null,
         ?string $alternativeDescription = null,
     ): LinkAnnotation {
-        $this->finalizer->assertAllowsLinkAnnotation($linkStructElem);
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Link');
-
-        $annotation = new LinkAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $target,
-        );
-
-        if ($linkStructElem !== null) {
-            $structParentId = $this->page->getDocument()->getNextStructParentId();
-            $annotation->withStructParent($structParentId);
-            $linkStructElem->addObjectReference($annotation, $this->page);
-            $this->page->getDocument()->registerObjectStructElem($structParentId, $linkStructElem);
-        }
-
-        if (
-            $alternativeDescription !== null
-            && $alternativeDescription !== ''
-            && $this->page->getDocument()->getProfile()->requiresLinkAnnotationAlternativeDescriptions()
-        ) {
-            $annotation->withContents($alternativeDescription);
-
-            if ($linkStructElem !== null) {
-                $linkStructElem->setAltText($alternativeDescription);
-            }
-        }
-
-        return $annotation;
+        return $this->interactiveAnnotations->createLinkAnnotation($box, $target, $linkStructElem, $alternativeDescription);
     }
 
     public function createFileAttachmentAnnotation(
@@ -98,25 +65,7 @@ final readonly class PageAnnotationFactory
         Rect $box,
         bool $open,
     ): PopupAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Popup annotation');
-
-        $popup = new PopupAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $parent,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $open,
-        );
-
-        if (method_exists($parent, 'withPopup')) {
-            $parent->withPopup($popup);
-        }
-
-        return $popup;
+        return $this->interactiveAnnotations->createPopupAnnotation($parent, $box, $open);
     }
 
     public function createFreeTextAnnotation(
@@ -292,10 +241,5 @@ final readonly class PageAnnotationFactory
         string $symbol,
     ): CaretAnnotation {
         return $this->boxAnnotations->createCaretAnnotation($box, $contents, $title, $symbol);
-    }
-
-    private function nextObjectId(): int
-    {
-        return $this->context->nextObjectId();
     }
 }
