@@ -9,7 +9,6 @@ use function implode;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
-use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Writer\DocumentSerializationPlan;
@@ -78,10 +77,9 @@ final class DocumentSerializationPlanBuilder
 
         foreach ($this->collectFonts($document->pages) as $fontKey => $pageFont) {
             $fontObjectId = $fontObjectIds[$fontKey];
-            $font = StandardFontDefinition::from($pageFont->name);
             $objects[] = new IndirectObject(
                 $fontObjectId,
-                '<< /Type /Font /Subtype /Type1 /BaseFont /' . $font->name . ' /Encoding ' . $pageFont->encoding->pdfObjectValueWithDifferences($font->name, $pageFont->differences) . ' >>',
+                $pageFont->pdfObjectContents(),
             );
         }
 
@@ -250,7 +248,7 @@ final class DocumentSerializationPlanBuilder
 
     private function fontObjectKey(PageFont $pageFont): string
     {
-        return $pageFont->name . '|' . $pageFont->encoding->value . '|' . json_encode($pageFont->differences, JSON_THROW_ON_ERROR);
+        return $pageFont->key();
     }
 
     /**

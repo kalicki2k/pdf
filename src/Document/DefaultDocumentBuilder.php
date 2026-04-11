@@ -413,7 +413,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         StandardFontDefinition::from($fontName);
 
         foreach ($this->currentPageFontResources as $alias => $pageFont) {
-            if ($pageFont->name === $fontName && $pageFont->encoding === $fontEncoding && $pageFont->differences === $differences) {
+            if ($pageFont->matches($fontName, $fontEncoding, $differences)) {
                 return $alias;
             }
         }
