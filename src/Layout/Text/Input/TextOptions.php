@@ -22,4 +22,24 @@ final readonly class TextOptions
         public ?LinkTarget $link = null,
     ) {
     }
+
+    public static function create(
+        ?StructureTag $structureTag = null,
+        ?StructElem $parentStructElem = null,
+        ?Color $color = null,
+        ?Opacity $opacity = null,
+        bool $underline = false,
+        bool $strikethrough = false,
+        ?LinkTarget $link = null,
+    ): self {
+        return new self(
+            structureTag: $structureTag,
+            parentStructElem: $parentStructElem,
+            color: $color,
+            opacity: $opacity,
+            underline: $underline,
+            strikethrough: $strikethrough,
+            link: $link,
+        );
+    }
 }

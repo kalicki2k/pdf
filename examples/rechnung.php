@@ -97,7 +97,7 @@ $page->addText(
     $titlePosition,
     'Helvetica-Bold',
     20,
-    new TextOptions(color: Color::rgb(220, 20, 60)),
+    TextOptions::create(color: Color::rgb(220, 20, 60)),
 );
 
 $page->addTextBox(
