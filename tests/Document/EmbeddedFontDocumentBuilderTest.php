@@ -98,4 +98,119 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         self::assertStringContainsString('<0001> Tj', $document->pages[0]->contents);
         self::assertStringContainsString('<0002> Tj', $document->pages[0]->contents);
     }
+
+    public function testItBuildsArabicUnicodeTextUsingShapedEmbeddedGlyphIds(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('ببب', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalArabicGsubTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->usesUnicodeCids());
+        self::assertSame([5, 7, 6], array_map(
+            static fn ($glyph): int => $glyph->glyphId,
+            $font->embeddedGlyphs,
+        ));
+        self::assertStringContainsString('[<0001> 60 <0002> 40 <0003>] TJ', $document->pages[0]->contents);
+    }
+
+    public function testItBuildsArabicUnicodeLigaturesUsingShapedEmbeddedGlyphIds(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('لا', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalArabicGsubTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->usesUnicodeCids());
+        self::assertSame([8], array_map(
+            static fn ($glyph): int => $glyph->glyphId,
+            $font->embeddedGlyphs,
+        ));
+        self::assertSame(['لا'], array_map(
+            static fn ($glyph): string => $glyph->unicodeText,
+            $font->embeddedGlyphs,
+        ));
+        self::assertStringContainsString('<0001> Tj', $document->pages[0]->contents);
+    }
+
+    public function testItBuildsGeneralLigaLigaturesUsingShapedEmbeddedGlyphIds(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('fi', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalLatinLigaTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->usesUnicodeCids());
+        self::assertSame([3], array_map(
+            static fn ($glyph): int => $glyph->glyphId,
+            $font->embeddedGlyphs,
+        ));
+        self::assertSame(['fi'], array_map(
+            static fn ($glyph): string => $glyph->unicodeText,
+            $font->embeddedGlyphs,
+        ));
+        self::assertStringContainsString('<0001> Tj', $document->pages[0]->contents);
+    }
+
+    public function testItBuildsGeneralCaltSubstitutionsUsingShapedEmbeddedGlyphIds(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('fi', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalLatinContextualTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->usesUnicodeCids());
+        self::assertSame([3, 2], array_map(
+            static fn ($glyph): int => $glyph->glyphId,
+            $font->embeddedGlyphs,
+        ));
+        self::assertSame(['f', 'i'], array_map(
+            static fn ($glyph): string => $glyph->unicodeText,
+            $font->embeddedGlyphs,
+        ));
+        self::assertStringContainsString('<00010002> Tj', $document->pages[0]->contents);
+    }
+
+    public function testItBuildsStackedArabicMarksUsingPositionedFragments(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('بَّ', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalArabicGsubTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->usesUnicodeCids());
+        self::assertSame([10, 9, 4], array_map(
+            static fn ($glyph): int => $glyph->glyphId,
+            $font->embeddedGlyphs,
+        ));
+        self::assertStringContainsString(' Tm', $document->pages[0]->contents);
+        self::assertStringContainsString('<0001> Tj', $document->pages[0]->contents);
+        self::assertStringContainsString('<0002> Tj', $document->pages[0]->contents);
+        self::assertStringContainsString('<0003> Tj', $document->pages[0]->contents);
+    }
 }

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
+use function array_keys;
+
+use function count;
+
 use InvalidArgumentException;
 
-use function array_keys;
-use function count;
-use function implode;
-use function strlen;
 use function str_pad;
+use function strlen;
 use function usort;
 
 final readonly class OpenTypeCffSubsetter

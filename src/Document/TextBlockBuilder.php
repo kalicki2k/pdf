@@ -31,7 +31,7 @@ final readonly class TextBlockBuilder
         float $x,
         float $y,
         string $fontAlias,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
         array $glyphNames = [],
         array $textAdjustments = [],
         array $positionedFragments = [],
@@ -87,7 +87,7 @@ final readonly class TextBlockBuilder
      */
     private function buildTextShowOperator(
         string $encodedText,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
         array $glyphNames,
         array $textAdjustments,
         bool $useHexString,
@@ -113,7 +113,7 @@ final readonly class TextBlockBuilder
      */
     private function buildAdjustedTextOperator(
         string $encodedText,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
         array $glyphNames,
         array $textAdjustments,
         bool $useHexString,
@@ -154,7 +154,7 @@ final readonly class TextBlockBuilder
      */
     private function buildKerningOperator(
         string $encodedText,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
         array $glyphNames,
     ): ?string {
         if ($glyphNames === [] || strlen($encodedText) < 2) {
@@ -207,7 +207,7 @@ final readonly class TextBlockBuilder
      */
     private function buildKerningAdjustments(
         array $glyphNames,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
     ): array {
         if ($glyphNames === [] || count($glyphNames) < 2) {
             return [];

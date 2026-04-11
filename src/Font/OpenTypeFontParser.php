@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
+use function count;
+
 use InvalidArgumentException;
 
-use function count;
-use function floor;
-use function is_string;
-use function mb_chr;
 use function mb_ord;
-use function preg_split;
-use function str_pad;
 use function strlen;
 use function substr;
 use function unpack;
@@ -21,6 +17,10 @@ final class OpenTypeFontParser
 {
     /** @var array<string, array{offset: int, length: int}> */
     private array $tables = [];
+    /** @var array<string, list<int>>|null */
+    private ?array $gsubFeatureLookups = null;
+    /** @var array<string, list<int>>|null */
+    private ?array $gposFeatureLookups = null;
 
     private readonly string $data;
 
@@ -81,6 +81,121 @@ final class OpenTypeFontParser
             4 => $this->glyphIdFromFormat4($subtable['offset'], $codePoint),
             default => throw new InvalidArgumentException("Unsupported cmap format {$subtable['format']}."),
         };
+    }
+
+    public function hasGsubFeature(string $featureTag): bool
+    {
+        return isset($this->gsubFeatureLookups()[$featureTag]);
+    }
+
+    public function hasGposFeature(string $featureTag): bool
+    {
+        return isset($this->gposFeatureLookups()[$featureTag]);
+    }
+
+    public function substituteGlyphIdWithFeature(string $featureTag, int $glyphId): ?int
+    {
+        foreach ($this->gsubFeatureLookups()[$featureTag] ?? [] as $lookupIndex) {
+            $substitutedGlyphId = $this->applyGsubLookup($lookupIndex, $glyphId);
+
+            if ($substitutedGlyphId !== null) {
+                return $substitutedGlyphId;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<int> $glyphIds
+     * @return array{substitutedGlyphId: int, consumedGlyphCount: int}|null
+     */
+    public function substituteGlyphSequenceWithFeature(string $featureTag, array $glyphIds): ?array
+    {
+        foreach ($this->gsubFeatureLookups()[$featureTag] ?? [] as $lookupIndex) {
+            $substitution = $this->applyGsubSequenceLookup($lookupIndex, $glyphIds);
+
+            if ($substitution !== null) {
+                return $substitution;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<int> $glyphIds
+     * @return array{substitutedGlyphId: int, matchedGlyphCount: int}|null
+     */
+    public function substituteContextualGlyphSequenceWithFeature(string $featureTag, array $glyphIds): ?array
+    {
+        foreach ($this->gsubFeatureLookups()[$featureTag] ?? [] as $lookupIndex) {
+            $substitution = $this->applyGsubContextLookup($lookupIndex, $glyphIds);
+
+            if ($substitution !== null) {
+                return $substitution;
+            }
+        }
+
+        return null;
+    }
+
+    public function gposPairAdjustmentValueWithFeature(string $featureTag, int $leftGlyphId, int $rightGlyphId): ?int
+    {
+        foreach ($this->gposFeatureLookups()[$featureTag] ?? [] as $lookupIndex) {
+            $adjustment = $this->applyGposPairAdjustmentLookup($lookupIndex, $leftGlyphId, $rightGlyphId);
+
+            if ($adjustment !== null) {
+                return $adjustment;
+            }
+        }
+
+        return null;
+    }
+
+    public function gposSingleAdjustmentValueWithFeature(string $featureTag, int $glyphId): ?int
+    {
+        foreach ($this->gposFeatureLookups()[$featureTag] ?? [] as $lookupIndex) {
+            $adjustment = $this->applyGposSingleAdjustmentLookup($lookupIndex, $glyphId);
+
+            if ($adjustment !== null) {
+                return $adjustment;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{xOffset: int, yOffset: int}|null
+     */
+    public function gposMarkToBasePlacementWithFeature(string $featureTag, int $baseGlyphId, int $markGlyphId): ?array
+    {
+        foreach ($this->gposFeatureLookups()[$featureTag] ?? [] as $lookupIndex) {
+            $placement = $this->applyGposMarkToBaseLookup($lookupIndex, $baseGlyphId, $markGlyphId);
+
+            if ($placement !== null) {
+                return $placement;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{xOffset: int, yOffset: int}|null
+     */
+    public function gposMarkToMarkPlacementWithFeature(string $featureTag, int $baseMarkGlyphId, int $markGlyphId): ?array
+    {
+        foreach ($this->gposFeatureLookups()[$featureTag] ?? [] as $lookupIndex) {
+            $placement = $this->applyGposMarkToMarkLookup($lookupIndex, $baseMarkGlyphId, $markGlyphId);
+
+            if ($placement !== null) {
+                return $placement;
+            }
+        }
+
+        return null;
     }
 
     public function getAdvanceWidthForGlyphId(int $glyphId): int
@@ -292,6 +407,692 @@ final class OpenTypeFontParser
                 'length' => $this->readUInt32($offset + 12),
             ];
         }
+    }
+
+    /**
+     * @return array<string, list<int>>
+     */
+    private function gsubFeatureLookups(): array
+    {
+        return $this->layoutFeatureLookups('GSUB', $this->gsubFeatureLookups);
+    }
+
+    /**
+     * @return array<string, list<int>>
+     */
+    private function gposFeatureLookups(): array
+    {
+        return $this->layoutFeatureLookups('GPOS', $this->gposFeatureLookups);
+    }
+
+    /**
+     * @param array<string, list<int>>|null $cache
+     * @param-out array<string, list<int>> $cache
+     * @return array<string, list<int>>
+     */
+    private function layoutFeatureLookups(string $tableTag, ?array &$cache): array
+    {
+        if ($cache !== null) {
+            return $cache;
+        }
+
+        if (!$this->hasTable($tableTag)) {
+            $cache = [];
+
+            return $cache;
+        }
+
+        $layoutOffset = $this->requiredTableOffset($tableTag);
+        $featureListOffset = $layoutOffset + $this->readUInt16($layoutOffset + 6);
+        $featureCount = $this->readUInt16($featureListOffset);
+        /** @var array<string, list<int>> $features */
+        $features = [];
+
+        for ($index = 0; $index < $featureCount; $index++) {
+            $recordOffset = $featureListOffset + 2 + ($index * 6);
+            $featureTag = $this->readBytes($recordOffset, 4);
+            $featureOffset = $featureListOffset + $this->readUInt16($recordOffset + 4);
+            $lookupCount = $this->readUInt16($featureOffset + 2);
+            $lookupIndices = [];
+
+            for ($lookupIndex = 0; $lookupIndex < $lookupCount; $lookupIndex++) {
+                $lookupIndices[] = $this->readUInt16($featureOffset + 4 + ($lookupIndex * 2));
+            }
+
+            $features[$featureTag] = $lookupIndices;
+        }
+
+        $cache = $features;
+
+        return $cache;
+    }
+
+    private function applyGposPairAdjustmentLookup(int $lookupIndex, int $leftGlyphId, int $rightGlyphId): ?int
+    {
+        if (!$this->hasTable('GPOS')) {
+            return null;
+        }
+
+        $gposOffset = $this->requiredTableOffset('GPOS');
+        $lookupListOffset = $gposOffset + $this->readUInt16($gposOffset + 8);
+        $lookupCount = $this->readUInt16($lookupListOffset);
+
+        if ($lookupIndex >= $lookupCount) {
+            return null;
+        }
+
+        $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
+        $lookupType = $this->readUInt16($lookupOffset);
+        $subtableCount = $this->readUInt16($lookupOffset + 4);
+
+        if ($lookupType !== 2) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $subtableCount; $subtableIndex++) {
+            $subtableOffset = $lookupOffset + $this->readUInt16($lookupOffset + 6 + ($subtableIndex * 2));
+            $adjustment = $this->applyPairAdjustmentSubtable($subtableOffset, $leftGlyphId, $rightGlyphId);
+
+            if ($adjustment !== null) {
+                return $adjustment;
+            }
+        }
+
+        return null;
+    }
+
+    private function applyGposSingleAdjustmentLookup(int $lookupIndex, int $glyphId): ?int
+    {
+        if (!$this->hasTable('GPOS')) {
+            return null;
+        }
+
+        $gposOffset = $this->requiredTableOffset('GPOS');
+        $lookupListOffset = $gposOffset + $this->readUInt16($gposOffset + 8);
+        $lookupCount = $this->readUInt16($lookupListOffset);
+
+        if ($lookupIndex >= $lookupCount) {
+            return null;
+        }
+
+        $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
+        $lookupType = $this->readUInt16($lookupOffset);
+        $subtableCount = $this->readUInt16($lookupOffset + 4);
+
+        if ($lookupType !== 1) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $subtableCount; $subtableIndex++) {
+            $subtableOffset = $lookupOffset + $this->readUInt16($lookupOffset + 6 + ($subtableIndex * 2));
+            $adjustment = $this->applySingleAdjustmentSubtable($subtableOffset, $glyphId);
+
+            if ($adjustment !== null) {
+                return $adjustment;
+            }
+        }
+
+        return null;
+    }
+
+    private function applySingleAdjustmentSubtable(int $subtableOffset, int $glyphId): ?int
+    {
+        $posFormat = $this->readUInt16($subtableOffset);
+        $coverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 2);
+        $coveredGlyphIds = $this->coverageGlyphIds($coverageOffset);
+        $coveredIndex = array_search($glyphId, $coveredGlyphIds, true);
+
+        if (!is_int($coveredIndex)) {
+            return null;
+        }
+
+        $valueFormat = $this->readUInt16($subtableOffset + 4);
+
+        if ($valueFormat !== 0x0004) {
+            return null;
+        }
+
+        if ($posFormat === 1) {
+            return $this->readInt16($subtableOffset + 6);
+        }
+
+        if ($posFormat === 2) {
+            return $this->readInt16($subtableOffset + 8 + ($coveredIndex * 2));
+        }
+
+        return null;
+    }
+
+    private function applyPairAdjustmentSubtable(int $subtableOffset, int $leftGlyphId, int $rightGlyphId): ?int
+    {
+        $posFormat = $this->readUInt16($subtableOffset);
+
+        if ($posFormat !== 1) {
+            return null;
+        }
+
+        $coverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 2);
+        $coveredGlyphIds = $this->coverageGlyphIds($coverageOffset);
+        $firstGlyphIndex = array_search($leftGlyphId, $coveredGlyphIds, true);
+
+        if (!is_int($firstGlyphIndex)) {
+            return null;
+        }
+
+        $valueFormat1 = $this->readUInt16($subtableOffset + 4);
+        $valueFormat2 = $this->readUInt16($subtableOffset + 6);
+
+        if ($valueFormat1 !== 0x0004 || $valueFormat2 !== 0) {
+            return null;
+        }
+
+        $pairSetCount = $this->readUInt16($subtableOffset + 8);
+
+        if ($firstGlyphIndex >= $pairSetCount) {
+            return null;
+        }
+
+        $pairSetOffset = $subtableOffset + $this->readUInt16($subtableOffset + 10 + ($firstGlyphIndex * 2));
+        $pairValueCount = $this->readUInt16($pairSetOffset);
+
+        for ($pairIndex = 0; $pairIndex < $pairValueCount; $pairIndex++) {
+            $pairValueOffset = $pairSetOffset + 2 + ($pairIndex * 4);
+
+            if ($this->readUInt16($pairValueOffset) !== $rightGlyphId) {
+                continue;
+            }
+
+            return $this->readInt16($pairValueOffset + 2);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{xOffset: int, yOffset: int}|null
+     */
+    private function applyGposMarkToBaseLookup(int $lookupIndex, int $baseGlyphId, int $markGlyphId): ?array
+    {
+        if (!$this->hasTable('GPOS')) {
+            return null;
+        }
+
+        $gposOffset = $this->requiredTableOffset('GPOS');
+        $lookupListOffset = $gposOffset + $this->readUInt16($gposOffset + 8);
+        $lookupCount = $this->readUInt16($lookupListOffset);
+
+        if ($lookupIndex >= $lookupCount) {
+            return null;
+        }
+
+        $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
+        $lookupType = $this->readUInt16($lookupOffset);
+        $subtableCount = $this->readUInt16($lookupOffset + 4);
+
+        if ($lookupType !== 4) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $subtableCount; $subtableIndex++) {
+            $subtableOffset = $lookupOffset + $this->readUInt16($lookupOffset + 6 + ($subtableIndex * 2));
+            $placement = $this->applyMarkToBaseSubtable($subtableOffset, $baseGlyphId, $markGlyphId);
+
+            if ($placement !== null) {
+                return $placement;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{xOffset: int, yOffset: int}|null
+     */
+    private function applyGposMarkToMarkLookup(int $lookupIndex, int $baseMarkGlyphId, int $markGlyphId): ?array
+    {
+        if (!$this->hasTable('GPOS')) {
+            return null;
+        }
+
+        $gposOffset = $this->requiredTableOffset('GPOS');
+        $lookupListOffset = $gposOffset + $this->readUInt16($gposOffset + 8);
+        $lookupCount = $this->readUInt16($lookupListOffset);
+
+        if ($lookupIndex >= $lookupCount) {
+            return null;
+        }
+
+        $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
+        $lookupType = $this->readUInt16($lookupOffset);
+        $subtableCount = $this->readUInt16($lookupOffset + 4);
+
+        if ($lookupType !== 6) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $subtableCount; $subtableIndex++) {
+            $subtableOffset = $lookupOffset + $this->readUInt16($lookupOffset + 6 + ($subtableIndex * 2));
+            $placement = $this->applyMarkToMarkSubtable($subtableOffset, $baseMarkGlyphId, $markGlyphId);
+
+            if ($placement !== null) {
+                return $placement;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{xOffset: int, yOffset: int}|null
+     */
+    private function applyMarkToBaseSubtable(int $subtableOffset, int $baseGlyphId, int $markGlyphId): ?array
+    {
+        $posFormat = $this->readUInt16($subtableOffset);
+
+        if ($posFormat !== 1) {
+            return null;
+        }
+
+        $markCoverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 2);
+        $baseCoverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 4);
+        $markGlyphIds = $this->coverageGlyphIds($markCoverageOffset);
+        $baseGlyphIds = $this->coverageGlyphIds($baseCoverageOffset);
+        $markIndex = array_search($markGlyphId, $markGlyphIds, true);
+        $baseIndex = array_search($baseGlyphId, $baseGlyphIds, true);
+
+        if (!is_int($markIndex) || !is_int($baseIndex)) {
+            return null;
+        }
+
+        $classCount = $this->readUInt16($subtableOffset + 6);
+        $markArrayOffset = $subtableOffset + $this->readUInt16($subtableOffset + 8);
+        $baseArrayOffset = $subtableOffset + $this->readUInt16($subtableOffset + 10);
+        $markRecordOffset = $markArrayOffset + 2 + ($markIndex * 4);
+        $markClass = $this->readUInt16($markRecordOffset);
+
+        if ($markClass >= $classCount) {
+            return null;
+        }
+
+        $markAnchorOffset = $markArrayOffset + $this->readUInt16($markRecordOffset + 2);
+        $baseRecordOffset = $baseArrayOffset + 2 + ($baseIndex * ($classCount * 2));
+        $baseAnchorRelativeOffset = $this->readUInt16($baseRecordOffset + ($markClass * 2));
+
+        if ($baseAnchorRelativeOffset === 0) {
+            return null;
+        }
+
+        $baseAnchorOffset = $baseArrayOffset + $baseAnchorRelativeOffset;
+        $markAnchor = $this->readAnchor($markAnchorOffset);
+        $baseAnchor = $this->readAnchor($baseAnchorOffset);
+
+        return [
+            'xOffset' => $baseAnchor['x'] - $markAnchor['x'],
+            'yOffset' => $baseAnchor['y'] - $markAnchor['y'],
+        ];
+    }
+
+    /**
+     * @return array{xOffset: int, yOffset: int}|null
+     */
+    private function applyMarkToMarkSubtable(int $subtableOffset, int $baseMarkGlyphId, int $markGlyphId): ?array
+    {
+        $posFormat = $this->readUInt16($subtableOffset);
+
+        if ($posFormat !== 1) {
+            return null;
+        }
+
+        $mark1CoverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 2);
+        $mark2CoverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 4);
+        $mark1GlyphIds = $this->coverageGlyphIds($mark1CoverageOffset);
+        $mark2GlyphIds = $this->coverageGlyphIds($mark2CoverageOffset);
+        $mark1Index = array_search($markGlyphId, $mark1GlyphIds, true);
+        $mark2Index = array_search($baseMarkGlyphId, $mark2GlyphIds, true);
+
+        if (!is_int($mark1Index) || !is_int($mark2Index)) {
+            return null;
+        }
+
+        $classCount = $this->readUInt16($subtableOffset + 6);
+        $mark1ArrayOffset = $subtableOffset + $this->readUInt16($subtableOffset + 8);
+        $mark2ArrayOffset = $subtableOffset + $this->readUInt16($subtableOffset + 10);
+        $mark1RecordOffset = $mark1ArrayOffset + 2 + ($mark1Index * 4);
+        $markClass = $this->readUInt16($mark1RecordOffset);
+
+        if ($markClass >= $classCount) {
+            return null;
+        }
+
+        $mark1AnchorOffset = $mark1ArrayOffset + $this->readUInt16($mark1RecordOffset + 2);
+        $mark2RecordOffset = $mark2ArrayOffset + 2 + ($mark2Index * ($classCount * 2));
+        $mark2AnchorRelativeOffset = $this->readUInt16($mark2RecordOffset + ($markClass * 2));
+
+        if ($mark2AnchorRelativeOffset === 0) {
+            return null;
+        }
+
+        $mark2AnchorOffset = $mark2ArrayOffset + $mark2AnchorRelativeOffset;
+        $mark1Anchor = $this->readAnchor($mark1AnchorOffset);
+        $mark2Anchor = $this->readAnchor($mark2AnchorOffset);
+
+        return [
+            'xOffset' => $mark2Anchor['x'] - $mark1Anchor['x'],
+            'yOffset' => $mark2Anchor['y'] - $mark1Anchor['y'],
+        ];
+    }
+
+    private function applyGsubLookup(int $lookupIndex, int $glyphId): ?int
+    {
+        if (!$this->hasTable('GSUB')) {
+            return null;
+        }
+
+        $gsubOffset = $this->requiredTableOffset('GSUB');
+        $lookupListOffset = $gsubOffset + $this->readUInt16($gsubOffset + 8);
+        $lookupCount = $this->readUInt16($lookupListOffset);
+
+        if ($lookupIndex >= $lookupCount) {
+            return null;
+        }
+
+        $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
+        $lookupType = $this->readUInt16($lookupOffset);
+        $subtableCount = $this->readUInt16($lookupOffset + 4);
+
+        if ($lookupType !== 1) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $subtableCount; $subtableIndex++) {
+            $subtableOffset = $lookupOffset + $this->readUInt16($lookupOffset + 6 + ($subtableIndex * 2));
+            $substitutedGlyphId = $this->applySingleSubstitutionSubtable($subtableOffset, $glyphId);
+
+            if ($substitutedGlyphId !== null) {
+                return $substitutedGlyphId;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<int> $glyphIds
+     * @return array{substitutedGlyphId: int, consumedGlyphCount: int}|null
+     */
+    private function applyGsubSequenceLookup(int $lookupIndex, array $glyphIds): ?array
+    {
+        if (!$this->hasTable('GSUB')) {
+            return null;
+        }
+
+        $gsubOffset = $this->requiredTableOffset('GSUB');
+        $lookupListOffset = $gsubOffset + $this->readUInt16($gsubOffset + 8);
+        $lookupCount = $this->readUInt16($lookupListOffset);
+
+        if ($lookupIndex >= $lookupCount) {
+            return null;
+        }
+
+        $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
+        $lookupType = $this->readUInt16($lookupOffset);
+        $subtableCount = $this->readUInt16($lookupOffset + 4);
+
+        if ($lookupType !== 4) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $subtableCount; $subtableIndex++) {
+            $subtableOffset = $lookupOffset + $this->readUInt16($lookupOffset + 6 + ($subtableIndex * 2));
+            $substitution = $this->applyLigatureSubstitutionSubtable($subtableOffset, $glyphIds);
+
+            if ($substitution !== null) {
+                return $substitution;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<int> $glyphIds
+     * @return array{substitutedGlyphId: int, matchedGlyphCount: int}|null
+     */
+    private function applyGsubContextLookup(int $lookupIndex, array $glyphIds): ?array
+    {
+        if (!$this->hasTable('GSUB')) {
+            return null;
+        }
+
+        $gsubOffset = $this->requiredTableOffset('GSUB');
+        $lookupListOffset = $gsubOffset + $this->readUInt16($gsubOffset + 8);
+        $lookupCount = $this->readUInt16($lookupListOffset);
+
+        if ($lookupIndex >= $lookupCount) {
+            return null;
+        }
+
+        $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
+        $lookupType = $this->readUInt16($lookupOffset);
+        $subtableCount = $this->readUInt16($lookupOffset + 4);
+
+        if ($lookupType !== 5) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $subtableCount; $subtableIndex++) {
+            $subtableOffset = $lookupOffset + $this->readUInt16($lookupOffset + 6 + ($subtableIndex * 2));
+            $substitution = $this->applyContextSubstitutionSubtable($lookupListOffset, $subtableOffset, $glyphIds);
+
+            if ($substitution !== null) {
+                return $substitution;
+            }
+        }
+
+        return null;
+    }
+
+    private function applySingleSubstitutionSubtable(int $subtableOffset, int $glyphId): ?int
+    {
+        $substFormat = $this->readUInt16($subtableOffset);
+        $coverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 2);
+        $coveredGlyphIds = $this->coverageGlyphIds($coverageOffset);
+        $coveredIndex = array_search($glyphId, $coveredGlyphIds, true);
+
+        if (!is_int($coveredIndex)) {
+            return null;
+        }
+
+        if ($substFormat === 1) {
+            $delta = $this->readInt16($subtableOffset + 4);
+
+            return ($glyphId + $delta) & 0xFFFF;
+        }
+
+        if ($substFormat === 2) {
+            return $this->readUInt16($subtableOffset + 6 + ($coveredIndex * 2));
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<int> $glyphIds
+     * @return array{substitutedGlyphId: int, consumedGlyphCount: int}|null
+     */
+    private function applyLigatureSubstitutionSubtable(int $subtableOffset, array $glyphIds): ?array
+    {
+        $substFormat = $this->readUInt16($subtableOffset);
+
+        if ($substFormat !== 1 || $glyphIds === []) {
+            return null;
+        }
+
+        $coverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 2);
+        $coveredGlyphIds = $this->coverageGlyphIds($coverageOffset);
+        $firstGlyphIndex = array_search($glyphIds[0], $coveredGlyphIds, true);
+
+        if (!is_int($firstGlyphIndex)) {
+            return null;
+        }
+
+        $ligSetCount = $this->readUInt16($subtableOffset + 4);
+
+        if ($firstGlyphIndex >= $ligSetCount) {
+            return null;
+        }
+
+        $ligSetOffset = $subtableOffset + $this->readUInt16($subtableOffset + 6 + ($firstGlyphIndex * 2));
+        $ligatureCount = $this->readUInt16($ligSetOffset);
+
+        for ($ligatureIndex = 0; $ligatureIndex < $ligatureCount; $ligatureIndex++) {
+            $ligatureOffset = $ligSetOffset + $this->readUInt16($ligSetOffset + 2 + ($ligatureIndex * 2));
+            $ligGlyph = $this->readUInt16($ligatureOffset);
+            $componentCount = $this->readUInt16($ligatureOffset + 2);
+
+            if ($componentCount < 2 || count($glyphIds) < $componentCount) {
+                continue;
+            }
+
+            $matches = true;
+
+            for ($componentIndex = 1; $componentIndex < $componentCount; $componentIndex++) {
+                if ($this->readUInt16($ligatureOffset + 4 + (($componentIndex - 1) * 2)) !== $glyphIds[$componentIndex]) {
+                    $matches = false;
+
+                    break;
+                }
+            }
+
+            if ($matches) {
+                return [
+                    'substitutedGlyphId' => $ligGlyph,
+                    'consumedGlyphCount' => $componentCount,
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<int> $glyphIds
+     * @return array{substitutedGlyphId: int, matchedGlyphCount: int}|null
+     */
+    private function applyContextSubstitutionSubtable(int $lookupListOffset, int $subtableOffset, array $glyphIds): ?array
+    {
+        $substFormat = $this->readUInt16($subtableOffset);
+
+        if ($substFormat !== 3 || $glyphIds === []) {
+            return null;
+        }
+
+        $glyphCount = $this->readUInt16($subtableOffset + 2);
+        $substitutionCount = $this->readUInt16($subtableOffset + 4);
+
+        if (count($glyphIds) < $glyphCount || $substitutionCount < 1) {
+            return null;
+        }
+
+        for ($index = 0; $index < $glyphCount; $index++) {
+            $coverageOffset = $subtableOffset + $this->readUInt16($subtableOffset + 6 + ($index * 2));
+            $coveredGlyphIds = $this->coverageGlyphIds($coverageOffset);
+
+            if (!in_array($glyphIds[$index], $coveredGlyphIds, true)) {
+                return null;
+            }
+        }
+
+        $lookupRecordOffset = $subtableOffset + 6 + ($glyphCount * 2);
+        $sequenceIndex = $this->readUInt16($lookupRecordOffset);
+        $nestedLookupIndex = $this->readUInt16($lookupRecordOffset + 2);
+
+        if (!isset($glyphIds[$sequenceIndex])) {
+            return null;
+        }
+
+        $nestedLookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($nestedLookupIndex * 2));
+        $nestedLookupType = $this->readUInt16($nestedLookupOffset);
+        $nestedSubtableCount = $this->readUInt16($nestedLookupOffset + 4);
+
+        if ($nestedLookupType !== 1 || $nestedSubtableCount < 1) {
+            return null;
+        }
+
+        for ($subtableIndex = 0; $subtableIndex < $nestedSubtableCount; $subtableIndex++) {
+            $nestedSubtableOffset = $nestedLookupOffset + $this->readUInt16($nestedLookupOffset + 6 + ($subtableIndex * 2));
+            $substitutedGlyphId = $this->applySingleSubstitutionSubtable($nestedSubtableOffset, $glyphIds[$sequenceIndex]);
+
+            if ($substitutedGlyphId !== null) {
+                return [
+                    'substitutedGlyphId' => $substitutedGlyphId,
+                    'matchedGlyphCount' => $glyphCount,
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function coverageGlyphIds(int $coverageOffset): array
+    {
+        $format = $this->readUInt16($coverageOffset);
+
+        if ($format === 1) {
+            $glyphCount = $this->readUInt16($coverageOffset + 2);
+            $glyphIds = [];
+
+            for ($index = 0; $index < $glyphCount; $index++) {
+                $glyphIds[] = $this->readUInt16($coverageOffset + 4 + ($index * 2));
+            }
+
+            return $glyphIds;
+        }
+
+        if ($format === 2) {
+            $rangeCount = $this->readUInt16($coverageOffset + 2);
+            $glyphIds = [];
+
+            for ($index = 0; $index < $rangeCount; $index++) {
+                $rangeOffset = $coverageOffset + 4 + ($index * 6);
+                $startGlyphId = $this->readUInt16($rangeOffset);
+                $endGlyphId = $this->readUInt16($rangeOffset + 2);
+
+                for ($glyphId = $startGlyphId; $glyphId <= $endGlyphId; $glyphId++) {
+                    $glyphIds[] = $glyphId;
+                }
+            }
+
+            return $glyphIds;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            "Unsupported GSUB coverage format '%d'.",
+            $format,
+        ));
+    }
+
+    /**
+     * @return array{x: int, y: int}
+     */
+    private function readAnchor(int $anchorOffset): array
+    {
+        $anchorFormat = $this->readUInt16($anchorOffset);
+
+        if ($anchorFormat !== 1) {
+            throw new InvalidArgumentException(sprintf(
+                "Unsupported GPOS anchor format '%d'.",
+                $anchorFormat,
+            ));
+        }
+
+        return [
+            'x' => $this->readInt16($anchorOffset + 2),
+            'y' => $this->readInt16($anchorOffset + 4),
+        ];
     }
 
     /**

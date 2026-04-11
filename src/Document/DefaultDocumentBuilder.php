@@ -6,24 +6,25 @@ namespace Kalle\Pdf\Document;
 
 use function count;
 use function implode;
-use function mb_ord;
 
 use InvalidArgumentException;
 
 use Kalle\Pdf\Color\Color;
+
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Font\StandardFontMetrics;
+use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
-use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\MappedTextRun;
+use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
 use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextAlign;
@@ -31,6 +32,8 @@ use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
 use Kalle\Pdf\Writer\StreamOutput;
 use Kalle\Pdf\Writer\StringOutput;
+
+use function mb_ord;
 
 use Throwable;
 
@@ -186,7 +189,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ? $clone->currentPageFontResources[$fontAlias] ?? null
             : null;
 
-            $clone->currentPageContents = $this->appendPageContent(
+        $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->buildWrappedTextContent(
                 $wrappedLines,
@@ -361,7 +364,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     /**
      * @param list<string> $wrappedLines
-     * @param list<list<\Kalle\Pdf\Text\ShapedTextRun>> $shapedLines
+     * @param list<list<ShapedTextRun>> $shapedLines
      */
     private function buildWrappedTextContent(
         array $wrappedLines,
@@ -371,7 +374,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $x,
         float $y,
         string $fontAlias,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
         ?PageFont $embeddedPageFont,
         bool $useHexString,
         float $pdfVersion,
@@ -580,14 +583,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     /**
      * @param list<string> $lines
-     * @return list<list<\Kalle\Pdf\Text\ShapedTextRun>>
+     * @return list<list<ShapedTextRun>>
      */
     private function shapeWrappedTextLines(
         array $lines,
         TextOptions $options,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
-    ): array
-    {
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+    ): array {
         $shapedLines = [];
 
         foreach ($lines as $line) {
@@ -600,7 +602,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<list<\Kalle\Pdf\Text\ShapedTextRun>> $shapedLines
+     * @param list<list<ShapedTextRun>> $shapedLines
      */
     private function containsShapedEmbeddedGlyphIds(array $shapedLines): bool
     {
@@ -618,7 +620,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<list<\Kalle\Pdf\Text\ShapedTextRun>> $shapedLines
+     * @param list<list<ShapedTextRun>> $shapedLines
      * @return list<EmbeddedGlyph>
      */
     private function embeddedGlyphsForShapedLines(array $shapedLines, EmbeddedFontDefinition $font): array

@@ -10,6 +10,7 @@ use function implode;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Font\OpenTypeOutlineType;
+use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Writer\DocumentSerializationPlan;
@@ -119,23 +120,23 @@ final class DocumentSerializationPlanBuilder
                 $fontFileObjectId = $fontFileObjectIds[$fontKey];
 
                 if ($pageFont->usesUnicodeCids()) {
-                    /** @var list<int> $unicodeCodePoints */
-                    $unicodeCodePoints = $pageFont->unicodeCodePoints;
+                    /** @var list<EmbeddedGlyph> $embeddedGlyphs */
+                    $embeddedGlyphs = $pageFont->embeddedGlyphs;
                     $cidFontObjectId = $cidFontObjectIds[$fontKey];
                     $toUnicodeObjectId = $toUnicodeObjectIds[$fontKey];
                     $cidToGidMapObjectId = $cidToGidMapObjectIds[$fontKey] ?? null;
-                    $subsetFontName = $embeddedFont->unicodeBaseFontName($unicodeCodePoints);
+                    $subsetFontName = $embeddedFont->unicodeBaseFontNameForGlyphs($embeddedGlyphs);
 
                     $objects[] = new IndirectObject(
                         $fontObjectId,
-                        $embeddedFont->unicodeType0FontObjectContents($cidFontObjectId, $toUnicodeObjectId, $unicodeCodePoints),
+                        $embeddedFont->unicodeType0FontObjectContentsForGlyphs($cidFontObjectId, $toUnicodeObjectId, $embeddedGlyphs),
                     );
                     $objects[] = new IndirectObject(
                         $cidFontObjectId,
-                        $embeddedFont->unicodeCidFontObjectContents(
+                        $embeddedFont->unicodeCidFontObjectContentsForGlyphs(
                             $fontDescriptorObjectId,
                             $cidToGidMapObjectId,
-                            $unicodeCodePoints,
+                            $embeddedGlyphs,
                         ),
                     );
                     $objects[] = new IndirectObject(
@@ -144,16 +145,16 @@ final class DocumentSerializationPlanBuilder
                     );
                     $objects[] = new IndirectObject(
                         $fontFileObjectId,
-                        $embeddedFont->unicodeSubsetFontFileStreamContents($unicodeCodePoints),
+                        $embeddedFont->unicodeSubsetFontFileStreamContentsForGlyphs($embeddedGlyphs),
                     );
                     $objects[] = new IndirectObject(
                         $toUnicodeObjectId,
-                        $embeddedFont->unicodeToUnicodeStreamContents($unicodeCodePoints),
+                        $embeddedFont->unicodeToUnicodeStreamContentsForGlyphs($embeddedGlyphs),
                     );
                     if ($cidToGidMapObjectId !== null) {
                         $objects[] = new IndirectObject(
                             $cidToGidMapObjectId,
-                            $embeddedFont->unicodeCidToGidMapStreamContents($unicodeCodePoints),
+                            $embeddedFont->unicodeCidToGidMapStreamContentsForGlyphs($embeddedGlyphs),
                         );
                     }
 
@@ -361,9 +362,9 @@ final class DocumentSerializationPlanBuilder
                 }
 
                 if ($pageFont->isEmbedded() && $pageFont->usesUnicodeCids()) {
-                    /** @var list<int> $unicodeCodePoints */
-                    $unicodeCodePoints = $pageFont->unicodeCodePoints;
-                    $fonts[$fontKey] = $fonts[$fontKey]->withAdditionalUnicodeCodePoints($unicodeCodePoints);
+                    /** @var list<EmbeddedGlyph> $embeddedGlyphs */
+                    $embeddedGlyphs = $pageFont->embeddedGlyphs;
+                    $fonts[$fontKey] = $fonts[$fontKey]->withAdditionalEmbeddedGlyphs($embeddedGlyphs);
                 }
             }
         }

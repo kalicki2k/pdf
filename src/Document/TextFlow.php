@@ -27,7 +27,7 @@ final readonly class TextFlow
     /**
      * @return array{x: float, y: float}
      */
-    public function placement(TextOptions $options, StandardFontDefinition|EmbeddedFontDefinition $font): array
+    public function placement(TextOptions $options, StandardFontDefinition | EmbeddedFontDefinition $font): array
     {
         $contentArea = $this->page->contentArea();
 
@@ -57,10 +57,9 @@ final readonly class TextFlow
     public function wrapTextLines(
         string $text,
         TextOptions $options,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
         float $x,
-    ): array
-    {
+    ): array {
         $maxWidth = $this->lineAvailableWidth($x, $options, true);
 
         if ($maxWidth <= 0.0 || (!str_contains($text, ' ') && !str_contains($text, "\n") && !str_contains($text, "\r"))) {
@@ -140,7 +139,7 @@ final readonly class TextFlow
 
     private function topGlyphOffset(
         TextOptions $options,
-        StandardFontDefinition|EmbeddedFontDefinition $font,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
     ): float {
         return $font->ascent($options->fontSize);
     }

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
+use function count;
+
 use InvalidArgumentException;
 
-use function count;
 use function ord;
 use function strlen;
 use function substr;

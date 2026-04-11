@@ -48,7 +48,7 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString("5 0 obj\n", $pdf);
         self::assertStringContainsString('/Type /Page', $pdf);
         self::assertStringContainsString('/MediaBox [0 0 419.528 595.276] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R', $pdf);
-        self::assertStringContainsString("<< /Length ", $pdf);
+        self::assertStringContainsString('<< /Length ', $pdf);
         self::assertStringContainsString("stream\nBT\n0.1 0.2 0.3 0.4 k\n/F1 18 Tf\n72 720 Td\n[<45>", $pdf);
         self::assertStringContainsString("] TJ\nET\nendstream", $pdf);
         self::assertStringContainsString('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>', $pdf);

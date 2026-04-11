@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use InvalidArgumentException;
-use Kalle\Pdf\Page\EmbeddedGlyph;
-
 use function array_key_exists;
 use function array_values;
+
 use function bin2hex;
 use function count;
 use function dechex;
 use function implode;
+
+use InvalidArgumentException;
+use Kalle\Pdf\Page\EmbeddedGlyph;
+
 use function mb_chr;
 use function mb_convert_encoding;
 use function mb_ord;

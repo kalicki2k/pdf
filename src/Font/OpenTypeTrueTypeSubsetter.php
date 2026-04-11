@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
+use function array_fill;
+
+use function ceil;
+use function count;
+
 use InvalidArgumentException;
 
-use function array_fill;
-use function ceil;
-use function chr;
-use function count;
-use function intdiv;
 use function ksort;
-use function max;
 use function pack;
-use function sort;
 use function strlen;
 use function substr_replace;
 use function usort;
