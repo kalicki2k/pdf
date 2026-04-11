@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Font;
 final class StandardFontMetrics
 {
     private const FALLBACK_GLYPH_WIDTH = 600;
+    private const ASCENT_SCALE = 1.0;
 
     /**
      * Widths are stored in 1000-unit text space for printable ASCII characters.
@@ -565,6 +566,11 @@ final class StandardFontMetrics
         $width += self::kerningAdjustment($baseFont, self::glyphNamesForText($baseFont, $text));
 
         return ($width / 1000) * $size;
+    }
+
+    public static function ascent(string $baseFont, float $size): float
+    {
+        return self::ASCENT_SCALE * $size;
     }
 
     /**

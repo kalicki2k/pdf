@@ -25,10 +25,24 @@ final class TextFlowTest extends TestCase
             ),
         );
 
-        $placement = $flow->placement(new TextOptions());
+        $placement = $flow->placement(new TextOptions(), StandardFontDefinition::from(StandardFont::HELVETICA));
 
         self::assertEqualsWithDelta(56.693, $placement['x'], 0.001);
-        self::assertEqualsWithDelta(785.197, $placement['y'], 0.001);
+        self::assertEqualsWithDelta(767.197, $placement['y'], 0.001);
+    }
+
+    public function testItResolvesPlacementToTheTopLeftPageCornerWithoutMargin(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A4(),
+            ),
+        );
+
+        $placement = $flow->placement(new TextOptions(), StandardFontDefinition::from(StandardFont::HELVETICA));
+
+        self::assertSame(0.0, $placement['x']);
+        self::assertEqualsWithDelta(PageSize::A4()->height() - 18.0, $placement['y'], 0.001);
     }
 
     public function testItWrapsTextWithinTheAvailableWidth(): void

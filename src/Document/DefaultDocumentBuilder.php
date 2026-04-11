@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use function count;
 use function implode;
+use function mb_ord;
 
 use InvalidArgumentException;
 
@@ -16,10 +17,13 @@ use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Text\SimpleFontRunMapper;
+use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
 use Kalle\Pdf\Writer\StreamOutput;
@@ -145,6 +149,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $font = $options->embeddedFont !== null
             ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
             : StandardFontDefinition::from($options->fontName);
+        $textFlow = $clone->textFlow();
+        $placement = $textFlow->placement($options, $font);
+        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
+        $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
         $usesUnicodeEmbeddedFont = $font instanceof EmbeddedFontDefinition
             && !$font->supportsText($text);
 
@@ -158,7 +166,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $fontAlias = $font instanceof EmbeddedFontDefinition
             ? (
                 $usesUnicodeEmbeddedFont
-                    ? $clone->embeddedUnicodeFontAliasFor($font, $font->unicodeCodePointsForText($text))
+                    ? $clone->embeddedUnicodeFontAliasFor($font, $clone->embeddedGlyphsForShapedLines($shapedLines, $font))
                     : $clone->embeddedFontAliasFor($font)
             )
             : $clone->fontAliasFor(
@@ -168,9 +176,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $options->fontEncoding,
                 ),
             );
-        $textFlow = $clone->textFlow();
-        $placement = $textFlow->placement($options);
-        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
         $embeddedPageFont = $font instanceof EmbeddedFontDefinition
             ? $clone->currentPageFontResources[$fontAlias] ?? null
             : null;
@@ -178,7 +183,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->buildWrappedTextContent(
-                $wrappedLines,
+                $shapedLines,
                 $options,
                 $textFlow,
                 $placement['x'],
@@ -220,19 +225,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
         $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding, $glyphRun->differences);
         $textFlow = $clone->textFlow();
-        $placement = $textFlow->placement($options);
+        $placement = $textFlow->placement($options, $font);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->textBlockBuilder()->build(
-                $glyphRun->bytes,
-                $options,
-                $placement['x'],
-                $placement['y'],
-                $fontAlias,
-                $font,
-                $glyphRun->glyphNames,
-                $glyphRun->useHexString,
+                encodedText: $glyphRun->bytes,
+                options: $options,
+                x: $placement['x'],
+                y: $placement['y'],
+                fontAlias: $fontAlias,
+                font: $font,
+                glyphNames: $glyphRun->glyphNames,
+                textAdjustments: [],
+                useHexString: $glyphRun->useHexString,
             ),
         );
         $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y']);
@@ -338,10 +344,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<string> $lines
+     * @param list<list<\Kalle\Pdf\Text\ShapedTextRun>> $shapedLines
      */
     private function buildWrappedTextContent(
-        array $lines,
+        array $shapedLines,
         TextOptions $options,
         TextFlow $textFlow,
         float $x,
@@ -354,33 +360,41 @@ class DefaultDocumentBuilder implements DocumentBuilder
     ): string {
         $contents = [];
 
-        foreach ($lines as $index => $line) {
-            if ($line === '') {
+        foreach ($shapedLines as $index => $lineRuns) {
+            if ($lineRuns === []) {
                 continue;
             }
 
-            $contents[] = $this->textBlockBuilder()->build(
-                $font instanceof EmbeddedFontDefinition
-                    ? (
-                        $useHexString
-                            ? $embeddedPageFont?->encodeUnicodeText($line) ?? $font->encodeUnicodeText($line)
-                            : $font->encodeText($line)
-                    )
-                    : $font->encodeText($line, $pdfVersion, $options->fontEncoding),
-                $options,
-                $x,
-                $y - ($textFlow->lineHeight($options) * $index),
-                $fontAlias,
-                $font,
-                $options->kerning
-                    ? (
-                        $font instanceof EmbeddedFontDefinition
-                            ? $font->glyphNamesForText($line)
-                            : $font->glyphNamesForText($line, $pdfVersion, $options->fontEncoding)
-                    )
-                    : [],
-                $useHexString,
-            );
+            $runX = $x;
+            $runY = $y - ($textFlow->lineHeight($options) * $index);
+
+            foreach ($lineRuns as $run) {
+                $mappedRun = $this->fontRunMapper()->map(
+                    $run,
+                    $font,
+                    $options,
+                    $pdfVersion,
+                    $embeddedPageFont,
+                    $useHexString,
+                );
+
+                if ($mappedRun->text === '') {
+                    continue;
+                }
+
+                $contents[] = $this->textBlockBuilder()->build(
+                    $mappedRun->encodedText,
+                    $options,
+                    $runX,
+                    $runY,
+                    $fontAlias,
+                    $font,
+                    $mappedRun->glyphNames,
+                    $mappedRun->textAdjustments,
+                    $mappedRun->useHexString,
+                );
+                $runX += $mappedRun->width;
+            }
         }
 
         return implode("\n", $contents);
@@ -403,6 +417,68 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function textBlockBuilder(): TextBlockBuilder
     {
         return new TextBlockBuilder();
+    }
+
+    private function textShaper(): SimpleTextShaper
+    {
+        return new SimpleTextShaper();
+    }
+
+    private function fontRunMapper(): SimpleFontRunMapper
+    {
+        return new SimpleFontRunMapper();
+    }
+
+    /**
+     * @param list<string> $lines
+     * @return list<list<\Kalle\Pdf\Text\ShapedTextRun>>
+     */
+    private function shapeWrappedTextLines(
+        array $lines,
+        TextOptions $options,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
+    ): array
+    {
+        $shapedLines = [];
+
+        foreach ($lines as $line) {
+            $shapedLines[] = $line === ''
+                ? []
+                : $this->textShaper()->shape($line, $options->baseDirection, $font);
+        }
+
+        return $shapedLines;
+    }
+
+    /**
+     * @param list<list<\Kalle\Pdf\Text\ShapedTextRun>> $shapedLines
+     * @return list<EmbeddedGlyph>
+     */
+    private function embeddedGlyphsForShapedLines(array $shapedLines, EmbeddedFontDefinition $font): array
+    {
+        $embeddedGlyphs = [];
+
+        foreach ($shapedLines as $lineRuns) {
+            foreach ($lineRuns as $run) {
+                foreach ($run->glyphs as $glyph) {
+                    $unicodeCodePoint = $glyph->unicodeCodePoint ?? mb_ord($glyph->character, 'UTF-8');
+                    $glyphId = $glyph->glyphId ?? $font->parser->getGlyphIdForCodePoint($unicodeCodePoint);
+                    $key = $glyphId . ':' . $unicodeCodePoint;
+
+                    if (isset($embeddedGlyphs[$key])) {
+                        continue;
+                    }
+
+                    $embeddedGlyphs[$key] = new EmbeddedGlyph(
+                        glyphId: $glyphId,
+                        unicodeCodePoint: $unicodeCodePoint,
+                        unicodeText: $glyph->unicodeText ?? $glyph->character,
+                    );
+                }
+            }
+        }
+
+        return array_values($embeddedGlyphs);
     }
 
     /**
@@ -439,22 +515,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<int> $unicodeCodePoints
+     * @param list<EmbeddedGlyph> $embeddedGlyphs
      */
-    private function embeddedUnicodeFontAliasFor(EmbeddedFontDefinition $font, array $unicodeCodePoints): string
+    private function embeddedUnicodeFontAliasFor(EmbeddedFontDefinition $font, array $embeddedGlyphs): string
     {
         foreach ($this->currentPageFontResources as $alias => $pageFont) {
             if (!$pageFont->matchesEmbedded($font, true)) {
                 continue;
             }
 
-            $this->currentPageFontResources[$alias] = $pageFont->withAdditionalUnicodeCodePoints($unicodeCodePoints);
+            $this->currentPageFontResources[$alias] = $pageFont->withAdditionalEmbeddedGlyphs($embeddedGlyphs);
 
             return $alias;
         }
 
         $alias = 'F' . (count($this->currentPageFontResources) + 1);
-        $this->currentPageFontResources[$alias] = PageFont::embeddedUnicode($font, $unicodeCodePoints);
+        $this->currentPageFontResources[$alias] = PageFont::embeddedUnicode($font, $embeddedGlyphs);
 
         return $alias;
     }

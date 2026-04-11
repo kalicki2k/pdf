@@ -23,9 +23,9 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ->paragraph('After paragraph')
             ->build();
 
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 538.583 Td\n[", $document->pages[0]->contents);
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 516.983 Td\n[", $document->pages[0]->contents);
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 495.383 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 520.583 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 498.983 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 477.383 Td\n[", $document->pages[0]->contents);
     }
 
     public function testItWritesTextColorOperatorsIntoPageContents(): void
@@ -40,8 +40,8 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ))
             ->build();
 
-        self::assertStringContainsString("BT\n0.5 g\n/F1 18 Tf\n72 720 Td\n[", $document->pages[0]->contents);
-        self::assertStringContainsString("BT\n0.1 0.2 0.3 0.4 k\n/F1 18 Tf\n72 680 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n0.5 g\n/F1 18 Tf\n0 823.89 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n0.1 0.2 0.3 0.4 k\n/F1 18 Tf\n0 680 Td\n[", $document->pages[0]->contents);
         self::assertStringContainsString('] TJ', $document->pages[0]->contents);
     }
 
@@ -52,7 +52,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ->text('Hello')
             ->build();
 
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 785.197 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 767.197 Td\n[", $document->pages[0]->contents);
         self::assertSame(Units::mm(20), $document->pages[0]->margin?->top);
     }
 
@@ -64,8 +64,8 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ->text('Line 2')
             ->build();
 
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 785.197 Td\n[", $document->pages[0]->contents);
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 763.597 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 767.197 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 745.597 Td\n[", $document->pages[0]->contents);
     }
 
     public function testItWrapsTextWithinTheCurrentContentArea(): void
@@ -76,8 +76,8 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ->text('Hello world this wraps automatically across multiple lines.')
             ->build();
 
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 538.583 Td\n[", $document->pages[0]->contents);
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 516.983 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 520.583 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 498.983 Td\n[", $document->pages[0]->contents);
     }
 
     public function testItContinuesBelowAllWrappedLinesForTheNextImplicitTextCall(): void
@@ -89,7 +89,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ->text('After wrap')
             ->build();
 
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 495.383 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 477.383 Td\n[", $document->pages[0]->contents);
     }
 
     public function testItAppliesSpacingAfterToTheNextImplicitTextCall(): void
@@ -104,7 +104,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ->text('Body')
             ->build();
 
-        self::assertStringContainsString("BT\n/F1 24 Tf\n56.693 785.197 Td\n[", $document->pages[0]->contents);
-        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 745.197 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 24 Tf\n56.693 761.197 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 721.197 Td\n[", $document->pages[0]->contents);
     }
 }

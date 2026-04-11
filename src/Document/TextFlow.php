@@ -27,16 +27,20 @@ final readonly class TextFlow
     /**
      * @return array{x: float, y: float}
      */
-    public function placement(TextOptions $options): array
+    public function placement(TextOptions $options, StandardFontDefinition|EmbeddedFontDefinition $font): array
     {
         $contentArea = $this->page->contentArea();
 
         $x = $options->x
-            ?? ($this->page->margin !== null ? $contentArea->left : 72.0);
+            ?? ($this->page->margin !== null ? $contentArea->left : 0.0);
+
+        $topBoundary = $this->page->margin !== null
+            ? $contentArea->top
+            : $this->page->size->height();
 
         $y = $options->y
             ?? $this->cursorY
-            ?? ($this->page->margin !== null ? $contentArea->top : 720.0);
+            ?? ($topBoundary - $this->topGlyphOffset($options, $font));
 
         return [
             'x' => $x,
@@ -112,6 +116,13 @@ final readonly class TextFlow
     private function spacingAfter(TextOptions $options): float
     {
         return $options->spacingAfter ?? 0.0;
+    }
+
+    private function topGlyphOffset(
+        TextOptions $options,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
+    ): float {
+        return $font->ascent($options->fontSize);
     }
 
     private function availableTextWidth(float $x): float

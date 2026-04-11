@@ -22,6 +22,7 @@ final class EmbeddedFontDefinitionTest extends TestCase
         self::assertTrue($font->supportsText('A'));
         self::assertSame('A', $font->encodeText('A'));
         self::assertSame(12.0, $font->measureTextWidth('A', 20.0));
+        self::assertSame(16.0, $font->ascent(20.0));
     }
 
     public function testItRejectsUnsupportedText(): void

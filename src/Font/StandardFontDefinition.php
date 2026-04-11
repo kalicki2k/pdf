@@ -60,6 +60,11 @@ final readonly class StandardFontDefinition
         return $width;
     }
 
+    public function ascent(float $fontSize): float
+    {
+        return StandardFontMetrics::ascent($this->name, $fontSize);
+    }
+
     public function pdfEncodingObjectValue(StandardFontEncoding $encoding): string
     {
         return $encoding->pdfObjectValue($this->name);

@@ -23,7 +23,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            "BT\n/F1 18 Tf\n72 720 Td\n[<41> 71 <56>] TJ\nET",
+            "BT\n/F1 18 Tf\n0 823.89 Td\n[<41> 71 <56>] TJ\nET",
             $document->pages[0]->contents,
         );
     }
@@ -45,7 +45,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a28c4d6dce4f6fcdf802920546a0a4554',
+            '42540a2f46312031382054660a30203832332e38392054640a28c4d6dce4f6fcdf802920546a0a4554',
             bin2hex($document->pages[0]->contents),
         );
     }
@@ -58,7 +58,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a288085868a9a9fa7a4a3b42920546a0a4554',
+            '42540a2f46312031382054660a30203832332e38392054640a288085868a9a9fa7a4a3b42920546a0a4554',
             bin2hex($document->pages[0]->contents),
         );
     }
@@ -81,7 +81,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a28616267572920546a0a4554',
+            '42540a2f46312031382054660a30203832332e38392054640a28616267572920546a0a4554',
             bin2hex($document->pages[0]->contents),
         );
     }
@@ -93,7 +93,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a28333435362920546a0a4554',
+            '42540a2f46312031382054660a30203832332e38392054640a28333435362920546a0a4554',
             bin2hex($document->pages[0]->contents),
         );
     }
@@ -109,7 +109,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a28c4d6dce4f6fcdf2920546a0a4554',
+            '42540a2f46312031382054660a30203832332e38392054640a28c4d6dce4f6fcdf2920546a0a4554',
             bin2hex($document->pages[0]->contents),
         );
         self::assertEquals(
@@ -129,7 +129,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a28d2d3d42920546a0a4554',
+            '42540a2f46312031382054660a30203832332e38392054640a28d2d3d42920546a0a4554',
             bin2hex($document->pages[0]->contents),
         );
     }
@@ -144,7 +144,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a3c3231323232333e20546a0a4554',
+            '42540a2f46312031382054660a30203832332e38392054640a3c3231323232333e20546a0a4554',
             bin2hex($document->pages[0]->contents),
         );
     }
@@ -160,7 +160,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a3c3431383038313e20546a0a4554',
+            '42540a2f46312031382054660a30203832332e38392054640a3c3431383038313e20546a0a4554',
             bin2hex($document->pages[0]->contents),
         );
         self::assertEquals(

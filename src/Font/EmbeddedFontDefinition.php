@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Page\EmbeddedGlyph;
 
 use function array_key_exists;
 use function array_values;
@@ -86,6 +87,20 @@ final readonly class EmbeddedFontDefinition
 
     public function encodeUnicodeText(string $text): string
     {
+        return $this->encodeUnicodeCodePoints($this->unicodeCodePointsForText($text));
+    }
+
+    /**
+     * @param list<int> $codePoints
+     */
+    public function encodeUnicodeCodePoints(array $codePoints): string
+    {
+        $text = '';
+
+        foreach ($codePoints as $codePoint) {
+            $text .= mb_chr($codePoint, 'UTF-8');
+        }
+
         if (!$this->supportsUnicodeText($text)) {
             throw new InvalidArgumentException(sprintf(
                 "Text cannot be encoded as Unicode with embedded font '%s'.",
@@ -130,6 +145,11 @@ final readonly class EmbeddedFontDefinition
         return ($width / $this->metadata->unitsPerEm) * $fontSize;
     }
 
+    public function ascent(float $fontSize): float
+    {
+        return ($this->metadata->ascent / $this->metadata->unitsPerEm) * $fontSize;
+    }
+
     /**
      * @return list<?string>
      */
@@ -159,6 +179,32 @@ final readonly class EmbeddedFontDefinition
         }
 
         return array_values($codePoints);
+    }
+
+    /**
+     * @param list<int> $codePoints
+     * @return list<EmbeddedGlyph>
+     */
+    public function embeddedGlyphsForCodePoints(array $codePoints): array
+    {
+        $glyphs = [];
+
+        foreach ($codePoints as $codePoint) {
+            $glyphId = $this->parser->getGlyphIdForCodePoint($codePoint);
+            $key = $glyphId . ':' . $codePoint;
+
+            if (isset($glyphs[$key])) {
+                continue;
+            }
+
+            $glyphs[$key] = new EmbeddedGlyph(
+                glyphId: $glyphId,
+                unicodeCodePoint: $codePoint,
+                unicodeText: mb_chr($codePoint, 'UTF-8'),
+            );
+        }
+
+        return array_values($glyphs);
     }
 
     /**
@@ -196,10 +242,18 @@ final readonly class EmbeddedFontDefinition
      */
     public function unicodeSubsetFontFileStreamContents(array $codePoints): string
     {
+        return $this->unicodeSubsetFontFileStreamContentsForGlyphs($this->embeddedGlyphsForCodePoints($codePoints));
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeSubsetFontFileStreamContentsForGlyphs(array $glyphs): string
+    {
         if ($this->metadata->outlineType === OpenTypeOutlineType::CFF) {
             $data = new OpenTypeCffSubsetter($this->parser)->subset(
-                $codePoints,
-                $this->subsetPostScriptName($codePoints),
+                array_map(static fn (EmbeddedGlyph $glyph): int => $glyph->unicodeCodePoint, $glyphs),
+                $this->subsetPostScriptNameForGlyphs($glyphs),
             );
 
             return '<< /Length ' . strlen($data) . ' /Subtype /OpenType >>' . "\nstream\n"
@@ -209,8 +263,8 @@ final readonly class EmbeddedFontDefinition
 
         $glyphIds = [0];
 
-        foreach ($codePoints as $codePoint) {
-            $glyphIds[] = $this->parser->getGlyphIdForCodePoint($codePoint);
+        foreach ($glyphs as $glyph) {
+            $glyphIds[] = $glyph->glyphId;
         }
 
         $data = new OpenTypeTrueTypeSubsetter($this->parser)->subset($glyphIds);
@@ -277,6 +331,20 @@ final readonly class EmbeddedFontDefinition
     }
 
     /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeType0FontObjectContentsForGlyphs(int $cidFontObjectId, int $toUnicodeObjectId, array $glyphs): string
+    {
+        return '<< /Type /Font'
+            . ' /Subtype /Type0'
+            . ' /BaseFont /' . $this->unicodeBaseFontNameForGlyphs($glyphs)
+            . ' /Encoding /Identity-H'
+            . ' /DescendantFonts [' . $cidFontObjectId . ' 0 R]'
+            . ' /ToUnicode ' . $toUnicodeObjectId . ' 0 R'
+            . ' >>';
+    }
+
+    /**
      * @param list<int> $codePoints
      */
     public function unicodeCidFontObjectContents(int $fontDescriptorObjectId, ?int $cidToGidMapObjectId, array $codePoints): string
@@ -288,6 +356,33 @@ final readonly class EmbeddedFontDefinition
             . ' /FontDescriptor ' . $fontDescriptorObjectId . ' 0 R'
             . ' /DW ' . $this->parser->getAdvanceWidthForGlyphId(0)
             . ' /W ' . $this->unicodeWidthsArray($codePoints);
+
+        if ($this->metadata->outlineType === OpenTypeOutlineType::TRUE_TYPE) {
+            if ($cidToGidMapObjectId === null) {
+                throw new InvalidArgumentException('TrueType CID fonts require a CIDToGIDMap object.');
+            }
+
+            $contents .= ' /CIDToGIDMap ' . $cidToGidMapObjectId . ' 0 R';
+        }
+
+        return $contents . ' >>';
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeCidFontObjectContentsForGlyphs(
+        int $fontDescriptorObjectId,
+        ?int $cidToGidMapObjectId,
+        array $glyphs,
+    ): string {
+        $contents = '<< /Type /Font'
+            . ' /Subtype /' . ($this->metadata->outlineType === OpenTypeOutlineType::CFF ? 'CIDFontType0' : 'CIDFontType2')
+            . ' /BaseFont /' . $this->unicodeBaseFontNameForGlyphs($glyphs)
+            . ' /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >>'
+            . ' /FontDescriptor ' . $fontDescriptorObjectId . ' 0 R'
+            . ' /DW ' . $this->parser->getAdvanceWidthForGlyphId(0)
+            . ' /W ' . $this->unicodeWidthsArrayForGlyphs($glyphs);
 
         if ($this->metadata->outlineType === OpenTypeOutlineType::TRUE_TYPE) {
             if ($cidToGidMapObjectId === null) {
@@ -320,6 +415,30 @@ final readonly class EmbeddedFontDefinition
         foreach ($codePoints as $codePoint) {
             $glyphId = $this->parser->getGlyphIdForCodePoint($codePoint);
             $map .= pack('n', $glyphId);
+        }
+
+        return '<< /Length ' . strlen($map) . " >>\nstream\n"
+            . $map
+            . "\nendstream";
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeCidToGidMapStreamContentsForGlyphs(array $glyphs): string
+    {
+        if ($this->metadata->outlineType === OpenTypeOutlineType::CFF) {
+            throw new InvalidArgumentException('CIDToGIDMap is only used for TrueType CID fonts.');
+        }
+
+        if ($glyphs === []) {
+            return "<< /Length 0 >>\nstream\nendstream";
+        }
+
+        $map = pack('n', 0);
+
+        foreach ($glyphs as $glyph) {
+            $map .= pack('n', $glyph->glyphId);
         }
 
         return '<< /Length ' . strlen($map) . " >>\nstream\n"
@@ -368,6 +487,46 @@ final readonly class EmbeddedFontDefinition
     }
 
     /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeToUnicodeStreamContentsForGlyphs(array $glyphs): string
+    {
+        $lines = [
+            '/CIDInit /ProcSet findresource begin',
+            '12 dict begin',
+            'begincmap',
+            '/CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> def',
+            '/CMapName /Adobe-Identity-UCS def',
+            '/CMapType 2 def',
+            '1 begincodespacerange',
+            '<0000> <FFFF>',
+            'endcodespacerange',
+            count($glyphs) . ' beginbfchar',
+        ];
+
+        foreach ($glyphs as $index => $glyph) {
+            $cid = strtoupper(str_pad(dechex($index + 1), 4, '0', STR_PAD_LEFT));
+            $unicode = strtoupper(bin2hex(mb_convert_encoding($glyph->unicodeText, 'UTF-16BE', 'UTF-8')));
+            $lines[] = '<' . $cid . '> <' . $unicode . '>';
+        }
+
+        $lines = [
+            ...$lines,
+            'endbfchar',
+            'endcmap',
+            'CMapName currentdict /CMap defineresource pop',
+            'end',
+            'end',
+        ];
+
+        $contents = implode("\n", $lines) . "\n";
+
+        return '<< /Length ' . strlen($contents) . " >>\nstream\n"
+            . $contents
+            . 'endstream';
+    }
+
+    /**
      * @param list<int> $codePoints
      */
     private function unicodeWidthsArray(array $codePoints): string
@@ -382,6 +541,24 @@ final readonly class EmbeddedFontDefinition
             $entries[] = (string) $this->unicodeCharCodeForCodePoint($codePoints, $codePoint) . ' [' . $this->parser->getAdvanceWidthForGlyphId(
                 $this->parser->getGlyphIdForCodePoint($codePoint),
             ) . ']';
+        }
+
+        return '[' . implode(' ', $entries) . ']';
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    private function unicodeWidthsArrayForGlyphs(array $glyphs): string
+    {
+        if ($glyphs === []) {
+            return '[]';
+        }
+
+        $entries = [];
+
+        foreach ($glyphs as $index => $glyph) {
+            $entries[] = (string) ($index + 1) . ' [' . $this->parser->getAdvanceWidthForGlyphId($glyph->glyphId) . ']';
         }
 
         return '[' . implode(' ', $entries) . ']';
@@ -408,6 +585,25 @@ final readonly class EmbeddedFontDefinition
     public function unicodeBaseFontName(array $codePoints): string
     {
         return $this->subsetPostScriptName($codePoints);
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function subsetPostScriptNameForGlyphs(array $glyphs): string
+    {
+        return $this->subsetPostScriptName(array_map(
+            static fn (EmbeddedGlyph $glyph): int => $glyph->unicodeCodePoint,
+            $glyphs,
+        ));
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeBaseFontNameForGlyphs(array $glyphs): string
+    {
+        return $this->subsetPostScriptNameForGlyphs($glyphs);
     }
 
     /**
