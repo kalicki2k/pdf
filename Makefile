@@ -8,7 +8,16 @@ composer-install:
 	docker compose run --rm php composer install
 
 phpstan:
-	bin/phpstan
+	docker compose run --rm php composer phpstan
+
+test:
+	docker compose run --rm php composer test
+
+coverage:
+	docker compose run --rm -e XDEBUG_MODE=coverage php composer test:coverage
+
+coverage-html:
+	docker compose run --rm -e XDEBUG_MODE=coverage php composer test:coverage-html
 
 shell:
 	docker compose run --rm php sh

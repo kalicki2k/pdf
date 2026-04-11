@@ -44,6 +44,12 @@ PHPStan im Container ausführen:
 make phpstan
 ```
 
+PHPUnit im Container ausführen:
+
+```bash
+make test
+```
+
 Compose-Services starten:
 
 ```bash
