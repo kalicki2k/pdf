@@ -153,6 +153,22 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 495.383 Td\n[", $document->pages[0]->contents);
     }
 
+    public function testItAppliesSpacingAfterToTheNextImplicitTextCall(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Headline', new TextOptions(
+                fontSize: 24,
+                lineHeight: 28,
+                spacingAfter: 12,
+            ))
+            ->text('Body')
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 24 Tf\n56.693 785.197 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 745.197 Td\n[", $document->pages[0]->contents);
+    }
+
     public function testItAppliesAfmKerningForWesternCoreText(): void
     {
         $document = DefaultDocumentBuilder::make()

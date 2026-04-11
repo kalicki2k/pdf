@@ -541,11 +541,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $options->lineHeight ?? ($options->fontSize * 1.2);
     }
 
+    private function spacingAfter(TextOptions $options): float
+    {
+        return $options->spacingAfter ?? 0.0;
+    }
+
     private function advanceCursor(TextOptions $options, float $resolvedY, int $lineCount = 1): void
     {
         $lineHeight = $this->lineHeight($options);
 
-        $this->currentPageCursorY = $resolvedY - ($lineHeight * max($lineCount, 1));
+        $this->currentPageCursorY = $resolvedY - ($lineHeight * max($lineCount, 1)) - $this->spacingAfter($options);
     }
 
     private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding, array $differences = []): string

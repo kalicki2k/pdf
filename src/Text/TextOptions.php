@@ -15,6 +15,7 @@ final readonly class TextOptions
         public ?float $y = null,
         public float $fontSize = 18.0,
         public ?float $lineHeight = null,
+        public ?float $spacingAfter = null,
         public string $fontName = StandardFont::HELVETICA->value,
         public ?StandardFontEncoding $fontEncoding = null,
         public ?Color $color = null,
