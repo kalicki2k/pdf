@@ -22,6 +22,7 @@ final readonly class PageAnnotationFactory
 {
     private PageAnnotationFinalizer $finalizer;
     private PageBoxAnnotationFactory $boxAnnotations;
+    private PageGeometricAnnotationFactory $geometricAnnotations;
 
     public function __construct(
         private Page $page,
@@ -29,6 +30,7 @@ final readonly class PageAnnotationFactory
     ) {
         $this->finalizer = new PageAnnotationFinalizer($page, $context);
         $this->boxAnnotations = new PageBoxAnnotationFactory($page, $context, $this->finalizer);
+        $this->geometricAnnotations = new PageGeometricAnnotationFactory($page, $context, $this->finalizer);
     }
 
     public function createLinkAnnotation(
@@ -222,14 +224,9 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): LineAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $annotation = new LineAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $from->x,
-            $from->y,
-            $to->x,
-            $to->y,
+        return $this->geometricAnnotations->createLineAnnotation(
+            $from,
+            $to,
             $color,
             $contents,
             $title,
@@ -238,10 +235,6 @@ final readonly class PageAnnotationFactory
             $subject,
             $borderStyle,
         );
-
-        $this->finalizer->finalizeLineAnnotation($annotation, $from, $to, 'Line annotation', $contents, $title, $subject);
-
-        return $annotation;
     }
 
     /**
@@ -257,10 +250,7 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): PolyLineAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $annotation = new PolyLineAnnotation(
-            $this->nextObjectId(),
-            $this->page,
+        return $this->geometricAnnotations->createPolyLineAnnotation(
             $vertices,
             $color,
             $contents,
@@ -270,10 +260,6 @@ final readonly class PageAnnotationFactory
             $subject,
             $borderStyle,
         );
-
-        $this->finalizer->finalizeVerticesAnnotation($annotation, $vertices, 'Polyline annotation', $contents, $title, $subject);
-
-        return $annotation;
     }
 
     /**
@@ -288,10 +274,7 @@ final readonly class PageAnnotationFactory
         ?string $subject,
         ?AnnotationBorderStyle $borderStyle,
     ): PolygonAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $annotation = new PolygonAnnotation(
-            $this->nextObjectId(),
-            $this->page,
+        return $this->geometricAnnotations->createPolygonAnnotation(
             $vertices,
             $borderColor,
             $fillColor,
@@ -300,10 +283,6 @@ final readonly class PageAnnotationFactory
             $subject,
             $borderStyle,
         );
-
-        $this->finalizer->finalizeVerticesAnnotation($annotation, $vertices, 'Polygon annotation', $contents, $title, $subject);
-
-        return $annotation;
     }
 
     public function createCaretAnnotation(
