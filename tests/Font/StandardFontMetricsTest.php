@@ -41,6 +41,14 @@ final class StandardFontMetricsTest extends TestCase
         self::assertEqualsWithDelta(31.24, StandardFontMetrics::measureTextWidth('ZapfDingbats', '✓✔✕✖', 10), 0.0001);
     }
 
+    public function testItExposesGlyphNamesAcrossAllStandardFonts(): void
+    {
+        self::assertContains('A', StandardFontMetrics::glyphNames('Helvetica'));
+        self::assertContains('AE', StandardFontMetrics::glyphNames('Times-Roman'));
+        self::assertContains('Alpha', StandardFontMetrics::glyphNames('Symbol'));
+        self::assertContains('a1', StandardFontMetrics::glyphNames('ZapfDingbats'));
+    }
+
     public function testItUsesTheFallbackGlyphWidthForUnknownAsciiCharactersInSupportedFonts(): void
     {
         self::assertSame(6.0, StandardFontMetrics::measureTextWidth('Helvetica', "\x7F", 10));

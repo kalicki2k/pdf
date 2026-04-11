@@ -169,11 +169,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $options->fontEncoding,
         );
-        $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding);
+        $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding, $glyphRun->differences);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
-            $this->buildEncodedTextContent($glyphRun->bytes, $options, $fontAlias),
+            $this->buildEncodedTextContent(
+                $glyphRun->bytes,
+                $options,
+                $fontAlias,
+                $font,
+                $glyphRun->glyphNames,
+                $glyphRun->useHexString,
+            ),
         );
 
         return $clone;
@@ -268,10 +275,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $font->encodeText($text, $pdfVersion, $options->fontEncoding),
             $options,
             $fontAlias,
+            $font,
+            $options->kerning ? $font->glyphNamesForText($text, $pdfVersion, $options->fontEncoding) : [],
         );
     }
 
-    private function buildEncodedTextContent(string $encodedText, TextOptions $options, string $fontAlias): string
+    private function buildEncodedTextContent(
+        string $encodedText,
+        TextOptions $options,
+        string $fontAlias,
+        StandardFontDefinition $font,
+        array $glyphNames = [],
+        bool $useHexString = false,
+    ): string
     {
         $lines = [
             'BT',
@@ -285,7 +301,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ...$lines,
             '/' . $fontAlias . ' ' . $this->formatNumber($options->fontSize) . ' Tf',
             $this->formatNumber($options->x) . ' ' . $this->formatNumber($options->y) . ' Td',
-            $this->pdfLiteralString($encodedText) . ' Tj',
+            $this->buildTextShowOperator($encodedText, $font, $glyphNames, $useHexString),
             'ET',
         ];
 
@@ -299,6 +315,81 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ['\\\\', '\(', '\)'],
             $value,
         ) . ')';
+    }
+
+    private function pdfHexString(string $value): string
+    {
+        return '<' . bin2hex($value) . '>';
+    }
+
+    /**
+     * @param list<?string> $glyphNames
+     */
+    private function buildTextShowOperator(
+        string $encodedText,
+        StandardFontDefinition $font,
+        array $glyphNames,
+        bool $useHexString,
+    ): string {
+        $kerningOperator = $this->buildKerningTextOperator($encodedText, $font, $glyphNames);
+
+        if ($kerningOperator !== null) {
+            return $kerningOperator;
+        }
+
+        return ($useHexString ? $this->pdfHexString($encodedText) : $this->pdfLiteralString($encodedText)) . ' Tj';
+    }
+
+    /**
+     * @param list<?string> $glyphNames
+     */
+    private function buildKerningTextOperator(
+        string $encodedText,
+        StandardFontDefinition $font,
+        array $glyphNames,
+    ): ?string {
+        if ($glyphNames === [] || strlen($encodedText) < 2) {
+            return null;
+        }
+
+        $bytes = str_split($encodedText);
+
+        if (count($bytes) !== count($glyphNames)) {
+            return null;
+        }
+
+        $parts = [];
+        $hasKerning = false;
+
+        foreach ($bytes as $index => $byte) {
+            $parts[] = $this->pdfHexString($byte);
+
+            if (!isset($bytes[$index + 1])) {
+                continue;
+            }
+
+            $leftGlyph = $glyphNames[$index];
+            $rightGlyph = $glyphNames[$index + 1];
+
+            if ($leftGlyph === null || $rightGlyph === null) {
+                continue;
+            }
+
+            $kerning = $font->kerningValue($leftGlyph, $rightGlyph);
+
+            if ($kerning === 0) {
+                continue;
+            }
+
+            $parts[] = (string) -$kerning;
+            $hasKerning = true;
+        }
+
+        if (!$hasKerning) {
+            return null;
+        }
+
+        return '[' . implode(' ', $parts) . '] TJ';
     }
 
     private function appendPageContent(string $existingContent, string $newContent): string
@@ -317,18 +408,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return rtrim(rtrim($formatted, '0'), '.');
     }
 
-    private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding): string
+    private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding, array $differences = []): string
     {
         StandardFontDefinition::from($fontName);
 
         foreach ($this->currentPageFontResources as $alias => $pageFont) {
-            if ($pageFont->name === $fontName && $pageFont->encoding === $fontEncoding) {
+            if ($pageFont->name === $fontName && $pageFont->encoding === $fontEncoding && $pageFont->differences === $differences) {
                 return $alias;
             }
         }
 
         $alias = 'F' . (count($this->currentPageFontResources) + 1);
-        $this->currentPageFontResources[$alias] = new PageFont($fontName, $fontEncoding);
+        $this->currentPageFontResources[$alias] = new PageFont($fontName, $fontEncoding, $differences);
 
         return $alias;
     }

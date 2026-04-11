@@ -568,6 +568,63 @@ final class StandardFontMetrics
     }
 
     /**
+     * @return list<string>
+     */
+    public static function glyphNames(string $baseFont): array
+    {
+        if ($baseFont === StandardFont::SYMBOL->value) {
+            return StandardFontGlyphMap::glyphNames($baseFont);
+        }
+
+        if ($baseFont === StandardFont::ZAPF_DINGBATS->value) {
+            return StandardFontGlyphMap::glyphNames($baseFont);
+        }
+
+        return StandardFontCoreGlyphMetrics::glyphNames($baseFont);
+    }
+
+    public static function glyphWidth(string $baseFont, string $glyphName): ?int
+    {
+        if ($baseFont === StandardFont::SYMBOL->value) {
+            $code = StandardFontGlyphMap::glyphCodeForName($baseFont, $glyphName);
+
+            return $code === null
+                ? null
+                : (self::SYMBOL_WIDTHS[$code] ?? null);
+        }
+
+        if ($baseFont === StandardFont::ZAPF_DINGBATS->value) {
+            $code = StandardFontGlyphMap::glyphCodeForName($baseFont, $glyphName);
+
+            return $code === null
+                ? null
+                : (self::ZAPF_DINGBATS_WIDTHS[$code] ?? null);
+        }
+
+        return StandardFontCoreGlyphMetrics::widthForGlyph($baseFont, $glyphName);
+    }
+
+    /**
+     * @param list<string> $glyphNames
+     */
+    public static function measureGlyphNamesWidth(string $baseFont, array $glyphNames, float $size): ?float
+    {
+        $width = 0;
+
+        foreach ($glyphNames as $glyphName) {
+            $glyphWidth = self::glyphWidth($baseFont, $glyphName);
+
+            if ($glyphWidth === null) {
+                return null;
+            }
+
+            $width += $glyphWidth;
+        }
+
+        return ($width / 1000) * $size;
+    }
+
+    /**
      * @return array<string, int>
      */
     private static function buildCourierWidths(): array

@@ -6,9 +6,15 @@ namespace Kalle\Pdf\Font;
 
 final readonly class StandardFontGlyphRun
 {
+    /**
+     * @param array<int, string> $differences
+     */
     private function __construct(
         public string $fontName,
         public string $bytes,
+        public array $differences = [],
+        public bool $useHexString = false,
+        public array $glyphNames = [],
     ) {
     }
 
@@ -20,10 +26,14 @@ final readonly class StandardFontGlyphRun
         $fontName = $font instanceof StandardFont
             ? $font->value
             : $font;
+        $glyphEncoding = StandardFontGlyphMap::encodeGlyphNames($fontName, $glyphNames);
 
         return new self(
             fontName: $fontName,
-            bytes: StandardFontGlyphMap::encodeGlyphNames($fontName, $glyphNames),
+            bytes: $glyphEncoding['bytes'],
+            differences: $glyphEncoding['differences'],
+            useHexString: $glyphEncoding['useHexString'],
+            glyphNames: $glyphNames,
         );
     }
 
@@ -35,10 +45,21 @@ final readonly class StandardFontGlyphRun
         $fontName = $font instanceof StandardFont
             ? $font->value
             : $font;
+        $glyphEncoding = StandardFontGlyphMap::encodeGlyphCodes($fontName, $glyphCodes);
+        $glyphNames = [];
+
+        if (isset(StandardFontCoreGlyphMap::CODE_TO_NAME[$fontName])) {
+            foreach ($glyphCodes as $glyphCode) {
+                $glyphNames[] = StandardFontCoreGlyphMap::glyphNameForCode($fontName, $glyphCode);
+            }
+        }
 
         return new self(
             fontName: $fontName,
-            bytes: StandardFontGlyphMap::encodeGlyphCodes($fontName, $glyphCodes),
+            bytes: $glyphEncoding['bytes'],
+            differences: $glyphEncoding['differences'],
+            useHexString: $glyphEncoding['useHexString'],
+            glyphNames: $glyphNames,
         );
     }
 }

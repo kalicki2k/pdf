@@ -12,6 +12,7 @@ use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
+use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
@@ -105,8 +106,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $objects = iterator_to_array($plan->objects);
 
         self::assertSame('<< /Type /Pages /Count 2 /Kids [3 0 R 5 0 R] >>', $objects[1]->contents);
-        self::assertStringContainsString('(Page 1) Tj', $objects[3]->contents);
-        self::assertStringContainsString('(Page 2) Tj', $objects[5]->contents);
+        self::assertStringContainsString('[<50>', $objects[3]->contents);
+        self::assertStringContainsString('[<50>', $objects[5]->contents);
+        self::assertStringContainsString('] TJ', $objects[3]->contents);
+        self::assertStringContainsString('] TJ', $objects[5]->contents);
     }
 
     public function testItPrependsBackgroundDrawingCommandsToPageContents(): void
@@ -199,5 +202,23 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /ISOLatin1Encoding >>',
             $objects[4]->contents,
         );
+    }
+
+    public function testItAddsCoreFontGlyphDifferencesWhenExplicitGlyphNamesNeedThem(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->glyphs(StandardFontGlyphRun::fromGlyphNames(StandardFont::HELVETICA, [
+                'A',
+                'Euro',
+                'Aogonek',
+            ]))
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/BaseEncoding /WinAnsiEncoding', $objects[4]->contents);
+        self::assertStringContainsString('/Differences [128 /Euro /Aogonek]', $objects[4]->contents);
     }
 }

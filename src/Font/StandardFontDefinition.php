@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
+use function ord;
+
 use InvalidArgumentException;
 
 final readonly class StandardFontDefinition
@@ -61,5 +63,63 @@ final readonly class StandardFontDefinition
     public function pdfEncodingObjectValue(StandardFontEncoding $encoding): string
     {
         return $encoding->pdfObjectValue($this->name);
+    }
+
+    /**
+     * @return list<?string>
+     */
+    public function glyphNamesForText(
+        string $text,
+        float $pdfVersion,
+        ?StandardFontEncoding $preferredEncoding = null,
+    ): array {
+        if (!isset(StandardFontCoreGlyphMap::NAME_TO_CODE[$this->name])) {
+            return [];
+        }
+
+        $encoding = $this->resolveEncoding($pdfVersion, $preferredEncoding);
+        $glyphNames = [];
+
+        foreach ($this->characters($text) as $character) {
+            if ($character === "\t" || $character === "\n" || $character === "\r") {
+                $glyphNames[] = null;
+
+                continue;
+            }
+
+            if ($character === ' ') {
+                $glyphNames[] = 'space';
+
+                continue;
+            }
+
+            if ($this->isAsciiPrintable($character)) {
+                $glyphNames[] = StandardFontCoreGlyphMap::glyphNameForCode($this->name, ord($character));
+
+                continue;
+            }
+
+            $glyphNames[] = StandardFontWesternGlyphMap::glyphName($character);
+        }
+
+        return $glyphNames;
+    }
+
+    public function kerningValue(string $leftGlyph, string $rightGlyph): int
+    {
+        return StandardFontCoreKerning::value($this->name, $leftGlyph, $rightGlyph);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function characters(string $text): array
+    {
+        return preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: str_split($text);
+    }
+
+    private function isAsciiPrintable(string $character): bool
+    {
+        return preg_match('/^[\x21-\x7E]$/', $character) === 1;
     }
 }

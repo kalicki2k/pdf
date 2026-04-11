@@ -416,14 +416,42 @@ final class StandardFontGlyphMap
      */
     public static function glyphNames(string | StandardFont $font): array
     {
+        $fontName = self::fontName($font);
+
+        if (isset(StandardFontCoreGlyphMap::NAME_TO_CODE[$fontName])) {
+            return StandardFontCoreGlyphMap::glyphNames($fontName);
+        }
+
         return array_keys(self::nameToByteMap($font));
+    }
+
+    public static function glyphCodeForName(string | StandardFont $font, string $glyphName): ?int
+    {
+        $fontName = self::fontName($font);
+
+        if (isset(StandardFontCoreGlyphMap::NAME_TO_CODE[$fontName])) {
+            $code = StandardFontCoreGlyphMap::glyphCode($fontName, $glyphName);
+
+            return $code !== null && $code >= 0 ? $code : null;
+        }
+
+        $byte = self::nameToByteMap($font)[$glyphName] ?? null;
+
+        return $byte === null ? null : ord($byte);
     }
 
     /**
      * @param list<string> $glyphNames
+     * @return array{bytes: string, differences: array<int, string>, useHexString: bool}
      */
-    public static function encodeGlyphNames(string | StandardFont $font, array $glyphNames): string
+    public static function encodeGlyphNames(string | StandardFont $font, array $glyphNames): array
     {
+        $fontName = self::fontName($font);
+
+        if (isset(StandardFontCoreGlyphMap::NAME_TO_CODE[$fontName])) {
+            return self::encodeCoreGlyphNames($fontName, $glyphNames);
+        }
+
         $map = self::nameToByteMap($font);
         $encoded = '';
 
@@ -441,14 +469,43 @@ final class StandardFontGlyphMap
             $encoded .= $byte;
         }
 
-        return $encoded;
+        return [
+            'bytes' => $encoded,
+            'differences' => [],
+            'useHexString' => false,
+        ];
     }
 
     /**
      * @param list<int> $glyphCodes
+     * @return array{bytes: string, differences: array<int, string>, useHexString: bool}
      */
-    public static function encodeGlyphCodes(string | StandardFont $font, array $glyphCodes): string
+    public static function encodeGlyphCodes(string | StandardFont $font, array $glyphCodes): array
     {
+        $fontName = self::fontName($font);
+
+        if (isset(StandardFontCoreGlyphMap::CODE_TO_NAME[$fontName])) {
+            $encoded = '';
+
+            foreach ($glyphCodes as $glyphCode) {
+                if ($glyphCode < 0 || $glyphCode > 255 || StandardFontCoreGlyphMap::glyphNameForCode($fontName, $glyphCode) === null) {
+                    throw new InvalidArgumentException(sprintf(
+                        "Glyph code '%d' is not defined for font '%s'.",
+                        $glyphCode,
+                        $fontName,
+                    ));
+                }
+
+                $encoded .= chr($glyphCode);
+            }
+
+            return [
+                'bytes' => $encoded,
+                'differences' => [],
+                'useHexString' => true,
+            ];
+        }
+
         $map = self::nameToByteMap($font);
         $supportedCodes = array_flip(array_map('ord', array_values($map)));
         $encoded = '';
@@ -465,7 +522,11 @@ final class StandardFontGlyphMap
             $encoded .= chr($glyphCode);
         }
 
-        return $encoded;
+        return [
+            'bytes' => $encoded,
+            'differences' => [],
+            'useHexString' => true,
+        ];
     }
 
     /**
@@ -492,5 +553,82 @@ final class StandardFontGlyphMap
         return $font instanceof StandardFont
             ? $font->value
             : $font;
+    }
+
+    /**
+     * @param list<string> $glyphNames
+     * @return array{bytes: string, differences: array<int, string>, useHexString: bool}
+     */
+    private static function encodeCoreGlyphNames(string $fontName, array $glyphNames): array
+    {
+        $baseCodeToName = StandardFontCoreGlyphMap::CODE_TO_NAME[$fontName];
+        $assigned = [];
+        $bytes = '';
+
+        foreach ($glyphNames as $glyphName) {
+            $baseCode = StandardFontCoreGlyphMap::glyphCode($fontName, $glyphName);
+
+            if ($baseCode === null) {
+                throw new InvalidArgumentException(sprintf(
+                    "Glyph '%s' is not defined for font '%s'.",
+                    $glyphName,
+                    $fontName,
+                ));
+            }
+
+            $code = $baseCode >= 0 && !isset($assigned[$baseCode])
+                ? $baseCode
+                : self::allocateCoreGlyphCode($baseCodeToName, $assigned);
+
+            $assigned[$code] = $glyphName;
+            $bytes .= chr($code);
+        }
+
+        $differences = [];
+
+        foreach ($assigned as $code => $glyphName) {
+            if (($baseCodeToName[$code] ?? null) !== $glyphName) {
+                $differences[$code] = $glyphName;
+            }
+        }
+
+        return [
+            'bytes' => $bytes,
+            'differences' => $differences,
+            'useHexString' => true,
+        ];
+    }
+
+    /**
+     * @param array<int, string> $baseCodeToName
+     * @param array<int, string> $assigned
+     */
+    private static function allocateCoreGlyphCode(array $baseCodeToName, array $assigned): int
+    {
+        for ($code = 128; $code <= 255; $code++) {
+            if (!isset($assigned[$code]) && !isset($baseCodeToName[$code])) {
+                return $code;
+            }
+        }
+
+        for ($code = 0; $code <= 127; $code++) {
+            if (!isset($assigned[$code]) && !isset($baseCodeToName[$code])) {
+                return $code;
+            }
+        }
+
+        for ($code = 128; $code <= 255; $code++) {
+            if (!isset($assigned[$code])) {
+                return $code;
+            }
+        }
+
+        for ($code = 0; $code <= 127; $code++) {
+            if (!isset($assigned[$code])) {
+                return $code;
+            }
+        }
+
+        throw new InvalidArgumentException('Too many unique glyphs requested for a single standard font run.');
     }
 }

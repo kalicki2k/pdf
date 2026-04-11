@@ -52,10 +52,8 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertCount(1, $document->pages);
         self::assertSame(PageSize::A5()->width(), $document->pages[0]->size->width());
         self::assertSame(PageSize::A5()->height(), $document->pages[0]->size->height());
-        self::assertSame(
-            "BT\n/F1 14 Tf\n56.693 708.661 Td\n(Hello \\(PDF\\) \\\\ Test) Tj\nET",
-            $document->pages[0]->contents,
-        );
+        self::assertStringContainsString("BT\n/F1 14 Tf\n56.693 708.661 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString('] TJ' . "\nET", $document->pages[0]->contents);
         self::assertEquals(
             ['F1' => new PageFont('Times-Roman', StandardFontEncoding::WIN_ANSI)],
             $document->pages[0]->fontResources,
@@ -78,8 +76,10 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->build();
 
         self::assertCount(2, $document->pages);
-        self::assertStringContainsString('(Page 1) Tj', $document->pages[0]->contents);
-        self::assertStringContainsString('(Page 2) Tj', $document->pages[1]->contents);
+        self::assertStringContainsString('[<50>', $document->pages[0]->contents);
+        self::assertStringContainsString('[<50>', $document->pages[1]->contents);
+        self::assertStringContainsString('] TJ', $document->pages[0]->contents);
+        self::assertStringContainsString('] TJ', $document->pages[1]->contents);
         self::assertSame(PageSize::A5()->landscape()->width(), $document->pages[1]->size->width());
         self::assertSame(PageSize::A5()->landscape()->height(), $document->pages[1]->size->height());
         self::assertSame(24.0, $document->pages[1]->margin?->top);
@@ -101,8 +101,21 @@ final class DefaultDocumentBuilderTest extends TestCase
             ))
             ->build();
 
-        self::assertStringContainsString("BT\n0.5 g\n/F1 18 Tf\n72 720 Td\n(Gray) Tj\nET", $document->pages[0]->contents);
-        self::assertStringContainsString("BT\n0.1 0.2 0.3 0.4 k\n/F1 18 Tf\n72 680 Td\n(CMYK) Tj\nET", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n0.5 g\n/F1 18 Tf\n72 720 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n0.1 0.2 0.3 0.4 k\n/F1 18 Tf\n72 680 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString('] TJ', $document->pages[0]->contents);
+    }
+
+    public function testItAppliesAfmKerningForWesternCoreText(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('AV', new TextOptions(fontName: StandardFont::HELVETICA->value))
+            ->build();
+
+        self::assertSame(
+            "BT\n/F1 18 Tf\n72 720 Td\n[<41> 71 <56>] TJ\nET",
+            $document->pages[0]->contents,
+        );
     }
 
     public function testItRejectsNonStandardFonts(): void
@@ -231,8 +244,28 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->build();
 
         self::assertSame(
-            '42540a2f46312031382054660a3732203732302054640a282122232920546a0a4554',
+            '42540a2f46312031382054660a3732203732302054640a3c3231323232333e20546a0a4554',
             bin2hex($document->pages[0]->contents),
+        );
+    }
+
+    public function testItBuildsTextFromExplicitCoreFontGlyphNames(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->glyphs(StandardFontGlyphRun::fromGlyphNames(StandardFont::HELVETICA, [
+                'A',
+                'Euro',
+                'Aogonek',
+            ]))
+            ->build();
+
+        self::assertSame(
+            '42540a2f46312031382054660a3732203732302054640a3c3431383038313e20546a0a4554',
+            bin2hex($document->pages[0]->contents),
+        );
+        self::assertEquals(
+            ['F1' => new PageFont(StandardFont::HELVETICA->value, StandardFontEncoding::WIN_ANSI, [128 => 'Euro', 129 => 'Aogonek'])],
+            $document->pages[0]->fontResources,
         );
     }
 

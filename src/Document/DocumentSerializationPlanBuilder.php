@@ -81,7 +81,7 @@ final class DocumentSerializationPlanBuilder
             $font = StandardFontDefinition::from($pageFont->name);
             $objects[] = new IndirectObject(
                 $fontObjectId,
-                '<< /Type /Font /Subtype /Type1 /BaseFont /' . $font->name . ' /Encoding ' . $font->pdfEncodingObjectValue($pageFont->encoding) . ' >>',
+                '<< /Type /Font /Subtype /Type1 /BaseFont /' . $font->name . ' /Encoding ' . $pageFont->encoding->pdfObjectValueWithDifferences($font->name, $pageFont->differences) . ' >>',
             );
         }
 
@@ -250,7 +250,7 @@ final class DocumentSerializationPlanBuilder
 
     private function fontObjectKey(PageFont $pageFont): string
     {
-        return $pageFont->name . '|' . $pageFont->encoding->value;
+        return $pageFont->name . '|' . $pageFont->encoding->value . '|' . json_encode($pageFont->differences, JSON_THROW_ON_ERROR);
     }
 
     /**

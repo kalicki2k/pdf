@@ -17,6 +17,7 @@ final readonly class TextOptions
         public string $fontName = StandardFont::HELVETICA->value,
         public ?StandardFontEncoding $fontEncoding = null,
         public ?Color $color = null,
+        public bool $kerning = true,
     ) {
     }
 }

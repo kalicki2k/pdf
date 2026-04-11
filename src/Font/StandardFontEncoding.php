@@ -189,7 +189,36 @@ enum StandardFontEncoding: string
         }
 
         return '<< /Type /Encoding /BaseEncoding /StandardEncoding /Differences ['
-            . $this->westernStandardDifferencesPdfEntries()
+            . $this->differencesPdfEntries(self::WESTERN_STANDARD_DIFFERENCES)
+            . '] >>';
+    }
+
+    /**
+     * @param array<int, string> $differences
+     */
+    public function pdfObjectValueWithDifferences(string $fontName, array $differences): string
+    {
+        if ($differences === []) {
+            return $this->pdfObjectValue($fontName);
+        }
+
+        if (in_array($this, [self::SYMBOL, self::ZAPF_DINGBATS], true)) {
+            return '/' . $this->value;
+        }
+
+        if ($this === self::STANDARD) {
+            $mergedDifferences = [...self::WESTERN_STANDARD_DIFFERENCES, ...$differences];
+            ksort($mergedDifferences);
+
+            return '<< /Type /Encoding /BaseEncoding /StandardEncoding /Differences ['
+                . $this->differencesPdfEntries($mergedDifferences)
+                . '] >>';
+        }
+
+        ksort($differences);
+
+        return '<< /Type /Encoding /BaseEncoding /' . $this->value . ' /Differences ['
+            . $this->differencesPdfEntries($differences)
             . '] >>';
     }
 
@@ -291,12 +320,15 @@ enum StandardFontEncoding: string
         return preg_match('/^[\x09\x0A\x0D\x20-\x7E]$/', $character) === 1;
     }
 
-    private function westernStandardDifferencesPdfEntries(): string
+    /**
+     * @param array<int, string> $differences
+     */
+    private function differencesPdfEntries(array $differences): string
     {
         $parts = [];
         $currentCode = null;
 
-        foreach (self::WESTERN_STANDARD_DIFFERENCES as $code => $glyphName) {
+        foreach ($differences as $code => $glyphName) {
             if ($currentCode === null || $code !== $currentCode + 1) {
                 $parts[] = (string) $code;
             }
