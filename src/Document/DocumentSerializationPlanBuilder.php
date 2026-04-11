@@ -10,6 +10,7 @@ use function implode;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Font\OpenTypeOutlineType;
+use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
@@ -42,6 +43,8 @@ final class DocumentSerializationPlanBuilder
         $toUnicodeObjectIds = [];
         /** @var array<string, int> $cidToGidMapObjectIds */
         $cidToGidMapObjectIds = [];
+        /** @var array<string, int> $imageObjectIds */
+        $imageObjectIds = [];
 
         foreach ($document->pages as $page) {
             $pageObjectIds[] = $nextObjectId;
@@ -83,6 +86,10 @@ final class DocumentSerializationPlanBuilder
                     }
                 }
             }
+
+            foreach ($page->imageResources as $imageSource) {
+                $nextObjectId = $this->reserveImageObjectIds($imageSource, $imageObjectIds, $nextObjectId);
+            }
         }
 
         $objects = [
@@ -102,7 +109,7 @@ final class DocumentSerializationPlanBuilder
                 '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '
                 . $this->formatNumber($page->size->width()) . ' '
                 . $this->formatNumber($page->size->height()) . '] /Resources '
-                . $this->buildPageResources($page->fontResources, $fontObjectIds) . ' /Contents '
+                . $this->buildPageResources($page->fontResources, $page->imageResources, $fontObjectIds, $imageObjectIds) . ' /Contents '
                 . $contentObjectId . ' 0 R >>',
             );
             $objects[] = new IndirectObject(
@@ -169,6 +176,15 @@ final class DocumentSerializationPlanBuilder
             }
 
             $objects[] = new IndirectObject($fontObjectId, $pageFont->pdfObjectContents());
+        }
+
+        foreach ($this->collectImages($document->pages) as $imageKey => $imageSource) {
+            $objects[] = new IndirectObject(
+                $imageObjectIds[$imageKey],
+                $imageSource->pdfObjectContents(
+                    $imageSource->softMask !== null ? $imageObjectIds[$imageSource->softMask->key()] : null,
+                ),
+            );
         }
 
         $infoObjectId = null;
@@ -321,11 +337,13 @@ final class DocumentSerializationPlanBuilder
 
     /**
      * @param array<string, PageFont> $fontResources
+     * @param array<string, ImageSource> $imageResources
      * @param array<string, int> $fontObjectIds
+     * @param array<string, int> $imageObjectIds
      */
-    private function buildPageResources(array $fontResources, array $fontObjectIds): string
+    private function buildPageResources(array $fontResources, array $imageResources, array $fontObjectIds, array $imageObjectIds): string
     {
-        if ($fontResources === []) {
+        if ($fontResources === [] && $imageResources === []) {
             return '<< >>';
         }
 
@@ -335,7 +353,23 @@ final class DocumentSerializationPlanBuilder
             $entries[] = '/' . $fontAlias . ' ' . $fontObjectIds[$this->fontObjectKey($pageFont)] . ' 0 R';
         }
 
-        return '<< /Font << ' . implode(' ', $entries) . ' >> >>';
+        $resourceEntries = [];
+
+        if ($entries !== []) {
+            $resourceEntries[] = '/Font << ' . implode(' ', $entries) . ' >>';
+        }
+
+        $imageEntries = [];
+
+        foreach ($imageResources as $imageAlias => $imageSource) {
+            $imageEntries[] = '/' . $imageAlias . ' ' . $imageObjectIds[$imageSource->key()] . ' 0 R';
+        }
+
+        if ($imageEntries !== []) {
+            $resourceEntries[] = '/XObject << ' . implode(' ', $imageEntries) . ' >>';
+        }
+
+        return '<< ' . implode(' ', $resourceEntries) . ' >>';
     }
 
     private function fontObjectKey(PageFont $pageFont): string
@@ -370,5 +404,57 @@ final class DocumentSerializationPlanBuilder
         }
 
         return $fonts;
+    }
+
+    /**
+     * @param array<string, int> $imageObjectIds
+     */
+    private function reserveImageObjectIds(ImageSource $imageSource, array &$imageObjectIds, int $nextObjectId): int
+    {
+        $imageKey = $imageSource->key();
+
+        if (!isset($imageObjectIds[$imageKey])) {
+            $imageObjectIds[$imageKey] = $nextObjectId;
+            $nextObjectId++;
+        }
+
+        if ($imageSource->softMask !== null) {
+            $nextObjectId = $this->reserveImageObjectIds($imageSource->softMask, $imageObjectIds, $nextObjectId);
+        }
+
+        return $nextObjectId;
+    }
+
+    /**
+     * @param list<Page> $pages
+     * @return array<string, ImageSource>
+     */
+    private function collectImages(array $pages): array
+    {
+        $images = [];
+
+        foreach ($pages as $page) {
+            foreach ($page->imageResources as $imageSource) {
+                $this->collectImageSource($imageSource, $images);
+            }
+        }
+
+        return $images;
+    }
+
+    /**
+     * @param array<string, ImageSource> $images
+     */
+    private function collectImageSource(ImageSource $imageSource, array &$images): void
+    {
+        $imageKey = $imageSource->key();
+
+        if (!isset($images[$imageKey])) {
+            $images[$imageKey] = $imageSource;
+        }
+
+        if ($imageSource->softMask !== null) {
+            $this->collectImageSource($imageSource->softMask, $images);
+        }
     }
 }

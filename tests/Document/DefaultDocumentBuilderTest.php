@@ -11,6 +11,9 @@ use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFontEncoding;
+use Kalle\Pdf\Image\ImageColorSpace;
+use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
@@ -128,5 +131,18 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         self::assertSame(Version::V1_7, $document->version());
         self::assertSame(Version::V1_7, $document->profile->version());
+    }
+
+    public function testItRegistersImageResourcesAndPlacementCommands(): void
+    {
+        $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
+
+        $document = DefaultDocumentBuilder::make()
+            ->image($image, ImagePlacement::at(40, 500, width: 120))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertSame($image, $document->pages[0]->imageResources['Im1']);
+        self::assertStringContainsString("120 0 0 60 40 500 cm\n/Im1 Do", $document->pages[0]->contents);
     }
 }

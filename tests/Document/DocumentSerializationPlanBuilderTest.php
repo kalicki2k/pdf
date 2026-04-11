@@ -14,6 +14,9 @@ use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
+use Kalle\Pdf\Image\ImageColorSpace;
+use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
@@ -224,6 +227,48 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         self::assertStringContainsString('/BaseEncoding /WinAnsiEncoding', $objects[4]->contents);
         self::assertStringContainsString('/Differences [128 /Euro /Aogonek]', $objects[4]->contents);
+    }
+
+    public function testItAddsImageXObjectsToPageResources(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::at(40, 500, width: 120))
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << /XObject << /Im1 5 0 R >> >> /Contents 4 0 R >>',
+            $objects[2]->contents,
+        );
+        self::assertStringContainsString('/Subtype /Image', $objects[4]->contents);
+        self::assertStringContainsString('/Filter /DCTDecode', $objects[4]->contents);
+    }
+
+    public function testItBuildsSoftMaskImageObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->image(
+                ImageSource::flate(
+                    'rgb-data',
+                    2,
+                    1,
+                    ImageColorSpace::RGB,
+                    softMask: ImageSource::alphaMask('alpha-data', 2, 1),
+                ),
+                ImagePlacement::at(10, 20),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/XObject << /Im1 5 0 R >>', $objects[2]->contents);
+        self::assertStringContainsString('/SMask 6 0 R', $objects[4]->contents);
+        self::assertStringContainsString('/ColorSpace /DeviceGray', $objects[5]->contents);
     }
 
     public function testItBuildsEmbeddedTrueTypeFontObjects(): void

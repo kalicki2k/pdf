@@ -16,6 +16,8 @@ use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Font\StandardFontMetrics;
+use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
@@ -47,6 +49,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private string $currentPageContents = '';
     /** @var array<string, PageFont> */
     private array $currentPageFontResources = [];
+    /** @var array<string, ImageSource> */
+    private array $currentPageImageResources = [];
     private ?Margin $currentPageMargin = null;
     private ?float $currentPageCursorY = null;
     private ?Color $currentPageBackgroundColor = null;
@@ -215,6 +219,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->text($text, $options);
     }
 
+    public function image(ImageSource $source, ImagePlacement $placement): DocumentBuilder
+    {
+        $clone = clone $this;
+        $imageAlias = $clone->imageAliasFor($source);
+        [$width, $height] = $this->resolveImageDimensions($source, $placement);
+
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $this->buildImageContent($imageAlias, $placement->x, $placement->y, $width, $height),
+        );
+
+        return $clone;
+    }
+
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): DocumentBuilder
     {
         $clone = clone $this;
@@ -324,6 +342,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             size: $this->currentPageSize ?? PageSize::A4(),
             contents: $this->currentPageContents,
             fontResources: $this->currentPageFontResources,
+            imageResources: $this->currentPageImageResources,
             margin: $this->currentPageMargin,
             backgroundColor: $this->currentPageBackgroundColor,
             label: $this->currentPageLabel,
@@ -336,6 +355,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageSize = $this->resolvePageSize($options);
         $this->currentPageContents = '';
         $this->currentPageFontResources = [];
+        $this->currentPageImageResources = [];
         $this->currentPageMargin = $options !== null
             ? $options->margin ?? $this->defaultPageMargin
             : $this->defaultPageMargin;
@@ -561,6 +581,43 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $existingContent . "\n" . $newContent;
     }
 
+    private function buildImageContent(string $imageAlias, float $x, float $y, float $width, float $height): string
+    {
+        return implode("\n", [
+            'q',
+            $this->formatNumber($width) . ' 0 0 ' . $this->formatNumber($height) . ' '
+            . $this->formatNumber($x) . ' ' . $this->formatNumber($y) . ' cm',
+            '/' . $imageAlias . ' Do',
+            'Q',
+        ]);
+    }
+
+    /**
+     * @return array{0: float, 1: float}
+     */
+    private function resolveImageDimensions(ImageSource $source, ImagePlacement $placement): array
+    {
+        if ($placement->width !== null && $placement->height !== null) {
+            return [$placement->width, $placement->height];
+        }
+
+        if ($placement->width !== null) {
+            return [
+                $placement->width,
+                $placement->width * ($source->height / $source->width),
+            ];
+        }
+
+        if ($placement->height !== null) {
+            return [
+                $placement->height * ($source->width / $source->height),
+                $placement->height,
+            ];
+        }
+
+        return [(float) $source->width, (float) $source->height];
+    }
+
     private function textFlow(): TextFlow
     {
         return new TextFlow($this->buildCurrentPage(), $this->currentPageCursorY);
@@ -702,6 +759,29 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageFontResources[$alias] = PageFont::embeddedUnicode($font, $embeddedGlyphs);
 
         return $alias;
+    }
+
+    private function imageAliasFor(ImageSource $source): string
+    {
+        $sourceKey = $source->key();
+
+        foreach ($this->currentPageImageResources as $alias => $imageSource) {
+            if ($imageSource->key() === $sourceKey) {
+                return $alias;
+            }
+        }
+
+        $alias = 'Im' . (count($this->currentPageImageResources) + 1);
+        $this->currentPageImageResources[$alias] = $source;
+
+        return $alias;
+    }
+
+    private function formatNumber(float $value): string
+    {
+        $formatted = number_format($value, 3, '.', '');
+
+        return rtrim(rtrim($formatted, '0'), '.');
     }
 
 }

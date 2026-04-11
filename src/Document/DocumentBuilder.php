@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Font\StandardFontGlyphRun;
+use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
@@ -35,6 +37,8 @@ interface DocumentBuilder
     public function text(string $text, ?TextOptions $options = null): self;
 
     public function paragraph(string $text, ?TextOptions $options = null): self;
+
+    public function image(ImageSource $source, ImagePlacement $placement): self;
 
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): self;
 
