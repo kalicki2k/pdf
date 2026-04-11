@@ -10,6 +10,7 @@ use function implode;
 use InvalidArgumentException;
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
@@ -141,12 +142,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $options ??= new TextOptions();
-        $font = StandardFontDefinition::from($options->fontName);
-        $fontEncoding = $font->resolveEncoding(
-            ($this->profile ?? Profile::standard())->version(),
-            $options->fontEncoding,
-        );
-        $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding);
+        $font = $options->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
+            : StandardFontDefinition::from($options->fontName);
+        $fontAlias = $font instanceof EmbeddedFontDefinition
+            ? $clone->embeddedFontAliasFor($font)
+            : $clone->fontAliasFor(
+                $font->name,
+                $font->resolveEncoding(
+                    ($this->profile ?? Profile::standard())->version(),
+                    $options->fontEncoding,
+                ),
+            );
         $textFlow = $clone->textFlow();
         $placement = $textFlow->placement($options);
         $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
@@ -321,7 +328,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $x,
         float $y,
         string $fontAlias,
-        StandardFontDefinition $font,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
         float $pdfVersion,
     ): string {
         $contents = [];
@@ -332,13 +339,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             $contents[] = $this->textBlockBuilder()->build(
-                $font->encodeText($line, $pdfVersion, $options->fontEncoding),
+                $font instanceof EmbeddedFontDefinition
+                    ? $font->encodeText($line)
+                    : $font->encodeText($line, $pdfVersion, $options->fontEncoding),
                 $options,
                 $x,
                 $y - ($textFlow->lineHeight($options) * $index),
                 $fontAlias,
                 $font,
-                $options->kerning ? $font->glyphNamesForText($line, $pdfVersion, $options->fontEncoding) : [],
+                $options->kerning
+                    ? (
+                        $font instanceof EmbeddedFontDefinition
+                            ? $font->glyphNamesForText($line)
+                            : $font->glyphNamesForText($line, $pdfVersion, $options->fontEncoding)
+                    )
+                    : [],
             );
         }
 
@@ -379,6 +394,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $alias = 'F' . (count($this->currentPageFontResources) + 1);
         $this->currentPageFontResources[$alias] = new PageFont($fontName, $fontEncoding, $differences);
+
+        return $alias;
+    }
+
+    private function embeddedFontAliasFor(EmbeddedFontDefinition $font): string
+    {
+        foreach ($this->currentPageFontResources as $alias => $pageFont) {
+            if ($pageFont->matchesEmbedded($font)) {
+                return $alias;
+            }
+        }
+
+        $alias = 'F' . (count($this->currentPageFontResources) + 1);
+        $this->currentPageFontResources[$alias] = PageFont::embedded($font);
 
         return $alias;
     }

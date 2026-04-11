@@ -30,6 +30,10 @@ final class DocumentSerializationPlanBuilder
         $nextObjectId = 3;
         /** @var array<string, int> $fontObjectIds */
         $fontObjectIds = [];
+        /** @var array<string, int> $fontDescriptorObjectIds */
+        $fontDescriptorObjectIds = [];
+        /** @var array<string, int> $fontFileObjectIds */
+        $fontFileObjectIds = [];
 
         foreach ($document->pages as $page) {
             $pageObjectIds[] = $nextObjectId;
@@ -45,6 +49,13 @@ final class DocumentSerializationPlanBuilder
                 if (!isset($fontObjectIds[$fontKey])) {
                     $fontObjectIds[$fontKey] = $nextObjectId;
                     $nextObjectId++;
+
+                    if ($pageFont->isEmbedded()) {
+                        $fontDescriptorObjectIds[$fontKey] = $nextObjectId;
+                        $nextObjectId++;
+                        $fontFileObjectIds[$fontKey] = $nextObjectId;
+                        $nextObjectId++;
+                    }
                 }
             }
         }
@@ -77,10 +88,29 @@ final class DocumentSerializationPlanBuilder
 
         foreach ($this->collectFonts($document->pages) as $fontKey => $pageFont) {
             $fontObjectId = $fontObjectIds[$fontKey];
-            $objects[] = new IndirectObject(
-                $fontObjectId,
-                $pageFont->pdfObjectContents(),
-            );
+
+            if ($pageFont->isEmbedded()) {
+                $embeddedFont = $pageFont->embeddedDefinition();
+                $fontDescriptorObjectId = $fontDescriptorObjectIds[$fontKey];
+                $fontFileObjectId = $fontFileObjectIds[$fontKey];
+
+                $objects[] = new IndirectObject(
+                    $fontObjectId,
+                    $embeddedFont->fontObjectContents($fontDescriptorObjectId),
+                );
+                $objects[] = new IndirectObject(
+                    $fontDescriptorObjectId,
+                    $embeddedFont->fontDescriptorContents($fontFileObjectId),
+                );
+                $objects[] = new IndirectObject(
+                    $fontFileObjectId,
+                    $embeddedFont->fontFileStreamContents(),
+                );
+
+                continue;
+            }
+
+            $objects[] = new IndirectObject($fontObjectId, $pageFont->pdfObjectContents());
         }
 
         $infoObjectId = null;

@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use function count;
 
+use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Page;
 
@@ -46,7 +47,12 @@ final readonly class TextFlow
     /**
      * @return list<string>
      */
-    public function wrapTextLines(string $text, TextOptions $options, StandardFontDefinition $font, float $x): array
+    public function wrapTextLines(
+        string $text,
+        TextOptions $options,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
+        float $x,
+    ): array
     {
         $maxWidth = $this->availableTextWidth($x);
 

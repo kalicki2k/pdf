@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
+use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
@@ -19,6 +20,7 @@ use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -220,5 +222,24 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         self::assertStringContainsString('/BaseEncoding /WinAnsiEncoding', $objects[4]->contents);
         self::assertStringContainsString('/Differences [128 /Euro /Aogonek]', $objects[4]->contents);
+    }
+
+    public function testItBuildsEmbeddedTrueTypeFontObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->text('A', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /TrueType', $serialized);
+        self::assertStringContainsString('/FontDescriptor', $serialized);
+        self::assertStringContainsString('/FontFile2', $serialized);
+        self::assertStringContainsString('/BaseFont /TestFont-Regular', $serialized);
     }
 }

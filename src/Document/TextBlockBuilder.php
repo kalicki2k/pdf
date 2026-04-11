@@ -8,6 +8,7 @@ use function implode;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 
 use Kalle\Pdf\Text\TextOptions;
@@ -27,7 +28,7 @@ final readonly class TextBlockBuilder
         float $x,
         float $y,
         string $fontAlias,
-        StandardFontDefinition $font,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
         array $glyphNames = [],
         bool $useHexString = false,
     ): string {
@@ -69,7 +70,7 @@ final readonly class TextBlockBuilder
      */
     private function buildTextShowOperator(
         string $encodedText,
-        StandardFontDefinition $font,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
         array $glyphNames,
         bool $useHexString,
     ): string {
@@ -87,7 +88,7 @@ final readonly class TextBlockBuilder
      */
     private function buildKerningTextOperator(
         string $encodedText,
-        StandardFontDefinition $font,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
         array $glyphNames,
     ): ?string {
         if ($glyphNames === [] || strlen($encodedText) < 2) {
