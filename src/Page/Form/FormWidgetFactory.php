@@ -32,6 +32,7 @@ use Kalle\Pdf\Style\Color;
 final readonly class FormWidgetFactory
 {
     private FormChoiceWidgetFactory $choiceWidgets;
+    private FormToggleWidgetFactory $toggleWidgets;
 
     public function __construct(
         private Page $page,
@@ -39,6 +40,7 @@ final readonly class FormWidgetFactory
         private UnicodeFontWidthUpdater $unicodeFontWidthUpdater,
     ) {
         $this->choiceWidgets = new FormChoiceWidgetFactory($page, $context, $unicodeFontWidthUpdater);
+        $this->toggleWidgets = new FormToggleWidgetFactory($page, $context);
     }
 
     public function createTextField(
@@ -104,27 +106,7 @@ final readonly class FormWidgetFactory
         bool $checked,
         ?string $accessibleName,
     ): CheckboxAnnotation {
-        if ($name === '') {
-            throw new InvalidArgumentException('Checkbox name must not be empty.');
-        }
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Checkbox size must be greater than zero.');
-        }
-
-        return new CheckboxAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $position->x,
-            $position->y,
-            $size,
-            $size,
-            $name,
-            $checked,
-            new CheckboxAppearanceStream($this->nextObjectId(), $size, $size, false),
-            new CheckboxAppearanceStream($this->nextObjectId(), $size, $size, true),
-            $accessibleName,
-        );
+        return $this->toggleWidgets->createCheckbox($name, $position, $size, $checked, $accessibleName);
     }
 
     /**
@@ -138,38 +120,7 @@ final readonly class FormWidgetFactory
         bool $checked,
         ?string $accessibleName,
     ): array {
-        if ($name === '') {
-            throw new InvalidArgumentException('Radio button name must not be empty.');
-        }
-
-        if ($value === '' || !preg_match('/^[A-Za-z0-9._-]+$/', $value)) {
-            throw new InvalidArgumentException('Radio button value may contain only letters, numbers, dots, underscores and hyphens.');
-        }
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Radio button size must be greater than zero.');
-        }
-
-        $acroForm = $this->ensureRadioButtonAcroForm();
-        $group = $acroForm->getOrCreateRadioGroup($name, $this->nextObjectId());
-        $annotation = new RadioButtonWidgetAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $group,
-            $position->x,
-            $position->y,
-            $size,
-            $value,
-            $checked,
-            new RadioButtonAppearanceStream($this->nextObjectId(), $size, false),
-            new RadioButtonAppearanceStream($this->nextObjectId(), $size, true),
-        );
-
-        if ($accessibleName !== null && $accessibleName !== '') {
-            $group->withTooltip($name);
-        }
-
-        return [$group, $annotation];
+        return $this->toggleWidgets->createRadioButton($name, $value, $position, $size, $checked, $accessibleName);
     }
 
     /**
@@ -326,11 +277,6 @@ final readonly class FormWidgetFactory
     private function ensurePushButtonAcroForm(): AcroForm
     {
         return $this->context->ensurePushButtonAcroForm();
-    }
-
-    private function ensureRadioButtonAcroForm(): AcroForm
-    {
-        return $this->context->ensureRadioButtonAcroForm();
     }
 
     /**
