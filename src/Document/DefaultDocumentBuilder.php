@@ -15,6 +15,7 @@ use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
+use Kalle\Pdf\Font\StandardFontMetrics;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\EmbeddedGlyph;
@@ -22,8 +23,10 @@ use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Text\MappedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
 use Kalle\Pdf\Text\SimpleTextShaper;
+use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
 use Kalle\Pdf\Writer\StreamOutput;
@@ -154,7 +157,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
         $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
         $usesUnicodeEmbeddedFont = $font instanceof EmbeddedFontDefinition
-            && !$font->supportsText($text);
+            && (
+                !$font->supportsText($text)
+                || $this->containsShapedEmbeddedGlyphIds($shapedLines)
+            );
 
         if ($font instanceof EmbeddedFontDefinition && $usesUnicodeEmbeddedFont && !$font->supportsUnicodeText($text)) {
             throw new InvalidArgumentException(sprintf(
@@ -180,9 +186,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ? $clone->currentPageFontResources[$fontAlias] ?? null
             : null;
 
-        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->buildWrappedTextContent(
+                $wrappedLines,
                 $shapedLines,
                 $options,
                 $textFlow,
@@ -226,13 +233,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding, $glyphRun->differences);
         $textFlow = $clone->textFlow();
         $placement = $textFlow->placement($options, $font);
+        $availableWidth = $textFlow->availableTextWidthFrom($placement['x'], $options);
+        /** @var list<string> $measurableGlyphNames */
+        $measurableGlyphNames = array_values(array_filter(
+            $glyphRun->glyphNames,
+            static fn (?string $glyphName): bool => $glyphName !== null,
+        ));
+        $glyphWidth = StandardFontMetrics::measureGlyphNamesWidth($font->name, $measurableGlyphNames, $options->fontSize)
+            ?? 0.0;
+        $alignedX = $this->alignedLineX($options->align, $placement['x'], max($availableWidth - $glyphWidth, 0.0));
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->textBlockBuilder()->build(
                 encodedText: $glyphRun->bytes,
                 options: $options,
-                x: $placement['x'],
+                x: $alignedX,
                 y: $placement['y'],
                 fontAlias: $fontAlias,
                 font: $font,
@@ -344,9 +360,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
+     * @param list<string> $wrappedLines
      * @param list<list<\Kalle\Pdf\Text\ShapedTextRun>> $shapedLines
      */
     private function buildWrappedTextContent(
+        array $wrappedLines,
         array $shapedLines,
         TextOptions $options,
         TextFlow $textFlow,
@@ -359,14 +377,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $pdfVersion,
     ): string {
         $contents = [];
+        $availableWidth = $textFlow->availableTextWidthFrom($x, $options);
 
         foreach ($shapedLines as $index => $lineRuns) {
             if ($lineRuns === []) {
                 continue;
             }
 
-            $runX = $x;
             $runY = $y - ($textFlow->lineHeight($options) * $index);
+            $isFirstLineOfParagraph = $this->isFirstLineOfParagraph($wrappedLines, $index);
+            $lineBaseX = $textFlow->lineX($x, $options, $isFirstLineOfParagraph);
+            $mappedRuns = [];
 
             foreach ($lineRuns as $run) {
                 $mappedRun = $this->fontRunMapper()->map(
@@ -382,6 +403,28 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     continue;
                 }
 
+                $mappedRuns[] = $mappedRun;
+            }
+
+            if ($mappedRuns === []) {
+                continue;
+            }
+
+            $lineWidth = $this->lineWidth($mappedRuns);
+            $lineIndent = $isFirstLineOfParagraph
+                ? max($options->firstLineIndent, 0.0)
+                : max($options->hangingIndent, 0.0);
+            $lineAvailableWidth = $options->width !== null
+                ? max($availableWidth - $lineIndent, 0.0)
+                : $textFlow->availableTextWidthFrom($lineBaseX, $options);
+            $remainingWidth = max($lineAvailableWidth - $lineWidth, 0.0);
+            $runX = $this->alignedLineX($options->align, $lineBaseX, $remainingWidth);
+
+            if ($options->align === TextAlign::JUSTIFY && $this->shouldJustifyLine($wrappedLines, $index)) {
+                $mappedRuns = $this->justifyMappedRuns($mappedRuns, $remainingWidth, $options);
+            }
+
+            foreach ($mappedRuns as $mappedRun) {
                 $contents[] = $this->textBlockBuilder()->build(
                     $mappedRun->encodedText,
                     $options,
@@ -391,6 +434,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $font,
                     $mappedRun->glyphNames,
                     $mappedRun->textAdjustments,
+                    $mappedRun->positionedFragments,
                     $mappedRun->useHexString,
                 );
                 $runX += $mappedRun->width;
@@ -398,6 +442,111 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return implode("\n", $contents);
+    }
+
+    /**
+     * @param list<MappedTextRun> $mappedRuns
+     */
+    private function lineWidth(array $mappedRuns): float
+    {
+        $width = 0.0;
+
+        foreach ($mappedRuns as $mappedRun) {
+            $width += $mappedRun->width;
+        }
+
+        return $width;
+    }
+
+    private function alignedLineX(TextAlign $align, float $x, float $remainingWidth): float
+    {
+        return match ($align) {
+            TextAlign::CENTER => $x + ($remainingWidth / 2),
+            TextAlign::RIGHT => $x + $remainingWidth,
+            default => $x,
+        };
+    }
+
+    /**
+     * @param list<string> $wrappedLines
+     */
+    private function shouldJustifyLine(array $wrappedLines, int $lineIndex): bool
+    {
+        if (!isset($wrappedLines[$lineIndex + 1])) {
+            return false;
+        }
+
+        return $wrappedLines[$lineIndex] !== '' && $wrappedLines[$lineIndex + 1] !== '';
+    }
+
+    /**
+     * @param list<string> $wrappedLines
+     */
+    private function isFirstLineOfParagraph(array $wrappedLines, int $lineIndex): bool
+    {
+        if ($lineIndex === 0) {
+            return true;
+        }
+
+        return ($wrappedLines[$lineIndex - 1] ?? '') === '';
+    }
+
+    /**
+     * @param list<MappedTextRun> $mappedRuns
+     * @return list<MappedTextRun>
+     */
+    private function justifyMappedRuns(array $mappedRuns, float $remainingWidth, TextOptions $options): array
+    {
+        if ($remainingWidth <= 0.0) {
+            return $mappedRuns;
+        }
+
+        $spaceCount = 0;
+
+        foreach ($mappedRuns as $mappedRun) {
+            $spaceCount += substr_count($mappedRun->text, ' ');
+        }
+
+        if ($spaceCount === 0) {
+            return $mappedRuns;
+        }
+
+        $extraSpaceAdjustment = (int) round(-($remainingWidth / $spaceCount) / $options->fontSize * 1000);
+        $justifiedRuns = [];
+
+        foreach ($mappedRuns as $mappedRun) {
+            if ($mappedRun->positionedFragments !== []) {
+                $justifiedRuns[] = $mappedRun;
+
+                continue;
+            }
+
+            $adjustments = $mappedRun->textAdjustments;
+            $characters = preg_split('//u', $mappedRun->text, -1, PREG_SPLIT_NO_EMPTY) ?: str_split($mappedRun->text);
+
+            foreach ($characters as $index => $character) {
+                if ($character !== ' ' || !isset($characters[$index + 1])) {
+                    continue;
+                }
+
+                $adjustments[$index] = ($adjustments[$index] ?? 0) + $extraSpaceAdjustment;
+            }
+
+            $justifiedRuns[] = new MappedTextRun(
+                script: $mappedRun->script,
+                text: $mappedRun->text,
+                encodedText: $mappedRun->encodedText,
+                glyphNames: $mappedRun->glyphNames,
+                codePoints: $mappedRun->codePoints,
+                embeddedGlyphs: $mappedRun->embeddedGlyphs,
+                textAdjustments: array_values($adjustments),
+                positionedFragments: $mappedRun->positionedFragments,
+                useHexString: $mappedRun->useHexString,
+                width: $mappedRun->width + ($remainingWidth * (substr_count($mappedRun->text, ' ') / $spaceCount)),
+            );
+        }
+
+        return $justifiedRuns;
     }
 
     private function appendPageContent(string $existingContent, string $newContent): string
@@ -448,6 +597,24 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $shapedLines;
+    }
+
+    /**
+     * @param list<list<\Kalle\Pdf\Text\ShapedTextRun>> $shapedLines
+     */
+    private function containsShapedEmbeddedGlyphIds(array $shapedLines): bool
+    {
+        foreach ($shapedLines as $lineRuns) {
+            foreach ($lineRuns as $run) {
+                foreach ($run->glyphs as $glyph) {
+                    if ($glyph->glyphId !== null) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

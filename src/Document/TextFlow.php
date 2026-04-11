@@ -38,9 +38,12 @@ final readonly class TextFlow
             ? $contentArea->top
             : $this->page->size->height();
 
-        $y = $options->y
+        $resolvedY = $options->y
             ?? $this->cursorY
             ?? ($topBoundary - $this->topGlyphOffset($options, $font));
+
+        $y = $options->y
+            ?? ($resolvedY - $this->spacingBefore($options));
 
         return [
             'x' => $x,
@@ -58,7 +61,7 @@ final readonly class TextFlow
         float $x,
     ): array
     {
-        $maxWidth = $this->availableTextWidth($x);
+        $maxWidth = $this->lineAvailableWidth($x, $options, true);
 
         if ($maxWidth <= 0.0 || (!str_contains($text, ' ') && !str_contains($text, "\n") && !str_contains($text, "\r"))) {
             return [$text];
@@ -78,12 +81,13 @@ final readonly class TextFlow
 
             $words = preg_split('/ +/u', $trimmedParagraph, -1, PREG_SPLIT_NO_EMPTY) ?: [$trimmedParagraph];
             $currentLine = array_shift($words);
+            $lineMaxWidth = $this->lineAvailableWidth($x, $options, true);
 
             foreach ($words as $word) {
                 $candidate = $currentLine . ' ' . $word;
                 $candidateWidth = $font->measureTextWidth($candidate, $options->fontSize);
 
-                if ($candidateWidth <= $maxWidth) {
+                if ($candidateWidth <= $lineMaxWidth) {
                     $currentLine = $candidate;
 
                     continue;
@@ -91,6 +95,7 @@ final readonly class TextFlow
 
                 $lines[] = $currentLine;
                 $currentLine = $word;
+                $lineMaxWidth = $this->lineAvailableWidth($x, $options, false);
             }
 
             $lines[] = $currentLine;
@@ -113,9 +118,24 @@ final readonly class TextFlow
         return $options->lineHeight ?? ($options->fontSize * 1.2);
     }
 
+    public function availableTextWidthFrom(float $x, ?TextOptions $options = null): float
+    {
+        return $this->availableTextWidth($x, $options);
+    }
+
+    public function lineX(float $x, TextOptions $options, bool $isFirstLine): float
+    {
+        return $x + $this->lineIndent($options, $isFirstLine);
+    }
+
     private function spacingAfter(TextOptions $options): float
     {
         return $options->spacingAfter ?? 0.0;
+    }
+
+    private function spacingBefore(TextOptions $options): float
+    {
+        return $options->spacingBefore ?? 0.0;
     }
 
     private function topGlyphOffset(
@@ -125,12 +145,40 @@ final readonly class TextFlow
         return $font->ascent($options->fontSize);
     }
 
-    private function availableTextWidth(float $x): float
+    private function availableTextWidth(float $x, ?TextOptions $options = null): float
     {
+        if ($options?->width !== null) {
+            return max($options->width, 0.0);
+        }
+
         $rightBoundary = $this->page->margin !== null
             ? $this->page->contentArea()->right
             : $this->page->size->width();
 
-        return max($rightBoundary - $x, 0.0);
+        $availableWidth = max($rightBoundary - $x, 0.0);
+
+        if ($options?->maxWidth !== null) {
+            return min($availableWidth, max($options->maxWidth, 0.0));
+        }
+
+        return $availableWidth;
+    }
+
+    private function lineAvailableWidth(float $x, TextOptions $options, bool $isFirstLine): float
+    {
+        $indent = $this->lineIndent($options, $isFirstLine);
+
+        if ($options->width !== null) {
+            return max($options->width - $indent, 0.0);
+        }
+
+        return $this->availableTextWidth($x + $indent, $options);
+    }
+
+    private function lineIndent(TextOptions $options, bool $isFirstLine): float
+    {
+        return $isFirstLine
+            ? max($options->firstLineIndent, 0.0)
+            : max($options->hangingIndent, 0.0);
     }
 }

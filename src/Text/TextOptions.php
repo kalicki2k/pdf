@@ -14,14 +14,21 @@ final readonly class TextOptions
     public function __construct(
         public ?float $x = null,
         public ?float $y = null,
+        public ?float $width = null,
+        public ?float $maxWidth = null,
         public float $fontSize = 18.0,
         public ?float $lineHeight = null,
+        public ?float $spacingBefore = null,
         public ?float $spacingAfter = null,
         public string $fontName = StandardFont::HELVETICA->value,
         public ?EmbeddedFontSource $embeddedFont = null,
         public ?StandardFontEncoding $fontEncoding = null,
         public ?Color $color = null,
         public bool $kerning = true,
+        public TextDirection $baseDirection = TextDirection::LTR,
+        public TextAlign $align = TextAlign::LEFT,
+        public float $firstLineIndent = 0.0,
+        public float $hangingIndent = 0.0,
     ) {
     }
 }

@@ -7,8 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Drawing\Units;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -106,5 +109,246 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
 
         self::assertStringContainsString("BT\n/F1 24 Tf\n56.693 761.197 Td\n[", $document->pages[0]->contents);
         self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 721.197 Td\n[", $document->pages[0]->contents);
+    }
+
+    public function testItAppliesSpacingBeforeToImplicitTextPlacement(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Body', new TextOptions(
+                spacingBefore: 12.0,
+            ))
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 755.197 Td\n[", $document->pages[0]->contents);
+    }
+
+    public function testItDoesNotApplySpacingBeforeWhenYIsExplicit(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('Body', new TextOptions(
+                y: 680.0,
+                spacingBefore: 12.0,
+            ))
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n0 680 Td\n[", $document->pages[0]->contents);
+    }
+
+    public function testItCentersImplicitTextWithinTheAvailableLineWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Centered', new TextOptions(
+                align: TextAlign::CENTER,
+            ))
+            ->build();
+
+        $font = StandardFontDefinition::from(StandardFont::HELVETICA);
+        $lineWidth = $font->measureTextWidth('Centered', 18.0);
+        $availableWidth = PageSize::A5()->width() - (Units::mm(20) * 2);
+        $x = Units::mm(20) + (($availableWidth - $lineWidth) / 2);
+
+        self::assertStringContainsString(
+            "BT\n/F1 18 Tf\n" . $this->formatNumber($x) . " 520.583 Td\n[",
+            $document->pages[0]->contents,
+        );
+    }
+
+    public function testItCentersTextWithinAnExplicitBlockWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Centered', new TextOptions(
+                width: 200.0,
+                align: TextAlign::CENTER,
+            ))
+            ->build();
+
+        $font = StandardFontDefinition::from(StandardFont::HELVETICA);
+        $lineWidth = $font->measureTextWidth('Centered', 18.0);
+        $x = Units::mm(20) + ((200.0 - $lineWidth) / 2);
+
+        self::assertStringContainsString(
+            "BT\n/F1 18 Tf\n" . $this->formatNumber($x) . " 520.583 Td\n[",
+            $document->pages[0]->contents,
+        );
+    }
+
+    public function testItCentersTextWithinAnExplicitMaxWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Centered', new TextOptions(
+                maxWidth: 200.0,
+                align: TextAlign::CENTER,
+            ))
+            ->build();
+
+        $font = StandardFontDefinition::from(StandardFont::HELVETICA);
+        $lineWidth = $font->measureTextWidth('Centered', 18.0);
+        $x = Units::mm(20) + ((200.0 - $lineWidth) / 2);
+
+        self::assertStringContainsString(
+            "BT\n/F1 18 Tf\n" . $this->formatNumber($x) . " 520.583 Td\n[",
+            $document->pages[0]->contents,
+        );
+    }
+
+    public function testItRightAlignsImplicitTextWithinTheAvailableLineWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Right', new TextOptions(
+                align: TextAlign::RIGHT,
+            ))
+            ->build();
+
+        $font = StandardFontDefinition::from(StandardFont::HELVETICA);
+        $lineWidth = $font->measureTextWidth('Right', 18.0);
+        $availableWidth = PageSize::A5()->width() - (Units::mm(20) * 2);
+        $x = Units::mm(20) + ($availableWidth - $lineWidth);
+
+        self::assertStringContainsString(
+            "BT\n/F1 18 Tf\n" . $this->formatNumber($x) . " 520.583 Td\n[",
+            $document->pages[0]->contents,
+        );
+    }
+
+    public function testItRightAlignsTextWithinAnExplicitBlockWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Right', new TextOptions(
+                width: 150.0,
+                align: TextAlign::RIGHT,
+            ))
+            ->build();
+
+        $font = StandardFontDefinition::from(StandardFont::HELVETICA);
+        $lineWidth = $font->measureTextWidth('Right', 18.0);
+        $x = Units::mm(20) + (150.0 - $lineWidth);
+
+        self::assertStringContainsString(
+            "BT\n/F1 18 Tf\n" . $this->formatNumber($x) . " 520.583 Td\n[",
+            $document->pages[0]->contents,
+        );
+    }
+
+    public function testItRightAlignsTextWithinAnExplicitMaxWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Right', new TextOptions(
+                maxWidth: 150.0,
+                align: TextAlign::RIGHT,
+            ))
+            ->build();
+
+        $font = StandardFontDefinition::from(StandardFont::HELVETICA);
+        $lineWidth = $font->measureTextWidth('Right', 18.0);
+        $x = Units::mm(20) + (150.0 - $lineWidth);
+
+        self::assertStringContainsString(
+            "BT\n/F1 18 Tf\n" . $this->formatNumber($x) . " 520.583 Td\n[",
+            $document->pages[0]->contents,
+        );
+    }
+
+    public function testItJustifiesWrappedLinesExceptTheParagraphEnd(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('one two three four five six seven eight', new TextOptions(
+                fontName: StandardFont::COURIER->value,
+                align: TextAlign::JUSTIFY,
+            ))
+            ->build();
+
+        self::assertMatchesRegularExpression(
+            '/56\.693 520\.583 Td\\n\\[.*-[1-9][0-9]*.*\\] TJ/s',
+            $document->pages[0]->contents,
+        );
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 498.983 Td\n(seven eight) Tj\nET", $document->pages[0]->contents);
+    }
+
+    public function testItJustifiesTextWithinAnExplicitBlockWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('one two three four five six', new TextOptions(
+                fontName: StandardFont::COURIER->value,
+                width: 170.0,
+                align: TextAlign::JUSTIFY,
+            ))
+            ->build();
+
+        self::assertMatchesRegularExpression(
+            '/56\.693 520\.583 Td\\n\\[.*-[1-9][0-9]*.*\\] TJ/s',
+            $document->pages[0]->contents,
+        );
+    }
+
+    public function testItJustifiesTextWithinAnExplicitMaxWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('one two three four five six', new TextOptions(
+                fontName: StandardFont::COURIER->value,
+                maxWidth: 170.0,
+                align: TextAlign::JUSTIFY,
+            ))
+            ->build();
+
+        self::assertMatchesRegularExpression(
+            '/56\.693 520\.583 Td\\n\\[.*-[1-9][0-9]*.*\\] TJ/s',
+            $document->pages[0]->contents,
+        );
+    }
+
+    public function testItAppliesFirstLineIndentOnlyToTheParagraphStart(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Hello world this wraps automatically across multiple lines.', new TextOptions(
+                width: 160.0,
+                firstLineIndent: 40.0,
+            ))
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n96.693 520.583 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 498.983 Td\n[", $document->pages[0]->contents);
+    }
+
+    public function testItAppliesHangingIndentOnlyToFollowingParagraphLines(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Hello world this wraps automatically across multiple lines.', new TextOptions(
+                width: 160.0,
+                hangingIndent: 40.0,
+            ))
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 520.583 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n96.693 498.983 Td\n[", $document->pages[0]->contents);
+    }
+
+    private function formatNumber(float $value): string
+    {
+        $formatted = number_format($value, 3, '.', '');
+
+        return rtrim(rtrim($formatted, '0'), '.');
     }
 }

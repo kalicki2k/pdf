@@ -10,7 +10,12 @@ use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
+use Kalle\Pdf\Font\StandardFontMetrics;
+use Kalle\Pdf\Page\Margin;
+use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\PageFont;
+use Kalle\Pdf\Drawing\Units;
+use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -169,6 +174,31 @@ final class DefaultDocumentBuilderFontTest extends TestCase
         );
     }
 
+    public function testItAlignsExplicitGlyphRunsWithinTheAvailableWidth(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->glyphs(
+                StandardFontGlyphRun::fromGlyphNames(StandardFont::HELVETICA, ['A', 'V']),
+                new TextOptions(
+                    fontName: StandardFont::HELVETICA->value,
+                    align: TextAlign::RIGHT,
+                ),
+            )
+            ->build();
+
+        $glyphWidth = StandardFontMetrics::measureGlyphNamesWidth(StandardFont::HELVETICA->value, ['A', 'V'], 18.0);
+        self::assertIsFloat($glyphWidth);
+        $availableWidth = PageSize::A5()->width() - (Units::mm(20) * 2);
+        $x = Units::mm(20) + ($availableWidth - $glyphWidth);
+
+        self::assertStringContainsString(
+            "BT\n/F1 18 Tf\n" . $this->formatNumber($x) . " 520.583 Td\n[<41> 71 <56>] TJ\nET",
+            $document->pages[0]->contents,
+        );
+    }
+
     public function testItRejectsUnsupportedSymbolText(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -187,5 +217,12 @@ final class DefaultDocumentBuilderFontTest extends TestCase
         DefaultDocumentBuilder::make()
             ->text('Hello', new TextOptions(fontName: StandardFont::ZAPF_DINGBATS->value))
             ->build();
+    }
+
+    private function formatNumber(float $value): string
+    {
+        $formatted = number_format($value, 3, '.', '');
+
+        return rtrim(rtrim($formatted, '0'), '.');
     }
 }

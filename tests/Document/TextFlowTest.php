@@ -66,6 +66,116 @@ final class TextFlowTest extends TestCase
         self::assertSame('across multiple lines.', $lines[1]);
     }
 
+    public function testItWrapsTextWithinAnExplicitBlockWidth(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A5(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $lines = $flow->wrapTextLines(
+            'Hello world this wraps automatically across multiple lines.',
+            new TextOptions(
+                fontName: StandardFont::HELVETICA->value,
+                width: 120.0,
+            ),
+            StandardFontDefinition::from(StandardFont::HELVETICA),
+            Units::mm(20),
+        );
+
+        self::assertCount(5, $lines);
+        self::assertSame('Hello world', $lines[0]);
+        self::assertSame('this wraps', $lines[1]);
+        self::assertSame('automatically', $lines[2]);
+        self::assertSame('across multiple', $lines[3]);
+        self::assertSame('lines.', $lines[4]);
+    }
+
+    public function testItWrapsTextWithinAnExplicitMaxWidth(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A5(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $lines = $flow->wrapTextLines(
+            'Hello world this wraps automatically across multiple lines.',
+            new TextOptions(
+                fontName: StandardFont::HELVETICA->value,
+                maxWidth: 120.0,
+            ),
+            StandardFontDefinition::from(StandardFont::HELVETICA),
+            Units::mm(20),
+        );
+
+        self::assertCount(5, $lines);
+        self::assertSame('Hello world', $lines[0]);
+        self::assertSame('this wraps', $lines[1]);
+        self::assertSame('automatically', $lines[2]);
+        self::assertSame('across multiple', $lines[3]);
+        self::assertSame('lines.', $lines[4]);
+    }
+
+    public function testItWrapsTheFirstParagraphLineWithinTheIndentedWidth(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A5(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $lines = $flow->wrapTextLines(
+            'Hello world this wraps automatically across multiple lines.',
+            new TextOptions(
+                fontName: StandardFont::HELVETICA->value,
+                width: 160.0,
+                firstLineIndent: 40.0,
+            ),
+            StandardFontDefinition::from(StandardFont::HELVETICA),
+            Units::mm(20),
+        );
+
+        self::assertCount(5, $lines);
+        self::assertSame('Hello world', $lines[0]);
+        self::assertSame('this wraps', $lines[1]);
+        self::assertSame('automatically', $lines[2]);
+        self::assertSame('across multiple', $lines[3]);
+        self::assertSame('lines.', $lines[4]);
+    }
+
+    public function testItWrapsFollowingParagraphLinesWithinTheHangingIndentedWidth(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A5(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $lines = $flow->wrapTextLines(
+            'Hello world this wraps automatically across multiple lines.',
+            new TextOptions(
+                fontName: StandardFont::HELVETICA->value,
+                width: 160.0,
+                hangingIndent: 40.0,
+            ),
+            StandardFontDefinition::from(StandardFont::HELVETICA),
+            Units::mm(20),
+        );
+
+        self::assertCount(5, $lines);
+        self::assertSame('Hello world this', $lines[0]);
+        self::assertSame('wraps', $lines[1]);
+        self::assertSame('automatically', $lines[2]);
+        self::assertSame('across multiple', $lines[3]);
+        self::assertSame('lines.', $lines[4]);
+    }
+
     public function testItCalculatesTheNextCursorYFromLineHeightAndSpacingAfter(): void
     {
         $flow = new TextFlow(new Page(PageSize::A4()));
@@ -77,5 +187,26 @@ final class TextFlowTest extends TestCase
         ), 785.197);
 
         self::assertEqualsWithDelta(745.197, $nextCursorY, 0.001);
+    }
+
+    public function testItAppliesSpacingBeforeToImplicitPlacementOnly(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A4(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $implicitPlacement = $flow->placement(new TextOptions(
+            spacingBefore: 12.0,
+        ), StandardFontDefinition::from(StandardFont::HELVETICA));
+        $explicitPlacement = $flow->placement(new TextOptions(
+            y: 700.0,
+            spacingBefore: 12.0,
+        ), StandardFontDefinition::from(StandardFont::HELVETICA));
+
+        self::assertEqualsWithDelta(755.197, $implicitPlacement['y'], 0.001);
+        self::assertSame(700.0, $explicitPlacement['y']);
     }
 }

@@ -11,6 +11,7 @@ use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 
+use Kalle\Pdf\Text\PositionedTextFragment;
 use Kalle\Pdf\Text\TextOptions;
 
 use function number_format;
@@ -21,6 +22,8 @@ final readonly class TextBlockBuilder
 {
     /**
      * @param list<?string> $glyphNames
+     * @param list<int> $textAdjustments
+     * @param list<PositionedTextFragment> $positionedFragments
      */
     public function build(
         string $encodedText,
@@ -30,6 +33,8 @@ final readonly class TextBlockBuilder
         string $fontAlias,
         StandardFontDefinition|EmbeddedFontDefinition $font,
         array $glyphNames = [],
+        array $textAdjustments = [],
+        array $positionedFragments = [],
         bool $useHexString = false,
     ): string {
         $lines = [
@@ -40,11 +45,22 @@ final readonly class TextBlockBuilder
             $lines[] = $this->buildFillColorOperator($options->color);
         }
 
+        if ($positionedFragments !== []) {
+            $lines[] = '/' . $fontAlias . ' ' . $this->formatNumber($options->fontSize) . ' Tf';
+            $lines = [
+                ...$lines,
+                ...$this->buildPositionedFragmentOperators($positionedFragments, $x, $y, $useHexString),
+                'ET',
+            ];
+
+            return implode("\n", $lines);
+        }
+
         $lines = [
             ...$lines,
             '/' . $fontAlias . ' ' . $this->formatNumber($options->fontSize) . ' Tf',
             $this->formatNumber($x) . ' ' . $this->formatNumber($y) . ' Td',
-            $this->buildTextShowOperator($encodedText, $font, $glyphNames, $useHexString),
+            $this->buildTextShowOperator($encodedText, $font, $glyphNames, $textAdjustments, $useHexString),
             'ET',
         ];
 
@@ -67,17 +83,25 @@ final readonly class TextBlockBuilder
 
     /**
      * @param list<?string> $glyphNames
+     * @param list<int> $textAdjustments
      */
     private function buildTextShowOperator(
         string $encodedText,
         StandardFontDefinition|EmbeddedFontDefinition $font,
         array $glyphNames,
+        array $textAdjustments,
         bool $useHexString,
     ): string {
-        $kerningOperator = $this->buildKerningTextOperator($encodedText, $font, $glyphNames);
+        $adjustedOperator = $this->buildAdjustedTextOperator(
+            $encodedText,
+            $font,
+            $glyphNames,
+            $textAdjustments,
+            $useHexString,
+        );
 
-        if ($kerningOperator !== null) {
-            return $kerningOperator;
+        if ($adjustedOperator !== null) {
+            return $adjustedOperator;
         }
 
         return ($useHexString ? $this->pdfHexString($encodedText) : $this->pdfLiteralString($encodedText)) . ' Tj';
@@ -85,8 +109,50 @@ final readonly class TextBlockBuilder
 
     /**
      * @param list<?string> $glyphNames
+     * @param list<int> $textAdjustments
      */
-    private function buildKerningTextOperator(
+    private function buildAdjustedTextOperator(
+        string $encodedText,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
+        array $glyphNames,
+        array $textAdjustments,
+        bool $useHexString,
+    ): ?string {
+        if ($textAdjustments === []) {
+            return $this->buildKerningOperator($encodedText, $font, $glyphNames);
+        }
+
+        $glyphCount = max(count($glyphNames), count($textAdjustments) + 1);
+
+        if (strlen($encodedText) < 2) {
+            return null;
+        }
+
+        if (strlen($encodedText) % $glyphCount !== 0) {
+            return null;
+        }
+
+        $adjustments = array_fill(0, $glyphCount - 1, 0);
+
+        foreach ($this->buildKerningAdjustments($glyphNames, $font) as $index => $adjustment) {
+            $adjustments[$index] = ($adjustments[$index] ?? 0) + $adjustment;
+        }
+
+        foreach ($textAdjustments as $index => $adjustment) {
+            $adjustments[$index] = ($adjustments[$index] ?? 0) + $adjustment;
+        }
+
+        if (count(array_filter($adjustments, static fn (int $value): bool => $value !== 0)) === 0) {
+            return null;
+        }
+
+        return $this->buildPositionedTextOperator($encodedText, array_values($adjustments), $useHexString);
+    }
+
+    /**
+     * @param list<?string> $glyphNames
+     */
+    private function buildKerningOperator(
         string $encodedText,
         StandardFontDefinition|EmbeddedFontDefinition $font,
         array $glyphNames,
@@ -130,6 +196,103 @@ final readonly class TextBlockBuilder
 
         if (!$hasKerning) {
             return null;
+        }
+
+        return '[' . implode(' ', $parts) . '] TJ';
+    }
+
+    /**
+     * @param list<?string> $glyphNames
+     * @return list<int>
+     */
+    private function buildKerningAdjustments(
+        array $glyphNames,
+        StandardFontDefinition|EmbeddedFontDefinition $font,
+    ): array {
+        if ($glyphNames === [] || count($glyphNames) < 2) {
+            return [];
+        }
+
+        $adjustments = [];
+
+        foreach ($glyphNames as $index => $leftGlyph) {
+            if (!isset($glyphNames[$index + 1])) {
+                continue;
+            }
+
+            $rightGlyph = $glyphNames[$index + 1];
+
+            if ($leftGlyph === null) {
+                $adjustments[] = 0;
+
+                continue;
+            }
+
+            $adjustments[] = -$font->kerningValue($leftGlyph, $rightGlyph);
+        }
+
+        return $adjustments;
+    }
+
+    /**
+     * @param list<PositionedTextFragment> $positionedFragments
+     * @return list<string>
+     */
+    private function buildPositionedFragmentOperators(
+        array $positionedFragments,
+        float $x,
+        float $y,
+        bool $useHexString,
+    ): array {
+        $operators = [];
+
+        foreach ($positionedFragments as $fragment) {
+            $operators[] = '1 0 0 1 '
+                . $this->formatNumber($x + $fragment->xOffset)
+                . ' '
+                . $this->formatNumber($y + $fragment->yOffset)
+                . ' Tm';
+            $operators[] = ($useHexString
+                ? $this->pdfHexString($fragment->encodedText)
+                : $this->pdfLiteralString($fragment->encodedText))
+                . ' Tj';
+        }
+
+        return $operators;
+    }
+
+    /**
+     * @param list<int> $textAdjustments
+     */
+    private function buildPositionedTextOperator(string $encodedText, array $textAdjustments, bool $useHexString): ?string
+    {
+        $glyphCount = count($textAdjustments) + 1;
+
+        if ($glyphCount < 2 || $encodedText === '') {
+            return null;
+        }
+
+        $encodedLength = strlen($encodedText);
+
+        if ($encodedLength % $glyphCount !== 0) {
+            return null;
+        }
+
+        $unitLength = intdiv($encodedLength, $glyphCount);
+
+        if ($unitLength <= 0) {
+            return null;
+        }
+
+        $parts = [];
+
+        for ($index = 0; $index < $glyphCount; $index++) {
+            $chunk = substr($encodedText, $index * $unitLength, $unitLength);
+            $parts[] = $useHexString ? $this->pdfHexString($chunk) : $this->pdfLiteralString($chunk);
+
+            if (isset($textAdjustments[$index])) {
+                $parts[] = (string) $textAdjustments[$index];
+            }
         }
 
         return '[' . implode(' ', $parts) . '] TJ';
