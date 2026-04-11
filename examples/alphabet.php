@@ -34,12 +34,16 @@ $sampleSentence = 'Sphinx of black quartz, judge my vow. Falsches Üben von Xylo
 $fonts = [
     StandardFont::HELVETICA->value,
     StandardFont::HELVETICA_BOLD->value,
+    StandardFont::HELVETICA_BOLD_OBLIQUE->value,
     StandardFont::HELVETICA_OBLIQUE->value,
     StandardFont::TIMES_ROMAN->value,
     StandardFont::TIMES_BOLD->value,
+    StandardFont::TIMES_BOLD_ITALIC->value,
     StandardFont::TIMES_ITALIC->value,
     StandardFont::COURIER->value,
     StandardFont::COURIER_BOLD->value,
+    StandardFont::COURIER_BOLD_OBLIQUE->value,
+    StandardFont::COURIER_OBLIQUE->value,
 ];
 
 $document = Pdf::document()
@@ -79,7 +83,7 @@ $document = $placeText(
 );
 $document = $placeText(
     $document,
-    'Referenzseite fuer Schriftschnitt, Zeichenumfang und Lesegroessen',
+    'Referenzseite für Schriftschnitt, Zeichenumfang und Lesegrößen',
     20,
     272,
     10,
@@ -88,7 +92,7 @@ $document = $placeText(
 );
 $document = $placeText(
     $document,
-    'Familienuebersicht',
+    'Familienübersicht',
     20,
     258,
     12,
@@ -97,7 +101,7 @@ $document = $placeText(
 );
 $document = $placeText(
     $document,
-    'Diese Seite zeigt die Standard-PDF-Fonts mit einem konsistenten Mustertext fuer schnelle visuelle Vergleiche.',
+    'Diese Seiten zeigen alle Standard-PDF-Fonts mit einem konsistenten Mustertext für schnelle visuelle Vergleiche.',
     20,
     251,
     9,
@@ -105,10 +109,12 @@ $document = $placeText(
     $copyColor,
 );
 
+$firstPageFonts = array_slice($fonts, 0, 6);
+$secondPageFonts = array_slice($fonts, 6);
 $startY = 237.0;
 $rowStep = 27.0;
 
-foreach ($fonts as $index => $fontName) {
+foreach ($firstPageFonts as $index => $fontName) {
     $baseline = $startY - ($index * $rowStep);
 
     $document = $placeText(
@@ -156,7 +162,7 @@ $document = $document->newPage(new PageOptions(
 
 $document = $placeText(
     $document,
-    'Groessen, Laufweite und Sonderzeichen',
+    'Weitere Standardschnitte',
     20,
     281,
     20,
@@ -165,7 +171,71 @@ $document = $placeText(
 );
 $document = $placeText(
     $document,
-    'Punktgroessen',
+    'Die restlichen Kernfonts der Standard-14-Familie mit identischem Mustertext.',
+    20,
+    272,
+    10,
+    StandardFont::HELVETICA->value,
+    $mutedColor,
+);
+
+foreach ($secondPageFonts as $index => $fontName) {
+    $baseline = 257.0 - ($index * $rowStep);
+
+    $document = $placeText(
+        $document,
+        $fontName,
+        20,
+        $baseline + 8,
+        11,
+        StandardFont::HELVETICA_BOLD->value,
+        $accentColor,
+    );
+    $document = $placeText(
+        $document,
+        $sampleSentence,
+        20,
+        $baseline,
+        13,
+        $fontName,
+        $headlineColor,
+    );
+    $document = $placeText(
+        $document,
+        $latinUpper,
+        20,
+        $baseline - 7,
+        9,
+        $fontName,
+        $copyColor,
+    );
+    $document = $placeText(
+        $document,
+        $latinLower . '    ' . $numeralsAndPunctuation,
+        20,
+        $baseline - 13,
+        8.5,
+        $fontName,
+        $mutedColor,
+    );
+}
+
+$document = $document->newPage(new PageOptions(
+    pageSize: PageSize::A4(),
+));
+
+$document = $placeText(
+    $document,
+    'Größen, Laufweite und Sonderzeichen',
+    20,
+    281,
+    20,
+    StandardFont::HELVETICA_BOLD->value,
+    $headlineColor,
+);
+$document = $placeText(
+    $document,
+    'Punktgrößen',
     20,
     266,
     12,
@@ -194,7 +264,7 @@ foreach ($sizeRows as [$label, $size, $y]) {
     );
     $document = $placeText(
         $document,
-        'Hamburgefons 12345 AeOeUe / Sphinx of black quartz',
+        'Hamburgefons 12345 ÄÖÜ / Sphinx of black quartz',
         40,
         $y,
         $size,
@@ -214,7 +284,7 @@ $document = $placeText(
 );
 $document = $placeText(
     $document,
-    'Courier eignet sich fuer tabellarische Ausrichtung und technische Ausgaben.',
+    'Courier eignet sich für tabellarische Ausrichtung und technische Ausgaben.',
     20,
     149,
     9,
@@ -279,7 +349,7 @@ $document = $placeText(
 
 $document = $placeText(
     $document,
-    'Hinweis: Die Musterseite arbeitet ausschliesslich mit PDF-Standardfonts und der aktuellen Text-API des Projekts.',
+    'Hinweis: Die Musterseiten arbeiten ausschließlich mit PDF-Standardfonts und der aktuellen Text-API des Projekts.',
     20,
     24,
     8.5,
