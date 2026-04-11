@@ -25,7 +25,7 @@
     }
   },
   "scripts": {
-    "phpstan": "phpstan analyse -c phpstan.neon",
+    "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
     "test": "phpunit -c phpunit.xml",
     "test:coverage": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-text",
     "test:coverage-html": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-html var/coverage",
@@ -38,6 +38,6 @@
     "friendsofphp/php-cs-fixer": "^3.80"
   },
   "require": {
-    "php": "^8.4"
+    "php": "^8.5"
   }
 }

@@ -38,6 +38,12 @@ Composer-Abhängigkeiten im Container installieren:
 make composer-install
 ```
 
+PHPStan im Container ausführen:
+
+```bash
+make phpstan
+```
+
 Compose-Services starten:
 
 ```bash

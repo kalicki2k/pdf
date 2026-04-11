@@ -7,6 +7,9 @@ rebuild:
 composer-install:
 	docker compose run --rm php composer install
 
+phpstan:
+	bin/phpstan
+
 shell:
 	docker compose run --rm php sh
 
