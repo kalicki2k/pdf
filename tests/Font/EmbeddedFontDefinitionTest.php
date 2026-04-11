@@ -36,6 +36,26 @@ final class EmbeddedFontDefinitionTest extends TestCase
         $font->encodeText('B');
     }
 
+    public function testItSupportsUnicodeBmpTextForPhaseTwoPath(): void
+    {
+        $font = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+        );
+
+        self::assertFalse($font->supportsText('Ж'));
+        self::assertTrue($font->supportsUnicodeText('Ж'));
+        self::assertSame("\x04\x16", $font->encodeUnicodeText('Ж'));
+        self::assertSame(14.0, $font->measureTextWidth('Ж', 20.0));
+        self::assertSame([0x0416], $font->unicodeCodePointsForText('ЖЖ'));
+        self::assertTrue($font->supportsUnicodeText('Ж中'));
+        self::assertSame("\x04\x16\x4E\x2D", $font->encodeUnicodeText('Ж中'));
+        self::assertSame(30.0, $font->measureTextWidth('Ж中', 20.0));
+        self::assertSame([0x4E2D, 0x0416], $font->unicodeCodePointsForText('中ЖЖ'));
+        self::assertTrue($font->supportsUnicodeText('😀'));
+        self::assertSame("\xD8\x3D\xDE\x00", $font->encodeUnicodeText('😀'));
+        self::assertSame(18.0, $font->measureTextWidth('😀', 20.0));
+    }
+
     public function testItRejectsCffOutlineFontsInPhaseOne(): void
     {
         $this->expectException(InvalidArgumentException::class);

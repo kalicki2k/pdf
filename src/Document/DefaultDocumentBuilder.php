@@ -145,8 +145,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $font = $options->embeddedFont !== null
             ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
             : StandardFontDefinition::from($options->fontName);
+        $usesUnicodeEmbeddedFont = $font instanceof EmbeddedFontDefinition
+            && !$font->supportsText($text);
+
+        if ($font instanceof EmbeddedFontDefinition && $usesUnicodeEmbeddedFont && !$font->supportsUnicodeText($text)) {
+            throw new InvalidArgumentException(sprintf(
+                "Text cannot be encoded with embedded font '%s'.",
+                $font->metadata->postScriptName,
+            ));
+        }
+
         $fontAlias = $font instanceof EmbeddedFontDefinition
-            ? $clone->embeddedFontAliasFor($font)
+            ? (
+                $usesUnicodeEmbeddedFont
+                    ? $clone->embeddedUnicodeFontAliasFor($font, $font->unicodeCodePointsForText($text))
+                    : $clone->embeddedFontAliasFor($font)
+            )
             : $clone->fontAliasFor(
                 $font->name,
                 $font->resolveEncoding(
@@ -157,6 +171,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $textFlow = $clone->textFlow();
         $placement = $textFlow->placement($options);
         $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
+        $embeddedPageFont = $font instanceof EmbeddedFontDefinition
+            ? $clone->currentPageFontResources[$fontAlias] ?? null
+            : null;
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
@@ -168,6 +185,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $placement['y'],
                 $fontAlias,
                 $font,
+                $embeddedPageFont,
+                $usesUnicodeEmbeddedFont,
                 ($this->profile ?? Profile::standard())->version(),
             ),
         );
@@ -329,6 +348,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $y,
         string $fontAlias,
         StandardFontDefinition|EmbeddedFontDefinition $font,
+        ?PageFont $embeddedPageFont,
+        bool $useHexString,
         float $pdfVersion,
     ): string {
         $contents = [];
@@ -340,7 +361,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
             $contents[] = $this->textBlockBuilder()->build(
                 $font instanceof EmbeddedFontDefinition
-                    ? $font->encodeText($line)
+                    ? (
+                        $useHexString
+                            ? $embeddedPageFont?->encodeUnicodeText($line) ?? $font->encodeUnicodeText($line)
+                            : $font->encodeText($line)
+                    )
                     : $font->encodeText($line, $pdfVersion, $options->fontEncoding),
                 $options,
                 $x,
@@ -354,6 +379,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                             : $font->glyphNamesForText($line, $pdfVersion, $options->fontEncoding)
                     )
                     : [],
+                $useHexString,
             );
         }
 
@@ -408,6 +434,27 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $alias = 'F' . (count($this->currentPageFontResources) + 1);
         $this->currentPageFontResources[$alias] = PageFont::embedded($font);
+
+        return $alias;
+    }
+
+    /**
+     * @param list<int> $unicodeCodePoints
+     */
+    private function embeddedUnicodeFontAliasFor(EmbeddedFontDefinition $font, array $unicodeCodePoints): string
+    {
+        foreach ($this->currentPageFontResources as $alias => $pageFont) {
+            if (!$pageFont->matchesEmbedded($font, true)) {
+                continue;
+            }
+
+            $this->currentPageFontResources[$alias] = $pageFont->withAdditionalUnicodeCodePoints($unicodeCodePoints);
+
+            return $alias;
+        }
+
+        $alias = 'F' . (count($this->currentPageFontResources) + 1);
+        $this->currentPageFontResources[$alias] = PageFont::embeddedUnicode($font, $unicodeCodePoints);
 
         return $alias;
     }

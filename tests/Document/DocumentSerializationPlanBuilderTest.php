@@ -24,6 +24,8 @@ use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
+use function preg_match;
+
 final class DocumentSerializationPlanBuilderTest extends TestCase
 {
     public function testItBuildsAMinimalSerializationPlan(): void
@@ -241,5 +243,36 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/FontDescriptor', $serialized);
         self::assertStringContainsString('/FontFile2', $serialized);
         self::assertStringContainsString('/BaseFont /TestFont-Regular', $serialized);
+    }
+
+    public function testItBuildsUnicodeEmbeddedTrueTypeFontObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->text('Ж', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+            ))
+            ->newPage()
+            ->text('中😀', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /Type0', $serialized);
+        self::assertStringContainsString('/Subtype /CIDFontType2', $serialized);
+        self::assertStringContainsString('/Encoding /Identity-H', $serialized);
+        self::assertStringContainsString('/CIDToGIDMap', $serialized);
+        self::assertStringContainsString('/ToUnicode', $serialized);
+        self::assertMatchesRegularExpression('/\\/BaseFont \\/[A-Z]{6}\\+TestFont-Regular/', $serialized);
+        self::assertStringContainsString('<0001> <0416>', $serialized);
+        self::assertStringContainsString('<0001> <4E2D>', $serialized);
+        self::assertStringContainsString('<0002> <D83DDE00>', $serialized);
+        preg_match('/\\/Length1 ([0-9]+)/', $serialized, $matches);
+        self::assertArrayHasKey(1, $matches);
+        self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()), (int) $matches[1]);
     }
 }

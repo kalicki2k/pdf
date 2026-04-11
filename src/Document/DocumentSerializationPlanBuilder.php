@@ -34,6 +34,12 @@ final class DocumentSerializationPlanBuilder
         $fontDescriptorObjectIds = [];
         /** @var array<string, int> $fontFileObjectIds */
         $fontFileObjectIds = [];
+        /** @var array<string, int> $cidFontObjectIds */
+        $cidFontObjectIds = [];
+        /** @var array<string, int> $toUnicodeObjectIds */
+        $toUnicodeObjectIds = [];
+        /** @var array<string, int> $cidToGidMapObjectIds */
+        $cidToGidMapObjectIds = [];
 
         foreach ($document->pages as $page) {
             $pageObjectIds[] = $nextObjectId;
@@ -51,10 +57,23 @@ final class DocumentSerializationPlanBuilder
                     $nextObjectId++;
 
                     if ($pageFont->isEmbedded()) {
-                        $fontDescriptorObjectIds[$fontKey] = $nextObjectId;
-                        $nextObjectId++;
-                        $fontFileObjectIds[$fontKey] = $nextObjectId;
-                        $nextObjectId++;
+                        if ($pageFont->usesUnicodeCids()) {
+                            $cidFontObjectIds[$fontKey] = $nextObjectId;
+                            $nextObjectId++;
+                            $fontDescriptorObjectIds[$fontKey] = $nextObjectId;
+                            $nextObjectId++;
+                            $fontFileObjectIds[$fontKey] = $nextObjectId;
+                            $nextObjectId++;
+                            $toUnicodeObjectIds[$fontKey] = $nextObjectId;
+                            $nextObjectId++;
+                            $cidToGidMapObjectIds[$fontKey] = $nextObjectId;
+                            $nextObjectId++;
+                        } else {
+                            $fontDescriptorObjectIds[$fontKey] = $nextObjectId;
+                            $nextObjectId++;
+                            $fontFileObjectIds[$fontKey] = $nextObjectId;
+                            $nextObjectId++;
+                        }
                     }
                 }
             }
@@ -94,18 +113,49 @@ final class DocumentSerializationPlanBuilder
                 $fontDescriptorObjectId = $fontDescriptorObjectIds[$fontKey];
                 $fontFileObjectId = $fontFileObjectIds[$fontKey];
 
-                $objects[] = new IndirectObject(
-                    $fontObjectId,
-                    $embeddedFont->fontObjectContents($fontDescriptorObjectId),
-                );
-                $objects[] = new IndirectObject(
-                    $fontDescriptorObjectId,
-                    $embeddedFont->fontDescriptorContents($fontFileObjectId),
-                );
-                $objects[] = new IndirectObject(
-                    $fontFileObjectId,
-                    $embeddedFont->fontFileStreamContents(),
-                );
+                if ($pageFont->usesUnicodeCids()) {
+                    /** @var list<int> $unicodeCodePoints */
+                    $unicodeCodePoints = $pageFont->unicodeCodePoints;
+                    $cidFontObjectId = $cidFontObjectIds[$fontKey];
+                    $toUnicodeObjectId = $toUnicodeObjectIds[$fontKey];
+                    $cidToGidMapObjectId = $cidToGidMapObjectIds[$fontKey];
+                    $subsetFontName = $embeddedFont->subsetPostScriptName($unicodeCodePoints);
+
+                    $objects[] = new IndirectObject(
+                        $fontObjectId,
+                        $embeddedFont->unicodeType0FontObjectContents($cidFontObjectId, $toUnicodeObjectId, $unicodeCodePoints),
+                    );
+                    $objects[] = new IndirectObject(
+                        $cidFontObjectId,
+                        $embeddedFont->unicodeCidFontObjectContents(
+                            $fontDescriptorObjectId,
+                            $cidToGidMapObjectId,
+                            $unicodeCodePoints,
+                        ),
+                    );
+                    $objects[] = new IndirectObject(
+                        $fontDescriptorObjectId,
+                        $embeddedFont->fontDescriptorContents($fontFileObjectId, $subsetFontName),
+                    );
+                    $objects[] = new IndirectObject(
+                        $fontFileObjectId,
+                        $embeddedFont->unicodeSubsetFontFileStreamContents($unicodeCodePoints),
+                    );
+                    $objects[] = new IndirectObject(
+                        $toUnicodeObjectId,
+                        $embeddedFont->unicodeToUnicodeStreamContents($unicodeCodePoints),
+                    );
+                    $objects[] = new IndirectObject(
+                        $cidToGidMapObjectId,
+                        $embeddedFont->unicodeCidToGidMapStreamContents($unicodeCodePoints),
+                    );
+
+                    continue;
+                }
+
+                $objects[] = new IndirectObject($fontObjectId, $embeddedFont->fontObjectContents($fontDescriptorObjectId));
+                $objects[] = new IndirectObject($fontDescriptorObjectId, $embeddedFont->fontDescriptorContents($fontFileObjectId));
+                $objects[] = new IndirectObject($fontFileObjectId, $embeddedFont->fontFileStreamContents());
 
                 continue;
             }
@@ -295,7 +345,19 @@ final class DocumentSerializationPlanBuilder
 
         foreach ($pages as $page) {
             foreach ($page->fontResources as $pageFont) {
-                $fonts[$this->fontObjectKey($pageFont)] = $pageFont;
+                $fontKey = $this->fontObjectKey($pageFont);
+
+                if (!isset($fonts[$fontKey])) {
+                    $fonts[$fontKey] = $pageFont;
+
+                    continue;
+                }
+
+                if ($pageFont->isEmbedded() && $pageFont->usesUnicodeCids()) {
+                    /** @var list<int> $unicodeCodePoints */
+                    $unicodeCodePoints = $pageFont->unicodeCodePoints;
+                    $fonts[$fontKey] = $fonts[$fontKey]->withAdditionalUnicodeCodePoints($unicodeCodePoints);
+                }
             }
         }
 

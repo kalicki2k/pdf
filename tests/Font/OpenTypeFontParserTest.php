@@ -37,4 +37,16 @@ final class OpenTypeFontParserTest extends TestCase
         self::assertSame(600, $parser->getAdvanceWidthForGlyphId(1));
         self::assertSame(500, $parser->getAdvanceWidthForGlyphId(0));
     }
+
+    public function testItResolvesUnicodeGlyphIdsFromFormat12Cmap(): void
+    {
+        $parser = new OpenTypeFontParser(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes());
+
+        self::assertSame(2, $parser->getGlyphIdForCharacter('Ж'));
+        self::assertSame(3, $parser->getGlyphIdForCharacter('中'));
+        self::assertSame(4, $parser->getGlyphIdForCharacter('😀'));
+        self::assertSame(700, $parser->getAdvanceWidthForGlyphId(2));
+        self::assertSame(800, $parser->getAdvanceWidthForGlyphId(3));
+        self::assertSame(900, $parser->getAdvanceWidthForGlyphId(4));
+    }
 }

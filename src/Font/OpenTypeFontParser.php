@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Font;
 use InvalidArgumentException;
 
 use function count;
+use function floor;
 use function is_string;
 use function mb_chr;
 use function mb_ord;
@@ -84,16 +85,32 @@ final class OpenTypeFontParser
 
     public function getAdvanceWidthForGlyphId(int $glyphId): int
     {
+        return $this->getHorizontalMetricsForGlyphId($glyphId)['advanceWidth'];
+    }
+
+    /**
+     * @return array{advanceWidth: int, leftSideBearing: int}
+     */
+    public function getHorizontalMetricsForGlyphId(int $glyphId): array
+    {
         $hheaOffset = $this->requiredTableOffset('hhea');
         $hmtxOffset = $this->requiredTableOffset('hmtx');
 
         $numberOfHMetrics = $this->readUInt16($hheaOffset + 34);
 
         if ($glyphId < $numberOfHMetrics) {
-            return $this->readUInt16($hmtxOffset + ($glyphId * 4));
+            return [
+                'advanceWidth' => $this->readUInt16($hmtxOffset + ($glyphId * 4)),
+                'leftSideBearing' => $this->readInt16($hmtxOffset + ($glyphId * 4) + 2),
+            ];
         }
 
-        return $this->readUInt16($hmtxOffset + (($numberOfHMetrics - 1) * 4));
+        return [
+            'advanceWidth' => $this->readUInt16($hmtxOffset + (($numberOfHMetrics - 1) * 4)),
+            'leftSideBearing' => $this->readInt16(
+                $hmtxOffset + ($numberOfHMetrics * 4) + (($glyphId - $numberOfHMetrics) * 2),
+            ),
+        ];
     }
 
     public function unitsPerEm(): int
@@ -196,6 +213,58 @@ final class OpenTypeFontParser
         }
 
         throw new InvalidArgumentException('OpenType font does not contain a supported PostScript name record.');
+    }
+
+    public function hasTable(string $tag): bool
+    {
+        return isset($this->tables[$tag]);
+    }
+
+    public function tableBytes(string $tag): string
+    {
+        $table = $this->tables[$tag] ?? null;
+
+        if ($table === null) {
+            throw new InvalidArgumentException(sprintf(
+                "Font does not contain table '%s'.",
+                $tag,
+            ));
+        }
+
+        return $this->readBytes($table['offset'], $table['length']);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function tableTags(): array
+    {
+        return array_keys($this->tables);
+    }
+
+    public function indexToLocFormat(): int
+    {
+        return $this->readInt16($this->requiredTableOffset('head') + 50);
+    }
+
+    public function glyphDataForGlyphId(int $glyphId): string
+    {
+        if (!$this->hasTable('glyf') || !$this->hasTable('loca')) {
+            throw new InvalidArgumentException('TrueType glyph tables are missing.');
+        }
+
+        $locaOffset = $this->requiredTableOffset('loca');
+        $locFormat = $this->indexToLocFormat();
+
+        $start = $locFormat === 0
+            ? $this->readUInt16($locaOffset + ($glyphId * 2)) * 2
+            : $this->readUInt32($locaOffset + ($glyphId * 4));
+
+        $end = $locFormat === 0
+            ? $this->readUInt16($locaOffset + (($glyphId + 1) * 2)) * 2
+            : $this->readUInt32($locaOffset + (($glyphId + 1) * 4));
+
+        return $this->readBytes($this->requiredTableOffset('glyf') + $start, $end - $start);
     }
 
     private function parseTableDirectory(): void
