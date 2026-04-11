@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Tests;
+
+use Kalle\Pdf\Pdf;
+use Kalle\Pdf\Render\StringOutput;
+use Kalle\Pdf\StandardFont;
+use PHPUnit\Framework\TestCase;
+
+final class PdfTest extends TestCase
+{
+    public function testItRendersADocumentToAProvidedOutput(): void
+    {
+        $document = Pdf::document()
+            ->title('Example Title')
+            ->author('Sebastian Kalicki')
+            ->build();
+        $output = new StringOutput();
+
+        Pdf::render($document, $output);
+
+        self::assertStringStartsWith('%PDF-1.4', $output->contents());
+        self::assertStringContainsString('/Title (Example Title)', $output->contents());
+    }
+
+    public function testItReturnsDocumentContentsAsAString(): void
+    {
+        $document = Pdf::document()
+            ->title('Example Title')
+            ->author('Sebastian Kalicki')
+            ->build();
+
+        $contents = Pdf::contents($document);
+
+        self::assertStringStartsWith('%PDF-1.4', $contents);
+        self::assertStringContainsString('%%EOF', $contents);
+    }
+
+    public function testItSavesADocumentToAPath(): void
+    {
+        $document = Pdf::document()
+            ->title('Example Title')
+            ->author('Sebastian Kalicki')
+            ->build();
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-pdf-facade-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary path for the Pdf facade save test.');
+        }
+
+        unlink($path);
+        $path .= '.pdf';
+
+        $savedPath = Pdf::save($document, $path);
+
+        self::assertSame($path, $savedPath);
+        self::assertFileExists($path);
+
+        $contents = file_get_contents($path);
+
+        self::assertIsString($contents);
+        self::assertStringStartsWith('%PDF-1.4', $contents);
+        self::assertStringContainsString('%%EOF', $contents);
+
+        unlink($path);
+    }
+
+    public function testItMeasuresTextWidthThroughTheFacade(): void
+    {
+        self::assertSame(22.78, Pdf::measureTextWidth('Hello', 10, StandardFont::HELVETICA));
+    }
+}

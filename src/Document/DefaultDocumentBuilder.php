@@ -1,0 +1,302 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Document;
+
+use Kalle\Pdf\Color;
+use Kalle\Pdf\ColorSpace;
+use Kalle\Pdf\Page\Margin;
+use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\PageOptions;
+use Kalle\Pdf\Page\PageOrientation;
+use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Profile;
+use Kalle\Pdf\Render\FileOutput;
+use Kalle\Pdf\StandardFont;
+use Kalle\Pdf\StandardFontEncoding;
+use Kalle\Pdf\TextOptions;
+use InvalidArgumentException;
+use function count;
+use function implode;
+use function is_string;
+use function number_format;
+use function str_replace;
+
+class DefaultDocumentBuilder implements DocumentBuilder
+{
+    /** @var list<Page> */
+    private array $pages = [];
+    private ?PageSize $currentPageSize = null;
+    private string $currentPageContents = '';
+    /** @var array<string, string> */
+    private array $currentPageFontResources = [];
+    private ?Margin $currentPageMargin = null;
+    private ?Color $currentPageBackgroundColor = null;
+    private ?string $currentPageLabel = null;
+    private ?string $currentPageName = null;
+    private ?string $title = null;
+    private ?string $author = null;
+    private ?string $subject = null;
+    private ?string $language = null;
+    private ?string $creator = null;
+    private ?string $creatorTool = null;
+    private ?Profile $profile = null;
+
+    public static function make(): self
+    {
+        return new self();
+    }
+
+    public function title(string $title): self
+    {
+        $clone = clone $this;
+        $clone->title = $title;
+
+        return $clone;
+    }
+
+    public function author(string $author): self
+    {
+        $clone = clone $this;
+        $clone->author = $author;
+
+        return $clone;
+    }
+
+    public function subject(string $subject): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->subject = $subject;
+
+        return $clone;
+    }
+
+    public function language(string $language): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->language = $language;
+
+        return $clone;
+    }
+
+    public function creator(string $creator): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->creator = $creator;
+
+        return $clone;
+    }
+
+    public function creatorTool(string $creatorTool): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->creatorTool = $creatorTool;
+
+        return $clone;
+    }
+
+    public function profile(Profile $profile): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->profile = $profile;
+
+        return $clone;
+    }
+
+    public function pageSize(PageSize $size): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->currentPageSize = $size;
+
+        return $clone;
+    }
+
+    public function content(string $content): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->currentPageContents = $content;
+
+        return $clone;
+    }
+
+    public function text(string $text, ?TextOptions $options = null): DocumentBuilder
+    {
+        $clone = clone $this;
+        $options ??= new TextOptions();
+        $fontAlias = $clone->fontAliasFor($options->fontName);
+
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $this->buildTextContent($text, $options, $fontAlias),
+        );
+
+        return $clone;
+    }
+
+    public function newPage(?PageOptions $options = null): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->pages[] = $clone->buildCurrentPage();
+        $clone->resetCurrentPage($options);
+
+        return $clone;
+    }
+
+    public function build(): Document
+    {
+        return new Document(
+            profile: $this->profile ?? Profile::standard(),
+            pages: [...$this->pages, $this->buildCurrentPage()],
+            title: $this->title,
+            author: $this->author,
+            subject: $this->subject,
+            language: $this->language,
+            creator: $this->creator,
+            creatorTool: $this->creatorTool,
+        );
+    }
+
+    public function save(string $path): string
+    {
+        $output = new FileOutput($path);
+
+        try {
+            (new DocumentRenderer())->write($this->build(), $output);
+            $output->close();
+        } catch (\Throwable $throwable) {
+            unset($output);
+
+            throw $throwable;
+        }
+
+        return $path;
+    }
+
+    private function buildCurrentPage(): Page
+    {
+        return new Page(
+            size: $this->currentPageSize ?? PageSize::A4(),
+            contents: $this->currentPageContents,
+            fontResources: $this->currentPageFontResources,
+            margin: $this->currentPageMargin,
+            backgroundColor: $this->currentPageBackgroundColor,
+            label: $this->currentPageLabel,
+            name: $this->currentPageName,
+        );
+    }
+
+    private function resetCurrentPage(?PageOptions $options): void
+    {
+        $this->currentPageSize = $this->resolvePageSize($options);
+        $this->currentPageContents = '';
+        $this->currentPageFontResources = [];
+        $this->currentPageMargin = $options?->margin;
+        $this->currentPageBackgroundColor = $options?->backgroundColor;
+        $this->currentPageLabel = $options?->label;
+        $this->currentPageName = $options?->name;
+    }
+
+    private function resolvePageSize(?PageOptions $options): ?PageSize
+    {
+        $pageSize = $options?->pageSize;
+
+        if ($pageSize === null) {
+            return null;
+        }
+
+        return match ($options?->orientation) {
+            PageOrientation::LANDSCAPE => $pageSize->landscape(),
+            PageOrientation::PORTRAIT => $pageSize->portrait(),
+            default => $pageSize,
+        };
+    }
+
+    private function buildTextContent(string $text, TextOptions $options, string $fontAlias): string
+    {
+        $fontEncoding = StandardFontEncoding::forFont(
+            $options->fontName,
+            ($this->profile ?? Profile::standard())->version(),
+        );
+
+        $encodedText = $fontEncoding->encodeText($text);
+
+        $lines = [
+            'BT',
+        ];
+
+        if ($options->color !== null) {
+            $lines[] = $this->buildFillColorOperator($options->color);
+        }
+
+        $lines = [
+            ...$lines,
+            '/' . $fontAlias . ' ' . $this->formatNumber($options->fontSize) . ' Tf',
+            $this->formatNumber($options->x) . ' ' . $this->formatNumber($options->y) . ' Td',
+            $this->pdfLiteralString($encodedText) . ' Tj',
+            'ET',
+        ];
+
+        return implode("\n", $lines);
+    }
+
+    private function pdfLiteralString(string $value): string
+    {
+        return '(' . str_replace(
+            ['\\', '(', ')'],
+            ['\\\\', '\(', '\)'],
+            $value,
+        ) . ')';
+    }
+
+    private function appendPageContent(string $existingContent, string $newContent): string
+    {
+        if ($existingContent === '') {
+            return $newContent;
+        }
+
+        return $existingContent . "\n" . $newContent;
+    }
+
+    private function formatNumber(float $value): string
+    {
+        $formatted = number_format($value, 3, '.', '');
+
+        return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    private function fontAliasFor(string $fontName): string
+    {
+        if (!StandardFont::isValid($fontName)) {
+            throw new InvalidArgumentException(sprintf(
+                "Font '%s' is not a valid PDF standard font.",
+                $fontName,
+            ));
+        }
+
+        $existingAlias = array_search($fontName, $this->currentPageFontResources, true);
+
+        if (is_string($existingAlias)) {
+            return $existingAlias;
+        }
+
+        $alias = 'F' . (count($this->currentPageFontResources) + 1);
+        $this->currentPageFontResources[$alias] = $fontName;
+
+        return $alias;
+    }
+
+    private function buildFillColorOperator(Color $color): string
+    {
+        $components = array_map(
+            fn (float $value): string => $this->formatNumber($value),
+            $color->components(),
+        );
+
+        return match ($color->space) {
+            ColorSpace::GRAY => implode(' ', $components) . ' g',
+            ColorSpace::RGB => implode(' ', $components) . ' rg',
+            ColorSpace::CMYK => implode(' ', $components) . ' k',
+        };
+    }
+}

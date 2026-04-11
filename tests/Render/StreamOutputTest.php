@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Render;
 use InvalidArgumentException;
 use Kalle\Pdf\Render\StreamOutput;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class StreamOutputTest extends TestCase
 {
@@ -43,5 +44,20 @@ final class StreamOutputTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         new StreamOutput('not-a-stream');
+    }
+
+    public function testItThrowsWhenBytesCannotBeWrittenToTheStream(): void
+    {
+        $stream = fopen('php://temp', 'rb');
+        $output = new StreamOutput($stream);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unable to write PDF bytes to output stream.');
+
+        try {
+            $output->write('Hello');
+        } finally {
+            fclose($stream);
+        }
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf;
 
-use InvalidArgumentException;
-
-final readonly class Profile
+final readonly class Version
 {
     public const float V1_0 = 1.0;
     public const float V1_1 = 1.1;
@@ -16,31 +16,10 @@ final readonly class Profile
     public const float V1_7 = 1.7;
     public const float V2_0 = 2.0;
 
-    private function __construct(private string $name, private float $version)
-    {
-    }
-
-    public static function standard(float $version = self::V1_4): self
-    {
-        self::assertSupportedStandardVersion($version);
-
-        return new self('standard', $version);
-    }
-
-    public function name(): string
-    {
-        return $this->name;
-    }
-
-    public function version(): float
-    {
-        return $this->version;
-    }
-
     /**
      * @return list<float>
      */
-    private static function all(): array
+    public static function all(): array
     {
         return [
             self::V1_0,
@@ -55,12 +34,8 @@ final readonly class Profile
         ];
     }
 
-    private static function assertSupportedStandardVersion(float $version): void
+    public static function format(float $version): string
     {
-        $supportedVersions = self::all();
-
-        if (!in_array($version, $supportedVersions, true)) {
-            throw new InvalidArgumentException('Unsupported PDF version. Supported versions are 1.0 to 1.7 and 2.0.');
-        }
+        return number_format($version, 1, '.', '');
     }
 }
