@@ -1,0 +1,20 @@
+/vendor/
+
+# IDE settings
+/.idea/
+
+# PHPUnit
+/.phpunit.result.cache
+/.phpunit.cache/
+/coverage/
+
+# PHPStan
+/.phpstan.cache
+
+# PHP CS Fixer
+/.php-cs-fixer.cache
+
+# OS files
+.DS_Store
+Thumbs.db
+AGENTS*.md

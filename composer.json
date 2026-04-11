@@ -1,0 +1,35 @@
+{
+  "name": "kalle/pdf",
+  "description": "A lightweight, native PDF engine for PHP for creating structured PDF documents programmatically",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "pdf",
+    "document",
+    "generator",
+    "rendering"
+  ],
+  "homepage": "https://github.com/kalicki2k/pdf",
+  "support": {
+    "issues": "https://github.com/kalicki2k/pdf/issues",
+    "source": "https://github.com/kalicki2k/pdf"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kalle\\Pdf\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Kalle\\Pdf\\Tests\\": "tests/"
+    }
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^11.5",
+    "friendsofphp/php-cs-fixer": "^3.80"
+  },
+  "require": {
+    "php": "^8.4"
+  }
+}
