@@ -26,10 +26,11 @@
   },
   "scripts": {
     "phpstan": "phpstan analyse -c phpstan.neon",
-    "phpunit": "phpunit -c phpunit.xml",
-    "test": "@phpunit",
+    "test": "phpunit -c phpunit.xml",
     "test:coverage": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-text",
-    "test:coverage-html": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-html var/coverage"
+    "test:coverage-html": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-html var/coverage",
+    "cs": "php-cs-fixer fix --config=.php-cs-fixer.php --verbose",
+    "cs:check": "php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --diff --verbose"
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",
