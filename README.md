@@ -44,6 +44,18 @@ PHPStan im Container ausführen:
 make phpstan
 ```
 
+PHP-CS-Fixer im Container ausführen:
+
+```bash
+make cs
+```
+
+PHP-CS-Fixer im Prüfmodus ausführen:
+
+```bash
+make cs-check
+```
+
 PHPUnit im Container ausführen:
 
 ```bash

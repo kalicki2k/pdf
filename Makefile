@@ -10,6 +10,12 @@ composer-install:
 phpstan:
 	docker compose run --rm php composer phpstan
 
+cs:
+	docker compose run --rm php composer cs
+
+cs-check:
+	docker compose run --rm php composer cs:check
+
 test:
 	docker compose run --rm php composer test
 
