@@ -115,7 +115,7 @@ $document = $placeText(
 $firstPageFonts = array_slice($fonts, 0, 6);
 $secondPageFonts = array_slice($fonts, 6);
 $startY = 237.0;
-$rowStep = 27.0;
+$rowStep = 36.0;
 
 foreach ($firstPageFonts as $index => $fontName) {
     $baseline = $startY - ($index * $rowStep);
@@ -142,7 +142,7 @@ foreach ($firstPageFonts as $index => $fontName) {
         $document,
         $latinUpper,
         null,
-        $baseline - 7,
+        $baseline - 24,
         9,
         $fontName,
         $copyColor,
@@ -151,7 +151,7 @@ foreach ($firstPageFonts as $index => $fontName) {
         $document,
         $latinLower . '    ' . $numeralsAndPunctuation,
         null,
-        $baseline - 13,
+        $baseline - 31,
         8.5,
         $fontName,
         $mutedColor,
@@ -208,7 +208,7 @@ foreach ($secondPageFonts as $index => $fontName) {
         $document,
         $latinUpper,
         null,
-        $baseline - 7,
+        $baseline - 24,
         9,
         $fontName,
         $copyColor,
@@ -217,7 +217,7 @@ foreach ($secondPageFonts as $index => $fontName) {
         $document,
         $latinLower . '    ' . $numeralsAndPunctuation,
         null,
-        $baseline - 13,
+        $baseline - 31,
         8.5,
         $fontName,
         $mutedColor,

@@ -129,6 +129,30 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 763.597 Td\n[", $document->pages[0]->contents);
     }
 
+    public function testItWrapsTextWithinTheCurrentContentArea(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Hello world this wraps automatically across multiple lines.')
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 538.583 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 516.983 Td\n[", $document->pages[0]->contents);
+    }
+
+    public function testItContinuesBelowAllWrappedLinesForTheNextImplicitTextCall(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Hello world this wraps automatically across multiple lines.')
+            ->text('After wrap')
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 495.383 Td\n[", $document->pages[0]->contents);
+    }
+
     public function testItAppliesAfmKerningForWesternCoreText(): void
     {
         $document = DefaultDocumentBuilder::make()

@@ -25,7 +25,10 @@ use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
 
 use function number_format;
+use function preg_split;
 use function str_replace;
+use function strlen;
+use function trim;
 
 use Throwable;
 
@@ -147,11 +150,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
         $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding);
         $placement = $clone->resolveTextPlacement($options);
+        $wrappedLines = $clone->wrapTextLines($text, $options, $font, $placement['x']);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
-            $this->buildTextContent(
-                $text,
+            $this->buildWrappedTextContent(
+                $wrappedLines,
                 $options,
                 $placement['x'],
                 $placement['y'],
@@ -160,7 +164,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 ($this->profile ?? Profile::standard())->version(),
             ),
         );
-        $clone->advanceCursor($options, $placement['y']);
+        $clone->advanceCursor($options, $placement['y'], count($wrappedLines));
 
         return $clone;
     }
@@ -283,8 +287,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
         };
     }
 
-    private function buildTextContent(
-        string $text,
+    /**
+     * @param list<string> $lines
+     */
+    private function buildWrappedTextContent(
+        array $lines,
         TextOptions $options,
         float $x,
         float $y,
@@ -292,15 +299,26 @@ class DefaultDocumentBuilder implements DocumentBuilder
         StandardFontDefinition $font,
         float $pdfVersion,
     ): string {
-        return $this->buildEncodedTextContent(
-            $font->encodeText($text, $pdfVersion, $options->fontEncoding),
-            $options,
-            $x,
-            $y,
-            $fontAlias,
-            $font,
-            $options->kerning ? $font->glyphNamesForText($text, $pdfVersion, $options->fontEncoding) : [],
-        );
+        $lineHeight = $this->lineHeight($options);
+        $contents = [];
+
+        foreach ($lines as $index => $line) {
+            if ($line === '') {
+                continue;
+            }
+
+            $contents[] = $this->buildEncodedTextContent(
+                $font->encodeText($line, $pdfVersion, $options->fontEncoding),
+                $options,
+                $x,
+                $y - ($lineHeight * $index),
+                $fontAlias,
+                $font,
+                $options->kerning ? $font->glyphNamesForText($line, $pdfVersion, $options->fontEncoding) : [],
+            );
+        }
+
+        return implode("\n", $contents);
     }
 
     private function buildEncodedTextContent(
@@ -454,11 +472,80 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ];
     }
 
-    private function advanceCursor(TextOptions $options, float $resolvedY): void
-    {
-        $lineHeight = $options->lineHeight ?? ($options->fontSize * 1.2);
+    /**
+     * @return list<string>
+     */
+    private function wrapTextLines(
+        string $text,
+        TextOptions $options,
+        StandardFontDefinition $font,
+        float $x,
+    ): array {
+        $maxWidth = $this->availableTextWidth($x);
 
-        $this->currentPageCursorY = $resolvedY - $lineHeight;
+        if ($maxWidth <= 0.0 || (!str_contains($text, ' ') && !str_contains($text, "\n") && !str_contains($text, "\r"))) {
+            return [$text];
+        }
+
+        $paragraphs = preg_split("/\r\n|\r|\n/", $text) ?: [$text];
+        $lines = [];
+
+        foreach ($paragraphs as $paragraphIndex => $paragraph) {
+            $trimmedParagraph = trim($paragraph);
+
+            if ($trimmedParagraph === '') {
+                $lines[] = '';
+
+                continue;
+            }
+
+            $words = preg_split('/ +/u', $trimmedParagraph, -1, PREG_SPLIT_NO_EMPTY) ?: [$trimmedParagraph];
+            $currentLine = array_shift($words);
+
+            foreach ($words as $word) {
+                $candidate = $currentLine . ' ' . $word;
+                $candidateWidth = $font->measureTextWidth($candidate, $options->fontSize);
+
+                if ($candidateWidth <= $maxWidth) {
+                    $currentLine = $candidate;
+
+                    continue;
+                }
+
+                $lines[] = $currentLine;
+                $currentLine = $word;
+            }
+
+            $lines[] = $currentLine;
+
+            if ($paragraphIndex < count($paragraphs) - 1) {
+                $lines[] = '';
+            }
+        }
+
+        return $lines;
+    }
+
+    private function availableTextWidth(float $x): float
+    {
+        $page = $this->buildCurrentPage();
+        $rightBoundary = $page->margin !== null
+            ? $page->contentArea()->right
+            : $page->size->width();
+
+        return max($rightBoundary - $x, 0.0);
+    }
+
+    private function lineHeight(TextOptions $options): float
+    {
+        return $options->lineHeight ?? ($options->fontSize * 1.2);
+    }
+
+    private function advanceCursor(TextOptions $options, float $resolvedY, int $lineCount = 1): void
+    {
+        $lineHeight = $this->lineHeight($options);
+
+        $this->currentPageCursorY = $resolvedY - ($lineHeight * max($lineCount, 1));
     }
 
     private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding, array $differences = []): string
