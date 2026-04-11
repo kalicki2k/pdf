@@ -6,15 +6,10 @@ namespace Kalle\Pdf\Page\Form;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Action\ButtonAction;
-use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\RadioButtonField;
-use Kalle\Pdf\Font\FontDefinition;
 use Kalle\Pdf\Font\UnicodeFontWidthUpdater;
 use Kalle\Pdf\Layout\Geometry\Position;
 use Kalle\Pdf\Layout\Geometry\Rect;
-use Kalle\Pdf\Layout\Value\HorizontalAlign;
-use Kalle\Pdf\Layout\Value\VerticalAlign;
-use Kalle\Pdf\Object\IndirectObject;
 use Kalle\Pdf\Page\Annotation\CheckboxAnnotation;
 use Kalle\Pdf\Page\Annotation\ComboBoxAnnotation;
 use Kalle\Pdf\Page\Annotation\ListBoxAnnotation;
@@ -32,14 +27,16 @@ use Kalle\Pdf\Style\Color;
 final readonly class FormWidgetFactory
 {
     private FormChoiceWidgetFactory $choiceWidgets;
+    private FormTextWidgetFactory $textWidgets;
     private FormToggleWidgetFactory $toggleWidgets;
 
     public function __construct(
         private Page $page,
         private FormWidgetFactoryContext $context,
-        private UnicodeFontWidthUpdater $unicodeFontWidthUpdater,
+        UnicodeFontWidthUpdater $unicodeFontWidthUpdater,
     ) {
         $this->choiceWidgets = new FormChoiceWidgetFactory($page, $context, $unicodeFontWidthUpdater);
+        $this->textWidgets = new FormTextWidgetFactory($page, $context, $unicodeFontWidthUpdater);
         $this->toggleWidgets = new FormToggleWidgetFactory($page, $context);
     }
 
@@ -55,47 +52,17 @@ final readonly class FormWidgetFactory
         ?string $defaultValue,
         ?string $accessibleName,
     ): TextFieldAnnotation {
-        if ($name === '') {
-            throw new InvalidArgumentException('Text field name must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'Text field');
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Text field font size must be greater than zero.');
-        }
-
-        [$font, $fontResourceName] = $this->prepareTextFieldAcroFormFont($baseFont);
-
-        return new TextFieldAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        return $this->textWidgets->createTextField(
             $name,
+            $box,
             $value,
-            $fontResourceName,
+            $baseFont,
             $size,
             $multiline,
-            $flags,
             $textColor,
+            $flags,
             $defaultValue,
             $accessibleName,
-            new FormFieldTextAppearanceStream(
-                $this->nextObjectId(),
-                $box->width,
-                $box->height,
-                $font,
-                $this->unicodeFontWidthUpdater,
-                $fontResourceName,
-                $size,
-                $this->resolveTextFieldAppearanceLines($value, $multiline),
-                $textColor,
-                HorizontalAlign::LEFT,
-                $multiline ? VerticalAlign::TOP : VerticalAlign::MIDDLE,
-            ),
         );
     }
 
@@ -218,93 +185,21 @@ final readonly class FormWidgetFactory
         ?ButtonAction $action,
         ?string $accessibleName,
     ): PushButtonAnnotation {
-        if ($name === '') {
-            throw new InvalidArgumentException('Push button name must not be empty.');
-        }
-
-        if ($label === '') {
-            throw new InvalidArgumentException('Push button label must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'Push button');
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Push button font size must be greater than zero.');
-        }
-
-        [$font, $fontResourceName] = $this->preparePushButtonAcroFormFont($baseFont);
-
-        return new PushButtonAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        return $this->textWidgets->createPushButton(
             $name,
             $label,
-            $fontResourceName,
+            $box,
+            $baseFont,
             $size,
             $textColor,
             $action,
             $accessibleName,
-            new FormFieldTextAppearanceStream(
-                $this->nextObjectId(),
-                $box->width,
-                $box->height,
-                $font,
-                $this->unicodeFontWidthUpdater,
-                $fontResourceName,
-                $size,
-                [$label],
-                $textColor,
-                HorizontalAlign::CENTER,
-                VerticalAlign::MIDDLE,
-            ),
         );
     }
 
     private function nextObjectId(): int
     {
         return $this->context->nextObjectId();
-    }
-
-    private function ensureTextFieldAcroForm(): AcroForm
-    {
-        return $this->context->ensureTextFieldAcroForm();
-    }
-
-    private function ensurePushButtonAcroForm(): AcroForm
-    {
-        return $this->context->ensurePushButtonAcroForm();
-    }
-
-    /**
-     * @return array{0: FontDefinition&IndirectObject, 1: string}
-     */
-    private function prepareTextFieldAcroFormFont(string $baseFont): array
-    {
-        $font = $this->context->resolveFont($baseFont);
-
-        if (!$font instanceof IndirectObject) {
-            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
-        }
-
-        return [$font, $this->ensureTextFieldAcroForm()->registerFont($font)];
-    }
-
-    /**
-     * @return array{0: FontDefinition&IndirectObject, 1: string}
-     */
-    private function preparePushButtonAcroFormFont(string $baseFont): array
-    {
-        $font = $this->context->resolveFont($baseFont);
-
-        if (!$font instanceof IndirectObject) {
-            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
-        }
-
-        return [$font, $this->ensurePushButtonAcroForm()->registerFont($font)];
     }
 
     private function assertRectHasPositiveDimensions(Rect $box, string $subject): void
@@ -316,24 +211,6 @@ final readonly class FormWidgetFactory
         if ($box->height <= 0) {
             throw new InvalidArgumentException("$subject height must be greater than zero.");
         }
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function resolveTextFieldAppearanceLines(?string $value, bool $multiline): array
-    {
-        if ($value === null || $value === '') {
-            return [];
-        }
-
-        if (!$multiline) {
-            return [$value];
-        }
-
-        $lines = preg_split('/\R/u', $value) ?: [];
-
-        return $lines;
     }
 
 }
