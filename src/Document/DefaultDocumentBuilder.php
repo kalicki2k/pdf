@@ -25,10 +25,8 @@ use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
 
 use function number_format;
-use function preg_split;
 use function str_replace;
 use function strlen;
-use function trim;
 
 use Throwable;
 
@@ -149,14 +147,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $options->fontEncoding,
         );
         $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding);
-        $placement = $clone->resolveTextPlacement($options);
-        $wrappedLines = $clone->wrapTextLines($text, $options, $font, $placement['x']);
+        $textFlow = $clone->textFlow();
+        $placement = $textFlow->placement($options);
+        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->buildWrappedTextContent(
                 $wrappedLines,
                 $options,
+                $textFlow,
                 $placement['x'],
                 $placement['y'],
                 $fontAlias,
@@ -164,7 +164,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 ($this->profile ?? Profile::standard())->version(),
             ),
         );
-        $clone->advanceCursor($options, $placement['y'], count($wrappedLines));
+        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedLines));
 
         return $clone;
     }
@@ -188,7 +188,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $options->fontEncoding,
         );
         $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding, $glyphRun->differences);
-        $placement = $clone->resolveTextPlacement($options);
+        $textFlow = $clone->textFlow();
+        $placement = $textFlow->placement($options);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
@@ -203,7 +204,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $glyphRun->useHexString,
             ),
         );
-        $clone->advanceCursor($options, $placement['y']);
+        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y']);
 
         return $clone;
     }
@@ -293,13 +294,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function buildWrappedTextContent(
         array $lines,
         TextOptions $options,
+        TextFlow $textFlow,
         float $x,
         float $y,
         string $fontAlias,
         StandardFontDefinition $font,
         float $pdfVersion,
     ): string {
-        $lineHeight = $this->lineHeight($options);
         $contents = [];
 
         foreach ($lines as $index => $line) {
@@ -311,7 +312,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $font->encodeText($line, $pdfVersion, $options->fontEncoding),
                 $options,
                 $x,
-                $y - ($lineHeight * $index),
+                $y - ($textFlow->lineHeight($options) * $index),
                 $fontAlias,
                 $font,
                 $options->kerning ? $font->glyphNamesForText($line, $pdfVersion, $options->fontEncoding) : [],
@@ -451,106 +452,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return rtrim(rtrim($formatted, '0'), '.');
     }
 
-    /**
-     * @return array{x: float, y: float}
-     */
-    private function resolveTextPlacement(TextOptions $options): array
+    private function textFlow(): TextFlow
     {
-        $page = $this->buildCurrentPage();
-        $contentArea = $page->contentArea();
-
-        $x = $options->x
-            ?? ($page->margin !== null ? $contentArea->left : 72.0);
-
-        $y = $options->y
-            ?? $this->currentPageCursorY
-            ?? ($page->margin !== null ? $contentArea->top : 720.0);
-
-        return [
-            'x' => $x,
-            'y' => $y,
-        ];
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function wrapTextLines(
-        string $text,
-        TextOptions $options,
-        StandardFontDefinition $font,
-        float $x,
-    ): array {
-        $maxWidth = $this->availableTextWidth($x);
-
-        if ($maxWidth <= 0.0 || (!str_contains($text, ' ') && !str_contains($text, "\n") && !str_contains($text, "\r"))) {
-            return [$text];
-        }
-
-        $paragraphs = preg_split("/\r\n|\r|\n/", $text) ?: [$text];
-        $lines = [];
-
-        foreach ($paragraphs as $paragraphIndex => $paragraph) {
-            $trimmedParagraph = trim($paragraph);
-
-            if ($trimmedParagraph === '') {
-                $lines[] = '';
-
-                continue;
-            }
-
-            $words = preg_split('/ +/u', $trimmedParagraph, -1, PREG_SPLIT_NO_EMPTY) ?: [$trimmedParagraph];
-            $currentLine = array_shift($words);
-
-            foreach ($words as $word) {
-                $candidate = $currentLine . ' ' . $word;
-                $candidateWidth = $font->measureTextWidth($candidate, $options->fontSize);
-
-                if ($candidateWidth <= $maxWidth) {
-                    $currentLine = $candidate;
-
-                    continue;
-                }
-
-                $lines[] = $currentLine;
-                $currentLine = $word;
-            }
-
-            $lines[] = $currentLine;
-
-            if ($paragraphIndex < count($paragraphs) - 1) {
-                $lines[] = '';
-            }
-        }
-
-        return $lines;
-    }
-
-    private function availableTextWidth(float $x): float
-    {
-        $page = $this->buildCurrentPage();
-        $rightBoundary = $page->margin !== null
-            ? $page->contentArea()->right
-            : $page->size->width();
-
-        return max($rightBoundary - $x, 0.0);
-    }
-
-    private function lineHeight(TextOptions $options): float
-    {
-        return $options->lineHeight ?? ($options->fontSize * 1.2);
-    }
-
-    private function spacingAfter(TextOptions $options): float
-    {
-        return $options->spacingAfter ?? 0.0;
-    }
-
-    private function advanceCursor(TextOptions $options, float $resolvedY, int $lineCount = 1): void
-    {
-        $lineHeight = $this->lineHeight($options);
-
-        $this->currentPageCursorY = $resolvedY - ($lineHeight * max($lineCount, 1)) - $this->spacingAfter($options);
+        return new TextFlow($this->buildCurrentPage(), $this->currentPageCursorY);
     }
 
     private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding, array $differences = []): string
