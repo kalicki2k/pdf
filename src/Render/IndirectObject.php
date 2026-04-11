@@ -4,14 +4,4 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-/**
- * Represents a prepared indirect PDF object body.
- */
-final readonly class IndirectObject
-{
-    public function __construct(
-        public int $objectId,
-        public string $contents,
-    ) {
-    }
-}
+class_alias(\Kalle\Pdf\Writer\IndirectObject::class, __NAMESPACE__ . '\IndirectObject');

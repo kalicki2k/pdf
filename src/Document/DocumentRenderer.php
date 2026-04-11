@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Render\Output;
-use Kalle\Pdf\Render\Renderer;
+use Kalle\Pdf\Writer\Output;
+use Kalle\Pdf\Writer\Renderer;
 
 /**
  * Renders a prepared document to an output target.

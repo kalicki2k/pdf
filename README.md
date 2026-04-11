@@ -1,5 +1,21 @@
 # PDF2
 
+## Struktur
+
+Der Quellcode ist jetzt grob nach Verantwortlichkeiten organisiert:
+
+```text
+src/
+├─ Color/
+├─ Document/
+├─ Drawing/
+├─ Font/
+├─ Page/
+├─ Text/
+├─ Writer/
+└─ Pdf.php
+```
+
 ## Docker
 
 Die Entwicklung kann innerhalb des Docker-Containers erfolgen. Der Projektordner wird per Bind-Mount nach `/app` eingebunden, dadurch sind lokale Dateien direkt im Container sichtbar.

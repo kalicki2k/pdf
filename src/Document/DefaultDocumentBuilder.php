@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Color;
-use Kalle\Pdf\ColorSpace;
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Profile;
-use Kalle\Pdf\Render\FileOutput;
-use Kalle\Pdf\StandardFont;
-use Kalle\Pdf\StandardFontEncoding;
-use Kalle\Pdf\TextOptions;
+use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Writer\FileOutput;
 use InvalidArgumentException;
 use function count;
 use function implode;
@@ -29,7 +30,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private array $pages = [];
     private ?PageSize $currentPageSize = null;
     private string $currentPageContents = '';
-    /** @var array<string, string> */
+    /** @var array<string, PageFont> */
     private array $currentPageFontResources = [];
     private ?Margin $currentPageMargin = null;
     private ?Color $currentPageBackgroundColor = null;
@@ -124,11 +125,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $options ??= new TextOptions();
-        $fontAlias = $clone->fontAliasFor($options->fontName);
+        $fontEncoding = StandardFontEncoding::forFont(
+            $options->fontName,
+            ($this->profile ?? Profile::standard())->version(),
+            $options->fontEncoding,
+        );
+        $fontAlias = $clone->fontAliasFor($options->fontName, $fontEncoding);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
-            $this->buildTextContent($text, $options, $fontAlias),
+            $this->buildTextContent($text, $options, $fontAlias, $fontEncoding),
         );
 
         return $clone;
@@ -212,13 +218,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
         };
     }
 
-    private function buildTextContent(string $text, TextOptions $options, string $fontAlias): string
+    private function buildTextContent(
+        string $text,
+        TextOptions $options,
+        string $fontAlias,
+        StandardFontEncoding $fontEncoding,
+    ): string
     {
-        $fontEncoding = StandardFontEncoding::forFont(
-            $options->fontName,
-            ($this->profile ?? Profile::standard())->version(),
-        );
-
         $encodedText = $fontEncoding->encodeText($text);
 
         $lines = [
@@ -265,7 +271,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return rtrim(rtrim($formatted, '0'), '.');
     }
 
-    private function fontAliasFor(string $fontName): string
+    private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding): string
     {
         if (!StandardFont::isValid($fontName)) {
             throw new InvalidArgumentException(sprintf(
@@ -274,14 +280,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ));
         }
 
-        $existingAlias = array_search($fontName, $this->currentPageFontResources, true);
-
-        if (is_string($existingAlias)) {
-            return $existingAlias;
+        foreach ($this->currentPageFontResources as $alias => $pageFont) {
+            if ($pageFont->name === $fontName && $pageFont->encoding === $fontEncoding) {
+                return $alias;
+            }
         }
 
         $alias = 'F' . (count($this->currentPageFontResources) + 1);
-        $this->currentPageFontResources[$alias] = $fontName;
+        $this->currentPageFontResources[$alias] = new PageFont($fontName, $fontEncoding);
 
         return $alias;
     }

@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Color;
-use Kalle\Pdf\ColorSpace;
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Document\Version;
+use Kalle\Pdf\Drawing\Units;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Page\Margin;
+use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Profile;
-use Kalle\Pdf\StandardFont;
 use InvalidArgumentException;
-use Kalle\Pdf\TextOptions;
-use Kalle\Pdf\Units;
-use Kalle\Pdf\Version;
+use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
 final class DefaultDocumentBuilderTest extends TestCase
@@ -53,7 +55,10 @@ final class DefaultDocumentBuilderTest extends TestCase
             "BT\n/F1 14 Tf\n56.693 708.661 Td\n(Hello \\(PDF\\) \\\\ Test) Tj\nET",
             $document->pages[0]->contents,
         );
-        self::assertSame(['F1' => 'Times-Roman'], $document->pages[0]->fontResources);
+        self::assertEquals(
+            ['F1' => new PageFont('Times-Roman', StandardFontEncoding::WIN_ANSI)],
+            $document->pages[0]->fontResources,
+        );
     }
 
     public function testItBuildsMultiplePagesWhenNewPageIsUsed(): void
@@ -131,6 +136,19 @@ final class DefaultDocumentBuilderTest extends TestCase
         );
     }
 
+    public function testItEncodesWesternTextForPdf10StandardEncoding(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdf10())
+            ->text('ÄÖÜäöüß§£¥')
+            ->build();
+
+        self::assertSame(
+            '42540a2f46312031382054660a3732203732302054640a288085868a9a9fa7a4a3b42920546a0a4554',
+            bin2hex($document->pages[0]->contents),
+        );
+    }
+
     public function testItRejectsUnsupportedTextForPdf10StandardEncoding(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -138,7 +156,7 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         DefaultDocumentBuilder::make()
             ->profile(Profile::pdf10())
-            ->text('Straße')
+            ->text('€')
             ->build();
     }
 
@@ -163,6 +181,26 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame(
             '42540a2f46312031382054660a3732203732302054640a28333435362920546a0a4554',
             bin2hex($document->pages[0]->contents),
+        );
+    }
+
+    public function testItEncodesIsoLatin1TextWhenExplicitlyRequested(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdf10())
+            ->text('ÄÖÜäöüß', new TextOptions(
+                fontName: StandardFont::HELVETICA->value,
+                fontEncoding: StandardFontEncoding::ISO_LATIN_1,
+            ))
+            ->build();
+
+        self::assertSame(
+            '42540a2f46312031382054660a3732203732302054640a28c4d6dce4f6fcdf2920546a0a4554',
+            bin2hex($document->pages[0]->contents),
+        );
+        self::assertEquals(
+            ['F1' => new PageFont(StandardFont::HELVETICA->value, StandardFontEncoding::ISO_LATIN_1)],
+            $document->pages[0]->fontResources,
         );
     }
 

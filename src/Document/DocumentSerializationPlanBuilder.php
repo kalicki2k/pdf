@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Color;
-use Kalle\Pdf\ColorSpace;
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Page\Page;
-use Kalle\Pdf\StandardFontEncoding;
+use Kalle\Pdf\Page\PageFont;
+use Kalle\Pdf\Writer\DocumentSerializationPlan;
+use Kalle\Pdf\Writer\FileStructure;
+use Kalle\Pdf\Writer\IndirectObject;
+use Kalle\Pdf\Writer\Trailer;
 use function count;
 use function implode;
-
-use Kalle\Pdf\Render\DocumentSerializationPlan;
-
-use Kalle\Pdf\Render\FileStructure;
-use Kalle\Pdf\Render\IndirectObject;
-use Kalle\Pdf\Render\Trailer;
 
 use function str_replace;
 
@@ -40,9 +39,11 @@ final class DocumentSerializationPlanBuilder
         }
 
         foreach ($document->pages as $page) {
-            foreach ($page->fontResources as $fontName) {
-                if (!isset($fontObjectIds[$fontName])) {
-                    $fontObjectIds[$fontName] = $nextObjectId;
+            foreach ($page->fontResources as $pageFont) {
+                $fontKey = $this->fontObjectKey($pageFont);
+
+                if (!isset($fontObjectIds[$fontKey])) {
+                    $fontObjectIds[$fontKey] = $nextObjectId;
                     $nextObjectId++;
                 }
             }
@@ -74,11 +75,11 @@ final class DocumentSerializationPlanBuilder
             );
         }
 
-        foreach ($fontObjectIds as $fontName => $fontObjectId) {
-            $encoding = StandardFontEncoding::forFont($fontName, $document->version());
+        foreach ($this->collectFonts($document->pages) as $fontKey => $pageFont) {
+            $fontObjectId = $fontObjectIds[$fontKey];
             $objects[] = new IndirectObject(
                 $fontObjectId,
-                '<< /Type /Font /Subtype /Type1 /BaseFont /' . $fontName . ' /Encoding /' . $encoding->value . ' >>',
+                '<< /Type /Font /Subtype /Type1 /BaseFont /' . $pageFont->name . ' /Encoding ' . $pageFont->encoding->pdfObjectValue($pageFont->name) . ' >>',
             );
         }
 
@@ -227,7 +228,7 @@ final class DocumentSerializationPlanBuilder
     }
 
     /**
-     * @param array<string, string> $fontResources
+     * @param array<string, PageFont> $fontResources
      * @param array<string, int> $fontObjectIds
      */
     private function buildPageResources(array $fontResources, array $fontObjectIds): string
@@ -238,10 +239,32 @@ final class DocumentSerializationPlanBuilder
 
         $entries = [];
 
-        foreach ($fontResources as $fontAlias => $fontName) {
-            $entries[] = '/' . $fontAlias . ' ' . $fontObjectIds[$fontName] . ' 0 R';
+        foreach ($fontResources as $fontAlias => $pageFont) {
+            $entries[] = '/' . $fontAlias . ' ' . $fontObjectIds[$this->fontObjectKey($pageFont)] . ' 0 R';
         }
 
         return '<< /Font << ' . implode(' ', $entries) . ' >> >>';
+    }
+
+    private function fontObjectKey(PageFont $pageFont): string
+    {
+        return $pageFont->name . '|' . $pageFont->encoding->value;
+    }
+
+    /**
+     * @param list<Page> $pages
+     * @return array<string, PageFont>
+     */
+    private function collectFonts(array $pages): array
+    {
+        $fonts = [];
+
+        foreach ($pages as $page) {
+            foreach ($page->fontResources as $pageFont) {
+                $fonts[$this->fontObjectKey($pageFont)] = $pageFont;
+            }
+        }
+
+        return $fonts;
     }
 }

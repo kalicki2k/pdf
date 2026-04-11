@@ -8,9 +8,11 @@ use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentBuilder;
 use Kalle\Pdf\Document\DocumentRenderer;
-use Kalle\Pdf\Render\FileOutput;
-use Kalle\Pdf\Render\Output;
-use Kalle\Pdf\Render\StringOutput;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Text\TextMeasurer;
+use Kalle\Pdf\Writer\FileOutput;
+use Kalle\Pdf\Writer\Output;
+use Kalle\Pdf\Writer\StringOutput;
 use Throwable;
 
 final readonly class Pdf

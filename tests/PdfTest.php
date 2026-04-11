@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests;
 
 use Kalle\Pdf\Pdf;
-use Kalle\Pdf\Render\StringOutput;
-use Kalle\Pdf\StandardFont;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Writer\StringOutput;
 use PHPUnit\Framework\TestCase;
 
 final class PdfTest extends TestCase
@@ -70,5 +70,10 @@ final class PdfTest extends TestCase
     public function testItMeasuresTextWidthThroughTheFacade(): void
     {
         self::assertSame(22.78, Pdf::measureTextWidth('Hello', 10, StandardFont::HELVETICA));
+    }
+
+    public function testItMeasuresSymbolTextWidthThroughTheFacade(): void
+    {
+        self::assertSame(23.59, Pdf::measureTextWidth('αβγΩ', 10, StandardFont::SYMBOL));
     }
 }

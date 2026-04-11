@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
-use Kalle\Pdf\Color;
+use Kalle\Pdf\Color\Color;
 
 /**
  * Immutable page model for the document structure.
@@ -12,7 +12,7 @@ use Kalle\Pdf\Color;
 final readonly class Page
 {
     /**
-     * @param array<string, string> $fontResources
+     * @param array<string, PageFont> $fontResources
      */
     public function __construct(
         public PageSize $size,

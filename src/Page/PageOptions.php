@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
-use Kalle\Pdf\Color;
+use Kalle\Pdf\Color\Color;
 
 final readonly class PageOptions
 {

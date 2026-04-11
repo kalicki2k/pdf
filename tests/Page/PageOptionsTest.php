@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Page;
 
-use Kalle\Pdf\Color;
-use Kalle\Pdf\ColorSpace;
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;

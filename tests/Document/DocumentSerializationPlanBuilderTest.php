@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Color;
+use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
+use Kalle\Pdf\Document\Version;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\Margin;
-use Kalle\Pdf\Profile;
-use Kalle\Pdf\StandardFont;
-use Kalle\Pdf\TextOptions;
-use Kalle\Pdf\Version;
+use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
 final class DocumentSerializationPlanBuilderTest extends TestCase
@@ -156,5 +158,46 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $objects = iterator_to_array($plan->objects);
 
         self::assertSame('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>', $objects[4]->contents);
+    }
+
+    public function testItAddsWesternDifferencesEncodingForPdf10StandardFonts(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdf10())
+            ->text('ÄÖÜäöüß', new TextOptions(fontName: StandardFont::HELVETICA->value))
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringStartsWith(
+            '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding << /Type /Encoding /BaseEncoding /StandardEncoding /Differences [128 /Adieresis',
+            $objects[4]->contents,
+        );
+    }
+
+    public function testItAddsIsoLatin1EncodingToExplicitlyConfiguredStandardFonts(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdf10(),
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    fontResources: [
+                        'F1' => new PageFont(StandardFont::HELVETICA->value, StandardFontEncoding::ISO_LATIN_1),
+                    ],
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /ISOLatin1Encoding >>',
+            $objects[4]->contents,
+        );
     }
 }

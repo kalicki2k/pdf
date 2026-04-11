@@ -6,8 +6,8 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Profile;
-use Kalle\Pdf\TextOptions;
+use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Text\TextOptions;
 
 interface DocumentBuilder
 {
