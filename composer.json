@@ -24,6 +24,13 @@
       "Kalle\\Pdf\\Tests\\": "tests/"
     }
   },
+  "scripts": {
+    "phpstan": "phpstan analyse -c phpstan.neon",
+    "phpunit": "phpunit -c phpunit.xml",
+    "test": "@phpunit",
+    "test:coverage": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-text",
+    "test:coverage-html": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-html var/coverage"
+  },
   "require-dev": {
     "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^11.5",
