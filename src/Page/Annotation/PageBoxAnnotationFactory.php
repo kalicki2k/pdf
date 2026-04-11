@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page\Annotation;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Attachment\FileSpecification;
 use Kalle\Pdf\Layout\Geometry\Rect;
 use Kalle\Pdf\Page\Annotation\Style\AnnotationBorderStyle;
@@ -13,6 +12,7 @@ use Kalle\Pdf\Style\Color;
 
 final readonly class PageBoxAnnotationFactory
 {
+    private PageCommentAnnotationFactory $commentAnnotations;
     private PageTextMarkupAnnotationFactory $textMarkupAnnotations;
 
     public function __construct(
@@ -20,6 +20,7 @@ final readonly class PageBoxAnnotationFactory
         private PageAnnotationFactoryContext $context,
         private PageAnnotationFinalizer $finalizer,
     ) {
+        $this->commentAnnotations = new PageCommentAnnotationFactory($page, $context, $finalizer);
         $this->textMarkupAnnotations = new PageTextMarkupAnnotationFactory($page, $context, $finalizer);
     }
 
@@ -29,34 +30,7 @@ final readonly class PageBoxAnnotationFactory
         string $icon,
         ?string $contents,
     ): FileAttachmentAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'File attachment');
-        $this->page->getDocument()->assertAllowsAttachments();
-
-        if ($icon === '') {
-            throw new InvalidArgumentException('File attachment icon must not be empty.');
-        }
-
-        $annotation = new FileAttachmentAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $file,
-            $icon,
-            $contents,
-        );
-
-        $this->finalizer->finalizeAccessibleAnnotation(
-            $annotation,
-            'File attachment',
-            $contents,
-            $file->getFilename(),
-        );
-
-        return $annotation;
+        return $this->commentAnnotations->createFileAttachmentAnnotation($box, $file, $icon, $contents);
     }
 
     public function createTextAnnotation(
@@ -66,33 +40,7 @@ final readonly class PageBoxAnnotationFactory
         string $icon,
         bool $open,
     ): TextAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Text annotation');
-
-        if ($contents === '') {
-            throw new InvalidArgumentException('Text annotation contents must not be empty.');
-        }
-
-        if ($icon === '') {
-            throw new InvalidArgumentException('Text annotation icon must not be empty.');
-        }
-
-        $annotation = new TextAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $contents,
-            $title,
-            $icon,
-            $open,
-        );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Text annotation', $contents, $title, $icon);
-
-        return $annotation;
+        return $this->commentAnnotations->createTextAnnotation($box, $contents, $title, $icon, $open);
     }
 
     public function createFreeTextAnnotation(
@@ -105,39 +53,16 @@ final readonly class PageBoxAnnotationFactory
         ?Color $fillColor,
         ?string $title,
     ): FreeTextAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Free text annotation');
-
-        if ($contents === '') {
-            throw new InvalidArgumentException('Free text annotation contents must not be empty.');
-        }
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Free text annotation font size must be greater than zero.');
-        }
-
-        $font = $this->context->resolveFont($baseFont);
-        $fontResourceName = $this->context->registerFontResource($font);
-
-        $annotation = new FreeTextAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        return $this->commentAnnotations->createFreeTextAnnotation(
+            $box,
             $contents,
-            $fontResourceName,
+            $baseFont,
             $size,
             $textColor,
             $borderColor,
             $fillColor,
             $title,
         );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Free text annotation', $contents, $title);
-
-        return $annotation;
     }
 
     public function createHighlightAnnotation(
@@ -183,29 +108,7 @@ final readonly class PageBoxAnnotationFactory
         ?string $contents,
         ?string $title,
     ): StampAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Stamp annotation');
-
-        if ($icon === '') {
-            throw new InvalidArgumentException('Stamp annotation icon must not be empty.');
-        }
-
-        $annotation = new StampAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $icon,
-            $color,
-            $contents,
-            $title,
-        );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Stamp annotation', $contents, $title, $icon);
-
-        return $annotation;
+        return $this->commentAnnotations->createStampAnnotation($box, $icon, $color, $contents, $title);
     }
 
     public function createSquareAnnotation(
@@ -305,23 +208,6 @@ final readonly class PageBoxAnnotationFactory
         ?string $title,
         string $symbol,
     ): CaretAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Caret annotation');
-
-        $annotation = new CaretAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $contents,
-            $title,
-            $symbol,
-        );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Caret annotation', $contents, $title, $symbol);
-
-        return $annotation;
+        return $this->commentAnnotations->createCaretAnnotation($box, $contents, $title, $symbol);
     }
 }
