@@ -34,6 +34,8 @@ interface DocumentBuilder
 
     public function text(string $text, ?TextOptions $options = null): self;
 
+    public function paragraph(string $text, ?TextOptions $options = null): self;
+
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): self;
 
     public function newPage(?PageOptions $options = null): self;

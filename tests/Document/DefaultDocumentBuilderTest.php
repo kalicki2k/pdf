@@ -60,6 +60,20 @@ final class DefaultDocumentBuilderTest extends TestCase
         );
     }
 
+    public function testParagraphUsesTheFlowingTextPath(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->paragraph('Hello world this wraps automatically across multiple lines.')
+            ->paragraph('After paragraph')
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 538.583 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 516.983 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 495.383 Td\n[", $document->pages[0]->contents);
+    }
+
     public function testItBuildsMultiplePagesWhenNewPageIsUsed(): void
     {
         $document = DefaultDocumentBuilder::make()

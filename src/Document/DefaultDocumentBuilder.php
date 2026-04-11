@@ -164,6 +164,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function paragraph(string $text, ?TextOptions $options = null): DocumentBuilder
+    {
+        return $this->text($text, $options);
+    }
+
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): DocumentBuilder
     {
         $clone = clone $this;
