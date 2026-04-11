@@ -13,11 +13,14 @@ use Kalle\Pdf\Style\Color;
 
 final readonly class PageBoxAnnotationFactory
 {
+    private PageTextMarkupAnnotationFactory $textMarkupAnnotations;
+
     public function __construct(
         private Page $page,
         private PageAnnotationFactoryContext $context,
         private PageAnnotationFinalizer $finalizer,
     ) {
+        $this->textMarkupAnnotations = new PageTextMarkupAnnotationFactory($page, $context, $finalizer);
     }
 
     public function createFileAttachmentAnnotation(
@@ -143,24 +146,7 @@ final readonly class PageBoxAnnotationFactory
         ?string $contents,
         ?string $title,
     ): HighlightAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Highlight annotation');
-
-        $annotation = new HighlightAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $color,
-            $contents,
-            $title,
-        );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Highlight annotation', $contents, $title);
-
-        return $annotation;
+        return $this->textMarkupAnnotations->createHighlightAnnotation($box, $color, $contents, $title);
     }
 
     public function createUnderlineAnnotation(
@@ -169,24 +155,7 @@ final readonly class PageBoxAnnotationFactory
         ?string $contents,
         ?string $title,
     ): UnderlineAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Underline annotation');
-
-        $annotation = new UnderlineAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $color,
-            $contents,
-            $title,
-        );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Underline annotation', $contents, $title);
-
-        return $annotation;
+        return $this->textMarkupAnnotations->createUnderlineAnnotation($box, $color, $contents, $title);
     }
 
     public function createStrikeOutAnnotation(
@@ -195,24 +164,7 @@ final readonly class PageBoxAnnotationFactory
         ?string $contents,
         ?string $title,
     ): StrikeOutAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'StrikeOut annotation');
-
-        $annotation = new StrikeOutAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $color,
-            $contents,
-            $title,
-        );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Strike-out annotation', $contents, $title);
-
-        return $annotation;
+        return $this->textMarkupAnnotations->createStrikeOutAnnotation($box, $color, $contents, $title);
     }
 
     public function createSquigglyAnnotation(
@@ -221,24 +173,7 @@ final readonly class PageBoxAnnotationFactory
         ?string $contents,
         ?string $title,
     ): SquigglyAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Squiggly annotation');
-
-        $annotation = new SquigglyAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $color,
-            $contents,
-            $title,
-        );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Squiggly annotation', $contents, $title);
-
-        return $annotation;
+        return $this->textMarkupAnnotations->createSquigglyAnnotation($box, $color, $contents, $title);
     }
 
     public function createStampAnnotation(
