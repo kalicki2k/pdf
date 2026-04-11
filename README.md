@@ -10,15 +10,35 @@ src/
 ├─ Document/
 ├─ Drawing/
 ├─ Font/
+├─ Image/
 ├─ Page/
 ├─ Text/
 ├─ Writer/
 └─ Pdf.php
 ```
 
+## Bilder
+
+Das Bildfundament ist über `ImageSource` und `ImagePlacement` angebunden. Die aktuelle API erwartet bereits vorbereitete Bilddaten, die als PDF-Image-XObject eingebettet werden.
+
+```php
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Image\ImageColorSpace;
+use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Image\ImageSource;
+
+$document = DefaultDocumentBuilder::make()
+    ->image(
+        ImageSource::jpeg($jpegBytes, 600, 300, ImageColorSpace::RGB),
+        ImagePlacement::at(40, 500, width: 180),
+    )
+    ->build();
+```
+
 ## Docker
 
 Die Entwicklung kann innerhalb des Docker-Containers erfolgen. Der Projektordner wird per Bind-Mount nach `/app` eingebunden, dadurch sind lokale Dateien direkt im Container sichtbar.
+Die `make`-Targets reichen dabei automatisch deine lokale `UID` und `GID` an Docker weiter, damit Dateien im gemounteten Projektordner nicht `root` gehören.
 
 ### Voraussetzungen
 
@@ -34,7 +54,7 @@ Vor der ersten Nutzung das PHP-Image bauen:
 make build
 ```
 
-Wenn sich das Basis-Image ändert und Docker noch ein altes Image verwendet:
+Wenn sich deine lokale Benutzer- oder Gruppen-ID geändert hat oder das Basis-Image aktualisiert wurde, das Image danach neu bauen:
 
 ```bash
 make rebuild

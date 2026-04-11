@@ -121,8 +121,6 @@ foreach ($firstPageFonts as $fontName) {
 
 $document = $document
     ->newPage(new PageOptions(
-        pageSize: PageSize::A4(),
-        margin: $margin,
         backgroundColor: $pageTwoBackground,
     ))
     ->paragraph('Weitere Standardschnitte', new TextOptions(
@@ -173,10 +171,7 @@ foreach ($secondPageFonts as $fontName) {
 }
 
 $document = $document
-    ->newPage(new PageOptions(
-        pageSize: PageSize::A4(),
-        margin: $margin,
-    ))
+    ->newPage()
     ->paragraph('Größen, Laufweite und Sonderzeichen', new TextOptions(
         fontSize: 20,
         lineHeight: 24,
@@ -202,7 +197,7 @@ foreach ([6, 8, 10, 12, 18, 28] as $size) {
     ));
 }
 
-$document = $document
+$document
     ->paragraph('Monospace-Vergleich', new TextOptions(
         fontSize: 12,
         lineHeight: 16,

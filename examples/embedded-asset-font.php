@@ -5,8 +5,8 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Kalle\Pdf\Color\Color;
-use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\EmbeddedFontSource;
+use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Text\TextOptions;
 
@@ -30,24 +30,19 @@ Pdf::document()
     ->subject('Embedded font example using a local asset font')
     ->creator('examples/embedded-asset-font.php')
     ->creatorTool('pdf2')
+    ->pageSize(PageSize::A4()->portrait())
     ->text('Embedded asset font', new TextOptions(
-        x: Units::mm(20),
-        y: Units::mm(270),
         fontSize: 24,
         embeddedFont: $fontSource,
         color: Color::hex('#111827'),
     ))
     ->paragraph('This example embeds Inter-Regular.ttf from assets/fonts and writes it into the PDF as an embedded TrueType font.', new TextOptions(
-        x: Units::mm(20),
-        y: Units::mm(248),
         fontSize: 12,
         lineHeight: 16,
         embeddedFont: $fontSource,
         color: Color::hex('#334155'),
     ))
     ->paragraph('The goal is to keep the example small and explicit so the embedded-font API remains easy to inspect.', new TextOptions(
-        x: Units::mm(20),
-        y: Units::mm(224),
         fontSize: 12,
         lineHeight: 16,
         embeddedFont: $fontSource,
