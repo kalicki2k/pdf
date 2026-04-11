@@ -20,7 +20,25 @@ final class TrueTypeFontFixture
 
     public static function minimalCffOpenTypeFontBytes(): string
     {
-        return self::minimalSfntFontBytes('OTTO');
+        $cmap = self::buildCmapTable();
+        $head = self::buildHeadTable();
+        $hhea = self::buildHheaTable();
+        $maxp = self::buildMaxpTable();
+        $hmtx = self::buildHmtxTable();
+        $name = self::buildNameTable();
+        $post = self::buildPostTable();
+        $cff = self::buildMinimalCffTable();
+
+        return self::buildSfnt('OTTO', [
+            'CFF ' => $cff,
+            'cmap' => $cmap,
+            'head' => $head,
+            'hhea' => $hhea,
+            'hmtx' => $hmtx,
+            'maxp' => $maxp,
+            'name' => $name,
+            'post' => $post,
+        ]);
     }
 
     public static function minimalUnicodeTrueTypeFontBytes(): string
@@ -41,6 +59,29 @@ final class TrueTypeFontFixture
             'hhea' => $hhea,
             'hmtx' => $hmtx,
             'loca' => $loca,
+            'maxp' => $maxp,
+            'name' => $name,
+            'post' => $post,
+        ]);
+    }
+
+    public static function minimalUnicodeCffOpenTypeFontBytes(): string
+    {
+        $head = self::buildHeadTable();
+        $hhea = self::buildUnicodeHheaTable();
+        $maxp = self::buildUnicodeMaxpTable();
+        $hmtx = self::buildUnicodeHmtxTable();
+        $name = self::buildNameTable();
+        $post = self::buildPostTable();
+        $cff = self::buildMinimalCffTable();
+        $cmap = self::buildUnicodeCmapTable();
+
+        return self::buildSfnt('OTTO', [
+            'CFF ' => $cff,
+            'cmap' => $cmap,
+            'head' => $head,
+            'hhea' => $hhea,
+            'hmtx' => $hmtx,
             'maxp' => $maxp,
             'name' => $name,
             'post' => $post,
@@ -301,5 +342,69 @@ final class TrueTypeFontFixture
         }
 
         return [$glyf, $loca];
+    }
+
+    private static function buildMinimalCffTable(): string
+    {
+        $name = 'TestCff-Regular';
+        $header = "\x01\x00\x04\x01";
+        $nameIndex = self::buildCffIndex([$name]);
+        $stringIndex = pack('n', 0);
+        $globalSubrIndex = pack('n', 0);
+        $charset = "\x00" . pack('n', 391);
+        $charStringsIndex = self::buildCffIndex(["\x0E", "\x0E"]);
+
+        $topDictLength = 26;
+        $topDictIndexLength = 2 + 1 + 2 + $topDictLength;
+        $charsetOffset = strlen($header) + strlen($nameIndex) + $topDictIndexLength + strlen($stringIndex) + strlen($globalSubrIndex);
+        $charStringsOffset = $charsetOffset + strlen($charset);
+
+        $topDict = self::cffInt16(-50)
+            . self::cffInt16(-200)
+            . self::cffInt16(950)
+            . self::cffInt16(800)
+            . "\x05"
+            . self::cffInt16(-12)
+            . "\x0C\x02"
+            . self::cffInt16($charsetOffset)
+            . "\x0F"
+            . self::cffInt16($charStringsOffset)
+            . "\x11";
+
+        return $header
+            . $nameIndex
+            . self::buildCffIndex([$topDict])
+            . $stringIndex
+            . $globalSubrIndex
+            . $charset
+            . $charStringsIndex;
+    }
+
+    /**
+     * @param list<string> $items
+     */
+    private static function buildCffIndex(array $items): string
+    {
+        if ($items === []) {
+            return pack('n', 0);
+        }
+
+        $data = '';
+        $offsets = [1];
+
+        foreach ($items as $item) {
+            $data .= $item;
+            $offsets[] = strlen($data) + 1;
+        }
+
+        return pack('n', count($items))
+            . "\x01"
+            . implode('', array_map(static fn (int $offset): string => chr($offset), $offsets))
+            . $data;
+    }
+
+    private static function cffInt16(int $value): string
+    {
+        return "\x1C" . pack('n', $value & 0xFFFF);
     }
 }

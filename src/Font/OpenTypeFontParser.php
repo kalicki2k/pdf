@@ -146,6 +146,10 @@ final class OpenTypeFontParser
 
     public function italicAngle(): float
     {
+        if ($this->outlineType() === OpenTypeOutlineType::CFF && isset($this->tables['CFF '])) {
+            return new CffFontParser($this->tableBytes('CFF '))->italicAngle();
+        }
+
         if (!isset($this->tables['post'])) {
             return 0.0;
         }
@@ -160,6 +164,10 @@ final class OpenTypeFontParser
 
     public function fontBoundingBox(): FontBoundingBox
     {
+        if ($this->outlineType() === OpenTypeOutlineType::CFF && isset($this->tables['CFF '])) {
+            return new CffFontParser($this->tableBytes('CFF '))->fontBoundingBox();
+        }
+
         $headOffset = $this->requiredTableOffset('head');
 
         return new FontBoundingBox(
@@ -172,6 +180,10 @@ final class OpenTypeFontParser
 
     public function postScriptName(): string
     {
+        if ($this->outlineType() === OpenTypeOutlineType::CFF && isset($this->tables['CFF '])) {
+            return new CffFontParser($this->tableBytes('CFF '))->postScriptName();
+        }
+
         $nameOffset = $this->requiredTableOffset('name');
         $count = $this->readUInt16($nameOffset + 2);
         $stringOffset = $this->readUInt16($nameOffset + 4);

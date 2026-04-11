@@ -245,6 +245,26 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/BaseFont /TestFont-Regular', $serialized);
     }
 
+    public function testItBuildsEmbeddedCffFontObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->text('A', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalCffOpenTypeFontBytes()),
+            ))
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /Type1', $serialized);
+        self::assertStringContainsString('/FontDescriptor', $serialized);
+        self::assertStringContainsString('/FontFile3', $serialized);
+        self::assertStringContainsString('/Subtype /OpenType', $serialized);
+        self::assertStringContainsString('/BaseFont /TestCff-Regular', $serialized);
+    }
+
     public function testItBuildsUnicodeEmbeddedTrueTypeFontObjects(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -274,5 +294,36 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         preg_match('/\\/Length1 ([0-9]+)/', $serialized, $matches);
         self::assertArrayHasKey(1, $matches);
         self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()), (int) $matches[1]);
+    }
+
+    public function testItBuildsUnicodeEmbeddedCffFontObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->text('Ж', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
+            ))
+            ->text('中😀', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
+            ))
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /Type0', $serialized);
+        self::assertStringContainsString('/Subtype /CIDFontType0', $serialized);
+        self::assertStringContainsString('/Encoding /Identity-H', $serialized);
+        self::assertStringContainsString('/FontFile3', $serialized);
+        self::assertStringContainsString('/Subtype /OpenType', $serialized);
+        self::assertMatchesRegularExpression('/\\/BaseFont \\/[A-Z]{6}\\+TestCff-Regular/', $serialized);
+        self::assertStringNotContainsString('/CIDToGIDMap', $serialized);
+        self::assertStringContainsString('<0001> <0416>', $serialized);
+        self::assertStringContainsString('<0002> <4E2D>', $serialized);
+        self::assertStringContainsString('<0003> <D83DDE00>', $serialized);
+        preg_match('/<< \\/Length ([0-9]+) \\/Subtype \\/OpenType >>/', $serialized, $matches);
+        self::assertArrayHasKey(1, $matches);
+        self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()), (int) $matches[1]);
     }
 }

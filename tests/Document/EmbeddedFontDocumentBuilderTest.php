@@ -30,6 +30,25 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         self::assertStringContainsString('(A) Tj', $document->pages[0]->contents);
     }
 
+    public function testItBuildsTextWithAnEmbeddedCffFont(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('A', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalCffOpenTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->isEmbedded());
+        self::assertSame('TestCff-Regular', $font->name);
+        self::assertFalse($font->usesUnicodeCids());
+        self::assertStringContainsString('/F1 18 Tf', $document->pages[0]->contents);
+        self::assertStringContainsString('(A) Tj', $document->pages[0]->contents);
+    }
+
     public function testItBuildsUnicodeTextWithAnEmbeddedTrueTypeFont(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -55,5 +74,28 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         self::assertStringContainsString('<0001> Tj', $document->pages[0]->contents);
         self::assertStringContainsString('<0002> Tj', $document->pages[0]->contents);
         self::assertStringContainsString('<0003> Tj', $document->pages[0]->contents);
+    }
+
+    public function testItBuildsUnicodeTextWithAnEmbeddedCffFont(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('Ж', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
+            ))
+            ->text('中', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->isEmbedded());
+        self::assertTrue($font->usesUnicodeCids());
+        self::assertSame('TestCff-Regular', $font->name);
+        self::assertSame([0x0416, 0x4E2D], $font->unicodeCodePoints);
+        self::assertStringContainsString('<0001> Tj', $document->pages[0]->contents);
+        self::assertStringContainsString('<0002> Tj', $document->pages[0]->contents);
     }
 }

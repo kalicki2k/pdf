@@ -28,9 +28,6 @@ final readonly class EmbeddedFontDefinition
         public OpenTypeFontParser $parser,
         public EmbeddedFontMetadata $metadata,
     ) {
-        if ($this->metadata->outlineType !== OpenTypeOutlineType::TRUE_TYPE) {
-            throw new InvalidArgumentException('Phase 1 only supports embedded TrueType outlines.');
-        }
     }
 
     public static function fromSource(EmbeddedFontSource $source): self
@@ -97,6 +94,24 @@ final readonly class EmbeddedFontDefinition
         }
 
         return mb_convert_encoding($text, 'UTF-16BE', 'UTF-8');
+    }
+
+    public function encodeUnicodeGlyphIdsText(string $text): string
+    {
+        if (!$this->supportsUnicodeText($text)) {
+            throw new InvalidArgumentException(sprintf(
+                "Text cannot be encoded as Unicode with embedded font '%s'.",
+                $this->metadata->postScriptName,
+            ));
+        }
+
+        $encoded = '';
+
+        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
+            $encoded .= pack('n', $this->parser->getGlyphIdForCharacter($character));
+        }
+
+        return $encoded;
     }
 
     public function measureTextWidth(string $text, float $fontSize): float
@@ -166,9 +181,14 @@ final readonly class EmbeddedFontDefinition
     {
         $data = $this->source->data;
 
-        return '<< /Length ' . strlen($data) . ' /Length1 ' . strlen($data) . " >>\nstream\n"
-            . $data
-            . "\nendstream";
+        return match ($this->metadata->outlineType) {
+            OpenTypeOutlineType::TRUE_TYPE => '<< /Length ' . strlen($data) . ' /Length1 ' . strlen($data) . " >>\nstream\n"
+                . $data
+                . "\nendstream",
+            OpenTypeOutlineType::CFF => '<< /Length ' . strlen($data) . ' /Subtype /OpenType >>' . "\nstream\n"
+                . $data
+                . "\nendstream",
+        };
     }
 
     /**
@@ -176,6 +196,17 @@ final readonly class EmbeddedFontDefinition
      */
     public function unicodeSubsetFontFileStreamContents(array $codePoints): string
     {
+        if ($this->metadata->outlineType === OpenTypeOutlineType::CFF) {
+            $data = new OpenTypeCffSubsetter($this->parser)->subset(
+                $codePoints,
+                $this->subsetPostScriptName($codePoints),
+            );
+
+            return '<< /Length ' . strlen($data) . ' /Subtype /OpenType >>' . "\nstream\n"
+                . $data
+                . "\nendstream";
+        }
+
         $glyphIds = [0];
 
         foreach ($codePoints as $codePoint) {
@@ -203,7 +234,8 @@ final readonly class EmbeddedFontDefinition
             . ' /Descent ' . $this->metadata->descent
             . ' /CapHeight ' . $this->metadata->capHeight
             . ' /StemV 80'
-            . ' /FontFile2 ' . $fontFileObjectId . ' 0 R'
+            . ' /' . ($this->metadata->outlineType === OpenTypeOutlineType::CFF ? 'FontFile3' : 'FontFile2')
+            . ' ' . $fontFileObjectId . ' 0 R'
             . ' >>';
     }
 
@@ -220,7 +252,7 @@ final readonly class EmbeddedFontDefinition
         }
 
         return '<< /Type /Font'
-            . ' /Subtype /TrueType'
+            . ' /Subtype /' . ($this->metadata->outlineType === OpenTypeOutlineType::CFF ? 'Type1' : 'TrueType')
             . ' /BaseFont /' . $this->metadata->postScriptName
             . ' /FirstChar 32'
             . ' /LastChar 255'
@@ -237,7 +269,7 @@ final readonly class EmbeddedFontDefinition
     {
         return '<< /Type /Font'
             . ' /Subtype /Type0'
-            . ' /BaseFont /' . $this->subsetPostScriptName($codePoints)
+            . ' /BaseFont /' . $this->unicodeBaseFontName($codePoints)
             . ' /Encoding /Identity-H'
             . ' /DescendantFonts [' . $cidFontObjectId . ' 0 R]'
             . ' /ToUnicode ' . $toUnicodeObjectId . ' 0 R'
@@ -247,17 +279,25 @@ final readonly class EmbeddedFontDefinition
     /**
      * @param list<int> $codePoints
      */
-    public function unicodeCidFontObjectContents(int $fontDescriptorObjectId, int $cidToGidMapObjectId, array $codePoints): string
+    public function unicodeCidFontObjectContents(int $fontDescriptorObjectId, ?int $cidToGidMapObjectId, array $codePoints): string
     {
-        return '<< /Type /Font'
-            . ' /Subtype /CIDFontType2'
-            . ' /BaseFont /' . $this->subsetPostScriptName($codePoints)
+        $contents = '<< /Type /Font'
+            . ' /Subtype /' . ($this->metadata->outlineType === OpenTypeOutlineType::CFF ? 'CIDFontType0' : 'CIDFontType2')
+            . ' /BaseFont /' . $this->unicodeBaseFontName($codePoints)
             . ' /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >>'
             . ' /FontDescriptor ' . $fontDescriptorObjectId . ' 0 R'
             . ' /DW ' . $this->parser->getAdvanceWidthForGlyphId(0)
-            . ' /W ' . $this->unicodeWidthsArray($codePoints)
-            . ' /CIDToGIDMap ' . $cidToGidMapObjectId . ' 0 R'
-            . ' >>';
+            . ' /W ' . $this->unicodeWidthsArray($codePoints);
+
+        if ($this->metadata->outlineType === OpenTypeOutlineType::TRUE_TYPE) {
+            if ($cidToGidMapObjectId === null) {
+                throw new InvalidArgumentException('TrueType CID fonts require a CIDToGIDMap object.');
+            }
+
+            $contents .= ' /CIDToGIDMap ' . $cidToGidMapObjectId . ' 0 R';
+        }
+
+        return $contents . ' >>';
     }
 
     /**
@@ -265,6 +305,10 @@ final readonly class EmbeddedFontDefinition
      */
     public function unicodeCidToGidMapStreamContents(array $codePoints): string
     {
+        if ($this->metadata->outlineType === OpenTypeOutlineType::CFF) {
+            throw new InvalidArgumentException('CIDToGIDMap is only used for TrueType CID fonts.');
+        }
+
         if ($codePoints === []) {
             return "<< /Length 0 >>\nstream\nendstream";
         }
@@ -302,7 +346,7 @@ final readonly class EmbeddedFontDefinition
         ];
 
         foreach ($codePoints as $codePoint) {
-            $cid = strtoupper(str_pad(dechex($this->subsetCidForCodePoint($codePoints, $codePoint)), 4, '0', STR_PAD_LEFT));
+            $cid = strtoupper(str_pad(dechex($this->unicodeCharCodeForCodePoint($codePoints, $codePoint)), 4, '0', STR_PAD_LEFT));
             $unicode = strtoupper(bin2hex(mb_convert_encoding(mb_chr($codePoint, 'UTF-8'), 'UTF-16BE', 'UTF-8')));
             $lines[] = '<' . $cid . '> <' . $unicode . '>';
         }
@@ -335,7 +379,7 @@ final readonly class EmbeddedFontDefinition
         $entries = [];
 
         foreach ($codePoints as $index => $codePoint) {
-            $entries[] = (string) ($index + 1) . ' [' . $this->parser->getAdvanceWidthForGlyphId(
+            $entries[] = (string) $this->unicodeCharCodeForCodePoint($codePoints, $codePoint) . ' [' . $this->parser->getAdvanceWidthForGlyphId(
                 $this->parser->getGlyphIdForCodePoint($codePoint),
             ) . ']';
         }
@@ -361,6 +405,14 @@ final readonly class EmbeddedFontDefinition
     /**
      * @param list<int> $codePoints
      */
+    public function unicodeBaseFontName(array $codePoints): string
+    {
+        return $this->subsetPostScriptName($codePoints);
+    }
+
+    /**
+     * @param list<int> $codePoints
+     */
     private function subsetCidForCodePoint(array $codePoints, int $codePoint): int
     {
         foreach ($codePoints as $index => $candidate) {
@@ -370,6 +422,14 @@ final readonly class EmbeddedFontDefinition
         }
 
         throw new InvalidArgumentException('Unicode code point is not present in the subset.');
+    }
+
+    /**
+     * @param list<int> $codePoints
+     */
+    private function unicodeCharCodeForCodePoint(array $codePoints, int $codePoint): int
+    {
+        return $this->subsetCidForCodePoint($codePoints, $codePoint);
     }
 
     private function formatNumber(float $value): string

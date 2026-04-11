@@ -9,6 +9,8 @@ use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use PHPUnit\Framework\TestCase;
 
+use function preg_match;
+
 final class EmbeddedFontDefinitionTest extends TestCase
 {
     public function testItEncodesAndMeasuresSimpleWesternText(): void
@@ -56,13 +58,41 @@ final class EmbeddedFontDefinitionTest extends TestCase
         self::assertSame(18.0, $font->measureTextWidth('😀', 20.0));
     }
 
-    public function testItRejectsCffOutlineFontsInPhaseOne(): void
+    public function testItSupportsSimpleWesternTextForCffOpenTypeFonts(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Phase 1 only supports embedded TrueType outlines.');
-
-        EmbeddedFontDefinition::fromSource(
+        $font = EmbeddedFontDefinition::fromSource(
             EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalCffOpenTypeFontBytes()),
         );
+
+        self::assertSame('TestCff-Regular', $font->metadata->postScriptName);
+        self::assertTrue($font->supportsText('A'));
+        self::assertSame('A', $font->encodeText('A'));
+        self::assertSame(12.0, $font->measureTextWidth('A', 20.0));
+        self::assertStringContainsString('/Subtype /OpenType', $font->fontFileStreamContents());
+        self::assertStringContainsString('/FontFile3 9 0 R', $font->fontDescriptorContents(9));
+        self::assertStringContainsString('/Subtype /Type1', $font->fontObjectContents(8));
+    }
+
+    public function testItSupportsUnicodeTextForCffOpenTypeFonts(): void
+    {
+        $font = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
+        );
+
+        self::assertTrue($font->supportsUnicodeText('Ж中😀'));
+        self::assertSame("\x04\x16\x4E\x2D\xD8\x3D\xDE\x00", $font->encodeUnicodeText('Ж中😀'));
+        $subsetStream = $font->unicodeSubsetFontFileStreamContents([0x0416, 0x4E2D, 0x1F600]);
+
+        self::assertStringContainsString('/Subtype /OpenType', $subsetStream);
+        self::assertStringContainsString('/Subtype /CIDFontType0', $font->unicodeCidFontObjectContents(8, null, [0x0416, 0x4E2D]));
+        self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()), $this->extractLength($subsetStream));
+    }
+
+    private function extractLength(string $stream): int
+    {
+        self::assertMatchesRegularExpression('/\\/Length ([0-9]+)/', $stream);
+        preg_match('/\\/Length ([0-9]+)/', $stream, $matches);
+
+        return (int) ($matches[1] ?? 0);
     }
 }

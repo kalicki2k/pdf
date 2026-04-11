@@ -9,6 +9,7 @@ use function implode;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Font\OpenTypeOutlineType;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Writer\DocumentSerializationPlan;
@@ -58,6 +59,7 @@ final class DocumentSerializationPlanBuilder
 
                     if ($pageFont->isEmbedded()) {
                         if ($pageFont->usesUnicodeCids()) {
+                            $embeddedFont = $pageFont->embeddedDefinition();
                             $cidFontObjectIds[$fontKey] = $nextObjectId;
                             $nextObjectId++;
                             $fontDescriptorObjectIds[$fontKey] = $nextObjectId;
@@ -66,8 +68,11 @@ final class DocumentSerializationPlanBuilder
                             $nextObjectId++;
                             $toUnicodeObjectIds[$fontKey] = $nextObjectId;
                             $nextObjectId++;
-                            $cidToGidMapObjectIds[$fontKey] = $nextObjectId;
-                            $nextObjectId++;
+
+                            if ($embeddedFont->metadata->outlineType === OpenTypeOutlineType::TRUE_TYPE) {
+                                $cidToGidMapObjectIds[$fontKey] = $nextObjectId;
+                                $nextObjectId++;
+                            }
                         } else {
                             $fontDescriptorObjectIds[$fontKey] = $nextObjectId;
                             $nextObjectId++;
@@ -118,8 +123,8 @@ final class DocumentSerializationPlanBuilder
                     $unicodeCodePoints = $pageFont->unicodeCodePoints;
                     $cidFontObjectId = $cidFontObjectIds[$fontKey];
                     $toUnicodeObjectId = $toUnicodeObjectIds[$fontKey];
-                    $cidToGidMapObjectId = $cidToGidMapObjectIds[$fontKey];
-                    $subsetFontName = $embeddedFont->subsetPostScriptName($unicodeCodePoints);
+                    $cidToGidMapObjectId = $cidToGidMapObjectIds[$fontKey] ?? null;
+                    $subsetFontName = $embeddedFont->unicodeBaseFontName($unicodeCodePoints);
 
                     $objects[] = new IndirectObject(
                         $fontObjectId,
@@ -145,10 +150,12 @@ final class DocumentSerializationPlanBuilder
                         $toUnicodeObjectId,
                         $embeddedFont->unicodeToUnicodeStreamContents($unicodeCodePoints),
                     );
-                    $objects[] = new IndirectObject(
-                        $cidToGidMapObjectId,
-                        $embeddedFont->unicodeCidToGidMapStreamContents($unicodeCodePoints),
-                    );
+                    if ($cidToGidMapObjectId !== null) {
+                        $objects[] = new IndirectObject(
+                            $cidToGidMapObjectId,
+                            $embeddedFont->unicodeCidToGidMapStreamContents($unicodeCodePoints),
+                        );
+                    }
 
                     continue;
                 }
