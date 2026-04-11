@@ -14,4 +14,4 @@ $document = Pdf::document()
     ->creator('Invoice service')
     ->creatorTool('Backoffice Export');
 
-$document->save('../var/examples/invoices.pdf');
+$document->writeToFile('../var/examples/invoices.pdf');

@@ -10,7 +10,6 @@ use function implode;
 use InvalidArgumentException;
 
 use Kalle\Pdf\Color\Color;
-use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
@@ -22,6 +21,8 @@ use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
+use Kalle\Pdf\Writer\StreamOutput;
+use Kalle\Pdf\Writer\StringOutput;
 
 use Throwable;
 
@@ -29,6 +30,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
 {
     /** @var list<Page> */
     private array $pages = [];
+    private ?PageSize $defaultPageSize = null;
+    private ?Margin $defaultPageMargin = null;
     private ?PageSize $currentPageSize = null;
     private string $currentPageContents = '';
     /** @var array<string, PageFont> */
@@ -110,6 +113,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     public function pageSize(PageSize $size): DocumentBuilder
     {
         $clone = clone $this;
+        $clone->defaultPageSize = $size;
         $clone->currentPageSize = $size;
 
         return $clone;
@@ -118,6 +122,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     public function margin(Margin $margin): DocumentBuilder
     {
         $clone = clone $this;
+        $clone->defaultPageMargin = $margin;
         $clone->currentPageMargin = $margin;
         $clone->currentPageCursorY = null;
 
@@ -232,20 +237,34 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
     }
 
-    public function save(string $path): string
+    public function contents(): string
+    {
+        $output = new StringOutput();
+
+        new DocumentRenderer()->write($this->build(), $output);
+
+        return $output->contents();
+    }
+
+    public function writeToStream($stream): void
+    {
+        $output = new StreamOutput($stream);
+
+        new DocumentRenderer()->write($this->build(), $output);
+    }
+
+    public function writeToFile(string $path): void
     {
         $output = new FileOutput($path);
 
         try {
-            (new DocumentRenderer())->write($this->build(), $output);
+            new DocumentRenderer()->write($this->build(), $output);
             $output->close();
         } catch (Throwable $throwable) {
             unset($output);
 
             throw $throwable;
         }
-
-        return $path;
     }
 
     private function buildCurrentPage(): Page
@@ -266,7 +285,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageSize = $this->resolvePageSize($options);
         $this->currentPageContents = '';
         $this->currentPageFontResources = [];
-        $this->currentPageMargin = $options?->margin;
+        $this->currentPageMargin = $options?->margin ?? $this->defaultPageMargin;
         $this->currentPageCursorY = null;
         $this->currentPageBackgroundColor = $options?->backgroundColor;
         $this->currentPageLabel = $options?->label;
@@ -275,7 +294,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function resolvePageSize(?PageOptions $options): ?PageSize
     {
-        $pageSize = $options?->pageSize;
+        $pageSize = $options?->pageSize ?? $this->defaultPageSize;
 
         if ($pageSize === null) {
             return null;

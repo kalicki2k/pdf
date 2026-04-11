@@ -46,4 +46,4 @@ Pdf::document()
         fontSize: 12,
         fontName: 'Courier',
     ))
-    ->save($outputDirectory . '/background.pdf');
+    ->writeToFile($outputDirectory . '/background.pdf');

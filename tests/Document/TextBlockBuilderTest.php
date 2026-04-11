@@ -15,7 +15,7 @@ final class TextBlockBuilderTest extends TestCase
 {
     public function testItBuildsABasicTextBlock(): void
     {
-        $block = (new TextBlockBuilder())->build(
+        $block = new TextBlockBuilder()->build(
             encodedText: 'Hello',
             options: new TextOptions(fontSize: 18),
             x: 72.0,
@@ -29,7 +29,7 @@ final class TextBlockBuilderTest extends TestCase
 
     public function testItBuildsKerningAwareHexTextBlocks(): void
     {
-        $block = (new TextBlockBuilder())->build(
+        $block = new TextBlockBuilder()->build(
             encodedText: 'AV',
             options: new TextOptions(fontSize: 18),
             x: 72.0,
@@ -45,7 +45,7 @@ final class TextBlockBuilderTest extends TestCase
 
     public function testItBuildsColorOperatorsIntoTextBlocks(): void
     {
-        $block = (new TextBlockBuilder())->build(
+        $block = new TextBlockBuilder()->build(
             encodedText: 'Hello',
             options: new TextOptions(
                 fontSize: 18,

@@ -265,4 +265,4 @@ $document = $document
         fontName: StandardFont::HELVETICA->value,
         color: $mutedColor,
     ))
-    ->save($outputDirectory . '/alphabet.pdf');
+    ->writeToFile($outputDirectory . '/alphabet.pdf');

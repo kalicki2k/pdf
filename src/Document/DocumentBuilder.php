@@ -42,5 +42,12 @@ interface DocumentBuilder
 
     public function build(): Document;
 
-    public function save(string $path): string;
+    public function contents(): string;
+
+    /**
+     * @param resource $stream
+     */
+    public function writeToStream($stream): void;
+
+    public function writeToFile(string $path): void;
 }

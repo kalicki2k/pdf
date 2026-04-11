@@ -12,6 +12,7 @@ use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Text\TextMeasurer;
 use Kalle\Pdf\Writer\FileOutput;
 use Kalle\Pdf\Writer\Output;
+use Kalle\Pdf\Writer\StreamOutput;
 use Kalle\Pdf\Writer\StringOutput;
 use Throwable;
 
@@ -34,7 +35,7 @@ final readonly class Pdf
     /**
      * @throws Throwable
      */
-    public static function save(Document $document, string $path): string
+    public static function writeToFile(Document $document, string $path): void
     {
         $output = new FileOutput($path);
 
@@ -46,8 +47,14 @@ final readonly class Pdf
 
             throw $throwable;
         }
+    }
 
-        return $path;
+    /**
+     * @param resource $stream
+     */
+    public static function writeToStream(Document $document, $stream): void
+    {
+        self::render($document, new StreamOutput($stream));
     }
 
     public static function contents(Document $document): string
@@ -60,6 +67,6 @@ final readonly class Pdf
 
     public static function measureTextWidth(string $text, float $fontSize, string | StandardFont $font = StandardFont::HELVETICA): float
     {
-        return (new TextMeasurer())->measureTextWidth($text, $fontSize, $font);
+        return new TextMeasurer()->measureTextWidth($text, $fontSize, $font);
     }
 }

@@ -38,7 +38,7 @@ final class PdfTest extends TestCase
         self::assertStringContainsString('%%EOF', $contents);
     }
 
-    public function testItSavesADocumentToAPath(): void
+    public function testItWritesADocumentToAPath(): void
     {
         $document = Pdf::document()
             ->title('Example Title')
@@ -53,9 +53,7 @@ final class PdfTest extends TestCase
         unlink($path);
         $path .= '.pdf';
 
-        $savedPath = Pdf::save($document, $path);
-
-        self::assertSame($path, $savedPath);
+        Pdf::writeToFile($document, $path);
         self::assertFileExists($path);
 
         $contents = file_get_contents($path);
@@ -65,6 +63,30 @@ final class PdfTest extends TestCase
         self::assertStringContainsString('%%EOF', $contents);
 
         unlink($path);
+    }
+
+    public function testItWritesADocumentToAStream(): void
+    {
+        $document = Pdf::document()
+            ->title('Example Title')
+            ->author('Sebastian Kalicki')
+            ->build();
+        $stream = fopen('php://temp', 'w+b');
+
+        if ($stream === false) {
+            self::fail('Unable to open a temporary stream for the Pdf facade write test.');
+        }
+
+        Pdf::writeToStream($document, $stream);
+
+        rewind($stream);
+        $contents = stream_get_contents($stream);
+
+        self::assertIsString($contents);
+        self::assertStringStartsWith('%PDF-1.4', $contents);
+        self::assertStringContainsString('%%EOF', $contents);
+
+        fclose($stream);
     }
 
     public function testItMeasuresTextWidthThroughTheFacade(): void
