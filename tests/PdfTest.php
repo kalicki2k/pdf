@@ -69,11 +69,16 @@ final class PdfTest extends TestCase
 
     public function testItMeasuresTextWidthThroughTheFacade(): void
     {
-        self::assertSame(22.78, Pdf::measureTextWidth('Hello', 10, StandardFont::HELVETICA));
+        self::assertEqualsWithDelta(22.74, Pdf::measureTextWidth('Hello', 10, StandardFont::HELVETICA), 0.0001);
     }
 
     public function testItMeasuresSymbolTextWidthThroughTheFacade(): void
     {
         self::assertSame(23.59, Pdf::measureTextWidth('αβγΩ', 10, StandardFont::SYMBOL));
+    }
+
+    public function testItMeasuresKerningAwareTextWidthThroughTheFacade(): void
+    {
+        self::assertEqualsWithDelta(12.63, Pdf::measureTextWidth('AV', 10, StandardFont::HELVETICA), 0.0001);
     }
 }

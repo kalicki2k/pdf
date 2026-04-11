@@ -46,6 +46,13 @@ final class StandardFontDefinitionTest extends TestCase
         self::assertSame(23.59, $font->measureTextWidth('αβγΩ', 10));
     }
 
+    public function testItMeasuresKerningAwareWidthThroughTheFontDefinition(): void
+    {
+        $font = StandardFontDefinition::from(StandardFont::HELVETICA);
+
+        self::assertEqualsWithDelta(12.63, $font->measureTextWidth('AV', 10), 0.0001);
+    }
+
     public function testItBuildsThePdfEncodingObjectValueThroughTheFontDefinition(): void
     {
         $font = StandardFontDefinition::from(StandardFont::HELVETICA);

@@ -564,6 +564,8 @@ final class StandardFontMetrics
                 ?? self::FALLBACK_GLYPH_WIDTH;
         }
 
+        $width += self::kerningAdjustment($baseFont, self::glyphNamesForText($baseFont, $text));
+
         return ($width / 1000) * $size;
     }
 
@@ -621,6 +623,8 @@ final class StandardFontMetrics
             $width += $glyphWidth;
         }
 
+        $width += self::kerningAdjustment($baseFont, $glyphNames);
+
         return ($width / 1000) * $size;
     }
 
@@ -666,6 +670,66 @@ final class StandardFontMetrics
         }
 
         return ($width / 1000) * $size;
+    }
+
+    /**
+     * @return list<?string>
+     */
+    private static function glyphNamesForText(string $baseFont, string $text): array
+    {
+        if (!isset(StandardFontCoreGlyphMap::NAME_TO_CODE[$baseFont])) {
+            return [];
+        }
+
+        $glyphNames = [];
+
+        foreach (self::characters($text) as $character) {
+            if ($character === "\t" || $character === "\n" || $character === "\r") {
+                $glyphNames[] = null;
+
+                continue;
+            }
+
+            if ($character === ' ') {
+                $glyphNames[] = 'space';
+
+                continue;
+            }
+
+            if (preg_match('/^[\x21-\x7E]$/', $character) === 1) {
+                $glyphNames[] = StandardFontCoreGlyphMap::glyphNameForCode($baseFont, ord($character));
+
+                continue;
+            }
+
+            $glyphNames[] = StandardFontWesternGlyphMap::glyphName($character);
+        }
+
+        return $glyphNames;
+    }
+
+    /**
+     * @param list<?string> $glyphNames
+     */
+    private static function kerningAdjustment(string $baseFont, array $glyphNames): int
+    {
+        if (!isset(StandardFontCoreKerning::PAIRS[$baseFont]) || $glyphNames === []) {
+            return 0;
+        }
+
+        $adjustment = 0;
+
+        foreach ($glyphNames as $index => $leftGlyph) {
+            $rightGlyph = $glyphNames[$index + 1] ?? null;
+
+            if ($leftGlyph === null || $rightGlyph === null) {
+                continue;
+            }
+
+            $adjustment += StandardFontCoreKerning::value($baseFont, $leftGlyph, $rightGlyph);
+        }
+
+        return $adjustment;
     }
 
     /**

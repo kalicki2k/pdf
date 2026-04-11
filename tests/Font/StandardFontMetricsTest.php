@@ -11,19 +11,19 @@ final class StandardFontMetricsTest extends TestCase
 {
     public function testItMeasuresKnownStandardFontWidths(): void
     {
-        self::assertSame(22.78, StandardFontMetrics::measureTextWidth('Helvetica', 'Hello', 10));
+        self::assertEqualsWithDelta(22.74, StandardFontMetrics::measureTextWidth('Helvetica', 'Hello', 10), 0.0001);
     }
 
     public function testItMeasuresWesternWinAnsiAndLatin1CharactersForHelvetica(): void
     {
         self::assertEqualsWithDelta(50.02, StandardFontMetrics::measureTextWidth('Helvetica', 'ÄÖÜäöüß€', 10), 0.0001);
-        self::assertEqualsWithDelta(29.44, StandardFontMetrics::measureTextWidth('Helvetica', '„Hallo“', 10), 0.0001);
+        self::assertEqualsWithDelta(29.37, StandardFontMetrics::measureTextWidth('Helvetica', '„Hallo“', 10), 0.0001);
     }
 
     public function testItMeasuresWesternWinAnsiAndLatin1CharactersForTimesRoman(): void
     {
         self::assertEqualsWithDelta(46.1, StandardFontMetrics::measureTextWidth('Times-Roman', 'ÄÖÜäöüß€', 10), 0.0001);
-        self::assertEqualsWithDelta(31.1, StandardFontMetrics::measureTextWidth('Times-Roman', '„Hallo“', 10), 0.0001);
+        self::assertEqualsWithDelta(31.03, StandardFontMetrics::measureTextWidth('Times-Roman', '„Hallo“', 10), 0.0001);
     }
 
     public function testItUsesMonospaceCourierWidthsWhenNoExplicitTableExists(): void
@@ -39,6 +39,12 @@ final class StandardFontMetricsTest extends TestCase
     public function testItMeasuresZapfDingbatsTextUsingAdobeAfmMetrics(): void
     {
         self::assertEqualsWithDelta(31.24, StandardFontMetrics::measureTextWidth('ZapfDingbats', '✓✔✕✖', 10), 0.0001);
+    }
+
+    public function testItMeasuresCoreFontTextWithKerningApplied(): void
+    {
+        self::assertEqualsWithDelta(12.63, StandardFontMetrics::measureTextWidth('Helvetica', 'AV', 10), 0.0001);
+        self::assertEqualsWithDelta(10.24, StandardFontMetrics::measureTextWidth('Times-Roman', 'To', 10), 0.0001);
     }
 
     public function testItExposesGlyphNamesAcrossAllStandardFonts(): void

@@ -15,7 +15,7 @@ final class TextMeasurerTest extends TestCase
     {
         $measurer = new TextMeasurer();
 
-        self::assertSame(22.78, $measurer->measureTextWidth('Hello', 10, 'Helvetica'));
+        self::assertEqualsWithDelta(22.74, $measurer->measureTextWidth('Hello', 10, 'Helvetica'), 0.0001);
     }
 
     public function testItMeasuresTextWidthForAStandardFontEnum(): void
@@ -30,6 +30,13 @@ final class TextMeasurerTest extends TestCase
         $measurer = new TextMeasurer();
 
         self::assertEqualsWithDelta(50.02, $measurer->measureTextWidth('ÄÖÜäöüß€', 10, StandardFont::HELVETICA), 0.0001);
+    }
+
+    public function testItMeasuresKerningAwareCoreTextWidth(): void
+    {
+        $measurer = new TextMeasurer();
+
+        self::assertEqualsWithDelta(12.63, $measurer->measureTextWidth('AV', 10, StandardFont::HELVETICA), 0.0001);
     }
 
     public function testItMeasuresSymbolTextWidthForUnicodeGlyphs(): void
