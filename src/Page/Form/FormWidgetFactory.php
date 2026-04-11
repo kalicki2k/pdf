@@ -31,11 +31,14 @@ use Kalle\Pdf\Style\Color;
  */
 final readonly class FormWidgetFactory
 {
+    private FormChoiceWidgetFactory $choiceWidgets;
+
     public function __construct(
         private Page $page,
         private FormWidgetFactoryContext $context,
         private UnicodeFontWidthUpdater $unicodeFontWidthUpdater,
     ) {
+        $this->choiceWidgets = new FormChoiceWidgetFactory($page, $context, $unicodeFontWidthUpdater);
     }
 
     public function createTextField(
@@ -184,58 +187,17 @@ final readonly class FormWidgetFactory
         ?string $defaultValue,
         ?string $accessibleName,
     ): ComboBoxAnnotation {
-        if ($name === '') {
-            throw new InvalidArgumentException('Combo box name must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'Combo box');
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('Combo box font size must be greater than zero.');
-        }
-
-        $this->assertOptionsAreNotEmpty($options, 'Combo box');
-
-        if ($value !== null && !array_key_exists($value, $options)) {
-            throw new InvalidArgumentException('Combo box value must reference one of the available options.');
-        }
-
-        if ($defaultValue !== null && !array_key_exists($defaultValue, $options)) {
-            throw new InvalidArgumentException('Combo box default value must reference one of the available options.');
-        }
-
-        [$font, $fontResourceName] = $this->prepareComboBoxAcroFormFont($baseFont);
-
-        return new ComboBoxAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        return $this->choiceWidgets->createComboBox(
             $name,
+            $box,
             $options,
             $value,
-            $fontResourceName,
+            $baseFont,
             $size,
-            $flags,
             $textColor,
+            $flags,
             $defaultValue,
             $accessibleName,
-            new FormFieldTextAppearanceStream(
-                $this->nextObjectId(),
-                $box->width,
-                $box->height,
-                $font,
-                $this->unicodeFontWidthUpdater,
-                $fontResourceName,
-                $size,
-                $this->resolveComboBoxAppearanceLines($options, $value),
-                $textColor,
-                HorizontalAlign::LEFT,
-                VerticalAlign::MIDDLE,
-                true,
-            ),
         );
     }
 
@@ -256,50 +218,17 @@ final readonly class FormWidgetFactory
         string | array | null $defaultValue,
         ?string $accessibleName,
     ): ListBoxAnnotation {
-        if ($name === '') {
-            throw new InvalidArgumentException('List box name must not be empty.');
-        }
-
-        $this->assertRectHasPositiveDimensions($box, 'List box');
-
-        if ($size <= 0) {
-            throw new InvalidArgumentException('List box font size must be greater than zero.');
-        }
-
-        $this->assertOptionsAreNotEmpty($options, 'List box');
-        $this->assertSelectionExists($value, $options, 'List box value must reference one of the available options.');
-        $this->assertSelectionExists($defaultValue, $options, 'List box default value must reference one of the available options.');
-
-        [$font, $fontResourceName] = $this->prepareListBoxAcroFormFont($baseFont);
-
-        return new ListBoxAnnotation(
-            $this->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        return $this->choiceWidgets->createListBox(
             $name,
+            $box,
             $options,
             $value,
-            $fontResourceName,
+            $baseFont,
             $size,
-            $flags,
             $textColor,
+            $flags,
             $defaultValue,
             $accessibleName,
-            new FormFieldListBoxAppearanceStream(
-                $this->nextObjectId(),
-                $box->width,
-                $box->height,
-                $font,
-                $this->unicodeFontWidthUpdater,
-                $fontResourceName,
-                $size,
-                $options,
-                $this->resolveSelectedValues($value),
-                $textColor,
-            ),
         );
     }
 
@@ -404,16 +333,6 @@ final readonly class FormWidgetFactory
         return $this->context->ensureRadioButtonAcroForm();
     }
 
-    private function ensureComboBoxAcroForm(): AcroForm
-    {
-        return $this->context->ensureComboBoxAcroForm();
-    }
-
-    private function ensureListBoxAcroForm(): AcroForm
-    {
-        return $this->context->ensureListBoxAcroForm();
-    }
-
     /**
      * @return array{0: FontDefinition&IndirectObject, 1: string}
      */
@@ -442,34 +361,6 @@ final readonly class FormWidgetFactory
         return [$font, $this->ensurePushButtonAcroForm()->registerFont($font)];
     }
 
-    /**
-     * @return array{0: FontDefinition&IndirectObject, 1: string}
-     */
-    private function prepareComboBoxAcroFormFont(string $baseFont): array
-    {
-        $font = $this->context->resolveFont($baseFont);
-
-        if (!$font instanceof IndirectObject) {
-            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
-        }
-
-        return [$font, $this->ensureComboBoxAcroForm()->registerFont($font)];
-    }
-
-    /**
-     * @return array{0: FontDefinition&IndirectObject, 1: string}
-     */
-    private function prepareListBoxAcroFormFont(string $baseFont): array
-    {
-        $font = $this->context->resolveFont($baseFont);
-
-        if (!$font instanceof IndirectObject) {
-            throw new InvalidArgumentException('AcroForm fonts must be indirect objects.');
-        }
-
-        return [$font, $this->ensureListBoxAcroForm()->registerFont($font)];
-    }
-
     private function assertRectHasPositiveDimensions(Rect $box, string $subject): void
     {
         if ($box->width <= 0) {
@@ -478,51 +369,6 @@ final readonly class FormWidgetFactory
 
         if ($box->height <= 0) {
             throw new InvalidArgumentException("$subject height must be greater than zero.");
-        }
-    }
-
-    /**
-     * @param array<string, string> $options
-     */
-    private function assertOptionsAreNotEmpty(array $options, string $subject): void
-    {
-        if ($options === []) {
-            throw new InvalidArgumentException("$subject options must not be empty.");
-        }
-
-        foreach ($options as $exportValue => $label) {
-            if ($exportValue === '') {
-                throw new InvalidArgumentException("$subject option values must not be empty.");
-            }
-
-            if ($label === '') {
-                throw new InvalidArgumentException("$subject option labels must not be empty.");
-            }
-        }
-    }
-
-    /**
-     * @param array<string, string> $options
-     * @param list<string>|string|null $value
-     */
-    private function assertSelectionExists(string | array | null $value, array $options, string $message): void
-    {
-        if ($value === null) {
-            return;
-        }
-
-        if (is_string($value)) {
-            if (!array_key_exists($value, $options)) {
-                throw new InvalidArgumentException($message);
-            }
-
-            return;
-        }
-
-        foreach ($value as $selectedValue) {
-            if (!array_key_exists($selectedValue, $options)) {
-                throw new InvalidArgumentException($message);
-            }
         }
     }
 
@@ -544,35 +390,4 @@ final readonly class FormWidgetFactory
         return $lines;
     }
 
-    /**
-     * @param array<string, string> $options
-     * @return list<string>
-     */
-    private function resolveComboBoxAppearanceLines(array $options, ?string $value): array
-    {
-        if ($value === null) {
-            return [];
-        }
-
-        $label = $options[$value] ?? null;
-
-        return $label === null ? [] : [$label];
-    }
-
-    /**
-     * @param list<string>|string|null $value
-     * @return list<string>
-     */
-    private function resolveSelectedValues(string | array | null $value): array
-    {
-        if ($value === null) {
-            return [];
-        }
-
-        if (is_string($value)) {
-            return [$value];
-        }
-
-        return $value;
-    }
 }
