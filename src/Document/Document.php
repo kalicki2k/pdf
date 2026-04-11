@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Document\Profile;
 
 final readonly class Document
 {

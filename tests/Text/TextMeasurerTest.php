@@ -25,6 +25,13 @@ final class TextMeasurerTest extends TestCase
         self::assertSame(18.0, $measurer->measureTextWidth('ABC', 10, StandardFont::COURIER_BOLD));
     }
 
+    public function testItMeasuresWesternTextWidthForHelvetica(): void
+    {
+        $measurer = new TextMeasurer();
+
+        self::assertEqualsWithDelta(50.02, $measurer->measureTextWidth('ÄÖÜäöüß€', 10, StandardFont::HELVETICA), 0.0001);
+    }
+
     public function testItMeasuresSymbolTextWidthForUnicodeGlyphs(): void
     {
         $measurer = new TextMeasurer();

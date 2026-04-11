@@ -4,4 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-class_alias(\Kalle\Pdf\Writer\StreamOutput::class, __NAMESPACE__ . '\StreamOutput');
+use Kalle\Pdf\Writer\StreamOutput;
+
+class_alias(StreamOutput::class, __NAMESPACE__ . '\StreamOutput');

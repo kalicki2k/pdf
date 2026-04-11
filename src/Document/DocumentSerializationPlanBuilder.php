@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function count;
+use function implode;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
-use Kalle\Pdf\Font\StandardFontEncoding;
+use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Writer\DocumentSerializationPlan;
 use Kalle\Pdf\Writer\FileStructure;
 use Kalle\Pdf\Writer\IndirectObject;
 use Kalle\Pdf\Writer\Trailer;
-use function count;
-use function implode;
 
 use function str_replace;
 
@@ -77,9 +78,10 @@ final class DocumentSerializationPlanBuilder
 
         foreach ($this->collectFonts($document->pages) as $fontKey => $pageFont) {
             $fontObjectId = $fontObjectIds[$fontKey];
+            $font = StandardFontDefinition::from($pageFont->name);
             $objects[] = new IndirectObject(
                 $fontObjectId,
-                '<< /Type /Font /Subtype /Type1 /BaseFont /' . $pageFont->name . ' /Encoding ' . $pageFont->encoding->pdfObjectValue($pageFont->name) . ' >>',
+                '<< /Type /Font /Subtype /Type1 /BaseFont /' . $font->name . ' /Encoding ' . $font->pdfEncodingObjectValue($pageFont->encoding) . ' >>',
             );
         }
 
@@ -180,7 +182,7 @@ final class DocumentSerializationPlanBuilder
 
         return '<< /Length ' . strlen($normalizedContents) . " >>\nstream\n"
             . $normalizedContents
-            . "endstream";
+            . 'endstream';
     }
 
     private function buildPageContents(Page $page): string

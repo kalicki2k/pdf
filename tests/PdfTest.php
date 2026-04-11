@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests;
 
-use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Writer\StringOutput;
 use PHPUnit\Framework\TestCase;
 

@@ -58,7 +58,7 @@ final readonly class Pdf
         return $output->contents();
     }
 
-    public static function measureTextWidth(string $text, float $fontSize, string|StandardFont $font = StandardFont::HELVETICA): float
+    public static function measureTextWidth(string $text, float $fontSize, string | StandardFont $font = StandardFont::HELVETICA): float
     {
         return (new TextMeasurer())->measureTextWidth($text, $fontSize, $font);
     }

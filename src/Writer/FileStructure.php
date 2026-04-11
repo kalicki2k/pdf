@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Writer;
 
-use Kalle\Pdf\Document\Version;
-
 /**
  * Describes top-level PDF file structure data.
  */

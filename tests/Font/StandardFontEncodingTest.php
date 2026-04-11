@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Font;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontSymbolMap;
 use Kalle\Pdf\Font\StandardFontZapfDingbatsMap;
-use Kalle\Pdf\Document\Version;
 use PHPUnit\Framework\TestCase;
 
 final class StandardFontEncodingTest extends TestCase

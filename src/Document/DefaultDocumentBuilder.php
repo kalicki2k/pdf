@@ -4,25 +4,30 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function count;
+use function implode;
+
+use InvalidArgumentException;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
+use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
-use InvalidArgumentException;
-use function count;
-use function implode;
-use function is_string;
+
 use function number_format;
 use function str_replace;
+
+use Throwable;
 
 class DefaultDocumentBuilder implements DocumentBuilder
 {
@@ -125,16 +130,50 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $options ??= new TextOptions();
-        $fontEncoding = StandardFontEncoding::forFont(
-            $options->fontName,
+        $font = StandardFontDefinition::from($options->fontName);
+        $fontEncoding = $font->resolveEncoding(
             ($this->profile ?? Profile::standard())->version(),
             $options->fontEncoding,
         );
-        $fontAlias = $clone->fontAliasFor($options->fontName, $fontEncoding);
+        $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding);
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
-            $this->buildTextContent($text, $options, $fontAlias, $fontEncoding),
+            $this->buildTextContent(
+                $text,
+                $options,
+                $fontAlias,
+                $font,
+                ($this->profile ?? Profile::standard())->version(),
+            ),
+        );
+
+        return $clone;
+    }
+
+    public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): DocumentBuilder
+    {
+        $clone = clone $this;
+        $options ??= new TextOptions(fontName: $glyphRun->fontName);
+
+        if ($options->fontName !== $glyphRun->fontName) {
+            throw new InvalidArgumentException(sprintf(
+                "Glyph run font '%s' does not match text option font '%s'.",
+                $glyphRun->fontName,
+                $options->fontName,
+            ));
+        }
+
+        $font = StandardFontDefinition::from($glyphRun->fontName);
+        $fontEncoding = $font->resolveEncoding(
+            ($this->profile ?? Profile::standard())->version(),
+            $options->fontEncoding,
+        );
+        $fontAlias = $clone->fontAliasFor($font->name, $fontEncoding);
+
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $this->buildEncodedTextContent($glyphRun->bytes, $options, $fontAlias),
         );
 
         return $clone;
@@ -170,7 +209,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         try {
             (new DocumentRenderer())->write($this->build(), $output);
             $output->close();
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             unset($output);
 
             throw $throwable;
@@ -222,11 +261,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
         string $text,
         TextOptions $options,
         string $fontAlias,
-        StandardFontEncoding $fontEncoding,
-    ): string
-    {
-        $encodedText = $fontEncoding->encodeText($text);
+        StandardFontDefinition $font,
+        float $pdfVersion,
+    ): string {
+        return $this->buildEncodedTextContent(
+            $font->encodeText($text, $pdfVersion, $options->fontEncoding),
+            $options,
+            $fontAlias,
+        );
+    }
 
+    private function buildEncodedTextContent(string $encodedText, TextOptions $options, string $fontAlias): string
+    {
         $lines = [
             'BT',
         ];
@@ -273,12 +319,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function fontAliasFor(string $fontName, StandardFontEncoding $fontEncoding): string
     {
-        if (!StandardFont::isValid($fontName)) {
-            throw new InvalidArgumentException(sprintf(
-                "Font '%s' is not a valid PDF standard font.",
-                $fontName,
-            ));
-        }
+        StandardFontDefinition::from($fontName);
 
         foreach ($this->currentPageFontResources as $alias => $pageFont) {
             if ($pageFont->name === $fontName && $pageFont->encoding === $fontEncoding) {

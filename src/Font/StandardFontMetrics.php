@@ -556,9 +556,12 @@ final class StandardFontMetrics
         }
 
         $width = 0;
+        $westernWidths = StandardFontWesternMetrics::WIDTHS[$baseFont] ?? [];
 
         foreach (self::characters($text) as $character) {
-            $width += $widths[$character] ?? self::FALLBACK_GLYPH_WIDTH;
+            $width += $widths[$character]
+                ?? $westernWidths[$character]
+                ?? self::FALLBACK_GLYPH_WIDTH;
         }
 
         return ($width / 1000) * $size;

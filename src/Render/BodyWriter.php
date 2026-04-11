@@ -4,4 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Render;
 
-class_alias(\Kalle\Pdf\Writer\BodyWriter::class, __NAMESPACE__ . '\BodyWriter');
+use Kalle\Pdf\Writer\BodyWriter;
+
+class_alias(BodyWriter::class, __NAMESPACE__ . '\BodyWriter');

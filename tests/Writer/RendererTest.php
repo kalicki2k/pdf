@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Writer;
 
+use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Writer\DocumentSerializationPlan;
 use Kalle\Pdf\Writer\FileStructure;
 use Kalle\Pdf\Writer\IndirectObject;
 use Kalle\Pdf\Writer\Renderer;
 use Kalle\Pdf\Writer\StringOutput;
 use Kalle\Pdf\Writer\Trailer;
-use Kalle\Pdf\Document\Version;
 use PHPUnit\Framework\TestCase;
 
 final class RendererTest extends TestCase

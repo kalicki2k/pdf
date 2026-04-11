@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Text\TextOptions;
 
 interface DocumentBuilder
@@ -30,6 +30,8 @@ interface DocumentBuilder
     public function content(string $content): self;
 
     public function text(string $text, ?TextOptions $options = null): self;
+
+    public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): self;
 
     public function newPage(?PageOptions $options = null): self;
 

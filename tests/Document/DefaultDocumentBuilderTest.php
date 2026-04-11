@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -12,12 +13,12 @@ use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
+use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
-use InvalidArgumentException;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -201,6 +202,37 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertEquals(
             ['F1' => new PageFont(StandardFont::HELVETICA->value, StandardFontEncoding::ISO_LATIN_1)],
             $document->pages[0]->fontResources,
+        );
+    }
+
+    public function testItBuildsTextFromExplicitSymbolGlyphNames(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->glyphs(StandardFontGlyphRun::fromGlyphNames(StandardFont::SYMBOL, [
+                'registerserif',
+                'copyrightserif',
+                'trademarkserif',
+            ]))
+            ->build();
+
+        self::assertSame(
+            '42540a2f46312031382054660a3732203732302054640a28d2d3d42920546a0a4554',
+            bin2hex($document->pages[0]->contents),
+        );
+    }
+
+    public function testItBuildsTextFromExplicitZapfDingbatsGlyphCodes(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->glyphs(
+                StandardFontGlyphRun::fromGlyphCodes(StandardFont::ZAPF_DINGBATS, [0x21, 0x22, 0x23]),
+                new TextOptions(fontName: StandardFont::ZAPF_DINGBATS->value),
+            )
+            ->build();
+
+        self::assertSame(
+            '42540a2f46312031382054660a3732203732302054640a282122232920546a0a4554',
+            bin2hex($document->pages[0]->contents),
         );
     }
 

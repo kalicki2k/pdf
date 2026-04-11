@@ -14,6 +14,18 @@ final class StandardFontMetricsTest extends TestCase
         self::assertSame(22.78, StandardFontMetrics::measureTextWidth('Helvetica', 'Hello', 10));
     }
 
+    public function testItMeasuresWesternWinAnsiAndLatin1CharactersForHelvetica(): void
+    {
+        self::assertEqualsWithDelta(50.02, StandardFontMetrics::measureTextWidth('Helvetica', 'ÄÖÜäöüß€', 10), 0.0001);
+        self::assertEqualsWithDelta(29.44, StandardFontMetrics::measureTextWidth('Helvetica', '„Hallo“', 10), 0.0001);
+    }
+
+    public function testItMeasuresWesternWinAnsiAndLatin1CharactersForTimesRoman(): void
+    {
+        self::assertEqualsWithDelta(46.1, StandardFontMetrics::measureTextWidth('Times-Roman', 'ÄÖÜäöüß€', 10), 0.0001);
+        self::assertEqualsWithDelta(31.1, StandardFontMetrics::measureTextWidth('Times-Roman', '„Hallo“', 10), 0.0001);
+    }
+
     public function testItUsesMonospaceCourierWidthsWhenNoExplicitTableExists(): void
     {
         self::assertSame(18.0, StandardFontMetrics::measureTextWidth('Courier-Bold', 'ABC', 10));
