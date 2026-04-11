@@ -13,14 +13,16 @@ use Kalle\Pdf\Style\Color;
 final readonly class PageBoxAnnotationFactory
 {
     private PageCommentAnnotationFactory $commentAnnotations;
+    private PageShapeAnnotationFactory $shapeAnnotations;
     private PageTextMarkupAnnotationFactory $textMarkupAnnotations;
 
     public function __construct(
-        private Page $page,
-        private PageAnnotationFactoryContext $context,
-        private PageAnnotationFinalizer $finalizer,
+        Page $page,
+        PageAnnotationFactoryContext $context,
+        PageAnnotationFinalizer $finalizer,
     ) {
         $this->commentAnnotations = new PageCommentAnnotationFactory($page, $context, $finalizer);
+        $this->shapeAnnotations = new PageShapeAnnotationFactory($page, $context, $finalizer);
         $this->textMarkupAnnotations = new PageTextMarkupAnnotationFactory($page, $context, $finalizer);
     }
 
@@ -119,26 +121,14 @@ final readonly class PageBoxAnnotationFactory
         ?string $title,
         ?AnnotationBorderStyle $borderStyle,
     ): SquareAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Square annotation');
-
-        $annotation = new SquareAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        return $this->shapeAnnotations->createSquareAnnotation(
+            $box,
             $borderColor,
             $fillColor,
             $contents,
             $title,
             $borderStyle,
         );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Square annotation', $contents, $title);
-
-        return $annotation;
     }
 
     public function createCircleAnnotation(
@@ -149,26 +139,14 @@ final readonly class PageBoxAnnotationFactory
         ?string $title,
         ?AnnotationBorderStyle $borderStyle,
     ): CircleAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Circle annotation');
-
-        $annotation = new CircleAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
+        return $this->shapeAnnotations->createCircleAnnotation(
+            $box,
             $borderColor,
             $fillColor,
             $contents,
             $title,
             $borderStyle,
         );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Circle annotation', $contents, $title);
-
-        return $annotation;
     }
 
     /**
@@ -181,25 +159,7 @@ final readonly class PageBoxAnnotationFactory
         ?string $contents,
         ?string $title,
     ): InkAnnotation {
-        $this->finalizer->assertAllowsAnnotations();
-        $this->finalizer->assertRectHasPositiveDimensions($box, 'Ink annotation');
-
-        $annotation = new InkAnnotation(
-            $this->context->nextObjectId(),
-            $this->page,
-            $box->x,
-            $box->y,
-            $box->width,
-            $box->height,
-            $paths,
-            $color,
-            $contents,
-            $title,
-        );
-
-        $this->finalizer->finalizeBoxAnnotation($annotation, $box, 'Ink annotation', $contents, $title);
-
-        return $annotation;
+        return $this->shapeAnnotations->createInkAnnotation($box, $paths, $color, $contents, $title);
     }
 
     public function createCaretAnnotation(
