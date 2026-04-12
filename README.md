@@ -234,6 +234,20 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+Explizite Tagged-PDF-Leaf-Rollen fuer Text koennen direkt ueber `TextOptions(tag: ...)` gesetzt werden:
+
+```php
+$document = DefaultDocumentBuilder::make()
+    ->profile(\Kalle\Pdf\Document\Profile::pdfA1a())
+    ->title('Archive Copy')
+    ->language('de-DE')
+    ->text('Zitat', new TextOptions(
+        embeddedFont: \Kalle\Pdf\Font\EmbeddedFontSource::fromPath('/path/to/font.ttf'),
+        tag: \Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag::BLOCK_QUOTE,
+    ))
+    ->build();
+```
+
 Dokumentweite PDF-Outlines/Bookmarks werden ebenfalls unterstuetzt. Neben Top-Level-Bookmarks koennen Outlines explizit verschachtelt, offen oder geschlossen markiert und mit Stilinformationen versehen werden. Zusaetzlich zu `XYZ` werden auch `Fit`, `FitH`, `FitR`, benannte Ziele sowie lokale und externe `GoTo`-Actions unterstuetzt.
 
 ```php

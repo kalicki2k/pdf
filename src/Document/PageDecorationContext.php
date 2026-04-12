@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\Path;
 use Kalle\Pdf\Drawing\StrokeStyle;
@@ -81,17 +82,10 @@ final class PageDecorationContext
         return $this;
     }
 
-    public function taggedText(string $text, string $tag, ?TextOptions $options = null): self
-    {
-        $this->builder = $this->builder->taggedText($text, $tag, $options);
-
-        return $this;
-    }
-
     /**
      * @param callable(DocumentBuilder): DocumentBuilder $renderer
      */
-    public function taggedStructure(string $tag, callable $renderer): self
+    public function taggedStructure(TaggedStructureTag|string $tag, callable $renderer): self
     {
         $this->builder = $this->builder->taggedStructure($tag, $renderer);
 

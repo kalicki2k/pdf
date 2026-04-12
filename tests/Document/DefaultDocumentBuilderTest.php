@@ -28,6 +28,7 @@ use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\EmbeddedFontSource;
@@ -194,12 +195,23 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->taggedText('Zitat', 'BlockQuote', new TextOptions(
+            ->text('Zitat', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                tag: TaggedStructureTag::BLOCK_QUOTE,
             ))
             ->build();
 
         self::assertSame('BlockQuote', $document->taggedTextBlocks[0]->tag);
+    }
+
+    public function testItRejectsContainerTagsForTextContent(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Tagged text tag "Sect" is not supported for text content.');
+
+        DefaultDocumentBuilder::make()
+            ->text('Kapitel', new TextOptions(tag: TaggedStructureTag::SECT))
+            ->build();
     }
 
     public function testTextLinesAdvanceTheCursorByTheRenderedLineCount(): void
@@ -248,8 +260,9 @@ final class DefaultDocumentBuilderTest extends TestCase
                 ->heading('Kapitel', 1, new TextOptions(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 ))
-                ->taggedText('Betont', 'Strong', new TextOptions(
+                ->text('Betont', new TextOptions(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    tag: TaggedStructureTag::STRONG,
                 )))
             ->build();
 

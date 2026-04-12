@@ -41,6 +41,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureElement;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureRoleRegistry;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
@@ -404,10 +405,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
     public function text(string|array $text, ?TextOptions $options = null): DocumentBuilder
     {
         if (is_array($text)) {
-            return $this->renderTextSegments($text, $options, $this->defaultTaggedTextTag());
+            return $this->renderTextSegments($text, $options, $this->resolveTaggedTextTag($options));
         }
 
-        return $this->renderTextBlock($text, $options, $this->defaultTaggedTextTag());
+        return $this->renderTextBlock($text, $options, $this->resolveTaggedTextTag($options));
     }
 
     /**
@@ -415,20 +416,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
      */
     public function textLines(array $lines, ?TextOptions $options = null): DocumentBuilder
     {
-        return $this->renderTextLines($lines, $options, $this->defaultTaggedTextTag());
+        return $this->renderTextLines($lines, $options, $this->resolveTaggedTextTag($options));
     }
 
-    public function taggedText(string $text, string $tag, ?TextOptions $options = null): DocumentBuilder
+    public function taggedStructure(TaggedStructureTag|string $tag, callable $renderer): DocumentBuilder
     {
-        if ($tag === '') {
-            throw new InvalidArgumentException('Tagged text tag must not be empty.');
-        }
+        $tag = $this->normalizeTaggedStructureTag($tag);
 
-        return $this->renderTextBlock($text, $options, $tag);
-    }
-
-    public function taggedStructure(string $tag, callable $renderer): DocumentBuilder
-    {
         if ($tag === '') {
             throw new InvalidArgumentException('Tagged structure tag must not be empty.');
         }
@@ -438,7 +432,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         if (!$registry->isContainerTag($tag)) {
             throw new InvalidArgumentException(sprintf(
-                'Tagged structure tag "%s" is not supported as a container. Use taggedText() for leaf roles.',
+                'Tagged structure tag "%s" is not supported as a container. Use TextOptions(tag: ...) for leaf roles.',
                 $tag,
             ));
         }
@@ -468,10 +462,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
     public function paragraph(string|array $text, ?TextOptions $options = null): DocumentBuilder
     {
         if (is_array($text)) {
-            return $this->renderTextSegments($text, $options, 'P');
+            return $this->renderTextSegments($text, $options, $this->resolveTaggedTextTag($options, 'P'));
         }
 
-        return $this->renderTextBlock($text, $options, 'P');
+        return $this->renderTextBlock($text, $options, $this->resolveTaggedTextTag($options, 'P'));
     }
 
     /**
@@ -479,7 +473,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
      */
     public function paragraphLines(array $lines, ?TextOptions $options = null): DocumentBuilder
     {
-        return $this->renderTextLines($lines, $options, 'P');
+        return $this->renderTextLines($lines, $options, $this->resolveTaggedTextTag($options, 'P'));
     }
 
     public function heading(string $text, int $level = 1, ?TextOptions $options = null): DocumentBuilder
@@ -488,7 +482,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             throw new InvalidArgumentException('Heading level must be between 1 and 6.');
         }
 
-        return $this->renderTextBlock($text, $options, 'H' . $level);
+        return $this->renderTextBlock($text, $options, $this->resolveTaggedTextTag($options, 'H' . $level));
     }
 
     /**
@@ -4042,9 +4036,34 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->taggedStructureElements[$containerKey]['childKeys'][] = $key;
     }
 
-    private function defaultTaggedTextTag(): ?string
+    private function resolveTaggedTextTag(?TextOptions $options, ?string $defaultTag = null): ?string
     {
-        return $this->requiresTaggedStructure() ? 'P' : null;
+        $tag = $options?->tag?->value ?? $defaultTag;
+
+        if ($tag === null) {
+            return $this->requiresTaggedStructure() ? 'P' : null;
+        }
+
+        $registry = new TaggedStructureRoleRegistry();
+        $registry->assertKnownTag($tag);
+
+        if (!in_array($tag, $registry->supportedLeafTextTags(), true)) {
+            throw new InvalidArgumentException(sprintf(
+                'Tagged text tag "%s" is not supported for text content.',
+                $tag,
+            ));
+        }
+
+        return $this->requiresTaggedStructure() ? $tag : null;
+    }
+
+    private function normalizeTaggedStructureTag(TaggedStructureTag|string|null $tag): ?string
+    {
+        if ($tag instanceof TaggedStructureTag) {
+            return $tag->value;
+        }
+
+        return $tag;
     }
 
     private function requiresTaggedStructure(): bool

@@ -36,6 +36,7 @@ use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\GraphicsAccessibility;
@@ -1936,8 +1937,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->taggedText('Quoted archive text Привет', 'BlockQuote', new TextOptions(
+            ->text('Quoted archive text Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                tag: TaggedStructureTag::BLOCK_QUOTE,
             ))
             ->build();
 
@@ -2031,8 +2033,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     ->profile(Profile::pdfA1a())
                     ->title('Archive Copy')
                     ->language('de-DE')
-                    ->taggedText('Ж', 'P', new TextOptions(
+                    ->text('Ж', new TextOptions(
                         embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+                        tag: TaggedStructureTag::P,
                     )),
             )->build();
 

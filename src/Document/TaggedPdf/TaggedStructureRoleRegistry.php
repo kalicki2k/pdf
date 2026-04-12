@@ -102,8 +102,10 @@ final class TaggedStructureRoleRegistry
         'Title',
     ];
 
-    public function assertKnownTag(string $tag): void
+    public function assertKnownTag(TaggedStructureTag|string $tag): void
     {
+        $tag = $this->normalizeTag($tag);
+
         if (!isset(self::ALLOWED_CHILDREN[$tag]) && !in_array($tag, self::LEAF_TAGS, true)) {
             throw new InvalidArgumentException(sprintf(
                 'Unsupported tagged PDF structure type "%s". Supported types are [%s].',
@@ -113,8 +115,11 @@ final class TaggedStructureRoleRegistry
         }
     }
 
-    public function assertChildAllowed(string $parentTag, string $childTag): void
+    public function assertChildAllowed(TaggedStructureTag|string $parentTag, TaggedStructureTag|string $childTag): void
     {
+        $parentTag = $this->normalizeTag($parentTag);
+        $childTag = $this->normalizeTag($childTag);
+
         $this->assertKnownTag($parentTag);
         $this->assertKnownTag($childTag);
 
@@ -127,8 +132,10 @@ final class TaggedStructureRoleRegistry
         }
     }
 
-    public function isContainerTag(string $tag): bool
+    public function isContainerTag(TaggedStructureTag|string $tag): bool
     {
+        $tag = $this->normalizeTag($tag);
+
         return isset(self::ALLOWED_CHILDREN[$tag]);
     }
 
@@ -167,5 +174,10 @@ final class TaggedStructureRoleRegistry
         sort($tags);
 
         return array_values(array_unique($tags));
+    }
+
+    private function normalizeTag(TaggedStructureTag|string $tag): string
+    {
+        return $tag instanceof TaggedStructureTag ? $tag->value : $tag;
     }
 }

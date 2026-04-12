@@ -19,6 +19,7 @@ use Kalle\Pdf\Document\DocumentSerializationPlanObjectIdAllocator;
 use Kalle\Pdf\Document\DocumentTaggedPdfObjectBuilder;
 use Kalle\Pdf\Document\PdfA1ObjectGraphValidator;
 use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 
@@ -36,8 +37,9 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->taggedText('Ж', 'P', new TextOptions(
+            ->text('Ж', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+                tag: TaggedStructureTag::P,
             ))
             ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
             ->build();
@@ -123,8 +125,9 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->taggedText('Ж', 'P', new TextOptions(
+            ->text('Ж', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+                tag: TaggedStructureTag::P,
             ))
             ->build();
         $state = $this->allocateState($document);
@@ -207,8 +210,9 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->taggedText('Ж', 'P', new TextOptions(
+            ->text('Ж', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+                tag: TaggedStructureTag::P,
             ))
             ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
             ->build();

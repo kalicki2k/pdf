@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\Path;
 use Kalle\Pdf\Drawing\StrokeStyle;
@@ -113,12 +114,10 @@ interface DocumentBuilder
      */
     public function textLines(array $lines, ?TextOptions $options = null): self;
 
-    public function taggedText(string $text, string $tag, ?TextOptions $options = null): self;
-
     /**
      * @param callable(DocumentBuilder): DocumentBuilder $renderer
      */
-    public function taggedStructure(string $tag, callable $renderer): self;
+    public function taggedStructure(TaggedStructureTag|string $tag, callable $renderer): self;
 
     /**
      * @param string|list<TextSegment> $text
