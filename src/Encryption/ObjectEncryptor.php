@@ -187,6 +187,7 @@ final class ObjectEncryptor
         return match ($this->profile->algorithm) {
             Algorithm::RC4_128 => $this->cipher->encrypt($this->deriveObjectKey($objectId), $bytes),
             Algorithm::AES_128 => $this->aes128Cipher->encrypt($this->deriveObjectKey($objectId, true), $bytes),
+            Algorithm::AES_256 => $this->aes128Cipher->encrypt($this->securityHandlerData->encryptionKey, $bytes),
         };
     }
 

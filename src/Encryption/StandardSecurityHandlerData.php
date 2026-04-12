@@ -11,6 +11,9 @@ final readonly class StandardSecurityHandlerData
         public string $userValue,
         public string $encryptionKey,
         public int $permissionBits,
+        public ?string $ownerEncryptionKey = null,
+        public ?string $userEncryptionKey = null,
+        public ?string $permsValue = null,
     ) {
     }
 }

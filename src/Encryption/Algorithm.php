@@ -8,4 +8,5 @@ enum Algorithm
 {
     case RC4_128;
     case AES_128;
+    case AES_256;
 }

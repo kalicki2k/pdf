@@ -51,4 +51,23 @@ final class StandardSecurityHandlerTest extends TestCase
         );
         self::assertSame(16, strlen($data->encryptionKey));
     }
+
+    public function testItBuildsRevision5SecurityHandlerDataForAes256(): void
+    {
+        $data = (new StandardSecurityHandler(
+            randomBytesGenerator: static fn (int $length): string => str_repeat(chr($length & 0xFF), $length),
+        ))->build(
+            Encryption::aes256('user', 'owner'),
+            new EncryptionProfile(Algorithm::AES_256, 256, 5, 5),
+            '10f7050476a6456a2e4f2b5b47297adf',
+        );
+
+        self::assertSame(-4, $data->permissionBits);
+        self::assertSame(48, strlen($data->ownerValue));
+        self::assertSame(48, strlen($data->userValue));
+        self::assertSame(32, strlen($data->encryptionKey));
+        self::assertSame(32, strlen((string) $data->ownerEncryptionKey));
+        self::assertSame(32, strlen((string) $data->userEncryptionKey));
+        self::assertSame(16, strlen((string) $data->permsValue));
+    }
 }

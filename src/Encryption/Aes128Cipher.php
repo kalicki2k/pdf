@@ -9,6 +9,8 @@ use RuntimeException;
 
 final class Aes128Cipher
 {
+    private const IV_LENGTH = 16;
+
     private Closure $ivGenerator;
 
     public function __construct(?callable $ivGenerator = null)
@@ -26,7 +28,7 @@ final class Aes128Cipher
             throw new RuntimeException('AES-128 encryption requires a string initialization vector.');
         }
 
-        if (strlen($iv) !== 16) {
+        if (strlen($iv) !== self::IV_LENGTH) {
             throw new RuntimeException('AES-128 encryption requires a 16-byte initialization vector.');
         }
 

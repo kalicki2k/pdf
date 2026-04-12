@@ -59,4 +59,19 @@ final class ObjectEncryptorTest extends TestCase
         self::assertStringNotContainsString('Secret', $encryptedObject);
         self::assertMatchesRegularExpression('/^<< \/Title \((?:\\\\[0-7]{3}|.)+\) >>$/', $encryptedObject);
     }
+
+    public function testItEncryptsAes256StreamPayloadsWithDocumentKey(): void
+    {
+        $encryptor = new ObjectEncryptor(
+            new EncryptionProfile(Algorithm::AES_256, 256, 5, 5),
+            new StandardSecurityHandlerData('', '', str_repeat('k', 32), -4),
+            aes128Cipher: new Aes128Cipher(static fn (): string => str_repeat("\x02", 16)),
+        );
+
+        $encryptedStream = $encryptor->encryptStreamContents('secret-stream', 3);
+
+        self::assertNotSame('secret-stream', $encryptedStream);
+        self::assertSame(32, strlen($encryptedStream));
+        self::assertSame(str_repeat("\x02", 16), substr($encryptedStream, 0, 16));
+    }
 }

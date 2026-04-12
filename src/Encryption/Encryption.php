@@ -30,4 +30,13 @@ final readonly class Encryption
             $ownerPassword ?? $userPassword,
         );
     }
+
+    public static function aes256(string $userPassword, ?string $ownerPassword = null): self
+    {
+        return new self(
+            Algorithm::AES_256,
+            $userPassword,
+            $ownerPassword ?? $userPassword,
+        );
+    }
 }

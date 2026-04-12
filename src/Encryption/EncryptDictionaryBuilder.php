@@ -24,6 +24,15 @@ final class EncryptDictionaryBuilder
             $entries[] = '/StrF /StdCF';
         }
 
+        if ($profile->algorithm === Algorithm::AES_256) {
+            $entries[] = '/OE <' . strtoupper(bin2hex($securityHandlerData->ownerEncryptionKey ?? '')) . '>';
+            $entries[] = '/UE <' . strtoupper(bin2hex($securityHandlerData->userEncryptionKey ?? '')) . '>';
+            $entries[] = '/Perms <' . strtoupper(bin2hex($securityHandlerData->permsValue ?? '')) . '>';
+            $entries[] = '/CF << /StdCF << /CFM /AESV3 /AuthEvent /DocOpen /Length 32 >> >>';
+            $entries[] = '/StmF /StdCF';
+            $entries[] = '/StrF /StdCF';
+        }
+
         return '<< '
             . implode(' ', $entries)
             . ' >>';

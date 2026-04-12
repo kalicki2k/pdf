@@ -68,4 +68,27 @@ final class EncryptionProfileResolverTest extends TestCase
 
         $resolver->resolve(Profile::pdf15(), Encryption::aes128('user', 'owner'));
     }
+
+    public function testItResolvesAes256ForSupportedProfiles(): void
+    {
+        $profile = (new EncryptionProfileResolver())->resolve(
+            Profile::pdf17(),
+            Encryption::aes256('user', 'owner'),
+        );
+
+        self::assertSame(Algorithm::AES_256, $profile->algorithm);
+        self::assertSame(256, $profile->keyLengthInBits);
+        self::assertSame(5, $profile->dictionaryVersion);
+        self::assertSame(5, $profile->revision);
+    }
+
+    public function testItRejectsAes256ForTooOldPdfVersions(): void
+    {
+        $resolver = new EncryptionProfileResolver();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('AES 256-bit encryption requires PDF 1.7 or newer.');
+
+        $resolver->resolve(Profile::pdf16(), Encryption::aes256('user', 'owner'));
+    }
 }

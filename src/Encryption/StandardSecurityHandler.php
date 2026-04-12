@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Encryption;
 
 use InvalidArgumentException;
+use Closure;
 
 final class StandardSecurityHandler
 {
@@ -13,13 +14,25 @@ final class StandardSecurityHandler
 
     public function __construct(
         private readonly Rc4Cipher $rc4Cipher = new Rc4Cipher(),
+        private readonly Aes256CbcNoPaddingCipher $aes256CbcNoPaddingCipher = new Aes256CbcNoPaddingCipher(),
+        private readonly Aes256EcbNoPaddingCipher $aes256EcbNoPaddingCipher = new Aes256EcbNoPaddingCipher(),
+        ?callable $randomBytesGenerator = null,
     ) {
+        $this->randomBytesGenerator = $randomBytesGenerator instanceof Closure
+            ? $randomBytesGenerator
+            : Closure::fromCallable($randomBytesGenerator ?? static fn (int $length): string => random_bytes(max(1, $length)));
     }
+
+    private Closure $randomBytesGenerator;
 
     public function build(Encryption $encryption, EncryptionProfile $profile, string $documentId): StandardSecurityHandlerData
     {
+        if ($profile->revision === 5) {
+            return $this->buildRevision5($encryption);
+        }
+
         if (!in_array($profile->revision, [3, 4], true)) {
-            throw new InvalidArgumentException('Only standard security handler revisions 3 and 4 are supported in this stage.');
+            throw new InvalidArgumentException('Only standard security handler revisions 3, 4 and 5 are supported in this stage.');
         }
 
         $permissionBits = -4;
@@ -32,6 +45,54 @@ final class StandardSecurityHandler
             $userValue,
             $encryptionKey,
             $permissionBits,
+        );
+    }
+
+    private function buildRevision5(Encryption $encryption): StandardSecurityHandlerData
+    {
+        $permissionBits = -4;
+        $fileEncryptionKey = $this->randomBytes(32);
+        $userPassword = $this->truncatePassword($encryption->userPassword);
+        $ownerPassword = $this->truncatePassword($encryption->ownerPassword !== '' ? $encryption->ownerPassword : $encryption->userPassword);
+
+        $userValidationSalt = $this->randomBytes(8);
+        $userKeySalt = $this->randomBytes(8);
+        $ownerValidationSalt = $this->randomBytes(8);
+        $ownerKeySalt = $this->randomBytes(8);
+
+        $userValue = hash('sha256', $userPassword . $userValidationSalt, true)
+            . $userValidationSalt
+            . $userKeySalt;
+        $userEncryptionKey = $this->aes256CbcNoPaddingCipher->encrypt(
+            $fileEncryptionKey,
+            hash('sha256', $userPassword . $userKeySalt, true),
+        );
+
+        $ownerValue = hash('sha256', $ownerPassword . $ownerValidationSalt . $userValue, true)
+            . $ownerValidationSalt
+            . $ownerKeySalt;
+        $ownerEncryptionKey = $this->aes256CbcNoPaddingCipher->encrypt(
+            $fileEncryptionKey,
+            hash('sha256', $ownerPassword . $ownerKeySalt . $userValue, true),
+        );
+
+        $permsValue = $this->aes256EcbNoPaddingCipher->encrypt(
+            pack('V', $permissionBits & 0xFFFFFFFF)
+            . "\xFF\xFF\xFF\xFF"
+            . 'T'
+            . 'adb'
+            . $this->randomBytes(4),
+            $fileEncryptionKey,
+        );
+
+        return new StandardSecurityHandlerData(
+            $ownerValue,
+            $userValue,
+            $fileEncryptionKey,
+            $permissionBits,
+            $ownerEncryptionKey,
+            $userEncryptionKey,
+            $permsValue,
         );
     }
 
@@ -111,5 +172,24 @@ final class StandardSecurityHandler
         }
 
         return $result;
+    }
+
+    private function truncatePassword(string $password): string
+    {
+        return substr($password, 0, 127);
+    }
+
+    private function randomBytes(int $length): string
+    {
+        $bytes = ($this->randomBytesGenerator)($length);
+
+        if (!is_string($bytes) || strlen($bytes) !== $length) {
+            throw new InvalidArgumentException(sprintf(
+                'Random byte generator must return exactly %d bytes.',
+                $length,
+            ));
+        }
+
+        return $bytes;
     }
 }
