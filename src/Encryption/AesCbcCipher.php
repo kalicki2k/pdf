@@ -7,7 +7,7 @@ namespace Kalle\Pdf\Encryption;
 use Closure;
 use RuntimeException;
 
-final class Aes128Cipher
+final class AesCbcCipher
 {
     private const IV_LENGTH = 16;
 
@@ -25,23 +25,32 @@ final class Aes128Cipher
         $iv = ($this->ivGenerator)();
 
         if (!is_string($iv)) {
-            throw new RuntimeException('AES-128 encryption requires a string initialization vector.');
+            throw new RuntimeException('AES-CBC encryption requires a string initialization vector.');
         }
 
         if (strlen($iv) !== self::IV_LENGTH) {
-            throw new RuntimeException('AES-128 encryption requires a 16-byte initialization vector.');
+            throw new RuntimeException('AES-CBC encryption requires a 16-byte initialization vector.');
         }
+
+        $cipher = match (strlen($key)) {
+            16 => 'aes-128-cbc',
+            32 => 'aes-256-cbc',
+            default => throw new RuntimeException('AES-CBC encryption requires a 16-byte or 32-byte key.'),
+        };
 
         $encrypted = openssl_encrypt(
             $plaintext,
-            'aes-128-cbc',
+            $cipher,
             $key,
             OPENSSL_RAW_DATA,
             $iv,
         );
 
         if ($encrypted === false) {
-            throw new RuntimeException('Unable to encrypt PDF object payload with aes-128-cbc.');
+            throw new RuntimeException(sprintf(
+                'Unable to encrypt PDF object payload with %s.',
+                $cipher,
+            ));
         }
 
         return $iv . $encrypted;

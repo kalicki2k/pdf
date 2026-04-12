@@ -12,7 +12,7 @@ final class ObjectEncryptor
         private readonly EncryptionProfile $profile,
         private readonly StandardSecurityHandlerData $securityHandlerData,
         private readonly Rc4Cipher $cipher = new Rc4Cipher(),
-        private readonly Aes128Cipher $aes128Cipher = new Aes128Cipher(),
+        private readonly AesCbcCipher $aesCbcCipher = new AesCbcCipher(),
     ) {
     }
 
@@ -186,8 +186,8 @@ final class ObjectEncryptor
     {
         return match ($this->profile->algorithm) {
             Algorithm::RC4_128 => $this->cipher->encrypt($this->deriveObjectKey($objectId), $bytes),
-            Algorithm::AES_128 => $this->aes128Cipher->encrypt($this->deriveObjectKey($objectId, true), $bytes),
-            Algorithm::AES_256 => $this->aes128Cipher->encrypt($this->securityHandlerData->encryptionKey, $bytes),
+            Algorithm::AES_128 => $this->aesCbcCipher->encrypt($this->deriveObjectKey($objectId, true), $bytes),
+            Algorithm::AES_256 => $this->aesCbcCipher->encrypt($this->securityHandlerData->encryptionKey, $bytes),
         };
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Writer;
 
 use Kalle\Pdf\Document\Version;
-use Kalle\Pdf\Encryption\Aes128Cipher;
+use Kalle\Pdf\Encryption\AesCbcCipher;
 use Kalle\Pdf\Encryption\Algorithm;
 use Kalle\Pdf\Encryption\EncryptionProfile;
 use Kalle\Pdf\Encryption\ObjectEncryptor;
@@ -60,7 +60,7 @@ final class BodyWriterTest extends TestCase
             objectEncryptor: new ObjectEncryptor(
                 new EncryptionProfile(Algorithm::AES_128, 128, 4, 4),
                 new StandardSecurityHandlerData('', '', '1234567890123456', -4),
-                aes128Cipher: new Aes128Cipher(static fn (): string => str_repeat("\x01", 16)),
+                aesCbcCipher: new AesCbcCipher(static fn (): string => str_repeat("\x01", 16)),
             ),
         );
 
