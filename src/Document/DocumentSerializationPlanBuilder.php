@@ -85,6 +85,8 @@ final class DocumentSerializationPlanBuilder
         $imageObjectIds = [];
         /** @var array<int, list<int>> $pageAnnotationObjectIds */
         $pageAnnotationObjectIds = [];
+        /** @var array<int, list<?int>> $pageAnnotationAppearanceObjectIds */
+        $pageAnnotationAppearanceObjectIds = [];
 
         foreach ($document->pages as $page) {
             $pageObjectIds[] = $nextObjectId;
@@ -134,10 +136,15 @@ final class DocumentSerializationPlanBuilder
             }
 
             $pageAnnotationObjectIds[$pageIndex] = [];
+            $pageAnnotationAppearanceObjectIds[$pageIndex] = [];
 
             foreach ($page->annotations as $annotation) {
                 $pageAnnotationObjectIds[$pageIndex][] = $nextObjectId;
                 $nextObjectId++;
+
+                $pageAnnotationAppearanceObjectIds[$pageIndex][] = $this->annotationNeedsAppearanceStream($document, $annotation)
+                    ? $nextObjectId++
+                    : null;
             }
         }
 
@@ -277,9 +284,20 @@ final class DocumentSerializationPlanBuilder
                             pageObjectIdsByPageNumber: $this->pageObjectIdsByPageNumber($pageObjectIds),
                             namedDestinations: $namedDestinations,
                             structParentId: $taggedLinkStructure['structParentIds'][$annotationKey] ?? null,
+                            appearanceObjectId: $pageAnnotationAppearanceObjectIds[$index][$annotationIndex] ?? null,
                         ),
                     ),
                 );
+
+                $appearanceObjectId = $pageAnnotationAppearanceObjectIds[$index][$annotationIndex] ?? null;
+
+                if ($appearanceObjectId !== null && $annotation instanceof LinkAnnotation) {
+                    $objects[] = IndirectObject::stream(
+                        $appearanceObjectId,
+                        $annotation->appearanceStreamDictionaryContents(),
+                        $annotation->appearanceStreamContents(),
+                    );
+                }
             }
         }
 
@@ -509,14 +527,16 @@ final class DocumentSerializationPlanBuilder
 
             foreach ($taggedLinkStructure['linkEntries'] as $linkEntry) {
                 $pageObjectId = $pageObjectIds[$linkEntry['pageIndex']];
-                $annotationObjectId = $pageAnnotationObjectIds[$linkEntry['pageIndex']][$linkEntry['annotationIndex']];
                 $kidEntries = [];
 
-                if ($linkEntry['markedContentId'] !== null) {
-                    $kidEntries[] = (string) $linkEntry['markedContentId'];
+                foreach ($linkEntry['markedContentIds'] as $markedContentId) {
+                    $kidEntries[] = (string) $markedContentId;
                 }
 
-                $kidEntries[] = '<< /Type /OBJR /Obj ' . $annotationObjectId . ' 0 R /Pg ' . $pageObjectId . ' 0 R >>';
+                foreach ($linkEntry['annotationIndices'] as $annotationIndex) {
+                    $annotationObjectId = $pageAnnotationObjectIds[$linkEntry['pageIndex']][$annotationIndex];
+                    $kidEntries[] = '<< /Type /OBJR /Obj ' . $annotationObjectId . ' 0 R /Pg ' . $pageObjectId . ' 0 R >>';
+                }
 
                 $objects[] = IndirectObject::plain(
                     $linkStructElemObjectIds[$linkEntry['key']],
@@ -632,7 +652,11 @@ final class DocumentSerializationPlanBuilder
     {
         if ($document->profile->requiresAnnotationAppearanceStreams()) {
             foreach ($document->pages as $pageIndex => $page) {
-                foreach ($page->annotations as $_annotation) {
+                foreach ($page->annotations as $annotation) {
+                    if ($this->annotationNeedsAppearanceStream($document, $annotation)) {
+                        continue;
+                    }
+
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page %d.',
                         $document->profile->name(),
@@ -672,6 +696,13 @@ final class DocumentSerializationPlanBuilder
                 }
             }
         }
+    }
+
+    private function annotationNeedsAppearanceStream(Document $document, object $annotation): bool
+    {
+        return $document->profile->requiresAnnotationAppearanceStreams()
+            && !$document->profile->isPdfA1()
+            && $annotation instanceof LinkAnnotation;
     }
 
     private function assertNamedDestinationRequirements(Document $document): void
@@ -952,7 +983,13 @@ final class DocumentSerializationPlanBuilder
 
     /**
      * @return array{
-     *   linkEntries: list<array{key: string, pageIndex: int, annotationIndex: int, altText: string, markedContentId: ?int}>,
+     *   linkEntries: list<array{
+     *     key: string,
+     *     pageIndex: int,
+     *     annotationIndices: list<int>,
+     *     altText: string,
+     *     markedContentIds: list<int>
+     *   }>,
      *   parentTreeEntries: array<int, list<string>>,
      *   structParentIds: array<string, int>
      * }
@@ -967,7 +1004,15 @@ final class DocumentSerializationPlanBuilder
             ];
         }
 
-        $linkEntries = [];
+        /** @var array<string, array{
+         *   key: string,
+         *   pageIndex: int,
+         *   annotationIndices: list<int>,
+         *   altTextParts: list<string>,
+         *   markedContentIds: list<int>
+         * }> $groupedLinkEntries
+         */
+        $groupedLinkEntries = [];
         $parentTreeEntries = [];
         $structParentIds = [];
 
@@ -977,25 +1022,75 @@ final class DocumentSerializationPlanBuilder
                     continue;
                 }
 
-                $key = $pageIndex . ':' . $annotationIndex;
-                $linkEntries[] = [
-                    'key' => $key,
-                    'pageIndex' => $pageIndex,
-                    'annotationIndex' => $annotationIndex,
-                    'altText' => $annotation->contents ?? '',
-                    'markedContentId' => $annotation->markedContentId(),
-                ];
-                $structParentIds[$key] = $nextStructParentId;
-                $parentTreeEntries[$nextStructParentId] = [$key];
+                $annotationKey = $pageIndex . ':' . $annotationIndex;
+                $groupKey = $annotation->taggedGroupKey ?? $annotationKey;
+
+                if (!isset($groupedLinkEntries[$groupKey])) {
+                    $groupedLinkEntries[$groupKey] = [
+                        'key' => $groupKey,
+                        'pageIndex' => $pageIndex,
+                        'annotationIndices' => [],
+                        'altTextParts' => [],
+                        'markedContentIds' => [],
+                    ];
+                }
+
+                $groupedLinkEntries[$groupKey]['annotationIndices'][] = $annotationIndex;
+
+                if ($annotation->contents !== null && $annotation->contents !== '') {
+                    $groupedLinkEntries[$groupKey]['altTextParts'][] = $annotation->contents;
+                }
+
+                if ($annotation->markedContentId() !== null) {
+                    $groupedLinkEntries[$groupKey]['markedContentIds'][] = $annotation->markedContentId();
+                }
+
+                $structParentIds[$annotationKey] = $nextStructParentId;
+                $parentTreeEntries[$nextStructParentId] = [$groupKey];
                 $nextStructParentId++;
             }
         }
+
+        $linkEntries = array_map(
+            fn (array $entry): array => [
+                'key' => $entry['key'],
+                'pageIndex' => $entry['pageIndex'],
+                'annotationIndices' => $entry['annotationIndices'],
+                'altText' => $this->joinTaggedLinkAltText($entry['altTextParts']),
+                'markedContentIds' => $entry['markedContentIds'],
+            ],
+            array_values($groupedLinkEntries),
+        );
 
         return [
             'linkEntries' => $linkEntries,
             'parentTreeEntries' => $parentTreeEntries,
             'structParentIds' => $structParentIds,
         ];
+    }
+
+    /**
+     * @param list<string> $parts
+     */
+    private function joinTaggedLinkAltText(array $parts): string
+    {
+        $altText = '';
+
+        foreach ($parts as $part) {
+            if ($altText !== '' && $this->shouldInsertWhitespaceBetweenLinkAltTextParts($altText, $part)) {
+                $altText .= ' ';
+            }
+
+            $altText .= $part;
+        }
+
+        return $altText;
+    }
+
+    private function shouldInsertWhitespaceBetweenLinkAltTextParts(string $left, string $right): bool
+    {
+        return preg_match('/[\pL\pN]$/u', $left) === 1
+            && preg_match('/^[\pL\pN]/u', $right) === 1;
     }
 
     /**

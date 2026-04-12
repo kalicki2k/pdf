@@ -31,6 +31,7 @@ use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
 
 use function preg_match;
@@ -460,6 +461,28 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testItBuildsPdfA2uLinkAnnotationsWithAppearanceStreams(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->text('PDF/A-2u Regression Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->link('https://example.com/spec', 40, 500, 120, 16, 'Specification Link')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /Link', $serialized);
+        self::assertStringContainsString('/AP << /N ', $serialized);
+        self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 120 16]', $serialized);
+    }
+
     public function testItRejectsSimpleEmbeddedFontsForPdfAProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -523,6 +546,27 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Contents (API)', $serialized);
     }
 
+    public function testItMergesAdjacentTextSegmentsWithTheSameLinkInSerialization(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->textSegments([
+                new TextSegment('Read', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' now'),
+            ])
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertSame(1, substr_count($serialized, '/URI (https://example.com/docs)'));
+        self::assertStringContainsString('/Contents (Read docs)', $serialized);
+    }
+
     public function testItBuildsSoftMaskImageObjects(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -546,6 +590,28 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/XObject << /Im1 5 0 R >>', $objects[2]->contents);
         self::assertStringContainsString('/SMask 6 0 R', $objects[4]->contents);
         self::assertStringContainsString('/ColorSpace /DeviceGray', $objects[5]->contents);
+    }
+
+    public function testItBuildsManualImageResourcesAsExplicitStreamObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    imageResources: [
+                        'Im1' => ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                    ],
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $imageObject = $this->findStreamObject(iterator_to_array($plan->objects), '/Subtype /Image');
+
+        self::assertNotNull($imageObject);
+        self::assertSame('jpeg-bytes', $imageObject->streamContents);
+        self::assertStringContainsString('/Filter /DCTDecode', (string) $imageObject->streamDictionaryContents);
     }
 
     public function testItRejectsPdfUaImagesWithoutAccessibilityMetadata(): void
@@ -793,6 +859,28 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertGreaterThanOrEqual(2, $this->countStreamObjects($objects));
     }
 
+    public function testItBuildsManualEmbeddedTrueTypeFontFileAsAnExplicitStreamObject(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $font = \Kalle\Pdf\Font\EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalTrueTypeFontBytes()),
+        );
+        $document = new Document(
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    fontResources: ['F1' => PageFont::embedded($font)],
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $fontFileObject = $this->findStreamObject(iterator_to_array($plan->objects), '/Length1 ');
+
+        self::assertNotNull($fontFileObject);
+        self::assertSame($font->fontFileStreamData(), $fontFileObject->streamContents);
+    }
+
     public function testItBuildsEmbeddedCffFontObjects(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -843,8 +931,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertTrue($this->containsStreamObject($objects, '/Length1'));
         self::assertTrue($this->containsStreamObject($objects, '<0001> <0416>'));
         self::assertGreaterThanOrEqual(3, $this->countStreamObjects($objects));
-        preg_match('/\\/Length1 ([0-9]+)/', $serialized, $matches);
-        self::assertArrayHasKey(1, $matches);
+        self::assertSame(1, preg_match('/\\/Length1 ([0-9]+)/', $serialized, $matches));
         self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()), (int) $matches[1]);
     }
 
@@ -877,13 +964,30 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertTrue($this->containsStreamObject($objects, '/Subtype /OpenType'));
         self::assertTrue($this->containsStreamObject($objects, '<0001> <0416>'));
         self::assertGreaterThanOrEqual(2, $this->countStreamObjects($objects));
-        preg_match('/<< \\/Length ([0-9]+) \\/Subtype \\/OpenType >>/', $serialized, $matches);
-        self::assertArrayHasKey(1, $matches);
+        self::assertSame(1, preg_match('/<< \\/Length ([0-9]+) \\/Subtype \\/OpenType >>/', $serialized, $matches));
         self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()), (int) $matches[1]);
     }
 
     /**
-     * @param list<object{contents: string, streamDictionaryContents: ?string, streamContents: ?string}> $objects
+     * @param array<int, IndirectObject> $objects
+     */
+    private function findStreamObject(array $objects, string $needle): ?IndirectObject
+    {
+        foreach ($objects as $object) {
+            if (
+                ($object->streamDictionaryContents !== null && str_contains($object->streamDictionaryContents, $needle))
+                || ($object->streamContents !== null && str_contains($object->streamContents, $needle))
+                || str_contains($object->contents, $needle)
+            ) {
+                return $object;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objects
      */
     private function containsStreamObject(array $objects, string $needle): bool
     {
@@ -905,7 +1009,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     }
 
     /**
-     * @param list<object{streamDictionaryContents: ?string, streamContents: ?string}> $objects
+     * @param array<int, IndirectObject> $objects
      */
     private function countStreamObjects(array $objects): int
     {

@@ -382,4 +382,72 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('NotoSans-Regular', $pdf);
         self::assertStringContainsString('/Encoding /Identity-H', $pdf);
     }
+
+    public function testItRendersAMinimalPdfA2uRegressionDocumentWithARealRepoFont(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Minimal Regression')
+            ->author('kalle/pdf2')
+            ->subject('Minimal PDF/A-2u regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->text('PDF/A-2u Regression Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringStartsWith("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n", $pdf);
+        self::assertStringContainsString('/OutputIntents [', $pdf);
+        self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $pdf);
+        self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $pdf);
+        self::assertStringContainsString('/Subtype /CIDFontType2', $pdf);
+        self::assertStringContainsString('/Encoding /Identity-H', $pdf);
+    }
+
+    public function testItRendersPdfA2uLinkAnnotationsWithAppearanceStreams(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Link Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u link annotation regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->text('PDF/A-2u Link Regression Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->link('https://example.com/spec', 72, 670, 180, 16, 'Specification Link')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Link', $pdf);
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com/spec) >>', $pdf);
+        self::assertStringContainsString('/AP << /N ', $pdf);
+        self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 180 16]', $pdf);
+        self::assertStringContainsString('/F 4', $pdf);
+    }
 }

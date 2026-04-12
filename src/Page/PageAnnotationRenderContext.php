@@ -18,6 +18,7 @@ final readonly class PageAnnotationRenderContext
         public array $pageObjectIdsByPageNumber,
         public array $namedDestinations = [],
         public ?int $structParentId = null,
+        public ?int $appearanceObjectId = null,
     ) {
     }
 

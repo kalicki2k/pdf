@@ -21,6 +21,7 @@ final readonly class LinkAnnotation implements PageAnnotation
         public ?string $contents = null,
         public ?int $markedContentId = null,
         public ?int $structParentId = null,
+        public ?string $taggedGroupKey = null,
     ) {
         if ($this->width <= 0.0) {
             throw new InvalidArgumentException('Link annotation width must be greater than zero.');
@@ -42,6 +43,7 @@ final readonly class LinkAnnotation implements PageAnnotation
             contents: $this->contents,
             markedContentId: $this->markedContentId,
             structParentId: $structParentId,
+            taggedGroupKey: $this->taggedGroupKey,
         );
     }
 
@@ -86,12 +88,29 @@ final readonly class LinkAnnotation implements PageAnnotation
             $entries[] = '/Contents ' . $this->pdfString($this->contents);
         }
 
+        if ($context->appearanceObjectId !== null) {
+            $entries[] = '/AP << /N ' . $context->appearanceObjectId . ' 0 R >>';
+        }
+
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
     public function markedContentId(): ?int
     {
         return $this->markedContentId;
+    }
+
+    public function appearanceStreamDictionaryContents(): string
+    {
+        return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 '
+            . $this->formatNumber($this->width) . ' '
+            . $this->formatNumber($this->height)
+            . '] /Resources << >> /Length 0 >>';
+    }
+
+    public function appearanceStreamContents(): string
+    {
+        return '';
     }
 
     private function formatNumber(float $value): string
