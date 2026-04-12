@@ -24,16 +24,13 @@ Die Engine unterstuetzt ein fokussiertes Debug-/Observability-System fuer Lifecy
 
 ```php
 use Kalle\Pdf\Debug\DebugConfig;
-use Kalle\Pdf\Debug\LogLevel;
 use Kalle\Pdf\Document\Document;
 
 $document = Document::make()
     ->title('Rechnung 2026-001')
     ->debug(
-        DebugConfig::make()
-            ->logLifecycle(LogLevel::Info)
-            ->logPdfStructure(LogLevel::Trace)
-            ->logPerformance(LogLevel::Info)
+        DebugConfig::json()
+            ->toStdout()
     )
     ->build();
 ```
@@ -42,13 +39,63 @@ $document = Document::make()
 - PDF-Struktur-Debugging protokolliert PDF-nahe Ereignisse wie `object.created`, `object.serialized`, `stream.serialized`, `xref.written` und `trailer.written`.
 - Performance-Logging misst Render- und Write-Schritte wie `document.render`, `page.render` und `file.write` inklusive Laufzeit- und Speichermetriken.
 
-Optional kann statt eines eigenen Sinks auch direkt ein PSR-3-Logger angebunden werden:
+Optional kann statt eines formatbasierten Sinks auch direkt ein PSR-3-Logger angebunden werden:
 
 ```php
+use Kalle\Pdf\Debug\LogLevel;
+
 $document = Document::make()
     ->debug(DebugConfig::make()->logLifecycle(LogLevel::Info))
     ->withLogger($logger)
     ->build();
+```
+
+Ein groesseres ausfuehrbares Beispiel mit zehn Seiten und JSON-Logger liegt in `examples/observability.php`.
+
+Fuer Docker- oder Container-Setups kann direkt in `stdout` oder `stderr` geloggt werden:
+
+```php
+$document = Document::make()
+    ->debug(
+        DebugConfig::json()
+            ->toStdout()
+    )
+    ->build();
+```
+
+Fuer strukturierte JSON-Lines ohne PSR-3 steht `JsonDebugSink` als direkte Low-Level-Option zur Verfuegung, zum Beispiel fuer Dateien, `stdout` oder `stderr`:
+
+```php
+$document = Document::make()
+    ->debug(
+        DebugConfig::json()
+            ->toFile(__DIR__ . '/var/pdf-debug.log')
+    )
+    ->build();
+```
+
+Fuer lesbare Terminal- oder Datei-Ausgaben steht ausserdem `text()` zur Verfuegung:
+
+```php
+$document = Document::make()
+    ->debug(
+        DebugConfig::text()
+            ->toStderr()
+    )
+    ->build();
+```
+
+Fuer Tests oder lokale Inspektion kann `InMemoryDebugSink` alle Events im Speicher sammeln:
+
+```php
+use Kalle\Pdf\Debug\InMemoryDebugSink;
+
+$sink = new InMemoryDebugSink();
+$document = Document::make()
+    ->debug(DebugConfig::make()->sink($sink))
+    ->build();
+
+$records = $sink->records();
 ```
 
 ## Bilder

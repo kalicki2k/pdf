@@ -1482,7 +1482,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         return new Debugger(
             config: $this->debugConfig,
-            sink: $this->debugSink ?? new NullDebugSink(),
+            sink: $this->debugSink ?? $this->debugConfig->sink ?? new NullDebugSink(),
         );
     }
 
