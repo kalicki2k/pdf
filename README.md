@@ -1,5 +1,16 @@
 # PDF2
 
+## PDF/A Scope
+
+Der aktuelle PDF/A-Scope ist bewusst konservativ und folgt eher dem Prinzip "hart blocken statt halb erlauben":
+
+- `PDF/A-1b`: stabil fuer den aktuell freigegebenen Scope mit eingebetteten Fonts, XMP/Info-Metadaten, OutputIntent, Annotation-APs und den geprueften Farbpfaden.
+- `PDF/A-1a`: bewusst enger als das volle Normspektrum. Im Formularpfad sind nur `TextField`, `ComboBoxField` und `ListBoxField` freigegeben. Popup-Related-Objects sowie URI-Annotation-Actions sind im PDF/A-1-Pfad explizit verboten.
+- `PDF/A-2u`: robuster Positivpfad fuer Unicode-Fonts, Metadaten, OutputIntent und den aktuell freigegebenen Annotation-/Link-Scope.
+- `PDF/A-3b`: dokumentweite Embedded Files und Associated Files am Catalog sind im aktuellen Scope abgedeckt.
+
+Die Engine validiert PDF/A-1 inzwischen nicht nur auf vorbereiteten Zwischenstrukturen, sondern auch gegen den finalen Objektgraphen vor dem Schreiben. Fuer PDF/A-2/3 laeuft derselbe finale Objektgraph-Check inzwischen fuer den gemeinsamen Catalog-, Metadata-, OutputIntent-, Attachment- und Seitenpfad.
+
 ## Struktur
 
 Der Quellcode ist jetzt grob nach Verantwortlichkeiten organisiert:

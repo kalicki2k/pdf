@@ -19,6 +19,7 @@ final class PdfA1ObjectGraphValidator
 {
     public function __construct(
         private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
+        private readonly PdfA1PopupPolicy $pdfA1PopupPolicy = new PdfA1PopupPolicy(),
     ) {
     }
 
@@ -63,6 +64,15 @@ final class PdfA1ObjectGraphValidator
 
             if (str_contains($acroFormObject->contents, '/Helv')) {
                 throw new InvalidArgumentException('Profile PDF/A-1 must not serialize AcroForm default resources with the built-in /Helv fallback.');
+            }
+
+            foreach ($state->acroFormFieldObjectIds as $fieldObjectId) {
+                $this->assertReferencePresent(
+                    $acroFormObject->contents,
+                    $fieldObjectId,
+                    sprintf('PDF/A-1 AcroForm must reference field object %d.', $fieldObjectId),
+                );
+                $this->assertObjectExists($objectsById, $fieldObjectId, sprintf('AcroForm field %d', $fieldObjectId));
             }
         }
 
@@ -122,6 +132,16 @@ final class PdfA1ObjectGraphValidator
                     ));
                 }
 
+                $this->assertReferencePresent(
+                    $annotationObject->contents,
+                    $state->pageObjectIds[$pageIndex],
+                    sprintf(
+                        'PDF/A-1 page annotation %d on page %d must reference its parent page object.',
+                        $annotationIndex + 1,
+                        $pageIndex + 1,
+                    ),
+                );
+
                 $appearanceObjectId = $state->pageAnnotationAppearanceObjectIds[$pageIndex][$annotationIndex] ?? null;
 
                 if ($this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)) {
@@ -180,6 +200,15 @@ final class PdfA1ObjectGraphValidator
                             $pageIndex + 1,
                         ));
                     }
+                }
+
+                if ($this->pdfA1PopupPolicy->usesPopup($annotation)) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s does not allow popup related objects for page annotation %d on page %d.',
+                        $document->profile->name(),
+                        $annotationIndex + 1,
+                        $pageIndex + 1,
+                    ));
                 }
             }
         }

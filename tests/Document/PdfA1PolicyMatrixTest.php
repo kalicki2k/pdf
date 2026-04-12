@@ -58,7 +58,9 @@ final class PdfA1PolicyMatrixTest extends TestCase
             'uri-link' => 'Profile %s does not allow URI annotation actions in link annotation 1 on page 1. Use an internal /Dest target instead.',
         ];
 
-        if ($profile->pdfaConformance() !== 'A') {
+        if ($profile->pdfaConformance() === 'A') {
+            $matrix['popup'] = 'Profile %s does not allow popup related objects for page annotation 1 on page 1.';
+        } else {
             $matrix['acroform'] = 'Profile %s does not allow AcroForm fields in the current implementation.';
             $matrix['text-annotation'] = 'Profile %s does not support the current page annotation implementation on page 1.';
         }
@@ -89,6 +91,10 @@ final class PdfA1PolicyMatrixTest extends TestCase
                     ImagePlacement::at(10, 20),
                     ImageAccessibility::alternativeText('Indexed image'),
                 )
+                ->build(),
+            'popup' => $builder
+                ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
+                ->popupAnnotation(70, 520, 120, 60, true)
                 ->build(),
             'soft-mask-image' => $builder
                 ->image(

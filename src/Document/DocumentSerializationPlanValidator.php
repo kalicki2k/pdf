@@ -32,6 +32,7 @@ final class DocumentSerializationPlanValidator
         private readonly PdfALowLevelPolicyValidator $pdfALowLevelPolicyValidator = new PdfALowLevelPolicyValidator(),
         private readonly PdfA1aSupportedStructureValidator $pdfA1aSupportedStructureValidator = new PdfA1aSupportedStructureValidator(),
         private readonly PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
+        private readonly PdfA1aFormFieldPolicy $pdfA1aFormFieldPolicy = new PdfA1aFormFieldPolicy(),
         private readonly PdfA1AnnotationPolicy $pdfA1AnnotationPolicy = new PdfA1AnnotationPolicy(),
         private readonly PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
         private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
@@ -424,6 +425,14 @@ final class DocumentSerializationPlanValidator
         }
 
         foreach ($document->acroForm->fields as $field) {
+            if (
+                $document->profile->isPdfA1()
+                && $document->profile->pdfaConformance() === 'A'
+                && !$this->pdfA1aFormFieldPolicy->supports($field)
+            ) {
+                throw new InvalidArgumentException($this->pdfA1aFormFieldPolicy->violationMessage($document->profile));
+            }
+
             if ($field instanceof TextField && !$document->profile->supportsCurrentTextFieldImplementation()) {
                 throw new InvalidArgumentException(sprintf(
                     'Profile %s does not allow text fields in the current implementation.',
@@ -438,23 +447,9 @@ final class DocumentSerializationPlanValidator
                 ));
             }
 
-            if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof CheckboxField) {
-                throw new InvalidArgumentException(sprintf(
-                    'Profile %s currently only allows text and choice fields in the PDF/A-1a form implementation.',
-                    $document->profile->name(),
-                ));
-            }
-
             if ($field instanceof RadioButtonGroup && !$document->profile->supportsCurrentRadioButtonImplementation()) {
                 throw new InvalidArgumentException(sprintf(
                     'Profile %s does not allow radio buttons in the current implementation.',
-                    $document->profile->name(),
-                ));
-            }
-
-            if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof RadioButtonGroup) {
-                throw new InvalidArgumentException(sprintf(
-                    'Profile %s currently only allows text and choice fields in the PDF/A-1a form implementation.',
                     $document->profile->name(),
                 ));
             }
@@ -474,13 +469,6 @@ final class DocumentSerializationPlanValidator
             }
 
             if ($field instanceof PushButtonField) {
-                if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A') {
-                    throw new InvalidArgumentException(sprintf(
-                        'Profile %s currently only allows text and choice fields in the PDF/A-1a form implementation.',
-                        $document->profile->name(),
-                    ));
-                }
-
                 if (
                     $document->profile->isPdfA1()
                     && $document->profile->pdfaConformance() === 'A'
@@ -509,13 +497,6 @@ final class DocumentSerializationPlanValidator
             if ($field instanceof SignatureField && !$document->profile->supportsCurrentSignatureFieldImplementation()) {
                 throw new InvalidArgumentException(sprintf(
                     'Profile %s does not allow signature fields in the current implementation.',
-                    $document->profile->name(),
-                ));
-            }
-
-            if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof SignatureField) {
-                throw new InvalidArgumentException(sprintf(
-                    'Profile %s currently only allows text and choice fields in the PDF/A-1a form implementation.',
                     $document->profile->name(),
                 ));
             }
