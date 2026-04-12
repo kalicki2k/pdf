@@ -27,6 +27,7 @@ final readonly class Table
         public array $headerRows = [],
         public array $rows = [],
         public array $footerRows = [],
+        public ?TablePlacement $placement = null,
         public CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
         public Border $border = new Border(0.5, 0.5, 0.5, 0.5),
         public TextOptions $textOptions = new TextOptions(fontSize: 12.0, lineHeight: 14.4),
@@ -43,6 +44,7 @@ final readonly class Table
 
     public static function define(TableColumn ...$columns): self
     {
+        /** @var list<TableColumn> $columns */
         return new self($columns);
     }
 
@@ -54,6 +56,7 @@ final readonly class Table
             headerRows: $this->headerRows,
             rows: [...$this->rows, $row],
             footerRows: $this->footerRows,
+            placement: $this->placement,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -63,12 +66,14 @@ final readonly class Table
 
     public function withRows(TableRow ...$rows): self
     {
+        /** @var list<TableRow> $rows */
         return new self(
             columns: $this->columns,
             caption: $this->caption,
             headerRows: $this->headerRows,
             rows: $rows,
             footerRows: $this->footerRows,
+            placement: $this->placement,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -78,12 +83,14 @@ final readonly class Table
 
     public function withHeaderRows(TableRow ...$headerRows): self
     {
+        /** @var list<TableRow> $headerRows */
         return new self(
             columns: $this->columns,
             caption: $this->caption,
             headerRows: $headerRows,
             rows: $this->rows,
             footerRows: $this->footerRows,
+            placement: $this->placement,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -93,12 +100,14 @@ final readonly class Table
 
     public function withFooterRows(TableRow ...$footerRows): self
     {
+        /** @var list<TableRow> $footerRows */
         return new self(
             columns: $this->columns,
             caption: $this->caption,
             headerRows: $this->headerRows,
             rows: $this->rows,
             footerRows: $footerRows,
+            placement: $this->placement,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -114,6 +123,23 @@ final readonly class Table
             headerRows: $this->headerRows,
             rows: $this->rows,
             footerRows: $this->footerRows,
+            placement: $this->placement,
+            cellPadding: $this->cellPadding,
+            border: $this->border,
+            textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+        );
+    }
+
+    public function withPlacement(TablePlacement $placement): self
+    {
+        return new self(
+            columns: $this->columns,
+            caption: $this->caption,
+            headerRows: $this->headerRows,
+            rows: $this->rows,
+            footerRows: $this->footerRows,
+            placement: $placement,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -129,6 +155,7 @@ final readonly class Table
             headerRows: $this->headerRows,
             rows: $this->rows,
             footerRows: $this->footerRows,
+            placement: $this->placement,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -144,6 +171,7 @@ final readonly class Table
             headerRows: $this->headerRows,
             rows: $this->rows,
             footerRows: $this->footerRows,
+            placement: $this->placement,
             cellPadding: $cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -159,6 +187,7 @@ final readonly class Table
             headerRows: $this->headerRows,
             rows: $this->rows,
             footerRows: $this->footerRows,
+            placement: $this->placement,
             cellPadding: $this->cellPadding,
             border: $border,
             textOptions: $this->textOptions,
@@ -174,6 +203,7 @@ final readonly class Table
             headerRows: $this->headerRows,
             rows: $this->rows,
             footerRows: $this->footerRows,
+            placement: $this->placement,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $textOptions,

@@ -87,8 +87,9 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame(PageSize::A5()->landscape()->width(), $document->pages[1]->size->width());
         self::assertSame(PageSize::A5()->landscape()->height(), $document->pages[1]->size->height());
         self::assertSame(24.0, $document->pages[1]->margin?->top);
-        self::assertSame(ColorSpace::RGB, $document->pages[1]->backgroundColor?->space);
-        self::assertSame([245 / 255, 245 / 255, 245 / 255], $document->pages[1]->backgroundColor?->components());
+        self::assertNotNull($document->pages[1]->backgroundColor);
+        self::assertSame(ColorSpace::RGB, $document->pages[1]->backgroundColor->space);
+        self::assertSame([245 / 255, 245 / 255, 245 / 255], $document->pages[1]->backgroundColor->components());
         self::assertSame('appendix', $document->pages[1]->label);
         self::assertSame('appendix-a', $document->pages[1]->name);
     }
@@ -143,10 +144,11 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->pdfaOutputIntent(new PdfAOutputIntent('/tmp/test.icc', 'Custom RGB', 'Custom profile', 4))
             ->build();
 
-        self::assertSame('/tmp/test.icc', $document->pdfaOutputIntent?->iccProfilePath);
-        self::assertSame('Custom RGB', $document->pdfaOutputIntent?->outputConditionIdentifier);
-        self::assertSame('Custom profile', $document->pdfaOutputIntent?->info);
-        self::assertSame(4, $document->pdfaOutputIntent?->colorComponents);
+        self::assertNotNull($document->pdfaOutputIntent);
+        self::assertSame('/tmp/test.icc', $document->pdfaOutputIntent->iccProfilePath);
+        self::assertSame('Custom RGB', $document->pdfaOutputIntent->outputConditionIdentifier);
+        self::assertSame('Custom profile', $document->pdfaOutputIntent->info);
+        self::assertSame(4, $document->pdfaOutputIntent->colorComponents);
     }
 
     public function testItRegistersImageResourcesAndPlacementCommands(): void
@@ -190,9 +192,11 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         self::assertCount(1, $document->pages[0]->annotations);
         self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[0]);
-        self::assertTrue($document->pages[0]->annotations[0]->target->isExternalUrl());
-        self::assertSame('https://example.com', $document->pages[0]->annotations[0]->target->externalUrlValue());
-        self::assertSame('Open Example', $document->pages[0]->annotations[0]->contents);
+        $annotation = $document->pages[0]->annotations[0];
+        self::assertInstanceOf(LinkAnnotation::class, $annotation);
+        self::assertTrue($annotation->target->isExternalUrl());
+        self::assertSame('https://example.com', $annotation->target->externalUrlValue());
+        self::assertSame('Open Example', $annotation->contents);
     }
 
     public function testItAddsInternalLinkAnnotationsToTheCurrentPage(): void
@@ -207,6 +211,8 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->build();
 
         self::assertCount(2, $document->pages[2]->annotations);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[2]->annotations[0]);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[2]->annotations[1]);
         self::assertTrue($document->pages[2]->annotations[0]->target->isPage());
         self::assertSame(2, $document->pages[2]->annotations[0]->target->pageNumberValue());
         self::assertTrue($document->pages[2]->annotations[1]->target->isPosition());
@@ -227,6 +233,7 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertCount(1, $document->pages[0]->namedDestinations);
         self::assertSame('intro', $document->pages[0]->namedDestinations[0]->name);
         self::assertNotEmpty($document->pages[0]->annotations);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[0]);
         self::assertTrue($document->pages[0]->annotations[0]->target->isNamedDestination());
         self::assertSame('intro', $document->pages[0]->annotations[0]->target->namedDestinationValue());
     }
@@ -242,6 +249,8 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->build();
 
         self::assertCount(2, $document->pages[0]->annotations);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[0]);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[1]);
         self::assertSame('https://example.com/docs', $document->pages[0]->annotations[0]->target->externalUrlValue());
         self::assertSame('Docs', $document->pages[0]->annotations[0]->contents);
         self::assertSame('https://example.com/api', $document->pages[0]->annotations[1]->target->externalUrlValue());
@@ -259,6 +268,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->build();
 
         self::assertCount(1, $document->pages[0]->annotations);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[0]);
         self::assertSame('https://example.com/docs', $document->pages[0]->annotations[0]->target->externalUrlValue());
         self::assertSame('Read docs', $document->pages[0]->annotations[0]->contents);
     }
@@ -275,6 +285,8 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->build();
 
         self::assertCount(2, $document->pages[0]->annotations);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[0]);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[1]);
         self::assertSame(
             $document->pages[0]->annotations[0]->taggedGroupKey,
             $document->pages[0]->annotations[1]->taggedGroupKey,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Layout\Table;
 
 use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Text\TextOptions;
 
 final readonly class TableCellLayout
 {
@@ -18,6 +19,9 @@ final readonly class TableCellLayout
         public float $width,
         public float $contentWidth,
         public float $height,
+        public CellPadding $padding,
+        public Border $border,
+        public TextOptions $textOptions,
         public array $wrappedLines,
     ) {
     }

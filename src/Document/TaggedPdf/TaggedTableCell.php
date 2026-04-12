@@ -15,6 +15,8 @@ final readonly class TaggedTableCell
         public int $columnIndex,
         public bool $header,
         public ?TableHeaderScope $headerScope = null,
+        public int $rowspan = 1,
+        public int $colspan = 1,
         public array $contentReferences = [],
     ) {
     }

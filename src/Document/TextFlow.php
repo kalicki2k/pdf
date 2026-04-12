@@ -270,6 +270,7 @@ final readonly class TextFlow
             }
         }
 
+        /** @var list<list<TextSegment>> $paragraphs */
         return $paragraphs;
     }
 

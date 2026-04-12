@@ -95,7 +95,6 @@ final class TableLayoutCalculator
 
         $padding = $table->cellPadding;
         $baseOptions = $table->textOptions;
-        $lineHeight = $textFlow->lineHeight($baseOptions);
         $rowHeights = array_fill(0, count($rows), 0.0);
         $cellLayouts = [];
         $activeRowspans = array_fill(0, count($columnWidths), 0);
@@ -109,11 +108,13 @@ final class TableLayoutCalculator
                 }
 
                 $cellWidth = array_sum(array_slice($columnWidths, $columnIndex, $cell->colspan));
-                $contentWidth = max($cellWidth - $padding->horizontal(), 0.0);
-                $cellOptions = $this->cellTextOptions($baseOptions, $contentWidth);
+                $cellPadding = $cell->padding ?? $padding;
+                $cellBorder = $cell->border ?? $table->border;
+                $contentWidth = max($cellWidth - $cellPadding->horizontal(), 0.0);
+                $cellOptions = $this->cellTextOptions($baseOptions, $cell, $contentWidth);
                 $wrappedLines = $textFlow->wrapTextLines($cell->text, $cellOptions, $font, 0.0);
                 $lineCount = max(count($wrappedLines), 1);
-                $cellHeight = ($lineCount * $lineHeight) + $padding->vertical();
+                $cellHeight = ($lineCount * $textFlow->lineHeight($cellOptions)) + $cellPadding->vertical();
                 $cellLayouts[] = new TableCellLayout(
                     $cell,
                     $rowIndex,
@@ -121,6 +122,9 @@ final class TableLayoutCalculator
                     $cellWidth,
                     $contentWidth,
                     $cellHeight,
+                    $cellPadding,
+                    $cellBorder,
+                    $cellOptions,
                     $wrappedLines,
                 );
 
@@ -209,7 +213,7 @@ final class TableLayoutCalculator
         return $rowGroups;
     }
 
-    private function cellTextOptions(TextOptions $options, float $contentWidth): TextOptions
+    private function cellTextOptions(TextOptions $options, \Kalle\Pdf\Document\TableCell $cell, float $contentWidth): TextOptions
     {
         return new TextOptions(
             width: $contentWidth,
@@ -221,7 +225,7 @@ final class TableLayoutCalculator
             color: $options->color,
             kerning: $options->kerning,
             baseDirection: $options->baseDirection,
-            align: $options->align,
+            align: $cell->horizontalAlign ?? $options->align,
         );
     }
 }

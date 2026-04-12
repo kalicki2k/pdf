@@ -24,14 +24,18 @@ final readonly class TableRow
 
     public static function fromCells(TableCell ...$cells): self
     {
+        /** @var list<TableCell> $cells */
         return new self($cells);
     }
 
     public static function fromTexts(string ...$texts): self
     {
-        return new self(array_map(
+        $cells = array_map(
             static fn (string $text): TableCell => TableCell::text($text),
             $texts,
-        ));
+        );
+        /** @var list<TableCell> $cells */
+
+        return new self($cells);
     }
 }

@@ -956,6 +956,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertTrue($this->containsStreamObject($objects, '<0001> <0416>'));
         self::assertGreaterThanOrEqual(3, $this->countStreamObjects($objects));
         self::assertSame(1, preg_match('/\\/Length1 ([0-9]+)/', $serialized, $matches));
+        if (!isset($matches[1])) {
+            self::fail('Expected a /Length1 entry in the serialized font stream.');
+        }
         self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()), (int) $matches[1]);
     }
 
@@ -989,11 +992,14 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertTrue($this->containsStreamObject($objects, '<0001> <0416>'));
         self::assertGreaterThanOrEqual(2, $this->countStreamObjects($objects));
         self::assertSame(1, preg_match('/<< \\/Length ([0-9]+) \\/Subtype \\/OpenType >>/', $serialized, $matches));
+        if (!isset($matches[1])) {
+            self::fail('Expected an OpenType stream length in the serialized font stream.');
+        }
         self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()), (int) $matches[1]);
     }
 
     /**
-     * @param array<int, IndirectObject> $objects
+     * @param array<array-key, IndirectObject> $objects
      */
     private function findStreamObject(array $objects, string $needle): ?IndirectObject
     {
@@ -1011,7 +1017,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     }
 
     /**
-     * @param array<int, IndirectObject> $objects
+     * @param array<array-key, IndirectObject> $objects
      */
     private function containsStreamObject(array $objects, string $needle): bool
     {
@@ -1033,7 +1039,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     }
 
     /**
-     * @param array<int, IndirectObject> $objects
+     * @param array<array-key, IndirectObject> $objects
      */
     private function countStreamObjects(array $objects): int
     {

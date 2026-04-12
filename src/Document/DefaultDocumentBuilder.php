@@ -82,7 +82,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /** @var list<NamedDestination> */
     private array $currentPageNamedDestinations = [];
     private int $currentPageNextMarkedContentId = 0;
-    /** @var array<int, array{captionReferences: list<array{pageIndex: int, markedContentId: int}>, headerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}>, bodyRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}>, footerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}>}> */
+    /** @var array<int, array{captionReferences: list<array{pageIndex: int, markedContentId: int}>, headerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>, bodyRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>, footerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>}> */
     private array $taggedTables = [];
     private int $nextTaggedTableId = 0;
     private ?Margin $currentPageMargin = null;
@@ -302,10 +302,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $page = $clone->buildCurrentPage();
         $contentArea = $page->contentArea();
-        $columnWidths = $calculator->resolveColumnWidths($table, $contentArea->width());
+        ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
+        $columnWidths = $calculator->resolveColumnWidths($table, $tableWidth);
         $captionLayout = $table->caption === null
             ? null
-            : $clone->layoutTableCaption($table, new TextFlow($page), $font, $contentArea->width());
+            : $clone->layoutTableCaption($table, new TextFlow($page), $font, $tableWidth);
         $headerLayout = $table->headerRows === []
             ? null
             : $calculator->layoutRows($table->headerRows, $table, $columnWidths, new TextFlow($page), $font);
@@ -330,10 +331,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $clone->startOverflowPage();
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
+                ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                 $cursorY = $contentArea->top;
             }
 
-            $clone->renderTableCaption($captionLayout, $table->caption, $font, $cursorY, $contentArea->left, $taggedTableId);
+            $clone->renderTableCaption($captionLayout, $table->caption, $font, $cursorY, $tableLeftX, $taggedTableId);
             $cursorY -= $captionLayout['height'];
             $clone->currentPageCursorY = $cursorY;
         }
@@ -343,10 +345,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $clone->startOverflowPage();
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
+                ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                 $cursorY = $contentArea->top;
             }
 
-            $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left, $taggedTableId, 'header');
+            $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
             $cursorY -= $headerLayout->totalHeight();
             $clone->currentPageCursorY = $cursorY;
             $headerRenderedOnCurrentPage = true;
@@ -373,6 +376,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
+                    ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                     $cursorY = $contentArea->top;
                     $headerRenderedOnCurrentPage = false;
                     continue;
@@ -383,7 +387,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         throw new InvalidArgumentException('Repeated table headers leave no space for table content on the page.');
                     }
 
-                    $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left, $taggedTableId, 'header');
+                    $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
                     $cursorY -= $headerLayout->totalHeight();
                     $clone->currentPageCursorY = $cursorY;
                     $headerRenderedOnCurrentPage = true;
@@ -394,6 +398,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
+                    ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                     $cursorY = $contentArea->top;
                     $headerRenderedOnCurrentPage = false;
                     continue;
@@ -406,7 +411,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $rowGroup,
                     $font,
                     $cursorY,
-                    $contentArea->left,
+                    $tableLeftX,
                     $segmentOffset,
                     $segmentHeight,
                     $taggedTableId,
@@ -420,6 +425,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
+                    ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                     $cursorY = $contentArea->top;
                     $headerRenderedOnCurrentPage = false;
                 }
@@ -440,18 +446,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $clone->startOverflowPage();
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
+                ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                 $cursorY = $contentArea->top;
                 $headerRenderedOnCurrentPage = false;
             }
 
             if (!$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak) {
-                $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left, $taggedTableId, 'header');
+                $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
                 $cursorY -= $headerLayout->totalHeight();
                 $clone->currentPageCursorY = $cursorY;
                 $headerRenderedOnCurrentPage = true;
             }
 
-            $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $contentArea->left, $taggedTableId, 'footer');
+            $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
             $cursorY -= $footerLayout->totalHeight();
             $clone->currentPageCursorY = $cursorY;
         }
@@ -1361,7 +1368,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     private function buildTableCellContent(
-        Table $table,
         TableLayout $tableLayout,
         TableCellLayout $cellLayout,
         StandardFontDefinition | EmbeddedFontDefinition $font,
@@ -1375,7 +1381,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $taggedSection = null,
     ): string {
         $contents = [];
-        $padding = $table->cellPadding;
         $x = $tableLeftX;
         $cellTopOffset = 0.0;
 
@@ -1387,9 +1392,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $x += $tableLayout->columnWidths[$index];
         }
 
-        $cellTextOptions = $this->tableCellTextOptions($table->textOptions, $cellLayout->contentWidth);
-        $shapedLines = $this->shapeWrappedTextLines($cellLayout->wrappedLines, $cellTextOptions, $font);
-        $renderState = $this->prepareTextRenderState($cellLayout->cell->text, $cellTextOptions, $font, $shapedLines);
+        $shapedLines = $this->shapeWrappedTextLines($cellLayout->wrappedLines, $cellLayout->textOptions, $font);
+        $renderState = $this->prepareTextRenderState($cellLayout->cell->text, $cellLayout->textOptions, $font, $shapedLines);
         $cellHeight = $tableLayout->cellHeight($cellLayout);
         $cellBottomOffset = $cellTopOffset + $cellHeight;
         $segmentBottomOffset = $segmentOffset + $segmentHeight;
@@ -1420,7 +1424,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             : null;
         $segmentText = $this->visibleWrappedTextContentForCellSegment(
             $cellLayout,
-            $cellTextOptions,
+            $cellLayout->textOptions,
             $cellHeight,
             $shapedLines,
             $font,
@@ -1428,17 +1432,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $renderState['embeddedPageFont'],
             $renderState['useHexString'],
             $textFlow,
-            $padding,
-            $x + $padding->left,
-            $segmentTopY,
-            $cellTopOffset,
-            $segmentOffset,
+                $cellLayout->padding,
+                $x + $cellLayout->padding->left,
+                $segmentTopY,
+                $cellTopOffset,
+                $segmentOffset,
             $segmentHeight,
             $markedContentId !== null ? ($taggedSection === 'header' ? 'TH' : 'TD') : null,
             $markedContentId,
         );
 
-        if ($table->border->isVisible()) {
+        if ($cellLayout->border->isVisible()) {
             $contents[] = $this->buildCellBorderSegmentContent(
                 $x,
                 $topY,
@@ -1446,7 +1450,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $visibleHeight,
                 $rendersCellTop,
                 $rendersCellBottom,
-                $table->border,
+                $cellLayout->border,
             );
         }
 
@@ -1594,7 +1598,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         foreach ($tableLayout->cells as $cellLayout) {
             $contents[] = $this->buildTableCellContent(
-                $table,
                 $tableLayout,
                 $cellLayout,
                 $font,
@@ -1635,7 +1638,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             $contents[] = $this->buildTableCellContent(
-                $table,
                 $tableLayout,
                 $cellLayout,
                 $font,
@@ -1674,7 +1676,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @return array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}>
+     * @return array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>
      */
     private function initializeTaggedTableRows(TableLayout $tableLayout, bool $header): array
     {
@@ -1688,6 +1690,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $rows[$cellLayout->rowIndex]['cells'][$cellLayout->columnIndex] = [
                 'header' => $header || $cellLayout->cell->headerScope !== null,
                 'headerScope' => $cellLayout->cell->headerScope ?? ($header ? TableHeaderScope::COLUMN : null),
+                'rowspan' => $cellLayout->cell->rowspan,
+                'colspan' => $cellLayout->cell->colspan,
                 'references' => [],
             ];
         }
@@ -1748,7 +1752,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}> $rows
+     * @param array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}> $rows
      * @return list<TaggedTableRow>
      */
     private function buildTaggedTableRows(array $rows): array
@@ -1764,6 +1768,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     columnIndex: $columnIndex,
                     header: $cell['header'],
                     headerScope: $cell['headerScope'],
+                    rowspan: $cell['rowspan'],
+                    colspan: $cell['colspan'],
                     contentReferences: array_map(
                         static fn (array $reference): TaggedTableContentReference => new TaggedTableContentReference(
                             $reference['pageIndex'],
@@ -1778,22 +1784,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $taggedRows;
-    }
-
-    private function tableCellTextOptions(TextOptions $options, float $contentWidth): TextOptions
-    {
-        return new TextOptions(
-            width: $contentWidth,
-            fontSize: $options->fontSize,
-            lineHeight: $options->lineHeight,
-            fontName: $options->fontName,
-            embeddedFont: $options->embeddedFont,
-            fontEncoding: $options->fontEncoding,
-            color: $options->color,
-            kerning: $options->kerning,
-            baseDirection: $options->baseDirection,
-            align: $options->align,
-        );
     }
 
     private function tableCaptionTextOptions(TableCaption $caption, TextOptions $baseOptions, float $contentWidth): TextOptions
@@ -1820,6 +1810,34 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function lineHeightForTable(Table $table): float
     {
         return $table->textOptions->lineHeight ?? ($table->textOptions->fontSize * 1.2);
+    }
+
+    /**
+     * @return array{x: float, width: float}
+     */
+    private function resolveTablePlacement(Table $table, Page $page): array
+    {
+        $contentArea = $page->contentArea();
+
+        if ($table->placement === null) {
+            return [
+                'x' => $contentArea->left,
+                'width' => $contentArea->width(),
+            ];
+        }
+
+        if ($table->placement->x < $contentArea->left) {
+            throw new InvalidArgumentException('Table placement x must not start left of the page content area.');
+        }
+
+        if (($table->placement->x + $table->placement->width) > $contentArea->right) {
+            throw new InvalidArgumentException('Table placement width exceeds the page content area.');
+        }
+
+        return [
+            'x' => $table->placement->x,
+            'width' => $table->placement->width,
+        ];
     }
 
     /**

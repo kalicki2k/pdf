@@ -22,6 +22,8 @@ final readonly class StructElem
         private ?int $markedContentId = null,
         private ?array $kidEntries = null,
         private ?string $scope = null,
+        private ?int $rowSpan = null,
+        private ?int $colSpan = null,
     ) {
     }
 
@@ -41,8 +43,22 @@ final readonly class StructElem
             $entries[] = '/Alt ' . $this->pdfString($this->altText);
         }
 
+        $tableAttributes = ['/O /Table'];
+
         if ($this->scope !== null) {
-            $entries[] = '/A << /O /Table /Scope /' . $this->scope . ' >>';
+            $tableAttributes[] = '/Scope /' . $this->scope;
+        }
+
+        if ($this->rowSpan !== null) {
+            $tableAttributes[] = '/RowSpan ' . $this->rowSpan;
+        }
+
+        if ($this->colSpan !== null) {
+            $tableAttributes[] = '/ColSpan ' . $this->colSpan;
+        }
+
+        if (count($tableAttributes) > 1) {
+            $entries[] = '/A << ' . implode(' ', $tableAttributes) . ' >>';
         }
 
         if ($this->markedContentId !== null) {

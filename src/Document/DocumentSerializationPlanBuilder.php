@@ -519,6 +519,8 @@ final class DocumentSerializationPlanBuilder
                                     $rowStructElemObjectIds[$rowKey],
                                     kidEntries: $this->taggedMarkedContentKidEntries($cell->contentReferences, $pageObjectIds),
                                     scope: $cell->headerScope?->value,
+                                    rowSpan: $cell->rowspan > 1 ? $cell->rowspan : null,
+                                    colSpan: $cell->colspan > 1 ? $cell->colspan : null,
                                 ))->objectContents(),
                             );
                         }
