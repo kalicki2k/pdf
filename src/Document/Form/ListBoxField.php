@@ -107,6 +107,9 @@ final readonly class ListBoxField extends WidgetFormField
         }
     }
 
+    /**
+     * @param list<string>|string|null $value
+     */
     private function isMultiSelect(string | array | null $value): bool
     {
         return is_array($value);

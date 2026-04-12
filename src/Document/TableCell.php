@@ -70,121 +70,80 @@ final class TableCell
 
     public function withColspan(int $colspan): self
     {
-        return new self(
-            $this->text,
+        return $this->copy(
             $colspan,
-            $this->rowspan,
-            $this->backgroundColor,
-            $this->verticalAlign,
-            $this->headerScope,
-            $this->horizontalAlign,
-            $this->padding,
-            $this->border,
         );
     }
 
     public function withRowspan(int $rowspan): self
     {
-        return new self(
-            $this->text,
-            $this->colspan,
-            $rowspan,
-            $this->backgroundColor,
-            $this->verticalAlign,
-            $this->headerScope,
-            $this->horizontalAlign,
-            $this->padding,
-            $this->border,
+        return $this->copy(
+            rowspan: $rowspan,
         );
     }
 
     public function withBackgroundColor(Color $backgroundColor): self
     {
-        return new self(
-            $this->text,
-            $this->colspan,
-            $this->rowspan,
-            $backgroundColor,
-            $this->verticalAlign,
-            $this->headerScope,
-            $this->horizontalAlign,
-            $this->padding,
-            $this->border,
+        return $this->copy(
+            backgroundColor: $backgroundColor,
         );
     }
 
     public function withVerticalAlign(VerticalAlign $verticalAlign): self
     {
-        return new self(
-            $this->text,
-            $this->colspan,
-            $this->rowspan,
-            $this->backgroundColor,
-            $verticalAlign,
-            $this->headerScope,
-            $this->horizontalAlign,
-            $this->padding,
-            $this->border,
+        return $this->copy(
+            verticalAlign: $verticalAlign,
         );
     }
 
     public function withHeaderScope(TableHeaderScope $headerScope): self
     {
-        return new self(
-            $this->text,
-            $this->colspan,
-            $this->rowspan,
-            $this->backgroundColor,
-            $this->verticalAlign,
-            $headerScope,
-            $this->horizontalAlign,
-            $this->padding,
-            $this->border,
+        return $this->copy(
+            headerScope: $headerScope,
         );
     }
 
     public function withHorizontalAlign(TextAlign $horizontalAlign): self
     {
-        return new self(
-            $this->text,
-            $this->colspan,
-            $this->rowspan,
-            $this->backgroundColor,
-            $this->verticalAlign,
-            $this->headerScope,
-            $horizontalAlign,
-            $this->padding,
-            $this->border,
+        return $this->copy(
+            horizontalAlign: $horizontalAlign,
         );
     }
 
     public function withPadding(CellPadding $padding): self
     {
-        return new self(
-            $this->text,
-            $this->colspan,
-            $this->rowspan,
-            $this->backgroundColor,
-            $this->verticalAlign,
-            $this->headerScope,
-            $this->horizontalAlign,
-            $padding,
-            $this->border,
+        return $this->copy(
+            padding: $padding,
         );
     }
 
     public function withBorder(Border $border): self
     {
+        return $this->copy(
+            border: $border,
+        );
+    }
+
+    private function copy(
+        ?int $colspan = null,
+        ?int $rowspan = null,
+        ?Color $backgroundColor = null,
+        ?VerticalAlign $verticalAlign = null,
+        ?TableHeaderScope $headerScope = null,
+        ?TextAlign $horizontalAlign = null,
+        ?CellPadding $padding = null,
+        ?Border $border = null,
+    ): self {
         return new self(
-            $this->text,
-            $this->colspan,
-            $this->rowspan,
-            $this->backgroundColor,
-            $this->verticalAlign,
-            $this->headerScope,
-            $this->horizontalAlign,
-            $this->padding,
-            $border,
+            $this->content,
+            $colspan ?? $this->colspan,
+            $rowspan ?? $this->rowspan,
+            $backgroundColor ?? $this->backgroundColor,
+            $verticalAlign ?? $this->verticalAlign,
+            $headerScope ?? $this->headerScope,
+            $horizontalAlign ?? $this->horizontalAlign,
+            $padding ?? $this->padding,
+            $border ?? $this->border,
         );
     }
 }

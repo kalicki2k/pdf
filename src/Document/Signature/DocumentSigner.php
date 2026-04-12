@@ -215,6 +215,7 @@ final readonly class DocumentSigner
     }
 
     /**
+     * @param array{size: int, root: string, info: ?string, id: ?string, prevStartXref: int} $trailer
      * @return array{0: string, 1: array{byteRange: string, contentsHex: string}}
      */
     private function appendIncrementalUpdate(

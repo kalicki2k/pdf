@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function array_map;
+use function array_values;
 
 use function implode;
 
@@ -33,7 +34,7 @@ final readonly class TableCellContent
                 static fn (TextSegment $segment): string => $segment->text,
                 $segments,
             )),
-            $segments,
+            array_values($segments),
         );
     }
 

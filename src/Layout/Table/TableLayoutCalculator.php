@@ -68,6 +68,9 @@ final class TableLayoutCalculator
         );
     }
 
+    /**
+     * @param list<float> $columnWidths
+     */
     public function layoutTable(
         Table $table,
         array $columnWidths,
@@ -83,6 +86,7 @@ final class TableLayoutCalculator
 
     /**
      * @param list<TableRow> $rows
+     * @param list<float> $columnWidths
      */
     public function layoutRows(
         array $rows,
@@ -97,6 +101,7 @@ final class TableLayoutCalculator
 
         $padding = $table->cellPadding;
         $baseOptions = $table->textOptions;
+        /** @var list<float> $rowHeights */
         $rowHeights = array_fill(0, count($rows), 0.0);
         $cellLayouts = [];
         $activeRowspans = array_fill(0, count($columnWidths), 0);
@@ -173,7 +178,15 @@ final class TableLayoutCalculator
             $rowHeights[$lastRowIndex] += $cellLayout->height - $spanHeight;
         }
 
-        return new TableLayout($columnWidths, $rowHeights, $cellLayouts, $this->buildRowGroups($cellLayouts, $rowHeights));
+        $normalizedRowHeights = array_values($rowHeights);
+        /** @var list<float> $normalizedRowHeights */
+
+        return new TableLayout(
+            $columnWidths,
+            $normalizedRowHeights,
+            $cellLayouts,
+            $this->buildRowGroups($cellLayouts, $normalizedRowHeights),
+        );
     }
 
     /**

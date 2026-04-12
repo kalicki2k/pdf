@@ -90,6 +90,8 @@ final readonly class PngImageDecoder
             ));
         }
 
+        $indexedPalette = $palette;
+
         $inflated = gzuncompress($idatData);
 
         if (!is_string($inflated)) {
@@ -153,12 +155,19 @@ final readonly class PngImageDecoder
         }
 
         if ($header['colorType'] === 3) {
+            if (!is_string($indexedPalette) || $indexedPalette === '') {
+                throw new RuntimeException(sprintf(
+                    "PNG image '%s' palette validation failed unexpectedly.",
+                    $path,
+                ));
+            }
+
             return ImageSource::indexed(
                 data: $compressedColorBytes,
                 width: $header['width'],
                 height: $header['height'],
                 bitsPerComponent: $header['bitsPerComponent'],
-                lookupTable: $palette,
+                lookupTable: $indexedPalette,
                 softMask: $softMask,
             );
         }
@@ -398,10 +407,10 @@ final readonly class PngImageDecoder
     {
         $value = unpack('Nvalue', $bytes);
 
-        if (!is_array($value) || !isset($value['value'])) {
+        if (!is_array($value) || !isset($value['value']) || !is_int($value['value'])) {
             throw new RuntimeException('Unable to decode PNG chunk length.');
         }
 
-        return (int) $value['value'];
+        return $value['value'];
     }
 }

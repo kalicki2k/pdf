@@ -84,4 +84,25 @@ final class TableValueObjectTest extends TestCase
         self::assertSame('Read docs', $content->plainText);
         self::assertCount(2, $content->segments);
     }
+
+    public function testTableCellMutatorsPreserveRichTextContent(): void
+    {
+        $cell = TableCell::segments(
+            TextSegment::plain('Read '),
+            TextSegment::link('docs', TextLink::externalUrl('https://example.com/docs')),
+        )
+            ->withColspan(2)
+            ->withRowspan(3)
+            ->withBackgroundColor(Color::hex('#ffeecc'))
+            ->withVerticalAlign(VerticalAlign::MIDDLE)
+            ->withHorizontalAlign(TextAlign::RIGHT)
+            ->withPadding(CellPadding::symmetric(2.0, 6.0))
+            ->withBorder(new Border(1.0, 0.0, 1.0, 0.0));
+
+        self::assertTrue($cell->content->isRichText());
+        self::assertSame('Read docs', $cell->text);
+        self::assertCount(2, $cell->content->segments);
+        self::assertSame(2, $cell->colspan);
+        self::assertSame(3, $cell->rowspan);
+    }
 }
