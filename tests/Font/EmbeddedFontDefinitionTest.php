@@ -10,6 +10,7 @@ use Kalle\Pdf\Font\EmbeddedFontSource;
 use PHPUnit\Framework\TestCase;
 
 use function preg_match;
+use function strlen;
 
 final class EmbeddedFontDefinitionTest extends TestCase
 {
@@ -74,6 +75,21 @@ final class EmbeddedFontDefinitionTest extends TestCase
         self::assertStringContainsString('/Subtype /Type1', $font->fontObjectContents(8));
     }
 
+    public function testItExposesFontStreamDictionaryAndDataSeparately(): void
+    {
+        $fontBytes = TrueTypeFontFixture::minimalTrueTypeFontBytes();
+        $font = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromString($fontBytes),
+        );
+
+        self::assertSame(
+            '<< /Length ' . strlen($fontBytes) . ' /Length1 ' . strlen($fontBytes) . ' >>',
+            $font->fontFileStreamDictionaryContents(),
+        );
+        self::assertSame($fontBytes, $font->fontFileStreamData());
+        self::assertStringStartsWith($font->fontFileStreamDictionaryContents() . "\nstream\n", $font->fontFileStreamContents());
+    }
+
     public function testItSupportsUnicodeTextForCffOpenTypeFonts(): void
     {
         $font = EmbeddedFontDefinition::fromSource(
@@ -98,6 +114,26 @@ final class EmbeddedFontDefinitionTest extends TestCase
         $contents = $font->unicodeCidFontObjectContentsForGlyphs(8, 9, $glyphs);
 
         self::assertStringContainsString('/W [1 [690]]', $contents);
+    }
+
+    public function testItExposesUnicodeSubsetStreamsSeparately(): void
+    {
+        $font = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+        );
+        $glyphs = $font->embeddedGlyphsForCodePoints([0x0416, 0x4E2D]);
+
+        self::assertStringStartsWith('<< /Length ', $font->unicodeSubsetFontFileStreamDictionaryContentsForGlyphs($glyphs));
+        self::assertStringContainsString('/Length1 ', $font->unicodeSubsetFontFileStreamDictionaryContentsForGlyphs($glyphs));
+        self::assertNotSame('', $font->unicodeSubsetFontFileStreamDataForGlyphs($glyphs));
+        self::assertSame('<< /Length 6 >>', $font->unicodeCidToGidMapStreamDictionaryContentsForGlyphs($glyphs));
+        self::assertSame(
+            pack('n', 0) . pack('n', $glyphs[0]->glyphId) . pack('n', $glyphs[1]->glyphId),
+            $font->unicodeCidToGidMapStreamDataForGlyphs($glyphs),
+        );
+        self::assertStringStartsWith('<< /Length ', $font->unicodeToUnicodeStreamDictionaryContentsForGlyphs($glyphs));
+        self::assertStringContainsString('<0001> <0416>', $font->unicodeToUnicodeStreamDataForGlyphs($glyphs));
+        self::assertStringContainsString('<0002> <4E2D>', $font->unicodeToUnicodeStreamDataForGlyphs($glyphs));
     }
 
     private function extractLength(string $stream): int

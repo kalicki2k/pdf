@@ -531,7 +531,7 @@ final readonly class EmbeddedFontDefinition
             $cid = $index + 1;
             $byteIndex = intdiv($cid, 8);
             $bitMask = 1 << (7 - ($cid % 8));
-            $cidSet[$byteIndex] = $cidSet[$byteIndex] | chr($bitMask);
+            $cidSet[$byteIndex] = $cidSet[$byteIndex] | pack('C', $bitMask);
         }
 
         return $cidSet;

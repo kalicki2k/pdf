@@ -25,6 +25,29 @@ final class ImageSourceTest extends TestCase
         self::assertSame(8, $source->bitsPerComponent);
     }
 
+    public function testItExposesImageDictionaryAndStreamContentsSeparately(): void
+    {
+        $source = new ImageSource(
+            width: 2,
+            height: 3,
+            colorSpace: ImageColorSpace::RGB,
+            bitsPerComponent: 8,
+            data: 'rgb-data',
+            filter: '/FlateDecode',
+            additionalDictionaryEntries: ['/Intent /Perceptual'],
+        );
+
+        self::assertSame(
+            '<< /Type /XObject /Subtype /Image /Width 2 /Height 3 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Intent /Perceptual /Length 8 >>',
+            $source->pdfObjectDictionaryContents(),
+        );
+        self::assertSame('rgb-data', $source->pdfObjectStreamContents());
+        self::assertSame(
+            "<<" . ' /Type /XObject /Subtype /Image /Width 2 /Height 3 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Intent /Perceptual /Length 8 >>' . "\nstream\nrgb-data\nendstream",
+            $source->pdfObjectContents(),
+        );
+    }
+
     public function testItCreatesAJpegImageSourceFromAFilePath(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
@@ -143,14 +166,15 @@ final class ImageSourceTest extends TestCase
         file_put_contents($path, PngFixture::tinyRgbaPngBytes());
 
         $source = ImageSource::fromPath($path);
+        $softMask = $source->softMask;
 
         self::assertSame(1, $source->width);
         self::assertSame(1, $source->height);
         self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
         self::assertSame('/FlateDecode', $source->filter);
-        self::assertNotNull($source->softMask);
-        self::assertSame(ImageColorSpace::GRAY, $source->softMask?->colorSpace);
-        self::assertSame('/FlateDecode', $source->softMask?->filter);
+        self::assertNotNull($softMask);
+        self::assertSame(ImageColorSpace::GRAY, $softMask->colorSpace);
+        self::assertSame('/FlateDecode', $softMask->filter);
 
         unlink($path);
     }
@@ -187,13 +211,14 @@ final class ImageSourceTest extends TestCase
         file_put_contents($path, PngFixture::tinyIndexedTransparentPngBytes());
 
         $source = ImageSource::fromPath($path);
+        $softMask = $source->softMask;
 
         self::assertSame(1, $source->width);
         self::assertSame(1, $source->height);
         self::assertStringContainsString('[/Indexed /DeviceRGB 0 <000000>]', $source->pdfObjectContents());
-        self::assertNotNull($source->softMask);
-        self::assertSame(ImageColorSpace::GRAY, $source->softMask?->colorSpace);
-        self::assertSame('/FlateDecode', $source->softMask?->filter);
+        self::assertNotNull($softMask);
+        self::assertSame(ImageColorSpace::GRAY, $softMask->colorSpace);
+        self::assertSame('/FlateDecode', $softMask->filter);
 
         unlink($path);
     }

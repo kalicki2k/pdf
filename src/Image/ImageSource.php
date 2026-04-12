@@ -7,9 +7,11 @@ namespace Kalle\Pdf\Image;
 use InvalidArgumentException;
 
 use function file_get_contents;
+use function get_debug_type;
 use function hash;
 use function implode;
 use function is_file;
+use function is_scalar;
 use function strlen;
 
 use RuntimeException;
@@ -91,7 +93,7 @@ final readonly class ImageSource
             ));
         }
 
-        return match ($imageInfo[2] ?? null) {
+        return match ($imageInfo[2]) {
             IMAGETYPE_JPEG => self::jpeg(
                 data: $data,
                 width: $imageInfo[0],
@@ -180,7 +182,7 @@ final readonly class ImageSource
         ]));
     }
 
-    public function pdfObjectContents(?int $softMaskObjectId = null): string
+    public function pdfObjectDictionaryContents(?int $softMaskObjectId = null): string
     {
         $entries = [
             '/Type /XObject',
@@ -205,8 +207,19 @@ final readonly class ImageSource
 
         $entries[] = '/Length ' . strlen($this->data);
 
-        return '<< ' . implode(' ', $entries) . " >>\nstream\n"
-            . $this->data
+        return '<< ' . implode(' ', $entries) . ' >>';
+    }
+
+    public function pdfObjectStreamContents(): string
+    {
+        return $this->data;
+    }
+
+    public function pdfObjectContents(?int $softMaskObjectId = null): string
+    {
+        return $this->pdfObjectDictionaryContents($softMaskObjectId)
+            . "\nstream\n"
+            . $this->pdfObjectStreamContents()
             . "\nendstream";
     }
 
@@ -224,7 +237,7 @@ final readonly class ImageSource
             default => throw new InvalidArgumentException(sprintf(
                 "JPEG image '%s' uses unsupported channel count '%s'.",
                 $path,
-                (string) $channels,
+                is_scalar($channels) ? (string) $channels : get_debug_type($channels),
             )),
         };
     }
