@@ -9,6 +9,7 @@ use function implode;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Table;
+use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableRow;
@@ -66,6 +67,30 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             "BT\n/F1 12 Tf\n" . $this->formatNumber($secondColumnX) . ' ' . $this->formatNumber($firstRowTextY) . ' Td',
             $page->contents,
         );
+    }
+
+    public function testItRendersATableCaptionBeforeTheHeaderAndBody(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(100.0),
+            TableColumn::fixed(100.0),
+        )
+            ->withCaption(TableCaption::text('Inventory summary')->withSpacingAfter(10.0))
+            ->withHeaderRows(TableRow::fromTexts('Name', 'Value'))
+            ->withRows(TableRow::fromTexts('Alpha', 'Beta'));
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->table($table)
+            ->build();
+
+        $contents = $document->pages[0]->contents;
+        $captionPositionSnippet = "BT\n/F1 12 Tf\n56.693 526.583 Td";
+        $headerPositionSnippet = "BT\n/F1 12 Tf\n60.693 498.183 Td";
+
+        self::assertStringContainsString($captionPositionSnippet, $contents);
+        self::assertStringContainsString($headerPositionSnippet, $contents);
+        self::assertLessThan(strpos($contents, $headerPositionSnippet), strpos($contents, $captionPositionSnippet));
     }
 
     public function testItAdvancesTheFlowCursorAfterARenderedTable(): void
@@ -197,6 +222,32 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         self::assertStringContainsString(
             $this->formatNumber($firstColumnX) . ' ' . $this->formatNumber($secondHeaderLineY) . ' Td',
             $document->pages[1]->contents,
+        );
+    }
+
+    public function testItRendersFooterRowsAfterTheBody(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(90.0),
+            TableColumn::fixed(90.0),
+        )
+            ->withRows(
+                TableRow::fromTexts('Alpha', '1'),
+                TableRow::fromTexts('Beta', '2'),
+            )
+            ->withFooterRows(
+                TableRow::fromTexts('Total', '3'),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->table($table)
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 12 Tf\n60.693 477.783 Td", $document->pages[0]->contents);
+        self::assertGreaterThan(
+            strpos($document->pages[0]->contents, "BT\n/F1 12 Tf\n60.693 500.183 Td"),
+            strpos($document->pages[0]->contents, "BT\n/F1 12 Tf\n60.693 477.783 Td"),
         );
     }
 

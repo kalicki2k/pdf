@@ -37,10 +37,11 @@ $document = DefaultDocumentBuilder::make()
 
 ## Links
 
-Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` an Link-Annotationen gebunden werden. Bei PDF/UA-Profilen dient der letzte Parameter aktuell zugleich als Annotation-`/Contents` und als Alternativtext fuer die Link-Struktur.
+Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Bei PDF/UA-Profilen dient der letzte Parameter aktuell zugleich als Annotation-`/Contents` und als Alternativtext fuer die Link-Struktur.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Text\TextSegment;
 
 $document = DefaultDocumentBuilder::make()
     ->text('Projektseite')
@@ -52,16 +53,22 @@ $document = DefaultDocumentBuilder::make()
     ->text('Zur Einleitung', new \Kalle\Pdf\Text\TextOptions(
         link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
     ))
+    ->textSegments([
+        new TextSegment('Docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+        new TextSegment(' und '),
+        new TextSegment('API', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/api')),
+    ])
     ->build();
 ```
 
 ## Tabellen
 
-Die erste Tabelleniteration unterstützt Textzellen mit festen oder proportionalen Spaltenbreiten, Padding, einfachen Borders, `colspan`/`rowspan`, optionale Header-Zeilen mit Wiederholung auf Folgeseiten und deterministische Seitenumbrüche zwischen ganzen Zeilen bzw. zusammenhängenden `rowspan`-Gruppen.
+Die erste Tabelleniteration unterstützt Textzellen mit festen oder proportionalen Spaltenbreiten, Padding, einfachen Borders, `colspan`/`rowspan`, optionale Caption- und Footer-Zeilen, optionale Header-Zeilen mit Wiederholung auf Folgeseiten und deterministische Seitenumbrüche zwischen ganzen Zeilen bzw. zusammenhängenden `rowspan`-Gruppen. Für Tagged-PDF-Profile wird zusätzlich eine minimale Tabellenstruktur mit `Table`, `Caption`, `TR`, `TH` und `TD` geschrieben.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Table;
+use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Layout\Table\CellPadding;
@@ -70,6 +77,7 @@ $table = Table::define(
     TableColumn::fixed(120),
     TableColumn::proportional(1),
 )
+    ->withCaption(TableCaption::text('Produktuebersicht'))
     ->withCellPadding(CellPadding::all(6))
     ->withHeaderRows(
         TableRow::fromTexts('Artikel', 'Beschreibung'),
@@ -83,6 +91,9 @@ $table = Table::define(
         TableRow::fromCells(
             \Kalle\Pdf\Document\TableCell::text('Mit zusammenhängender Zeilengruppe über zwei Tabellenzeilen.'),
         ),
+    )
+    ->withFooterRows(
+        TableRow::fromTexts('Summe', '2 Positionen'),
     );
 
 $document = DefaultDocumentBuilder::make()
@@ -159,6 +170,7 @@ veraPDF im Container ausführen:
 make verapdf-version
 make validate-pdfa PDF=var/example.pdf
 make validate-pdfua PDF=var/example.pdf
+make test-pdfa1b-regression
 make check-pdf PDF=var/example.pdf
 ```
 
@@ -167,6 +179,7 @@ Alternativ direkt über die Skripte:
 ```bash
 bin/validate-pdfa.sh var/example.pdf
 bin/validate-pdfua.sh var/example.pdf
+bin/test-pdfa1b-regression.sh
 ```
 
 Compose-Services starten:

@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function dirname;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\DocumentRenderer;
 use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Document\Table;
+use Kalle\Pdf\Document\TableCaption;
+use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
@@ -16,13 +22,13 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\LinkTarget;
+use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Writer\StringOutput;
 use PHPUnit\Framework\TestCase;
-
-use function dirname;
 
 final class DocumentRendererTest extends TestCase
 {
@@ -190,7 +196,7 @@ final class DocumentRendererTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->namedDestination('intro')
             ->text('Open intro', new TextOptions(
-                link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+                link: LinkTarget::namedDestination('intro'),
             ))
             ->build();
 
@@ -234,7 +240,7 @@ final class DocumentRendererTest extends TestCase
             ->title('Accessible Copy')
             ->language('de-DE')
             ->text('Read more', new TextOptions(
-                link: \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com'),
+                link: LinkTarget::externalUrl('https://example.com'),
             ))
             ->build();
 
@@ -254,9 +260,9 @@ final class DocumentRendererTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->textSegments([
-                new TextSegment('Docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment('Docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' und '),
-                new TextSegment('API', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/api')),
+                new TextSegment('API', LinkTarget::externalUrl('https://example.com/api')),
             ])
             ->build();
 
@@ -271,6 +277,73 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Contents (Docs)', $pdf);
         self::assertStringContainsString('/URI (https://example.com/api)', $pdf);
         self::assertStringContainsString('/Contents (API)', $pdf);
+    }
+
+    public function testItRendersMergedTaggedPdfUaTextSegmentsWithTheSameLink(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textSegments([
+                new TextSegment('Read', LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' docs', LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' now'),
+            ])
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertSame(1, substr_count($pdf, '/URI (https://example.com/docs)'));
+        self::assertSame(1, substr_count($pdf, '/Type /StructElem /S /Link'));
+        self::assertStringContainsString('/Contents (Read docs)', $pdf);
+    }
+
+    public function testItRendersTaggedPdfUaTablesWithCaptionHeaderAndCells(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(90.0),
+            TableColumn::fixed(90.0),
+        )
+            ->withCaption(TableCaption::text('Quarterly summary'))
+            ->withHeaderRows(TableRow::fromTexts('Label', 'Value'))
+            ->withRows(
+                TableRow::fromTexts('North', '12'),
+            )
+            ->withFooterRows(
+                TableRow::fromTexts('Total', '12'),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->table($table)
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/StructParents 0', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Table', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Caption', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /TR', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /TH', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /TD', $pdf);
+        self::assertStringContainsString('/Caption << /MCID ', $pdf);
+        self::assertStringContainsString('/TH << /MCID ', $pdf);
+        self::assertStringContainsString('/TD << /MCID ', $pdf);
+        self::assertStringContainsString('/Nums [0 [', $pdf);
     }
 
     public function testItRendersAMinimalPdfA1bRegressionDocumentWithARealRepoFont(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
@@ -22,9 +23,12 @@ final readonly class Document
     public ?string $creatorTool;
     public ?PdfAOutputIntent $pdfaOutputIntent;
     public ?Encryption $encryption;
+    /** @var list<TaggedTable> */
+    public array $taggedTables;
 
     /**
      * @param list<Page>|null $pages
+     * @param list<TaggedTable>|null $taggedTables
      */
     public function __construct(
         ?Profile $profile = null,
@@ -37,6 +41,7 @@ final readonly class Document
         ?string $creatorTool = null,
         ?PdfAOutputIntent $pdfaOutputIntent = null,
         ?Encryption $encryption = null,
+        ?array $taggedTables = null,
     ) {
         $this->profile = $profile ?? Profile::standard();
         $this->pages = $pages ?? [new Page(PageSize::A4())];
@@ -48,6 +53,7 @@ final readonly class Document
         $this->creatorTool = $creatorTool;
         $this->pdfaOutputIntent = $pdfaOutputIntent;
         $this->encryption = $encryption;
+        $this->taggedTables = $taggedTables ?? [];
     }
 
     public function version(): float

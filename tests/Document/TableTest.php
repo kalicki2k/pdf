@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Table;
+use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableRow;
@@ -72,5 +73,20 @@ final class TableTest extends TestCase
 
         self::assertCount(1, $table->headerRows);
         self::assertTrue($table->repeatHeaderOnPageBreak);
+    }
+
+    public function testItStoresCaptionAndFooterRowsExplicitly(): void
+    {
+        $caption = TableCaption::text('Quarterly overview')->withSpacingAfter(8.0);
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )
+            ->withCaption($caption)
+            ->withRows(TableRow::fromTexts('A', 'B'))
+            ->withFooterRows(TableRow::fromTexts('Total', '2'));
+
+        self::assertSame($caption, $table->caption);
+        self::assertCount(1, $table->footerRows);
     }
 }

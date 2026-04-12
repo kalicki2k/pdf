@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function count;
+
 use DateTimeImmutable;
 
-use function count;
 use function implode;
-use function sprintf;
 
 use InvalidArgumentException;
 
@@ -20,15 +20,17 @@ use Kalle\Pdf\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Document\TaggedPdf\ParentTree;
 use Kalle\Pdf\Document\TaggedPdf\StructElem;
 use Kalle\Pdf\Document\TaggedPdf\StructTreeRoot;
-use Kalle\Pdf\Encryption\EncryptionProfileResolver;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Encryption\EncryptDictionaryBuilder;
+use Kalle\Pdf\Encryption\EncryptionProfileResolver;
 use Kalle\Pdf\Encryption\ObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandler;
 use Kalle\Pdf\Font\OpenTypeOutlineType;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\LinkAnnotation;
-use Kalle\Pdf\Page\NamedDestination;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
@@ -36,7 +38,9 @@ use Kalle\Pdf\Writer\DocumentSerializationPlan;
 use Kalle\Pdf\Writer\FileStructure;
 use Kalle\Pdf\Writer\IndirectObject;
 use Kalle\Pdf\Writer\Trailer;
+use Random\RandomException;
 
+use function sprintf;
 use function str_replace;
 
 /**
@@ -137,21 +141,58 @@ final class DocumentSerializationPlanBuilder
             }
         }
 
-        $taggedImageStructure = $this->collectTaggedImageStructure($document);
-        $taggedLinkStructure = $this->collectTaggedLinkStructure($document, $taggedImageStructure['nextStructParentId']);
+        $taggedImageStructure = $this->collectTaggedFigureStructure($document);
+        $taggedTableStructure = $this->collectTaggedTableStructure($document);
+        $taggedPageContentKeys = $this->mergeTaggedPageContentKeys(
+            $taggedImageStructure['pageMarkedContentKeys'],
+            $taggedTableStructure['pageMarkedContentKeys'],
+        );
+        $pageStructParentIds = $this->assignPageStructParentIds($taggedPageContentKeys);
+        $taggedLinkStructure = $this->collectTaggedLinkStructure($document, count($pageStructParentIds));
         $namedDestinations = $this->collectNamedDestinations($document);
         $structTreeRootObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
         $documentStructElemObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
-        $parentTreeObjectId = ($taggedImageStructure['parentTreeEntries'] !== [] || $taggedLinkStructure['parentTreeEntries'] !== [])
+        $parentTreeObjectId = ($taggedPageContentKeys !== [] || $taggedLinkStructure['parentTreeEntries'] !== [])
             ? $nextObjectId++
             : null;
         /** @var array<string, int> $figureStructElemObjectIds */
         $figureStructElemObjectIds = [];
+        /** @var array<string, int> $tableStructElemObjectIds */
+        $tableStructElemObjectIds = [];
+        /** @var array<string, int> $captionStructElemObjectIds */
+        $captionStructElemObjectIds = [];
+        /** @var array<string, int> $rowStructElemObjectIds */
+        $rowStructElemObjectIds = [];
+        /** @var array<string, int> $cellStructElemObjectIds */
+        $cellStructElemObjectIds = [];
         /** @var array<string, int> $linkStructElemObjectIds */
         $linkStructElemObjectIds = [];
 
         foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
             $figureStructElemObjectIds[$figureEntry['key']] = $nextObjectId++;
+        }
+
+        foreach ($document->taggedTables as $taggedTable) {
+            $tableStructElemObjectIds[$this->taggedTableKey($taggedTable->tableId)] = $nextObjectId++;
+
+            if ($taggedTable->hasCaption()) {
+                $captionStructElemObjectIds[$this->taggedTableCaptionKey($taggedTable->tableId)] = $nextObjectId++;
+            }
+
+            foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
+                foreach ($rows as $row) {
+                    $rowStructElemObjectIds[$this->taggedTableRowKey($taggedTable->tableId, $section, $row->rowIndex)] = $nextObjectId++;
+
+                    foreach ($row->cells as $cell) {
+                        $cellStructElemObjectIds[$this->taggedTableCellKey(
+                            $taggedTable->tableId,
+                            $section,
+                            $row->rowIndex,
+                            $cell->columnIndex,
+                        )] = $nextObjectId++;
+                    }
+                }
+            }
         }
 
         foreach ($taggedLinkStructure['linkEntries'] as $linkEntry) {
@@ -216,7 +257,7 @@ final class DocumentSerializationPlanBuilder
                 . $contentObjectId . ' 0 R'
                 . $this->buildPageAnnotationsEntry($annotationObjectIds)
                 . $this->buildAnnotationTabOrderEntry($document, $annotationObjectIds)
-                . $this->buildStructParentsEntry($taggedImageStructure['pageStructParentIds'][$index] ?? null)
+                . $this->buildStructParentsEntry($pageStructParentIds[$index] ?? null)
                 . ' >>',
             );
             $objects[] = IndirectObject::stream(
@@ -335,6 +376,10 @@ final class DocumentSerializationPlanBuilder
                 $documentKidObjectIds[] = $figureStructElemObjectIds[$figureEntry['key']];
             }
 
+            foreach ($document->taggedTables as $taggedTable) {
+                $documentKidObjectIds[] = $tableStructElemObjectIds[$this->taggedTableKey($taggedTable->tableId)];
+            }
+
             foreach ($taggedLinkStructure['linkEntries'] as $linkEntry) {
                 $documentKidObjectIds[] = $linkStructElemObjectIds[$linkEntry['key']];
             }
@@ -351,10 +396,22 @@ final class DocumentSerializationPlanBuilder
             if ($parentTreeObjectId !== null) {
                 $parentTreeEntries = [];
 
-                foreach ($taggedImageStructure['parentTreeEntries'] as $structParentId => $figureKeys) {
+                foreach ($pageStructParentIds as $pageIndex => $structParentId) {
+                    $pageKeys = $taggedPageContentKeys[$pageIndex] ?? [];
+
+                    if ($pageKeys === []) {
+                        continue;
+                    }
+
+                    ksort($pageKeys);
                     $parentTreeEntries[$structParentId] = array_map(
-                        static fn (string $key): int => $figureStructElemObjectIds[$key],
-                        $figureKeys,
+                        fn (string $key): int => $this->taggedPageContentObjectId(
+                            $key,
+                            $figureStructElemObjectIds,
+                            $captionStructElemObjectIds,
+                            $cellStructElemObjectIds,
+                        ),
+                        array_values($pageKeys),
                     );
                 }
 
@@ -379,6 +436,75 @@ final class DocumentSerializationPlanBuilder
                         markedContentId: $figureEntry['markedContentId'],
                     ))->objectContents(),
                 );
+            }
+
+            foreach ($document->taggedTables as $taggedTable) {
+                $tableStructKey = $this->taggedTableKey($taggedTable->tableId);
+                $tableKidObjectIds = [];
+
+                if ($taggedTable->hasCaption()) {
+                    $tableKidObjectIds[] = $captionStructElemObjectIds[$this->taggedTableCaptionKey($taggedTable->tableId)];
+                }
+
+                foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
+                    foreach ($rows as $row) {
+                        $tableKidObjectIds[] = $rowStructElemObjectIds[$this->taggedTableRowKey(
+                            $taggedTable->tableId,
+                            $section,
+                            $row->rowIndex,
+                        )];
+                    }
+                }
+
+                $objects[] = new IndirectObject(
+                    $tableStructElemObjectIds[$tableStructKey],
+                    (new StructElem('Table', $documentStructElemObjectId, $tableKidObjectIds))->objectContents(),
+                );
+
+                if ($taggedTable->hasCaption()) {
+                    $captionKey = $this->taggedTableCaptionKey($taggedTable->tableId);
+                    $objects[] = new IndirectObject(
+                        $captionStructElemObjectIds[$captionKey],
+                        (new StructElem(
+                            'Caption',
+                            $tableStructElemObjectIds[$tableStructKey],
+                            kidEntries: $this->taggedMarkedContentKidEntries($taggedTable->captionReferences, $pageObjectIds),
+                        ))->objectContents(),
+                    );
+                }
+
+                foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
+                    foreach ($rows as $row) {
+                        $rowKey = $this->taggedTableRowKey($taggedTable->tableId, $section, $row->rowIndex);
+                        $rowKidObjectIds = [];
+
+                        foreach ($row->cells as $cell) {
+                            $rowKidObjectIds[] = $cellStructElemObjectIds[$this->taggedTableCellKey(
+                                $taggedTable->tableId,
+                                $section,
+                                $row->rowIndex,
+                                $cell->columnIndex,
+                            )];
+                        }
+
+                        $objects[] = new IndirectObject(
+                            $rowStructElemObjectIds[$rowKey],
+                            (new StructElem('TR', $tableStructElemObjectIds[$tableStructKey], $rowKidObjectIds))->objectContents(),
+                        );
+
+                        foreach ($row->cells as $cell) {
+                            $cellKey = $this->taggedTableCellKey($taggedTable->tableId, $section, $row->rowIndex, $cell->columnIndex);
+                            $objects[] = new IndirectObject(
+                                $cellStructElemObjectIds[$cellKey],
+                                (new StructElem(
+                                    $cell->header ? 'TH' : 'TD',
+                                    $rowStructElemObjectIds[$rowKey],
+                                    kidEntries: $this->taggedMarkedContentKidEntries($cell->contentReferences, $pageObjectIds),
+                                ))->objectContents(),
+                            );
+                        }
+                    }
+                }
             }
 
             foreach ($taggedLinkStructure['linkEntries'] as $linkEntry) {
@@ -629,8 +755,7 @@ final class DocumentSerializationPlanBuilder
         ?int $iccProfileObjectId,
         ?int $structTreeRootObjectId,
         array $namedDestinations,
-    ): string
-    {
+    ): string {
         $entries = [
             '/Type /Catalog',
             '/Pages 2 0 R',
@@ -714,28 +839,22 @@ final class DocumentSerializationPlanBuilder
     /**
      * @return array{
      *   figureEntries: list<array{key: string, pageIndex: int, markedContentId: int, altText: ?string}>,
-     *   parentTreeEntries: array<int, list<string>>,
-     *   pageStructParentIds: array<int, int>,
-     *   nextStructParentId: int
+     *   pageMarkedContentKeys: array<int, array<int, string>>
      * }
      */
-    private function collectTaggedImageStructure(Document $document): array
+    private function collectTaggedFigureStructure(Document $document): array
     {
         $figureEntries = [];
-        $parentTreeEntries = [];
-        $pageStructParentIds = [];
-        $nextStructParentId = 0;
+        $pageMarkedContentKeys = [];
 
         foreach ($document->pages as $pageIndex => $page) {
-            $pageFigureKeys = [];
-
             foreach ($page->images as $imageIndex => $pageImage) {
                 if ($pageImage->markedContentId === null) {
                     continue;
                 }
 
-                $key = $pageIndex . ':' . $imageIndex;
-                $pageFigureKeys[$pageImage->markedContentId] = $key;
+                $key = 'figure:' . $pageIndex . ':' . $imageIndex;
+                $pageMarkedContentKeys[$pageIndex][$pageImage->markedContentId] = $key;
                 $figureEntries[] = [
                     'key' => $key,
                     'pageIndex' => $pageIndex,
@@ -743,23 +862,92 @@ final class DocumentSerializationPlanBuilder
                     'altText' => $pageImage->accessibility?->altText,
                 ];
             }
-
-            if ($pageFigureKeys === []) {
-                continue;
-            }
-
-            ksort($pageFigureKeys);
-            $pageStructParentIds[$pageIndex] = $nextStructParentId;
-            $parentTreeEntries[$nextStructParentId] = array_values($pageFigureKeys);
-            $nextStructParentId++;
         }
 
         return [
             'figureEntries' => $figureEntries,
-            'parentTreeEntries' => $parentTreeEntries,
-            'pageStructParentIds' => $pageStructParentIds,
-            'nextStructParentId' => $nextStructParentId,
+            'pageMarkedContentKeys' => $pageMarkedContentKeys,
         ];
+    }
+
+    /**
+     * @return array{
+     *   pageMarkedContentKeys: array<int, array<int, string>>
+     * }
+     */
+    private function collectTaggedTableStructure(Document $document): array
+    {
+        $pageMarkedContentKeys = [];
+
+        foreach ($document->taggedTables as $taggedTable) {
+            foreach ($taggedTable->captionReferences as $reference) {
+                $pageMarkedContentKeys[$reference->pageIndex][$reference->markedContentId] = $this->taggedTableCaptionKey($taggedTable->tableId);
+            }
+
+            foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
+                foreach ($rows as $row) {
+                    foreach ($row->cells as $cell) {
+                        $cellKey = $this->taggedTableCellKey($taggedTable->tableId, $section, $row->rowIndex, $cell->columnIndex);
+
+                        foreach ($cell->contentReferences as $reference) {
+                            $pageMarkedContentKeys[$reference->pageIndex][$reference->markedContentId] = $cellKey;
+                        }
+                    }
+                }
+            }
+        }
+
+        return [
+            'pageMarkedContentKeys' => $pageMarkedContentKeys,
+        ];
+    }
+
+    /**
+     * @param array<int, array<int, string>> $left
+     * @param array<int, array<int, string>> $right
+     * @return array<int, array<int, string>>
+     */
+    private function mergeTaggedPageContentKeys(array $left, array $right): array
+    {
+        $merged = $left;
+
+        foreach ($right as $pageIndex => $pageKeys) {
+            foreach ($pageKeys as $markedContentId => $key) {
+                if (isset($merged[$pageIndex][$markedContentId])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Duplicate marked-content id %d on page %d.',
+                        $markedContentId,
+                        $pageIndex + 1,
+                    ));
+                }
+
+                $merged[$pageIndex][$markedContentId] = $key;
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
+     * @param array<int, array<int, string>> $pageMarkedContentKeys
+     * @return array<int, int>
+     */
+    private function assignPageStructParentIds(array $pageMarkedContentKeys): array
+    {
+        $pageStructParentIds = [];
+        $nextStructParentId = 0;
+        ksort($pageMarkedContentKeys);
+
+        foreach ($pageMarkedContentKeys as $pageIndex => $pageKeys) {
+            if ($pageKeys === []) {
+                continue;
+            }
+
+            $pageStructParentIds[$pageIndex] = $nextStructParentId;
+            $nextStructParentId++;
+        }
+
+        return $pageStructParentIds;
     }
 
     /**
@@ -832,6 +1020,72 @@ final class DocumentSerializationPlanBuilder
         }
 
         return $destinations;
+    }
+
+    /**
+     * @return array<string, list<TaggedTableRow>>
+     */
+    private function taggedTableSections(TaggedTable $taggedTable): array
+    {
+        return [
+            'header' => $taggedTable->headerRows,
+            'body' => $taggedTable->bodyRows,
+            'footer' => $taggedTable->footerRows,
+        ];
+    }
+
+    private function taggedTableKey(int $tableId): string
+    {
+        return 'table:' . $tableId;
+    }
+
+    private function taggedTableCaptionKey(int $tableId): string
+    {
+        return 'table:' . $tableId . ':caption';
+    }
+
+    private function taggedTableRowKey(int $tableId, string $section, int $rowIndex): string
+    {
+        return 'table:' . $tableId . ':' . $section . ':row:' . $rowIndex;
+    }
+
+    private function taggedTableCellKey(int $tableId, string $section, int $rowIndex, int $columnIndex): string
+    {
+        return 'table:' . $tableId . ':' . $section . ':cell:' . $rowIndex . ':' . $columnIndex;
+    }
+
+    /**
+     * @param array<string, int> $figureStructElemObjectIds
+     * @param array<string, int> $captionStructElemObjectIds
+     * @param array<string, int> $cellStructElemObjectIds
+     */
+    private function taggedPageContentObjectId(
+        string $key,
+        array $figureStructElemObjectIds,
+        array $captionStructElemObjectIds,
+        array $cellStructElemObjectIds,
+    ): int {
+        return $figureStructElemObjectIds[$key]
+            ?? $captionStructElemObjectIds[$key]
+            ?? $cellStructElemObjectIds[$key]
+            ?? throw new InvalidArgumentException("Unknown tagged page content key '$key'.");
+    }
+
+    /**
+     * @param list<TaggedTableContentReference> $references
+     * @param list<int> $pageObjectIds
+     * @return list<string>
+     */
+    private function taggedMarkedContentKidEntries(array $references, array $pageObjectIds): array
+    {
+        return array_map(
+            static fn (TaggedTableContentReference $reference): string => '<< /Type /MCR /Pg '
+                . $pageObjectIds[$reference->pageIndex]
+                . ' 0 R /MCID '
+                . $reference->markedContentId
+                . ' >>',
+            $references,
+        );
     }
 
     /**
@@ -937,7 +1191,7 @@ final class DocumentSerializationPlanBuilder
     {
         try {
             return bin2hex(random_bytes(16));
-        } catch (\Random\RandomException) {
+        } catch (RandomException) {
             return md5(uniqid((string) mt_rand(), true));
         }
     }

@@ -12,6 +12,10 @@ use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 
@@ -46,8 +50,8 @@ use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
 use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextAlign;
-
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 use Kalle\Pdf\Writer\FileOutput;
 
@@ -78,6 +82,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /** @var list<NamedDestination> */
     private array $currentPageNamedDestinations = [];
     private int $currentPageNextMarkedContentId = 0;
+    /** @var array<int, array{captionReferences: list<array{pageIndex: int, markedContentId: int}>, headerRows: array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}>, bodyRows: array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}>, footerRows: array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}>}> */
+    private array $taggedTables = [];
+    private int $nextTaggedTableId = 0;
     private ?Margin $currentPageMargin = null;
     private ?float $currentPageCursorY = null;
     private ?Color $currentPageBackgroundColor = null;
@@ -238,6 +245,49 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->text($text, $options);
     }
 
+    public function textSegments(array $segments, ?TextOptions $options = null): DocumentBuilder
+    {
+        $clone = clone $this;
+        $options ??= new TextOptions();
+
+        if ($segments === []) {
+            return $clone;
+        }
+
+        $text = implode('', array_map(
+            static fn (TextSegment $segment): string => $segment->text,
+            $segments,
+        ));
+        $font = $options->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
+            : StandardFontDefinition::from($options->fontName);
+        $textFlow = $clone->textFlow();
+        $placement = $textFlow->placement($options, $font);
+        $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
+        $renderState = $clone->prepareTextRenderState($text, $options, $font, []);
+        $textResult = $clone->buildWrappedTextSegmentsContent(
+            $wrappedSegmentLines,
+            $options,
+            $textFlow,
+            $placement['x'],
+            $placement['y'],
+            $renderState['fontAlias'],
+            $font,
+            $renderState['embeddedPageFont'],
+            $renderState['useHexString'],
+            ($this->profile ?? Profile::standard())->version(),
+        );
+
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $textResult['contents'],
+        );
+        $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
+        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedSegmentLines));
+
+        return $clone;
+    }
+
     public function table(Table $table): DocumentBuilder
     {
         if ($table->rows === []) {
@@ -253,13 +303,40 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $page = $clone->buildCurrentPage();
         $contentArea = $page->contentArea();
         $columnWidths = $calculator->resolveColumnWidths($table, $contentArea->width());
+        $captionLayout = $table->caption === null
+            ? null
+            : $clone->layoutTableCaption($table, new TextFlow($page), $font, $contentArea->width());
         $headerLayout = $table->headerRows === []
             ? null
             : $calculator->layoutRows($table->headerRows, $table, $columnWidths, new TextFlow($page), $font);
         $tableLayout = $calculator->layoutTable($table, $columnWidths, new TextFlow($page), $font);
+        $footerLayout = $table->footerRows === []
+            ? null
+            : $calculator->layoutRows($table->footerRows, $table, $columnWidths, new TextFlow($page), $font);
+        $taggedTableId = ($clone->profile ?? Profile::standard())->requiresTaggedPdf()
+            ? $clone->registerTaggedTable($headerLayout, $tableLayout, $footerLayout)
+            : null;
         $cursorY = $clone->currentPageCursorY ?? $contentArea->top;
         $headerRenderedOnCurrentPage = false;
         $minimumTableSegmentHeight = $table->cellPadding->vertical() + $clone->lineHeightForTable($table);
+        $minimumTableStartHeight = $minimumTableSegmentHeight + ($headerLayout?->totalHeight() ?? 0.0);
+
+        if ($captionLayout !== null) {
+            if (($captionLayout['height'] + $minimumTableStartHeight) > $contentArea->height()) {
+                throw new InvalidArgumentException('Table caption leaves no space for table content on a fresh page.');
+            }
+
+            if (($captionLayout['height'] + $minimumTableStartHeight) > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
+                $clone->startOverflowPage();
+                $page = $clone->buildCurrentPage();
+                $contentArea = $page->contentArea();
+                $cursorY = $contentArea->top;
+            }
+
+            $clone->renderTableCaption($captionLayout, $table->caption, $font, $cursorY, $contentArea->left, $taggedTableId);
+            $cursorY -= $captionLayout['height'];
+            $clone->currentPageCursorY = $cursorY;
+        }
 
         if ($headerLayout !== null) {
             if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
@@ -269,7 +346,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $cursorY = $contentArea->top;
             }
 
-            $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left);
+            $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left, $taggedTableId, 'header');
             $cursorY -= $headerLayout->totalHeight();
             $clone->currentPageCursorY = $cursorY;
             $headerRenderedOnCurrentPage = true;
@@ -306,7 +383,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         throw new InvalidArgumentException('Repeated table headers leave no space for table content on the page.');
                     }
 
-                    $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left);
+                    $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left, $taggedTableId, 'header');
                     $cursorY -= $headerLayout->totalHeight();
                     $clone->currentPageCursorY = $cursorY;
                     $headerRenderedOnCurrentPage = true;
@@ -332,6 +409,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $contentArea->left,
                     $segmentOffset,
                     $segmentHeight,
+                    $taggedTableId,
+                    'body',
                 );
                 $segmentOffset += $segmentHeight;
                 $cursorY -= $segmentHeight;
@@ -345,6 +424,36 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $headerRenderedOnCurrentPage = false;
                 }
             }
+        }
+
+        if ($footerLayout !== null) {
+            $headerHeight = !$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak
+                ? $headerLayout->totalHeight()
+                : 0.0;
+            $requiredHeight = $footerLayout->totalHeight() + $headerHeight;
+
+            if ($requiredHeight > $contentArea->height()) {
+                throw new InvalidArgumentException('Table footer rows must fit on a fresh page.');
+            }
+
+            if ($requiredHeight > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
+                $clone->startOverflowPage();
+                $page = $clone->buildCurrentPage();
+                $contentArea = $page->contentArea();
+                $cursorY = $contentArea->top;
+                $headerRenderedOnCurrentPage = false;
+            }
+
+            if (!$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak) {
+                $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left, $taggedTableId, 'header');
+                $cursorY -= $headerLayout->totalHeight();
+                $clone->currentPageCursorY = $cursorY;
+                $headerRenderedOnCurrentPage = true;
+            }
+
+            $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $contentArea->left, $taggedTableId, 'footer');
+            $cursorY -= $footerLayout->totalHeight();
+            $clone->currentPageCursorY = $cursorY;
         }
 
         return $clone;
@@ -530,6 +639,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             creatorTool: $this->creatorTool,
             pdfaOutputIntent: $this->pdfaOutputIntent,
             encryption: $this->encryption,
+            taggedTables: $this->buildTaggedTables(),
         );
     }
 
@@ -641,6 +751,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?PageFont $embeddedPageFont,
         bool $useHexString,
         float $pdfVersion,
+        ?string $markedContentTag = null,
+        ?int $markedContentId = null,
     ): array {
         $contents = [];
         $annotations = [];
@@ -734,10 +846,221 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
         }
 
+        $contentsString = implode("\n", $contents);
+
+        if ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
+            $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
+        }
+
+        return [
+            'contents' => $contentsString,
+            'annotations' => $annotations,
+        ];
+    }
+
+    /**
+     * @param list<list<TextSegment>> $wrappedSegmentLines
+     * @return array{contents: string, annotations: list<PageAnnotation>}
+     */
+    private function buildWrappedTextSegmentsContent(
+        array $wrappedSegmentLines,
+        TextOptions $options,
+        TextFlow $textFlow,
+        float $x,
+        float $y,
+        string $fontAlias,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        ?PageFont $embeddedPageFont,
+        bool $useHexString,
+        float $pdfVersion,
+    ): array {
+        $contents = [];
+        $annotations = [];
+        $availableWidth = $textFlow->availableTextWidthFrom($x, $options);
+
+        foreach ($wrappedSegmentLines as $index => $lineSegments) {
+            if ($lineSegments === []) {
+                continue;
+            }
+
+            $runY = $y - ($textFlow->lineHeight($options) * $index);
+            $isFirstLineOfParagraph = $this->isFirstSegmentLineOfParagraph($wrappedSegmentLines, $index);
+            $lineBaseX = $textFlow->lineX($x, $options, $isFirstLineOfParagraph);
+            $lineEntries = [];
+
+            foreach ($lineSegments as $segment) {
+                if ($segment->text === '') {
+                    continue;
+                }
+
+                $segmentOptions = $this->textOptionsWithLink($options, $segment->link);
+                $segmentRuns = $this->textShaper()->shape($segment->text, $segmentOptions->baseDirection, $font);
+
+                foreach ($segmentRuns as $run) {
+                    $mappedRun = $this->fontRunMapper()->map(
+                        $run,
+                        $font,
+                        $segmentOptions,
+                        $pdfVersion,
+                        $embeddedPageFont,
+                        $useHexString,
+                    );
+
+                    if ($mappedRun->text === '') {
+                        continue;
+                    }
+
+                    $lineEntries[] = [
+                        'mappedRun' => $mappedRun,
+                        'link' => $segment->link,
+                    ];
+                }
+            }
+
+            if ($lineEntries === []) {
+                continue;
+            }
+
+            $mappedRuns = array_map(
+                static fn (array $entry): MappedTextRun => $entry['mappedRun'],
+                $lineEntries,
+            );
+            $lineWidth = $this->lineWidth($mappedRuns);
+            $lineIndent = $isFirstLineOfParagraph
+                ? max($options->firstLineIndent, 0.0)
+                : max($options->hangingIndent, 0.0);
+            $lineAvailableWidth = $options->width !== null
+                ? max($availableWidth - $lineIndent, 0.0)
+                : $textFlow->availableTextWidthFrom($lineBaseX, $options);
+            $remainingWidth = max($lineAvailableWidth - $lineWidth, 0.0);
+            $runX = $this->alignedLineX($options->align, $lineBaseX, $remainingWidth);
+
+            if ($options->align === TextAlign::JUSTIFY && $this->shouldJustifySegmentLine($wrappedSegmentLines, $index)) {
+                $mappedRuns = $this->justifyMappedRuns($mappedRuns, $remainingWidth, $options);
+
+                foreach ($mappedRuns as $mappedRunIndex => $mappedRun) {
+                    $lineEntries[$mappedRunIndex]['mappedRun'] = $mappedRun;
+                }
+            }
+
+            $renderedEntries = [];
+
+            foreach ($lineEntries as $lineEntry) {
+                /** @var MappedTextRun $mappedRun */
+                $mappedRun = $lineEntry['mappedRun'];
+                /** @var ?LinkTarget $link */
+                $link = $lineEntry['link'];
+                $renderedEntries[] = [
+                    'mappedRun' => $mappedRun,
+                    'link' => $link,
+                    'x' => $runX,
+                    'textBlockContent' => $this->textBlockBuilder()->build(
+                        $mappedRun->encodedText,
+                        $options,
+                        $runX,
+                        $runY,
+                        $fontAlias,
+                        $font,
+                        $mappedRun->glyphNames,
+                        $mappedRun->textAdjustments,
+                        $mappedRun->positionedFragments,
+                        $mappedRun->useHexString,
+                    ),
+                ];
+                $runX += $mappedRun->width;
+            }
+
+            foreach ($this->mergeRenderedSegmentEntries($renderedEntries) as $renderedEntry) {
+                /** @var ?LinkTarget $link */
+                $link = $renderedEntry['link'];
+                $textBlockContent = $renderedEntry['textBlockContent'];
+
+                if ($link !== null && $renderedEntry['width'] > 0.0) {
+                    $linkResult = $this->buildLinkedTextRunContent(
+                        $link,
+                        $renderedEntry['text'],
+                        $textBlockContent,
+                        $renderedEntry['x'],
+                        $runY,
+                        $renderedEntry['width'],
+                        $textFlow->lineHeight($options),
+                        $font->ascent($options->fontSize),
+                    );
+                    $textBlockContent = $linkResult['contents'];
+                    $annotations[] = $linkResult['annotation'];
+                }
+
+                $contents[] = $textBlockContent;
+            }
+        }
+
         return [
             'contents' => implode("\n", $contents),
             'annotations' => $annotations,
         ];
+    }
+
+    /**
+     * @param list<array{mappedRun: MappedTextRun, link: ?LinkTarget, x: float, textBlockContent: string}> $renderedEntries
+     * @return list<array{link: ?LinkTarget, x: float, width: float, text: string, textBlockContent: string}>
+     */
+    private function mergeRenderedSegmentEntries(array $renderedEntries): array
+    {
+        $mergedEntries = [];
+
+        foreach ($renderedEntries as $renderedEntry) {
+            /** @var MappedTextRun $mappedRun */
+            $mappedRun = $renderedEntry['mappedRun'];
+            /** @var ?LinkTarget $link */
+            $link = $renderedEntry['link'];
+            $lastIndex = array_key_last($mergedEntries);
+
+            if (
+                $lastIndex !== null
+                && $link !== null
+                && $mergedEntries[$lastIndex]['link'] !== null
+                && $this->sameLinkTarget($mergedEntries[$lastIndex]['link'], $link)
+            ) {
+                $mergedEntries[$lastIndex]['width'] += $mappedRun->width;
+                $mergedEntries[$lastIndex]['text'] .= $mappedRun->text;
+                $mergedEntries[$lastIndex]['textBlockContent'] .= "\n" . $renderedEntry['textBlockContent'];
+
+                continue;
+            }
+
+            $mergedEntries[] = [
+                'link' => $link,
+                'x' => $renderedEntry['x'],
+                'width' => $mappedRun->width,
+                'text' => $mappedRun->text,
+                'textBlockContent' => $renderedEntry['textBlockContent'],
+            ];
+        }
+
+        return $mergedEntries;
+    }
+
+    private function sameLinkTarget(LinkTarget $left, LinkTarget $right): bool
+    {
+        if ($left->isExternalUrl() && $right->isExternalUrl()) {
+            return $left->externalUrlValue() === $right->externalUrlValue();
+        }
+
+        if ($left->isNamedDestination() && $right->isNamedDestination()) {
+            return $left->namedDestinationValue() === $right->namedDestinationValue();
+        }
+
+        if ($left->isPage() && $right->isPage()) {
+            return $left->pageNumberValue() === $right->pageNumberValue();
+        }
+
+        if ($left->isPosition() && $right->isPosition()) {
+            return $left->pageNumberValue() === $right->pageNumberValue()
+                && $left->xValue() === $right->xValue()
+                && $left->yValue() === $right->yValue();
+        }
+
+        return false;
     }
 
     /**
@@ -776,6 +1099,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
+     * @param list<list<TextSegment>> $wrappedLines
+     */
+    private function shouldJustifySegmentLine(array $wrappedLines, int $lineIndex): bool
+    {
+        if (!isset($wrappedLines[$lineIndex + 1])) {
+            return false;
+        }
+
+        return $wrappedLines[$lineIndex] !== [] && $wrappedLines[$lineIndex + 1] !== [];
+    }
+
+    /**
      * @param list<string> $wrappedLines
      */
     private function isFirstLineOfParagraph(array $wrappedLines, int $lineIndex): bool
@@ -785,6 +1120,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return ($wrappedLines[$lineIndex - 1] ?? '') === '';
+    }
+
+    /**
+     * @param list<list<TextSegment>> $wrappedLines
+     */
+    private function isFirstSegmentLineOfParagraph(array $wrappedLines, int $lineIndex): bool
+    {
+        if ($lineIndex === 0) {
+            return true;
+        }
+
+        return ($wrappedLines[$lineIndex - 1] ?? []) === [];
     }
 
     /**
@@ -854,6 +1201,141 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $existingContent . "\n" . $newContent;
     }
 
+    private function wrapMarkedContent(string $tag, int $markedContentId, string $contents): string
+    {
+        return implode("\n", [
+            '/' . $tag . ' << /MCID ' . $markedContentId . ' >> BDC',
+            $contents,
+            'EMC',
+        ]);
+    }
+
+    /**
+     * @return array{wrappedLines: list<string>, textOptions: TextOptions, height: float}
+     */
+    private function layoutTableCaption(
+        Table $table,
+        TextFlow $textFlow,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        float $tableWidth,
+    ): array {
+        $caption = $table->caption;
+
+        if ($caption === null) {
+            throw new InvalidArgumentException('Cannot layout a missing table caption.');
+        }
+
+        $textOptions = $this->tableCaptionTextOptions($caption, $table->textOptions, $tableWidth);
+        $wrappedLines = $textFlow->wrapTextLines($caption->text, $textOptions, $font, 0.0);
+
+        return [
+            'wrappedLines' => $wrappedLines,
+            'textOptions' => $textOptions,
+            'height' => (max(count($wrappedLines), 1) * $textFlow->lineHeight($textOptions)) + $caption->spacingAfter,
+        ];
+    }
+
+    /**
+     * @param array{wrappedLines: list<string>, textOptions: TextOptions, height: float} $captionLayout
+     */
+    private function renderTableCaption(
+        array $captionLayout,
+        TableCaption $caption,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        float $topY,
+        float $leftX,
+        ?int $taggedTableId = null,
+    ): void {
+        $shapedLines = $this->shapeWrappedTextLines($captionLayout['wrappedLines'], $captionLayout['textOptions'], $font);
+        $renderState = $this->prepareTextRenderState($caption->text, $captionLayout['textOptions'], $font, $shapedLines);
+        $markedContentId = $taggedTableId !== null ? $this->nextMarkedContentId() : null;
+        $textResult = $this->buildWrappedTextContent(
+            $captionLayout['wrappedLines'],
+            $shapedLines,
+            $captionLayout['textOptions'],
+            new TextFlow($this->buildCurrentPage()),
+            $leftX,
+            $topY - $font->ascent($captionLayout['textOptions']->fontSize),
+            $renderState['fontAlias'],
+            $font,
+            $renderState['embeddedPageFont'],
+            $renderState['useHexString'],
+            ($this->profile ?? Profile::standard())->version(),
+            $markedContentId !== null ? 'Caption' : null,
+            $markedContentId,
+        );
+
+        $this->currentPageContents = $this->appendPageContent($this->currentPageContents, $textResult['contents']);
+        $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
+
+        if ($taggedTableId !== null && $markedContentId !== null) {
+            $this->addTaggedTableCaptionReference($taggedTableId, $markedContentId);
+        }
+    }
+
+    /**
+     * @return array{contents: string, annotation: LinkAnnotation}
+     */
+    private function buildLinkedTextRunContent(
+        LinkTarget $link,
+        string $text,
+        string $textBlockContent,
+        float $x,
+        float $y,
+        float $width,
+        float $lineHeight,
+        float $ascent,
+    ): array {
+        $markedContentId = ($this->profile ?? Profile::standard())->requiresTaggedLinkAnnotations()
+            ? $this->nextMarkedContentId()
+            : null;
+
+        if ($markedContentId !== null) {
+            $textBlockContent = implode("\n", [
+                '/Link << /MCID ' . $markedContentId . ' >> BDC',
+                $textBlockContent,
+                'EMC',
+            ]);
+        }
+
+        return [
+            'contents' => $textBlockContent,
+            'annotation' => new LinkAnnotation(
+                target: $link,
+                x: $x,
+                y: $y - max($lineHeight - $ascent, 0.0),
+                width: $width,
+                height: $lineHeight,
+                contents: $text,
+                markedContentId: $markedContentId,
+            ),
+        ];
+    }
+
+    private function textOptionsWithLink(TextOptions $options, ?LinkTarget $link): TextOptions
+    {
+        return new TextOptions(
+            x: $options->x,
+            y: $options->y,
+            width: $options->width,
+            maxWidth: $options->maxWidth,
+            fontSize: $options->fontSize,
+            lineHeight: $options->lineHeight,
+            spacingBefore: $options->spacingBefore,
+            spacingAfter: $options->spacingAfter,
+            fontName: $options->fontName,
+            embeddedFont: $options->embeddedFont,
+            fontEncoding: $options->fontEncoding,
+            color: $options->color,
+            kerning: $options->kerning,
+            baseDirection: $options->baseDirection,
+            align: $options->align,
+            firstLineIndent: $options->firstLineIndent,
+            hangingIndent: $options->hangingIndent,
+            link: $link,
+        );
+    }
+
     private function buildTableCellContent(
         Table $table,
         TableLayout $tableLayout,
@@ -865,6 +1347,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $segmentOffset,
         float $segmentHeight,
         float $tableLeftX,
+        ?int $taggedTableId = null,
+        ?string $taggedSection = null,
     ): string {
         $contents = [];
         $padding = $table->cellPadding;
@@ -907,6 +1391,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             );
         }
 
+        $markedContentId = $taggedTableId !== null && $taggedSection !== null
+            ? $this->nextMarkedContentId()
+            : null;
         $segmentText = $this->visibleWrappedTextContentForCellSegment(
             $cellLayout,
             $cellTextOptions,
@@ -923,6 +1410,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $cellTopOffset,
             $segmentOffset,
             $segmentHeight,
+            $markedContentId !== null ? ($taggedSection === 'header' ? 'TH' : 'TD') : null,
+            $markedContentId,
         );
 
         if ($table->border->isVisible()) {
@@ -943,6 +1432,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$segmentText['annotations']];
+
+            if ($taggedTableId !== null && $taggedSection !== null && $markedContentId !== null) {
+                $this->addTaggedTableCellReference(
+                    $taggedTableId,
+                    $taggedSection,
+                    $cellLayout->rowIndex,
+                    $cellLayout->columnIndex,
+                    $markedContentId,
+                );
+            }
         }
 
         return implode("\n", array_filter($contents, static fn (string $content): bool => $content !== ''));
@@ -981,6 +1480,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $cellTopOffset,
         float $segmentOffset,
         float $segmentHeight,
+        ?string $markedContentTag = null,
+        ?int $markedContentId = null,
     ): ?array {
         $lineHeight = $textFlow->lineHeight($cellTextOptions);
         $textTopOffset = $cellTopOffset + $this->tableCellVerticalOffset(
@@ -1030,6 +1531,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $embeddedPageFont,
             $useHexString,
             ($this->profile ?? Profile::standard())->version(),
+            $markedContentTag,
+            $markedContentId,
         );
     }
 
@@ -1073,6 +1576,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         StandardFontDefinition | EmbeddedFontDefinition $font,
         float $topY,
         float $leftX,
+        ?int $taggedTableId = null,
+        ?string $taggedSection = null,
     ): void {
         $contents = [];
 
@@ -1088,6 +1593,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 0.0,
                 $tableLayout->totalHeight(),
                 $leftX,
+                $taggedTableId,
+                $taggedSection,
             );
         }
 
@@ -1106,6 +1613,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $leftX,
         float $segmentOffset,
         float $segmentHeight,
+        ?int $taggedTableId = null,
+        ?string $taggedSection = null,
     ): void {
         $contents = [];
 
@@ -1125,6 +1634,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $segmentOffset,
                 $segmentHeight,
                 $leftX,
+                $taggedTableId,
+                $taggedSection,
             );
         }
 
@@ -1132,6 +1643,128 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $this->currentPageContents,
             implode("\n", array_filter($contents, static fn (string $content): bool => $content !== '')),
         );
+    }
+
+    private function registerTaggedTable(
+        ?TableLayout $headerLayout,
+        TableLayout $bodyLayout,
+        ?TableLayout $footerLayout,
+    ): int {
+        $tableId = $this->nextTaggedTableId;
+        $this->nextTaggedTableId++;
+        $this->taggedTables[$tableId] = [
+            'captionReferences' => [],
+            'headerRows' => $headerLayout !== null ? $this->initializeTaggedTableRows($headerLayout, true) : [],
+            'bodyRows' => $this->initializeTaggedTableRows($bodyLayout, false),
+            'footerRows' => $footerLayout !== null ? $this->initializeTaggedTableRows($footerLayout, false) : [],
+        ];
+
+        return $tableId;
+    }
+
+    /**
+     * @return array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}>
+     */
+    private function initializeTaggedTableRows(TableLayout $tableLayout, bool $header): array
+    {
+        $rows = [];
+
+        foreach ($tableLayout->rowHeights as $rowIndex => $_rowHeight) {
+            $rows[$rowIndex] = ['cells' => []];
+        }
+
+        foreach ($tableLayout->cells as $cellLayout) {
+            $rows[$cellLayout->rowIndex]['cells'][$cellLayout->columnIndex] = [
+                'header' => $header,
+                'references' => [],
+            ];
+        }
+
+        return $rows;
+    }
+
+    private function addTaggedTableCaptionReference(int $tableId, int $markedContentId): void
+    {
+        $this->taggedTables[$tableId]['captionReferences'][] = [
+            'pageIndex' => count($this->pages),
+            'markedContentId' => $markedContentId,
+        ];
+    }
+
+    private function addTaggedTableCellReference(
+        int $tableId,
+        string $section,
+        int $rowIndex,
+        int $columnIndex,
+        int $markedContentId,
+    ): void {
+        $sectionKey = match ($section) {
+            'header' => 'headerRows',
+            'footer' => 'footerRows',
+            default => 'bodyRows',
+        };
+        $this->taggedTables[$tableId][$sectionKey][$rowIndex]['cells'][$columnIndex]['references'][] = [
+            'pageIndex' => count($this->pages),
+            'markedContentId' => $markedContentId,
+        ];
+    }
+
+    /**
+     * @return list<TaggedTable>
+     */
+    private function buildTaggedTables(): array
+    {
+        $taggedTables = [];
+
+        foreach ($this->taggedTables as $tableId => $table) {
+            $taggedTables[] = new TaggedTable(
+                tableId: $tableId,
+                captionReferences: array_map(
+                    static fn (array $reference): TaggedTableContentReference => new TaggedTableContentReference(
+                        $reference['pageIndex'],
+                        $reference['markedContentId'],
+                    ),
+                    $table['captionReferences'],
+                ),
+                headerRows: $this->buildTaggedTableRows($table['headerRows']),
+                bodyRows: $this->buildTaggedTableRows($table['bodyRows']),
+                footerRows: $this->buildTaggedTableRows($table['footerRows']),
+            );
+        }
+
+        return $taggedTables;
+    }
+
+    /**
+     * @param array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}> $rows
+     * @return list<TaggedTableRow>
+     */
+    private function buildTaggedTableRows(array $rows): array
+    {
+        $taggedRows = [];
+
+        foreach ($rows as $rowIndex => $row) {
+            ksort($row['cells']);
+            $taggedCells = [];
+
+            foreach ($row['cells'] as $columnIndex => $cell) {
+                $taggedCells[] = new TaggedTableCell(
+                    columnIndex: $columnIndex,
+                    header: $cell['header'],
+                    contentReferences: array_map(
+                        static fn (array $reference): TaggedTableContentReference => new TaggedTableContentReference(
+                            $reference['pageIndex'],
+                            $reference['markedContentId'],
+                        ),
+                        $cell['references'],
+                    ),
+                );
+            }
+
+            $taggedRows[] = new TaggedTableRow($rowIndex, $taggedCells);
+        }
+
+        return $taggedRows;
     }
 
     private function tableCellTextOptions(TextOptions $options, float $contentWidth): TextOptions
@@ -1147,6 +1780,27 @@ class DefaultDocumentBuilder implements DocumentBuilder
             kerning: $options->kerning,
             baseDirection: $options->baseDirection,
             align: $options->align,
+        );
+    }
+
+    private function tableCaptionTextOptions(TableCaption $caption, TextOptions $baseOptions, float $contentWidth): TextOptions
+    {
+        $captionOptions = $caption->textOptions ?? $baseOptions;
+
+        return new TextOptions(
+            width: $contentWidth,
+            fontSize: $captionOptions->fontSize,
+            lineHeight: $captionOptions->lineHeight,
+            fontName: $captionOptions->fontName,
+            embeddedFont: $captionOptions->embeddedFont,
+            fontEncoding: $captionOptions->fontEncoding,
+            color: $captionOptions->color,
+            kerning: $captionOptions->kerning,
+            baseDirection: $captionOptions->baseDirection,
+            align: $captionOptions->align,
+            firstLineIndent: $captionOptions->firstLineIndent,
+            hangingIndent: $captionOptions->hangingIndent,
+            link: $captionOptions->link,
         );
     }
 

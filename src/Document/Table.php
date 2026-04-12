@@ -19,11 +19,14 @@ final readonly class Table
      * @param list<TableColumn> $columns
      * @param list<TableRow> $headerRows
      * @param list<TableRow> $rows
+     * @param list<TableRow> $footerRows
      */
     public function __construct(
         public array $columns,
+        public ?TableCaption $caption = null,
         public array $headerRows = [],
         public array $rows = [],
+        public array $footerRows = [],
         public CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
         public Border $border = new Border(0.5, 0.5, 0.5, 0.5),
         public TextOptions $textOptions = new TextOptions(fontSize: 12.0, lineHeight: 14.4),
@@ -35,6 +38,7 @@ final readonly class Table
 
         $this->assertRowsMatchGrid($this->headerRows);
         $this->assertRowsMatchGrid($this->rows);
+        $this->assertRowsMatchGrid($this->footerRows);
     }
 
     public static function define(TableColumn ...$columns): self
@@ -46,8 +50,10 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            caption: $this->caption,
             headerRows: $this->headerRows,
             rows: [...$this->rows, $row],
+            footerRows: $this->footerRows,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -59,8 +65,10 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            caption: $this->caption,
             headerRows: $this->headerRows,
             rows: $rows,
+            footerRows: $this->footerRows,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -72,8 +80,40 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            caption: $this->caption,
             headerRows: $headerRows,
             rows: $this->rows,
+            footerRows: $this->footerRows,
+            cellPadding: $this->cellPadding,
+            border: $this->border,
+            textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+        );
+    }
+
+    public function withFooterRows(TableRow ...$footerRows): self
+    {
+        return new self(
+            columns: $this->columns,
+            caption: $this->caption,
+            headerRows: $this->headerRows,
+            rows: $this->rows,
+            footerRows: $footerRows,
+            cellPadding: $this->cellPadding,
+            border: $this->border,
+            textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+        );
+    }
+
+    public function withCaption(TableCaption $caption): self
+    {
+        return new self(
+            columns: $this->columns,
+            caption: $caption,
+            headerRows: $this->headerRows,
+            rows: $this->rows,
+            footerRows: $this->footerRows,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -85,8 +125,10 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            caption: $this->caption,
             headerRows: $this->headerRows,
             rows: $this->rows,
+            footerRows: $this->footerRows,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -98,8 +140,10 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            caption: $this->caption,
             headerRows: $this->headerRows,
             rows: $this->rows,
+            footerRows: $this->footerRows,
             cellPadding: $cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
@@ -111,8 +155,10 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            caption: $this->caption,
             headerRows: $this->headerRows,
             rows: $this->rows,
+            footerRows: $this->footerRows,
             cellPadding: $this->cellPadding,
             border: $border,
             textOptions: $this->textOptions,
@@ -124,8 +170,10 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            caption: $this->caption,
             headerRows: $this->headerRows,
             rows: $this->rows,
+            footerRows: $this->footerRows,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $textOptions,
