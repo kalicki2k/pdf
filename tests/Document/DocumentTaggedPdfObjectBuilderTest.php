@@ -277,7 +277,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
                 ->language('de-DE')
-                ->textSegments([
+                ->paragraph([
                     new TextSegment(
                         'Read docs',
                         new TextLink(
@@ -290,7 +290,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->newPage()
-                ->textSegments([
+                ->paragraph([
                     new TextSegment(
                         'Read docs',
                         new TextLink(

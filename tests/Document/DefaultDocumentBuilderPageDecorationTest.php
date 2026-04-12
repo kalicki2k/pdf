@@ -279,7 +279,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
                 ImagePlacement::at(40.0, 340.0, width: 120.0),
             )
-            ->textSegments([
+            ->paragraph([
                 TextSegment::link('Open docs', TextLink::externalUrl('https://example.com/docs')),
             ], new TextOptions(
                 x: 40.0,

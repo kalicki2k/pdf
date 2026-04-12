@@ -103,7 +103,10 @@ interface DocumentBuilder
 
     public function content(string $content): self;
 
-    public function text(string $text, ?TextOptions $options = null): self;
+    /**
+     * @param string|list<TextSegment> $text
+     */
+    public function text(string|array $text, ?TextOptions $options = null): self;
 
     public function taggedText(string $text, string $tag, ?TextOptions $options = null): self;
 
@@ -113,11 +116,9 @@ interface DocumentBuilder
     public function taggedStructure(string $tag, callable $renderer): self;
 
     /**
-     * @param list<TextSegment> $segments
+     * @param string|list<TextSegment> $text
      */
-    public function textSegments(array $segments, ?TextOptions $options = null): self;
-
-    public function paragraph(string $text, ?TextOptions $options = null): self;
+    public function paragraph(string|array $text, ?TextOptions $options = null): self;
 
     public function heading(string $text, int $level = 1, ?TextOptions $options = null): self;
 

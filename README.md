@@ -263,7 +263,7 @@ $builder = DefaultDocumentBuilder::make()
     ->text('Zur Einleitung', new \Kalle\Pdf\Text\TextOptions(
         link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
     ))
-    ->textSegments([
+    ->paragraph([
         TextSegment::link(
             'Docs',
             TextLink::externalUrl(

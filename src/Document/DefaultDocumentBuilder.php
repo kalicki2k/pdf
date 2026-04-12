@@ -398,8 +398,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
-    public function text(string $text, ?TextOptions $options = null): DocumentBuilder
+    /**
+     * @param string|list<TextSegment> $text
+     */
+    public function text(string|array $text, ?TextOptions $options = null): DocumentBuilder
     {
+        if (is_array($text)) {
+            return $this->renderTextSegments($text, $options, $this->defaultTaggedTextTag());
+        }
+
         return $this->renderTextBlock($text, $options, $this->defaultTaggedTextTag());
     }
 
@@ -447,8 +454,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $result;
     }
 
-    public function paragraph(string $text, ?TextOptions $options = null): DocumentBuilder
+    /**
+     * @param string|list<TextSegment> $text
+     */
+    public function paragraph(string|array $text, ?TextOptions $options = null): DocumentBuilder
     {
+        if (is_array($text)) {
+            return $this->renderTextSegments($text, $options, 'P');
+        }
+
         return $this->renderTextBlock($text, $options, 'P');
     }
 
@@ -559,7 +573,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
-    public function textSegments(array $segments, ?TextOptions $options = null): DocumentBuilder
+    /**
+     * @param list<TextSegment> $segments
+     */
+    private function renderTextSegments(array $segments, ?TextOptions $options, ?string $markedContentTag): DocumentBuilder
     {
         $clone = clone $this;
         $options ??= new TextOptions();
@@ -579,7 +596,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $placement = $textFlow->placement($options, $font);
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, []);
-        $markedContentTag = $clone->defaultTaggedTextTag();
         $markedContentId = $clone->nextTaggedMarkedContentId();
         $textResult = $clone->buildWrappedTextSegmentsContent(
             $wrappedSegmentLines,

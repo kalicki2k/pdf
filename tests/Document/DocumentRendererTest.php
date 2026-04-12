@@ -813,7 +813,7 @@ final class DocumentRendererTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.');
 
         (new DocumentRenderer())->write($document, new StringOutput());
     }
@@ -829,7 +829,7 @@ final class DocumentRendererTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.');
 
         (new DocumentRenderer())->write($document, new StringOutput());
     }
@@ -990,7 +990,7 @@ final class DocumentRendererTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.',
+            'Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.',
         );
 
         (new DocumentRenderer())->write($document, new StringOutput());
@@ -1480,7 +1480,7 @@ final class DocumentRendererTest extends TestCase
     public function testItRendersMultipleTextSegmentLinks(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->textSegments([
+            ->paragraph([
                 new TextSegment('Docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' und '),
                 new TextSegment('API', LinkTarget::externalUrl('https://example.com/api')),
@@ -1506,7 +1506,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->textSegments([
+            ->paragraph([
                 new TextSegment('Read', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' now'),
@@ -1531,7 +1531,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->textSegments([
+            ->paragraph([
                 new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
             ], new TextOptions(width: 45))
             ->build();
@@ -1555,7 +1555,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->textSegments([
+            ->paragraph([
                 TextSegment::link(
                     'Docs',
                     TextLink::externalUrl(

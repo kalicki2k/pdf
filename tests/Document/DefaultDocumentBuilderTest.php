@@ -963,7 +963,7 @@ final class DefaultDocumentBuilderTest extends TestCase
     public function testItAddsMultipleLinkedTextSegmentsInOneCall(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->textSegments([
+            ->paragraph([
                 new TextSegment('Docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' und '),
                 new TextSegment('API', LinkTarget::externalUrl('https://example.com/api')),
@@ -979,10 +979,25 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame('API', $document->pages[0]->annotations[1]->contents);
     }
 
+    public function testItAcceptsTextSegmentsViaTextArray(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text([
+                new TextSegment('Docs', LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' und '),
+                new TextSegment('API', LinkTarget::externalUrl('https://example.com/api')),
+            ])
+            ->build();
+
+        self::assertCount(2, $document->pages[0]->annotations);
+        self::assertSame('https://example.com/docs', $document->pages[0]->annotations[0]->target->externalUrlValue());
+        self::assertSame('https://example.com/api', $document->pages[0]->annotations[1]->target->externalUrlValue());
+    }
+
     public function testItMergesAdjacentTextSegmentsWithTheSameLink(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->textSegments([
+            ->paragraph([
                 new TextSegment('Read', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' now'),
@@ -1001,7 +1016,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->textSegments([
+            ->paragraph([
                 new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
             ], new TextOptions(width: 45))
             ->build();
@@ -1022,7 +1037,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->textSegments([
+            ->paragraph([
                 TextSegment::link(
                     'Docs',
                     TextLink::externalUrl(
@@ -1042,7 +1057,7 @@ final class DefaultDocumentBuilderTest extends TestCase
     public function testExplicitTextLinkGroupKeysCanPreventMergingForTheSameTarget(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->textSegments([
+            ->paragraph([
                 TextSegment::link('Docs', TextLink::externalUrl('https://example.com/docs', groupKey: 'docs-a')),
                 TextSegment::link(' API', TextLink::externalUrl('https://example.com/docs', groupKey: 'docs-b')),
             ])
