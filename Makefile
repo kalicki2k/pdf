@@ -107,6 +107,9 @@ test-pdfa2b-regressions:
 test-pdfa2a-regressions:
 	sh bin/test-pdfa2a-regressions.sh
 
+test-pdfa2a-negative-regressions:
+	sh bin/test-pdfa2a-negative-regressions.sh
+
 test-pdfa2u-negative-regressions:
 	sh bin/test-pdfa2u-negative-regressions.sh
 
@@ -118,6 +121,9 @@ test-pdfa3u-regression:
 
 test-pdfa3a-regressions:
 	sh bin/test-pdfa3a-regressions.sh
+
+test-pdfa3a-negative-regressions:
+	sh bin/test-pdfa3a-negative-regressions.sh
 
 check-pdf:
 	@if [ -z "$(PDF)" ]; then echo "Usage: make check-pdf PDF=path/to/file.pdf"; exit 1; fi

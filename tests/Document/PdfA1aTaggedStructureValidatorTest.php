@@ -47,6 +47,26 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         self::assertTrue(true);
     }
 
+    public function testItAcceptsConsistentPdfA2aTaggedStructure(): void
+    {
+        $document = $this->pdfATaggedDocument(Profile::pdfA2a());
+        [$state, $objects] = $this->buildTaggedObjects($document);
+
+        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+
+        self::assertTrue(true);
+    }
+
+    public function testItAcceptsConsistentPdfA3aTaggedStructureWithAssociatedFiles(): void
+    {
+        $document = $this->pdfATaggedDocument(Profile::pdfA3a(), true);
+        [$state, $objects] = $this->buildTaggedObjects($document);
+
+        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+
+        self::assertTrue(true);
+    }
+
     public function testItAcceptsPdfA1aRectLinkStructureWithoutMarkedContentKids(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -77,6 +97,44 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('StructTreeRoot must reference exactly the document structure element');
+
+        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA2aLinkStructElementWithoutAltText(): void
+    {
+        $document = $this->pdfATaggedDocument(Profile::pdfA2a());
+        [$state, $objects] = $this->buildTaggedObjects($document);
+
+        $linkEntry = $state->taggedLinkStructure['linkEntries'][0];
+        $linkObjectId = $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']];
+        $linkContents = $this->objectContents($objects, $linkObjectId);
+        $objects = $this->replaceObjectContents(
+            $objects,
+            $linkObjectId,
+            preg_replace('/\s*\/Alt\s*\([^)]+\)/', '', $linkContents, 1) ?? $linkContents,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('link StructElem');
+        $this->expectExceptionMessage('must expose /Alt text');
+
+        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA3aStructTreeRootWithoutParentTree(): void
+    {
+        $document = $this->pdfATaggedDocument(Profile::pdfA3a(), true);
+        [$state, $objects] = $this->buildTaggedObjects($document);
+        $structTreeRootContents = $this->objectContents($objects, $state->structTreeRootObjectId);
+        $objects = $this->replaceObjectContents(
+            $objects,
+            $state->structTreeRootObjectId,
+            preg_replace('/\s*\/ParentTree\s+\d+\s+0\s+R/', '', $structTreeRootContents, 1) ?? $structTreeRootContents,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('StructTreeRoot must reference ParentTree');
 
         (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
     }
@@ -164,8 +222,13 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
 
     private function pdfA1aDocument(): Document
     {
-        return DefaultDocumentBuilder::make()
-            ->profile(Profile::pdfA1a())
+        return $this->pdfATaggedDocument(Profile::pdfA1a());
+    }
+
+    private function pdfATaggedDocument(Profile $profile, bool $withAttachment = false): Document
+    {
+        $builder = DefaultDocumentBuilder::make()
+            ->profile($profile)
             ->title('Archive Copy')
             ->language('de-DE')
             ->heading('Heading Привет', 1, new TextOptions(
@@ -206,8 +269,13 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
                 ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
                 ImagePlacement::at(72, 440, 32, 32),
                 ImageAccessibility::alternativeText('Project figure'),
-            )
-            ->build();
+            );
+
+        if ($withAttachment) {
+            $builder = $builder->attachment('data.xml', '<root/>', 'Source data', 'application/xml');
+        }
+
+        return $builder->build();
     }
 
     private function fontPath(): string
