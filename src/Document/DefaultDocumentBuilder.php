@@ -118,9 +118,9 @@ use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
-use Kalle\Pdf\Text\TextSemantic;
-
 use Kalle\Pdf\Text\TextSegment;
+
+use Kalle\Pdf\Text\TextSemantic;
 
 use Kalle\Pdf\Writer\FileOutput;
 

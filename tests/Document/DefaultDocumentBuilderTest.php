@@ -73,8 +73,8 @@ use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Page\UnderlineAnnotation;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
-use Kalle\Pdf\Text\TextSemantic;
 use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Text\TextSemantic;
 use PHPUnit\Framework\TestCase;
 
 final class DefaultDocumentBuilderTest extends TestCase
