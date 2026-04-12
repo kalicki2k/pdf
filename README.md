@@ -39,11 +39,16 @@ $document = DefaultDocumentBuilder::make()
 
 Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Fuer explizitere Inline-Link-Spans steht `TextLink` zur Verfuegung, damit sichtbarer Text, Annotation-`/Contents`, PDF/UA-Alternativtext und Gruppierung getrennt steuerbar bleiben.
 
-Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation mit festem Rechteck und eigenem `/AP`-Stream, die sich damit auch fuer den aktuellen PDF/A-2u-Pfad eignet. Dasselbe gilt jetzt fuer eine schlanke `Highlight`-Annotation mit festen `QuadPoints`.
+Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen.
+
+Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation mit festem Rechteck und eigenem `/AP`-Stream, die sich damit auch fuer den aktuellen PDF/A-2u-Pfad eignet. Dasselbe gilt jetzt fuer eine schlanke `Highlight`-Annotation mit festen `QuadPoints` und fuer `FreeText`, das seinen Appearance-Stream mit dem verwendeten Seitenfont rendert.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Page\FreeTextAnnotationOptions;
+use Kalle\Pdf\Page\HighlightAnnotationOptions;
 use Kalle\Pdf\Page\LinkAnnotationOptions;
+use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextSegment;
 
@@ -82,8 +87,41 @@ $document = DefaultDocumentBuilder::make()
             groupKey: 'spec-link',
         ),
     )
-    ->textAnnotation(40, 450, 18, 18, 'Kurzer Kommentar', 'QA', 'Comment', true)
-    ->highlightAnnotation(40, 420, 120, 12, \Kalle\Pdf\Color\Color::rgb(1, 1, 0), 'Markierung', 'QA')
+    ->textAnnotationWithOptions(40, 450, 18, 18, 'Kurzer Kommentar', new TextAnnotationOptions(
+        title: 'QA',
+        icon: 'Comment',
+        open: true,
+    ))
+    ->highlightAnnotationWithOptions(40, 420, 120, 12, new HighlightAnnotationOptions(
+        color: \Kalle\Pdf\Color\Color::rgb(1, 1, 0),
+        contents: 'Markierung',
+        title: 'QA',
+    ))
+    ->freeTextAnnotation(
+        'Kommentar im Dokument',
+        40,
+        380,
+        140,
+        36,
+        new \Kalle\Pdf\Text\TextOptions(fontSize: 12, color: \Kalle\Pdf\Color\Color::rgb(0, 0, 0.4)),
+        \Kalle\Pdf\Color\Color::rgb(0.2, 0.2, 0.2),
+        \Kalle\Pdf\Color\Color::rgb(1, 1, 0.8),
+        'QA',
+    )
+    ->freeTextAnnotationWithOptions(
+        'Zweiter Kommentar',
+        40,
+        330,
+        140,
+        36,
+        new \Kalle\Pdf\Text\TextOptions(fontSize: 12),
+        new FreeTextAnnotationOptions(
+            textColor: \Kalle\Pdf\Color\Color::rgb(0, 0, 0.4),
+            borderColor: \Kalle\Pdf\Color\Color::rgb(0.2, 0.2, 0.2),
+            fillColor: \Kalle\Pdf\Color\Color::rgb(1, 1, 0.8),
+            metadata: new \Kalle\Pdf\Page\AnnotationMetadata(title: 'QA'),
+        ),
+    )
     ->build();
 ```
 
@@ -102,13 +140,15 @@ use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextSegment;
 
 $table = Table::define(
     TableColumn::fixed(120),
     TableColumn::proportional(1),
 )
     ->withCaption(TableCaption::text('Produktuebersicht'))
-    ->withPlacement(new TablePlacement(72, 320))
+    ->withPlacement(TablePlacement::at(72, 520, 320))
     ->withCellPadding(CellPadding::all(6))
     ->withHeaderRows(
         TableRow::fromTexts('Artikel', 'Beschreibung'),
@@ -119,7 +159,10 @@ $table = Table::define(
             \Kalle\Pdf\Document\TableCell::text('A-100', rowspan: 2)
                 ->withHeaderScope(TableHeaderScope::ROW)
                 ->withPadding(CellPadding::symmetric(8, 10)),
-            \Kalle\Pdf\Document\TableCell::text('Kompakter Einstieg in das Tabellenlayout von pdf2.')
+            \Kalle\Pdf\Document\TableCell::segments(
+                TextSegment::plain('Kompakter Einstieg in das Tabellenlayout von pdf2. '),
+                TextSegment::link('Mehr dazu', TextLink::externalUrl('https://example.com/docs/tables')),
+            )
                 ->withHorizontalAlign(TextAlign::RIGHT)
                 ->withBorder(Border::all(1)),
         ),
@@ -136,7 +179,7 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-Ein umfangreicheres Beispiel liegt in `examples/table.php`.
+Ein umfangreicheres Beispiel liegt in `examples/table.php`. Die aktuelle Tabellen-API deckt damit auch absolutes Start-`y`, Rich-Text-Zellen sowie Tagged-Table-Abschnitte `THead`, `TBody` und `TFoot` ab.
 
 ## Verschluesselung
 

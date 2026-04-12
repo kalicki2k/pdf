@@ -33,6 +33,7 @@ use Kalle\Pdf\Layout\Table\TableLayout;
 use Kalle\Pdf\Layout\Table\TableLayoutCalculator;
 use Kalle\Pdf\Layout\Table\TableRowGroupLayout;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
+use Kalle\Pdf\Page\AnnotationMetadata;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\FreeTextAnnotationOptions;
@@ -59,6 +60,7 @@ use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+
 use Kalle\Pdf\Text\TextSegment;
 
 use Kalle\Pdf\Writer\FileOutput;
@@ -631,7 +633,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 textColor: $options?->color,
                 borderColor: $borderColor,
                 fillColor: $fillColor,
-                metadata: new \Kalle\Pdf\Page\AnnotationMetadata(title: $title),
+                metadata: new AnnotationMetadata(title: $title),
             ),
         );
     }
