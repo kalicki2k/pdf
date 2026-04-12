@@ -4062,7 +4062,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             return null;
         }
 
-        $tag = $options?->tag?->value ?? $defaultTag;
+        $tag = $options?->tag->value ?? $defaultTag;
 
         if ($tag === null) {
             return $this->requiresTaggedStructure() ? 'P' : null;
@@ -4236,7 +4236,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<string> $lines
+     * @param array<int, mixed> $lines
      */
     private function renderTextLines(array $lines, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
     {
@@ -4248,6 +4248,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             return $clone;
         }
 
+        $validatedLines = [];
+
         foreach ($lines as $index => $line) {
             if (!is_string($line)) {
                 throw new InvalidArgumentException(sprintf(
@@ -4255,6 +4257,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $index + 1,
                 ));
             }
+
+            $validatedLines[] = $line;
         }
 
         $font = $options->embeddedFont !== null
@@ -4262,9 +4266,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             : StandardFontDefinition::from($options->fontName);
         $textFlow = $clone->textFlow();
         $placement = $textFlow->placement($options, $font);
-        $wrappedLines = $clone->wrapExplicitTextLines($lines, $options, $font, $textFlow, $placement['x']);
+        $wrappedLines = $clone->wrapExplicitTextLines($validatedLines, $options, $font, $textFlow, $placement['x']);
         $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
-        $renderState = $clone->prepareTextRenderState(implode('', $lines), $options, $font, $shapedLines);
+        $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, $shapedLines);
         $markedContentTag = $taggedTextTag !== null && $clone->requiresTaggedStructure()
             ? $taggedTextTag
             : null;

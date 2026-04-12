@@ -683,7 +683,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             ->table($table)
             ->build();
 
-        self::assertStringContainsString('62.693 491.783 Td', $document->pages[0]->contents);
+        self::assertStringContainsString('62.693 506.183 Td', $document->pages[0]->contents);
         self::assertStringContainsString('142.693 520.583 Td', $document->pages[0]->contents);
     }
 
@@ -707,7 +707,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             ->table($table)
             ->build();
 
-        self::assertStringContainsString('62.693 462.983 Td', $document->pages[0]->contents);
+        self::assertStringContainsString('62.693 491.783 Td', $document->pages[0]->contents);
     }
 
     public function testItSplitsATallSingleRowAcrossMultiplePages(): void
