@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 
@@ -18,6 +19,7 @@ final readonly class Document
     public ?string $language;
     public ?string $creator;
     public ?string $creatorTool;
+    public ?PdfAOutputIntent $pdfaOutputIntent;
 
     /**
      * @param list<Page>|null $pages
@@ -31,6 +33,7 @@ final readonly class Document
         ?string $language = null,
         ?string $creator = null,
         ?string $creatorTool = null,
+        ?PdfAOutputIntent $pdfaOutputIntent = null,
     ) {
         $this->profile = $profile ?? Profile::standard();
         $this->pages = $pages ?? [new Page(PageSize::A4())];
@@ -40,6 +43,7 @@ final readonly class Document
         $this->language = $language;
         $this->creator = $creator;
         $this->creatorTool = $creatorTool;
+        $this->pdfaOutputIntent = $pdfaOutputIntent;
     }
 
     public function version(): float

@@ -4,11 +4,22 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use DateTimeImmutable;
+
 use function count;
 use function implode;
+use function sprintf;
+
+use InvalidArgumentException;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Document\Metadata\IccProfile;
+use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\Metadata\XmpMetadata;
+use Kalle\Pdf\Document\TaggedPdf\ParentTree;
+use Kalle\Pdf\Document\TaggedPdf\StructElem;
+use Kalle\Pdf\Document\TaggedPdf\StructTreeRoot;
 use Kalle\Pdf\Font\OpenTypeOutlineType;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\EmbeddedGlyph;
@@ -28,6 +39,11 @@ final class DocumentSerializationPlanBuilder
 {
     public function build(Document $document): DocumentSerializationPlan
     {
+        $this->assertProfileRequirements($document);
+        $this->assertImageAccessibilityRequirements($document);
+        $this->assertPdfARequirements($document);
+        $serializedAt = new DateTimeImmutable('now');
+
         $pageObjectIds = [];
         $contentObjectIds = [];
         $nextObjectId = 3;
@@ -92,8 +108,30 @@ final class DocumentSerializationPlanBuilder
             }
         }
 
+        $taggedImageStructure = $this->collectTaggedImageStructure($document);
+        $structTreeRootObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
+        $documentStructElemObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
+        $parentTreeObjectId = $taggedImageStructure['parentTreeEntries'] !== [] ? $nextObjectId++ : null;
+        /** @var array<string, int> $figureStructElemObjectIds */
+        $figureStructElemObjectIds = [];
+
+        foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
+            $figureStructElemObjectIds[$figureEntry['key']] = $nextObjectId++;
+        }
+
+        $metadataObjectId = $this->usesMetadataStream($document) ? $nextObjectId++ : null;
+        $iccProfileObjectId = $document->profile->usesPdfAOutputIntent() ? $nextObjectId++ : null;
+        $infoObjectId = null;
+
+        if ($document->profile->writesInfoDictionary() && $this->hasInfoMetadata($document)) {
+            $infoObjectId = $nextObjectId++;
+        }
+
         $objects = [
-            new IndirectObject(1, '<< /Type /Catalog /Pages 2 0 R >>'),
+            new IndirectObject(
+                1,
+                $this->buildCatalogDictionary($document, $metadataObjectId, $iccProfileObjectId, $structTreeRootObjectId),
+            ),
             new IndirectObject(
                 2,
                 '<< /Type /Pages /Count ' . count($pageObjectIds) . ' /Kids [' . $this->buildKidsReferences($pageObjectIds) . '] >>',
@@ -110,7 +148,9 @@ final class DocumentSerializationPlanBuilder
                 . $this->formatNumber($page->size->width()) . ' '
                 . $this->formatNumber($page->size->height()) . '] /Resources '
                 . $this->buildPageResources($page->fontResources, $page->imageResources, $fontObjectIds, $imageObjectIds) . ' /Contents '
-                . $contentObjectId . ' 0 R >>',
+                . $contentObjectId . ' 0 R'
+                . $this->buildStructParentsEntry($taggedImageStructure['pageStructParentIds'][$index] ?? null)
+                . ' >>',
             );
             $objects[] = new IndirectObject(
                 $contentObjectId,
@@ -187,11 +227,63 @@ final class DocumentSerializationPlanBuilder
             );
         }
 
-        $infoObjectId = null;
+        if ($structTreeRootObjectId !== null && $documentStructElemObjectId !== null) {
+            $documentKidObjectIds = [];
 
-        if ($this->hasInfoMetadata($document)) {
-            $infoObjectId = $nextObjectId;
-            $objects[] = new IndirectObject($infoObjectId, $this->buildInfoDictionary($document));
+            foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
+                $documentKidObjectIds[] = $figureStructElemObjectIds[$figureEntry['key']];
+            }
+
+            $objects[] = new IndirectObject(
+                $structTreeRootObjectId,
+                (new StructTreeRoot([$documentStructElemObjectId], $parentTreeObjectId))->objectContents(),
+            );
+            $objects[] = new IndirectObject(
+                $documentStructElemObjectId,
+                (new StructElem('Document', $structTreeRootObjectId, $documentKidObjectIds))->objectContents(),
+            );
+
+            if ($parentTreeObjectId !== null) {
+                $parentTreeEntries = [];
+
+                foreach ($taggedImageStructure['parentTreeEntries'] as $structParentId => $figureKeys) {
+                    $parentTreeEntries[$structParentId] = array_map(
+                        static fn (string $key): int => $figureStructElemObjectIds[$key],
+                        $figureKeys,
+                    );
+                }
+
+                $objects[] = new IndirectObject($parentTreeObjectId, (new ParentTree($parentTreeEntries))->objectContents());
+            }
+
+            foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
+                $objects[] = new IndirectObject(
+                    $figureStructElemObjectIds[$figureEntry['key']],
+                    (new StructElem(
+                        'Figure',
+                        $documentStructElemObjectId,
+                        pageObjectId: $pageObjectIds[$figureEntry['pageIndex']],
+                        altText: $figureEntry['altText'],
+                        markedContentId: $figureEntry['markedContentId'],
+                    ))->objectContents(),
+                );
+            }
+        }
+
+        if ($metadataObjectId !== null) {
+            $objects[] = new IndirectObject($metadataObjectId, (new XmpMetadata())->objectContents($document, $serializedAt));
+        }
+
+        if ($iccProfileObjectId !== null) {
+            $outputIntent = $this->resolvePdfAOutputIntent($document);
+            $objects[] = new IndirectObject(
+                $iccProfileObjectId,
+                IccProfile::fromPath($outputIntent->iccProfilePath, $outputIntent->colorComponents)->objectContents(),
+            );
+        }
+
+        if ($infoObjectId !== null) {
+            $objects[] = new IndirectObject($infoObjectId, $this->buildInfoDictionary($document, $serializedAt));
         }
 
         return new DocumentSerializationPlan(
@@ -207,6 +299,56 @@ final class DocumentSerializationPlanBuilder
         );
     }
 
+    private function assertProfileRequirements(Document $document): void
+    {
+        if ($document->profile->requiresDocumentLanguage() && $document->language === null) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s requires a document language.',
+                $document->profile->name(),
+            ));
+        }
+
+        if ($document->profile->requiresDocumentTitle() && $document->title === null) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s requires a document title.',
+                $document->profile->name(),
+            ));
+        }
+    }
+
+    private function assertImageAccessibilityRequirements(Document $document): void
+    {
+        if (!$document->profile->requiresTaggedImages()) {
+            return;
+        }
+
+        foreach ($document->pages as $pageIndex => $page) {
+            foreach ($page->images as $imageIndex => $pageImage) {
+                $accessibility = $pageImage->accessibility;
+
+                if ($accessibility === null) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Tagged PDF profiles require accessibility metadata for image %d on page %d.',
+                        $imageIndex + 1,
+                        $pageIndex + 1,
+                    ));
+                }
+
+                if (
+                    $document->profile->requiresFigureAltText()
+                    && $accessibility->requiresFigureTag()
+                    && $accessibility->altText === null
+                ) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Tagged PDF profiles require alternative text for image %d on page %d.',
+                        $imageIndex + 1,
+                        $pageIndex + 1,
+                    ));
+                }
+            }
+        }
+    }
+
     private function hasInfoMetadata(Document $document): bool
     {
         return $document->title !== null
@@ -216,7 +358,20 @@ final class DocumentSerializationPlanBuilder
             || $document->creatorTool !== null;
     }
 
-    private function buildInfoDictionary(Document $document): string
+    private function usesMetadataStream(Document $document): bool
+    {
+        if (!$document->profile->supportsXmpMetadata()) {
+            return false;
+        }
+
+        return $this->hasInfoMetadata($document)
+            || $document->language !== null
+            || $document->profile->requiresTaggedPdf()
+            || $document->profile->writesPdfAIdentificationMetadata()
+            || $document->profile->writesPdfUaIdentificationMetadata();
+    }
+
+    private function buildInfoDictionary(Document $document, DateTimeImmutable $serializedAt): string
     {
         $entries = [];
 
@@ -240,7 +395,159 @@ final class DocumentSerializationPlanBuilder
             $entries[] = '/Producer ' . $this->pdfString($document->creatorTool);
         }
 
+        $pdfDate = $this->pdfDate($serializedAt);
+        $entries[] = '/CreationDate ' . $this->pdfString($pdfDate);
+        $entries[] = '/ModDate ' . $this->pdfString($pdfDate);
+
         return '<< ' . implode(' ', $entries) . ' >>';
+    }
+
+    private function buildCatalogDictionary(
+        Document $document,
+        ?int $metadataObjectId,
+        ?int $iccProfileObjectId,
+        ?int $structTreeRootObjectId,
+    ): string
+    {
+        $entries = [
+            '/Type /Catalog',
+            '/Pages 2 0 R',
+        ];
+
+        if ($metadataObjectId !== null) {
+            $entries[] = '/Metadata ' . $metadataObjectId . ' 0 R';
+        }
+
+        if ($document->language !== null) {
+            $entries[] = '/Lang ' . $this->pdfString($document->language);
+        }
+
+        if ($document->profile->requiresTaggedPdf()) {
+            $entries[] = '/MarkInfo << /Marked true >>';
+        }
+
+        if ($iccProfileObjectId !== null) {
+            $outputIntent = $this->resolvePdfAOutputIntent($document);
+            $entries[] = '/OutputIntents [<< /Type /OutputIntent /S /GTS_PDFA1 /OutputConditionIdentifier '
+                . $this->pdfString($outputIntent->outputConditionIdentifier)
+                . ($outputIntent->info !== null ? ' /Info ' . $this->pdfString($outputIntent->info) : '')
+                . ' /DestOutputProfile '
+                . $iccProfileObjectId
+                . ' 0 R >>]';
+        }
+
+        if ($structTreeRootObjectId !== null) {
+            $entries[] = '/StructTreeRoot ' . $structTreeRootObjectId . ' 0 R';
+        }
+
+        return '<< ' . implode(' ', $entries) . ' >>';
+    }
+
+    private function buildStructParentsEntry(?int $structParentId): string
+    {
+        if ($structParentId === null) {
+            return '';
+        }
+
+        return ' /StructParents ' . $structParentId;
+    }
+
+    /**
+     * @return array{
+     *   figureEntries: list<array{key: string, pageIndex: int, markedContentId: int, altText: ?string}>,
+     *   parentTreeEntries: array<int, list<string>>,
+     *   pageStructParentIds: array<int, int>
+     * }
+     */
+    private function collectTaggedImageStructure(Document $document): array
+    {
+        $figureEntries = [];
+        $parentTreeEntries = [];
+        $pageStructParentIds = [];
+        $nextStructParentId = 0;
+
+        foreach ($document->pages as $pageIndex => $page) {
+            $pageFigureKeys = [];
+
+            foreach ($page->images as $imageIndex => $pageImage) {
+                if ($pageImage->markedContentId === null) {
+                    continue;
+                }
+
+                $key = $pageIndex . ':' . $imageIndex;
+                $pageFigureKeys[$pageImage->markedContentId] = $key;
+                $figureEntries[] = [
+                    'key' => $key,
+                    'pageIndex' => $pageIndex,
+                    'markedContentId' => $pageImage->markedContentId,
+                    'altText' => $pageImage->accessibility?->altText,
+                ];
+            }
+
+            if ($pageFigureKeys === []) {
+                continue;
+            }
+
+            ksort($pageFigureKeys);
+            $pageStructParentIds[$pageIndex] = $nextStructParentId;
+            $parentTreeEntries[$nextStructParentId] = array_values($pageFigureKeys);
+            $nextStructParentId++;
+        }
+
+        return [
+            'figureEntries' => $figureEntries,
+            'parentTreeEntries' => $parentTreeEntries,
+            'pageStructParentIds' => $pageStructParentIds,
+        ];
+    }
+
+    private function resolvePdfAOutputIntent(Document $document): PdfAOutputIntent
+    {
+        return $document->pdfaOutputIntent ?? PdfAOutputIntent::defaultSrgb();
+    }
+
+    private function assertPdfARequirements(Document $document): void
+    {
+        if (!$document->profile->isPdfA()) {
+            return;
+        }
+
+        foreach ($document->pages as $pageIndex => $page) {
+            foreach ($page->fontResources as $fontIndex => $pageFont) {
+                if ($pageFont->isEmbedded()) {
+                    continue;
+                }
+
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s requires embedded fonts. Found standard font "%s" on page %d.',
+                    $document->profile->name(),
+                    $pageFont->name,
+                    $pageIndex + 1,
+                ));
+            }
+
+            $imageResourceIndex = 0;
+
+            foreach ($page->imageResources as $imageSource) {
+                $imageResourceIndex++;
+
+                if ($imageSource->softMask === null || $document->profile->supportsCurrentTransparencyImplementation()) {
+                    continue;
+                }
+
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow soft-mask image transparency for image resource %d on page %d.',
+                    $document->profile->name(),
+                    $imageResourceIndex,
+                    $pageIndex + 1,
+                ));
+            }
+        }
+    }
+
+    private function pdfDate(DateTimeImmutable $timestamp): string
+    {
+        return $timestamp->format("YmdHisO");
     }
 
     /**

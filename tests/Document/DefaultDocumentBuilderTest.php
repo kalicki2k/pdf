@@ -7,10 +7,12 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFontEncoding;
+use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
@@ -133,16 +135,47 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame(Version::V1_7, $document->profile->version());
     }
 
+    public function testItBuildsADocumentWithACustomPdfAOutputIntent(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pdfaOutputIntent(new PdfAOutputIntent('/tmp/test.icc', 'Custom RGB', 'Custom profile', 4))
+            ->build();
+
+        self::assertSame('/tmp/test.icc', $document->pdfaOutputIntent?->iccProfilePath);
+        self::assertSame('Custom RGB', $document->pdfaOutputIntent?->outputConditionIdentifier);
+        self::assertSame('Custom profile', $document->pdfaOutputIntent?->info);
+        self::assertSame(4, $document->pdfaOutputIntent?->colorComponents);
+    }
+
     public function testItRegistersImageResourcesAndPlacementCommands(): void
     {
         $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
 
         $document = DefaultDocumentBuilder::make()
-            ->image($image, ImagePlacement::at(40, 500, width: 120))
+            ->image($image, ImagePlacement::at(40, 500, width: 120), ImageAccessibility::alternativeText('Logo'))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertCount(1, $document->pages[0]->images);
         self::assertSame($image, $document->pages[0]->imageResources['Im1']);
+        self::assertSame('Im1', $document->pages[0]->images[0]->resourceAlias);
+        self::assertSame('Logo', $document->pages[0]->images[0]->accessibility?->altText);
         self::assertStringContainsString("120 0 0 60 40 500 cm\n/Im1 Do", $document->pages[0]->contents);
+    }
+
+    public function testItWrapsTaggedPdfImagesInMarkedContent(): void
+    {
+        $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
+
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->image($image, ImagePlacement::at(40, 500, width: 120), ImageAccessibility::alternativeText('Logo'))
+            ->image($image, ImagePlacement::at(40, 420, width: 120), ImageAccessibility::decorative())
+            ->build();
+
+        self::assertSame(0, $document->pages[0]->images[0]->markedContentId);
+        self::assertNull($document->pages[0]->images[1]->markedContentId);
+        self::assertStringContainsString("/Figure << /MCID 0 >> BDC\nq\n120 0 0 60 40 500 cm\n/Im1 Do\nQ\nEMC", $document->pages[0]->contents);
+        self::assertStringContainsString("/Artifact BMC\nq\n120 0 0 60 40 420 cm\n/Im1 Do\nQ\nEMC", $document->pages[0]->contents);
     }
 }

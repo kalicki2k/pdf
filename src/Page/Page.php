@@ -15,12 +15,14 @@ final readonly class Page
     /**
      * @param array<string, PageFont> $fontResources
      * @param array<string, ImageSource> $imageResources
+     * @param list<PageImage> $images
      */
     public function __construct(
         public PageSize $size,
         public string $contents = '',
         public array $fontResources = [],
         public array $imageResources = [],
+        public array $images = [],
         public ?Margin $margin = null,
         public ?Color $backgroundColor = null,
         public ?string $label = null,

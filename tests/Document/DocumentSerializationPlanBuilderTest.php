@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
@@ -14,6 +15,7 @@ use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
+use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
@@ -68,14 +70,21 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $plan = $builder->build($document);
         $objects = iterator_to_array($plan->objects);
 
-        self::assertSame(6, $plan->fileStructure->trailer->size);
-        self::assertSame(5, $plan->fileStructure->trailer->infoObjectId);
-        self::assertCount(5, $objects);
+        self::assertSame(7, $plan->fileStructure->trailer->size);
+        self::assertSame(6, $plan->fileStructure->trailer->infoObjectId);
+        self::assertCount(6, $objects);
+        self::assertSame('<< /Type /Catalog /Pages 2 0 R /Metadata 5 0 R >>', $objects[0]->contents);
         self::assertSame(5, $objects[4]->objectId);
-        self::assertSame(
-            '<< /Title (Example Title) /Author (Sebastian Kalicki) /Subject (Example Subject) /Creator (Kalle PDF) /Producer (pdf2 test suite) >>',
-            $objects[4]->contents,
+        self::assertStringStartsWith('<< /Type /Metadata /Subtype /XML /Length ', $objects[4]->contents);
+        self::assertStringContainsString('<rdf:li xml:lang="x-default">Example Title</rdf:li>', $objects[4]->contents);
+        self::assertStringContainsString('<pdf:Producer>pdf2 test suite</pdf:Producer>', $objects[4]->contents);
+        self::assertMatchesRegularExpression('/<xmp:CreateDate>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}<\/xmp:CreateDate>/', $objects[4]->contents);
+        self::assertSame(6, $objects[5]->objectId);
+        self::assertStringStartsWith(
+            '<< /Title (Example Title) /Author (Sebastian Kalicki) /Subject (Example Subject) /Creator (Kalle PDF) /Producer (pdf2 test suite) /CreationDate (',
+            $objects[5]->contents,
         );
+        self::assertStringContainsString('/ModDate (', $objects[5]->contents);
     }
 
     public function testItBuildsPageObjectsForAllDocumentPages(): void
@@ -233,7 +242,11 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
-            ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::at(40, 500, width: 120))
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                ImagePlacement::at(40, 500, width: 120),
+                ImageAccessibility::alternativeText('Example image'),
+            )
             ->build();
 
         $plan = $builder->build($document);
@@ -260,6 +273,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     softMask: ImageSource::alphaMask('alpha-data', 2, 1),
                 ),
                 ImagePlacement::at(10, 20),
+                ImageAccessibility::alternativeText('Transparent image'),
             )
             ->build();
 
@@ -269,6 +283,205 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/XObject << /Im1 5 0 R >>', $objects[2]->contents);
         self::assertStringContainsString('/SMask 6 0 R', $objects[4]->contents);
         self::assertStringContainsString('/ColorSpace /DeviceGray', $objects[5]->contents);
+    }
+
+    public function testItRejectsPdfUaImagesWithoutAccessibilityMetadata(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::at(40, 500, width: 120))
+            ->build();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Tagged PDF profiles require accessibility metadata for image 1 on page 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItAddsCatalogMetadataLangAndMarkInfoForTaggedProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'Accessible Copy',
+            language: 'de-DE',
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Catalog /Pages 2 0 R /Metadata 7 0 R /Lang (de-DE) /MarkInfo << /Marked true >> /StructTreeRoot 5 0 R >>',
+            $objects[0]->contents,
+        );
+        self::assertSame('<< /Type /StructTreeRoot /K [6 0 R] >>', $objects[4]->contents);
+        self::assertSame('<< /Type /StructElem /S /Document /P 5 0 R /K [] >>', $objects[5]->contents);
+        self::assertStringContainsString('<pdfuaid:part>1</pdfuaid:part>', $objects[6]->contents);
+    }
+
+    public function testItAddsPdfAOutputIntentAndIdentificationMetadata(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            title: 'Archive Copy',
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/Metadata 5 0 R', $objects[0]->contents);
+        self::assertStringContainsString('/OutputIntents [<< /Type /OutputIntent /S /GTS_PDFA1', $objects[0]->contents);
+        self::assertStringContainsString('/DestOutputProfile 6 0 R', $objects[0]->contents);
+        self::assertStringContainsString('<pdfaid:part>2</pdfaid:part>', $objects[4]->contents);
+        self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $objects[4]->contents);
+        self::assertStringStartsWith('<< /N 3 /Length ', $objects[5]->contents);
+    }
+
+    public function testItUsesACustomPdfAOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-icc-');
+        self::assertNotFalse($path);
+        file_put_contents($path, 'ICC');
+
+        try {
+            $document = new Document(
+                profile: Profile::pdfA2u(),
+                title: 'Archive Copy',
+                pdfaOutputIntent: new PdfAOutputIntent($path, 'Custom RGB', 'Custom profile', 4),
+            );
+
+            $plan = $builder->build($document);
+            $objects = iterator_to_array($plan->objects);
+
+            self::assertStringContainsString('/OutputConditionIdentifier (Custom RGB)', $objects[0]->contents);
+            self::assertStringContainsString('/Info (Custom profile)', $objects[0]->contents);
+            self::assertSame("<< /N 4 /Length 3 >>\nstream\nICC\nendstream", $objects[5]->contents);
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    public function testItRejectsTaggedProfilesWithoutLanguage(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'Accessible Copy',
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires a document language.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsStandardFontsForPdfAProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('Archive Copy')
+            ->text('Hello')
+            ->build();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u requires embedded fonts. Found standard font "Helvetica" on page 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsSoftMaskTransparencyForPdfA1Profiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->image(
+                ImageSource::flate(
+                    'rgb-data',
+                    2,
+                    1,
+                    ImageColorSpace::RGB,
+                    softMask: ImageSource::alphaMask('alpha-data', 2, 1),
+                ),
+                ImagePlacement::at(10, 20),
+                ImageAccessibility::alternativeText('Transparent image'),
+            )
+            ->build();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow soft-mask image transparency for image resource 1 on page 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsTaggedProfilesWithoutTitle(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            language: 'de-DE',
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires a document title.');
+
+        $builder->build($document);
+    }
+
+    public function testItAllowsDecorativeImagesForPdfUaProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                ImagePlacement::at(40, 500, width: 120),
+                ImageAccessibility::decorative(),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/XObject << /Im1 5 0 R >>', $objects[2]->contents);
+        self::assertStringContainsString('/Artifact BMC', $objects[3]->contents);
+        self::assertStringContainsString('/StructTreeRoot 6 0 R', $objects[0]->contents);
+        self::assertSame('<< /Type /StructTreeRoot /K [7 0 R] >>', $objects[5]->contents);
+        self::assertSame('<< /Type /StructElem /S /Document /P 6 0 R /K [] >>', $objects[6]->contents);
+    }
+
+    public function testItBuildsTaggedFigureStructureForPdfUaImages(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                ImagePlacement::at(40, 500, width: 120),
+                ImageAccessibility::alternativeText('Logo'),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/StructTreeRoot 6 0 R', $objects[0]->contents);
+        self::assertStringContainsString('/StructParents 0', $objects[2]->contents);
+        self::assertStringContainsString('/Figure << /MCID 0 >> BDC', $objects[3]->contents);
+        self::assertSame('<< /Type /StructTreeRoot /K [7 0 R] /ParentTree 8 0 R >>', $objects[5]->contents);
+        self::assertSame('<< /Type /StructElem /S /Document /P 6 0 R /K [9 0 R] >>', $objects[6]->contents);
+        self::assertSame('<< /Nums [0 [9 0 R]] >>', $objects[7]->contents);
+        self::assertSame('<< /Type /StructElem /S /Figure /P 7 0 R /Pg 3 0 R /Alt (Logo) /K 0 >>', $objects[8]->contents);
     }
 
     public function testItBuildsEmbeddedTrueTypeFontObjects(): void
