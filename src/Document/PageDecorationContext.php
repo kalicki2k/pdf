@@ -71,6 +71,16 @@ final class PageDecorationContext
         return $this;
     }
 
+    /**
+     * @param list<string> $lines
+     */
+    public function textLines(array $lines, ?TextOptions $options = null): self
+    {
+        $this->builder = $this->builder->textLines($lines, $options);
+
+        return $this;
+    }
+
     public function taggedText(string $text, string $tag, ?TextOptions $options = null): self
     {
         $this->builder = $this->builder->taggedText($text, $tag, $options);
@@ -94,6 +104,16 @@ final class PageDecorationContext
     public function paragraph(string|array $text, ?TextOptions $options = null): self
     {
         $this->builder = $this->builder->paragraph($text, $options);
+
+        return $this;
+    }
+
+    /**
+     * @param list<string> $lines
+     */
+    public function paragraphLines(array $lines, ?TextOptions $options = null): self
+    {
+        $this->builder = $this->builder->paragraphLines($lines, $options);
 
         return $this;
     }

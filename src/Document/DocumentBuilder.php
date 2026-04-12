@@ -108,6 +108,11 @@ interface DocumentBuilder
      */
     public function text(string|array $text, ?TextOptions $options = null): self;
 
+    /**
+     * @param list<string> $lines
+     */
+    public function textLines(array $lines, ?TextOptions $options = null): self;
+
     public function taggedText(string $text, string $tag, ?TextOptions $options = null): self;
 
     /**
@@ -119,6 +124,11 @@ interface DocumentBuilder
      * @param string|list<TextSegment> $text
      */
     public function paragraph(string|array $text, ?TextOptions $options = null): self;
+
+    /**
+     * @param list<string> $lines
+     */
+    public function paragraphLines(array $lines, ?TextOptions $options = null): self;
 
     public function heading(string $text, int $level = 1, ?TextOptions $options = null): self;
 

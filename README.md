@@ -222,6 +222,18 @@ $document = DefaultDocumentBuilder::make()
 
 Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Fuer explizitere Inline-Link-Spans steht `TextLink` zur Verfuegung, damit sichtbarer Text, Annotation-`/Contents`, PDF/UA-Alternativtext und Gruppierung getrennt steuerbar bleiben.
 
+Fuer explizite Zeilen ohne eingebettete Newline-Strings stehen ausserdem `textLines(...)` und `paragraphLines(...)` zur Verfuegung:
+
+```php
+$document = DefaultDocumentBuilder::make()
+    ->paragraphLines([
+        'DEIN FIRMENNAME',
+        'Strasse Hausnummer',
+        '12345 Musterstadt',
+    ], new TextOptions(fontSize: 12))
+    ->build();
+```
+
 Dokumentweite PDF-Outlines/Bookmarks werden ebenfalls unterstuetzt. Neben Top-Level-Bookmarks koennen Outlines explizit verschachtelt, offen oder geschlossen markiert und mit Stilinformationen versehen werden. Zusaetzlich zu `XYZ` werden auch `Fit`, `FitH`, `FitR`, benannte Ziele sowie lokale und externe `GoTo`-Actions unterstuetzt.
 
 ```php

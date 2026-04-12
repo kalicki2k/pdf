@@ -202,6 +202,42 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame('BlockQuote', $document->taggedTextBlocks[0]->tag);
     }
 
+    public function testTextLinesAdvanceTheCursorByTheRenderedLineCount(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textLines(['Firma', 'Strasse 1'], new TextOptions(
+                x: 72.0,
+                y: 720.0,
+                fontSize: 10.0,
+                lineHeight: 12.0,
+            ))
+            ->text('Ort', new TextOptions(
+                x: 72.0,
+                fontSize: 10.0,
+                lineHeight: 12.0,
+            ))
+            ->build();
+
+        self::assertStringContainsString("72 720 Td", $document->pages[0]->contents);
+        self::assertStringContainsString("72 696 Td", $document->pages[0]->contents);
+        self::assertStringNotContainsString("72 684 Td", $document->pages[0]->contents);
+    }
+
+    public function testParagraphLinesUseParagraphTagging(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->paragraphLines(['Zeile 1', 'Zeile 2'], new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->taggedTextBlocks);
+        self::assertSame('P', $document->taggedTextBlocks[0]->tag);
+    }
+
     public function testItBuildsGenericTaggedStructureContainers(): void
     {
         $document = DefaultDocumentBuilder::make()

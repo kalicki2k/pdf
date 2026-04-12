@@ -410,6 +410,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->renderTextBlock($text, $options, $this->defaultTaggedTextTag());
     }
 
+    /**
+     * @param list<string> $lines
+     */
+    public function textLines(array $lines, ?TextOptions $options = null): DocumentBuilder
+    {
+        return $this->renderTextLines($lines, $options, $this->defaultTaggedTextTag());
+    }
+
     public function taggedText(string $text, string $tag, ?TextOptions $options = null): DocumentBuilder
     {
         if ($tag === '') {
@@ -464,6 +472,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $this->renderTextBlock($text, $options, 'P');
+    }
+
+    /**
+     * @param list<string> $lines
+     */
+    public function paragraphLines(array $lines, ?TextOptions $options = null): DocumentBuilder
+    {
+        return $this->renderTextLines($lines, $options, 'P');
     }
 
     public function heading(string $text, int $level = 1, ?TextOptions $options = null): DocumentBuilder
@@ -4184,6 +4200,69 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
+     * @param list<string> $lines
+     */
+    private function renderTextLines(array $lines, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
+    {
+        $clone = clone $this;
+        $options ??= new TextOptions();
+
+        if ($lines === []) {
+            return $clone;
+        }
+
+        foreach ($lines as $index => $line) {
+            if (!is_string($line)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Text line %d must be a string.',
+                    $index + 1,
+                ));
+            }
+        }
+
+        $font = $options->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
+            : StandardFontDefinition::from($options->fontName);
+        $textFlow = $clone->textFlow();
+        $placement = $textFlow->placement($options, $font);
+        $wrappedLines = $clone->wrapExplicitTextLines($lines, $options, $font, $textFlow, $placement['x']);
+        $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
+        $renderState = $clone->prepareTextRenderState(implode('', $lines), $options, $font, $shapedLines);
+        $markedContentTag = $taggedTextTag !== null && $clone->requiresTaggedStructure()
+            ? $taggedTextTag
+            : null;
+        $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
+
+        $textResult = $clone->buildWrappedTextContent(
+            $wrappedLines,
+            $shapedLines,
+            $options,
+            $textFlow,
+            $placement['x'],
+            $placement['y'],
+            $renderState['fontAlias'],
+            $font,
+            $renderState['embeddedPageFont'],
+            $renderState['useHexString'],
+            ($this->profile ?? Profile::standard())->version(),
+            $markedContentTag,
+            $markedContentId,
+        );
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $textResult['contents'],
+        );
+        $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
+        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedLines));
+
+        if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
+            $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
+        }
+
+        return $clone;
+    }
+
+    /**
      * @return array{contents: string, annotations: list<PageAnnotation>, lineCount: int}
      */
     private function renderTextBlockAt(
@@ -4226,6 +4305,35 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'annotations' => $textResult['annotations'],
             'lineCount' => count($wrappedLines),
         ];
+    }
+
+    /**
+     * @param list<string> $lines
+     * @return list<string>
+     */
+    private function wrapExplicitTextLines(
+        array $lines,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        TextFlow $textFlow,
+        float $x,
+    ): array {
+        $wrappedLines = [];
+
+        foreach ($lines as $line) {
+            if ($line === '') {
+                $wrappedLines[] = '';
+
+                continue;
+            }
+
+            $wrappedLines = [
+                ...$wrappedLines,
+                ...$textFlow->wrapTextLines($line, $options, $font, $x),
+            ];
+        }
+
+        return $wrappedLines;
     }
 
     private function copyTextOptions(

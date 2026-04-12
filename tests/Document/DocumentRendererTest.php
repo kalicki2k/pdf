@@ -155,6 +155,34 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('28c4d6dce4f6fcdf2920546a', bin2hex($pdf));
     }
 
+    public function testItRendersExplicitTextLinesWithoutBlankLineSpacing(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textLines(['Firma', 'Strasse 1'], new TextOptions(
+                x: 72.0,
+                y: 720.0,
+                fontSize: 10.0,
+                lineHeight: 12.0,
+            ))
+            ->text('Ort', new TextOptions(
+                x: 72.0,
+                fontSize: 10.0,
+                lineHeight: 12.0,
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString("72 720 Td", $pdf);
+        self::assertStringContainsString("72 696 Td", $pdf);
+        self::assertStringNotContainsString("72 684 Td", $pdf);
+    }
+
     public function testItRendersTaggedFigureStructureForPdfUaImages(): void
     {
         $document = DefaultDocumentBuilder::make()
