@@ -37,6 +37,7 @@ final class PdfAColorPolicyValidator
 {
     public function __construct(
         private readonly DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
+        private readonly PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
     ) {
     }
 
@@ -153,20 +154,11 @@ final class PdfAColorPolicyValidator
      */
     private function pdfAFormRenderContext(Document $document, array $pageObjectIdsByPageNumber): FormFieldRenderContext
     {
-        foreach ($document->pages as $page) {
-            foreach ($page->fontResources as $pageFont) {
-                if ($pageFont->isEmbedded() && $pageFont->usesUnicodeCids()) {
-                    return new FormFieldRenderContext(
-                        $pageObjectIdsByPageNumber,
-                        defaultTextFont: $pageFont,
-                        defaultTextFontAlias: 'F0',
-                        defaultTextFontObjectId: 1,
-                    );
-                }
-            }
-        }
-
-        return new FormFieldRenderContext($pageObjectIdsByPageNumber);
+        return $this->pdfAFormContextFactory->buildRenderContext(
+            $document,
+            $pageObjectIdsByPageNumber,
+            defaultTextFontObjectId: 1,
+        );
     }
 
     private function assertImageColorSpaceCompatible(

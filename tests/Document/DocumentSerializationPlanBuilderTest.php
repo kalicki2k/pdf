@@ -1172,7 +1172,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
-            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->linkToPage(1, 40, 500, 120, 16, 'Open Example')
             ->build();
 
         $plan = $builder->build($document);
@@ -1183,7 +1183,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             $objects[2]->contents,
         );
         self::assertSame(
-            '<< /Type /Annot /Subtype /Link /Rect [40 500 160 516] /Border [0 0 0] /P 3 0 R /A << /S /URI /URI (https://example.com) >> /Contents (Open Example) >>',
+            '<< /Type /Annot /Subtype /Link /Rect [40 500 160 516] /Border [0 0 0] /P 3 0 R /Dest [3 0 R /Fit] /Contents (Open Example) >>',
             $objects[4]->contents,
         );
     }
@@ -1526,7 +1526,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->linkToPage(1, 40, 500, 120, 16, 'Open Example')
             ->build();
 
         $plan = $builder->build($document);
@@ -1574,7 +1574,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->paragraph('Lead in text Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->linkToPage(1, 40, 500, 120, 16, 'Open Example')
             ->build();
 
         $plan = $builder->build($document);
@@ -1804,12 +1804,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.');
 
         $builder->build($document);
     }
 
-    public function testItBuildsTaggedPdfA1aChoiceAndPushButtonFields(): void
+    public function testItBuildsTaggedPdfA1aChoiceFields(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -1835,7 +1835,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringNotContainsString('/Helv', $serialized);
     }
 
-    public function testItBuildsPdfA1aInertPushButtons(): void
+    public function testItRejectsPdfA1aPushButtons(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -1845,15 +1845,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->pushButton('ack', 'Acknowledge', 40, 380, 120, 18, 'Acknowledge')
             ->build();
 
-        $serialized = implode("\n", array_map(
-            static fn ($object): string => $object->contents,
-            iterator_to_array($builder->build($document)->objects),
-        ));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.',
+        );
 
-        self::assertStringContainsString('/FT /Btn', $serialized);
-        self::assertStringContainsString('/MK << /CA (Acknowledge) >>', $serialized);
-        self::assertStringNotContainsString('/A << /S /URI', $serialized);
-        self::assertStringContainsString('/Type /StructElem /S /Form', $serialized);
+        $builder->build($document);
     }
 
     public function testItRejectsPdfA1aPushButtonsWithUriActions(): void
@@ -1867,7 +1864,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1a does not allow push button URI actions. Use an inert button without /A.');
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.',
+        );
 
         $builder->build($document);
     }
@@ -1905,7 +1904,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.');
 
         $builder->build($document);
     }
@@ -1951,7 +1950,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /BlockQuote', $serialized);
     }
 
-    public function testItBuildsPdfA1LinkAnnotationsWithAppearanceStreams(): void
+    public function testItBuildsPdfA1InternalLinkAnnotationsWithAppearanceStreams(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -1960,7 +1959,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->text('Ж', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
-            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->linkToPage(1, 40, 500, 120, 16, 'Open Example')
             ->build();
 
         $plan = $builder->build($document);
@@ -1970,7 +1969,150 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         ));
 
         self::assertStringContainsString('/Subtype /Link', $serialized);
+        self::assertStringContainsString('/Dest [3 0 R /Fit]', $serialized);
         self::assertStringContainsString('/AP << /N ', $serialized);
+    }
+
+    public function testItRejectsPdfA1UriLinkAnnotations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow URI annotation actions in link annotation 1 on page 1. Use an internal /Dest target instead.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItBuildsAppearanceStreamsForAllSupportedPdfA1aPageAnnotations(): void
+    {
+        $annotationBuilders = [
+            'Text' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA'),
+            'FreeText' => fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->freeTextAnnotation('Ж', 40, 470, 120, 28, new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+                ), Color::gray(0.2), Color::gray(0.95), 'QA'),
+            'Highlight' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->highlightAnnotation(40, 440, 80, 12, Color::rgb(1, 1, 0), 'Markiert', 'QA'),
+            'Underline' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->underlineAnnotation(40, 410, 80, 12, Color::rgb(1, 0, 0), 'Unterstrichen', 'QA'),
+            'StrikeOut' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->strikeOutAnnotation(40, 380, 80, 12, Color::rgb(0, 0, 1), 'Durchgestrichen', 'QA'),
+            'Squiggly' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->squigglyAnnotation(40, 350, 80, 12, Color::rgb(0, 0.5, 0), 'Wellig', 'QA'),
+            'Stamp' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->stampAnnotation(40, 320, 48, 18, 'Approved', Color::rgb(1, 0, 0), 'Stempel', 'QA'),
+            'Square' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->squareAnnotation(40, 280, 80, 24, Color::rgb(1, 0, 0), Color::gray(0.9), 'Quadrat', 'QA'),
+            'Circle' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->circleAnnotation(40, 240, 80, 24, Color::rgb(1, 0, 0), Color::gray(0.9), 'Kreis', 'QA'),
+            'Caret' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->caretAnnotation(40, 200, 18, 18, 'Einfügen', 'QA', 'P'),
+            'Ink' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->inkAnnotation(40, 160, 80, 24, [[[40.0, 160.0], [60.0, 178.0], [90.0, 166.0]]], Color::black(), 'Tinte', 'QA'),
+            'Line' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->lineAnnotation(40, 120, 90, 150, Color::rgb(0, 0, 1), 'Linie', 'QA'),
+            'PolyLine' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->polyLineAnnotation([[40.0, 90.0], [70.0, 110.0], [120.0, 96.0]], Color::rgb(0, 0, 1), 'Polyline', 'QA'),
+            'Polygon' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
+                ->polygonAnnotation([[40.0, 60.0], [70.0, 80.0], [120.0, 66.0]], Color::rgb(1, 0, 0), Color::gray(0.9), 'Polygon', 'QA'),
+        ];
+
+        foreach ($annotationBuilders as $subtype => $buildAnnotation) {
+            $document = $buildAnnotation(
+                DefaultDocumentBuilder::make()
+                    ->profile(Profile::pdfA1a())
+                    ->title('Archive Copy')
+                    ->language('de-DE')
+                    ->taggedText('Ж', 'P', new TextOptions(
+                        embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+                    )),
+            )->build();
+
+            $serialized = implode("\n", array_map(
+                static fn ($object): string => $object->contents,
+                iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+            ));
+
+            self::assertStringContainsString('/Subtype /' . $subtype, $serialized, $subtype);
+            self::assertStringContainsString('/AP << /N ', $serialized, $subtype);
+        }
+    }
+
+    public function testItBuildsPdfA1aPopupRelatedObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
+            ->popupAnnotation(70, 520, 120, 60, true)
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Subtype /Popup', $serialized);
+        self::assertMatchesRegularExpression('/\/Subtype \/Popup[\s\S]*\/Parent \d+ 0 R/', $serialized);
+    }
+
+    public function testItRejectsInvalidIccProfilesForPdfA1Builds(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'icc');
+
+        if ($path === false) {
+            self::fail('Failed to create ICC temp file.');
+        }
+
+        file_put_contents($path, 'ICC');
+
+        try {
+            $builder = new DocumentSerializationPlanBuilder();
+            $document = DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfA1b())
+                ->title('Archive Copy')
+                ->pdfaOutputIntent(new PdfAOutputIntent($path, 'Custom RGB', 'Broken profile', 3))
+                ->build();
+
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage(sprintf(
+                'ICC profile "%s" is too short to be a valid PDF/A output intent profile.',
+                $path,
+            ));
+
+            $builder->build($document);
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    public function testItKeepsPdfA1InfoAndXmpCreatorMetadataConsistent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            creatorTool: 'pdf2 test suite',
+        );
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Producer (pdf2 test suite)', $serialized);
+        self::assertStringContainsString('<pdf:Producer>pdf2 test suite</pdf:Producer>', $serialized);
+        self::assertStringNotContainsString('<xmp:CreatorTool>pdf2 test suite</xmp:CreatorTool>', $serialized);
     }
 
     public function testItBuildsPdfA2uLinkAnnotationsWithAppearanceStreams(): void

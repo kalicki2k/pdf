@@ -15,7 +15,6 @@ use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
-
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
@@ -215,6 +214,11 @@ final class PdfALowLevelPolicyValidator
         'null',
     ];
 
+    public function __construct(
+        private readonly PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
+    ) {
+    }
+
     public function assertDocumentLowLevelSafety(Document $document): void
     {
         if (!$document->profile->isPdfA()) {
@@ -262,19 +266,23 @@ final class PdfALowLevelPolicyValidator
             $this->assertImageResourceLowLevelSafety($document, $imageSource, $pageIndex, $imageResourceIndex);
         }
 
-        $annotationRenderContext = new PageAnnotationRenderContext(
-            pageObjectId: $pageIndex + 1,
-            printable: true,
-            pageObjectIdsByPageNumber: $pageObjectIdsByPageNumber,
-            structParentId: 1,
-            appearanceObjectId: 1,
-        );
-
         $appearanceRenderContext = new AnnotationAppearanceRenderContext(
             array_fill_keys(array_keys($page->fontResources), 1),
         );
 
         foreach ($page->annotations as $annotationIndex => $annotation) {
+            $annotationRenderContext = new PageAnnotationRenderContext(
+                pageObjectId: $pageIndex + 1,
+                printable: true,
+                pageObjectIdsByPageNumber: $pageObjectIdsByPageNumber,
+                structParentId: 1,
+                appearanceObjectId: 1,
+                annotationObjectId: 1,
+                relatedObjectIds: $annotation instanceof RelatedObjectsPageAnnotation
+                    ? array_fill(0, $annotation->relatedObjectCount(), 1)
+                    : [],
+            );
+
             $this->assertAnnotationLowLevelSafety(
                 $document,
                 $annotation,
@@ -431,20 +439,11 @@ final class PdfALowLevelPolicyValidator
      */
     private function pdfAFormRenderContext(Document $document, array $pageObjectIdsByPageNumber): FormFieldRenderContext
     {
-        foreach ($document->pages as $page) {
-            foreach ($page->fontResources as $pageFont) {
-                if ($pageFont->isEmbedded() && $pageFont->usesUnicodeCids()) {
-                    return new FormFieldRenderContext(
-                        $pageObjectIdsByPageNumber,
-                        defaultTextFont: $pageFont,
-                        defaultTextFontAlias: 'F0',
-                        defaultTextFontObjectId: 1,
-                    );
-                }
-            }
-        }
-
-        return new FormFieldRenderContext($pageObjectIdsByPageNumber);
+        return $this->pdfAFormContextFactory->buildRenderContext(
+            $document,
+            $pageObjectIdsByPageNumber,
+            defaultTextFontObjectId: 1,
+        );
     }
 
     /**

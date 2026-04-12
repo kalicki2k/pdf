@@ -86,8 +86,12 @@ final readonly class AcroForm
     /**
      * @param list<int> $fieldObjectIds
      */
-    public function pdfObjectContents(array $fieldObjectIds, ?int $defaultTextFontObjectId = null, string $defaultTextFontAlias = 'F0'): string
-    {
+    public function pdfObjectContents(
+        array $fieldObjectIds,
+        ?int $defaultTextFontObjectId = null,
+        string $defaultTextFontAlias = 'F0',
+        bool $allowBuiltinDefaultTextFontFallback = true,
+    ): string {
         if (count($fieldObjectIds) !== count($this->fields)) {
             throw new InvalidArgumentException('AcroForm field object IDs must match the registered field count.');
         }
@@ -110,6 +114,10 @@ final readonly class AcroForm
         if ($this->needsDefaultTextResources()) {
             if ($defaultTextFontObjectId !== null) {
                 $entries[] = '/DR << /Font << /' . $defaultTextFontAlias . ' ' . $defaultTextFontObjectId . ' 0 R >> >>';
+            } elseif (!$allowBuiltinDefaultTextFontFallback) {
+                throw new InvalidArgumentException(
+                    'PDF/A form resources require an embedded default font. The built-in /Helv fallback is not allowed.',
+                );
             } else {
                 $entries[] = '/DR << /Font << /Helv << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> >> >>';
             }

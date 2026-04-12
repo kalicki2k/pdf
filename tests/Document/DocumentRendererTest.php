@@ -431,7 +431,7 @@ final class DocumentRendererTest extends TestCase
                 ImagePlacement::at(320, 610, width: 140),
                 ImageAccessibility::alternativeText('Projektgrafik'),
             )
-            ->link('https://example.com/spec', 72, 560, 180, 16, 'Spezifikation öffnen')
+            ->linkToPage(1, 72, 560, 180, 16, 'Spezifikation öffnen')
             ->build();
 
         $renderer = new DocumentRenderer();
@@ -606,7 +606,7 @@ final class DocumentRendererTest extends TestCase
                 ImagePlacement::at(320, 610, width: 140),
                 ImageAccessibility::alternativeText('Projektgrafik'),
             )
-            ->link('https://example.com/spec', 72, 480, 180, 16, 'Spezifikation oeffnen')
+            ->linkToPage(1, 72, 480, 180, 16, 'Spezifikation oeffnen')
             ->build();
 
         $renderer = new DocumentRenderer();
@@ -813,7 +813,7 @@ final class DocumentRendererTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.');
 
         (new DocumentRenderer())->write($document, new StringOutput());
     }
@@ -829,7 +829,7 @@ final class DocumentRendererTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.');
 
         (new DocumentRenderer())->write($document, new StringOutput());
     }
@@ -952,7 +952,7 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/A << /S /URI /URI (https://example.com/docs) >>', $pdf);
     }
 
-    public function testItRendersTaggedPdfA1aChoiceAndPushButtonFields(): void
+    public function testItRendersTaggedPdfA1aChoiceFields(): void
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1a())
@@ -979,7 +979,7 @@ final class DocumentRendererTest extends TestCase
         self::assertStringNotContainsString('/Helv', $pdf);
     }
 
-    public function testItRendersTaggedPdfA1aInertPushButtons(): void
+    public function testItRejectsPdfA1aPushButtons(): void
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1a())
@@ -988,17 +988,12 @@ final class DocumentRendererTest extends TestCase
             ->pushButton('ack', 'Acknowledge', 40, 380, 120, 18, 'Acknowledge')
             ->build();
 
-        $renderer = new DocumentRenderer();
-        $output = new StringOutput();
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.',
+        );
 
-        $renderer->write($document, $output);
-
-        $pdf = $output->contents();
-
-        self::assertStringContainsString('/FT /Btn', $pdf);
-        self::assertStringContainsString('/MK << /CA (Acknowledge) >>', $pdf);
-        self::assertStringNotContainsString('/A << /S /URI', $pdf);
-        self::assertStringContainsString('/Type /StructElem /S /Form', $pdf);
+        (new DocumentRenderer())->write($document, new StringOutput());
     }
 
     public function testItRendersASignatureField(): void

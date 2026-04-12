@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use DateTimeImmutable;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
@@ -14,7 +15,6 @@ use Kalle\Pdf\Document\Form\SignatureField;
 use Kalle\Pdf\Document\Form\TextField;
 use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureCollector;
-use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
@@ -34,10 +34,11 @@ final class DocumentSerializationPlanValidator
         private readonly PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
         private readonly PdfA1AnnotationPolicy $pdfA1AnnotationPolicy = new PdfA1AnnotationPolicy(),
         private readonly PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
+        private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
     ) {
     }
 
-    public function assertBuildable(Document $document): void
+    public function assertBuildable(Document $document, ?DateTimeImmutable $serializedAt = null): void
     {
         $this->assertProfileRequirements($document);
         $this->pdfA1aSupportedStructureValidator->assertSupported($document);
@@ -48,7 +49,7 @@ final class DocumentSerializationPlanValidator
         $this->assertAnnotationRequirements($document);
         $this->assertNamedDestinationRequirements($document);
         $this->assertOutlineRequirements($document);
-        $this->assertPdfARequirements($document);
+        $this->assertPdfARequirements($document, $serializedAt);
     }
 
     private function assertProfileRequirements(Document $document): void
@@ -131,7 +132,7 @@ final class DocumentSerializationPlanValidator
 
                 if (
                     $document->profile->requiresAnnotationAppearanceStreams()
-                    && !$this->annotationNeedsAppearanceStream($document, $annotation)
+                    && !$this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)
                 ) {
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page %d.',
@@ -170,25 +171,6 @@ final class DocumentSerializationPlanValidator
                 }
             }
         }
-    }
-
-    private function annotationNeedsAppearanceStream(Document $document, object $annotation): bool
-    {
-        return $document->profile->requiresAnnotationAppearanceStreams()
-            && (
-                !$document->profile->isPdfA1()
-                || $annotation instanceof LinkAnnotation
-                || (
-                    $document->profile->requiresTaggedPageAnnotations()
-                    && (
-                        ($document->profile->pdfaConformance() === 'A'
-                            && $annotation instanceof PageAnnotation
-                            && $this->pdfA1aPageAnnotationPolicy->supports($annotation))
-                        || $annotation instanceof PdfUaTaggedPageAnnotation
-                    )
-                )
-            )
-            && $annotation instanceof AppearanceStreamAnnotation;
     }
 
     private function assertNamedDestinationRequirements(Document $document): void
@@ -458,7 +440,7 @@ final class DocumentSerializationPlanValidator
 
             if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof CheckboxField) {
                 throw new InvalidArgumentException(sprintf(
-                    'Profile %s currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.',
+                    'Profile %s currently only allows text and choice fields in the PDF/A-1a form implementation.',
                     $document->profile->name(),
                 ));
             }
@@ -472,7 +454,7 @@ final class DocumentSerializationPlanValidator
 
             if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof RadioButtonGroup) {
                 throw new InvalidArgumentException(sprintf(
-                    'Profile %s currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.',
+                    'Profile %s currently only allows text and choice fields in the PDF/A-1a form implementation.',
                     $document->profile->name(),
                 ));
             }
@@ -492,6 +474,13 @@ final class DocumentSerializationPlanValidator
             }
 
             if ($field instanceof PushButtonField) {
+                if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A') {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s currently only allows text and choice fields in the PDF/A-1a form implementation.',
+                        $document->profile->name(),
+                    ));
+                }
+
                 if (
                     $document->profile->isPdfA1()
                     && $document->profile->pdfaConformance() === 'A'
@@ -526,7 +515,7 @@ final class DocumentSerializationPlanValidator
 
             if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof SignatureField) {
                 throw new InvalidArgumentException(sprintf(
-                    'Profile %s currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.',
+                    'Profile %s currently only allows text and choice fields in the PDF/A-1a form implementation.',
                     $document->profile->name(),
                 ));
             }
@@ -557,7 +546,7 @@ final class DocumentSerializationPlanValidator
         }
     }
 
-    private function assertPdfARequirements(Document $document): void
+    private function assertPdfARequirements(Document $document, ?DateTimeImmutable $serializedAt = null): void
     {
         if (!$document->profile->isPdfA()) {
             return;
@@ -570,7 +559,7 @@ final class DocumentSerializationPlanValidator
             ));
         }
 
-        $this->pdfA1PolicyEnforcer->enforce($document);
+        $this->pdfA1PolicyEnforcer->enforce($document, serializedAt: $serializedAt);
         $this->pdfALowLevelPolicyValidator->assertDocumentLowLevelSafety($document);
         $this->pdfAColorPolicyValidator->assertDocumentColors($document);
 

@@ -43,8 +43,8 @@ $document = DefaultDocumentBuilder::make()
     ))
     ->textAnnotation(420, 744, 18, 18, 'Kommentar', 'QA', 'Comment', true)
     ->textField('customer_name', 72, 700, 180, 18, 'Ada', 'Customer name')
-    ->checkbox('accept_terms', 72, 664, 14, true, 'Accept terms')
-    ->signatureField('approval_signature', 72, 620, 180, 28, 'Approval signature')
+    ->comboBox('status', 72, 664, 180, 18, ['new' => 'Neu', 'done' => 'Erledigt'], 'done', 'Status')
+    ->listBox('skills', 72, 592, 180, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php', 'pdf'], 'Skills')
     ->build();
 
 $output = new FileOutput($argv[1]);

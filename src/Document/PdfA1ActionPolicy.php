@@ -34,6 +34,15 @@ final class PdfA1ActionPolicy
         if (!$document->profile->isPdfA1()) {
             return;
         }
+
+        if ($annotation instanceof LinkAnnotation && $annotation->target->isExternalUrl()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow URI annotation actions in link annotation %d on page %d. Use an internal /Dest target instead.',
+                $document->profile->name(),
+                $annotationIndex + 1,
+                $pageIndex + 1,
+            ));
+        }
     }
 
     public function assertFormFieldAllowed(Document $document, FormField $field): void

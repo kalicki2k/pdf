@@ -55,6 +55,7 @@ final class PdfA1PolicyMatrixTest extends TestCase
             'encryption' => 'Profile %s does not allow encryption.',
             'indexed-image' => 'Profile %s does not allow custom image color space definitions in the current implementation for image resource 1 on page 1.',
             'soft-mask-image' => 'Profile %s does not allow soft-mask image transparency for image resource 1 on page 1.',
+            'uri-link' => 'Profile %s does not allow URI annotation actions in link annotation 1 on page 1. Use an internal /Dest target instead.',
         ];
 
         if ($profile->pdfaConformance() !== 'A') {
@@ -101,6 +102,9 @@ final class PdfA1PolicyMatrixTest extends TestCase
                     ImagePlacement::at(10, 20),
                     ImageAccessibility::alternativeText('Transparent image'),
                 )
+                ->build(),
+            'uri-link' => $builder
+                ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
                 ->build(),
             default => throw new InvalidArgumentException(sprintf('Unknown PDF/A-1 scenario "%s".', $scenario)),
         };

@@ -71,7 +71,7 @@ final readonly class XmpMetadata
 
         if ($document->creator !== null) {
             $lines[] = '    <xmp:CreatorTool>' . $this->escape($document->creator) . '</xmp:CreatorTool>';
-        } elseif ($document->creatorTool !== null) {
+        } elseif ($document->creatorTool !== null && !$document->profile->isPdfA1()) {
             $lines[] = '    <xmp:CreatorTool>' . $this->escape($document->creatorTool) . '</xmp:CreatorTool>';
         }
 

@@ -4,26 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use function array_keys;
-
 use function array_values;
 use function count;
-use function dirname;
-
-use Kalle\Pdf\Document\Form\ComboBoxField;
-use Kalle\Pdf\Document\Form\ListBoxField;
-use Kalle\Pdf\Document\Form\PushButtonField;
-use Kalle\Pdf\Document\Form\TextField;
 
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureCollector;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
-use Kalle\Pdf\Font\EmbeddedFontDefinition;
-use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\OpenTypeOutlineType;
 use Kalle\Pdf\Image\ImageSource;
-use Kalle\Pdf\Page\AppearanceStreamAnnotation;
-use Kalle\Pdf\Page\EmbeddedGlyph;
-use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 
@@ -32,6 +19,8 @@ final class DocumentSerializationPlanObjectIdAllocator
     public function __construct(
         private readonly DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
         private readonly TaggedStructureCollector $taggedStructureCollector = new TaggedStructureCollector(),
+        private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
+        private readonly PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
     ) {
     }
 
@@ -86,7 +75,7 @@ final class DocumentSerializationPlanObjectIdAllocator
             $contentObjectIds[] = $nextObjectId++;
         }
 
-        foreach (array_keys($document->pages) as $pageIndex) {
+        foreach ($document->pages as $pageIndex => $_page) {
             $pageFormWidgetObjectIds[$pageIndex] = [];
         }
 
@@ -115,7 +104,7 @@ final class DocumentSerializationPlanObjectIdAllocator
 
             foreach ($page->annotations as $annotationIndex => $annotation) {
                 $pageAnnotationObjectIds[$pageIndex][] = $nextObjectId++;
-                $pageAnnotationAppearanceObjectIds[$pageIndex][] = $this->annotationNeedsAppearanceStream($document, $annotation)
+                $pageAnnotationAppearanceObjectIds[$pageIndex][] = $this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)
                     ? $nextObjectId++
                     : null;
                 $pageAnnotationRelatedObjectIds[$pageIndex][$annotationIndex] = [];
@@ -134,7 +123,7 @@ final class DocumentSerializationPlanObjectIdAllocator
         }
 
         if ($document->acroForm !== null) {
-            $acroFormDefaultFont = $this->buildAcroFormDefaultFont($document);
+            $acroFormDefaultFont = $this->pdfAFormContextFactory->buildDefaultFont($document);
 
             if ($acroFormDefaultFont !== null) {
                 $acroFormDefaultFontKey = $acroFormDefaultFont->key();
@@ -235,6 +224,7 @@ final class DocumentSerializationPlanObjectIdAllocator
         $documentStructElemObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
         $parentTreeObjectId = ($taggedStructure->pageMarkedContentKeys !== []
             || $taggedLinkStructure['parentTreeEntries'] !== []
+            || $taggedPageAnnotationStructure['parentTreeEntries'] !== []
             || $taggedFormStructure['parentTreeEntries'] !== [])
             ? $nextObjectId++
             : null;
@@ -370,79 +360,6 @@ final class DocumentSerializationPlanObjectIdAllocator
         }
 
         return $nextObjectId;
-    }
-
-    private function annotationNeedsAppearanceStream(Document $document, object $annotation): bool
-    {
-        return $document->profile->requiresAnnotationAppearanceStreams()
-            && (!$document->profile->isPdfA1() || $annotation instanceof LinkAnnotation)
-            && $annotation instanceof AppearanceStreamAnnotation;
-    }
-
-    private function buildAcroFormDefaultFont(Document $document): ?PageFont
-    {
-        if ($document->acroForm === null || !$document->profile->isPdfA1()) {
-            return null;
-        }
-
-        $defaultFont = null;
-
-        foreach ($document->pages as $page) {
-            foreach ($page->fontResources as $pageFont) {
-                if (!$pageFont->isEmbedded() || !$pageFont->usesUnicodeCids()) {
-                    continue;
-                }
-
-                $defaultFont = $pageFont;
-                break 2;
-            }
-        }
-
-        if ($defaultFont === null) {
-            $defaultFont = PageFont::embeddedUnicode(
-                EmbeddedFontDefinition::fromSource(
-                    EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
-                ),
-                [],
-            );
-        }
-
-        $additionalGlyphs = [];
-
-        foreach ($document->acroForm->fields as $field) {
-            foreach ($this->formFieldVisibleTexts($field) as $text) {
-                foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
-                    $codePoint = mb_ord($character, 'UTF-8');
-                    $additionalGlyphs[] = new EmbeddedGlyph(
-                        glyphId: $defaultFont->embeddedDefinition()->parser->getGlyphIdForCodePoint($codePoint),
-                        unicodeCodePoint: $codePoint,
-                        unicodeText: $character,
-                    );
-                }
-            }
-        }
-
-        return $additionalGlyphs === []
-            ? $defaultFont
-            : $defaultFont->withAdditionalEmbeddedGlyphs($additionalGlyphs);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function formFieldVisibleTexts(object $field): array
-    {
-        return match (true) {
-            $field instanceof TextField => array_values(array_filter([$field->value, $field->defaultValue], static fn (?string $value): bool => $value !== null && $value !== '')),
-            $field instanceof ComboBoxField => array_values(array_filter([
-                $field->value !== null ? ($field->options[$field->value] ?? null) : null,
-                $field->defaultValue !== null ? ($field->options[$field->defaultValue] ?? null) : null,
-                ...array_values($field->options),
-            ], static fn (?string $value): bool => $value !== null && $value !== '')),
-            $field instanceof ListBoxField => array_values(array_filter(array_values($field->options), static fn (?string $value): bool => $value !== null && $value !== '')),
-            $field instanceof PushButtonField => [$field->label],
-            default => [],
-        };
     }
 
     /**

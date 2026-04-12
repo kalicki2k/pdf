@@ -64,6 +64,20 @@ final class AcroFormTest extends TestCase
         self::assertStringNotContainsString('/Helv', $acroForm->pdfObjectContents([7], 11));
     }
 
+    public function testItRejectsTheBuiltinHelvFallbackWhenDisabled(): void
+    {
+        $acroForm = (new AcroForm())->withField(
+            new ComboBoxField('status', 1, 10, 20, 80, 12, ['new' => 'New'], 'new'),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'PDF/A form resources require an embedded default font. The built-in /Helv fallback is not allowed.',
+        );
+
+        $acroForm->pdfObjectContents([7], allowBuiltinDefaultTextFontFallback: false);
+    }
+
     public function testItStoresRadioButtonGroupsAsSingleFields(): void
     {
         $group = (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))

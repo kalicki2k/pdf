@@ -84,7 +84,7 @@ $document = DefaultDocumentBuilder::make()
         ImagePlacement::at(72, 600, width: 140),
         ImageAccessibility::alternativeText('Projektgrafik Seite zwei'),
     )
-    ->link('https://example.com/spec', 72, 540, 180, 16, 'Spezifikation oeffnen')
+    ->linkToPage(1, 72, 540, 180, 16, 'Spezifikation oeffnen')
     ->build();
 
 $output = new FileOutput($argv[1]);

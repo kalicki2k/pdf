@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use DateTimeImmutable;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Metadata\IccProfile;
 
@@ -16,7 +17,7 @@ final class PdfA1PolicyEnforcer
     ) {
     }
 
-    public function enforce(Document $document, ?AcroForm $acroForm = null): void
+    public function enforce(Document $document, ?AcroForm $acroForm = null, ?DateTimeImmutable $serializedAt = null): void
     {
         if (!$document->profile->isPdfA1()) {
             return;
@@ -36,7 +37,7 @@ final class PdfA1PolicyEnforcer
             $this->actionPolicy->assertFormFieldAllowed($document, $field);
         }
 
-        $this->metadataConsistencyValidator->assertConsistent($document);
+        $this->metadataConsistencyValidator->assertConsistent($document, $serializedAt);
 
         $outputIntent = $this->metadataInspector->resolvePdfAOutputIntent($document);
         IccProfile::fromPath($outputIntent->iccProfilePath, $outputIntent->colorComponents)->assertPdfA1Compatible($outputIntent);

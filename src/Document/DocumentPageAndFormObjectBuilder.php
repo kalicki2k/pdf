@@ -169,6 +169,7 @@ final class DocumentPageAndFormObjectBuilder
                 $acroForm->pdfObjectContents(
                     $state->acroFormFieldObjectIds,
                     $state->acroFormDefaultFontKey !== null ? ($state->fontObjectIds[$state->acroFormDefaultFontKey] ?? null) : null,
+                    allowBuiltinDefaultTextFontFallback: !$document->profile->isPdfA1(),
                 ),
             ),
         ];

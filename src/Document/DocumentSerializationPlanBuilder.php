@@ -8,8 +8,6 @@ use function count;
 
 use DateTimeImmutable;
 
-use InvalidArgumentException;
-
 use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Encryption\EncryptDictionaryBuilder;
 use Kalle\Pdf\Encryption\EncryptionProfileResolver;
@@ -21,7 +19,6 @@ use Kalle\Pdf\Writer\IndirectObject;
 use Kalle\Pdf\Writer\Trailer;
 use Random\RandomException;
 
-use function sprintf;
 use function str_replace;
 
 /**
@@ -48,8 +45,8 @@ final class DocumentSerializationPlanBuilder
     public function build(Document $document): DocumentSerializationPlan
     {
         $debugger = $document->debugger;
-        $this->validator->assertBuildable($document);
         $serializedAt = new DateTimeImmutable('now');
+        $this->validator->assertBuildable($document, $serializedAt);
         $collectTaggedLinkStructure = fn (int $nextStructParentId): array => $this->taggedPdfObjectBuilder->collectTaggedLinkStructure($document, $nextStructParentId);
         $collectTaggedPageAnnotationStructure = fn (int $nextStructParentId): array => $this->taggedPdfObjectBuilder->collectTaggedPageAnnotationStructure($document, $nextStructParentId);
         $collectTaggedFormStructure = function (
