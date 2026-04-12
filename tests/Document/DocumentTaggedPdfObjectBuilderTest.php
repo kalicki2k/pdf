@@ -17,6 +17,7 @@ use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Font\EmbeddedFontSource;
+use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
@@ -180,6 +181,114 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
 
         self::assertSame(
             ['H1', 'P', 'Table', 'Figure'],
+            $this->documentChildTags(iterator_to_array($plan->objects)),
+        );
+    }
+
+    public function testItBuildsDocumentChildrenInReadingOrderWithLinksBetweenContentBlocks(): void
+    {
+        $plan = (new DocumentSerializationPlanBuilder())->build(
+            DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfUa1())
+                ->title('Accessible Copy')
+                ->language('de-DE')
+                ->heading('Heading', 1, new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                ))
+                ->paragraph('Paragraph', new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                ))
+                ->text('Read more', new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                    link: LinkTarget::externalUrl('https://example.com/docs'),
+                ))
+                ->list(['Item'], text: new TextOptions(
+                    width: 220,
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                ))
+                ->table(
+                    Table::define(TableColumn::fixed(120.0))
+                        ->withPlacement(TablePlacement::at(72.0, 540.0, 120.0))
+                        ->withCaption(TableCaption::text('Table caption'))
+                        ->withRows(TableRow::fromCells(TableCell::text('Value')))
+                        ->withTextOptions(new TextOptions(
+                            embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                        )),
+                )
+                ->image(
+                    ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
+                    ImagePlacement::at(72, 460, 32, 32),
+                    ImageAccessibility::alternativeText('Decorative figure'),
+                )
+                ->build(),
+        );
+
+        self::assertSame(
+            ['H1', 'P', 'P', 'Link', 'L', 'Table', 'Figure'],
+            $this->documentChildTags(iterator_to_array($plan->objects)),
+        );
+    }
+
+    public function testItDoesNotMergeTaggedLinkStructureAcrossPages(): void
+    {
+        $plan = (new DocumentSerializationPlanBuilder())->build(
+            DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfUa1())
+                ->title('Accessible Copy')
+                ->language('de-DE')
+                ->textSegments([
+                    new \Kalle\Pdf\Text\TextSegment(
+                        'Read docs',
+                        new \Kalle\Pdf\Text\TextLink(
+                            target: LinkTarget::externalUrl('https://example.com/docs'),
+                            groupKey: 'docs-link',
+                        ),
+                    ),
+                ], new TextOptions(
+                    width: 45,
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                ))
+                ->newPage()
+                ->textSegments([
+                    new \Kalle\Pdf\Text\TextSegment(
+                        'Read docs',
+                        new \Kalle\Pdf\Text\TextLink(
+                            target: LinkTarget::externalUrl('https://example.com/docs'),
+                            groupKey: 'docs-link',
+                        ),
+                    ),
+                ], new TextOptions(
+                    width: 45,
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                ))
+                ->build(),
+        );
+
+        self::assertSame(
+            ['Link', 'Link'],
+            array_values(array_filter(
+                $this->documentChildTags(iterator_to_array($plan->objects)),
+                static fn (string $tag): bool => $tag === 'Link',
+            )),
+        );
+    }
+
+    public function testItPlacesTaggedFormStructureAfterMarkedPageContentOnTheSamePage(): void
+    {
+        $plan = (new DocumentSerializationPlanBuilder())->build(
+            DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfUa1())
+                ->title('Accessible Form')
+                ->language('de-DE')
+                ->paragraph('Intro text', new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                ))
+                ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')
+                ->build(),
+        );
+
+        self::assertSame(
+            ['P', 'Form'],
             $this->documentChildTags(iterator_to_array($plan->objects)),
         );
     }

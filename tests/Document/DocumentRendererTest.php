@@ -466,6 +466,53 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/P << /MCID ', $pdf);
     }
 
+    public function testItKeepsMultipleTaggedLayoutArtifactsOutOfTheLogicalStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->newPage(new \Kalle\Pdf\Page\PageOptions(
+                backgroundColor: Color::rgb(0.95, 0.95, 0.95),
+            ))
+            ->table(
+                Table::define(
+                    TableColumn::fixed(120.0),
+                    TableColumn::fixed(120.0),
+                )
+                    ->withPlacement(TablePlacement::at(72.0, 700.0, 240.0))
+                    ->withRows(
+                        TableRow::fromCells(
+                            TableCell::text('Left')->withBackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
+                            TableCell::text('Right')->withBackgroundColor(Color::rgb(0.85, 0.85, 0.85)),
+                        ),
+                    )
+                    ->withTextOptions(new TextOptions(
+                        fontSize: 12,
+                        lineHeight: 15,
+                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    )),
+            )
+            ->paragraph('Text content Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertGreaterThanOrEqual(4, substr_count($pdf, '/Artifact BMC'));
+        self::assertStringNotContainsString('/Artifact << /MCID ', $pdf);
+        self::assertSame(0, substr_count($pdf, '/Type /StructElem /S /Artifact'));
+        self::assertStringContainsString('/TD << /MCID ', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Table', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
+    }
+
     public function testItRendersTheSupportedPdfA1aStructureSurface(): void
     {
         $table = Table::define(

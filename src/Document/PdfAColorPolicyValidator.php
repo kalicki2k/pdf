@@ -140,8 +140,21 @@ final class PdfAColorPolicyValidator
         }
 
         $inTextObject = false;
+        $previousTokenWasNameDelimiter = false;
 
         foreach ($this->tokenizePdfContentStream($contents) as $token) {
+            if ($token === '/') {
+                $previousTokenWasNameDelimiter = true;
+
+                continue;
+            }
+
+            if ($previousTokenWasNameDelimiter) {
+                $previousTokenWasNameDelimiter = false;
+
+                continue;
+            }
+
             if ($token === 'BT') {
                 $inTextObject = true;
 

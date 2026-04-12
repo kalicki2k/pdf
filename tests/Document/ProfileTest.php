@@ -9,6 +9,27 @@ use PHPUnit\Framework\TestCase;
 
 final class ProfileTest extends TestCase
 {
+    public function testPdfA2bDoesNotRequireExtractableEmbeddedUnicodeFonts(): void
+    {
+        $profile = Profile::pdfA2b();
+
+        self::assertFalse($profile->requiresExtractableEmbeddedUnicodeFonts());
+    }
+
+    public function testPdfA2uRequiresExtractableEmbeddedUnicodeFonts(): void
+    {
+        $profile = Profile::pdfA2u();
+
+        self::assertTrue($profile->requiresExtractableEmbeddedUnicodeFonts());
+    }
+
+    public function testPdfUaRequiresExtractableEmbeddedUnicodeFonts(): void
+    {
+        $profile = Profile::pdfUa1();
+
+        self::assertTrue($profile->requiresExtractableEmbeddedUnicodeFonts());
+    }
+
     public function testPdfA1aExposesTheExpectedPolicyMatrix(): void
     {
         $this->assertPdfA1PolicyMatrix(Profile::pdfA1a(), true, true);

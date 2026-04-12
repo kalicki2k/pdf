@@ -44,7 +44,7 @@ final class DocumentPageAndFormObjectBuilder
             $annotationAppearanceContext = new AnnotationAppearanceRenderContext(
                 $this->pageFontObjectIdsByAlias($page->fontResources, $state->fontObjectIds),
             );
-            $pageContents = $this->buildPageContents($page);
+            $pageContents = $this->buildPageContents($document, $page);
 
             $objects[] = IndirectObject::plain(
                 $pageObjectId,
@@ -206,7 +206,7 @@ final class DocumentPageAndFormObjectBuilder
         return $contents;
     }
 
-    private function buildPageContents(Page $page): string
+    private function buildPageContents(Document $document, Page $page): string
     {
         $contents = $page->contents;
 
@@ -214,7 +214,7 @@ final class DocumentPageAndFormObjectBuilder
             return $contents;
         }
 
-        $backgroundContents = $this->buildBackgroundContents($page);
+        $backgroundContents = $this->buildBackgroundContents($document, $page);
 
         if ($contents === '') {
             return $backgroundContents;
@@ -223,7 +223,7 @@ final class DocumentPageAndFormObjectBuilder
         return $backgroundContents . "\n" . $contents;
     }
 
-    private function buildBackgroundContents(Page $page): string
+    private function buildBackgroundContents(Document $document, Page $page): string
     {
         $color = $page->backgroundColor;
 
@@ -240,13 +240,13 @@ final class DocumentPageAndFormObjectBuilder
         ]);
 
         // Page backgrounds are presentation-only and must stay outside the tagged content tree.
-        return $this->wrapArtifactContents($contents);
+        return $this->wrapArtifactContents($document, $contents);
     }
 
-    private function wrapArtifactContents(string $contents): string
+    private function wrapArtifactContents(Document $document, string $contents): string
     {
-        if ($contents === '') {
-            return '';
+        if ($contents === '' || !$document->profile->requiresTaggedPdf()) {
+            return $contents;
         }
 
         return implode("\n", [

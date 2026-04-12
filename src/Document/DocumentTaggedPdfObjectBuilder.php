@@ -69,7 +69,9 @@ final class DocumentTaggedPdfObjectBuilder
                 }
 
                 $annotationKey = $pageIndex . ':' . $annotationIndex;
-                $groupKey = $annotation->taggedGroupKey ?? $annotationKey;
+                // Link groups stay page-local in the current model because the
+                // StructElem uses a single /Pg entry and plain MCID kids.
+                $groupKey = $pageIndex . ':' . ($annotation->taggedGroupKey ?? $annotationKey);
 
                 if (!isset($groupedLinkEntries[$groupKey])) {
                     $groupedLinkEntries[$groupKey] = [
@@ -496,6 +498,8 @@ final class DocumentTaggedPdfObjectBuilder
             $entries[] = [
                 'key' => $formEntry['key'],
                 'pageIndex' => $formEntry['pageIndex'],
+                // Widget annotations do not currently expose MCID-based content
+                // positions, so keep them after marked page content on the same page.
                 'orderIndex' => 2000000,
                 'sequence' => $sequence++,
             ];

@@ -216,6 +216,120 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testItRejectsRawTextOperatorsWithoutFontResourcesForPdfA1(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "BT\n/F1 12 Tf\n10 20 Td\n(Test) Tj\nET",
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow text operators in page content stream on page 1 to reference missing font resource "F1" on page 1.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsRawTextOperatorsWithNonEmbeddedFontResourcesForPdfA1(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "BT\n/F1 12 Tf\n10 20 Td\n(Test) Tj\nET",
+                    fontResources: [
+                        'F1' => new PageFont('Helvetica', StandardFontEncoding::WIN_ANSI),
+                    ],
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow text operators in page content stream on page 1 to reference non-embedded font resource "F1" on page 1.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItAllowsRawTextOperatorsWithEmbeddedFontResourcesForPdfA1b(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $embeddedFont = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+        );
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "BT\n/F1 12 Tf\n10 20 Td\n(Test) Tj\nET",
+                    fontResources: [
+                        'F1' => PageFont::embedded($embeddedFont),
+                    ],
+                ),
+            ],
+        );
+
+        self::assertNotEmpty(iterator_to_array($builder->build($document)->objects));
+    }
+
+    public function testItRejectsRawDoOperatorsWithoutXObjectResourcesForPdfA1(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "q\n/Im1 Do\nQ",
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow Do in page content stream on page 1 to reference missing XObject resource "Im1" on page 1.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsUnvalidatedMarkedContentPropertiesForPdfA1(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/P /OC1 BDC\nEMC",
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow unvalidated marked-content property usage in page content stream on page 1.',
+        );
+
+        $builder->build($document);
+    }
+
     public function testItRejectsAdditionalImageDictionaryEntriesForPdfAProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -874,6 +988,25 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('(Appendix) Tj', $objects[5]->contents);
     }
 
+    public function testItDoesNotWrapPageBackgroundsAsArtifactsOutsideTaggedProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    backgroundColor: Color::rgb(0.95, 0.95, 0.95),
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString("q\n0.95 0.95 0.95 rg\n0 0 595.276 841.89 re\nf\nQ", $objects[3]->contents);
+        self::assertStringNotContainsString('/Artifact BMC', $objects[3]->contents);
+    }
+
     public function testItUsesTheCorrectPdfColorOperatorForGrayAndCmykBackgrounds(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1387,7 +1520,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('requires embedded Unicode fonts');
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1a does not allow text operators in page content stream on page 1 to reference simple embedded font resource "F1" on page 1 because the active profile requires extractable Unicode fonts.',
+        );
 
         $builder->build($document);
     }
@@ -1402,7 +1537,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1b requires embedded fonts. Found standard font "Helvetica" on page 1.');
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow text operators in page content stream on page 1 to reference non-embedded font resource "F1" on page 1.',
+        );
 
         $builder->build($document);
     }
@@ -1991,7 +2128,28 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-2u requires embedded fonts. Found standard font "Helvetica" on page 1.');
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2u does not allow text operators in page content stream on page 1 to reference non-embedded font resource "F1" on page 1.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsSimpleEmbeddedFontsForPdfA2u(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('Archive Copy')
+            ->text('ASCII only', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2u does not allow text operators in page content stream on page 1 to reference simple embedded font resource "F1" on page 1 because the active profile requires extractable Unicode fonts.',
+        );
 
         $builder->build($document);
     }
@@ -2135,6 +2293,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItAllowsRgbTextForPdfA1bWithRgbOutputIntent(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
+        $embeddedFont = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+        );
         $document = new \Kalle\Pdf\Document\Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
@@ -2142,6 +2303,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 new \Kalle\Pdf\Page\Page(
                     \Kalle\Pdf\Page\PageSize::A4(),
                     contents: "BT\n0.1 0.2 0.3 rg\n/F1 12 Tf\n10 20 Td\n(RGB) Tj\nET",
+                    fontResources: [
+                        'F1' => PageFont::embedded($embeddedFont),
+                    ],
                 ),
             ],
         );
@@ -2173,6 +2337,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItAllowsCmykTextForPdfA1bWithCmykOutputIntent(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
+        $embeddedFont = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+        );
         $document = new \Kalle\Pdf\Document\Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
@@ -2181,6 +2348,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 new \Kalle\Pdf\Page\Page(
                     \Kalle\Pdf\Page\PageSize::A4(),
                     contents: "BT\n0.1 0.2 0.3 0.4 k\n/F1 12 Tf\n10 20 Td\n(CMYK) Tj\nET",
+                    fontResources: [
+                        'F1' => PageFont::embedded($embeddedFont),
+                    ],
                 ),
             ],
         );

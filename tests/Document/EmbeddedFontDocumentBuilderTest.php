@@ -69,6 +69,26 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         self::assertStringContainsString('(ASCII only) Tj', $document->pages[0]->contents);
     }
 
+    public function testItKeepsSimpleEmbeddedCffFontsForPdfA1bAsciiText(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('A', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalCffOpenTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->isEmbedded());
+        self::assertFalse($font->usesUnicodeCids());
+        self::assertSame('TestCff-Regular', $font->name);
+        self::assertStringContainsString('(A) Tj', $document->pages[0]->contents);
+    }
+
     public function testItBuildsUnicodeTextWithAnEmbeddedTrueTypeFont(): void
     {
         $document = DefaultDocumentBuilder::make()

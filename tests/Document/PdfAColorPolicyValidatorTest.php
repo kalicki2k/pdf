@@ -16,6 +16,31 @@ use PHPUnit\Framework\TestCase;
 
 final class PdfAColorPolicyValidatorTest extends TestCase
 {
+    public function testItIgnoresColorLikeTokensInsideNamesCommentsAndStrings(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: implode("\n", [
+                        '% 0.1 0.2 0.3 0.4 k',
+                        '/RG << /k true /rg false >> BDC',
+                        'BT',
+                        '(rg k RG) Tj',
+                        '<7267206b205247> Tj',
+                        'ET',
+                        'EMC',
+                    ]),
+                ),
+            ],
+        );
+
+        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
+        self::assertTrue(true);
+    }
+
     public function testItRejectsCmykGraphicsOperatorsForRgbOutputIntent(): void
     {
         $document = new Document(
@@ -53,6 +78,54 @@ final class PdfAColorPolicyValidatorTest extends TestCase
 
         (new PdfAColorPolicyValidator())->assertDocumentColors($document);
         self::assertTrue(true);
+    }
+
+    public function testItAllowsGrayGraphicsOperatorsForRgbOutputIntent(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "0.2 G\n0 0 m\n20 20 l\nS",
+                ),
+            ],
+        );
+
+        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
+        self::assertTrue(true);
+    }
+
+    public function testItRejectsCmykTextOperatorsInsideMixedContentStreamsForRgbOutputIntent(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: implode("\n", [
+                        '0.1 0.2 0.3 rg',
+                        '0 0 20 20 re',
+                        'f',
+                        'BT',
+                        '0.1 0.2 0.3 0.4 k',
+                        '/F1 12 Tf',
+                        '10 20 Td',
+                        '(Mixed) Tj',
+                        'ET',
+                    ]),
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow CMYK color in text operations in page content stream on page 1 when the active PDF/A output intent is RGB.',
+        );
+
+        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
     }
 
     public function testItRejectsCmykPageBackgroundForRgbOutputIntent(): void
