@@ -122,6 +122,12 @@ Dokumentweite Seitendekorationen koennen ueber `header()` und `footer()` registr
 
 Ein ausführbares Beispiel liegt in `examples/header-footer.php`.
 
+- Signatur: `static function (PageDecorationContext $page, int $pageNumber): void`
+- Reihenfolge pro Seite: Header, regulaerer Seiteninhalt, Footer
+- Der Context stellt ueber `$page->page()` die aktuelle Seite und deren `contentArea()` bereit.
+- Die Seitennummer ist 1-basiert.
+- In Tagged-PDF-Profilen werden Header/Footer als Artefakt behandelt und nicht in die logische Dokumentstruktur aufgenommen.
+
 ```php
 use Kalle\Pdf\Document\PageDecorationContext;
 use Kalle\Pdf\Text\TextOptions;
