@@ -87,6 +87,7 @@ use Kalle\Pdf\Page\MarkupAnnotationOptions;
 use Kalle\Pdf\Page\NamedDestination;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
+use Kalle\Pdf\Page\PageAnnotationReference;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageImage;
 use Kalle\Pdf\Page\PageOptions;
@@ -382,6 +383,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
     public function text(string $text, ?TextOptions $options = null): DocumentBuilder
     {
         return $this->renderTextBlock($text, $options, $this->defaultTaggedTextTag());
+    }
+
+    public function taggedText(string $text, string $tag, ?TextOptions $options = null): DocumentBuilder
+    {
+        if ($tag === '') {
+            throw new InvalidArgumentException('Tagged text tag must not be empty.');
+        }
+
+        return $this->renderTextBlock($text, $options, $tag);
     }
 
     public function paragraph(string $text, ?TextOptions $options = null): DocumentBuilder
@@ -1878,22 +1888,57 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     public function popupAnnotationWithDefinition(PopupAnnotationDefinition $definition): self
     {
-        $clone = clone $this;
-        $annotationIndex = array_key_last($clone->currentPageAnnotations);
+        return $this->popupAnnotationForWithDefinition($this->lastPageAnnotationReference(), $definition);
+    }
 
-        if ($annotationIndex === null) {
-            throw new InvalidArgumentException('Popup annotations require a preceding page annotation on the current page.');
-        }
+    public function popupAnnotationFor(
+        PageAnnotationReference $reference,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        bool $open = false,
+    ): self {
+        return $this->popupAnnotationForWithDefinition(
+            $reference,
+            new PopupAnnotationDefinition(
+                x: $x,
+                y: $y,
+                width: $width,
+                height: $height,
+                open: $open,
+            ),
+        );
+    }
+
+    public function popupAnnotationForWithDefinition(PageAnnotationReference $reference, PopupAnnotationDefinition $definition): self
+    {
+        $clone = clone $this;
+        $annotationIndex = $clone->resolveCurrentPageAnnotationReference($reference);
 
         $annotation = $clone->currentPageAnnotations[$annotationIndex];
 
         if (!$annotation instanceof SupportsPopupAnnotation) {
-            throw new InvalidArgumentException('The last page annotation does not support popup annotations.');
+            throw new InvalidArgumentException('The referenced page annotation does not support popup annotations.');
         }
 
         $clone->currentPageAnnotations[$annotationIndex] = $annotation->withPopup($definition);
 
         return $clone;
+    }
+
+    public function lastPageAnnotationReference(): PageAnnotationReference
+    {
+        $annotationIndex = array_key_last($this->currentPageAnnotations);
+
+        if ($annotationIndex === null) {
+            throw new InvalidArgumentException('No page annotation is available on the current page.');
+        }
+
+        return new PageAnnotationReference(
+            pageNumber: count($this->pages) + 1,
+            annotationIndex: $annotationIndex,
+        );
     }
 
     public function fileAttachmentAnnotation(
@@ -1942,13 +1987,74 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ));
         }
 
-        $attachment = new FileAttachment(
+        $attachment = $clone->reuseOrAppendAttachment(new FileAttachment(
             filename: $filename,
             embeddedFile: $embeddedFile,
             description: $options->description,
             associatedFileRelationship: $options->associatedFileRelationship,
+        ));
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new FileAttachmentAnnotation(
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            attachmentFilename: $attachment->filename,
+            icon: $options->icon,
+            contents: $metadata->contents,
         );
-        $clone->attachments[] = $attachment;
+
+        return $clone;
+    }
+
+    public function existingFileAttachmentAnnotation(
+        string $filename,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $icon = 'PushPin',
+        ?string $contents = null,
+    ): self {
+        return $this->existingFileAttachmentAnnotationWithOptions(
+            $filename,
+            $x,
+            $y,
+            $width,
+            $height,
+            new FileAttachmentAnnotationOptions(
+                icon: $icon,
+                contents: $contents,
+            ),
+        );
+    }
+
+    public function existingFileAttachmentAnnotationWithOptions(
+        string $filename,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        FileAttachmentAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+
+        if (!$clone->profileOrDefault()->supportsEmbeddedFileAttachments()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow embedded file attachments.',
+                $clone->profileOrDefault()->name(),
+            ));
+        }
+
+        $attachment = $clone->findAttachmentByFilename($filename);
+
+        if ($attachment === null) {
+            throw new InvalidArgumentException(sprintf(
+                'Attachment "%s" does not exist in the document.',
+                $filename,
+            ));
+        }
+
         $metadata = $options->metadata();
         $clone->currentPageAnnotations[] = new FileAttachmentAnnotation(
             x: $x,
@@ -3812,6 +3918,68 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function profileOrDefault(): Profile
     {
         return $this->profile ?? Profile::standard();
+    }
+
+    private function resolveCurrentPageAnnotationReference(PageAnnotationReference $reference): int
+    {
+        $currentPageNumber = count($this->pages) + 1;
+
+        if ($reference->pageNumber !== $currentPageNumber) {
+            throw new InvalidArgumentException(sprintf(
+                'Page annotation reference targets page %d, but the current page is %d.',
+                $reference->pageNumber,
+                $currentPageNumber,
+            ));
+        }
+
+        if (!isset($this->currentPageAnnotations[$reference->annotationIndex])) {
+            throw new InvalidArgumentException(sprintf(
+                'Page annotation %d does not exist on the current page.',
+                $reference->annotationIndex + 1,
+            ));
+        }
+
+        return $reference->annotationIndex;
+    }
+
+    private function reuseOrAppendAttachment(FileAttachment $candidate): FileAttachment
+    {
+        $existingAttachment = $this->findAttachmentByFilename($candidate->filename);
+
+        if ($existingAttachment === null) {
+            $this->attachments[] = $candidate;
+
+            return $candidate;
+        }
+
+        if (!$this->attachmentsAreEquivalent($existingAttachment, $candidate)) {
+            throw new InvalidArgumentException(sprintf(
+                'Attachment "%s" already exists with different contents or metadata.',
+                $candidate->filename,
+            ));
+        }
+
+        return $existingAttachment;
+    }
+
+    private function findAttachmentByFilename(string $filename): ?FileAttachment
+    {
+        foreach ($this->attachments as $attachment) {
+            if ($attachment->filename === $filename) {
+                return $attachment;
+            }
+        }
+
+        return null;
+    }
+
+    private function attachmentsAreEquivalent(FileAttachment $left, FileAttachment $right): bool
+    {
+        return $left->filename === $right->filename
+            && $left->embeddedFile->contents === $right->embeddedFile->contents
+            && $left->embeddedFile->mimeType === $right->embeddedFile->mimeType
+            && $left->description === $right->description
+            && $left->associatedFileRelationship === $right->associatedFileRelationship;
     }
 
     private function nextTaggedMarkedContentId(): ?int

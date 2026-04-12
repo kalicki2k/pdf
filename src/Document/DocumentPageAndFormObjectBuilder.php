@@ -159,10 +159,14 @@ final class DocumentPageAndFormObjectBuilder
             throw new InvalidArgumentException('AcroForm object ID allocation is missing.');
         }
 
+        $acroForm = $document->profile->isPdfA()
+            ? $document->acroForm->withNeedAppearances(false)
+            : $document->acroForm;
+
         $objects = [
             IndirectObject::plain(
                 $acroFormObjectId,
-                $document->acroForm->pdfObjectContents($state->acroFormFieldObjectIds),
+                $acroForm->pdfObjectContents($state->acroFormFieldObjectIds),
             ),
         ];
 

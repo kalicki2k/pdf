@@ -10,7 +10,7 @@ use Kalle\Pdf\Color\Color;
 use function implode;
 use function strlen;
 
-final readonly class SquareAnnotation implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation
+final readonly class SquareAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

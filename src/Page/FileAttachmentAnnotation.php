@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 use function implode;
 
-final readonly class FileAttachmentAnnotation implements PageAnnotation, TaggedPageAnnotation
+final readonly class FileAttachmentAnnotation implements PageAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

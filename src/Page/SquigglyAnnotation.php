@@ -11,7 +11,7 @@ use Kalle\Pdf\Writer\IndirectObject;
 use function implode;
 use function strlen;
 
-final readonly class SquigglyAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
+final readonly class SquigglyAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

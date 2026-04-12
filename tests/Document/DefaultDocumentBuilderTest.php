@@ -42,6 +42,7 @@ use Kalle\Pdf\Page\LineEndingStyle;
 use Kalle\Pdf\Page\MarkupAnnotationOptions;
 use Kalle\Pdf\Page\PolygonAnnotation;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
+use Kalle\Pdf\Page\PageAnnotationReference;
 use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\PolyLineAnnotation;
 use Kalle\Pdf\Page\ShapeAnnotationOptions;
@@ -179,6 +180,20 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         self::assertSame(Version::V1_7, $document->version());
         self::assertSame(Version::V1_7, $document->profile->version());
+    }
+
+    public function testItBuildsTaggedTextBlocksWithExplicitStructureTags(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->taggedText('Zitat', 'BlockQuote', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        self::assertSame('BlockQuote', $document->taggedTextBlocks[0]->tag);
     }
 
     public function testItBuildsADocumentWithACustomPdfAOutputIntent(): void
@@ -670,9 +685,11 @@ final class DefaultDocumentBuilderTest extends TestCase
 
     public function testItAttachesPopupAnnotationsToThePreviousSupportedAnnotation(): void
     {
-        $document = DefaultDocumentBuilder::make()
-            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
-            ->popupAnnotation(70, 520, 120, 60, true)
+        $builder = DefaultDocumentBuilder::make()
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA');
+        $reference = $builder->lastPageAnnotationReference();
+        $document = $builder
+            ->popupAnnotationFor($reference, 70, 520, 120, 60, true)
             ->build();
 
         self::assertCount(1, $document->pages[0]->annotations);
@@ -684,10 +701,21 @@ final class DefaultDocumentBuilderTest extends TestCase
     public function testItRejectsPopupAnnotationsWithoutASupportedParent(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Popup annotations require a preceding page annotation on the current page.');
+        $this->expectExceptionMessage('No page annotation is available on the current page.');
 
         DefaultDocumentBuilder::make()
             ->popupAnnotationWithDefinition(new PopupAnnotationDefinition(10, 20, 30, 40))
+            ->build();
+    }
+
+    public function testItRejectsPopupAnnotationsForInvalidReferences(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Page annotation 2 does not exist on the current page.');
+
+        DefaultDocumentBuilder::make()
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
+            ->popupAnnotationFor(new PageAnnotationReference(1, 1), 70, 520, 120, 60, true)
             ->build();
     }
 
@@ -714,6 +742,57 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertInstanceOf(FileAttachmentAnnotation::class, $document->pages[0]->annotations[0]);
         self::assertSame('demo.txt', $document->pages[0]->annotations[0]->attachmentFilename);
         self::assertSame('Graph', $document->pages[0]->annotations[0]->icon);
+    }
+
+    public function testItReusesExistingAttachmentsForFileAttachmentAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->attachment('demo.txt', 'hello', 'Demo attachment', 'text/plain')
+            ->existingFileAttachmentAnnotation('demo.txt', 40, 500, 12, 14, 'Graph', 'Anhang')
+            ->build();
+
+        self::assertCount(1, $document->attachments);
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertSame('demo.txt', $document->pages[0]->annotations[0]->attachmentFilename);
+    }
+
+    public function testItReusesEquivalentAttachmentsInsteadOfDuplicatingThem(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->attachment('demo.txt', 'hello', 'Demo attachment', 'text/plain')
+            ->fileAttachmentAnnotation(
+                'demo.txt',
+                new EmbeddedFile('hello', 'text/plain'),
+                40,
+                500,
+                12,
+                14,
+                'Demo attachment',
+                'Graph',
+                'Anhang',
+            )
+            ->build();
+
+        self::assertCount(1, $document->attachments);
+    }
+
+    public function testItRejectsConflictingAttachmentReuse(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Attachment "demo.txt" already exists with different contents or metadata.');
+
+        DefaultDocumentBuilder::make()
+            ->attachment('demo.txt', 'hello', 'Demo attachment', 'text/plain')
+            ->fileAttachmentAnnotation(
+                'demo.txt',
+                new EmbeddedFile('different', 'text/plain'),
+                40,
+                500,
+                12,
+                14,
+                'Demo attachment',
+            )
+            ->build();
     }
 
     public function testItAddsInternalLinkAnnotationsToTheCurrentPage(): void

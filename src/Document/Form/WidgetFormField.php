@@ -56,6 +56,7 @@ abstract readonly class WidgetFormField extends FormField
                 . ']',
             '/P ' . $context->pageObjectId($this->pageNumber) . ' 0 R',
             '/T ' . $this->pdfString($this->name),
+            '/F 4',
         ];
 
         if ($this->alternativeName !== null) {

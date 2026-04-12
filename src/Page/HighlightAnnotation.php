@@ -12,7 +12,7 @@ use Kalle\Pdf\Color\Color;
 use function strlen;
 use Kalle\Pdf\Writer\IndirectObject;
 
-final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
+final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

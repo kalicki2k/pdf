@@ -13,7 +13,7 @@ use function max;
 use function min;
 use function strlen;
 
-final readonly class LineAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
+final readonly class LineAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

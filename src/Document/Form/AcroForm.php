@@ -39,6 +39,14 @@ final readonly class AcroForm
         );
     }
 
+    public function withNeedAppearances(bool $needAppearances): self
+    {
+        return new self(
+            fields: $this->fields,
+            needAppearances: $needAppearances,
+        );
+    }
+
     public function field(string $name): ?FormField
     {
         foreach ($this->fields as $field) {

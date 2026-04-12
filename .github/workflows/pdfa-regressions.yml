@@ -1,0 +1,33 @@
+name: PDF/A Regressions
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  pdfa1a-verapdf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build PHP image
+        run: make build
+
+      - name: Install Composer dependencies
+        run: make composer-install
+
+      - name: Run PDF/A-1a veraPDF regressions
+        run: |
+          make test-pdfa1a-regression
+          make test-pdfa1a-list-regression
+          make test-pdfa1a-table-regression
+          make test-pdfa1a-mixed-regression
+          make test-pdfa1a-multipage-regression
+          make test-pdfa1a-forms-and-annotations-regression
+          make test-pdfa1a-radio-regression
+          make test-pdfa1a-choice-fields-regression
+          make test-pdfa1a-negative-regressions

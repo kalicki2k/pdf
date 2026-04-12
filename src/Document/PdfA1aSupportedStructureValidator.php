@@ -26,6 +26,8 @@ final class PdfA1aSupportedStructureValidator
      * @var list<string>
      */
     private const SUPPORTED_TEXT_TAGS = [
+        'BlockQuote',
+        'Code',
         'H1',
         'H2',
         'H3',
@@ -33,6 +35,8 @@ final class PdfA1aSupportedStructureValidator
         'H5',
         'H6',
         'P',
+        'Quote',
+        'Span',
     ];
 
     public function assertSupported(Document $document): void

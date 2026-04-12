@@ -55,11 +55,15 @@ final class ProfileTest extends TestCase
         self::assertSame($requiresTaggedPdf, $profile->requiresFigureAltText());
         self::assertSame($requiresTaggedPdf, $profile->requiresTaggedLinkAnnotations());
         self::assertSame($requiresTaggedPdf, $profile->requiresLinkAnnotationAlternativeDescriptions());
+        self::assertSame($requiresTaggedPdf, $profile->requiresTaggedPageAnnotations());
+        self::assertSame($requiresTaggedPdf, $profile->requiresPageAnnotationAlternativeDescriptions());
+        self::assertSame($requiresTaggedPdf, $profile->requiresTaggedFormFields());
+        self::assertSame($requiresTaggedPdf, $profile->requiresFormFieldAlternativeDescriptions());
         self::assertTrue($profile->requiresPrintableAnnotations());
         self::assertSame($requiresExtractableEmbeddedUnicodeFonts, $profile->requiresEmbeddedUnicodeFonts());
         self::assertSame($requiresExtractableEmbeddedUnicodeFonts, $profile->requiresExtractableEmbeddedUnicodeFonts());
         self::assertSame($requiresTaggedPdf, $profile->requiresDocumentLanguage());
-        self::assertFalse($profile->supportsAcroForms());
+        self::assertSame($requiresTaggedPdf, $profile->supportsAcroForms());
         self::assertFalse($profile->supportsDocumentEmbeddedFileAttachments());
         self::assertFalse($profile->supportsDocumentAssociatedFiles());
         self::assertFalse($profile->supportsEncryption());

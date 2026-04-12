@@ -240,7 +240,7 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen. Dasselbe Muster deckt inzwischen auch weitere Markup- und Geometrie-Typen wie `Underline`, `StrikeOut`, `Squiggly`, `Stamp`, `Square`, `Circle`, `Caret`, `Ink`, `Line`, `PolyLine` und `Polygon` ab. Popups koennen ueber `popupAnnotation(...)` an die zuletzt hinzugefuegte kompatible Seitenannotation gebunden werden; seitengebundene Dateianhaenge setzen auf derselben Builder-API auf und verwenden intern die bestehende Attachment-Infrastruktur.
+Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen. Dasselbe Muster deckt inzwischen auch weitere Markup- und Geometrie-Typen wie `Underline`, `StrikeOut`, `Squiggly`, `Stamp`, `Square`, `Circle`, `Caret`, `Ink`, `Line`, `PolyLine` und `Polygon` ab. Popups koennen ueber `popupAnnotation(...)` weiterhin an die zuletzt hinzugefuegte kompatible Seitenannotation gebunden werden oder explizit ueber `lastPageAnnotationReference()` plus `popupAnnotationFor(...)`. Seitengebundene Dateianhaenge setzen auf derselben Builder-API auf und koennen entweder neue Attachments anlegen oder vorhandene Dokument-Attachments ueber `existingFileAttachmentAnnotation(...)` wiederverwenden.
 
 Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation mit festem Rechteck und eigenem `/AP`-Stream, die sich damit auch fuer den aktuellen PDF/A-2u-Pfad eignet. Dasselbe gilt jetzt fuer eine schlanke `Highlight`-Annotation mit festen `QuadPoints` und fuer `FreeText`, das seinen Appearance-Stream mit dem verwendeten Seitenfont rendert.
 
@@ -253,7 +253,7 @@ use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextSegment;
 
-$document = DefaultDocumentBuilder::make()
+$builder = DefaultDocumentBuilder::make()
     ->text('Projektseite')
     ->link('https://example.com', 40, 500, 120, 16, 'Projektseite oeffnen')
     ->namedDestination('intro')
@@ -316,12 +316,26 @@ $document = DefaultDocumentBuilder::make()
             title: 'QA',
             subject: 'Pruefpfad',
         ),
-    ))
-    ->popupAnnotation(190, 300, 160, 70, true)
+    ));
+
+$lineAnnotation = $builder->lastPageAnnotationReference();
+
+$document = $builder
+    ->popupAnnotationFor($lineAnnotation, 190, 300, 160, 70, true)
+    ->attachment('demo.txt', 'hello', 'Demo attachment', 'text/plain')
+    ->existingFileAttachmentAnnotation(
+        'demo.txt',
+        40,
+        270,
+        12,
+        14,
+        'Graph',
+        'Anhang',
+    )
     ->fileAttachmentAnnotationWithOptions(
         'demo.txt',
         new \Kalle\Pdf\Document\Attachment\EmbeddedFile('hello', 'text/plain'),
-        40,
+        70,
         270,
         12,
         14,
@@ -359,7 +373,7 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-Die aktuelle `pdf2`-Implementierung deckt damit nun auch Popups und seitengebundene Dateianhang-Annotationen ab. Fuer PDF/UA-1 werden neben Links und Formularfeldern jetzt auch allgemeine Seitenannotationen als getaggte `Annot`-StructElems mit `/OBJR`, `/StructParent` und Alternativtext geschrieben. Die Freigabe bleibt dabei bewusst streng: fehlt fuer eine solche Annotation ein brauchbarer Alternativtext, scheitert `pdf2` weiterhin explizit.
+Die aktuelle `pdf2`-Implementierung deckt damit nun auch Popups und seitengebundene Dateianhang-Annotationen ab. Fuer PDF/UA-1 werden neben Links und Formularfeldern jetzt auch allgemeine Seitenannotationen als getaggte `Annot`-StructElems mit `/OBJR`, `/StructParent` und Alternativtext geschrieben. Die Freigabe bleibt dabei bewusst streng und explizit: nur Annotationtypen mit dediziertem PDF/UA-Opt-in werden in diesem Pfad akzeptiert, und fehlt fuer eine solche Annotation ein brauchbarer Alternativtext, scheitert `pdf2` weiterhin explizit.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -469,9 +483,9 @@ $document = DefaultDocumentBuilder::make()
 
 ## PDF/A-1a Umfang
 
-Der folgende Umfang ist der offizielle `PDF/A-1a`-Support-Scope der aktuellen `pdf2`-Version. Abgesichert und freigegeben sind Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Fuer diese Struktur prueft der Build-Pfad jetzt nicht nur die Existenz von Tagged Content, sondern auch die Konsistenz von `StructTreeRoot`, Dokumentwurzel, `ParentTree`, `/StructParents`, `MCID`-Zuordnung und der unterstuetzten Strukturelement-Hierarchie. Interne `PDF/A-1a`-Dokumentmodelle mit anderen Text-Tags als `H1` bis `H6` oder `P`, mit leeren Tagged-Listen/Tabellen oder mit inkonsistenten Tagged-Referenzen werden explizit verworfen. Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer-, Builder- und Strukturvalidator-Tests abgesichert.
+Der folgende Umfang ist der offizielle `PDF/A-1a`-Support-Scope der aktuellen `pdf2`-Version. Abgesichert und freigegeben sind Ueberschriften und Absaetze (`H1` bis `H6`, `P`), zusaetzliche Text-Strukturtypen (`BlockQuote`, `Code`, `Quote`, `Span`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure`, getaggte Seitenannotationen als `Annot`, getaggte Formular-/Widgetfelder als `Form` sowie Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Fuer diese Struktur prueft der Build-Pfad jetzt nicht nur die Existenz von Tagged Content, sondern auch die Konsistenz von `StructTreeRoot`, Dokumentwurzel, `ParentTree`, `/StructParents`, `MCID`-Zuordnung und der unterstuetzten Strukturelement-Hierarchie. Interne `PDF/A-1a`-Dokumentmodelle mit nicht freigegebenen Text-Tags, mit leeren Tagged-Listen/Tabellen oder mit inkonsistenten Tagged-Referenzen werden explizit verworfen. Fuer Annotationen und Formularfelder erzwingt der `PDF/A-1a`-Pfad Alternativtexte, `/StructParent`-Eintraege und `OBJR`-basierte Strukturreferenzen.
 
-Nicht Teil dieses offiziellen Umfangs sind aktuell reichere Annotationstypen, Formulare, Signaturfelder oder weitergehende Strukturtypen ausserhalb dieses Satzes. Solche Faelle gelten in `pdf2` fuer `PDF/A-1a` derzeit nicht als unterstuetzt und sollen weiter explizit scheitern oder erst nach eigener Regressionserweiterung freigegeben werden.
+Der aktuelle Formularumfang umfasst Textfelder, Checkboxen, Radio-Button-Gruppen, ComboBoxen, ListBoxen und Signaturfelder im getaggten Strukturpfad. Push Buttons bleiben im `PDF/A-1a`-Pfad weiterhin gesperrt, weil der aktuelle URI-Aktionspfad auf dem Widget nicht normkonform zu PDF/A-1a ist.
 
 ## Verschluesselung
 
@@ -540,7 +554,7 @@ $document = DefaultDocumentBuilder::make()
 
 ## Formulare
 
-Die aktuelle AcroForm-API deckt fuer Standard-PDFs Textfelder, Checkboxen, Radio Buttons, ComboBoxen, ListBoxen, Push Buttons und Signaturfelder ab. Fuer PDF/UA-1 ist jetzt der erste Tagged-Form-Structure-Schritt fuer Single-Widget-Felder umgesetzt: Textfelder, Checkboxen, ComboBoxen, ListBoxen, Push Buttons und Signaturfelder werden als `/Form`-Strukturelemente mit `OBJR`/`ParentTree` serialisiert. Radio-Button-Gruppen bleiben im aktuellen Stand bewusst gesperrt, bis ihre Mehrfach-Widget-Struktur vollstaendig abgedeckt ist. Sichtbare Signaturfelder werden direkt ueber die Formular-API erzeugt; die kryptographische Signaturintegration fuer unterstuetzte Dokumente ist unten als separater Signier-Schritt beschrieben.
+Die aktuelle AcroForm-API deckt fuer Standard-PDFs Textfelder, Checkboxen, Radio Buttons, ComboBoxen, ListBoxen, Push Buttons und Signaturfelder ab. Fuer Tagged-Profile ist der Strukturpfad inzwischen breiter: Textfelder, Checkboxen, Radio-Button-Gruppen, ComboBoxen, ListBoxen und Signaturfelder werden als `/Form`-Strukturelemente mit `OBJR`/`ParentTree` serialisiert. Das gilt fuer den aktuellen `PDF/UA-1`-Pfad und fuer den offiziell freigegebenen `PDF/A-1a`-Form-Scope. Push Buttons bleiben fuer `PDF/A-1a` weiterhin explizit gesperrt, weil der aktuelle URI-Aktionspfad am Widget veraPDF-relevante PDF/A-1a-Verstoesse erzeugt. Sichtbare Signaturfelder werden direkt ueber die Formular-API erzeugt; die kryptographische Signaturintegration fuer unterstuetzte Dokumente ist unten als separater Signier-Schritt beschrieben.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -661,9 +675,14 @@ make test-pdfa1a-list-regression
 make test-pdfa1a-table-regression
 make test-pdfa1a-mixed-regression
 make test-pdfa1a-multipage-regression
+make test-pdfa1a-forms-and-annotations-regression
+make test-pdfa1a-radio-regression
+make test-pdfa1a-choice-fields-regression
 make test-pdfa1a-negative-regressions
 make check-pdf PDF=var/example.pdf
 ```
+
+Dieselben `PDF/A-1a`-veraPDF-Regressionslaeufe laufen auch automatisiert in GitHub Actions ueber `.github/workflows/pdfa-regressions.yml`.
 
 Alternativ direkt über die Skripte:
 
@@ -677,6 +696,9 @@ bin/test-pdfa1a-list-regression.sh
 bin/test-pdfa1a-table-regression.sh
 bin/test-pdfa1a-mixed-regression.sh
 bin/test-pdfa1a-multipage-regression.sh
+bin/test-pdfa1a-forms-and-annotations-regression.sh
+bin/test-pdfa1a-radio-regression.sh
+bin/test-pdfa1a-choice-fields-regression.sh
 bin/test-pdfa1a-negative-regressions.sh
 ```
 

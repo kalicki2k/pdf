@@ -27,7 +27,7 @@ final class PdfA1PolicyMatrixTest extends TestCase
         $builder = new DocumentSerializationPlanBuilder();
 
         foreach ([Profile::pdfA1a(), Profile::pdfA1b()] as $profile) {
-            foreach ($this->unsupportedPdfA1FeatureMatrix() as $scenario => $message) {
+            foreach ($this->unsupportedPdfA1FeatureMatrix($profile) as $scenario => $message) {
                 try {
                     $builder->build($this->unsupportedPdfA1Document($profile, $scenario));
                     self::fail(sprintf(
@@ -45,16 +45,21 @@ final class PdfA1PolicyMatrixTest extends TestCase
     /**
      * @return array<string, string>
      */
-    private function unsupportedPdfA1FeatureMatrix(): array
+    private function unsupportedPdfA1FeatureMatrix(Profile $profile): array
     {
-        return [
+        $matrix = [
             'attachment' => 'Profile %s does not allow embedded file attachments.',
-            'acroform' => 'Profile %s does not allow AcroForm fields in the current implementation.',
             'encryption' => 'Profile %s does not allow encryption.',
-            'text-annotation' => 'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page 1.',
             'indexed-image' => 'Profile %s does not allow custom image color space definitions in the current implementation for image resource 1 on page 1.',
             'soft-mask-image' => 'Profile %s does not allow soft-mask image transparency for image resource 1 on page 1.',
         ];
+
+        if ($profile->pdfaConformance() !== 'A') {
+            $matrix['acroform'] = 'Profile %s does not allow AcroForm fields in the current implementation.';
+            $matrix['text-annotation'] = 'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page 1.';
+        }
+
+        return $matrix;
     }
 
     private function unsupportedPdfA1Document(Profile $profile, string $scenario): Document

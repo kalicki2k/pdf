@@ -86,6 +86,15 @@ test-pdfa1a-mixed-regression:
 test-pdfa1a-multipage-regression:
 	sh bin/test-pdfa1a-multipage-regression.sh
 
+test-pdfa1a-forms-and-annotations-regression:
+	sh bin/test-pdfa1a-forms-and-annotations-regression.sh
+
+test-pdfa1a-radio-regression:
+	sh bin/test-pdfa1a-radio-regression.sh
+
+test-pdfa1a-choice-fields-regression:
+	sh bin/test-pdfa1a-choice-fields-regression.sh
+
 test-pdfa1a-negative-regressions:
 	sh bin/test-pdfa1a-negative-regressions.sh
 

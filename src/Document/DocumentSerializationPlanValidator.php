@@ -17,7 +17,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedStructureCollector;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
-use Kalle\Pdf\Page\TaggedPageAnnotation;
+use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 
 use function preg_match;
 use function sprintf;
@@ -119,7 +119,7 @@ final class DocumentSerializationPlanValidator
             foreach ($page->annotations as $annotationIndex => $annotation) {
                 $supportsCurrentAnnotation = $document->profile->supportsCurrentPageAnnotationsImplementation()
                     || ($annotation instanceof LinkAnnotation && $document->profile->requiresTaggedLinkAnnotations())
-                    || ($annotation instanceof TaggedPageAnnotation && $document->profile->requiresTaggedPageAnnotations());
+                    || ($annotation instanceof PdfUaTaggedPageAnnotation && $document->profile->requiresTaggedPageAnnotations());
 
                 if (!$supportsCurrentAnnotation) {
                     throw new InvalidArgumentException(sprintf(
@@ -147,7 +147,7 @@ final class DocumentSerializationPlanValidator
 
                 if (
                     !$annotation instanceof LinkAnnotation
-                    && $annotation instanceof TaggedPageAnnotation
+                    && $annotation instanceof PdfUaTaggedPageAnnotation
                     && $document->profile->requiresPageAnnotationAlternativeDescriptions()
                     && (($annotation->taggedAnnotationAltText() ?? '') === '')
                 ) {
@@ -165,7 +165,11 @@ final class DocumentSerializationPlanValidator
     private function annotationNeedsAppearanceStream(Document $document, object $annotation): bool
     {
         return $document->profile->requiresAnnotationAppearanceStreams()
-            && (!$document->profile->isPdfA1() || $annotation instanceof LinkAnnotation)
+            && (
+                !$document->profile->isPdfA1()
+                || $annotation instanceof LinkAnnotation
+                || ($annotation instanceof PdfUaTaggedPageAnnotation && $document->profile->requiresTaggedPageAnnotations())
+            )
             && $annotation instanceof AppearanceStreamAnnotation;
     }
 
@@ -269,7 +273,7 @@ final class DocumentSerializationPlanValidator
 
         $taggedStructure = $this->taggedStructureCollector->collect($document);
 
-        if (!$taggedStructure->hasStructuredContent()) {
+        if (!$taggedStructure->hasStructuredContent() && !$this->documentHasTaggedPdfA1aNonMarkedContent($document)) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s requires structured content in the current implementation.',
                 $document->profile->name(),
@@ -301,13 +305,34 @@ final class DocumentSerializationPlanValidator
         return preg_match('/(?:^|\\s)BT(?:\\s|$)/', $page->contents) === 1;
     }
 
+    private function documentHasTaggedPdfA1aNonMarkedContent(Document $document): bool
+    {
+        foreach ($document->pages as $page) {
+            foreach ($page->annotations as $annotation) {
+                if (
+                    !$annotation instanceof LinkAnnotation
+                    && $annotation instanceof PdfUaTaggedPageAnnotation
+                    && $document->profile->requiresTaggedPageAnnotations()
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        if ($document->acroForm === null || !$document->profile->requiresTaggedFormFields()) {
+            return false;
+        }
+
+        return true;
+    }
+
     private function assertAcroFormRequirements(Document $document): void
     {
         if ($document->acroForm === null) {
             return;
         }
 
-        if (!$document->profile->supportsAcroForms() && !$document->profile->isPdfUa()) {
+        if (!$document->profile->supportsAcroForms() && !$document->profile->requiresTaggedFormFields()) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s does not allow AcroForm fields in the current implementation.',
                 $document->profile->name(),
@@ -316,6 +341,31 @@ final class DocumentSerializationPlanValidator
 
         if ($document->profile->requiresFormFieldAlternativeDescriptions()) {
             foreach ($document->acroForm->fields as $field) {
+                if ($field instanceof RadioButtonGroup) {
+                    if (($field->alternativeName ?? '') === '') {
+                        throw new InvalidArgumentException(sprintf(
+                            'Profile %s requires an alternative description for radio button group "%s".',
+                            $document->profile->name(),
+                            $field->name,
+                        ));
+                    }
+
+                    foreach ($field->choices as $choiceIndex => $choice) {
+                        if (($choice->alternativeName ?? '') !== '') {
+                            continue;
+                        }
+
+                        throw new InvalidArgumentException(sprintf(
+                            'Profile %s requires an alternative description for radio button choice %d in group "%s".',
+                            $document->profile->name(),
+                            $choiceIndex + 1,
+                            $field->name,
+                        ));
+                    }
+
+                    continue;
+                }
+
                 if (($field->alternativeName ?? '') !== '') {
                     continue;
                 }
@@ -330,14 +380,11 @@ final class DocumentSerializationPlanValidator
 
         if ($document->profile->requiresTaggedFormFields()) {
             foreach ($document->acroForm->fields as $field) {
-                if ($field instanceof RadioButtonGroup) {
-                    throw new InvalidArgumentException(sprintf(
-                        'Profile %s does not allow radio buttons in the current tagged form implementation.',
-                        $document->profile->name(),
-                    ));
+                if ($field instanceof WidgetFormField) {
+                    continue;
                 }
 
-                if ($field instanceof WidgetFormField) {
+                if ($field instanceof RadioButtonGroup) {
                     continue;
                 }
 

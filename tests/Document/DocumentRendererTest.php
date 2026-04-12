@@ -800,6 +800,56 @@ final class DocumentRendererTest extends TestCase
         self::assertSame(2, substr_count($pdf, '/Type /OBJR /Obj'));
     }
 
+    public function testItRendersTaggedPdfA1aSingleWidgetFormFields(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')
+            ->checkbox('accept_terms', 40, 460, 14, true, 'Accept terms')
+            ->signatureField('approval_signature', 40, 420, 140, 28, 'Approval signature')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertSame(3, substr_count($pdf, '/Type /StructElem /S /Form'));
+        self::assertStringContainsString('/Alt (Customer name)', $pdf);
+        self::assertStringContainsString('/Alt (Accept terms)', $pdf);
+        self::assertStringContainsString('/Alt (Approval signature)', $pdf);
+        self::assertStringContainsString('/FT /Sig', $pdf);
+    }
+
+    public function testItRendersTaggedPdfA1aRadioButtonGroups(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->radioButton('delivery', 'standard', 40, 500, 14, false, 'Standard delivery', 'Delivery method')
+            ->radioButton('delivery', 'express', 80, 500, 14, true, 'Express delivery')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Kids [7 0 R 10 0 R]', $pdf);
+        self::assertStringContainsString('/StructParent 0', $pdf);
+        self::assertStringContainsString('/StructParent 1', $pdf);
+        self::assertSame(2, substr_count($pdf, '/Type /StructElem /S /Form'));
+        self::assertStringContainsString('/Alt (Standard delivery)', $pdf);
+        self::assertStringContainsString('/Alt (Express delivery)', $pdf);
+    }
+
     public function testItRendersATextField(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -916,6 +966,29 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Ff 65536', $pdf);
         self::assertStringContainsString('/MK << /CA (Open docs) >>', $pdf);
         self::assertStringContainsString('/A << /S /URI /URI (https://example.com/docs) >>', $pdf);
+    }
+
+    public function testItRendersTaggedPdfA1aChoiceAndPushButtonFields(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->listBox('skills', 40, 450, 120, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php', 'pdf'], 'Skills')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertSame(2, substr_count($pdf, '/Type /StructElem /S /Form'));
+        self::assertStringContainsString('/Alt (Status)', $pdf);
+        self::assertStringContainsString('/Alt (Skills)', $pdf);
+        self::assertStringContainsString('/AP << /N ', $pdf);
     }
 
     public function testItRendersASignatureField(): void

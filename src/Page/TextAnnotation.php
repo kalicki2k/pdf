@@ -16,7 +16,7 @@ use function strlen;
 
 use Kalle\Pdf\Writer\IndirectObject;
 
-final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
+final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

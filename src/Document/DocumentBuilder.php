@@ -29,6 +29,7 @@ use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\MarkupAnnotationOptions;
 use Kalle\Pdf\Page\PageOptions;
+use Kalle\Pdf\Page\PageAnnotationReference;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
 use Kalle\Pdf\Page\PopupAnnotationDefinition;
@@ -101,6 +102,8 @@ interface DocumentBuilder
     public function content(string $content): self;
 
     public function text(string $text, ?TextOptions $options = null): self;
+
+    public function taggedText(string $text, string $tag, ?TextOptions $options = null): self;
 
     /**
      * @param list<TextSegment> $segments
@@ -543,6 +546,19 @@ interface DocumentBuilder
 
     public function popupAnnotationWithDefinition(PopupAnnotationDefinition $definition): self;
 
+    public function popupAnnotationFor(
+        PageAnnotationReference $reference,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        bool $open = false,
+    ): self;
+
+    public function popupAnnotationForWithDefinition(PageAnnotationReference $reference, PopupAnnotationDefinition $definition): self;
+
+    public function lastPageAnnotationReference(): PageAnnotationReference;
+
     public function fileAttachmentAnnotation(
         string $filename,
         EmbeddedFile $embeddedFile,
@@ -559,6 +575,25 @@ interface DocumentBuilder
     public function fileAttachmentAnnotationWithOptions(
         string $filename,
         EmbeddedFile $embeddedFile,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        FileAttachmentAnnotationOptions $options,
+    ): self;
+
+    public function existingFileAttachmentAnnotation(
+        string $filename,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $icon = 'PushPin',
+        ?string $contents = null,
+    ): self;
+
+    public function existingFileAttachmentAnnotationWithOptions(
+        string $filename,
         float $x,
         float $y,
         float $width,

@@ -33,7 +33,8 @@ final class TextFieldAndCheckboxTest extends TestCase
             fontSize: 11.0,
         );
 
-        $contents = $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7);
+        $contents = $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, [8]);
+        $objects = $field->relatedObjects(new FormFieldRenderContext([1 => 3]), 7, [8]);
 
         self::assertStringContainsString('/Subtype /Widget', $contents);
         self::assertStringContainsString('/FT /Tx', $contents);
@@ -42,6 +43,9 @@ final class TextFieldAndCheckboxTest extends TestCase
         self::assertStringContainsString('/V (Ada)', $contents);
         self::assertStringContainsString('/DV (Default name)', $contents);
         self::assertStringContainsString('/DA (/Helv 11 Tf 0 g)', $contents);
+        self::assertStringContainsString('/AP << /N 8 0 R >>', $contents);
+        self::assertCount(1, $objects);
+        self::assertStringContainsString('/Subtype /Form', $objects[0]->contents);
     }
 
     public function testItRendersACheckboxWithAppearanceReferences(): void
@@ -133,12 +137,16 @@ final class TextFieldAndCheckboxTest extends TestCase
             'Status',
         );
 
-        $contents = $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7);
+        $contents = $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, [8]);
+        $objects = $field->relatedObjects(new FormFieldRenderContext([1 => 3]), 7, [8]);
 
         self::assertStringContainsString('/FT /Ch', $contents);
         self::assertStringContainsString('/Ff 131072', $contents);
+        self::assertStringContainsString('/AP << /N 8 0 R >>', $contents);
         self::assertStringContainsString('/Opt [[(new) (New)] [(done) (Done)]]', $contents);
         self::assertStringContainsString('/V (done)', $contents);
+        self::assertCount(1, $objects);
+        self::assertStringContainsString('/Subtype /Form', $objects[0]->contents);
     }
 
     public function testItRendersAMultiselectListBox(): void
@@ -155,11 +163,15 @@ final class TextFieldAndCheckboxTest extends TestCase
             'Skills',
         );
 
-        $contents = $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7);
+        $contents = $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, [8]);
+        $objects = $field->relatedObjects(new FormFieldRenderContext([1 => 3]), 7, [8]);
 
         self::assertStringContainsString('/FT /Ch', $contents);
         self::assertStringContainsString('/Ff 2097152', $contents);
+        self::assertStringContainsString('/AP << /N 8 0 R >>', $contents);
         self::assertStringContainsString('/V [(php) (pdf)]', $contents);
+        self::assertCount(1, $objects);
+        self::assertStringContainsString('/Subtype /Form', $objects[0]->contents);
     }
 
     public function testItRendersAPushButtonWithUriAction(): void
@@ -176,12 +188,16 @@ final class TextFieldAndCheckboxTest extends TestCase
             'https://example.com/docs',
         );
 
-        $contents = $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7);
+        $contents = $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, [8]);
+        $objects = $field->relatedObjects(new FormFieldRenderContext([1 => 3]), 7, [8]);
 
         self::assertStringContainsString('/FT /Btn', $contents);
         self::assertStringContainsString('/Ff 65536', $contents);
+        self::assertStringContainsString('/AP << /N 8 0 R >>', $contents);
         self::assertStringContainsString('/MK << /CA (Open docs) >>', $contents);
         self::assertStringContainsString('/A << /S /URI /URI (https://example.com/docs) >>', $contents);
+        self::assertCount(1, $objects);
+        self::assertStringContainsString('/Subtype /Form', $objects[0]->contents);
     }
 
     public function testItRendersASignatureFieldWithAppearanceReference(): void

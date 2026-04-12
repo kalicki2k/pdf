@@ -10,6 +10,7 @@ use function count;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\WidgetFormField;
+use Kalle\Pdf\Document\Form\RadioButtonGroup;
 use Kalle\Pdf\Document\TaggedPdf\ParentTree;
 use Kalle\Pdf\Document\TaggedPdf\StructElem;
 use Kalle\Pdf\Document\TaggedPdf\StructTreeRoot;
@@ -17,7 +18,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Page\LinkAnnotation;
-use Kalle\Pdf\Page\TaggedPageAnnotation;
+use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 use function preg_match;
@@ -158,7 +159,7 @@ final class DocumentTaggedPdfObjectBuilder
 
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
-                if ($annotation instanceof LinkAnnotation || !$annotation instanceof TaggedPageAnnotation) {
+                if ($annotation instanceof LinkAnnotation || !$annotation instanceof PdfUaTaggedPageAnnotation) {
                     continue;
                 }
 
@@ -218,6 +219,33 @@ final class DocumentTaggedPdfObjectBuilder
         $structParentIds = [];
 
         foreach ($document->acroForm->fields as $fieldIndex => $field) {
+            if ($field instanceof RadioButtonGroup) {
+                foreach ($field->choices as $choiceIndex => $choice) {
+                    $annotationObjectId = $acroFormFieldRelatedObjectIds[$fieldIndex][$choiceIndex * 3] ?? null;
+
+                    if ($annotationObjectId === null) {
+                        throw new InvalidArgumentException(sprintf(
+                            'Tagged form structure requires a widget annotation object for radio button group "%s" choice %d.',
+                            $field->name,
+                            $choiceIndex + 1,
+                        ));
+                    }
+
+                    $entryKey = 'form:' . $field->name . ':choice:' . $choiceIndex;
+                    $entries[] = [
+                        'key' => $entryKey,
+                        'pageIndex' => $choice->pageNumber - 1,
+                        'annotationObjectId' => $annotationObjectId,
+                        'altText' => $choice->alternativeName ?? $field->alternativeName ?? $field->name,
+                    ];
+                    $structParentIds[$annotationObjectId] = $nextStructParentId;
+                    $parentTreeEntries[$nextStructParentId] = [$entryKey];
+                    $nextStructParentId++;
+                }
+
+                continue;
+            }
+
             if (!$field instanceof WidgetFormField) {
                 continue;
             }
@@ -273,10 +301,13 @@ final class DocumentTaggedPdfObjectBuilder
             fn (array $entry): int => $this->resolveDocumentKidObjectId($entry['key'], $state),
             $this->documentChildEntriesInReadingOrder($state),
         );
+        $roleMap = $state->taggedPageAnnotationStructure['entries'] !== []
+            ? ['Annot' => 'Span']
+            : [];
 
         $objects[] = new IndirectObject(
             $state->structTreeRootObjectId,
-            (new StructTreeRoot([$state->documentStructElemObjectId], $state->parentTreeObjectId))->objectContents(),
+            (new StructTreeRoot([$state->documentStructElemObjectId], $state->parentTreeObjectId, $roleMap))->objectContents(),
         );
         $objects[] = new IndirectObject(
             $state->documentStructElemObjectId,

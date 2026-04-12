@@ -16,7 +16,7 @@ use function rtrim;
 use function str_replace;
 use function strlen;
 
-final readonly class FreeTextAnnotation implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation
+final readonly class FreeTextAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation
 {
     public function __construct(
         public float $x,

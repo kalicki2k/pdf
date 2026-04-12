@@ -10,7 +10,7 @@ use function implode;
 use function in_array;
 use function strlen;
 
-final readonly class CaretAnnotation implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation
+final readonly class CaretAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

@@ -10,7 +10,7 @@ use Kalle\Pdf\Color\Color;
 use function implode;
 use function strlen;
 
-final readonly class CircleAnnotation implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation
+final readonly class CircleAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

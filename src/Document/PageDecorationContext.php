@@ -67,6 +67,13 @@ final class PageDecorationContext
         return $this;
     }
 
+    public function taggedText(string $text, string $tag, ?TextOptions $options = null): self
+    {
+        $this->builder = $this->builder->taggedText($text, $tag, $options);
+
+        return $this;
+    }
+
     /**
      * @param list<TextSegment> $segments
      */

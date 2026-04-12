@@ -36,12 +36,12 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
             language: 'de-DE',
             pages: [$this->textPage('Span candidate Привет')],
             taggedTextBlocks: [
-                new TaggedTextBlock('Span', 0, 0),
+                new TaggedTextBlock('Div', 0, 0),
             ],
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('supports only tagged text blocks with tags [H1, H2, H3, H4, H5, H6, P]');
+        $this->expectExceptionMessage('supports only tagged text blocks with tags [BlockQuote, Code, H1, H2, H3, H4, H5, H6, P, Quote, Span]');
 
         (new DocumentSerializationPlanBuilder())->build($document);
     }

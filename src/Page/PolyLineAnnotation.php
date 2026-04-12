@@ -16,7 +16,7 @@ use function max;
 use function min;
 use function strlen;
 
-final readonly class PolyLineAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
+final readonly class PolyLineAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

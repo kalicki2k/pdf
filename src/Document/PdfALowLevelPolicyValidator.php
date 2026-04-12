@@ -35,7 +35,9 @@ final class PdfALowLevelPolicyValidator
      */
     private const ALLOWED_MARKED_CONTENT_TAGS = [
         '/Artifact',
+        '/BlockQuote',
         '/Caption',
+        '/Code',
         '/Figure',
         '/H1',
         '/H2',
@@ -47,6 +49,8 @@ final class PdfALowLevelPolicyValidator
         '/Lbl',
         '/Link',
         '/P',
+        '/Quote',
+        '/Span',
         '/TD',
         '/TH',
     ];

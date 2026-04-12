@@ -131,6 +131,7 @@ final readonly class RadioButtonGroup extends FormField
                 '/Border [0 0 0]',
                 '/P ' . $context->pageObjectId($choice->pageNumber) . ' 0 R',
                 '/Parent ' . $fieldObjectId . ' 0 R',
+                '/F 4',
                 '/AS /' . $state,
             ];
 

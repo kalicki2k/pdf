@@ -12,7 +12,7 @@ use function count;
 use function implode;
 use function strlen;
 
-final readonly class InkAnnotation implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation
+final readonly class InkAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 

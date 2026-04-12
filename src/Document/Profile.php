@@ -316,7 +316,8 @@ final readonly class Profile
 
     public function requiresFormFieldAlternativeDescriptions(): bool
     {
-        return $this->isPdfUa();
+        return $this->isPdfUa()
+            || ($this->isPdfA1() && $this->conformance === 'A');
     }
 
     public function requiresLinkAnnotationAlternativeDescriptions(): bool
@@ -327,7 +328,8 @@ final readonly class Profile
 
     public function requiresPageAnnotationAlternativeDescriptions(): bool
     {
-        return $this->isPdfUa();
+        return $this->isPdfUa()
+            || ($this->isPdfA1() && $this->conformance === 'A');
     }
 
     public function requiresPageAnnotationTabOrder(): bool
@@ -342,7 +344,8 @@ final readonly class Profile
 
     public function requiresTaggedFormFields(): bool
     {
-        return $this->isPdfUa();
+        return $this->isPdfUa()
+            || ($this->isPdfA1() && $this->conformance === 'A');
     }
 
     public function requiresTaggedImages(): bool
@@ -359,7 +362,8 @@ final readonly class Profile
 
     public function requiresTaggedPageAnnotations(): bool
     {
-        return $this->isPdfUa();
+        return $this->isPdfUa()
+            || ($this->isPdfA1() && $this->conformance === 'A');
     }
 
     public function requiresTaggedPdf(): bool
@@ -370,8 +374,9 @@ final readonly class Profile
 
     public function supportsAcroForms(): bool
     {
-        return !$this->isPdfA()
-            && !$this->isPdfUa();
+        return ($this->isPdfA1() && $this->conformance === 'A')
+            || (!$this->isPdfA()
+            && !$this->isPdfUa());
     }
 
     public function supportsAes128Encryption(): bool
@@ -399,19 +404,19 @@ final readonly class Profile
     public function supportsCurrentCheckboxImplementation(): bool
     {
         return $this->supportsAcroForms()
-            || $this->isPdfUa();
+            || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentComboBoxImplementation(): bool
     {
         return $this->supportsAcroForms()
-            || $this->isPdfUa();
+            || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentListBoxImplementation(): bool
     {
         return $this->supportsAcroForms()
-            || $this->isPdfUa();
+            || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentOptionalContentGroupImplementation(): bool
@@ -426,26 +431,26 @@ final readonly class Profile
 
     public function supportsCurrentPushButtonImplementation(): bool
     {
-        return $this->supportsAcroForms()
+        return ($this->supportsAcroForms() && !($this->isPdfA1() && $this->conformance === 'A'))
             || $this->isPdfUa();
     }
 
     public function supportsCurrentRadioButtonImplementation(): bool
     {
         return $this->supportsAcroForms()
-            || $this->isPdfUa();
+            || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentSignatureFieldImplementation(): bool
     {
         return $this->supportsAcroForms()
-            || $this->isPdfUa();
+            || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentTextFieldImplementation(): bool
     {
         return $this->supportsAcroForms()
-            || $this->isPdfUa();
+            || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentTransparencyImplementation(): bool

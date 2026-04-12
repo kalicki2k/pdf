@@ -51,6 +51,8 @@ final class PdfA1aTaggedStructureValidator
         $this->assertListStructElements($state, $objectsById);
         $this->assertTableStructElements($document, $state, $objectsById);
         $this->assertLinkStructElements($state, $objectsById);
+        $this->assertPageAnnotationStructElements($state, $objectsById);
+        $this->assertFormStructElements($state, $objectsById);
     }
 
     /**
@@ -455,6 +457,89 @@ final class PdfA1aTaggedStructureValidator
     }
 
     /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertPageAnnotationStructElements(DocumentSerializationPlanBuildState $state, array $objectsById): void
+    {
+        foreach ($state->taggedPageAnnotationStructure['entries'] as $annotationEntry) {
+            $objectId = $state->taggedStructureObjectIds->annotationStructElemObjectIds[$annotationEntry['key']];
+            $contents = $this->requireObjectContents($objectsById, $objectId, sprintf('page annotation StructElem "%s"', $annotationEntry['key']));
+            $this->assertStructElemTagAndParent($contents, $annotationEntry['tag'], $state->documentStructElemObjectId);
+
+            $pageObjectId = $state->pageObjectIds[$annotationEntry['pageIndex']];
+            $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
+
+            if ($actualPageObjectId !== $pageObjectId) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a page annotation StructElem "%s" must reference page object %d 0 R.',
+                    $annotationEntry['key'],
+                    $pageObjectId,
+                ));
+            }
+
+            if (!str_contains($contents, '/Alt ')) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a page annotation StructElem "%s" must expose /Alt text.',
+                    $annotationEntry['key'],
+                ));
+            }
+
+            $kidSection = $this->extractKidSection($contents, sprintf('page annotation StructElem "%s"', $annotationEntry['key']));
+            $actualObjrObjectIds = $this->extractObjrObjectIds($kidSection);
+            $expectedObjectId = $state->pageAnnotationObjectIds[$annotationEntry['pageIndex']][$annotationEntry['annotationIndex']];
+
+            if ($actualObjrObjectIds !== [$expectedObjectId]) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a page annotation StructElem "%s" must reference annotation object %d 0 R.',
+                    $annotationEntry['key'],
+                    $expectedObjectId,
+                ));
+            }
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertFormStructElements(DocumentSerializationPlanBuildState $state, array $objectsById): void
+    {
+        foreach ($state->taggedFormStructure['entries'] as $formEntry) {
+            $objectId = $state->taggedFormStructElemObjectIds[$formEntry['key']];
+            $contents = $this->requireObjectContents($objectsById, $objectId, sprintf('form StructElem "%s"', $formEntry['key']));
+            $this->assertStructElemTagAndParent($contents, 'Form', $state->documentStructElemObjectId);
+
+            $pageObjectId = $state->pageObjectIds[$formEntry['pageIndex']];
+            $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
+
+            if ($actualPageObjectId !== $pageObjectId) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a form StructElem "%s" must reference page object %d 0 R.',
+                    $formEntry['key'],
+                    $pageObjectId,
+                ));
+            }
+
+            if (!str_contains($contents, '/Alt ')) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a form StructElem "%s" must expose /Alt text.',
+                    $formEntry['key'],
+                ));
+            }
+
+            $kidSection = $this->extractKidSection($contents, sprintf('form StructElem "%s"', $formEntry['key']));
+            $actualObjrObjectIds = $this->extractObjrObjectIds($kidSection);
+
+            if ($actualObjrObjectIds !== [$formEntry['annotationObjectId']]) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a form StructElem "%s" must reference widget annotation object %d 0 R.',
+                    $formEntry['key'],
+                    $formEntry['annotationObjectId'],
+                ));
+            }
+        }
+    }
+
+    /**
      * @return array<int, list<int>>
      */
     private function expectedParentTreeEntries(DocumentSerializationPlanBuildState $state): array
@@ -481,6 +566,14 @@ final class PdfA1aTaggedStructureValidator
 
             foreach ($linkKeys as $key) {
                 $entries[$structParentId][] = $state->taggedStructureObjectIds->linkStructElemObjectIds[$key];
+            }
+        }
+
+        foreach ($state->taggedPageAnnotationStructure['parentTreeEntries'] as $structParentId => $annotationKeys) {
+            $entries[$structParentId] = [];
+
+            foreach ($annotationKeys as $key) {
+                $entries[$structParentId][] = $state->taggedStructureObjectIds->annotationStructElemObjectIds[$key];
             }
         }
 
@@ -525,6 +618,15 @@ final class PdfA1aTaggedStructureValidator
             ];
         }
 
+        foreach ($state->taggedPageAnnotationStructure['entries'] as $annotationEntry) {
+            $entries[] = [
+                'objectId' => $state->taggedStructureObjectIds->annotationStructElemObjectIds[$annotationEntry['key']],
+                'pageIndex' => $annotationEntry['pageIndex'],
+                'orderIndex' => 1500000 + $annotationEntry['annotationIndex'],
+                'sequence' => $sequence++,
+            ];
+        }
+
         foreach ($state->taggedFormStructure['entries'] as $formEntry) {
             $entries[] = [
                 'objectId' => $state->taggedFormStructElemObjectIds[$formEntry['key']],
@@ -553,6 +655,7 @@ final class PdfA1aTaggedStructureValidator
             ?? $state->taggedStructureObjectIds->listStructElemObjectIds[$key]
             ?? $state->taggedStructureObjectIds->tableStructElemObjectIds[$key]
             ?? $state->taggedStructureObjectIds->linkStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->annotationStructElemObjectIds[$key]
             ?? $state->taggedFormStructElemObjectIds[$key]
             ?? throw new InvalidArgumentException(sprintf('Unknown PDF/A-1a document child key "%s".', $key));
     }
