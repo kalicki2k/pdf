@@ -20,7 +20,9 @@ use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 $outputDirectory = __DIR__ . '/../var/examples';
 
@@ -44,7 +46,7 @@ $table = Table::define(
     TableColumn::fixed(58.0),
     TableColumn::proportional(1.0),
 )
-    ->withPlacement(new TablePlacement(50.0, 320.0))
+    ->withPlacement(TablePlacement::at(50.0, 430.0, 320.0))
     ->withCaption(
         TableCaption::text('Tables in pdf2: caption, repeated headers, row headers, spans, backgrounds, vertical alignment, footer and tagged PDF scope')
             ->withTextOptions($captionText)
@@ -75,8 +77,19 @@ $table = Table::define(
                 ->withBackgroundColor(Color::hex('#f8fafc'))
                 ->withPadding(CellPadding::symmetric(10.0, 8.0)),
             TableCell::text('Availability'),
-            TableCell::text("Stable overall.\nMinor fluctuations remained below threshold.")
-                ->withBorder(new Border(1.0, 1.0, 1.0, 1.0)),
+            TableCell::segments(
+                TextSegment::plain('Stable overall. Read the '),
+                TextSegment::link(
+                    'playbook',
+                    TextLink::externalUrl(
+                        'https://example.com/playbook',
+                        contents: 'Open mitigation playbook',
+                        accessibleLabel: 'Open the mitigation playbook',
+                        groupKey: 'north-playbook',
+                    ),
+                ),
+                TextSegment::plain(" before the next review.\nMinor fluctuations remained below threshold."),
+            )->withBorder(new Border(1.0, 1.0, 1.0, 1.0)),
         ),
         TableRow::fromCells(
             TableCell::text('Response time'),

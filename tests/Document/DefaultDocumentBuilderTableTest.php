@@ -23,7 +23,9 @@ use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 use function number_format;
 
@@ -108,6 +110,57 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         );
     }
 
+    public function testItUsesExplicitTablePlacementYOnTheCurrentPage(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(90.0),
+            TableColumn::fixed(90.0),
+        )
+            ->withPlacement(TablePlacement::at(70.0, 460.0, 180.0))
+            ->withRows(
+                TableRow::fromTexts('Left', 'Right'),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->table($table)
+            ->build();
+        $page = $document->pages[0];
+        $font = StandardFontDefinition::from('Helvetica');
+
+        self::assertStringContainsString(
+            '70 460 m',
+            $page->contents,
+        );
+        self::assertStringContainsString(
+            '74 ' . $this->formatNumber(460.0 - 4.0 - $font->ascent(12.0)) . ' Td',
+            $page->contents,
+        );
+    }
+
+    public function testItRejectsExplicitTablePlacementYAboveTheCurrentFlowCursor(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Explicit table placement y must not be above the current flow cursor on the page.');
+
+        $table = Table::define(
+            TableColumn::fixed(90.0),
+        )
+            ->withPlacement(TablePlacement::at(60.0, 550.0, 90.0))
+            ->withRows(
+                TableRow::fromTexts('Value'),
+            );
+
+        DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->paragraph('Intro text', new TextOptions(
+                fontSize: 18.0,
+                lineHeight: 22.0,
+            ))
+            ->table($table);
+    }
+
     public function testItAppliesHorizontalAlignmentAndCellSpecificBorders(): void
     {
         $font = StandardFontDefinition::from('Helvetica');
@@ -146,6 +199,143 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             '0.5 w' . "\n" . '60 ' . $this->formatNumber($page->contentArea()->top) . ' m',
             $page->contents,
         );
+    }
+
+    public function testItRendersRichTextSegmentsInsideTableCells(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(180.0),
+        )
+            ->withPlacement(TablePlacement::at(60.0, 480.0, 180.0))
+            ->withRows(
+                TableRow::fromCells(
+                    TableCell::segments(
+                        TextSegment::plain('Read the '),
+                        TextSegment::link('documentation', TextLink::externalUrl('https://example.com/docs')),
+                        TextSegment::plain(' before rollout.'),
+                    ),
+                ),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->table($table)
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertSame('documentation', $document->pages[0]->annotations[0]->contents);
+        self::assertGreaterThanOrEqual(5, substr_count($document->pages[0]->contents, "BT\n/F1 12 Tf\n"));
+    }
+
+    public function testItKeepsVeryNarrowColumnTablesDeterministic(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(30.0),
+            TableColumn::fixed(34.0),
+            TableColumn::fixed(42.0),
+        )
+            ->withPlacement(TablePlacement::at(40.0, 360.0, 106.0))
+            ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
+            ->withRows(
+                TableRow::fromTexts('Area', 'Queue', 'INC2026ALPHAOMEGA0004711'),
+                TableRow::fromTexts('South', '', 'REGIONALHANDOVERALPHA2026040801'),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A6())
+            ->margin(Margin::all(18.0))
+            ->table($table)
+            ->build();
+
+        self::assertCount(1, $document->pages);
+        self::assertSame(5, substr_count($document->pages[0]->contents, "BT\n/F1 12 Tf\n"));
+    }
+
+    public function testItRepeatsAHeaderMatrixAcrossPages(): void
+    {
+        $rows = [];
+
+        for ($index = 1; $index <= 12; $index++) {
+            $rows[] = TableRow::fromTexts('Region ' . $index, '98 %', '1.2 h', '2', '18');
+        }
+
+        $table = Table::define(
+            TableColumn::fixed(40.0),
+            TableColumn::fixed(45.0),
+            TableColumn::fixed(45.0),
+            TableColumn::fixed(45.0),
+            TableColumn::fixed(45.0),
+        )
+            ->withPlacement(TablePlacement::at(20.0, 360.0, 220.0))
+            ->withHeaderRows(
+                TableRow::fromCells(
+                    TableCell::text('Region', rowspan: 2),
+                    TableCell::text('Service quality', colspan: 2),
+                    TableCell::text('Follow-up', colspan: 2),
+                ),
+                TableRow::fromTexts('Availability', 'Response time', 'Escalations', 'Resolved'),
+            )
+            ->withRepeatedHeaderOnPageBreak()
+            ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
+            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withRows(...$rows);
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A6())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+
+        self::assertGreaterThan(1, count($document->pages));
+        self::assertCount(2, $document->pages);
+        self::assertSame(26, substr_count($document->pages[1]->contents, "BT\n/F1 10 Tf\n"));
+    }
+
+    public function testItSplitsSpanHeavyTablesAcrossPagesDeterministically(): void
+    {
+        $rows = [];
+
+        foreach (['North', 'South', 'West'] as $region) {
+            $rows[] = TableRow::fromCells(
+                TableCell::text($region, rowspan: 2),
+                TableCell::text('Availability review'),
+                TableCell::text('98 %'),
+                TableCell::text('97 %'),
+                TableCell::text('99 %'),
+            );
+            $rows[] = TableRow::fromCells(
+                TableCell::text('Follow-up action'),
+                TableCell::text('1.2 h'),
+                TableCell::text('1.1 h'),
+                TableCell::text('1.0 h'),
+            );
+            $rows[] = TableRow::fromCells(
+                TableCell::text($region . ' summary'),
+                TableCell::text($region . ' remains stable overall, but rollout notes and acknowledgements stay grouped.', colspan: 4),
+            );
+        }
+
+        $table = Table::define(
+            TableColumn::fixed(28.0),
+            TableColumn::fixed(34.0),
+            TableColumn::fixed(34.0),
+            TableColumn::fixed(34.0),
+            TableColumn::fixed(34.0),
+        )
+            ->withPlacement(TablePlacement::at(20.0, 360.0, 164.0))
+            ->withHeaderRows(TableRow::fromTexts('Region', 'Metric', 'Jan', 'Feb', 'Mar'))
+            ->withRepeatedHeaderOnPageBreak()
+            ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
+            ->withTextOptions(new TextOptions(fontSize: 9.0, lineHeight: 11.5))
+            ->withRows(...$rows);
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A6())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+
+        self::assertGreaterThan(1, count($document->pages));
+        self::assertCount(2, $document->pages);
+        self::assertSame(50, substr_count($document->pages[0]->contents, "BT\n/F1 9 Tf\n"));
+        self::assertSame(11, substr_count($document->pages[1]->contents, "BT\n/F1 9 Tf\n"));
     }
 
     public function testItRendersATableCaptionBeforeTheHeaderAndBody(): void

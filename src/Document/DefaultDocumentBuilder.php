@@ -35,6 +35,7 @@ use Kalle\Pdf\Layout\Table\TableRowGroupLayout;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\FreeTextAnnotation;
+use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotationOptions;
 use Kalle\Pdf\Page\LinkAnnotation;
@@ -324,7 +325,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $taggedTableId = ($clone->profile ?? Profile::standard())->requiresTaggedPdf()
             ? $clone->registerTaggedTable($headerLayout, $tableLayout, $footerLayout)
             : null;
-        $cursorY = $clone->currentPageCursorY ?? $contentArea->top;
+        $explicitStartY = $table->placement?->y;
+
+        if ($explicitStartY !== null && $clone->currentPageCursorY !== null && $explicitStartY > $clone->currentPageCursorY) {
+            throw new InvalidArgumentException(
+                'Explicit table placement y must not be above the current flow cursor on the page.',
+            );
+        }
+
+        $cursorY = $explicitStartY ?? $clone->currentPageCursorY ?? $contentArea->top;
         $headerRenderedOnCurrentPage = false;
         $minimumTableSegmentHeight = $table->cellPadding->vertical() + $clone->lineHeightForTable($table);
         $minimumTableStartHeight = $minimumTableSegmentHeight + ($headerLayout?->totalHeight() ?? 0.0);
@@ -332,6 +341,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         if ($captionLayout !== null) {
             if (($captionLayout['height'] + $minimumTableStartHeight) > $contentArea->height()) {
                 throw new InvalidArgumentException('Table caption leaves no space for table content on a fresh page.');
+            }
+
+            if (($captionLayout['height'] + $minimumTableStartHeight) > ($cursorY - $contentArea->bottom) && $explicitStartY !== null) {
+                throw new InvalidArgumentException('Explicit table placement y leaves no space for caption and table start.');
             }
 
             if (($captionLayout['height'] + $minimumTableStartHeight) > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
@@ -344,10 +357,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
             $clone->renderTableCaption($captionLayout, $table->caption, $font, $cursorY, $tableLeftX, $taggedTableId);
             $cursorY -= $captionLayout['height'];
-            $clone->currentPageCursorY = $cursorY;
+            $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
         }
 
         if ($headerLayout !== null) {
+            if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $explicitStartY !== null) {
+                throw new InvalidArgumentException('Explicit table placement y leaves no space for the configured header rows.');
+            }
+
             if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
                 $clone->startOverflowPage();
                 $page = $clone->buildCurrentPage();
@@ -358,7 +375,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
             $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
             $cursorY -= $headerLayout->totalHeight();
-            $clone->currentPageCursorY = $cursorY;
+            $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
             $headerRenderedOnCurrentPage = true;
         }
 
@@ -396,7 +413,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
                     $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
                     $cursorY -= $headerLayout->totalHeight();
-                    $clone->currentPageCursorY = $cursorY;
+                    $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                     $headerRenderedOnCurrentPage = true;
                     $availableHeight = $cursorY - $contentArea->bottom;
                 }
@@ -426,7 +443,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 );
                 $segmentOffset += $segmentHeight;
                 $cursorY -= $segmentHeight;
-                $clone->currentPageCursorY = $cursorY;
+                $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
 
                 if ($segmentOffset < $rowGroup->height) {
                     $clone->startOverflowPage();
@@ -461,13 +478,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
             if (!$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak) {
                 $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
                 $cursorY -= $headerLayout->totalHeight();
-                $clone->currentPageCursorY = $cursorY;
+                $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                 $headerRenderedOnCurrentPage = true;
             }
 
             $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
             $cursorY -= $footerLayout->totalHeight();
-            $clone->currentPageCursorY = $cursorY;
+            $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
         }
 
         return $clone;
@@ -603,24 +620,52 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?Color $fillColor = null,
         ?string $title = null,
     ): DocumentBuilder {
+        return $this->freeTextAnnotationWithOptions(
+            $contents,
+            $x,
+            $y,
+            $width,
+            $height,
+            $options,
+            new FreeTextAnnotationOptions(
+                textColor: $options?->color,
+                borderColor: $borderColor,
+                fillColor: $fillColor,
+                metadata: new \Kalle\Pdf\Page\AnnotationMetadata(title: $title),
+            ),
+        );
+    }
+
+    public function freeTextAnnotationWithOptions(
+        string $contents,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?TextOptions $textOptions = null,
+        ?FreeTextAnnotationOptions $options = null,
+    ): DocumentBuilder {
         $clone = clone $this;
-        $options ??= new TextOptions(fontSize: 12.0);
-        $font = $options->embeddedFont !== null
-            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
-            : StandardFontDefinition::from($options->fontName);
+        $textOptions ??= new TextOptions(fontSize: 12.0);
+        $options ??= new FreeTextAnnotationOptions();
+        $metadata = $options->metadata();
+        $resolvedTextColor = $options->textColor ?? $textOptions->color;
+        $font = $textOptions->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($textOptions->embeddedFont)
+            : StandardFontDefinition::from($textOptions->fontName);
         $appearanceOptions = new TextOptions(
             x: 2.0,
-            y: $height - 2.0 - $font->ascent($options->fontSize),
+            y: $height - 2.0 - $font->ascent($textOptions->fontSize),
             width: max($width - 4.0, 0.0),
-            fontSize: $options->fontSize,
-            lineHeight: $options->lineHeight,
-            fontName: $options->fontName,
-            embeddedFont: $options->embeddedFont,
-            fontEncoding: $options->fontEncoding,
-            color: $options->color,
-            kerning: $options->kerning,
-            baseDirection: $options->baseDirection,
-            align: $options->align,
+            fontSize: $textOptions->fontSize,
+            lineHeight: $textOptions->lineHeight,
+            fontName: $textOptions->fontName,
+            embeddedFont: $textOptions->embeddedFont,
+            fontEncoding: $textOptions->fontEncoding,
+            color: $resolvedTextColor,
+            kerning: $textOptions->kerning,
+            baseDirection: $textOptions->baseDirection,
+            align: $textOptions->align,
         );
         $textFlow = new TextFlow(new Page(PageSize::custom($width, $height)));
         $wrappedLines = $textFlow->wrapTextLines($contents, $appearanceOptions, $font, 2.0);
@@ -632,7 +677,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $appearanceOptions,
             $textFlow,
             2.0,
-            $height - 2.0 - $font->ascent($options->fontSize),
+            $height - 2.0 - $font->ascent($textOptions->fontSize),
             $renderState['fontAlias'],
             $font,
             $renderState['embeddedPageFont'],
@@ -641,19 +686,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
         $appearanceContents = $appearance['contents'];
 
-        if ($fillColor !== null || $borderColor !== null) {
+        if ($options->fillColor !== null || $options->borderColor !== null) {
             $background = [];
 
-            if ($fillColor !== null) {
-                $background[] = $this->colorFillOperator($fillColor);
+            if ($options->fillColor !== null) {
+                $background[] = $this->colorFillOperator($options->fillColor);
             }
 
-            if ($borderColor !== null) {
-                $background[] = $this->colorStrokeOperator($borderColor);
+            if ($options->borderColor !== null) {
+                $background[] = $this->colorStrokeOperator($options->borderColor);
                 $background[] = '1 w';
                 $background[] = '0.5 0.5 ' . $this->formatNumber($width - 1.0) . ' ' . $this->formatNumber($height - 1.0) . ' re';
-                $background[] = $fillColor !== null ? 'B' : 'S';
-            } elseif ($fillColor !== null) {
+                $background[] = $options->fillColor !== null ? 'B' : 'S';
+            } elseif ($options->fillColor !== null) {
                 $background[] = '0 0 ' . $this->formatNumber($width) . ' ' . $this->formatNumber($height) . ' re';
                 $background[] = 'f';
             }
@@ -670,12 +715,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
             height: $height,
             contents: $contents,
             fontAlias: $renderState['fontAlias'],
-            fontSize: $options->fontSize,
+            fontSize: $textOptions->fontSize,
             appearanceContents: $appearanceContents,
-            textColor: $options->color,
-            borderColor: $borderColor,
-            fillColor: $fillColor,
-            title: $title,
+            textColor: $resolvedTextColor,
+            borderColor: $options->borderColor,
+            fillColor: $options->fillColor,
+            title: $metadata->title,
         );
 
         return $clone;
@@ -1175,6 +1220,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?PageFont $embeddedPageFont,
         bool $useHexString,
         float $pdfVersion,
+        ?string $markedContentTag = null,
+        ?int $markedContentId = null,
     ): array {
         $contents = [];
         $annotations = [];
@@ -1318,8 +1365,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $continuingLinkGroup = $lastLinkedGroupOnLine;
         }
 
+        $contentsString = implode("\n", $contents);
+
+        if ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
+            $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
+        }
+
         return [
-            'contents' => implode("\n", $contents),
+            'contents' => $contentsString,
             'annotations' => $annotations,
         ];
     }
@@ -1364,7 +1417,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $mergedEntries;
     }
 
-    private function canMergeTextLinks(LinkTarget|TextLink $left, LinkTarget|TextLink $right): bool
+    private function canMergeTextLinks(LinkTarget | TextLink $left, LinkTarget | TextLink $right): bool
     {
         $leftGroupKey = $this->linkGroupKey($left);
         $rightGroupKey = $this->linkGroupKey($right);
@@ -1757,7 +1810,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $x += $tableLayout->columnWidths[$index];
         }
 
-        $shapedLines = $this->shapeWrappedTextLines($cellLayout->wrappedLines, $cellLayout->textOptions, $font);
+        $shapedLines = $cellLayout->usesRichText()
+            ? []
+            : $this->shapeWrappedTextLines($cellLayout->wrappedLines, $cellLayout->textOptions, $font);
         $renderState = $this->prepareTextRenderState($cellLayout->cell->text, $cellLayout->textOptions, $font, $shapedLines);
         $cellHeight = $tableLayout->cellHeight($cellLayout);
         $cellBottomOffset = $cellTopOffset + $cellHeight;
@@ -1789,7 +1844,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
             : null;
         $segmentText = $this->visibleWrappedTextContentForCellSegment(
             $cellLayout,
-            $cellLayout->textOptions,
             $cellHeight,
             $shapedLines,
             $font,
@@ -1797,7 +1851,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $renderState['embeddedPageFont'],
             $renderState['useHexString'],
             $textFlow,
-            $cellLayout->padding,
             $x + $cellLayout->padding->left,
             $segmentTopY,
             $cellTopOffset,
@@ -1846,7 +1899,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
      */
     private function visibleWrappedTextContentForCellSegment(
         TableCellLayout $cellLayout,
-        TextOptions $cellTextOptions,
         float $cellHeight,
         array $shapedLines,
         StandardFontDefinition | EmbeddedFontDefinition $font,
@@ -1854,7 +1906,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?PageFont $embeddedPageFont,
         bool $useHexString,
         TextFlow $textFlow,
-        CellPadding $cellPadding,
         float $x,
         float $segmentTopY,
         float $cellTopOffset,
@@ -1863,11 +1914,30 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
     ): ?array {
+        if ($cellLayout->usesRichText()) {
+            return $this->visibleWrappedTextSegmentsContentForCellSegment(
+                $cellLayout,
+                $font,
+                $fontAlias,
+                $embeddedPageFont,
+                $useHexString,
+                $textFlow,
+                $x,
+                $segmentTopY,
+                $cellTopOffset,
+                $segmentOffset,
+                $segmentHeight,
+                $markedContentTag,
+                $markedContentId,
+            );
+        }
+
+        $cellTextOptions = $cellLayout->textOptions;
         $lineHeight = $textFlow->lineHeight($cellTextOptions);
         $textTopOffset = $cellTopOffset + $this->tableCellVerticalOffset(
             $cellHeight,
             $cellLayout,
-            $cellPadding,
+            $cellLayout->padding,
             $cellTextOptions,
         );
         $firstLineBaselineOffset = $textTopOffset + $font->ascent($cellTextOptions->fontSize);
@@ -1916,13 +1986,88 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
     }
 
+    /**
+     * @return array{contents: string, annotations: list<PageAnnotation>}|null
+     */
+    private function visibleWrappedTextSegmentsContentForCellSegment(
+        TableCellLayout $cellLayout,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        string $fontAlias,
+        ?PageFont $embeddedPageFont,
+        bool $useHexString,
+        TextFlow $textFlow,
+        float $x,
+        float $segmentTopY,
+        float $cellTopOffset,
+        float $segmentOffset,
+        float $segmentHeight,
+        ?string $markedContentTag = null,
+        ?int $markedContentId = null,
+    ): ?array {
+        $wrappedSegmentLines = $cellLayout->wrappedSegmentLines;
+
+        if ($wrappedSegmentLines === null) {
+            return null;
+        }
+
+        $cellTextOptions = $cellLayout->textOptions;
+        $lineHeight = $textFlow->lineHeight($cellTextOptions);
+        $textTopOffset = $cellTopOffset + $this->tableCellVerticalOffset(
+            $cellLayout->height,
+            $cellLayout,
+            $cellLayout->padding,
+            $cellTextOptions,
+        );
+        $firstLineBaselineOffset = $textTopOffset + $font->ascent($cellTextOptions->fontSize);
+        $segmentBottomOffset = $segmentOffset + $segmentHeight;
+        $visibleLineIndexes = [];
+
+        foreach ($wrappedSegmentLines as $index => $_line) {
+            $lineTopOffset = $textTopOffset + ($lineHeight * $index);
+
+            if ($lineTopOffset < $segmentOffset || $lineTopOffset >= $segmentBottomOffset) {
+                continue;
+            }
+
+            $visibleLineIndexes[] = $index;
+        }
+
+        if ($visibleLineIndexes === []) {
+            return null;
+        }
+
+        $startIndex = $visibleLineIndexes[0];
+        $visibleSegmentLines = [];
+
+        foreach ($visibleLineIndexes as $index) {
+            $visibleSegmentLines[] = $wrappedSegmentLines[$index];
+        }
+
+        $firstLineY = $segmentTopY - (($firstLineBaselineOffset + ($lineHeight * $startIndex)) - $segmentOffset);
+
+        return $this->buildWrappedTextSegmentsContent(
+            $visibleSegmentLines,
+            $cellTextOptions,
+            $textFlow,
+            $x,
+            $firstLineY,
+            $fontAlias,
+            $font,
+            $embeddedPageFont,
+            $useHexString,
+            ($this->profile ?? Profile::standard())->version(),
+            $markedContentTag,
+            $markedContentId,
+        );
+    }
+
     private function tableCellVerticalOffset(
         float $cellHeight,
         TableCellLayout $cellLayout,
         CellPadding $cellPadding,
         TextOptions $textOptions,
     ): float {
-        $textHeight = max(count($cellLayout->wrappedLines), 1) * ($textOptions->lineHeight ?? ($textOptions->fontSize * 1.2));
+        $textHeight = max($cellLayout->lineCount(), 1) * ($textOptions->lineHeight ?? ($textOptions->fontSize * 1.2));
         $contentHeight = max($cellHeight - $cellPadding->vertical(), 0.0);
         $availableSpace = max($contentHeight - $textHeight, 0.0);
 
@@ -2199,10 +2344,23 @@ class DefaultDocumentBuilder implements DocumentBuilder
             throw new InvalidArgumentException('Table placement width exceeds the page content area.');
         }
 
+        if ($table->placement->y !== null && ($table->placement->y > $contentArea->top || $table->placement->y < $contentArea->bottom)) {
+            throw new InvalidArgumentException('Table placement y must stay within the page content area.');
+        }
+
         return [
             'x' => $table->placement->x,
             'width' => $table->placement->width,
         ];
+    }
+
+    private function nextTableCursorY(Table $table, Page $page, float $tableBottomY): float
+    {
+        if ($table->placement?->y === null) {
+            return $tableBottomY;
+        }
+
+        return min($this->currentPageCursorY ?? $page->contentArea()->top, $tableBottomY);
     }
 
     /**
