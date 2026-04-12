@@ -46,10 +46,13 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\PageAnnotation;
+use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
@@ -117,6 +120,175 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             $objects[5]->contents,
         );
         self::assertStringContainsString('/ModDate (', $objects[5]->contents);
+    }
+
+    public function testItBuildsPdfA1bInfoDictionaryWithUnicodeMetadataWithoutRawUtf8Bytes(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Projektübersicht')
+            ->author('Jörg Example')
+            ->subject('Überblick')
+            ->text('Unicode-Inhalt Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $infoObjectId = $plan->fileStructure->trailer->infoObjectId;
+        $infoObject = current(array_filter(
+            $objects,
+            static fn ($object): bool => $object->objectId === $infoObjectId,
+        ));
+
+        self::assertNotFalse($infoObject);
+
+        self::assertStringContainsString('/Title (Projekt\\374bersicht)', $infoObject->contents);
+        self::assertStringContainsString('/Author (J\\366rg Example)', $infoObject->contents);
+        self::assertStringContainsString('/Subject (\\334berblick)', $infoObject->contents);
+        self::assertStringNotContainsString('Projektübersicht', $infoObject->contents);
+        self::assertStringNotContainsString('Jörg Example', $infoObject->contents);
+        self::assertStringNotContainsString('Überblick', $infoObject->contents);
+    }
+
+    public function testItAllowsValidatedLowLevelPageContentsForPdfA1(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "q\n0.5 g\n0 0 20 20 re\nf\nQ",
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+
+        self::assertSame(8, $plan->fileStructure->trailer->size);
+    }
+
+    public function testItRejectsUnsafeRawPageContentsForPdfA1(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "q\n/GS1 gs\nQ",
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow low-level PDF operator "gs" in page content stream on page 1.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsUnvalidatedLowLevelPageOperatorsForPdfA1(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "0 0 10 10 re\nfoo",
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow unvalidated low-level PDF operator "foo" in page content stream on page 1.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsAdditionalImageDictionaryEntriesForPdfAProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    imageResources: [
+                        'Im1' => new ImageSource(
+                            width: 1,
+                            height: 1,
+                            colorSpace: ImageColorSpace::RGB,
+                            bitsPerComponent: 8,
+                            data: 'x',
+                            additionalDictionaryEntries: ['/Intent /Perceptual'],
+                        ),
+                    ],
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow additional low-level image dictionary entries for image resource 1 on page 1 because they cannot be validated safely for PDF/A.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsManualAnnotationsWithForbiddenActionsForPdfAProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $annotation = new readonly class implements PageAnnotation, AppearanceStreamAnnotation {
+            public function pdfObjectContents(PageAnnotationRenderContext $context): string
+            {
+                return '<< /Type /Annot /Subtype /Link /Rect [0 0 20 20] /P '
+                    . $context->pageObjectId
+                    . ' 0 R /A << /S /Launch /F (calc.exe) >> >>';
+            }
+
+            public function markedContentId(): ?int
+            {
+                return null;
+            }
+
+            public function appearanceStreamDictionaryContents(?\Kalle\Pdf\Page\AnnotationAppearanceRenderContext $context = null): string
+            {
+                return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 20 20] /Resources << >> /Length 0 >>';
+            }
+
+            public function appearanceStreamContents(?\Kalle\Pdf\Page\AnnotationAppearanceRenderContext $context = null): string
+            {
+                return '';
+            }
+        };
+        $document = new Document(
+            profile: Profile::pdfA2b(),
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    annotations: [$annotation],
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2b does not allow low-level key /Launch in annotation 1 on page 1.',
+        );
+
+        $builder->build($document);
     }
 
     public function testItAddsAnEncryptObjectAndTrailerEntriesForEncryptedDocuments(): void
@@ -271,6 +443,23 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testItRejectsEmbeddedFileAttachmentsForPdfA1b(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            attachments: [
+                new FileAttachment('demo.txt', new EmbeddedFile('hello')),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow embedded file attachments.');
+
+        $builder->build($document);
+    }
+
     public function testItRejectsAssociatedFilesForUnsupportedProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -324,6 +513,21 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsAcroFormsForPdfA1b(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            acroForm: (new AcroForm())->withField($this->testWidgetField()),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow AcroForm fields in the current implementation.');
 
         $builder->build($document);
     }
@@ -526,6 +730,23 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsSignatureFieldsForPdfA1b(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            acroForm: (new AcroForm())->withField(
+                new SignatureField('approval_signature', 1, 10.0, 20.0, 100.0, 30.0, 'Approval signature'),
+            ),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow AcroForm fields in the current implementation.');
 
         $builder->build($document);
     }
@@ -1010,6 +1231,24 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 18 18]', $serialized);
     }
 
+    public function testItRejectsPdfA1bTextAnnotations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('annotation appearance streams are required on page 1');
+
+        $builder->build($document);
+    }
+
     public function testItBuildsPdfA2uHighlightAnnotationsWithAppearanceStreams(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1031,6 +1270,24 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/QuadPoints [40 510 120 510 40 500 120 500]', $serialized);
         self::assertStringContainsString('/AP << /N ', $serialized);
         self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 80 10]', $serialized);
+    }
+
+    public function testItRejectsPdfA1bHighlightAnnotations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->highlightAnnotation(40, 500, 80, 10, Color::rgb(1, 1, 0), 'Markiert', 'QA')
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('annotation appearance streams are required on page 1');
+
+        $builder->build($document);
     }
 
     public function testItBuildsPdfA2uFreeTextAnnotationsWithAppearanceStreams(): void
@@ -1067,7 +1324,36 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Resources << /Font << /', $serialized);
     }
 
-    public function testItRejectsSimpleEmbeddedFontsForPdfAProfiles(): void
+    public function testItRejectsPdfA1bFreeTextAnnotations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->freeTextAnnotation(
+                'Kommentar Привет',
+                40,
+                500,
+                160,
+                36,
+                new TextOptions(
+                    fontSize: 12,
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    color: Color::rgb(0, 0, 0.4),
+                ),
+                Color::rgb(0.2, 0.2, 0.2),
+                Color::rgb(1, 1, 0.8),
+                'QA',
+            )
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('annotation appearance streams are required on page 1');
+
+        $builder->build($document);
+    }
+
+    public function testItAllowsSimpleEmbeddedFontsForPdfA1b(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -1078,8 +1364,45 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ))
             ->build();
 
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringNotContainsString('/Subtype /Type0', $serialized);
+        self::assertStringNotContainsString('/ToUnicode', $serialized);
+    }
+
+    public function testItRejectsSimpleEmbeddedFontsForPdfA1a(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->paragraph('ASCII only', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('requires embedded Unicode fonts');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsStandardFontsForPdfA1b(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('ASCII only')
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b requires embedded fonts. Found standard font "Helvetica" on page 1.');
 
         $builder->build($document);
     }
@@ -1480,6 +1803,41 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /TD', $serialized);
     }
 
+    public function testItAddsTaggedPdfA1aMultipageParentTreeEntries(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->heading('Kapitel Eins Привет', 1, new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->paragraph('Erste Seite Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->newPage()
+            ->heading('Kapitel Zwei Привет', 1, new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->paragraph('Zweite Seite Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/StructParents 0', $serialized);
+        self::assertStringContainsString('/StructParents 1', $serialized);
+        self::assertStringContainsString('/Nums [0 [', $serialized);
+        self::assertStringContainsString('1 [', $serialized);
+        self::assertGreaterThanOrEqual(2, substr_count($serialized, '/Type /StructElem /S /H1'));
+        self::assertGreaterThanOrEqual(2, substr_count($serialized, '/Type /StructElem /S /P'));
+    }
+
     public function testItRejectsPdfA1aPagesWithRawTextOperatorsWithoutTaggedStructure(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1603,6 +1961,26 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testItAllowsPdfA1aWithoutLanguage(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->paragraph('Absatztext Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $serialized);
+        self::assertStringNotContainsString('/Lang (', $serialized);
+    }
+
     public function testItRejectsStandardFontsForPdfAProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1666,6 +2044,228 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $this->expectExceptionMessage('Profile PDF/A-1b does not allow custom image color space definitions in the current implementation for image resource 1 on page 1.');
 
         $builder->build($document);
+    }
+
+    public function testItAllowsCmykJpegImagesForPdfA1ProfilesWithCmykOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->pdfaOutputIntent(\Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk())
+            ->text('CMYK JPEG Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->image(
+                $this->jpegImageSourceFromBytes(\Kalle\Pdf\Tests\Image\JpegFixture::tinyCmykJpegBytes()),
+                ImagePlacement::at(10, 20),
+                ImageAccessibility::alternativeText('CMYK image'),
+            )
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/OutputConditionIdentifier (Artifex CMYK SWOP Profile)', $serialized);
+        self::assertStringContainsString('/N 4 /Length ', $serialized);
+        self::assertStringContainsString('/ColorSpace /DeviceCMYK', $serialized);
+    }
+
+    public function testItRejectsCmykImagesForPdfA1ProfilesWithRgbOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->image(
+                $this->jpegImageSourceFromBytes(\Kalle\Pdf\Tests\Image\JpegFixture::tinyCmykJpegBytes()),
+                ImagePlacement::at(10, 20),
+                ImageAccessibility::alternativeText('CMYK image'),
+            )
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b requires a CMYK PDF/A output intent for CMYK image resource 1 on page 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsRgbImagesForPdfA1ProfilesWithCmykOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->pdfaOutputIntent(\Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk())
+            ->image(
+                $this->jpegImageSourceFromBytes(\Kalle\Pdf\Tests\Image\JpegFixture::tinyRgbJpegBytes()),
+                ImagePlacement::at(10, 20),
+                ImageAccessibility::alternativeText('RGB image'),
+            )
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b requires an RGB PDF/A output intent for RGB image resource 1 on page 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsCmykTextForPdfA1bWithRgbOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('CMYK text', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::cmyk(0.1, 0.2, 0.3, 0.4),
+            ))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow CMYK color in text operations in page content stream on page 1 when the active PDF/A output intent is RGB.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItAllowsRgbTextForPdfA1bWithRgbOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new \Kalle\Pdf\Document\Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new \Kalle\Pdf\Page\Page(
+                    \Kalle\Pdf\Page\PageSize::A4(),
+                    contents: "BT\n0.1 0.2 0.3 rg\n/F1 12 Tf\n10 20 Td\n(RGB) Tj\nET",
+                ),
+            ],
+        );
+
+        self::assertNotEmpty(iterator_to_array($builder->build($document)->objects));
+    }
+
+    public function testItRejectsRgbTextForPdfA1bWithCmykOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->pdfaOutputIntent(\Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk())
+            ->text('RGB text', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.1, 0.2, 0.3),
+            ))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow RGB color in text operations in page content stream on page 1 when the active PDF/A output intent is CMYK.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItAllowsCmykTextForPdfA1bWithCmykOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new \Kalle\Pdf\Document\Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pdfaOutputIntent: \Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk(),
+            pages: [
+                new \Kalle\Pdf\Page\Page(
+                    \Kalle\Pdf\Page\PageSize::A4(),
+                    contents: "BT\n0.1 0.2 0.3 0.4 k\n/F1 12 Tf\n10 20 Td\n(CMYK) Tj\nET",
+                ),
+            ],
+        );
+
+        self::assertNotEmpty(iterator_to_array($builder->build($document)->objects));
+    }
+
+    public function testItRejectsCmykBackgroundGraphicsForPdfA1bWithRgbOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new \Kalle\Pdf\Document\Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new \Kalle\Pdf\Page\Page(
+                    \Kalle\Pdf\Page\PageSize::A4(),
+                    backgroundColor: Color::cmyk(0.1, 0.2, 0.3, 0.4),
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow CMYK color in page background graphics on page 1 when the active PDF/A output intent is RGB.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItAllowsRgbBackgroundGraphicsForPdfA1bWithRgbOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new \Kalle\Pdf\Document\Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pages: [
+                new \Kalle\Pdf\Page\Page(
+                    \Kalle\Pdf\Page\PageSize::A4(),
+                    backgroundColor: Color::rgb(0.1, 0.2, 0.3),
+                ),
+            ],
+        );
+
+        self::assertNotEmpty(iterator_to_array($builder->build($document)->objects));
+    }
+
+    public function testItRejectsRgbGraphicsOperatorsForPdfA1bWithCmykOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new \Kalle\Pdf\Document\Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pdfaOutputIntent: \Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk(),
+            pages: [
+                new \Kalle\Pdf\Page\Page(
+                    \Kalle\Pdf\Page\PageSize::A4(),
+                    contents: "0.1 0.2 0.3 RG\n10 10 m\n100 10 l\nS",
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-1b does not allow RGB color in graphics operations in page content stream on page 1 when the active PDF/A output intent is CMYK.',
+        );
+
+        $builder->build($document);
+    }
+
+    public function testItAllowsCmykGraphicsOperatorsForPdfA1bWithCmykOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new \Kalle\Pdf\Document\Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            pdfaOutputIntent: \Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk(),
+            pages: [
+                new \Kalle\Pdf\Page\Page(
+                    \Kalle\Pdf\Page\PageSize::A4(),
+                    contents: "0.1 0.2 0.3 0.4 K\n10 10 m\n100 10 l\nS",
+                ),
+            ],
+        );
+
+        self::assertNotEmpty(iterator_to_array($builder->build($document)->objects));
     }
 
     public function testItRejectsTaggedProfilesWithoutTitle(): void
@@ -1916,5 +2516,29 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             $objects,
             static fn (object $object): bool => $object->streamDictionaryContents !== null && $object->streamContents !== null,
         ));
+    }
+
+    private function jpegImageSourceFromBytes(string $bytes): ImageSource
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-jpeg-fixture-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary JPEG fixture path.');
+        }
+
+        $typedPath = $path . '.jpg';
+
+        if (!rename($path, $typedPath)) {
+            @unlink($path);
+            self::fail('Unable to prepare a typed JPEG fixture path.');
+        }
+
+        file_put_contents($typedPath, $bytes);
+
+        try {
+            return ImageSource::fromPath($typedPath);
+        } finally {
+            @unlink($typedPath);
+        }
     }
 }

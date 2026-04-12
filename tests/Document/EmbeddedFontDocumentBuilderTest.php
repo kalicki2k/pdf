@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 use Kalle\Pdf\Text\TextOptions;
@@ -49,6 +50,25 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         self::assertStringContainsString('(A) Tj', $document->pages[0]->contents);
     }
 
+    public function testItKeepsSimpleEmbeddedFontsForPdfA1bAsciiText(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('ASCII only', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->isEmbedded());
+        self::assertFalse($font->usesUnicodeCids());
+        self::assertStringContainsString('(ASCII only) Tj', $document->pages[0]->contents);
+    }
+
     public function testItBuildsUnicodeTextWithAnEmbeddedTrueTypeFont(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -74,6 +94,26 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         self::assertStringContainsString('<0001> Tj', $document->pages[0]->contents);
         self::assertStringContainsString('<0002> Tj', $document->pages[0]->contents);
         self::assertStringContainsString('<0003> Tj', $document->pages[0]->contents);
+    }
+
+    public function testItKeepsUnicodeCidFontsForPdfA1bWhenUnicodeRequiresIt(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('Ж中', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->fontResources);
+        $font = current($document->pages[0]->fontResources);
+
+        self::assertNotFalse($font);
+        self::assertTrue($font->isEmbedded());
+        self::assertTrue($font->usesUnicodeCids());
+        self::assertSame([0x0416, 0x4E2D], $font->unicodeCodePoints);
+        self::assertStringContainsString('<00010002> Tj', $document->pages[0]->contents);
     }
 
     public function testItBuildsUnicodeTextWithAnEmbeddedCffFont(): void

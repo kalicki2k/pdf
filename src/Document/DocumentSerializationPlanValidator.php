@@ -26,6 +26,8 @@ final class DocumentSerializationPlanValidator
     public function __construct(
         private readonly TaggedStructureCollector $taggedStructureCollector = new TaggedStructureCollector(),
         private readonly DocumentAttachmentRelationshipResolver $attachmentRelationshipResolver = new DocumentAttachmentRelationshipResolver(),
+        private readonly PdfAColorPolicyValidator $pdfAColorPolicyValidator = new PdfAColorPolicyValidator(),
+        private readonly PdfALowLevelPolicyValidator $pdfALowLevelPolicyValidator = new PdfALowLevelPolicyValidator(),
     ) {
     }
 
@@ -370,6 +372,9 @@ final class DocumentSerializationPlanValidator
             ));
         }
 
+        $this->pdfALowLevelPolicyValidator->assertDocumentLowLevelSafety($document);
+        $this->pdfAColorPolicyValidator->assertDocumentColors($document);
+
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->fontResources as $pageFont) {
                 if (!$pageFont->isEmbedded()) {
@@ -381,7 +386,7 @@ final class DocumentSerializationPlanValidator
                     ));
                 }
 
-                if (!$document->profile->requiresEmbeddedUnicodeFonts() || $pageFont->usesUnicodeCids()) {
+                if (!$document->profile->requiresExtractableEmbeddedUnicodeFonts() || $pageFont->usesUnicodeCids()) {
                     continue;
                 }
 

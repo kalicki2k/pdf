@@ -298,8 +298,13 @@ final readonly class Profile
 
     public function requiresEmbeddedUnicodeFonts(): bool
     {
-        return $this->isPdfA()
-            || $this->isPdfUa();
+        return $this->requiresExtractableEmbeddedUnicodeFonts();
+    }
+
+    public function requiresExtractableEmbeddedUnicodeFonts(): bool
+    {
+        return $this->isPdfUa()
+            || ($this->isPdfA() && ($this->conformance === 'A' || $this->conformance === 'U'));
     }
 
     public function requiresFigureAltText(): bool

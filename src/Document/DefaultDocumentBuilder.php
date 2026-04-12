@@ -2103,7 +2103,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $captionLayout['textOptions'],
             $font,
             $shapedLines,
-            ($this->profile ?? Profile::standard())->requiresEmbeddedUnicodeFonts(),
+            ($this->profile ?? Profile::standard())->requiresExtractableEmbeddedUnicodeFonts(),
         );
         $markedContentId = $taggedTableId !== null ? $this->nextTaggedMarkedContentId() : null;
         $textResult = $this->buildWrappedTextContent(
@@ -2284,7 +2284,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $cellLayout->textOptions,
             $font,
             $shapedLines,
-            ($this->profile ?? Profile::standard())->requiresEmbeddedUnicodeFonts(),
+            ($this->profile ?? Profile::standard())->requiresExtractableEmbeddedUnicodeFonts(),
         );
         $cellHeight = $tableLayout->cellHeight($cellLayout);
         $cellBottomOffset = $cellTopOffset + $cellHeight;
@@ -2557,14 +2557,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $height,
         Color $backgroundColor,
     ): string {
-        return implode("\n", [
+        return $this->wrapArtifactGraphics(implode("\n", [
             'q',
             $this->buildFillColorOperator($backgroundColor),
             $this->formatNumber($x) . ' ' . $this->formatNumber($topY - $height) . ' '
             . $this->formatNumber($width) . ' ' . $this->formatNumber($height) . ' re',
             'f',
             'Q',
-        ]);
+        ]));
     }
 
     private function renderTableLayout(
@@ -3127,13 +3127,27 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function buildStrokeLineContent(float $x1, float $y1, float $x2, float $y2, float $width): string
     {
-        return implode("\n", [
+        return $this->wrapArtifactGraphics(implode("\n", [
             'q',
             $this->formatNumber($width) . ' w',
             $this->formatNumber($x1) . ' ' . $this->formatNumber($y1) . ' m',
             $this->formatNumber($x2) . ' ' . $this->formatNumber($y2) . ' l',
             'S',
             'Q',
+        ]));
+    }
+
+    private function wrapArtifactGraphics(string $contents): string
+    {
+        if ($contents === '' || !($this->profile ?? Profile::standard())->requiresTaggedPdf()) {
+            return $contents;
+        }
+
+        // Borders and fills used only for layout are artifacts, not logical document content.
+        return implode("\n", [
+            '/Artifact BMC',
+            $contents,
+            'EMC',
         ]);
     }
 
