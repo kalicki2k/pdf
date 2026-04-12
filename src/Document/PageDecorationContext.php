@@ -19,6 +19,7 @@ final class PageDecorationContext
         DefaultDocumentBuilder $builder,
         private readonly Page $page,
         private readonly int $pageNumber,
+        private readonly int $totalPages,
     ) {
         $this->builder = $builder;
     }
@@ -31,6 +32,21 @@ final class PageDecorationContext
     public function pageNumber(): int
     {
         return $this->pageNumber;
+    }
+
+    public function totalPages(): int
+    {
+        return $this->totalPages;
+    }
+
+    public function isFirstPage(): bool
+    {
+        return $this->pageNumber === 1;
+    }
+
+    public function isLastPage(): bool
+    {
+        return $this->pageNumber === $this->totalPages;
     }
 
     public function content(string $content): self

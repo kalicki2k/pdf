@@ -3587,15 +3587,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
             return $pages;
         }
 
+        $totalPages = count($pages);
+
         foreach ($pages as $index => $page) {
             $pageNumber = $index + 1;
 
             if ($this->headerRenderers !== []) {
-                $page = $this->applyPageDecoration($page, $pageNumber, $this->headerRenderers, true);
+                $page = $this->applyPageDecoration($page, $pageNumber, $totalPages, $this->headerRenderers, true);
             }
 
             if ($this->footerRenderers !== []) {
-                $page = $this->applyPageDecoration($page, $pageNumber, $this->footerRenderers, false);
+                $page = $this->applyPageDecoration($page, $pageNumber, $totalPages, $this->footerRenderers, false);
             }
 
             $pages[$index] = $page;
@@ -3607,12 +3609,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /**
      * @param list<callable(PageDecorationContext, int): void> $renderers
      */
-    private function applyPageDecoration(Page $page, int $pageNumber, array $renderers, bool $prependContents): Page
+    private function applyPageDecoration(
+        Page $page,
+        int $pageNumber,
+        int $totalPages,
+        array $renderers,
+        bool $prependContents,
+    ): Page
     {
         $context = new PageDecorationContext(
             $this->createPageDecorationBuilder($page),
             $page,
             $pageNumber,
+            $totalPages,
         );
 
         foreach ($renderers as $renderer) {

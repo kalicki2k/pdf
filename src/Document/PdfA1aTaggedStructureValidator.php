@@ -1,0 +1,766 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kalle\Pdf\Document;
+
+use InvalidArgumentException;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
+use Kalle\Pdf\Writer\IndirectObject;
+
+use function array_key_exists;
+use function array_map;
+use function implode;
+use function ksort;
+use function min;
+use function preg_match;
+use function preg_match_all;
+use function preg_replace;
+use function sprintf;
+use function str_contains;
+use function usort;
+
+final class PdfA1aTaggedStructureValidator
+{
+    /**
+     * @param list<IndirectObject> $objects
+     */
+    public function assertValid(Document $document, DocumentSerializationPlanBuildState $state, array $objects): void
+    {
+        if (!$document->profile->isPdfA1() || $document->profile->pdfaConformance() !== 'A') {
+            return;
+        }
+
+        if ($state->structTreeRootObjectId === null || $state->documentStructElemObjectId === null) {
+            throw new InvalidArgumentException('Profile PDF/A-1a requires StructTreeRoot and Document structure objects.');
+        }
+
+        $objectsById = $this->indexObjectsById($objects);
+        $expectedParentTreeEntries = $this->expectedParentTreeEntries($state);
+        $parentTreeRequired = $expectedParentTreeEntries !== [];
+
+        if ($parentTreeRequired && $state->parentTreeObjectId === null) {
+            throw new InvalidArgumentException('Profile PDF/A-1a requires a ParentTree for structured marked content.');
+        }
+
+        $this->assertStructTreeRoot($state, $objectsById, $parentTreeRequired);
+        $this->assertDocumentStructElem($state, $objectsById);
+        $this->assertPageStructParents($state, $objectsById);
+        $this->assertParentTree($state, $objectsById, $expectedParentTreeEntries);
+        $this->assertLeafStructElements($state, $objectsById);
+        $this->assertListStructElements($state, $objectsById);
+        $this->assertTableStructElements($document, $state, $objectsById);
+        $this->assertLinkStructElements($state, $objectsById);
+    }
+
+    /**
+     * @param list<IndirectObject> $objects
+     * @return array<int, IndirectObject>
+     */
+    private function indexObjectsById(array $objects): array
+    {
+        $objectsById = [];
+
+        foreach ($objects as $object) {
+            $objectsById[$object->objectId] = $object;
+        }
+
+        return $objectsById;
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertStructTreeRoot(
+        DocumentSerializationPlanBuildState $state,
+        array $objectsById,
+        bool $parentTreeRequired,
+    ): void {
+        $contents = $this->requireObjectContents($objectsById, $state->structTreeRootObjectId, 'StructTreeRoot');
+
+        if (!str_contains($contents, '/Type /StructTreeRoot')) {
+            throw new InvalidArgumentException('PDF/A-1a StructTreeRoot object is missing /Type /StructTreeRoot.');
+        }
+
+        $kidObjectIds = $this->extractReferenceArray($contents, '/K', 'StructTreeRoot');
+
+        if ($kidObjectIds !== [$state->documentStructElemObjectId]) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a StructTreeRoot must reference exactly the document structure element %d 0 R.',
+                $state->documentStructElemObjectId,
+            ));
+        }
+
+        $parentTreeObjectId = $this->extractSingleReference($contents, '/ParentTree');
+
+        if ($parentTreeRequired && $parentTreeObjectId !== $state->parentTreeObjectId) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a StructTreeRoot must reference ParentTree %d 0 R.',
+                $state->parentTreeObjectId,
+            ));
+        }
+
+        if (!$parentTreeRequired && $parentTreeObjectId !== null) {
+            throw new InvalidArgumentException('PDF/A-1a StructTreeRoot must not reference an unused ParentTree.');
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertDocumentStructElem(DocumentSerializationPlanBuildState $state, array $objectsById): void
+    {
+        $contents = $this->requireObjectContents($objectsById, $state->documentStructElemObjectId, 'document StructElem');
+
+        if (!str_contains($contents, '/Type /StructElem') || !str_contains($contents, '/S /Document')) {
+            throw new InvalidArgumentException('PDF/A-1a document structure element must use /Type /StructElem and /S /Document.');
+        }
+
+        $parentObjectId = $this->extractSingleReference($contents, '/P');
+
+        if ($parentObjectId !== $state->structTreeRootObjectId) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a document structure element must reference StructTreeRoot %d 0 R as /P.',
+                $state->structTreeRootObjectId,
+            ));
+        }
+
+        $kidObjectIds = $this->extractReferenceArray($contents, '/K', 'document StructElem');
+        $expectedKidObjectIds = $this->expectedDocumentChildObjectIds($state);
+
+        if ($kidObjectIds !== $expectedKidObjectIds) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a document structure element must list child structure elements in reading order. Expected [%s], got [%s].',
+                implode(', ', $expectedKidObjectIds),
+                implode(', ', $kidObjectIds),
+            ));
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertPageStructParents(DocumentSerializationPlanBuildState $state, array $objectsById): void
+    {
+        foreach ($state->pageStructParentIds as $pageIndex => $structParentId) {
+            $pageObjectId = $state->pageObjectIds[$pageIndex];
+            $contents = $this->requireObjectContents($objectsById, $pageObjectId, sprintf('page %d object', $pageIndex + 1));
+
+            if (!str_contains($contents, '/StructParents ' . $structParentId)) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a page %d must expose /StructParents %d for its marked content.',
+                    $pageIndex + 1,
+                    $structParentId,
+                ));
+            }
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     * @param array<int, list<int>> $expectedEntries
+     */
+    private function assertParentTree(
+        DocumentSerializationPlanBuildState $state,
+        array $objectsById,
+        array $expectedEntries,
+    ): void {
+        if ($expectedEntries === []) {
+            return;
+        }
+
+        $contents = $this->requireObjectContents($objectsById, $state->parentTreeObjectId, 'ParentTree');
+        $entries = $this->extractParentTreeEntries($contents);
+
+        if ($entries !== $expectedEntries) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a ParentTree entries must match the tagged content mapping. Expected [%s], got [%s].',
+                $this->formatParentTreeEntries($expectedEntries),
+                $this->formatParentTreeEntries($entries),
+            ));
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertLeafStructElements(DocumentSerializationPlanBuildState $state, array $objectsById): void
+    {
+        foreach ($state->taggedStructure->figureEntries as $figureEntry) {
+            $contents = $this->requireObjectContents(
+                $objectsById,
+                $state->taggedStructureObjectIds->figureStructElemObjectIds[$figureEntry['key']],
+                sprintf('figure StructElem "%s"', $figureEntry['key']),
+            );
+            $this->assertStructElemTagAndParent($contents, 'Figure', $state->documentStructElemObjectId);
+            $this->assertStructElemPageAndMarkedContent(
+                $contents,
+                $state->pageObjectIds[$figureEntry['pageIndex']],
+                $figureEntry['markedContentId'],
+            );
+
+            if ($figureEntry['altText'] !== null && !str_contains($contents, '/Alt ')) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a figure StructElem "%s" must expose /Alt text.',
+                    $figureEntry['key'],
+                ));
+            }
+        }
+
+        foreach ($state->taggedStructure->textEntries as $textEntry) {
+            $contents = $this->requireObjectContents(
+                $objectsById,
+                $state->taggedStructureObjectIds->textStructElemObjectIds[$textEntry['key']],
+                sprintf('text StructElem "%s"', $textEntry['key']),
+            );
+            $this->assertStructElemTagAndParent($contents, $textEntry['tag'], $state->documentStructElemObjectId);
+            $this->assertStructElemPageAndMarkedContent(
+                $contents,
+                $state->pageObjectIds[$textEntry['pageIndex']],
+                $textEntry['markedContentId'],
+            );
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertListStructElements(DocumentSerializationPlanBuildState $state, array $objectsById): void
+    {
+        foreach ($state->taggedStructure->listEntries as $listEntry) {
+            $listObjectId = $state->taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']];
+            $listContents = $this->requireObjectContents($objectsById, $listObjectId, sprintf('list StructElem "%s"', $listEntry['key']));
+            $this->assertStructElemTagAndParent($listContents, 'L', $state->documentStructElemObjectId);
+
+            $expectedListKids = [];
+
+            foreach ($listEntry['itemEntries'] as $itemEntry) {
+                $expectedListKids[] = $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']];
+            }
+
+            $this->assertKidReferences($listContents, $expectedListKids, sprintf('list StructElem "%s"', $listEntry['key']));
+
+            foreach ($listEntry['itemEntries'] as $itemEntry) {
+                $itemObjectId = $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']];
+                $itemContents = $this->requireObjectContents($objectsById, $itemObjectId, sprintf('list item StructElem "%s"', $itemEntry['key']));
+                $this->assertStructElemTagAndParent($itemContents, 'LI', $listObjectId);
+                $this->assertKidReferences(
+                    $itemContents,
+                    [
+                        $state->taggedStructureObjectIds->listLabelStructElemObjectIds[$itemEntry['labelKey']],
+                        $state->taggedStructureObjectIds->listBodyStructElemObjectIds[$itemEntry['bodyKey']],
+                    ],
+                    sprintf('list item StructElem "%s"', $itemEntry['key']),
+                );
+
+                $labelContents = $this->requireObjectContents(
+                    $objectsById,
+                    $state->taggedStructureObjectIds->listLabelStructElemObjectIds[$itemEntry['labelKey']],
+                    sprintf('list label StructElem "%s"', $itemEntry['labelKey']),
+                );
+                $this->assertStructElemTagAndParent($labelContents, 'Lbl', $itemObjectId);
+                $this->assertMcrKids(
+                    $labelContents,
+                    [[$state->pageObjectIds[$itemEntry['labelReference']->pageIndex], $itemEntry['labelReference']->markedContentId]],
+                    sprintf('list label StructElem "%s"', $itemEntry['labelKey']),
+                );
+
+                $bodyContents = $this->requireObjectContents(
+                    $objectsById,
+                    $state->taggedStructureObjectIds->listBodyStructElemObjectIds[$itemEntry['bodyKey']],
+                    sprintf('list body StructElem "%s"', $itemEntry['bodyKey']),
+                );
+                $this->assertStructElemTagAndParent($bodyContents, 'LBody', $itemObjectId);
+                $this->assertMcrKids(
+                    $bodyContents,
+                    [[$state->pageObjectIds[$itemEntry['bodyReference']->pageIndex], $itemEntry['bodyReference']->markedContentId]],
+                    sprintf('list body StructElem "%s"', $itemEntry['bodyKey']),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertTableStructElements(
+        Document $document,
+        DocumentSerializationPlanBuildState $state,
+        array $objectsById,
+    ): void {
+        foreach ($document->taggedTables as $taggedTable) {
+            $tableKey = TaggedStructureObjectIds::tableKey($taggedTable->tableId);
+            $tableObjectId = $state->taggedStructureObjectIds->tableStructElemObjectIds[$tableKey];
+            $tableContents = $this->requireObjectContents($objectsById, $tableObjectId, sprintf('table StructElem "%s"', $tableKey));
+            $this->assertStructElemTagAndParent($tableContents, 'Table', $state->documentStructElemObjectId);
+
+            $expectedTableKids = [];
+
+            if ($taggedTable->hasCaption()) {
+                $expectedTableKids[] = $state->taggedStructureObjectIds->captionStructElemObjectIds[
+                    TaggedStructureObjectIds::tableCaptionKey($taggedTable->tableId)
+                ];
+            }
+
+            foreach ($this->taggedTableSections($document, $taggedTable) as $section => $rows) {
+                if ($rows !== []) {
+                    $expectedTableKids[] = $state->taggedStructureObjectIds->tableSectionStructElemObjectIds[
+                        TaggedStructureObjectIds::tableSectionKey($taggedTable->tableId, $section)
+                    ];
+                }
+            }
+
+            $this->assertKidReferences($tableContents, $expectedTableKids, sprintf('table StructElem "%s"', $tableKey));
+
+            if ($taggedTable->hasCaption()) {
+                $captionKey = TaggedStructureObjectIds::tableCaptionKey($taggedTable->tableId);
+                $captionContents = $this->requireObjectContents(
+                    $objectsById,
+                    $state->taggedStructureObjectIds->captionStructElemObjectIds[$captionKey],
+                    sprintf('table caption StructElem "%s"', $captionKey),
+                );
+                $this->assertStructElemTagAndParent($captionContents, 'Caption', $tableObjectId);
+                $expectedCaptionKids = [];
+
+                foreach ($taggedTable->captionReferences as $reference) {
+                    $expectedCaptionKids[] = [$state->pageObjectIds[$reference->pageIndex], $reference->markedContentId];
+                }
+
+                $this->assertMcrKids($captionContents, $expectedCaptionKids, sprintf('table caption StructElem "%s"', $captionKey));
+            }
+
+            foreach ($this->taggedTableSections($document, $taggedTable) as $section => $rows) {
+                if ($rows === []) {
+                    continue;
+                }
+
+                $sectionKey = TaggedStructureObjectIds::tableSectionKey($taggedTable->tableId, $section);
+                $sectionObjectId = $state->taggedStructureObjectIds->tableSectionStructElemObjectIds[$sectionKey];
+                $sectionContents = $this->requireObjectContents($objectsById, $sectionObjectId, sprintf('table section StructElem "%s"', $sectionKey));
+                $this->assertStructElemTagAndParent(
+                    $sectionContents,
+                    $document->profile->isPdfA1() ? 'Sect' : match ($section) {
+                        'header' => 'THead',
+                        'footer' => 'TFoot',
+                        default => 'TBody',
+                    },
+                    $tableObjectId,
+                );
+
+                $expectedSectionKids = [];
+
+                foreach ($rows as $row) {
+                    $expectedSectionKids[] = $state->taggedStructureObjectIds->rowStructElemObjectIds[
+                        TaggedStructureObjectIds::tableRowKey($taggedTable->tableId, $section, $row->rowIndex)
+                    ];
+                }
+
+                $this->assertKidReferences($sectionContents, $expectedSectionKids, sprintf('table section StructElem "%s"', $sectionKey));
+
+                foreach ($rows as $row) {
+                    $rowKey = TaggedStructureObjectIds::tableRowKey($taggedTable->tableId, $section, $row->rowIndex);
+                    $rowObjectId = $state->taggedStructureObjectIds->rowStructElemObjectIds[$rowKey];
+                    $rowContents = $this->requireObjectContents($objectsById, $rowObjectId, sprintf('table row StructElem "%s"', $rowKey));
+                    $this->assertStructElemTagAndParent($rowContents, 'TR', $sectionObjectId);
+
+                    $expectedRowKids = [];
+
+                    foreach ($row->cells as $cell) {
+                        $expectedRowKids[] = $state->taggedStructureObjectIds->cellStructElemObjectIds[
+                            TaggedStructureObjectIds::tableCellKey($taggedTable->tableId, $section, $row->rowIndex, $cell->columnIndex)
+                        ];
+                    }
+
+                    $this->assertKidReferences($rowContents, $expectedRowKids, sprintf('table row StructElem "%s"', $rowKey));
+
+                    foreach ($row->cells as $cell) {
+                        $cellKey = TaggedStructureObjectIds::tableCellKey($taggedTable->tableId, $section, $row->rowIndex, $cell->columnIndex);
+                        $cellContents = $this->requireObjectContents(
+                            $objectsById,
+                            $state->taggedStructureObjectIds->cellStructElemObjectIds[$cellKey],
+                            sprintf('table cell StructElem "%s"', $cellKey),
+                        );
+                        $this->assertStructElemTagAndParent($cellContents, $cell->header ? 'TH' : 'TD', $rowObjectId);
+                        $expectedCellKids = [];
+
+                        foreach ($cell->contentReferences as $reference) {
+                            $expectedCellKids[] = [$state->pageObjectIds[$reference->pageIndex], $reference->markedContentId];
+                        }
+
+                        $this->assertMcrKids($cellContents, $expectedCellKids, sprintf('table cell StructElem "%s"', $cellKey));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertLinkStructElements(DocumentSerializationPlanBuildState $state, array $objectsById): void
+    {
+        foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
+            $objectId = $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']];
+            $contents = $this->requireObjectContents($objectsById, $objectId, sprintf('link StructElem "%s"', $linkEntry['key']));
+
+            $this->assertStructElemTagAndParent($contents, 'Link', $state->documentStructElemObjectId);
+
+            $pageObjectId = $state->pageObjectIds[$linkEntry['pageIndex']];
+            $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
+
+            if ($actualPageObjectId !== $pageObjectId) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a link StructElem "%s" must reference page object %d 0 R.',
+                    $linkEntry['key'],
+                    $pageObjectId,
+                ));
+            }
+
+            if (!str_contains($contents, '/Alt ')) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a link StructElem "%s" must expose /Alt text.',
+                    $linkEntry['key'],
+                ));
+            }
+
+            $kidSection = $this->extractKidSection($contents, sprintf('link StructElem "%s"', $linkEntry['key']));
+            $actualMarkedContentIds = $this->extractLinkMarkedContentIds($kidSection);
+
+            if ($actualMarkedContentIds !== $linkEntry['markedContentIds']) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a link StructElem "%s" must list the expected MCID kids. Expected [%s], got [%s].',
+                    $linkEntry['key'],
+                    implode(', ', $linkEntry['markedContentIds']),
+                    implode(', ', $actualMarkedContentIds),
+                ));
+            }
+
+            $expectedAnnotationObjectIds = [];
+
+            foreach ($linkEntry['annotationIndices'] as $annotationIndex) {
+                $expectedAnnotationObjectIds[] = $state->pageAnnotationObjectIds[$linkEntry['pageIndex']][$annotationIndex];
+            }
+
+            $actualObjrObjectIds = $this->extractObjrObjectIds($kidSection);
+
+            if ($actualObjrObjectIds !== $expectedAnnotationObjectIds) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A-1a link StructElem "%s" must reference the expected annotation objects. Expected [%s], got [%s].',
+                    $linkEntry['key'],
+                    implode(', ', $expectedAnnotationObjectIds),
+                    implode(', ', $actualObjrObjectIds),
+                ));
+            }
+        }
+    }
+
+    /**
+     * @return array<int, list<int>>
+     */
+    private function expectedParentTreeEntries(DocumentSerializationPlanBuildState $state): array
+    {
+        $entries = [];
+
+        foreach ($state->pageStructParentIds as $pageIndex => $structParentId) {
+            $pageKeys = $state->taggedStructure->pageMarkedContentKeys[$pageIndex] ?? [];
+
+            if ($pageKeys === []) {
+                continue;
+            }
+
+            ksort($pageKeys);
+            $entries[$structParentId] = [];
+
+            foreach ($pageKeys as $key) {
+                $entries[$structParentId][] = $state->taggedStructureObjectIds->resolvePageContentObjectId($key);
+            }
+        }
+
+        foreach ($state->taggedLinkStructure['parentTreeEntries'] as $structParentId => $linkKeys) {
+            $entries[$structParentId] = [];
+
+            foreach ($linkKeys as $key) {
+                $entries[$structParentId][] = $state->taggedStructureObjectIds->linkStructElemObjectIds[$key];
+            }
+        }
+
+        foreach ($state->taggedFormStructure['parentTreeEntries'] as $structParentId => $formKeys) {
+            $entries[$structParentId] = [];
+
+            foreach ($formKeys as $key) {
+                $entries[$structParentId][] = $state->taggedFormStructElemObjectIds[$key];
+            }
+        }
+
+        ksort($entries);
+
+        return $entries;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function expectedDocumentChildObjectIds(DocumentSerializationPlanBuildState $state): array
+    {
+        $entries = [];
+        $sequence = 0;
+
+        foreach ($state->taggedStructure->documentChildEntries as $entry) {
+            $entries[] = [
+                'objectId' => $this->resolveDocumentChildObjectId($entry['key'], $state),
+                'pageIndex' => $entry['pageIndex'],
+                'orderIndex' => $entry['markedContentId'],
+                'sequence' => $sequence++,
+            ];
+        }
+
+        foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
+            $entries[] = [
+                'objectId' => $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']],
+                'pageIndex' => $linkEntry['pageIndex'],
+                'orderIndex' => $linkEntry['markedContentIds'] !== []
+                    ? min($linkEntry['markedContentIds'])
+                    : 1000000 + ($linkEntry['annotationIndices'][0] ?? 0),
+                'sequence' => $sequence++,
+            ];
+        }
+
+        foreach ($state->taggedFormStructure['entries'] as $formEntry) {
+            $entries[] = [
+                'objectId' => $state->taggedFormStructElemObjectIds[$formEntry['key']],
+                'pageIndex' => $formEntry['pageIndex'],
+                'orderIndex' => 2000000,
+                'sequence' => $sequence++,
+            ];
+        }
+
+        usort(
+            $entries,
+            static fn (array $left, array $right): int => [$left['pageIndex'], $left['orderIndex'], $left['sequence']]
+                <=> [$right['pageIndex'], $right['orderIndex'], $right['sequence']],
+        );
+
+        return array_map(
+            static fn (array $entry): int => $entry['objectId'],
+            $entries,
+        );
+    }
+
+    private function resolveDocumentChildObjectId(string $key, DocumentSerializationPlanBuildState $state): int
+    {
+        return $state->taggedStructureObjectIds->figureStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->textStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->listStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->tableStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->linkStructElemObjectIds[$key]
+            ?? $state->taggedFormStructElemObjectIds[$key]
+            ?? throw new InvalidArgumentException(sprintf('Unknown PDF/A-1a document child key "%s".', $key));
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function requireObjectContents(array $objectsById, ?int $objectId, string $label): string
+    {
+        if ($objectId === null || !array_key_exists($objectId, $objectsById)) {
+            throw new InvalidArgumentException(sprintf('PDF/A-1a %s object is missing.', $label));
+        }
+
+        return $objectsById[$objectId]->contents;
+    }
+
+    private function assertStructElemTagAndParent(string $contents, string $tag, int $parentObjectId): void
+    {
+        if (!str_contains($contents, '/Type /StructElem') || !str_contains($contents, '/S /' . $tag)) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a structure element must use /Type /StructElem and /S /%s.',
+                $tag,
+            ));
+        }
+
+        $actualParentObjectId = $this->extractSingleReference($contents, '/P');
+
+        if ($actualParentObjectId !== $parentObjectId) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a structure element /S /%s must reference parent object %d 0 R.',
+                $tag,
+                $parentObjectId,
+            ));
+        }
+    }
+
+    private function assertStructElemPageAndMarkedContent(string $contents, int $pageObjectId, int $markedContentId): void
+    {
+        $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
+
+        if ($actualPageObjectId !== $pageObjectId) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a structure element must reference page object %d 0 R.',
+                $pageObjectId,
+            ));
+        }
+
+        if (!preg_match('/\/K\s+' . $markedContentId . '(?=\D|$)/', $contents)) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a structure element must reference MCID %d as /K.',
+                $markedContentId,
+            ));
+        }
+    }
+
+    /**
+     * @param list<int> $expectedObjectIds
+     */
+    private function assertKidReferences(string $contents, array $expectedObjectIds, string $label): void
+    {
+        $actualObjectIds = $this->extractReferenceArray($contents, '/K', $label);
+
+        if ($actualObjectIds !== $expectedObjectIds) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a %s must list the expected child structure elements. Expected [%s], got [%s].',
+                $label,
+                implode(', ', $expectedObjectIds),
+                implode(', ', $actualObjectIds),
+            ));
+        }
+    }
+
+    /**
+     * @param list<array{0: int, 1: int}> $expectedEntries
+     */
+    private function assertMcrKids(string $contents, array $expectedEntries, string $label): void
+    {
+        $kidSection = $this->extractKidSection($contents, $label);
+        $matches = [];
+        preg_match_all('/<<\s*\/Type\s*\/MCR\s*\/Pg\s*(\d+)\s+0\s+R\s*\/MCID\s*(\d+)\s*>>/', $kidSection, $matches, PREG_SET_ORDER);
+        $actualEntries = [];
+
+        foreach ($matches as $match) {
+            $actualEntries[] = [(int) $match[1], (int) $match[2]];
+        }
+
+        if ($actualEntries !== $expectedEntries) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a %s must expose the expected MCR kids.',
+                $label,
+            ));
+        }
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function extractReferenceArray(string $contents, string $entry, string $label): array
+    {
+        if (!preg_match('/' . preg_quote($entry, '/') . '\s*\[([^\]]*)\]/', $contents, $matches)) {
+            throw new InvalidArgumentException(sprintf('PDF/A-1a %s is missing %s array.', $label, $entry));
+        }
+
+        $references = [];
+        preg_match_all('/(\d+)\s+0\s+R/', $matches[1], $referenceMatches);
+
+        foreach ($referenceMatches[1] as $objectId) {
+            $references[] = (int) $objectId;
+        }
+
+        return $references;
+    }
+
+    private function extractKidSection(string $contents, string $label): string
+    {
+        if (!preg_match('/\/K\s*\[(.*)\](?!.*\/K\s*\[)/', $contents, $matches)) {
+            throw new InvalidArgumentException(sprintf('PDF/A-1a %s is missing /K kids.', $label));
+        }
+
+        return $matches[1];
+    }
+
+    private function extractSingleReference(string $contents, string $entry): ?int
+    {
+        if (!preg_match('/' . preg_quote($entry, '/') . '\s+(\d+)\s+0\s+R/', $contents, $matches)) {
+            return null;
+        }
+
+        return (int) $matches[1];
+    }
+
+    /**
+     * @return array<int, list<int>>
+     */
+    private function extractParentTreeEntries(string $contents): array
+    {
+        if (!preg_match('/\/Nums\s*\[(.*)\]/', $contents, $matches)) {
+            throw new InvalidArgumentException('PDF/A-1a ParentTree is missing a /Nums array.');
+        }
+
+        $entries = [];
+        preg_match_all('/(\d+)\s*\[((?:\d+\s+0\s+R\s*)*)\]/', $matches[1], $entryMatches, PREG_SET_ORDER);
+
+        foreach ($entryMatches as $entryMatch) {
+            $objectIds = [];
+            preg_match_all('/(\d+)\s+0\s+R/', $entryMatch[2], $objectIdMatches);
+
+            foreach ($objectIdMatches[1] as $objectId) {
+                $objectIds[] = (int) $objectId;
+            }
+
+            $entries[(int) $entryMatch[1]] = $objectIds;
+        }
+
+        ksort($entries);
+
+        return $entries;
+    }
+
+    private function formatParentTreeEntries(array $entries): string
+    {
+        $parts = [];
+
+        foreach ($entries as $structParentId => $objectIds) {
+            $parts[] = $structParentId . ':[' . implode(', ', $objectIds) . ']';
+        }
+
+        return implode('; ', $parts);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function extractLinkMarkedContentIds(string $kidSection): array
+    {
+        $normalizedKidSection = preg_replace('/<<.*?>>/s', ' ', $kidSection) ?? $kidSection;
+        $matches = [];
+        preg_match_all('/(?<!\d)(\d+)(?!\s+0\s+R)(?!\d)/', $normalizedKidSection, $matches);
+
+        return array_map(
+            static fn (string $value): int => (int) $value,
+            $matches[1],
+        );
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function extractObjrObjectIds(string $kidSection): array
+    {
+        $matches = [];
+        preg_match_all('/<<\s*\/Type\s*\/OBJR\s*\/Obj\s*(\d+)\s+0\s+R\s*\/Pg\s*\d+\s+0\s+R\s*>>/', $kidSection, $matches);
+
+        return array_map(
+            static fn (string $value): int => (int) $value,
+            $matches[1],
+        );
+    }
+
+    /**
+     * @return array<string, list<object>>
+     */
+    private function taggedTableSections(Document $document, object $taggedTable): array
+    {
+        return [
+            'header' => $taggedTable->headerRows,
+            'body' => $taggedTable->bodyRows,
+            'footer' => $taggedTable->footerRows,
+        ];
+    }
+}

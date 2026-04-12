@@ -126,6 +126,8 @@ Ein ausführbares Beispiel liegt in `examples/header-footer.php`.
 - Reihenfolge pro Seite: Header, regulaerer Seiteninhalt, Footer
 - Der Context stellt ueber `$page->page()` die aktuelle Seite und deren `contentArea()` bereit.
 - Die Seitennummer ist 1-basiert.
+- Fuer Seitennummern wie `Seite X von Y` steht zusaetzlich `$page->totalPages()` bereit.
+- Bedingte Dekorationen koennen direkt im Callback ueber `$page->isFirstPage()`, `$page->isLastPage()` oder `$page->pageNumber()` umgesetzt werden.
 - In Tagged-PDF-Profilen werden Header/Footer als Artefakt behandelt und nicht in die logische Dokumentstruktur aufgenommen.
 
 ```php
@@ -364,7 +366,7 @@ $document = DefaultDocumentBuilder::make()
 
 ## PDF/A-1a Umfang
 
-Der aktuell abgesicherte `PDF/A-1a`-Pfad in `pdf2` deckt bewusst einen klar begrenzten Strukturumfang ab: Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer- und Builder-Tests abgesichert.
+Der aktuell abgesicherte `PDF/A-1a`-Pfad in `pdf2` deckt bewusst einen klar begrenzten Strukturumfang ab: Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Fuer diese Struktur prueft der Build-Pfad jetzt nicht nur die Existenz von Tagged Content, sondern auch die Konsistenz von `StructTreeRoot`, Dokumentwurzel, `ParentTree`, `/StructParents`, `MCID`-Zuordnung und der unterstuetzten Strukturelement-Hierarchie. Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer-, Builder- und Strukturvalidator-Tests abgesichert.
 
 Nicht Teil dieses Umfangs sind aktuell reichere Annotationstypen, Formulare, Signaturfelder oder weitergehende Strukturtypen ausserhalb dieses Satzes. Solche Faelle sollen fuer `PDF/A-1a` weiter explizit scheitern oder erst nach eigener Regressionserweiterung freigegeben werden.
 

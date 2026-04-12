@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Image\ImageColorSpace;
+use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\PageDecorationContext;
 use Kalle\Pdf\Document\Profile;
@@ -16,7 +19,9 @@ use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
 final class DefaultDocumentBuilderPageDecorationTest extends TestCase
@@ -125,6 +130,55 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
         self::assertMatchesRegularExpression($this->textRegex('Header 1'), $document->pages[0]->contents);
     }
 
+    public function testItExposesTotalPagesAndSupportsConditionalDecoration(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->header(static function (PageDecorationContext $page, int $pageNumber): void {
+                if ($page->isFirstPage()) {
+                    return;
+                }
+
+                $page->text(
+                    'Header ' . $page->pageNumber() . '/' . $page->totalPages(),
+                    new TextOptions(
+                        x: $page->page()->contentArea()->left,
+                        y: $page->page()->contentArea()->top,
+                        fontSize: 12.0,
+                    ),
+                );
+            })
+            ->footer(static function (PageDecorationContext $page, int $pageNumber): void {
+                if (!$page->isLastPage()) {
+                    return;
+                }
+
+                $page->text(
+                    'Footer ' . $page->pageNumber() . '/' . $page->totalPages(),
+                    new TextOptions(
+                        x: $page->page()->contentArea()->left,
+                        y: $page->page()->contentArea()->bottom + 12.0,
+                        fontSize: 12.0,
+                    ),
+                );
+            })
+            ->text('Page 1')
+            ->newPage()
+            ->text('Page 2')
+            ->newPage()
+            ->text('Page 3')
+            ->build();
+
+        self::assertCount(3, $document->pages);
+        self::assertDoesNotMatchRegularExpression($this->textRegex('Header 1/3'), $document->pages[0]->contents);
+        self::assertMatchesRegularExpression($this->textRegex('Header 2/3'), $document->pages[1]->contents);
+        self::assertMatchesRegularExpression($this->textRegex('Header 3/3'), $document->pages[2]->contents);
+        self::assertDoesNotMatchRegularExpression($this->textRegex('Footer 1/3'), $document->pages[0]->contents);
+        self::assertDoesNotMatchRegularExpression($this->textRegex('Footer 2/3'), $document->pages[1]->contents);
+        self::assertMatchesRegularExpression($this->textRegex('Footer 3/3'), $document->pages[2]->contents);
+    }
+
     public function testItRendersTaggedPageDecorationsAsArtifacts(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -148,6 +202,38 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
         self::assertCount(1, $document->taggedTextBlocks);
         self::assertStringContainsString('/Artifact BMC', $document->pages[0]->contents);
         self::assertMatchesRegularExpression($this->textRegex('Header 1'), $document->pages[0]->contents);
+    }
+
+    public function testItKeepsLinksAndImagesWorkingAlongsidePageDecorations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->header(static function (PageDecorationContext $page, int $pageNumber): void {
+                $page->text('Decorated header', new TextOptions(
+                    x: $page->page()->contentArea()->left,
+                    y: $page->page()->contentArea()->top,
+                    fontSize: 10.0,
+                ));
+            })
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                ImagePlacement::at(40.0, 340.0, width: 120.0),
+            )
+            ->textSegments([
+                TextSegment::link('Open docs', TextLink::externalUrl('https://example.com/docs')),
+            ], new TextOptions(
+                x: 40.0,
+                y: 300.0,
+                fontSize: 12.0,
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->images);
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertMatchesRegularExpression($this->textRegex('Decorated header'), $document->pages[0]->contents);
+        self::assertStringContainsString('/Im1 Do', $document->pages[0]->contents);
+        self::assertSame('https://example.com/docs', $document->pages[0]->annotations[0]->target->externalUrlValue());
     }
 
     private function textRegex(string $text): string
