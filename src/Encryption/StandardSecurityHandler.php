@@ -14,6 +14,7 @@ final class StandardSecurityHandler
 
     public function __construct(
         private readonly Rc4Cipher $rc4Cipher = new Rc4Cipher(),
+        private readonly PermissionBitsResolver $permissionBitsResolver = new PermissionBitsResolver(),
         private readonly Aes256CbcNoPaddingCipher $aes256CbcNoPaddingCipher = new Aes256CbcNoPaddingCipher(),
         private readonly Aes256EcbNoPaddingCipher $aes256EcbNoPaddingCipher = new Aes256EcbNoPaddingCipher(),
         ?callable $randomBytesGenerator = null,
@@ -35,7 +36,7 @@ final class StandardSecurityHandler
             throw new InvalidArgumentException('Only standard security handler revisions 3, 4 and 5 are supported in this stage.');
         }
 
-        $permissionBits = -4;
+        $permissionBits = $this->permissionBitsResolver->resolve($encryption->permissions, $profile);
         $ownerValue = $this->computeOwnerValue($encryption, $profile);
         $encryptionKey = $this->computeEncryptionKey($encryption, $profile, $ownerValue, $permissionBits, $documentId);
         $userValue = $this->computeUserValue($profile, $encryptionKey, $documentId);
@@ -50,7 +51,10 @@ final class StandardSecurityHandler
 
     private function buildRevision5(Encryption $encryption): StandardSecurityHandlerData
     {
-        $permissionBits = -4;
+        $permissionBits = $this->permissionBitsResolver->resolve(
+            $encryption->permissions,
+            new EncryptionProfile(Algorithm::AES_256, 256, 5, 5),
+        );
         $fileEncryptionKey = $this->randomBytes(32);
         $userPassword = $this->truncatePassword($encryption->userPassword);
         $ownerPassword = $this->truncatePassword($encryption->ownerPassword !== '' ? $encryption->ownerPassword : $encryption->userPassword);

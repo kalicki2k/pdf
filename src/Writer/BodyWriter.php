@@ -50,12 +50,10 @@ final class BodyWriter
             $output->write($this->replaceStreamLength($dictionaryContents, strlen($streamContents)));
             $output->write("\nstream\n");
             $output->write($streamContents);
-            $output->write("\nendstream");
-
             if (!str_ends_with($streamContents, "\n")) {
                 $output->write("\n");
             }
-
+            $output->write("endstream\n");
             $output->write("endobj\n");
         }
 

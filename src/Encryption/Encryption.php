@@ -10,6 +10,7 @@ final readonly class Encryption
         public Algorithm $algorithm,
         public string $userPassword,
         public string $ownerPassword,
+        public Permissions $permissions = new Permissions(),
     ) {
     }
 
@@ -37,6 +38,16 @@ final readonly class Encryption
             Algorithm::AES_256,
             $userPassword,
             $ownerPassword ?? $userPassword,
+        );
+    }
+
+    public function withPermissions(Permissions $permissions): self
+    {
+        return new self(
+            $this->algorithm,
+            $this->userPassword,
+            $this->ownerPassword,
+            $permissions,
         );
     }
 }

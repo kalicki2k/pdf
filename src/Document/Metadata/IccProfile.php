@@ -41,8 +41,18 @@ final readonly class IccProfile
 
     public function objectContents(): string
     {
-        return '<< /N ' . $this->colorComponents . ' /Length ' . strlen($this->data) . " >>\nstream\n"
-            . $this->data
+        return $this->streamDictionaryContents() . "\nstream\n"
+            . $this->streamContents()
             . "\nendstream";
+    }
+
+    public function streamDictionaryContents(): string
+    {
+        return '<< /N ' . $this->colorComponents . ' /Length ' . strlen($this->data) . ' >>';
+    }
+
+    public function streamContents(): string
+    {
+        return $this->data;
     }
 }

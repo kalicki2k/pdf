@@ -51,7 +51,7 @@ final class BodyWriterTest extends TestCase
         $output = new StringOutput();
         $plan = new DocumentSerializationPlan(
             objects: [
-                new IndirectObject(1, "<< /Length 4 >>\nstream\ndata\nendstream"),
+                IndirectObject::stream(1, '<< /Length 4 >>', 'data'),
             ],
             fileStructure: new FileStructure(
                 version: Version::V1_6,

@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Encryption\Encryption;
+use Kalle\Pdf\Encryption\Permissions;
 use PHPUnit\Framework\TestCase;
 
 final class DocumentRendererEncryptionTest extends TestCase
@@ -61,5 +62,17 @@ final class DocumentRendererEncryptionTest extends TestCase
         self::assertStringNotContainsString('AES256 Secret Title', $pdf);
         self::assertStringNotContainsString('AES256 Secret Author', $pdf);
         self::assertStringNotContainsString('Visible AES256 Secret', $pdf);
+    }
+
+    public function testItWritesConfiguredPermissionsIntoTheRenderedEncryptDictionary(): void
+    {
+        $pdf = DefaultDocumentBuilder::make()
+            ->profile(\Kalle\Pdf\Document\Profile::pdf16())
+            ->encryption(Encryption::aes128('user', 'owner')->withPermissions(
+                new Permissions(print: false, modify: true, copy: false, annotate: true),
+            ))
+            ->contents();
+
+        self::assertStringContainsString('/P -24', $pdf);
     }
 }
