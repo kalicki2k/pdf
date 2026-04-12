@@ -59,4 +59,18 @@ final class TableTest extends TestCase
             ),
         );
     }
+
+    public function testItStoresHeaderRowsAndRepeatFlagExplicitly(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )
+            ->withHeaderRows(TableRow::fromTexts('H1', 'H2'))
+            ->withRows(TableRow::fromTexts('A', 'B'))
+            ->withRepeatedHeaderOnPageBreak();
+
+        self::assertCount(1, $table->headerRows);
+        self::assertTrue($table->repeatHeaderOnPageBreak);
+    }
 }

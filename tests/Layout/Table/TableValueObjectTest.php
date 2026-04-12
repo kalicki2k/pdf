@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Layout\Table;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\ColumnWidth;
+use Kalle\Pdf\Layout\Table\VerticalAlign;
 use PHPUnit\Framework\TestCase;
 
 final class TableValueObjectTest extends TestCase
@@ -31,5 +34,15 @@ final class TableValueObjectTest extends TestCase
     {
         self::assertFalse(Border::none()->isVisible());
         self::assertTrue(Border::all(0.5)->isVisible());
+    }
+
+    public function testTableCellCanCarryBackgroundAndVerticalAlignment(): void
+    {
+        $cell = TableCell::text('Value')
+            ->withBackgroundColor(Color::hex('#ffeecc'))
+            ->withVerticalAlign(VerticalAlign::MIDDLE);
+
+        self::assertSame(VerticalAlign::MIDDLE, $cell->verticalAlign);
+        self::assertEquals(Color::hex('#ffeecc'), $cell->backgroundColor);
     }
 }

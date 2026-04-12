@@ -21,9 +21,12 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Layout\Table\Border;
+use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\TableCellLayout;
 use Kalle\Pdf\Layout\Table\TableLayout;
 use Kalle\Pdf\Layout\Table\TableLayoutCalculator;
+use Kalle\Pdf\Layout\Table\TableRowGroupLayout;
+use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
@@ -227,8 +230,26 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $page = $clone->buildCurrentPage();
         $contentArea = $page->contentArea();
         $columnWidths = $calculator->resolveColumnWidths($table, $contentArea->width());
+        $headerLayout = $table->headerRows === []
+            ? null
+            : $calculator->layoutRows($table->headerRows, $table, $columnWidths, new TextFlow($page), $font);
         $tableLayout = $calculator->layoutTable($table, $columnWidths, new TextFlow($page), $font);
         $cursorY = $clone->currentPageCursorY ?? $contentArea->top;
+        $headerRenderedOnCurrentPage = false;
+
+        if ($headerLayout !== null) {
+            if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
+                $clone->startOverflowPage();
+                $page = $clone->buildCurrentPage();
+                $contentArea = $page->contentArea();
+                $cursorY = $contentArea->top;
+            }
+
+            $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left);
+            $cursorY -= $headerLayout->totalHeight();
+            $clone->currentPageCursorY = $cursorY;
+            $headerRenderedOnCurrentPage = true;
+        }
 
         foreach ($tableLayout->rowGroups as $rowGroup) {
             if ($rowGroup->height > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
@@ -236,31 +257,24 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
                 $cursorY = $contentArea->top;
+                $headerRenderedOnCurrentPage = false;
             }
 
-            $groupContents = [];
-
-            foreach ($tableLayout->cells as $cellLayout) {
-                if ($cellLayout->rowIndex < $rowGroup->startRowIndex || $cellLayout->rowIndex > $rowGroup->endRowIndex) {
-                    continue;
+            if (!$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak) {
+                if (($headerLayout->totalHeight() + $rowGroup->height) > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
+                    $clone->startOverflowPage();
+                    $page = $clone->buildCurrentPage();
+                    $contentArea = $page->contentArea();
+                    $cursorY = $contentArea->top;
                 }
 
-                $groupContents[] = $clone->buildTableCellContent(
-                    $table,
-                    $tableLayout,
-                    $cellLayout,
-                    $font,
-                    new TextFlow($clone->buildCurrentPage()),
-                    $cursorY,
-                    $rowGroup->startRowIndex,
-                    $contentArea->left,
-                );
+                $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left);
+                $cursorY -= $headerLayout->totalHeight();
+                $clone->currentPageCursorY = $cursorY;
+                $headerRenderedOnCurrentPage = true;
             }
 
-            $clone->currentPageContents = $this->appendPageContent(
-                $clone->currentPageContents,
-                implode("\n", array_filter($groupContents, static fn (string $content): bool => $content !== '')),
-            );
+            $clone->renderTableRowGroup($table, $tableLayout, $rowGroup, $font, $cursorY, $contentArea->left);
             $cursorY -= $rowGroup->height;
             $clone->currentPageCursorY = $cursorY;
         }
@@ -682,14 +696,33 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $cellTextOptions = $this->tableCellTextOptions($table->textOptions, $cellLayout->contentWidth);
         $shapedLines = $this->shapeWrappedTextLines($cellLayout->wrappedLines, $cellTextOptions, $font);
         $renderState = $this->prepareTextRenderState($cellLayout->cell->text, $cellTextOptions, $font, $shapedLines);
-        $textTopY = $topY - $padding->top - $font->ascent($cellTextOptions->fontSize);
+        $cellHeight = $tableLayout->cellHeight($cellLayout);
+
+        if ($cellLayout->cell->backgroundColor !== null) {
+            $contents[] = $this->buildCellBackgroundContent(
+                $x,
+                $topY,
+                $cellLayout->width,
+                $cellHeight,
+                $cellLayout->cell->backgroundColor,
+            );
+        }
+
+        $textTopY = $this->tableCellTextTopY(
+            $topY,
+            $cellHeight,
+            $cellLayout,
+            $table->cellPadding,
+            $cellTextOptions,
+            $font,
+        );
 
         if ($table->border->isVisible()) {
             $contents[] = $this->buildCellBorderContent(
                 $x,
                 $topY,
                 $cellLayout->width,
-                $tableLayout->cellHeight($cellLayout),
+                $cellHeight,
                 $table->border,
             );
         }
@@ -713,6 +746,114 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return implode("\n", array_filter($contents, static fn (string $content): bool => $content !== ''));
+    }
+
+    private function tableCellTextTopY(
+        float $topY,
+        float $cellHeight,
+        TableCellLayout $cellLayout,
+        CellPadding $cellPadding,
+        TextOptions $textOptions,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+    ): float {
+        return $topY
+            - $font->ascent($textOptions->fontSize)
+            - $this->tableCellVerticalOffset($cellHeight, $cellLayout, $cellPadding, $textOptions);
+    }
+
+    private function tableCellVerticalOffset(
+        float $cellHeight,
+        TableCellLayout $cellLayout,
+        CellPadding $cellPadding,
+        TextOptions $textOptions,
+    ): float {
+        $textHeight = max(count($cellLayout->wrappedLines), 1) * ($textOptions->lineHeight ?? ($textOptions->fontSize * 1.2));
+        $contentHeight = max($cellHeight - $cellPadding->vertical(), 0.0);
+        $availableSpace = max($contentHeight - $textHeight, 0.0);
+
+        return match ($cellLayout->cell->verticalAlign) {
+            VerticalAlign::MIDDLE => $cellPadding->top + ($availableSpace / 2),
+            VerticalAlign::BOTTOM => $cellPadding->top + $availableSpace,
+            VerticalAlign::TOP => $cellPadding->top,
+        };
+    }
+
+    private function buildCellBackgroundContent(
+        float $x,
+        float $topY,
+        float $width,
+        float $height,
+        Color $backgroundColor,
+    ): string {
+        return implode("\n", [
+            'q',
+            $this->buildFillColorOperator($backgroundColor),
+            $this->formatNumber($x) . ' ' . $this->formatNumber($topY - $height) . ' '
+            . $this->formatNumber($width) . ' ' . $this->formatNumber($height) . ' re',
+            'f',
+            'Q',
+        ]);
+    }
+
+    private function renderTableLayout(
+        Table $table,
+        TableLayout $tableLayout,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        float $topY,
+        float $leftX,
+    ): void {
+        $contents = [];
+
+        foreach ($tableLayout->cells as $cellLayout) {
+            $contents[] = $this->buildTableCellContent(
+                $table,
+                $tableLayout,
+                $cellLayout,
+                $font,
+                new TextFlow($this->buildCurrentPage()),
+                $topY,
+                0,
+                $leftX,
+            );
+        }
+
+        $this->currentPageContents = $this->appendPageContent(
+            $this->currentPageContents,
+            implode("\n", array_filter($contents, static fn (string $content): bool => $content !== '')),
+        );
+    }
+
+    private function renderTableRowGroup(
+        Table $table,
+        TableLayout $tableLayout,
+        TableRowGroupLayout $rowGroup,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        float $topY,
+        float $leftX,
+    ): void {
+        $contents = [];
+
+        foreach ($tableLayout->cells as $cellLayout) {
+            if ($cellLayout->rowIndex < $rowGroup->startRowIndex || $cellLayout->rowIndex > $rowGroup->endRowIndex) {
+                continue;
+            }
+
+            $contents[] = $this->buildTableCellContent(
+                $table,
+                $tableLayout,
+                $cellLayout,
+                $font,
+                new TextFlow($this->buildCurrentPage()),
+                $topY,
+                $rowGroup->startRowIndex,
+                $leftX,
+            );
+        }
+
+        $this->currentPageContents = $this->appendPageContent(
+            $this->currentPageContents,
+            implode("\n", array_filter($contents, static fn (string $content): bool => $content !== '')),
+        );
     }
 
     private function tableCellTextOptions(TextOptions $options, float $contentWidth): TextOptions
@@ -817,6 +958,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'S',
             'Q',
         ]);
+    }
+
+    private function buildFillColorOperator(Color $color): string
+    {
+        $components = array_map(
+            fn (float $value): string => $this->formatNumber($value),
+            $color->components(),
+        );
+
+        return match ($color->space) {
+            ColorSpace::GRAY => implode(' ', $components) . ' g',
+            ColorSpace::RGB => implode(' ', $components) . ' rg',
+            ColorSpace::CMYK => implode(' ', $components) . ' k',
+        };
     }
 
     private function buildImageContent(

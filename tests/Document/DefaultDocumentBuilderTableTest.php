@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
@@ -13,6 +14,7 @@ use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
+use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
@@ -122,6 +124,79 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         );
     }
 
+    public function testItDoesNotRepeatHeaderRowsByDefault(): void
+    {
+        $rows = [];
+
+        for ($index = 1; $index <= 10; $index++) {
+            $rows[] = TableRow::fromTexts('Item ' . $index, 'Value ' . $index);
+        }
+
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withHeaderRows(TableRow::fromTexts('Head Left', 'Head Right'))
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(...$rows);
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+        $font = StandardFontDefinition::from('Helvetica');
+        $firstColumnX = $document->pages[0]->contentArea()->left + 6.0;
+        $secondHeaderLineY = $document->pages[0]->contentArea()->top - 6.0 - $font->ascent(12.0) - 14.4;
+
+        self::assertCount(2, $document->pages);
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ' . $this->formatNumber($secondHeaderLineY) . ' Td',
+            $document->pages[0]->contents,
+        );
+        self::assertStringNotContainsString(
+            $this->formatNumber($firstColumnX) . ' ' . $this->formatNumber($secondHeaderLineY) . ' Td',
+            $document->pages[1]->contents,
+        );
+    }
+
+    public function testItRepeatsHeaderRowsOnFollowUpPagesWhenEnabled(): void
+    {
+        $rows = [];
+
+        for ($index = 1; $index <= 10; $index++) {
+            $rows[] = TableRow::fromTexts('Item ' . $index, 'Value ' . $index);
+        }
+
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withHeaderRows(TableRow::fromTexts('Head Left', 'Head Right'))
+            ->withRepeatedHeaderOnPageBreak()
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(...$rows);
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+        $font = StandardFontDefinition::from('Helvetica');
+        $firstColumnX = $document->pages[0]->contentArea()->left + 6.0;
+        $secondHeaderLineY = $document->pages[0]->contentArea()->top - 6.0 - $font->ascent(12.0) - 14.4;
+
+        self::assertCount(2, $document->pages);
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ' . $this->formatNumber($secondHeaderLineY) . ' Td',
+            $document->pages[0]->contents,
+        );
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ' . $this->formatNumber($secondHeaderLineY) . ' Td',
+            $document->pages[1]->contents,
+        );
+    }
+
     public function testItRendersAColspanCellAcrossMultipleColumns(): void
     {
         $padding = CellPadding::all(6.0);
@@ -155,6 +230,31 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             $this->formatNumber($rightCellX) . ' ' . $this->formatNumber($textY) . ' Td',
             $document->pages[0]->contents,
         );
+    }
+
+    public function testItRendersACellBackgroundBeforeItsText(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )->withRows(
+            TableRow::fromCells(
+                TableCell::text('Tinted')->withBackgroundColor(Color::rgb(1.0, 0.9, 0.8)),
+                TableCell::text('Plain'),
+            ),
+        );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->table($table)
+            ->build();
+        $contents = $document->pages[0]->contents;
+        $backgroundSnippet = "1 0.9 0.8 rg\n56.693 516.183 80 22.4 re\nf";
+        $textSnippet = "BT\n/F1 12 Tf\n60.693 522.583 Td";
+
+        self::assertStringContainsString($backgroundSnippet, $contents);
+        self::assertStringContainsString($textSnippet, $contents);
+        self::assertLessThan(strpos($contents, $textSnippet), strpos($contents, $backgroundSnippet));
     }
 
     public function testItRendersARowspanCellOnlyOnceAndShiftsTheNextRow(): void
@@ -236,6 +336,53 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             $this->formatNumber($secondColumnX) . ' ' . $this->formatNumber($firstRowTextY) . ' Td',
             $document->pages[1]->contents,
         );
+    }
+
+    public function testItSupportsMiddleVerticalAlignmentWithinATallerRow(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(
+                TableRow::fromCells(
+                    TableCell::text('Center')->withVerticalAlign(VerticalAlign::MIDDLE),
+                    TableCell::text("Line one\nLine two\nLine three"),
+                ),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->table($table)
+            ->build();
+
+        self::assertStringContainsString('62.693 491.783 Td', $document->pages[0]->contents);
+        self::assertStringContainsString('142.693 520.583 Td', $document->pages[0]->contents);
+    }
+
+    public function testItSupportsBottomVerticalAlignmentWithinATallerRow(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(
+                TableRow::fromCells(
+                    TableCell::text('Bottom')->withVerticalAlign(VerticalAlign::BOTTOM),
+                    TableCell::text("Line one\nLine two\nLine three"),
+                ),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->table($table)
+            ->build();
+
+        self::assertStringContainsString('62.693 462.983 Td', $document->pages[0]->contents);
     }
 
     private function formatNumber(float $value): string

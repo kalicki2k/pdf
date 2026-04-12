@@ -17,20 +17,24 @@ final readonly class Table
 {
     /**
      * @param list<TableColumn> $columns
+     * @param list<TableRow> $headerRows
      * @param list<TableRow> $rows
      */
     public function __construct(
         public array $columns,
+        public array $headerRows = [],
         public array $rows = [],
         public CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
         public Border $border = new Border(0.5, 0.5, 0.5, 0.5),
         public TextOptions $textOptions = new TextOptions(fontSize: 12.0, lineHeight: 14.4),
+        public bool $repeatHeaderOnPageBreak = false,
     ) {
         if (count($this->columns) === 0) {
             throw new InvalidArgumentException('A table must contain at least one column.');
         }
 
-        $this->assertRowsMatchGrid();
+        $this->assertRowsMatchGrid($this->headerRows);
+        $this->assertRowsMatchGrid($this->rows);
     }
 
     public static function define(TableColumn ...$columns): self
@@ -42,10 +46,12 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            headerRows: $this->headerRows,
             rows: [...$this->rows, $row],
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
         );
     }
 
@@ -53,10 +59,38 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            headerRows: $this->headerRows,
             rows: $rows,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+        );
+    }
+
+    public function withHeaderRows(TableRow ...$headerRows): self
+    {
+        return new self(
+            columns: $this->columns,
+            headerRows: $headerRows,
+            rows: $this->rows,
+            cellPadding: $this->cellPadding,
+            border: $this->border,
+            textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+        );
+    }
+
+    public function withRepeatedHeaderOnPageBreak(bool $repeatHeaderOnPageBreak = true): self
+    {
+        return new self(
+            columns: $this->columns,
+            headerRows: $this->headerRows,
+            rows: $this->rows,
+            cellPadding: $this->cellPadding,
+            border: $this->border,
+            textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $repeatHeaderOnPageBreak,
         );
     }
 
@@ -64,10 +98,12 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            headerRows: $this->headerRows,
             rows: $this->rows,
             cellPadding: $cellPadding,
             border: $this->border,
             textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
         );
     }
 
@@ -75,10 +111,12 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            headerRows: $this->headerRows,
             rows: $this->rows,
             cellPadding: $this->cellPadding,
             border: $border,
             textOptions: $this->textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
         );
     }
 
@@ -86,18 +124,23 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            headerRows: $this->headerRows,
             rows: $this->rows,
             cellPadding: $this->cellPadding,
             border: $this->border,
             textOptions: $textOptions,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
         );
     }
 
-    private function assertRowsMatchGrid(): void
+    /**
+     * @param list<TableRow> $rows
+     */
+    private function assertRowsMatchGrid(array $rows): void
     {
         $activeRowspans = array_fill(0, count($this->columns), 0);
 
-        foreach ($this->rows as $row) {
+        foreach ($rows as $row) {
             $columnIndex = 0;
 
             foreach ($row->cells as $cell) {

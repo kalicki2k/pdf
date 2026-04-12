@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Layout\Table;
 
+use function array_sum;
+
 final readonly class TableLayout
 {
     /**
@@ -40,5 +42,10 @@ final readonly class TableLayout
         }
 
         return $height;
+    }
+
+    public function totalHeight(): float
+    {
+        return array_sum($this->rowHeights);
     }
 }

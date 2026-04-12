@@ -12,6 +12,7 @@ use InvalidArgumentException;
 
 use Kalle\Pdf\Document\Table;
 
+use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TextFlow;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
@@ -75,14 +76,31 @@ final class TableLayoutCalculator
             throw new InvalidArgumentException('Resolved column widths must match the configured column count.');
         }
 
+        return $this->layoutRows($table->rows, $table, $columnWidths, $textFlow, $font);
+    }
+
+    /**
+     * @param list<TableRow> $rows
+     */
+    public function layoutRows(
+        array $rows,
+        Table $table,
+        array $columnWidths,
+        TextFlow $textFlow,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+    ): TableLayout {
+        if (count($table->columns) !== count($columnWidths)) {
+            throw new InvalidArgumentException('Resolved column widths must match the configured column count.');
+        }
+
         $padding = $table->cellPadding;
         $baseOptions = $table->textOptions;
         $lineHeight = $textFlow->lineHeight($baseOptions);
-        $rowHeights = array_fill(0, count($table->rows), 0.0);
+        $rowHeights = array_fill(0, count($rows), 0.0);
         $cellLayouts = [];
         $activeRowspans = array_fill(0, count($columnWidths), 0);
 
-        foreach ($table->rows as $rowIndex => $row) {
+        foreach ($rows as $rowIndex => $row) {
             $columnIndex = 0;
 
             foreach ($row->cells as $cell) {
@@ -143,12 +161,7 @@ final class TableLayoutCalculator
             $rowHeights[$lastRowIndex] += $cellLayout->height - $spanHeight;
         }
 
-        return new TableLayout(
-            $columnWidths,
-            $rowHeights,
-            $cellLayouts,
-            $this->buildRowGroups($cellLayouts, $rowHeights),
-        );
+        return new TableLayout($columnWidths, $rowHeights, $cellLayouts, $this->buildRowGroups($cellLayouts, $rowHeights));
     }
 
     /**

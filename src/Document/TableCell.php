@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Layout\Table\VerticalAlign;
 
 final readonly class TableCell
 {
@@ -12,6 +14,8 @@ final readonly class TableCell
         public string $text,
         public int $colspan = 1,
         public int $rowspan = 1,
+        public ?Color $backgroundColor = null,
+        public VerticalAlign $verticalAlign = VerticalAlign::TOP,
     ) {
         if ($this->colspan < 1) {
             throw new InvalidArgumentException('Table cell colspan must be at least 1.');
@@ -29,11 +33,21 @@ final readonly class TableCell
 
     public function withColspan(int $colspan): self
     {
-        return new self($this->text, $colspan, $this->rowspan);
+        return new self($this->text, $colspan, $this->rowspan, $this->backgroundColor, $this->verticalAlign);
     }
 
     public function withRowspan(int $rowspan): self
     {
-        return new self($this->text, $this->colspan, $rowspan);
+        return new self($this->text, $this->colspan, $rowspan, $this->backgroundColor, $this->verticalAlign);
+    }
+
+    public function withBackgroundColor(Color $backgroundColor): self
+    {
+        return new self($this->text, $this->colspan, $this->rowspan, $backgroundColor, $this->verticalAlign);
+    }
+
+    public function withVerticalAlign(VerticalAlign $verticalAlign): self
+    {
+        return new self($this->text, $this->colspan, $this->rowspan, $this->backgroundColor, $verticalAlign);
     }
 }
