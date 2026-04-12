@@ -153,6 +153,20 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 721.197 Td\n[", $document->pages[0]->contents);
     }
 
+    public function testItPlacesImplicitTextBelowThePreviousLineGraphic(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->margin(Margin::all(Units::mm(20)))
+            ->line(56.693, 680.0, 200.0, 680.0)
+            ->text('Body', new TextOptions(
+                fontSize: 18.0,
+            ))
+            ->build();
+
+        self::assertStringContainsString("56.693 680 m\n200 680 l", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 662 Td\n[", $document->pages[0]->contents);
+    }
+
     public function testItAppliesSpacingBeforeToImplicitTextPlacement(): void
     {
         $document = DefaultDocumentBuilder::make()

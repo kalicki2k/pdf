@@ -175,6 +175,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private int $nextTaggedStructureElementId = 0;
     private ?Margin $currentPageMargin = null;
     private ?float $currentPageCursorY = null;
+    private bool $currentPageCursorYIsTopBoundary = false;
     private ?Color $currentPageBackgroundColor = null;
     private ?string $currentPageLabel = null;
     private ?string $currentPageName = null;
@@ -581,6 +582,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $clone->currentPageCursorY = $currentY - ($text->spacingAfter ?? 0.0);
+        $clone->currentPageCursorYIsTopBoundary = false;
 
         return $clone;
     }
@@ -632,6 +634,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
         $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
         $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedSegmentLines));
+        $clone->currentPageCursorYIsTopBoundary = false;
         if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
             $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
         }
@@ -701,6 +704,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $clone->renderTableCaption($captionLayout, $table->caption, $font, $cursorY, $tableLeftX, $taggedTableId);
             $cursorY -= $captionLayout['height'];
             $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+            $clone->currentPageCursorYIsTopBoundary = false;
         }
 
         if ($headerLayout !== null) {
@@ -719,6 +723,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
             $cursorY -= $headerLayout->totalHeight();
             $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+            $clone->currentPageCursorYIsTopBoundary = false;
             $headerRenderedOnCurrentPage = true;
         }
 
@@ -757,6 +762,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
                     $cursorY -= $headerLayout->totalHeight();
                     $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+                    $clone->currentPageCursorYIsTopBoundary = false;
                     $headerRenderedOnCurrentPage = true;
                     $availableHeight = $cursorY - $contentArea->bottom;
                 }
@@ -787,6 +793,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $segmentOffset += $segmentHeight;
                 $cursorY -= $segmentHeight;
                 $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+                $clone->currentPageCursorYIsTopBoundary = false;
 
                 if ($segmentOffset < $rowGroup->height) {
                     $clone->startOverflowPage();
@@ -822,12 +829,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
                 $cursorY -= $headerLayout->totalHeight();
                 $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+                $clone->currentPageCursorYIsTopBoundary = false;
                 $headerRenderedOnCurrentPage = true;
             }
 
             $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
             $cursorY -= $footerLayout->totalHeight();
             $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+            $clone->currentPageCursorYIsTopBoundary = false;
         }
 
         return $clone;
@@ -899,6 +908,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         if ($markedContentId !== null) {
             $clone->registerTaggedFigure($markedContentId, $accessibility?->altText);
         }
+
+        $clone->advanceCursorToGraphicTop(min($y1, $y2));
 
         return $clone;
     }
@@ -2546,6 +2557,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ),
         );
         $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y']);
+        $clone->currentPageCursorYIsTopBoundary = false;
 
         return $clone;
     }
@@ -2704,6 +2716,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ? $options->margin ?? $this->defaultPageMargin
             : $this->defaultPageMargin;
         $this->currentPageCursorY = null;
+        $this->currentPageCursorYIsTopBoundary = false;
         $this->currentPageBackgroundColor = $options?->backgroundColor;
         $this->currentPageLabel = $options?->label;
         $this->currentPageName = $options?->name;
@@ -4176,6 +4189,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->requiresTaggedStructure() ? $this->nextMarkedContentId() : null;
     }
 
+    private function advanceCursorToGraphicTop(float $y): void
+    {
+        $this->currentPageCursorY = $this->currentPageCursorY !== null
+            ? min($this->currentPageCursorY, $y)
+            : $y;
+        $this->currentPageCursorYIsTopBoundary = true;
+    }
+
     /**
      * @return array{pageIndex: int, markedContentId: int}
      */
@@ -4227,6 +4248,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
         $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
         $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedLines));
+        $clone->currentPageCursorYIsTopBoundary = false;
 
         if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
             $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
@@ -4327,6 +4349,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
         $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
         $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], $lineCount);
+        $clone->currentPageCursorYIsTopBoundary = false;
 
         if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
             $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
@@ -4913,7 +4936,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function textFlow(): TextFlow
     {
-        return new TextFlow($this->buildCurrentPage(), $this->currentPageCursorY);
+        return new TextFlow($this->buildCurrentPage(), $this->currentPageCursorY, $this->currentPageCursorYIsTopBoundary);
     }
 
     private function tableLayoutCalculator(): TableLayoutCalculator

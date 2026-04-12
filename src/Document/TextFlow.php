@@ -20,6 +20,7 @@ final readonly class TextFlow
     public function __construct(
         private Page $page,
         private ?float $cursorY = null,
+        private bool $cursorYIsTopBoundary = false,
     ) {
     }
 
@@ -38,7 +39,9 @@ final readonly class TextFlow
             : $this->page->size->height();
 
         $resolvedY = $options->y
-            ?? $this->cursorY
+            ?? ($this->cursorY !== null
+                ? $this->cursorY - ($this->cursorYIsTopBoundary ? $this->topGlyphOffset($options, $font) : 0.0)
+                : null)
             ?? ($topBoundary - $this->topGlyphOffset($options, $font));
 
         $y = $options->y
