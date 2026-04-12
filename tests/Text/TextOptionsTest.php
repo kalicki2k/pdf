@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Text;
 
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -63,6 +64,14 @@ final class TextOptionsTest extends TestCase
     public function testItAcceptsALinkTarget(): void
     {
         $link = LinkTarget::externalUrl('https://example.com');
+        $options = new TextOptions(link: $link);
+
+        self::assertSame($link, $options->link);
+    }
+
+    public function testItAcceptsATextLink(): void
+    {
+        $link = TextLink::externalUrl('https://example.com', 'Open Example', 'Open the example website');
         $options = new TextOptions(link: $link);
 
         self::assertSame($link, $options->link);

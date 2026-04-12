@@ -29,6 +29,7 @@ use Kalle\Pdf\Encryption\ObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandler;
 use Kalle\Pdf\Font\OpenTypeOutlineType;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
@@ -291,7 +292,7 @@ final class DocumentSerializationPlanBuilder
 
                 $appearanceObjectId = $pageAnnotationAppearanceObjectIds[$index][$annotationIndex] ?? null;
 
-                if ($appearanceObjectId !== null && $annotation instanceof LinkAnnotation) {
+                if ($appearanceObjectId !== null && $annotation instanceof AppearanceStreamAnnotation) {
                     $objects[] = IndirectObject::stream(
                         $appearanceObjectId,
                         $annotation->appearanceStreamDictionaryContents(),
@@ -688,7 +689,7 @@ final class DocumentSerializationPlanBuilder
                         $document->profile->requiresLinkAnnotationAlternativeDescriptions()
                         || $document->profile->requiresPageAnnotationAlternativeDescriptions()
                     )
-                    && ($annotation->contents === null || $annotation->contents === '')
+                    && (($annotation->accessibleLabelOrContents() ?? '') === '')
                 ) {
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s requires alternative text for link annotation %d on page %d.',
@@ -705,7 +706,7 @@ final class DocumentSerializationPlanBuilder
     {
         return $document->profile->requiresAnnotationAppearanceStreams()
             && !$document->profile->isPdfA1()
-            && $annotation instanceof LinkAnnotation;
+            && $annotation instanceof AppearanceStreamAnnotation;
     }
 
     private function assertNamedDestinationRequirements(Document $document): void
@@ -1040,8 +1041,10 @@ final class DocumentSerializationPlanBuilder
 
                 $groupedLinkEntries[$groupKey]['annotationIndices'][] = $annotationIndex;
 
-                if ($annotation->contents !== null && $annotation->contents !== '') {
-                    $groupedLinkEntries[$groupKey]['altTextParts'][] = $annotation->contents;
+                $accessibleLabel = $annotation->accessibleLabelOrContents();
+
+                if ($accessibleLabel !== null && $accessibleLabel !== '') {
+                    $groupedLinkEntries[$groupKey]['altTextParts'][] = $accessibleLabel;
                 }
 
                 if ($annotation->markedContentId() !== null) {

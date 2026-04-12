@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Font\EmbeddedFontSource;
@@ -27,6 +28,7 @@ use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Writer\StringOutput;
@@ -171,6 +173,44 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Subtype /Link', $pdf);
         self::assertStringContainsString('/A << /S /URI /URI (https://example.com) >>', $pdf);
         self::assertStringContainsString('/Contents (Open Example)', $pdf);
+    }
+
+    public function testItRendersTextAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Annots [5 0 R]', $pdf);
+        self::assertStringContainsString('/Subtype /Text', $pdf);
+        self::assertStringContainsString('/Name /Comment', $pdf);
+        self::assertStringContainsString('/Contents (Kommentar)', $pdf);
+    }
+
+    public function testItRendersHighlightAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->highlightAnnotation(40, 500, 80, 10, Color::rgb(1, 1, 0), 'Markiert', 'QA')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Annots [5 0 R]', $pdf);
+        self::assertStringContainsString('/Subtype /Highlight', $pdf);
+        self::assertStringContainsString('/QuadPoints [40 510 120 510 40 500 120 500]', $pdf);
+        self::assertStringContainsString('/Contents (Markiert)', $pdf);
     }
 
     public function testItRendersInternalLinkAnnotations(): void
@@ -330,25 +370,60 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Alt (Read docs)', $pdf);
     }
 
+    public function testItRendersSeparateAccessibleLabelsForPdfUaTextLinks(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textSegments([
+                TextSegment::link(
+                    'Docs',
+                    TextLink::externalUrl(
+                        'https://example.com/docs',
+                        contents: 'Open docs section',
+                        accessibleLabel: 'Read the documentation section',
+                    ),
+                ),
+            ])
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Contents (Open docs section)', $pdf);
+        self::assertStringContainsString('/Alt (Read the documentation section)', $pdf);
+    }
+
     public function testItRendersTaggedPdfUaTablesWithCaptionHeaderAndCells(): void
     {
         $table = Table::define(
             TableColumn::fixed(90.0),
             TableColumn::fixed(90.0),
+            TableColumn::fixed(90.0),
         )
+            ->withPlacement(new TablePlacement(24.0, 270.0))
             ->withCaption(TableCaption::text('Quarterly summary'))
-            ->withHeaderRows(TableRow::fromCells(
-                TableCell::text('Label')->withHeaderScope(TableHeaderScope::BOTH),
-                TableCell::text('Value'),
-            ))
+            ->withHeaderRows(
+                TableRow::fromCells(
+                    TableCell::text('Label', rowspan: 2)->withHeaderScope(TableHeaderScope::BOTH),
+                    TableCell::text('Current', colspan: 2),
+                ),
+                TableRow::fromTexts('Planned', 'Actual'),
+            )
             ->withRows(
                 TableRow::fromCells(
-                    TableCell::text('North')->withHeaderScope(TableHeaderScope::ROW),
+                    TableCell::text('North', colspan: 2)->withHeaderScope(TableHeaderScope::ROW),
                     TableCell::text('12'),
                 ),
+                TableRow::fromTexts('South', '11', '10'),
             )
             ->withFooterRows(
-                TableRow::fromTexts('Total', '12'),
+                TableRow::fromTexts('Total', '23', '22'),
             );
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfUa1())
@@ -372,8 +447,9 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /TR', $pdf);
         self::assertStringContainsString('/Type /StructElem /S /TH', $pdf);
         self::assertStringContainsString('/Type /StructElem /S /TD', $pdf);
-        self::assertStringContainsString('/A << /O /Table /Scope /Both >>', $pdf);
-        self::assertStringContainsString('/A << /O /Table /Scope /Row >>', $pdf);
+        self::assertStringContainsString('/A << /O /Table /Scope /Both /RowSpan 2 >>', $pdf);
+        self::assertStringContainsString('/A << /O /Table /Scope /Column /ColSpan 2 >>', $pdf);
+        self::assertStringContainsString('/A << /O /Table /Scope /Row /ColSpan 2 >>', $pdf);
         self::assertStringContainsString('/Caption << /MCID ', $pdf);
         self::assertStringContainsString('/TH << /MCID ', $pdf);
         self::assertStringContainsString('/TD << /MCID ', $pdf);
@@ -485,6 +561,73 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/F 4', $pdf);
     }
 
+    public function testItRendersPdfA2uTextAnnotationsWithAppearanceStreams(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Text Annotation Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u text annotation regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->text('PDF/A-2u Kommentar Regression Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->textAnnotation(72, 680, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Text', $pdf);
+        self::assertStringContainsString('/AP << /N ', $pdf);
+        self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 18 18]', $pdf);
+        self::assertStringContainsString('/F 4', $pdf);
+    }
+
+    public function testItRendersPdfA2uHighlightAnnotationsWithAppearanceStreams(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Highlight Annotation Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u highlight annotation regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->text('PDF/A-2u Highlight Regression Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->highlightAnnotation(72, 680, 140, 12, Color::rgb(1, 1, 0), 'Markiert', 'QA')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Highlight', $pdf);
+        self::assertStringContainsString('/QuadPoints [72 692 212 692 72 680 212 680]', $pdf);
+        self::assertStringContainsString('/AP << /N ', $pdf);
+        self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 140 12]', $pdf);
+        self::assertStringContainsString('/F 4', $pdf);
+    }
+
     public function testItRendersPdfA2uInternalLinksAndNamedDestinations(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -517,7 +660,7 @@ final class DocumentRendererTest extends TestCase
                 x: 72,
                 y: 620,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
-                link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+                link: LinkTarget::namedDestination('intro'),
             ))
             ->build();
 

@@ -16,12 +16,15 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\TextAnnotation;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
@@ -199,6 +202,39 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame('Open Example', $annotation->contents);
     }
 
+    public function testItAddsTextAnnotationsToTheCurrentPage(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('Example')
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertInstanceOf(TextAnnotation::class, $document->pages[0]->annotations[0]);
+        $annotation = $document->pages[0]->annotations[0];
+        self::assertInstanceOf(TextAnnotation::class, $annotation);
+        self::assertSame('Kommentar', $annotation->contents);
+        self::assertSame('QA', $annotation->title);
+        self::assertSame('Comment', $annotation->icon);
+        self::assertTrue($annotation->open);
+    }
+
+    public function testItAddsHighlightAnnotationsToTheCurrentPage(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('Example')
+            ->highlightAnnotation(40, 500, 80, 10, Color::rgb(1, 1, 0), 'Markiert', 'QA')
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertInstanceOf(HighlightAnnotation::class, $document->pages[0]->annotations[0]);
+        $annotation = $document->pages[0]->annotations[0];
+        self::assertInstanceOf(HighlightAnnotation::class, $annotation);
+        self::assertSame('Markiert', $annotation->contents);
+        self::assertSame('QA', $annotation->title);
+        self::assertSame([1.0, 1.0, 0.0], $annotation->color?->components());
+    }
+
     public function testItAddsInternalLinkAnnotationsToTheCurrentPage(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -292,5 +328,40 @@ final class DefaultDocumentBuilderTest extends TestCase
             $document->pages[0]->annotations[1]->taggedGroupKey,
         );
         self::assertNotNull($document->pages[0]->annotations[0]->taggedGroupKey);
+    }
+
+    public function testItSeparatesAnnotationContentsFromAccessibleLinkLabel(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textSegments([
+                TextSegment::link(
+                    'Docs',
+                    TextLink::externalUrl(
+                        'https://example.com/docs',
+                        contents: 'Open docs section',
+                        accessibleLabel: 'Read the documentation section',
+                    ),
+                ),
+            ])
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertSame('Open docs section', $document->pages[0]->annotations[0]->contents);
+        self::assertSame('Read the documentation section', $document->pages[0]->annotations[0]->accessibleLabel);
+    }
+
+    public function testExplicitTextLinkGroupKeysCanPreventMergingForTheSameTarget(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textSegments([
+                TextSegment::link('Docs', TextLink::externalUrl('https://example.com/docs', groupKey: 'docs-a')),
+                TextSegment::link(' API', TextLink::externalUrl('https://example.com/docs', groupKey: 'docs-b')),
+            ])
+            ->build();
+
+        self::assertCount(2, $document->pages[0]->annotations);
     }
 }

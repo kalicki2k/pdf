@@ -37,10 +37,13 @@ $document = DefaultDocumentBuilder::make()
 
 ## Links
 
-Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Bei PDF/UA-Profilen dient der letzte Parameter aktuell zugleich als Annotation-`/Contents` und als Alternativtext fuer die Link-Struktur.
+Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Fuer explizitere Inline-Link-Spans steht `TextLink` zur Verfuegung, damit sichtbarer Text, Annotation-`/Contents`, PDF/UA-Alternativtext und Gruppierung getrennt steuerbar bleiben.
+
+Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation mit festem Rechteck und eigenem `/AP`-Stream, die sich damit auch fuer den aktuellen PDF/A-2u-Pfad eignet. Dasselbe gilt jetzt fuer eine schlanke `Highlight`-Annotation mit festen `QuadPoints`.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextSegment;
 
 $document = DefaultDocumentBuilder::make()
@@ -54,10 +57,20 @@ $document = DefaultDocumentBuilder::make()
         link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
     ))
     ->textSegments([
-        new TextSegment('Docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+        TextSegment::link(
+            'Docs',
+            TextLink::externalUrl(
+                'https://example.com/docs',
+                contents: 'Open docs section',
+                accessibleLabel: 'Read the documentation section',
+                groupKey: 'docs-link',
+            ),
+        ),
         new TextSegment(' und '),
-        new TextSegment('API', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/api')),
+        TextSegment::link('API', TextLink::externalUrl('https://example.com/api')),
     ])
+    ->textAnnotation(40, 450, 18, 18, 'Kurzer Kommentar', 'QA', 'Comment', true)
+    ->highlightAnnotation(40, 420, 120, 12, \Kalle\Pdf\Color\Color::rgb(1, 1, 0), 'Markierung', 'QA')
     ->build();
 ```
 
@@ -71,14 +84,18 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
+use Kalle\Pdf\Text\TextAlign;
 
 $table = Table::define(
     TableColumn::fixed(120),
     TableColumn::proportional(1),
 )
     ->withCaption(TableCaption::text('Produktuebersicht'))
+    ->withPlacement(new TablePlacement(72, 320))
     ->withCellPadding(CellPadding::all(6))
     ->withHeaderRows(
         TableRow::fromTexts('Artikel', 'Beschreibung'),
@@ -86,8 +103,12 @@ $table = Table::define(
     ->withRepeatedHeaderOnPageBreak()
     ->withRows(
         TableRow::fromCells(
-            \Kalle\Pdf\Document\TableCell::text('A-100', rowspan: 2)->withHeaderScope(TableHeaderScope::ROW),
-            \Kalle\Pdf\Document\TableCell::text('Kompakter Einstieg in das Tabellenlayout von pdf2.'),
+            \Kalle\Pdf\Document\TableCell::text('A-100', rowspan: 2)
+                ->withHeaderScope(TableHeaderScope::ROW)
+                ->withPadding(CellPadding::symmetric(8, 10)),
+            \Kalle\Pdf\Document\TableCell::text('Kompakter Einstieg in das Tabellenlayout von pdf2.')
+                ->withHorizontalAlign(TextAlign::RIGHT)
+                ->withBorder(Border::all(1)),
         ),
         TableRow::fromCells(
             \Kalle\Pdf\Document\TableCell::text('Mit zusammenhängender Zeilengruppe über zwei Tabellenzeilen.'),

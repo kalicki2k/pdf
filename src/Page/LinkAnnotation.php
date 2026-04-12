@@ -10,7 +10,7 @@ use function implode;
 use function sprintf;
 use function str_replace;
 
-final readonly class LinkAnnotation implements PageAnnotation
+final readonly class LinkAnnotation implements AppearanceStreamAnnotation, PageAnnotation
 {
     public function __construct(
         public LinkTarget $target,
@@ -19,6 +19,7 @@ final readonly class LinkAnnotation implements PageAnnotation
         public float $width,
         public float $height,
         public ?string $contents = null,
+        public ?string $accessibleLabel = null,
         public ?int $markedContentId = null,
         public ?int $structParentId = null,
         public ?string $taggedGroupKey = null,
@@ -41,6 +42,7 @@ final readonly class LinkAnnotation implements PageAnnotation
             width: $this->width,
             height: $this->height,
             contents: $this->contents,
+            accessibleLabel: $this->accessibleLabel,
             markedContentId: $this->markedContentId,
             structParentId: $structParentId,
             taggedGroupKey: $this->taggedGroupKey,
@@ -98,6 +100,11 @@ final readonly class LinkAnnotation implements PageAnnotation
     public function markedContentId(): ?int
     {
         return $this->markedContentId;
+    }
+
+    public function accessibleLabelOrContents(): ?string
+    {
+        return $this->accessibleLabel ?? $this->contents;
     }
 
     public function appearanceStreamDictionaryContents(): string

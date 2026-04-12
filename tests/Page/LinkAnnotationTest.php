@@ -21,6 +21,7 @@ final class LinkAnnotationTest extends TestCase
             '<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 3 0 R /A << /S /URI /URI (https://example.com) >> /Contents (Open Example) >>',
             $annotation->pdfObjectContents($context),
         );
+        self::assertSame('Open Example', $annotation->accessibleLabelOrContents());
         self::assertSame(
             '<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 3 0 R /StructParent 7 /A << /S /URI /URI (https://example.com) >> /F 4 /Contents (Open Example) >>',
             $annotation->pdfObjectContents(new PageAnnotationRenderContext(3, true, [1 => 3], [], 7)),
@@ -34,6 +35,18 @@ final class LinkAnnotationTest extends TestCase
             $annotation->appearanceStreamDictionaryContents(),
         );
         self::assertSame('', $annotation->appearanceStreamContents());
+
+        $accessibleAnnotation = new LinkAnnotation(
+            LinkTarget::externalUrl('https://example.com'),
+            10,
+            20,
+            80,
+            12,
+            'Open Example',
+            'Open the example website',
+        );
+
+        self::assertSame('Open the example website', $accessibleAnnotation->accessibleLabelOrContents());
     }
 
     public function testItBuildsInternalPageAndPositionLinkAnnotationObjects(): void

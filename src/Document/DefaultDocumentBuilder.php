@@ -34,6 +34,7 @@ use Kalle\Pdf\Layout\Table\TableLayoutCalculator;
 use Kalle\Pdf\Layout\Table\TableRowGroupLayout;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\EmbeddedGlyph;
+use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
@@ -45,11 +46,13 @@ use Kalle\Pdf\Page\PageImage;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Text\MappedTextRun;
 use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
 use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 
@@ -493,6 +496,37 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->image(ImageSource::fromPath($path), $placement, $accessibility);
     }
 
+    public function textAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $contents,
+        ?string $title = null,
+        string $icon = 'Note',
+        bool $open = false,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->currentPageAnnotations[] = new TextAnnotation($x, $y, $width, $height, $contents, $title, $icon, $open);
+
+        return $clone;
+    }
+
+    public function highlightAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->currentPageAnnotations[] = new HighlightAnnotation($x, $y, $width, $height, $color, $contents, $title);
+
+        return $clone;
+    }
+
     public function link(
         string $url,
         float $x,
@@ -500,9 +534,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $width,
         float $height,
         ?string $contents = null,
+        ?string $accessibleLabel = null,
     ): DocumentBuilder {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new LinkAnnotation(LinkTarget::externalUrl($url), $x, $y, $width, $height, $contents);
+        $clone->currentPageAnnotations[] = new LinkAnnotation(
+            LinkTarget::externalUrl($url),
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+            $accessibleLabel,
+        );
 
         return $clone;
     }
@@ -514,9 +557,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $width,
         float $height,
         ?string $contents = null,
+        ?string $accessibleLabel = null,
     ): DocumentBuilder {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new LinkAnnotation(LinkTarget::namedDestination($name), $x, $y, $width, $height, $contents);
+        $clone->currentPageAnnotations[] = new LinkAnnotation(
+            LinkTarget::namedDestination($name),
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+            $accessibleLabel,
+        );
 
         return $clone;
     }
@@ -528,9 +580,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $width,
         float $height,
         ?string $contents = null,
+        ?string $accessibleLabel = null,
     ): DocumentBuilder {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new LinkAnnotation(LinkTarget::page($pageNumber), $x, $y, $width, $height, $contents);
+        $clone->currentPageAnnotations[] = new LinkAnnotation(
+            LinkTarget::page($pageNumber),
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+            $accessibleLabel,
+        );
 
         return $clone;
     }
@@ -544,6 +605,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $width,
         float $height,
         ?string $contents = null,
+        ?string $accessibleLabel = null,
     ): DocumentBuilder {
         $clone = clone $this;
         $clone->currentPageAnnotations[] = new LinkAnnotation(
@@ -553,6 +615,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $width,
             $height,
             $contents,
+            $accessibleLabel,
         );
 
         return $clone;
@@ -826,27 +889,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 );
 
                 if ($options->link !== null && $mappedRun->width > 0.0) {
-                    $markedContentId = ($this->profile ?? Profile::standard())->requiresTaggedLinkAnnotations()
-                        ? $this->nextMarkedContentId()
-                        : null;
-
-                    if ($markedContentId !== null) {
-                        $textBlockContent = implode("\n", [
-                            '/Link << /MCID ' . $markedContentId . ' >> BDC',
-                            $textBlockContent,
-                            'EMC',
-                        ]);
-                    }
-
-                    $annotations[] = new LinkAnnotation(
-                        target: $options->link,
-                        x: $runX,
-                        y: $runY - max($textFlow->lineHeight($options) - $font->ascent($options->fontSize), 0.0),
-                        width: $mappedRun->width,
-                        height: $textFlow->lineHeight($options),
-                        contents: $mappedRun->text,
-                        markedContentId: $markedContentId,
+                    $linkResult = $this->buildLinkedTextRunContent(
+                        $this->linkTarget($options->link),
+                        $this->linkContents($options->link, $mappedRun->text),
+                        $this->linkAccessibleLabel($options->link, $mappedRun->text),
+                        $textBlockContent,
+                        $runX,
+                        $runY,
+                        $mappedRun->width,
+                        $textFlow->lineHeight($options),
+                        $font->ascent($options->fontSize),
+                        $this->linkGroupKey($options->link),
                     );
+                    $textBlockContent = $linkResult['contents'];
+                    $annotations[] = $linkResult['annotation'];
                 }
 
                 $contents[] = $textBlockContent;
@@ -960,7 +1016,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             foreach ($lineEntries as $lineEntry) {
                 /** @var MappedTextRun $mappedRun */
                 $mappedRun = $lineEntry['mappedRun'];
-                /** @var ?LinkTarget $link */
+                /** @var LinkTarget|TextLink|null $link */
                 $link = $lineEntry['link'] ?? null;
                 $renderedEntries[] = [
                     'mappedRun' => $mappedRun,
@@ -986,19 +1042,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $lastLinkedGroupOnLine = null;
 
             foreach ($mergedRenderedEntries as $renderedEntryIndex => $renderedEntry) {
-                /** @var ?LinkTarget $link */
+                /** @var LinkTarget|TextLink|null $link */
                 $link = $renderedEntry['link'];
                 $textBlockContent = $renderedEntry['textBlockContent'];
 
                 if ($link !== null && $renderedEntry['width'] > 0.0) {
                     $groupKey = $renderedEntryIndex === 0
                         && $continuingLinkGroup !== null
-                        && $this->sameLinkTarget($continuingLinkGroup['link'], $link)
+                        && $this->canMergeTextLinks($continuingLinkGroup['link'], $link)
                         ? $continuingLinkGroup['key']
-                        : 'page-' . $currentPageIndex . '-text-link-' . $nextLinkGroupId++;
+                        : $this->linkGroupKey($link) ?? ('page-' . $currentPageIndex . '-text-link-' . $nextLinkGroupId++);
                     $linkResult = $this->buildLinkedTextRunContent(
-                        $link,
-                        $renderedEntry['text'],
+                        $this->linkTarget($link),
+                        $this->linkContents($link, $renderedEntry['text']),
+                        $this->linkAccessibleLabel($link, $renderedEntry['text']),
                         $textBlockContent,
                         $renderedEntry['x'],
                         $runY,
@@ -1030,8 +1087,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<array{mappedRun: MappedTextRun, link: ?LinkTarget, x: float, textBlockContent: string}> $renderedEntries
-     * @return list<array{link: ?LinkTarget, x: float, width: float, text: string, textBlockContent: string}>
+     * @param list<array{mappedRun: MappedTextRun, link: LinkTarget|TextLink|null, x: float, textBlockContent: string}> $renderedEntries
+     * @return list<array{link: LinkTarget|TextLink|null, x: float, width: float, text: string, textBlockContent: string}>
      */
     private function mergeRenderedSegmentEntries(array $renderedEntries): array
     {
@@ -1040,7 +1097,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         foreach ($renderedEntries as $renderedEntry) {
             /** @var MappedTextRun $mappedRun */
             $mappedRun = $renderedEntry['mappedRun'];
-            /** @var ?LinkTarget $link */
+            /** @var LinkTarget|TextLink|null $link */
             $link = $renderedEntry['link'];
             $lastIndex = array_key_last($mergedEntries);
 
@@ -1048,7 +1105,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $lastIndex !== null
                 && $link !== null
                 && $mergedEntries[$lastIndex]['link'] !== null
-                && $this->sameLinkTarget($mergedEntries[$lastIndex]['link'], $link)
+                && $this->canMergeTextLinks($mergedEntries[$lastIndex]['link'], $link)
             ) {
                 $mergedEntries[$lastIndex]['width'] += $mappedRun->width;
                 $mergedEntries[$lastIndex]['text'] .= $mappedRun->text;
@@ -1067,6 +1124,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $mergedEntries;
+    }
+
+    private function canMergeTextLinks(LinkTarget|TextLink $left, LinkTarget|TextLink $right): bool
+    {
+        $leftGroupKey = $this->linkGroupKey($left);
+        $rightGroupKey = $this->linkGroupKey($right);
+
+        if ($leftGroupKey !== null || $rightGroupKey !== null) {
+            return $leftGroupKey !== null
+                && $rightGroupKey !== null
+                && $leftGroupKey === $rightGroupKey;
+        }
+
+        return $this->sameLinkTarget($this->linkTarget($left), $this->linkTarget($right));
     }
 
     private function sameLinkTarget(LinkTarget $left, LinkTarget $right): bool
@@ -1307,7 +1378,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
      */
     private function buildLinkedTextRunContent(
         LinkTarget $link,
-        string $text,
+        string $contents,
+        string $accessibleLabel,
         string $textBlockContent,
         float $x,
         float $y,
@@ -1336,14 +1408,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 y: $y - max($lineHeight - $ascent, 0.0),
                 width: $width,
                 height: $lineHeight,
-                contents: $text,
+                contents: $contents,
+                accessibleLabel: $accessibleLabel,
                 markedContentId: $markedContentId,
                 taggedGroupKey: $taggedGroupKey,
             ),
         ];
     }
 
-    private function textOptionsWithLink(TextOptions $options, ?LinkTarget $link): TextOptions
+    private function textOptionsWithLink(TextOptions $options, LinkTarget | TextLink | null $link): TextOptions
     {
         return new TextOptions(
             x: $options->x,
@@ -1365,6 +1438,38 @@ class DefaultDocumentBuilder implements DocumentBuilder
             hangingIndent: $options->hangingIndent,
             link: $link,
         );
+    }
+
+    private function linkTarget(LinkTarget | TextLink $link): LinkTarget
+    {
+        return $link instanceof TextLink ? $link->target : $link;
+    }
+
+    private function linkContents(LinkTarget | TextLink $link, string $visibleText): string
+    {
+        if ($link instanceof TextLink && $link->contents !== null) {
+            return $link->contents;
+        }
+
+        return $visibleText;
+    }
+
+    private function linkAccessibleLabel(LinkTarget | TextLink $link, string $visibleText): string
+    {
+        if ($link instanceof TextLink && $link->accessibleLabel !== null) {
+            return $link->accessibleLabel;
+        }
+
+        if ($link instanceof TextLink && $link->contents !== null) {
+            return $link->contents;
+        }
+
+        return $visibleText;
+    }
+
+    private function linkGroupKey(LinkTarget | TextLink $link): ?string
+    {
+        return $link instanceof TextLink ? $link->groupKey : null;
     }
 
     private function buildTableCellContent(
@@ -1432,11 +1537,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $renderState['embeddedPageFont'],
             $renderState['useHexString'],
             $textFlow,
-                $cellLayout->padding,
-                $x + $cellLayout->padding->left,
-                $segmentTopY,
-                $cellTopOffset,
-                $segmentOffset,
+            $cellLayout->padding,
+            $x + $cellLayout->padding->left,
+            $segmentTopY,
+            $cellTopOffset,
+            $segmentOffset,
             $segmentHeight,
             $markedContentId !== null ? ($taggedSection === 'header' ? 'TH' : 'TD') : null,
             $markedContentId,

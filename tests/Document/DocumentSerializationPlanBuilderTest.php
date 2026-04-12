@@ -22,13 +22,16 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Writer\IndirectObject;
@@ -353,6 +356,46 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
     }
 
+    public function testItAddsTextAnnotationsToPageObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 4 0 R /Annots [5 0 R] >>',
+            $objects[2]->contents,
+        );
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Text /Rect [40 500 58 518] /P 3 0 R /Contents (Kommentar) /Name /Comment /Open true /T (QA) >>',
+            $objects[4]->contents,
+        );
+    }
+
+    public function testItAddsHighlightAnnotationsToPageObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->highlightAnnotation(40, 500, 80, 10, Color::rgb(1, 1, 0), 'Markiert', 'QA')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 4 0 R /Annots [5 0 R] >>',
+            $objects[2]->contents,
+        );
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Highlight /Rect [40 500 120 510] /P 3 0 R /QuadPoints [40 510 120 510 40 500 120 500] /C [1 1 0] /Contents (Markiert) /T (QA) >>',
+            $objects[4]->contents,
+        );
+    }
+
     public function testItAddsInternalLinkDestinationsToPageObjects(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -483,6 +526,51 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 120 16]', $serialized);
     }
 
+    public function testItBuildsPdfA2uTextAnnotationsWithAppearanceStreams(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->text('PDF/A-2u Regression Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /Text', $serialized);
+        self::assertStringContainsString('/AP << /N ', $serialized);
+        self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 18 18]', $serialized);
+    }
+
+    public function testItBuildsPdfA2uHighlightAnnotationsWithAppearanceStreams(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->text('PDF/A-2u Regression Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->highlightAnnotation(40, 500, 80, 10, Color::rgb(1, 1, 0), 'Markiert', 'QA')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /Highlight', $serialized);
+        self::assertStringContainsString('/QuadPoints [40 510 120 510 40 500 120 500]', $serialized);
+        self::assertStringContainsString('/AP << /N ', $serialized);
+        self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 80 10]', $serialized);
+    }
+
     public function testItRejectsSimpleEmbeddedFontsForPdfAProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -589,6 +677,35 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame(1, substr_count($serialized, '/Type /StructElem /S /Link'));
         self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
         self::assertStringContainsString('/Alt (Read docs)', $serialized);
+    }
+
+    public function testItUsesSeparateAccessibleLabelsForPdfUaTextLinks(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textSegments([
+                TextSegment::link(
+                    'Docs',
+                    TextLink::externalUrl(
+                        'https://example.com/docs',
+                        contents: 'Open docs section',
+                        accessibleLabel: 'Read the documentation section',
+                    ),
+                ),
+            ])
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/Contents (Open docs section)', $serialized);
+        self::assertStringContainsString('/Alt (Read the documentation section)', $serialized);
     }
 
     public function testItBuildsSoftMaskImageObjects(): void

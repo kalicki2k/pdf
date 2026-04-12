@@ -57,11 +57,32 @@ interface DocumentBuilder
 
     public function imageFile(string $path, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;
 
-    public function link(string $url, float $x, float $y, float $width, float $height, ?string $contents = null): self;
+    public function textAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $contents,
+        ?string $title = null,
+        string $icon = 'Note',
+        bool $open = false,
+    ): self;
 
-    public function linkToNamedDestination(string $name, float $x, float $y, float $width, float $height, ?string $contents = null): self;
+    public function highlightAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?\Kalle\Pdf\Color\Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self;
 
-    public function linkToPage(int $pageNumber, float $x, float $y, float $width, float $height, ?string $contents = null): self;
+    public function link(string $url, float $x, float $y, float $width, float $height, ?string $contents = null, ?string $accessibleLabel = null): self;
+
+    public function linkToNamedDestination(string $name, float $x, float $y, float $width, float $height, ?string $contents = null, ?string $accessibleLabel = null): self;
+
+    public function linkToPage(int $pageNumber, float $x, float $y, float $width, float $height, ?string $contents = null, ?string $accessibleLabel = null): self;
 
     public function linkToPagePosition(
         int $pageNumber,
@@ -72,6 +93,7 @@ interface DocumentBuilder
         float $width,
         float $height,
         ?string $contents = null,
+        ?string $accessibleLabel = null,
     ): self;
 
     public function namedDestination(string $name): self;
