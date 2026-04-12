@@ -227,16 +227,20 @@ final readonly class EmbeddedFontDefinition
 
     public function fontFileStreamContents(): string
     {
-        $data = $this->source->data;
+        return $this->fontFileStreamDictionaryContents()
+            . "\nstream\n"
+            . $this->fontFileStreamData()
+            . "\nendstream";
+    }
 
-        return match ($this->metadata->outlineType) {
-            OpenTypeOutlineType::TRUE_TYPE => '<< /Length ' . strlen($data) . ' /Length1 ' . strlen($data) . " >>\nstream\n"
-                . $data
-                . "\nendstream",
-            OpenTypeOutlineType::CFF => '<< /Length ' . strlen($data) . ' /Subtype /OpenType >>' . "\nstream\n"
-                . $data
-                . "\nendstream",
-        };
+    public function fontFileStreamDictionaryContents(): string
+    {
+        return $this->fontFileStreamDictionaryContentsForData($this->fontFileStreamData());
+    }
+
+    public function fontFileStreamData(): string
+    {
+        return $this->source->data;
     }
 
     /**
@@ -252,15 +256,30 @@ final readonly class EmbeddedFontDefinition
      */
     public function unicodeSubsetFontFileStreamContentsForGlyphs(array $glyphs): string
     {
+        return $this->unicodeSubsetFontFileStreamDictionaryContentsForGlyphs($glyphs)
+            . "\nstream\n"
+            . $this->unicodeSubsetFontFileStreamDataForGlyphs($glyphs)
+            . "\nendstream";
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeSubsetFontFileStreamDictionaryContentsForGlyphs(array $glyphs): string
+    {
+        return $this->fontFileStreamDictionaryContentsForData($this->unicodeSubsetFontFileStreamDataForGlyphs($glyphs));
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeSubsetFontFileStreamDataForGlyphs(array $glyphs): string
+    {
         if ($this->metadata->outlineType === OpenTypeOutlineType::CFF) {
-            $data = new OpenTypeCffSubsetter($this->parser)->subset(
+            return new OpenTypeCffSubsetter($this->parser)->subset(
                 array_map(static fn (EmbeddedGlyph $glyph): int => $glyph->unicodeCodePoint, $glyphs),
                 $this->subsetPostScriptNameForGlyphs($glyphs),
             );
-
-            return '<< /Length ' . strlen($data) . ' /Subtype /OpenType >>' . "\nstream\n"
-                . $data
-                . "\nendstream";
         }
 
         $glyphIds = [0];
@@ -269,19 +288,23 @@ final readonly class EmbeddedFontDefinition
             $glyphIds[] = $glyph->glyphId;
         }
 
-        $data = new OpenTypeTrueTypeSubsetter($this->parser)->subset($glyphIds);
-
-        return '<< /Length ' . strlen($data) . ' /Length1 ' . strlen($data) . " >>\nstream\n"
-            . $data
-            . "\nendstream";
+        return new OpenTypeTrueTypeSubsetter($this->parser)->subset($glyphIds);
     }
 
     public function fontDescriptorContents(int $fontFileObjectId, ?string $fontName = null): string
     {
+        return $this->fontDescriptorContentsWithCidSet($fontFileObjectId, $fontName);
+    }
+
+    public function fontDescriptorContentsWithCidSet(
+        int $fontFileObjectId,
+        ?string $fontName = null,
+        ?int $cidSetObjectId = null,
+    ): string {
         $flags = 32 | ($this->metadata->italicAngle !== 0.0 ? 64 : 0);
         $bbox = $this->metadata->fontBoundingBox;
 
-        return '<< /Type /FontDescriptor'
+        $contents = '<< /Type /FontDescriptor'
             . ' /FontName /' . ($fontName ?? $this->metadata->postScriptName)
             . ' /Flags ' . $flags
             . ' /FontBBox ['
@@ -295,8 +318,13 @@ final readonly class EmbeddedFontDefinition
             . ' /CapHeight ' . $this->pdfMetric($this->metadata->capHeight)
             . ' /StemV 80'
             . ' /' . ($this->metadata->outlineType === OpenTypeOutlineType::CFF ? 'FontFile3' : 'FontFile2')
-            . ' ' . $fontFileObjectId . ' 0 R'
-            . ' >>';
+            . ' ' . $fontFileObjectId . ' 0 R';
+
+        if ($cidSetObjectId !== null) {
+            $contents .= ' /CIDSet ' . $cidSetObjectId . ' 0 R';
+        }
+
+        return $contents . ' >>';
     }
 
     public function fontObjectContents(int $fontDescriptorObjectId): string
@@ -433,12 +461,31 @@ final readonly class EmbeddedFontDefinition
      */
     public function unicodeCidToGidMapStreamContentsForGlyphs(array $glyphs): string
     {
+        return $this->unicodeCidToGidMapStreamDictionaryContentsForGlyphs($glyphs)
+            . "\nstream\n"
+            . $this->unicodeCidToGidMapStreamDataForGlyphs($glyphs)
+            . "\nendstream";
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeCidToGidMapStreamDictionaryContentsForGlyphs(array $glyphs): string
+    {
+        return '<< /Length ' . strlen($this->unicodeCidToGidMapStreamDataForGlyphs($glyphs)) . ' >>';
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeCidToGidMapStreamDataForGlyphs(array $glyphs): string
+    {
         if ($this->metadata->outlineType === OpenTypeOutlineType::CFF) {
             throw new InvalidArgumentException('CIDToGIDMap is only used for TrueType CID fonts.');
         }
 
         if ($glyphs === []) {
-            return "<< /Length 0 >>\nstream\nendstream";
+            return '';
         }
 
         $map = pack('n', 0);
@@ -447,9 +494,47 @@ final readonly class EmbeddedFontDefinition
             $map .= pack('n', $glyph->glyphId);
         }
 
-        return '<< /Length ' . strlen($map) . " >>\nstream\n"
-            . $map
+        return $map;
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeCidSetStreamContentsForGlyphs(array $glyphs): string
+    {
+        return $this->unicodeCidSetStreamDictionaryContentsForGlyphs($glyphs)
+            . "\nstream\n"
+            . $this->unicodeCidSetStreamDataForGlyphs($glyphs)
             . "\nendstream";
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeCidSetStreamDictionaryContentsForGlyphs(array $glyphs): string
+    {
+        return '<< /Length ' . strlen($this->unicodeCidSetStreamDataForGlyphs($glyphs)) . ' >>';
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeCidSetStreamDataForGlyphs(array $glyphs): string
+    {
+        $highestCid = count($glyphs);
+        $byteLength = intdiv($highestCid, 8) + 1;
+        $cidSet = str_repeat("\x00", $byteLength);
+
+        $cidSet[0] = $cidSet[0] | "\x80";
+
+        foreach (array_keys($glyphs) as $index) {
+            $cid = $index + 1;
+            $byteIndex = intdiv($cid, 8);
+            $bitMask = 1 << (7 - ($cid % 8));
+            $cidSet[$byteIndex] = $cidSet[$byteIndex] | chr($bitMask);
+        }
+
+        return $cidSet;
     }
 
     /**
@@ -497,6 +582,25 @@ final readonly class EmbeddedFontDefinition
      */
     public function unicodeToUnicodeStreamContentsForGlyphs(array $glyphs): string
     {
+        return $this->unicodeToUnicodeStreamDictionaryContentsForGlyphs($glyphs)
+            . "\nstream\n"
+            . $this->unicodeToUnicodeStreamDataForGlyphs($glyphs)
+            . 'endstream';
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeToUnicodeStreamDictionaryContentsForGlyphs(array $glyphs): string
+    {
+        return '<< /Length ' . strlen($this->unicodeToUnicodeStreamDataForGlyphs($glyphs)) . ' >>';
+    }
+
+    /**
+     * @param list<EmbeddedGlyph> $glyphs
+     */
+    public function unicodeToUnicodeStreamDataForGlyphs(array $glyphs): string
+    {
         $lines = [
             '/CIDInit /ProcSet findresource begin',
             '12 dict begin',
@@ -525,11 +629,15 @@ final readonly class EmbeddedFontDefinition
             'end',
         ];
 
-        $contents = implode("\n", $lines) . "\n";
+        return implode("\n", $lines) . "\n";
+    }
 
-        return '<< /Length ' . strlen($contents) . " >>\nstream\n"
-            . $contents
-            . 'endstream';
+    private function fontFileStreamDictionaryContentsForData(string $data): string
+    {
+        return match ($this->metadata->outlineType) {
+            OpenTypeOutlineType::TRUE_TYPE => '<< /Length ' . strlen($data) . ' /Length1 ' . strlen($data) . ' >>',
+            OpenTypeOutlineType::CFF => '<< /Length ' . strlen($data) . ' /Subtype /OpenType >>',
+        };
     }
 
     /**
@@ -579,7 +687,9 @@ final readonly class EmbeddedFontDefinition
         $prefix = '';
 
         for ($index = 0; $index < 6; $index++) {
-            $prefix .= chr(65 + (hexdec($hash[$index]) % 26));
+            /** @var int<65, 90> $prefixCode */
+            $prefixCode = 65 + (hexdec($hash[$index]) % 26);
+            $prefix .= chr($prefixCode);
         }
 
         return $prefix . '+' . $this->metadata->postScriptName;

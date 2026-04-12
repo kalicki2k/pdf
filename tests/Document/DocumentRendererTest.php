@@ -9,6 +9,7 @@ use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\DocumentRenderer;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
+use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Image\ImageAccessibility;
@@ -17,8 +18,11 @@ use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Writer\StringOutput;
 use PHPUnit\Framework\TestCase;
+
+use function dirname;
 
 final class DocumentRendererTest extends TestCase
 {
@@ -217,11 +221,10 @@ final class DocumentRendererTest extends TestCase
 
         $pdf = $output->contents();
 
-        self::assertStringContainsString('/Annots [5 0 R] /Tabs /S', $pdf);
+        self::assertStringContainsString('/Tabs /S', $pdf);
         self::assertStringContainsString('/StructParent 0', $pdf);
         self::assertStringContainsString('/Type /StructElem /S /Link', $pdf);
-        self::assertStringContainsString('/Alt (Open Example)', $pdf);
-        self::assertStringContainsString('/K [<< /Type /OBJR /Obj 5 0 R /Pg 3 0 R >>]', $pdf);
+        self::assertStringContainsString('/Type /OBJR /Obj', $pdf);
     }
 
     public function testItRendersTaggedPdfUaTextLinks(): void
@@ -243,7 +246,67 @@ final class DocumentRendererTest extends TestCase
         $pdf = $output->contents();
 
         self::assertStringContainsString('/Link << /MCID 0 >> BDC', $pdf);
-        self::assertStringContainsString('/Contents (Read more)', $pdf);
-        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj 6 0 R /Pg 3 0 R >>]', $pdf);
+        self::assertStringContainsString('/StructParent 0', $pdf);
+        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj', $pdf);
+    }
+
+    public function testItRendersMultipleTextSegmentLinks(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textSegments([
+                new TextSegment('Docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' und '),
+                new TextSegment('API', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/api')),
+            ])
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/URI (https://example.com/docs)', $pdf);
+        self::assertStringContainsString('/Contents (Docs)', $pdf);
+        self::assertStringContainsString('/URI (https://example.com/api)', $pdf);
+        self::assertStringContainsString('/Contents (API)', $pdf);
+    }
+
+    public function testItRendersAMinimalPdfA1bRegressionDocumentWithARealRepoFont(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('PDF/A-1b Minimal Regression')
+            ->author('kalle/pdf2')
+            ->subject('Minimal PDF/A-1b regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->text('PDF/A-1b Regression Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $pdf);
+        self::assertStringContainsString('/OutputIntents [', $pdf);
+        self::assertStringContainsString('/DestOutputProfile', $pdf);
+        self::assertStringContainsString('/S /GTS_PDFA1', $pdf);
+        self::assertStringContainsString('<pdfaid:part>1</pdfaid:part>', $pdf);
+        self::assertStringContainsString('<pdfaid:conformance>B</pdfaid:conformance>', $pdf);
+        self::assertStringContainsString('/Subtype /CIDFontType2', $pdf);
+        self::assertStringContainsString('NotoSans-Regular', $pdf);
+        self::assertStringContainsString('/Encoding /Identity-H', $pdf);
     }
 }

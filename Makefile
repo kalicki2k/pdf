@@ -57,6 +57,10 @@ validate-pdfua:
 	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-pdfua PDF=path/to/file.pdf"; exit 1; fi
 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose --defaultflavour ua1 --flavour ua1 "/app/$(PDF)"
 
+test-pdfa1b-regression:
+	$(DOCKER_COMPOSE) run --rm php php bin/generate-pdfa1b-regression.php /app/var/pdfa-regression/pdf-a-1b-minimal.pdf
+	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose /app/var/pdfa-regression/pdf-a-1b-minimal.pdf
+
 check-pdf:
 	@if [ -z "$(PDF)" ]; then echo "Usage: make check-pdf PDF=path/to/file.pdf"; exit 1; fi
 	$(MAKE) check-qpdf PDF="$(PDF)"

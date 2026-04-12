@@ -23,12 +23,23 @@ final readonly class IndirectObject
         string $streamContents,
         bool $encryptable = true,
     ): self {
+        $normalizedStreamContents = str_ends_with($streamContents, "\n")
+            ? substr($streamContents, 0, -1)
+            : $streamContents;
+        $normalizedStreamDictionaryContents = preg_replace(
+            '/\/Length\s+\d+/',
+            '/Length ' . strlen($normalizedStreamContents),
+            $streamDictionaryContents,
+            1,
+        ) ?? $streamDictionaryContents;
+        $endstreamSeparator = $normalizedStreamContents === '' ? '' : "\n";
+
         return new self(
             objectId: $objectId,
-            contents: $streamDictionaryContents . "\nstream\n" . $streamContents . 'endstream',
+            contents: $normalizedStreamDictionaryContents . "\nstream\n" . $normalizedStreamContents . $endstreamSeparator . 'endstream',
             encryptable: $encryptable,
-            streamDictionaryContents: $streamDictionaryContents,
-            streamContents: $streamContents,
+            streamDictionaryContents: $normalizedStreamDictionaryContents,
+            streamContents: $normalizedStreamContents,
         );
     }
 
@@ -63,6 +74,10 @@ final readonly class IndirectObject
 
         $streamStart = $streamOffset + strlen($streamMarker);
         $streamEnd = strrpos($contents, "\nendstream");
+
+        if ($streamEnd === false) {
+            $streamEnd = strrpos($contents, 'endstream');
+        }
 
         if ($streamEnd === false || $streamEnd < $streamStart) {
             return [null, null];

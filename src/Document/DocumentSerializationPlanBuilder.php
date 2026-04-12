@@ -75,6 +75,8 @@ final class DocumentSerializationPlanBuilder
         $toUnicodeObjectIds = [];
         /** @var array<string, int> $cidToGidMapObjectIds */
         $cidToGidMapObjectIds = [];
+        /** @var array<string, int> $cidSetObjectIds */
+        $cidSetObjectIds = [];
         /** @var array<string, int> $imageObjectIds */
         $imageObjectIds = [];
         /** @var array<int, list<int>> $pageAnnotationObjectIds */
@@ -105,6 +107,8 @@ final class DocumentSerializationPlanBuilder
                             $fontFileObjectIds[$fontKey] = $nextObjectId;
                             $nextObjectId++;
                             $toUnicodeObjectIds[$fontKey] = $nextObjectId;
+                            $nextObjectId++;
+                            $cidSetObjectIds[$fontKey] = $nextObjectId;
                             $nextObjectId++;
 
                             if ($embeddedFont->metadata->outlineType === OpenTypeOutlineType::TRUE_TYPE) {
@@ -252,6 +256,7 @@ final class DocumentSerializationPlanBuilder
                     $cidFontObjectId = $cidFontObjectIds[$fontKey];
                     $toUnicodeObjectId = $toUnicodeObjectIds[$fontKey];
                     $cidToGidMapObjectId = $cidToGidMapObjectIds[$fontKey] ?? null;
+                    $cidSetObjectId = $cidSetObjectIds[$fontKey] ?? null;
                     $subsetFontName = $embeddedFont->unicodeBaseFontNameForGlyphs($embeddedGlyphs);
 
                     $objects[] = new IndirectObject(
@@ -268,20 +273,31 @@ final class DocumentSerializationPlanBuilder
                     );
                     $objects[] = new IndirectObject(
                         $fontDescriptorObjectId,
-                        $embeddedFont->fontDescriptorContents($fontFileObjectId, $subsetFontName),
+                        $embeddedFont->fontDescriptorContentsWithCidSet($fontFileObjectId, $subsetFontName, $cidSetObjectId),
                     );
-                    $objects[] = new IndirectObject(
+                    $objects[] = IndirectObject::stream(
                         $fontFileObjectId,
-                        $embeddedFont->unicodeSubsetFontFileStreamContentsForGlyphs($embeddedGlyphs),
+                        $embeddedFont->unicodeSubsetFontFileStreamDictionaryContentsForGlyphs($embeddedGlyphs),
+                        $embeddedFont->unicodeSubsetFontFileStreamDataForGlyphs($embeddedGlyphs),
                     );
-                    $objects[] = new IndirectObject(
+                    $objects[] = IndirectObject::stream(
                         $toUnicodeObjectId,
-                        $embeddedFont->unicodeToUnicodeStreamContentsForGlyphs($embeddedGlyphs),
+                        $embeddedFont->unicodeToUnicodeStreamDictionaryContentsForGlyphs($embeddedGlyphs),
+                        $embeddedFont->unicodeToUnicodeStreamDataForGlyphs($embeddedGlyphs),
                     );
                     if ($cidToGidMapObjectId !== null) {
-                        $objects[] = new IndirectObject(
+                        $objects[] = IndirectObject::stream(
                             $cidToGidMapObjectId,
-                            $embeddedFont->unicodeCidToGidMapStreamContentsForGlyphs($embeddedGlyphs),
+                            $embeddedFont->unicodeCidToGidMapStreamDictionaryContentsForGlyphs($embeddedGlyphs),
+                            $embeddedFont->unicodeCidToGidMapStreamDataForGlyphs($embeddedGlyphs),
+                        );
+                    }
+
+                    if ($cidSetObjectId !== null) {
+                        $objects[] = IndirectObject::stream(
+                            $cidSetObjectId,
+                            $embeddedFont->unicodeCidSetStreamDictionaryContentsForGlyphs($embeddedGlyphs),
+                            $embeddedFont->unicodeCidSetStreamDataForGlyphs($embeddedGlyphs),
                         );
                     }
 
@@ -290,7 +306,11 @@ final class DocumentSerializationPlanBuilder
 
                 $objects[] = new IndirectObject($fontObjectId, $embeddedFont->fontObjectContents($fontDescriptorObjectId));
                 $objects[] = new IndirectObject($fontDescriptorObjectId, $embeddedFont->fontDescriptorContents($fontFileObjectId));
-                $objects[] = new IndirectObject($fontFileObjectId, $embeddedFont->fontFileStreamContents());
+                $objects[] = IndirectObject::stream(
+                    $fontFileObjectId,
+                    $embeddedFont->fontFileStreamDictionaryContents(),
+                    $embeddedFont->fontFileStreamData(),
+                );
 
                 continue;
             }
@@ -299,11 +319,12 @@ final class DocumentSerializationPlanBuilder
         }
 
         foreach ($this->collectImages($document->pages) as $imageKey => $imageSource) {
-            $objects[] = new IndirectObject(
+            $objects[] = IndirectObject::stream(
                 $imageObjectIds[$imageKey],
-                $imageSource->pdfObjectContents(
+                $imageSource->pdfObjectDictionaryContents(
                     $imageSource->softMask !== null ? $imageObjectIds[$imageSource->softMask->key()] : null,
                 ),
+                $imageSource->pdfObjectStreamContents(),
             );
         }
 
@@ -485,11 +506,7 @@ final class DocumentSerializationPlanBuilder
     {
         if ($document->profile->requiresAnnotationAppearanceStreams()) {
             foreach ($document->pages as $pageIndex => $page) {
-                foreach ($page->annotations as $annotation) {
-                    if ($annotation instanceof LinkAnnotation) {
-                        continue;
-                    }
-
+                foreach ($page->annotations as $_annotation) {
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page %d.',
                         $document->profile->name(),
@@ -501,7 +518,10 @@ final class DocumentSerializationPlanBuilder
 
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
-                if (!$document->profile->supportsCurrentPageAnnotationsImplementation() && !$annotation instanceof LinkAnnotation) {
+                $supportsCurrentAnnotation = $document->profile->supportsCurrentPageAnnotationsImplementation()
+                    || ($annotation instanceof LinkAnnotation && $document->profile->requiresTaggedLinkAnnotations());
+
+                if (!$supportsCurrentAnnotation) {
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s does not support the current page annotation implementation on page %d.',
                         $document->profile->name(),
@@ -849,12 +869,21 @@ final class DocumentSerializationPlanBuilder
 
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->fontResources as $fontIndex => $pageFont) {
-                if ($pageFont->isEmbedded()) {
+                if (!$pageFont->isEmbedded()) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s requires embedded fonts. Found standard font "%s" on page %d.',
+                        $document->profile->name(),
+                        $pageFont->name,
+                        $pageIndex + 1,
+                    ));
+                }
+
+                if (!$document->profile->requiresEmbeddedUnicodeFonts() || $pageFont->usesUnicodeCids()) {
                     continue;
                 }
 
                 throw new InvalidArgumentException(sprintf(
-                    'Profile %s requires embedded fonts. Found standard font "%s" on page %d.',
+                    'Profile %s requires embedded Unicode fonts. Found simple embedded font "%s" on page %d.',
                     $document->profile->name(),
                     $pageFont->name,
                     $pageIndex + 1,

@@ -30,6 +30,7 @@ use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
 use function preg_match;
@@ -128,7 +129,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertCount(6, $objects);
         self::assertSame('<< /Type /Pages /Count 2 /Kids [3 0 R 5 0 R] >>', $objects[1]->contents);
         self::assertSame('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 4 0 R >>', $objects[2]->contents);
-        self::assertSame("<< /Length 4 >>\nstream\nq\nQ\nendstream", $objects[3]->contents);
+        self::assertSame("<< /Length 3 >>\nstream\nq\nQ\nendstream", $objects[3]->contents);
         self::assertSame('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 419.528 595.276] /Resources << >> /Contents 6 0 R >>', $objects[4]->contents);
         self::assertSame("<< /Length 0 >>\nstream\nendstream", $objects[5]->contents);
     }
@@ -327,6 +328,8 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
         self::assertStringContainsString('/Subtype /Image', $objects[4]->contents);
         self::assertStringContainsString('/Filter /DCTDecode', $objects[4]->contents);
+        self::assertNotNull($objects[4]->streamDictionaryContents);
+        self::assertSame('jpeg-bytes', $objects[4]->streamContents);
     }
 
     public function testItAddsLinkAnnotationsToPageObjects(): void
@@ -401,7 +404,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Dest /intro', $serialized);
     }
 
-    public function testItRejectsCurrentLinkAnnotationsForPdfUaProfiles(): void
+    public function testItAddsTaggedPdfUaLinkAnnotations(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -411,10 +414,16 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('does not support the current page annotation implementation');
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
 
-        $builder->build($document);
+        self::assertStringContainsString('/Tabs /S', $serialized);
+        self::assertStringContainsString('/StructParent 0', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Link', $serialized);
+        self::assertStringContainsString('/Type /OBJR /Obj', $serialized);
     }
 
     public function testItRejectsPdfUaLinkAnnotationsWithoutAlternativeText(): void
@@ -428,7 +437,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('does not support the current page annotation implementation');
+        $this->expectExceptionMessage('requires alternative text for link annotation 1 on page 1');
 
         $builder->build($document);
     }
@@ -451,7 +460,24 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
-    public function testItRejectsCurrentTaggedTextLinksForPdfUaProfiles(): void
+    public function testItRejectsSimpleEmbeddedFontsForPdfAProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('ASCII only', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('requires embedded Unicode fonts');
+
+        $builder->build($document);
+    }
+
+    public function testItAddsTaggedPdfUaTextLinks(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -463,10 +489,38 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ))
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('does not support the current page annotation implementation');
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
 
-        $builder->build($document);
+        self::assertStringContainsString('/Link << /MCID 0 >> BDC', $serialized);
+        self::assertStringContainsString('/StructParent 0', $serialized);
+        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj', $serialized);
+    }
+
+    public function testItAddsMultipleTextSegmentLinksToSerialization(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->textSegments([
+                new TextSegment('Docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' und '),
+                new TextSegment('API', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/api')),
+            ])
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/URI (https://example.com/docs)', $serialized);
+        self::assertStringContainsString('/Contents (Docs)', $serialized);
+        self::assertStringContainsString('/URI (https://example.com/api)', $serialized);
+        self::assertStringContainsString('/Contents (API)', $serialized);
     }
 
     public function testItBuildsSoftMaskImageObjects(): void
@@ -569,7 +623,8 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
             self::assertStringContainsString('/OutputConditionIdentifier (Custom RGB)', $objects[0]->contents);
             self::assertStringContainsString('/Info (Custom profile)', $objects[0]->contents);
-            self::assertSame("<< /N 4 /Length 3 >>\nstream\nICC\nendstream", $objects[5]->contents);
+            self::assertStringStartsWith("<< /N 4 /Length 3 >>\nstream\nICC", $objects[5]->contents);
+            self::assertStringEndsWith("endstream", $objects[5]->contents);
         } finally {
             @unlink($path);
         }
@@ -735,6 +790,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/FontDescriptor', $serialized);
         self::assertStringContainsString('/FontFile2', $serialized);
         self::assertStringContainsString('/BaseFont /TestFont-Regular', $serialized);
+        self::assertGreaterThanOrEqual(2, $this->countStreamObjects($objects));
     }
 
     public function testItBuildsEmbeddedCffFontObjects(): void
@@ -755,6 +811,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/FontFile3', $serialized);
         self::assertStringContainsString('/Subtype /OpenType', $serialized);
         self::assertStringContainsString('/BaseFont /TestCff-Regular', $serialized);
+        self::assertGreaterThanOrEqual(2, $this->countStreamObjects($objects));
     }
 
     public function testItBuildsUnicodeEmbeddedTrueTypeFontObjects(): void
@@ -783,6 +840,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('<0001> <0416>', $serialized);
         self::assertStringContainsString('<0001> <4E2D>', $serialized);
         self::assertStringContainsString('<0002> <D83DDE00>', $serialized);
+        self::assertTrue($this->containsStreamObject($objects, '/Length1'));
+        self::assertTrue($this->containsStreamObject($objects, '<0001> <0416>'));
+        self::assertGreaterThanOrEqual(3, $this->countStreamObjects($objects));
         preg_match('/\\/Length1 ([0-9]+)/', $serialized, $matches);
         self::assertArrayHasKey(1, $matches);
         self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()), (int) $matches[1]);
@@ -814,8 +874,44 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('<0001> <0416>', $serialized);
         self::assertStringContainsString('<0002> <4E2D>', $serialized);
         self::assertStringContainsString('<0003> <D83DDE00>', $serialized);
+        self::assertTrue($this->containsStreamObject($objects, '/Subtype /OpenType'));
+        self::assertTrue($this->containsStreamObject($objects, '<0001> <0416>'));
+        self::assertGreaterThanOrEqual(2, $this->countStreamObjects($objects));
         preg_match('/<< \\/Length ([0-9]+) \\/Subtype \\/OpenType >>/', $serialized, $matches);
         self::assertArrayHasKey(1, $matches);
         self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()), (int) $matches[1]);
+    }
+
+    /**
+     * @param list<object{contents: string, streamDictionaryContents: ?string, streamContents: ?string}> $objects
+     */
+    private function containsStreamObject(array $objects, string $needle): bool
+    {
+        foreach ($objects as $object) {
+            if (str_contains($object->contents, $needle)) {
+                return true;
+            }
+
+            if ($object->streamDictionaryContents !== null && str_contains($object->streamDictionaryContents, $needle)) {
+                return true;
+            }
+
+            if ($object->streamContents !== null && str_contains($object->streamContents, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<object{streamDictionaryContents: ?string, streamContents: ?string}> $objects
+     */
+    private function countStreamObjects(array $objects): int
+    {
+        return count(array_filter(
+            $objects,
+            static fn (object $object): bool => $object->streamDictionaryContents !== null && $object->streamContents !== null,
+        ));
     }
 }

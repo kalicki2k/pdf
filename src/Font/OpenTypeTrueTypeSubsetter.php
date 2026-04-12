@@ -56,7 +56,9 @@ final readonly class OpenTypeTrueTypeSubsetter
                 continue;
             }
 
-            $tables[$tag] = $this->parser->tableBytes($tag);
+            $tables[$tag] = $tag === 'post'
+                ? $this->buildPostTable()
+                : $this->parser->tableBytes($tag);
         }
 
         [$glyfTable, $locaTable] = $this->buildGlyphTables($glyphIds, $maxGlyphId);
@@ -237,6 +239,20 @@ final readonly class OpenTypeTrueTypeSubsetter
         $table = substr_replace($table, pack('N', 0), 8, 4);
 
         return substr_replace($table, pack('n', 1), 50, 2);
+    }
+
+    private function buildPostTable(): string
+    {
+        $table = $this->parser->tableBytes('post');
+
+        if (strlen($table) < 32) {
+            return $table;
+        }
+
+        // Subset fonts do not preserve a meaningful glyph-name table. Emitting
+        // a minimal format 3.0 post table keeps the font program internally
+        // consistent for validators without carrying stale glyph-name metadata.
+        return pack('N', 0x00030000) . substr($table, 4, 28);
     }
 
     /**
