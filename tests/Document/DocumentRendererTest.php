@@ -991,6 +991,28 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/AP << /N ', $pdf);
     }
 
+    public function testItRendersTaggedPdfA1aInertPushButtons(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->pushButton('ack', 'Acknowledge', 40, 380, 120, 18, 'Acknowledge')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/FT /Btn', $pdf);
+        self::assertStringContainsString('/MK << /CA (Acknowledge) >>', $pdf);
+        self::assertStringNotContainsString('/A << /S /URI', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Form', $pdf);
+    }
+
     public function testItRendersASignatureField(): void
     {
         $document = DefaultDocumentBuilder::make()

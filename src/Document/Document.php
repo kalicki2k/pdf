@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureElement;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Encryption\Encryption;
@@ -42,6 +43,10 @@ final readonly class Document
     public ?AcroForm $acroForm;
     /** @var list<TaggedList> */
     public array $taggedLists;
+    /** @var list<TaggedStructureElement> */
+    public array $taggedStructureElements;
+    /** @var list<string> */
+    public array $taggedDocumentChildKeys;
     public Debugger $debugger;
 
     public static function make(): DocumentBuilder
@@ -58,6 +63,8 @@ final readonly class Document
      * @param list<Outline>|null $outlines
      * @param AcroForm|null $acroForm
      * @param list<TaggedList>|null $taggedLists
+     * @param list<TaggedStructureElement>|null $taggedStructureElements
+     * @param list<string>|null $taggedDocumentChildKeys
      */
     public function __construct(
         ?Profile $profile = null,
@@ -77,6 +84,8 @@ final readonly class Document
         ?array $outlines = null,
         ?AcroForm $acroForm = null,
         ?array $taggedLists = null,
+        ?array $taggedStructureElements = null,
+        ?array $taggedDocumentChildKeys = null,
         ?Debugger $debugger = null,
     ) {
         $this->profile = $profile ?? Profile::standard();
@@ -96,6 +105,8 @@ final readonly class Document
         $this->outlines = $outlines ?? [];
         $this->acroForm = $acroForm;
         $this->taggedLists = $taggedLists ?? [];
+        $this->taggedStructureElements = $taggedStructureElements ?? [];
+        $this->taggedDocumentChildKeys = $taggedDocumentChildKeys ?? [];
         $this->debugger = $debugger ?? Debugger::disabled();
     }
 

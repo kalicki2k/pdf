@@ -13,6 +13,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureElement;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
@@ -41,7 +42,48 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('supports only tagged text blocks with tags [BlockQuote, Code, H1, H2, H3, H4, H5, H6, P, Quote, Span]');
+        $this->expectExceptionMessage('supports only tagged text blocks with tags [BibEntry, BlockQuote, Code, Em, H1, H2, H3, H4, H5, H6, Note, P, Quote, Reference, Span, Strong, Title]');
+
+        (new DocumentSerializationPlanBuilder())->build($document);
+    }
+
+    public function testItRejectsEmptyPdfA1aTaggedStructureContainers(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA1a(),
+            title: 'Archive Copy',
+            language: 'de-DE',
+            pages: [$this->textPage('Paragraph Привет')],
+            taggedStructureElements: [
+                new TaggedStructureElement('struct:0', 'Sect', []),
+            ],
+            taggedDocumentChildKeys: ['struct:0'],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('does not allow empty tagged structure container "struct:0"');
+
+        (new DocumentSerializationPlanBuilder())->build($document);
+    }
+
+    public function testItRejectsInvalidPdfA1aTaggedStructureChildRelationships(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA1a(),
+            title: 'Archive Copy',
+            language: 'de-DE',
+            pages: [$this->textPage('Paragraph Привет')],
+            taggedTextBlocks: [
+                new TaggedTextBlock('H1', 0, 0, 'text:0'),
+            ],
+            taggedStructureElements: [
+                new TaggedStructureElement('struct:0', 'TOC', ['text:0']),
+            ],
+            taggedDocumentChildKeys: ['struct:0'],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Tagged PDF structure type "TOC" does not allow child "H1"');
 
         (new DocumentSerializationPlanBuilder())->build($document);
     }

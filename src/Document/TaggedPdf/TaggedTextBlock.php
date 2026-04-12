@@ -10,6 +10,7 @@ final readonly class TaggedTextBlock
         public string $tag,
         public int $pageIndex,
         public int $markedContentId,
+        public ?string $key = null,
     ) {
     }
 }

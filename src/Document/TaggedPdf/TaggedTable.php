@@ -18,6 +18,7 @@ final readonly class TaggedTable
         public array $headerRows = [],
         public array $bodyRows = [],
         public array $footerRows = [],
+        public ?string $key = null,
     ) {
     }
 

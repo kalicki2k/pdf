@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\DocumentBuilder;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
@@ -194,6 +195,27 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->build();
 
         self::assertSame('BlockQuote', $document->taggedTextBlocks[0]->tag);
+    }
+
+    public function testItBuildsGenericTaggedStructureContainers(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->taggedStructure('Sect', static fn (DocumentBuilder $builder): DocumentBuilder => $builder
+                ->heading('Kapitel', 1, new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                ))
+                ->taggedText('Betont', 'Strong', new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                )))
+            ->build();
+
+        self::assertCount(1, $document->taggedStructureElements);
+        self::assertSame('Sect', $document->taggedStructureElements[0]->tag);
+        self::assertSame(['struct:0'], $document->taggedDocumentChildKeys);
+        self::assertSame(['text:0', 'text:1'], $document->taggedStructureElements[0]->childKeys);
     }
 
     public function testItBuildsADocumentWithACustomPdfAOutputIntent(): void

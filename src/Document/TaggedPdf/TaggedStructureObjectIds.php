@@ -21,6 +21,7 @@ final readonly class TaggedStructureObjectIds
      * @param array<string, int> $tableSectionStructElemObjectIds
      * @param array<string, int> $rowStructElemObjectIds
      * @param array<string, int> $cellStructElemObjectIds
+     * @param array<string, int> $genericStructElemObjectIds
      * @param array<string, int> $linkStructElemObjectIds
      * @param array<string, int> $annotationStructElemObjectIds
      */
@@ -36,6 +37,7 @@ final readonly class TaggedStructureObjectIds
         public array $tableSectionStructElemObjectIds,
         public array $rowStructElemObjectIds,
         public array $cellStructElemObjectIds,
+        public array $genericStructElemObjectIds,
         public array $linkStructElemObjectIds,
         public array $annotationStructElemObjectIds,
         public int $nextObjectId,
@@ -65,6 +67,7 @@ final readonly class TaggedStructureObjectIds
         $tableSectionStructElemObjectIds = [];
         $rowStructElemObjectIds = [];
         $cellStructElemObjectIds = [];
+        $genericStructElemObjectIds = [];
         $linkStructElemObjectIds = [];
         $annotationStructElemObjectIds = [];
 
@@ -87,7 +90,7 @@ final readonly class TaggedStructureObjectIds
         }
 
         foreach ($document->taggedTables as $taggedTable) {
-            $tableStructElemObjectIds[self::tableKey($taggedTable->tableId)] = $nextObjectId++;
+            $tableStructElemObjectIds[$taggedTable->key ?? self::tableKey($taggedTable->tableId)] = $nextObjectId++;
 
             if ($taggedTable->hasCaption()) {
                 $captionStructElemObjectIds[self::tableCaptionKey($taggedTable->tableId)] = $nextObjectId++;
@@ -121,6 +124,10 @@ final readonly class TaggedStructureObjectIds
             $annotationStructElemObjectIds[$annotationEntry['key']] = $nextObjectId++;
         }
 
+        foreach ($structure->containerEntries as $containerEntry) {
+            $genericStructElemObjectIds[$containerEntry['key']] = $nextObjectId++;
+        }
+
         return new self(
             $figureStructElemObjectIds,
             $textStructElemObjectIds,
@@ -133,6 +140,7 @@ final readonly class TaggedStructureObjectIds
             $tableSectionStructElemObjectIds,
             $rowStructElemObjectIds,
             $cellStructElemObjectIds,
+            $genericStructElemObjectIds,
             $linkStructElemObjectIds,
             $annotationStructElemObjectIds,
             $nextObjectId,
@@ -148,6 +156,25 @@ final readonly class TaggedStructureObjectIds
             ?? $this->captionStructElemObjectIds[$key]
             ?? $this->cellStructElemObjectIds[$key]
             ?? throw new InvalidArgumentException("Unknown tagged page content key '$key'.");
+    }
+
+    public function resolveStructElemObjectId(string $key): int
+    {
+        return $this->genericStructElemObjectIds[$key]
+            ?? $this->figureStructElemObjectIds[$key]
+            ?? $this->textStructElemObjectIds[$key]
+            ?? $this->listStructElemObjectIds[$key]
+            ?? $this->listItemStructElemObjectIds[$key]
+            ?? $this->listLabelStructElemObjectIds[$key]
+            ?? $this->listBodyStructElemObjectIds[$key]
+            ?? $this->tableStructElemObjectIds[$key]
+            ?? $this->captionStructElemObjectIds[$key]
+            ?? $this->tableSectionStructElemObjectIds[$key]
+            ?? $this->rowStructElemObjectIds[$key]
+            ?? $this->cellStructElemObjectIds[$key]
+            ?? $this->linkStructElemObjectIds[$key]
+            ?? $this->annotationStructElemObjectIds[$key]
+            ?? throw new InvalidArgumentException("Unknown tagged structure key '$key'.");
     }
 
     public static function tableKey(int $tableId): string

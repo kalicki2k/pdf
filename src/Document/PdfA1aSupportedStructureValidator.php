@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureRoleRegistry;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
@@ -22,22 +23,10 @@ use function sprintf;
 
 final class PdfA1aSupportedStructureValidator
 {
-    /**
-     * @var list<string>
-     */
-    private const SUPPORTED_TEXT_TAGS = [
-        'BlockQuote',
-        'Code',
-        'H1',
-        'H2',
-        'H3',
-        'H4',
-        'H5',
-        'H6',
-        'P',
-        'Quote',
-        'Span',
-    ];
+    public function __construct(
+        private readonly TaggedStructureRoleRegistry $roleRegistry = new TaggedStructureRoleRegistry(),
+    ) {
+    }
 
     public function assertSupported(Document $document): void
     {
@@ -60,15 +49,17 @@ final class PdfA1aSupportedStructureValidator
         foreach ($document->taggedTables as $index => $table) {
             $this->assertSupportedTable($document, $table, $index);
         }
+
+        $this->assertSupportedGenericStructure($document);
     }
 
     private function assertSupportedTextBlock(Document $document, TaggedTextBlock $textBlock, int $index): void
     {
-        if (!in_array($textBlock->tag, self::SUPPORTED_TEXT_TAGS, true)) {
+        if (!in_array($textBlock->tag, $this->roleRegistry->supportedLeafTextTags(), true)) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s supports only tagged text blocks with tags [%s]. Tagged text block %d uses unsupported tag "%s".',
                 $document->profile->name(),
-                implode(', ', self::SUPPORTED_TEXT_TAGS),
+                implode(', ', $this->roleRegistry->supportedLeafTextTags()),
                 $index + 1,
                 $textBlock->tag,
             ));
@@ -86,6 +77,74 @@ final class PdfA1aSupportedStructureValidator
             'tagged figure %d',
             $index + 1,
         ));
+    }
+
+    private function assertSupportedGenericStructure(Document $document): void
+    {
+        $knownKeys = [];
+
+        foreach ($document->taggedTextBlocks as $index => $textBlock) {
+            $knownKeys[$textBlock->key ?? 'text:' . $index] = $textBlock->tag;
+        }
+
+        foreach ($document->pages as $pageIndex => $page) {
+            foreach ($page->images as $imageIndex => $image) {
+                if ($image->markedContentId === null) {
+                    continue;
+                }
+
+                $knownKeys[$image->structureKey ?? 'figure:image:' . $pageIndex . ':' . $imageIndex] = 'Figure';
+            }
+        }
+
+        foreach ($document->taggedFigures as $index => $figure) {
+            $knownKeys[$figure->key ?? 'figure:graphics:' . $index] = 'Figure';
+        }
+
+        foreach ($document->taggedLists as $list) {
+            $knownKeys[$list->key ?? 'list:' . $list->listId] = 'L';
+        }
+
+        foreach ($document->taggedTables as $table) {
+            $knownKeys[$table->key ?? 'table:' . $table->tableId] = 'Table';
+        }
+
+        foreach ($document->taggedStructureElements as $element) {
+            $knownKeys[$element->key] = $element->tag;
+        }
+
+        foreach ($document->taggedStructureElements as $element) {
+            $this->roleRegistry->assertKnownTag($element->tag);
+
+            if (!$this->roleRegistry->isContainerTag($element->tag)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s requires tagged structure element "%s" to use a supported container tag, got "%s".',
+                    $document->profile->name(),
+                    $element->key,
+                    $element->tag,
+                ));
+            }
+
+            if ($element->childKeys === []) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow empty tagged structure container "%s".',
+                    $document->profile->name(),
+                    $element->key,
+                ));
+            }
+
+            foreach ($element->childKeys as $childKey) {
+                if (!isset($knownKeys[$childKey])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s requires tagged structure child "%s" to reference a known tagged element.',
+                        $document->profile->name(),
+                        $childKey,
+                    ));
+                }
+
+                $this->roleRegistry->assertChildAllowed($element->tag, $knownKeys[$childKey]);
+            }
+        }
     }
 
     private function assertSupportedList(Document $document, TaggedList $list, int $index): void

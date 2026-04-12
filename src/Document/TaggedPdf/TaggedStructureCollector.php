@@ -7,6 +7,9 @@ namespace Kalle\Pdf\Document\TaggedPdf;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 
+use function array_key_exists;
+use function array_map;
+use function array_values;
 use function explode;
 use function ksort;
 use function sprintf;
@@ -20,6 +23,8 @@ final class TaggedStructureCollector
         $figureEntries = [];
         $textEntries = [];
         $listEntries = [];
+        $containerEntries = [];
+        $explicitParentKeys = [];
         $pageMarkedContentKeys = [];
 
         foreach ($document->pages as $pageIndex => $page) {
@@ -28,7 +33,7 @@ final class TaggedStructureCollector
                     continue;
                 }
 
-                $key = 'figure:' . $pageIndex . ':' . $imageIndex;
+                $key = $pageImage->structureKey ?? 'figure:image:' . $pageIndex . ':' . $imageIndex;
                 $this->addPageMarkedContentKey($pageMarkedContentKeys, $pageIndex, $pageImage->markedContentId, $key);
                 $figureEntries[] = [
                     'key' => $key,
@@ -40,7 +45,7 @@ final class TaggedStructureCollector
         }
 
         foreach ($document->taggedFigures as $index => $figure) {
-            $key = 'figure:graphics:' . $index . ':' . $figure->pageIndex . ':' . $figure->markedContentId;
+            $key = $figure->key ?? 'figure:graphics:' . $index;
             $this->addPageMarkedContentKey($pageMarkedContentKeys, $figure->pageIndex, $figure->markedContentId, $key);
             $figureEntries[] = [
                 'key' => $key,
@@ -51,7 +56,7 @@ final class TaggedStructureCollector
         }
 
         foreach ($document->taggedTextBlocks as $index => $textBlock) {
-            $key = 'text:' . $index . ':' . $textBlock->tag . ':' . $textBlock->pageIndex . ':' . $textBlock->markedContentId;
+            $key = $textBlock->key ?? 'text:' . $index;
             $this->addPageMarkedContentKey($pageMarkedContentKeys, $textBlock->pageIndex, $textBlock->markedContentId, $key);
             $textEntries[] = [
                 'key' => $key,
@@ -63,7 +68,7 @@ final class TaggedStructureCollector
 
         foreach ($document->taggedLists as $taggedList) {
             $listEntry = [
-                'key' => $this->listKey($taggedList->listId),
+                'key' => $taggedList->key ?? $this->listKey($taggedList->listId),
                 'listId' => $taggedList->listId,
                 'itemEntries' => [],
             ];
@@ -125,24 +130,53 @@ final class TaggedStructureCollector
             }
         }
 
-        $documentChildEntries = $this->collectDocumentChildEntries($pageMarkedContentKeys);
+        foreach ($document->taggedStructureElements as $element) {
+            $containerEntries[] = [
+                'key' => $element->key,
+                'tag' => $element->tag,
+                'childKeys' => $element->childKeys,
+            ];
+
+            foreach ($element->childKeys as $childKey) {
+                if (isset($explicitParentKeys[$childKey])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Tagged structure child "%s" is assigned to more than one parent container.',
+                        $childKey,
+                    ));
+                }
+
+                $explicitParentKeys[$childKey] = $element->key;
+            }
+        }
+
+        $documentChildKeysInOrder = $document->taggedDocumentChildKeys !== []
+            ? $document->taggedDocumentChildKeys
+            : $this->collectDocumentChildKeysInReadingOrder($pageMarkedContentKeys);
+
+        foreach ($this->collectDocumentChildKeysInReadingOrder($pageMarkedContentKeys) as $key) {
+            if (!in_array($key, $documentChildKeysInOrder, true) && !isset($explicitParentKeys[$key])) {
+                $documentChildKeysInOrder[] = $key;
+            }
+        }
 
         return new CollectedTaggedStructure(
             $figureEntries,
             $textEntries,
             $listEntries,
-            $documentChildEntries,
+            $containerEntries,
+            $documentChildKeysInOrder,
+            $explicitParentKeys,
             $pageMarkedContentKeys,
         );
     }
 
     /**
      * @param array<int, array<int, string>> $pageMarkedContentKeys
-     * @return list<array{key: string, pageIndex: int, markedContentId: int}>
+     * @return list<string>
      */
-    private function collectDocumentChildEntries(array $pageMarkedContentKeys): array
+    private function collectDocumentChildKeysInReadingOrder(array $pageMarkedContentKeys): array
     {
-        $entries = [];
+        $keys = [];
         $seenKeys = [];
 
         foreach ($pageMarkedContentKeys as $pageIndex => $markedContentKeys) {
@@ -156,15 +190,11 @@ final class TaggedStructureCollector
                 }
 
                 $seenKeys[$documentChildKey] = true;
-                $entries[] = [
-                    'key' => $documentChildKey,
-                    'pageIndex' => $pageIndex,
-                    'markedContentId' => $markedContentId,
-                ];
+                $keys[] = $documentChildKey;
             }
         }
 
-        return $entries;
+        return $keys;
     }
 
     /**

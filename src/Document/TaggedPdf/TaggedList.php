@@ -12,6 +12,7 @@ final readonly class TaggedList
     public function __construct(
         public int $listId,
         public array $items,
+        public ?string $key = null,
     ) {
     }
 }

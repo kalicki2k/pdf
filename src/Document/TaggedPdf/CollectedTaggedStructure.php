@@ -21,14 +21,18 @@ final readonly class CollectedTaggedStructure
      *     bodyReference: TaggedListContentReference
      *   }>
      * }> $listEntries
-     * @param list<array{key: string, pageIndex: int, markedContentId: int}> $documentChildEntries
+     * @param list<array{key: string, tag: string, childKeys: list<string>}> $containerEntries
+     * @param list<string> $documentChildKeysInOrder
+     * @param array<string, string> $explicitParentKeys
      * @param array<int, array<int, string>> $pageMarkedContentKeys
      */
     public function __construct(
         public array $figureEntries,
         public array $textEntries,
         public array $listEntries,
-        public array $documentChildEntries,
+        public array $containerEntries,
+        public array $documentChildKeysInOrder,
+        public array $explicitParentKeys,
         public array $pageMarkedContentKeys,
     ) {
     }
@@ -38,7 +42,9 @@ final readonly class CollectedTaggedStructure
         return $this->figureEntries !== []
             || $this->textEntries !== []
             || $this->listEntries !== []
-            || $this->documentChildEntries !== []
+            || $this->containerEntries !== []
+            || $this->documentChildKeysInOrder !== []
+            || $this->explicitParentKeys !== []
             || $this->pageMarkedContentKeys !== [];
     }
 

@@ -136,6 +136,8 @@ final readonly class DocumentTableOfContentsBuilder
             outlines: $this->shiftOutlines($document->outlines, $tocPageCount, $insertionIndex),
             acroForm: $this->shiftAcroForm($document->acroForm, $tocPageCount, $insertionIndex),
             taggedLists: $this->shiftTaggedLists($document->taggedLists, $tocPageCount, $insertionIndex),
+            taggedStructureElements: $document->taggedStructureElements,
+            taggedDocumentChildKeys: $document->taggedDocumentChildKeys,
             debugger: $document->debugger,
         );
     }
@@ -574,6 +576,7 @@ final readonly class DocumentTableOfContentsBuilder
                 pageIndex: $this->shiftedPageIndex($taggedFigure->pageIndex, $tocPageCount, $insertionIndex),
                 markedContentId: $taggedFigure->markedContentId,
                 altText: $taggedFigure->altText,
+                key: $taggedFigure->key,
             );
         }
 
@@ -593,6 +596,7 @@ final readonly class DocumentTableOfContentsBuilder
                 tag: $taggedTextBlock->tag,
                 pageIndex: $this->shiftedPageIndex($taggedTextBlock->pageIndex, $tocPageCount, $insertionIndex),
                 markedContentId: $taggedTextBlock->markedContentId,
+                key: $taggedTextBlock->key,
             );
         }
 
@@ -620,6 +624,7 @@ final readonly class DocumentTableOfContentsBuilder
                 headerRows: $this->shiftTaggedRows($taggedTable->headerRows, $tocPageCount, $insertionIndex),
                 bodyRows: $this->shiftTaggedRows($taggedTable->bodyRows, $tocPageCount, $insertionIndex),
                 footerRows: $this->shiftTaggedRows($taggedTable->footerRows, $tocPageCount, $insertionIndex),
+                key: $taggedTable->key,
             );
         }
 
@@ -647,6 +652,7 @@ final readonly class DocumentTableOfContentsBuilder
             $shifted[] = new TaggedList(
                 listId: $taggedList->listId,
                 items: $items,
+                key: $taggedList->key,
             );
         }
 

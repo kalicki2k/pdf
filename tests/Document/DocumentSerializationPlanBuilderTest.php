@@ -1767,7 +1767,28 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
     }
 
-    public function testItRejectsPdfA1aPushButtons(): void
+    public function testItBuildsPdfA1aInertPushButtons(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->pushButton('ack', 'Acknowledge', 40, 380, 120, 18, 'Acknowledge')
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/FT /Btn', $serialized);
+        self::assertStringContainsString('/MK << /CA (Acknowledge) >>', $serialized);
+        self::assertStringNotContainsString('/A << /S /URI', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Form', $serialized);
+    }
+
+    public function testItRejectsPdfA1aPushButtonsWithUriActions(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -1778,7 +1799,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-1a does not allow push buttons in the current implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-1a does not allow push button URI actions. Use an inert button without /A.');
 
         $builder->build($document);
     }

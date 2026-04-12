@@ -50,6 +50,7 @@ final class PdfA1aTaggedStructureValidator
         $this->assertLeafStructElements($state, $objectsById);
         $this->assertListStructElements($state, $objectsById);
         $this->assertTableStructElements($document, $state, $objectsById);
+        $this->assertGenericContainerStructElements($state, $objectsById);
         $this->assertLinkStructElements($state, $objectsById);
         $this->assertPageAnnotationStructElements($state, $objectsById);
         $this->assertFormStructElements($state, $objectsById);
@@ -186,6 +187,34 @@ final class PdfA1aTaggedStructureValidator
     /**
      * @param array<int, IndirectObject> $objectsById
      */
+    private function assertGenericContainerStructElements(DocumentSerializationPlanBuildState $state, array $objectsById): void
+    {
+        foreach ($state->taggedStructure->containerEntries as $containerEntry) {
+            $objectId = $state->taggedStructureObjectIds->genericStructElemObjectIds[$containerEntry['key']];
+            $contents = $this->requireObjectContents(
+                $objectsById,
+                $objectId,
+                sprintf('container StructElem "%s"', $containerEntry['key']),
+            );
+            $this->assertStructElemTagAndParent(
+                $contents,
+                $containerEntry['tag'],
+                $this->expectedParentObjectId($containerEntry['key'], $state),
+            );
+            $this->assertKidReferences(
+                $contents,
+                array_map(
+                    fn (string $childKey): int => $this->resolveDocumentChildObjectId($childKey, $state),
+                    $containerEntry['childKeys'],
+                ),
+                sprintf('container StructElem "%s"', $containerEntry['key']),
+            );
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
     private function assertLeafStructElements(DocumentSerializationPlanBuildState $state, array $objectsById): void
     {
         foreach ($state->taggedStructure->figureEntries as $figureEntry) {
@@ -194,7 +223,7 @@ final class PdfA1aTaggedStructureValidator
                 $state->taggedStructureObjectIds->figureStructElemObjectIds[$figureEntry['key']],
                 sprintf('figure StructElem "%s"', $figureEntry['key']),
             );
-            $this->assertStructElemTagAndParent($contents, 'Figure', $state->documentStructElemObjectId);
+            $this->assertStructElemTagAndParent($contents, 'Figure', $this->expectedParentObjectId($figureEntry['key'], $state));
             $this->assertStructElemPageAndMarkedContent(
                 $contents,
                 $state->pageObjectIds[$figureEntry['pageIndex']],
@@ -215,7 +244,7 @@ final class PdfA1aTaggedStructureValidator
                 $state->taggedStructureObjectIds->textStructElemObjectIds[$textEntry['key']],
                 sprintf('text StructElem "%s"', $textEntry['key']),
             );
-            $this->assertStructElemTagAndParent($contents, $textEntry['tag'], $state->documentStructElemObjectId);
+            $this->assertStructElemTagAndParent($contents, $textEntry['tag'], $this->expectedParentObjectId($textEntry['key'], $state));
             $this->assertStructElemPageAndMarkedContent(
                 $contents,
                 $state->pageObjectIds[$textEntry['pageIndex']],
@@ -232,7 +261,7 @@ final class PdfA1aTaggedStructureValidator
         foreach ($state->taggedStructure->listEntries as $listEntry) {
             $listObjectId = $state->taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']];
             $listContents = $this->requireObjectContents($objectsById, $listObjectId, sprintf('list StructElem "%s"', $listEntry['key']));
-            $this->assertStructElemTagAndParent($listContents, 'L', $state->documentStructElemObjectId);
+            $this->assertStructElemTagAndParent($listContents, 'L', $this->expectedParentObjectId($listEntry['key'], $state));
 
             $expectedListKids = [];
 
@@ -291,10 +320,10 @@ final class PdfA1aTaggedStructureValidator
         array $objectsById,
     ): void {
         foreach ($document->taggedTables as $taggedTable) {
-            $tableKey = TaggedStructureObjectIds::tableKey($taggedTable->tableId);
+            $tableKey = $taggedTable->key ?? TaggedStructureObjectIds::tableKey($taggedTable->tableId);
             $tableObjectId = $state->taggedStructureObjectIds->tableStructElemObjectIds[$tableKey];
             $tableContents = $this->requireObjectContents($objectsById, $tableObjectId, sprintf('table StructElem "%s"', $tableKey));
-            $this->assertStructElemTagAndParent($tableContents, 'Table', $state->documentStructElemObjectId);
+            $this->assertStructElemTagAndParent($tableContents, 'Table', $this->expectedParentObjectId($tableKey, $state));
 
             $expectedTableKids = [];
 
@@ -598,13 +627,28 @@ final class PdfA1aTaggedStructureValidator
         $entries = [];
         $sequence = 0;
 
-        foreach ($state->taggedStructure->documentChildEntries as $entry) {
-            $entries[] = [
-                'objectId' => $this->resolveDocumentChildObjectId($entry['key'], $state),
-                'pageIndex' => $entry['pageIndex'],
-                'orderIndex' => $entry['markedContentId'],
-                'sequence' => $sequence++,
-            ];
+        if ($state->taggedStructure->documentChildKeysInOrder !== []) {
+            foreach ($state->taggedStructure->documentChildKeysInOrder as $key) {
+                $entries[] = [
+                    'objectId' => $this->resolveDocumentChildObjectId($key, $state),
+                    'pageIndex' => 0,
+                    'orderIndex' => 0,
+                    'sequence' => $sequence++,
+                ];
+            }
+        } else {
+            foreach ($state->taggedStructure->pageMarkedContentKeys as $pageIndex => $pageKeys) {
+                ksort($pageKeys);
+
+                foreach ($pageKeys as $markedContentId => $key) {
+                    $entries[] = [
+                        'objectId' => $this->resolveDocumentChildObjectId($this->documentChildKey($key), $state),
+                        'pageIndex' => $pageIndex,
+                        'orderIndex' => $markedContentId,
+                        'sequence' => $sequence++,
+                    ];
+                }
+            }
         }
 
         foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
@@ -650,14 +694,41 @@ final class PdfA1aTaggedStructureValidator
 
     private function resolveDocumentChildObjectId(string $key, DocumentSerializationPlanBuildState $state): int
     {
-        return $state->taggedStructureObjectIds->figureStructElemObjectIds[$key]
-            ?? $state->taggedStructureObjectIds->textStructElemObjectIds[$key]
-            ?? $state->taggedStructureObjectIds->listStructElemObjectIds[$key]
-            ?? $state->taggedStructureObjectIds->tableStructElemObjectIds[$key]
-            ?? $state->taggedStructureObjectIds->linkStructElemObjectIds[$key]
-            ?? $state->taggedStructureObjectIds->annotationStructElemObjectIds[$key]
-            ?? $state->taggedFormStructElemObjectIds[$key]
-            ?? throw new InvalidArgumentException(sprintf('Unknown PDF/A-1a document child key "%s".', $key));
+        if (isset($state->taggedFormStructElemObjectIds[$key])) {
+            return $state->taggedFormStructElemObjectIds[$key];
+        }
+
+        return $state->taggedStructureObjectIds->resolveStructElemObjectId($key);
+    }
+
+    private function expectedParentObjectId(string $key, DocumentSerializationPlanBuildState $state): int
+    {
+        $parentKey = $state->taggedStructure->explicitParentKeys[$key] ?? null;
+
+        if ($parentKey === null) {
+            return $state->documentStructElemObjectId
+                ?? throw new InvalidArgumentException('PDF/A-1a document structure root object is missing.');
+        }
+
+        return $state->taggedStructureObjectIds->genericStructElemObjectIds[$parentKey]
+            ?? throw new InvalidArgumentException(sprintf('Unknown PDF/A-1a parent structure key "%s".', $parentKey));
+    }
+
+    private function documentChildKey(string $key): string
+    {
+        if (str_starts_with($key, 'list:') && str_contains($key, ':item:')) {
+            [$prefix, $listId] = explode(':', $key, 3);
+
+            return $prefix . ':' . $listId;
+        }
+
+        if (str_starts_with($key, 'table:')) {
+            [$prefix, $tableId] = explode(':', $key, 3);
+
+            return $prefix . ':' . $tableId;
+        }
+
+        return $key;
     }
 
     /**

@@ -431,11 +431,30 @@ final class DocumentSerializationPlanValidator
                 ));
             }
 
-            if ($field instanceof PushButtonField && !$document->profile->supportsCurrentPushButtonImplementation()) {
-                throw new InvalidArgumentException(sprintf(
-                    'Profile %s does not allow push buttons in the current implementation.',
-                    $document->profile->name(),
-                ));
+            if ($field instanceof PushButtonField) {
+                if (
+                    $document->profile->isPdfA1()
+                    && $document->profile->pdfaConformance() === 'A'
+                    && $field->url !== null
+                ) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s does not allow push button URI actions. Use an inert button without /A.',
+                        $document->profile->name(),
+                    ));
+                }
+
+                if (
+                    !$document->profile->supportsCurrentPushButtonImplementation()
+                    && !(
+                        $document->profile->requiresTaggedFormFields()
+                        && $field->url === null
+                    )
+                ) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s does not allow push buttons in the current implementation.',
+                        $document->profile->name(),
+                    ));
+                }
             }
 
             if ($field instanceof SignatureField && !$document->profile->supportsCurrentSignatureFieldImplementation()) {

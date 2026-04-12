@@ -39,6 +39,8 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureElement;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureRoleRegistry;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
@@ -154,14 +156,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private int $currentPageNextMarkedContentId = 0;
     /** @var array<int, array{captionReferences: list<array{pageIndex: int, markedContentId: int}>, headerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>, bodyRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>, footerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>}> */
     private array $taggedTables = [];
-    /** @var list<array{pageIndex: int, markedContentId: int, altText: ?string}> */
+    /** @var list<array{key: string, pageIndex: int, markedContentId: int, altText: ?string}> */
     private array $taggedFigures = [];
-    /** @var list<array{tag: string, pageIndex: int, markedContentId: int}> */
+    /** @var list<array{key: string, tag: string, pageIndex: int, markedContentId: int}> */
     private array $taggedTextBlocks = [];
     /** @var array<int, list<array{label: array{pageIndex: int, markedContentId: int}, body: array{pageIndex: int, markedContentId: int}}>> */
     private array $taggedLists = [];
+    /** @var array<string, array{tag: string, childKeys: list<string>}> */
+    private array $taggedStructureElements = [];
+    /** @var list<string> */
+    private array $taggedDocumentChildKeys = [];
+    /** @var list<string> */
+    private array $taggedStructureStack = [];
     private int $nextTaggedTableId = 0;
     private int $nextTaggedListId = 0;
+    private int $nextTaggedStructureElementId = 0;
     private ?Margin $currentPageMargin = null;
     private ?float $currentPageCursorY = null;
     private ?Color $currentPageBackgroundColor = null;
@@ -392,6 +401,41 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $this->renderTextBlock($text, $options, $tag);
+    }
+
+    public function taggedStructure(string $tag, callable $renderer): DocumentBuilder
+    {
+        if ($tag === '') {
+            throw new InvalidArgumentException('Tagged structure tag must not be empty.');
+        }
+
+        $registry = new TaggedStructureRoleRegistry();
+        $registry->assertKnownTag($tag);
+
+        if (!$registry->isContainerTag($tag)) {
+            throw new InvalidArgumentException(sprintf(
+                'Tagged structure tag "%s" is not supported as a container. Use taggedText() for leaf roles.',
+                $tag,
+            ));
+        }
+
+        $clone = clone $this;
+        $key = 'struct:' . $clone->nextTaggedStructureElementId++;
+        $clone->taggedStructureElements[$key] = [
+            'tag' => $tag,
+            'childKeys' => [],
+        ];
+        $clone->attachTaggedStructureChildKey($key);
+        $clone->taggedStructureStack[] = $key;
+        $result = $renderer($clone);
+
+        if (!$result instanceof self) {
+            throw new InvalidArgumentException('Tagged structure renderer must return a DefaultDocumentBuilder instance.');
+        }
+
+        array_pop($result->taggedStructureStack);
+
+        return $result;
     }
 
     public function paragraph(string $text, ?TextOptions $options = null): DocumentBuilder
@@ -759,7 +803,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $imageAlias = $clone->imageAliasFor($source);
         [$width, $height] = $this->resolveImageDimensions($source, $placement);
         $markedContentId = $clone->markedContentIdForImage($accessibility);
-        $clone->currentPageImages[] = new PageImage($imageAlias, $placement, $accessibility, $markedContentId);
+        $structureKey = $markedContentId !== null
+            ? 'figure:image:' . count($clone->pages) . ':' . count($clone->currentPageImages)
+            : null;
+        $clone->currentPageImages[] = new PageImage(
+            $imageAlias,
+            $placement,
+            $accessibility,
+            $markedContentId,
+            $structureKey,
+        );
+
+        if ($structureKey !== null) {
+            $clone->attachTaggedStructureChildKey($structureKey);
+        }
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
@@ -2477,6 +2534,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             outlines: $this->outlines,
             acroForm: $this->acroForm,
             taggedLists: $this->buildTaggedLists(),
+            taggedStructureElements: $this->buildTaggedStructureElements(),
+            taggedDocumentChildKeys: $this->taggedDocumentChildKeys,
             debugger: $debugger,
         );
 
@@ -3730,6 +3789,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'bodyRows' => $this->initializeTaggedTableRows($bodyLayout, false),
             'footerRows' => $footerLayout !== null ? $this->initializeTaggedTableRows($footerLayout, false) : [],
         ];
+        $this->attachTaggedStructureChildKey('table:' . $tableId);
 
         return $tableId;
     }
@@ -3798,6 +3858,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 headerRows: $this->buildTaggedTableRows($table['headerRows']),
                 bodyRows: $this->buildTaggedTableRows($table['bodyRows']),
                 footerRows: $this->buildTaggedTableRows($table['footerRows']),
+                key: 'table:' . $tableId,
             );
         }
 
@@ -3814,6 +3875,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 pageIndex: $figure['pageIndex'],
                 markedContentId: $figure['markedContentId'],
                 altText: $figure['altText'],
+                key: $figure['key'],
             ),
             $this->taggedFigures,
         );
@@ -3829,6 +3891,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 tag: $block['tag'],
                 pageIndex: $block['pageIndex'],
                 markedContentId: $block['markedContentId'],
+                key: $block['key'],
             ),
             $this->taggedTextBlocks,
         );
@@ -3857,6 +3920,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     ),
                     $items,
                 ),
+                key: 'list:' . $listId,
             );
         }
 
@@ -3865,26 +3929,67 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function registerTaggedTextBlock(string $tag, int $markedContentId): void
     {
+        $key = 'text:' . count($this->taggedTextBlocks);
         $this->taggedTextBlocks[] = [
+            'key' => $key,
             'tag' => $tag,
             ...$this->taggedContentReference($markedContentId),
         ];
+        $this->attachTaggedStructureChildKey($key);
     }
 
     private function registerTaggedFigure(int $markedContentId, ?string $altText): void
     {
+        $key = 'figure:graphics:' . count($this->taggedFigures);
         $this->taggedFigures[] = [
+            'key' => $key,
             ...$this->taggedContentReference($markedContentId),
             'altText' => $altText,
         ];
+        $this->attachTaggedStructureChildKey($key);
     }
 
     private function registerTaggedListItem(int $listId, int $labelMarkedContentId, int $bodyMarkedContentId): void
     {
+        if (!isset($this->taggedLists[$listId])) {
+            $this->attachTaggedStructureChildKey('list:' . $listId);
+        }
+
         $this->taggedLists[$listId][] = [
             'label' => $this->taggedContentReference($labelMarkedContentId),
             'body' => $this->taggedContentReference($bodyMarkedContentId),
         ];
+    }
+
+    /**
+     * @return list<TaggedStructureElement>
+     */
+    private function buildTaggedStructureElements(): array
+    {
+        $elements = [];
+
+        foreach ($this->taggedStructureElements as $key => $element) {
+            $elements[] = new TaggedStructureElement($key, $element['tag'], $element['childKeys']);
+        }
+
+        return $elements;
+    }
+
+    private function attachTaggedStructureChildKey(string $key): void
+    {
+        if (!$this->requiresTaggedStructure()) {
+            return;
+        }
+
+        $containerKey = $this->taggedStructureStack[count($this->taggedStructureStack) - 1] ?? null;
+
+        if ($containerKey === null) {
+            $this->taggedDocumentChildKeys[] = $key;
+
+            return;
+        }
+
+        $this->taggedStructureElements[$containerKey]['childKeys'][] = $key;
     }
 
     private function defaultTaggedTextTag(): ?string
@@ -4849,8 +4954,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone->taggedFigures = [];
         $clone->taggedTextBlocks = [];
         $clone->taggedLists = [];
+        $clone->taggedStructureElements = [];
+        $clone->taggedDocumentChildKeys = [];
+        $clone->taggedStructureStack = [];
         $clone->nextTaggedTableId = 0;
         $clone->nextTaggedListId = 0;
+        $clone->nextTaggedStructureElementId = 0;
 
         return $clone;
     }

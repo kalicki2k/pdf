@@ -75,6 +75,16 @@ final class PageDecorationContext
     }
 
     /**
+     * @param callable(DocumentBuilder): DocumentBuilder $renderer
+     */
+    public function taggedStructure(string $tag, callable $renderer): self
+    {
+        $this->builder = $this->builder->taggedStructure($tag, $renderer);
+
+        return $this;
+    }
+
+    /**
      * @param list<TextSegment> $segments
      */
     public function textSegments(array $segments, ?TextOptions $options = null): self

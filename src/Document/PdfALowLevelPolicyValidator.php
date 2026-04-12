@@ -38,6 +38,7 @@ final class PdfALowLevelPolicyValidator
         '/BlockQuote',
         '/Caption',
         '/Code',
+        '/Em',
         '/Figure',
         '/H1',
         '/H2',
@@ -48,11 +49,15 @@ final class PdfALowLevelPolicyValidator
         '/LBody',
         '/Lbl',
         '/Link',
+        '/Note',
         '/P',
         '/Quote',
+        '/Reference',
         '/Span',
+        '/Strong',
         '/TD',
         '/TH',
+        '/Title',
     ];
 
     /**

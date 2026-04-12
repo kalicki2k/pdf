@@ -10,6 +10,7 @@ final readonly class TaggedFigure
         public int $pageIndex,
         public int $markedContentId,
         public ?string $altText = null,
+        public ?string $key = null,
     ) {
     }
 }

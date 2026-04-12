@@ -106,6 +106,11 @@ interface DocumentBuilder
     public function taggedText(string $text, string $tag, ?TextOptions $options = null): self;
 
     /**
+     * @param callable(DocumentBuilder): DocumentBuilder $renderer
+     */
+    public function taggedStructure(string $tag, callable $renderer): self;
+
+    /**
      * @param list<TextSegment> $segments
      */
     public function textSegments(array $segments, ?TextOptions $options = null): self;

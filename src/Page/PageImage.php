@@ -14,6 +14,7 @@ final readonly class PageImage
         public ImagePlacement $placement,
         public ?ImageAccessibility $accessibility = null,
         public ?int $markedContentId = null,
+        public ?string $structureKey = null,
     ) {
     }
 }
