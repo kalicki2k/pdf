@@ -1720,6 +1720,54 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testPdfA1aRequiresExplicitSupportedTaggedPageAnnotationPolicy(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $annotation = new readonly class implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation {
+            public function pdfObjectContents(PageAnnotationRenderContext $context): string
+            {
+                return '<< /Type /Annot /Subtype /Text /Rect [10 20 20 30] /P ' . $context->pageObjectId . ' 0 R /Contents (Demo) /F 4 /AP << /N ' . $context->appearanceObjectId . ' 0 R >> >>';
+            }
+
+            public function markedContentId(): ?int
+            {
+                return null;
+            }
+
+            public function taggedAnnotationAltText(): ?string
+            {
+                return 'Demo';
+            }
+
+            public function taggedAnnotationStructureTag(): string
+            {
+                return 'Annot';
+            }
+
+            public function appearanceStreamDictionaryContents(?\Kalle\Pdf\Page\AnnotationAppearanceRenderContext $context = null): string
+            {
+                return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 10 10] /Resources << >> /Length 0 >>';
+            }
+
+            public function appearanceStreamContents(?\Kalle\Pdf\Page\AnnotationAppearanceRenderContext $context = null): string
+            {
+                return '';
+            }
+        };
+        $document = new Document(
+            profile: Profile::pdfA1a(),
+            title: 'Archive Copy',
+            language: 'de-DE',
+            pages: [new Page(PageSize::A4(), contents: "/P << /MCID 0 >> BDC\nBT /F1 12 Tf 40 700 Td (Lead) Tj ET\nEMC", annotations: [$annotation])],
+            taggedTextBlocks: [new \Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock('P', 0, 0)],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a does not support the current page annotation implementation on page 1.');
+
+        $builder->build($document);
+    }
+
     public function testItBuildsTaggedPdfA1aSingleWidgetFormFields(): void
     {
         $builder = new DocumentSerializationPlanBuilder();

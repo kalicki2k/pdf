@@ -18,6 +18,7 @@ use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
+use Kalle\Pdf\Page\PageAnnotation;
 
 use function preg_match;
 use function sprintf;
@@ -30,6 +31,7 @@ final class DocumentSerializationPlanValidator
         private readonly PdfAColorPolicyValidator $pdfAColorPolicyValidator = new PdfAColorPolicyValidator(),
         private readonly PdfALowLevelPolicyValidator $pdfALowLevelPolicyValidator = new PdfALowLevelPolicyValidator(),
         private readonly PdfA1aSupportedStructureValidator $pdfA1aSupportedStructureValidator = new PdfA1aSupportedStructureValidator(),
+        private readonly PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
     ) {
     }
 
@@ -99,31 +101,35 @@ final class DocumentSerializationPlanValidator
 
     private function assertAnnotationRequirements(Document $document): void
     {
-        if ($document->profile->requiresAnnotationAppearanceStreams()) {
-            foreach ($document->pages as $pageIndex => $page) {
-                foreach ($page->annotations as $annotation) {
-                    if ($this->annotationNeedsAppearanceStream($document, $annotation)) {
-                        continue;
-                    }
-
-                    throw new InvalidArgumentException(sprintf(
-                        'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page %d.',
-                        $document->profile->name(),
-                        $pageIndex + 1,
-                    ));
-                }
-            }
-        }
-
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
-                $supportsCurrentAnnotation = $document->profile->supportsCurrentPageAnnotationsImplementation()
+                $supportsCurrentAnnotation = (
+                        !$document->profile->requiresTaggedPageAnnotations()
+                        && $document->profile->supportsCurrentPageAnnotationsImplementation()
+                    )
                     || ($annotation instanceof LinkAnnotation && $document->profile->requiresTaggedLinkAnnotations())
-                    || ($annotation instanceof PdfUaTaggedPageAnnotation && $document->profile->requiresTaggedPageAnnotations());
+                    || (
+                        $document->profile->requiresTaggedPageAnnotations()
+                        && (
+                            ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $this->pdfA1aPageAnnotationPolicy->supports($annotation))
+                            || $annotation instanceof PdfUaTaggedPageAnnotation
+                        )
+                    );
 
                 if (!$supportsCurrentAnnotation) {
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s does not support the current page annotation implementation on page %d.',
+                        $document->profile->name(),
+                        $pageIndex + 1,
+                    ));
+                }
+
+                if (
+                    $document->profile->requiresAnnotationAppearanceStreams()
+                    && !$this->annotationNeedsAppearanceStream($document, $annotation)
+                ) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page %d.',
                         $document->profile->name(),
                         $pageIndex + 1,
                     ));
@@ -147,9 +153,8 @@ final class DocumentSerializationPlanValidator
 
                 if (
                     !$annotation instanceof LinkAnnotation
-                    && $annotation instanceof PdfUaTaggedPageAnnotation
                     && $document->profile->requiresPageAnnotationAlternativeDescriptions()
-                    && (($annotation->taggedAnnotationAltText() ?? '') === '')
+                    && (($this->pageAnnotationAltText($document, $annotation) ?? '') === '')
                 ) {
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s requires alternative text for page annotation %d on page %d.',
@@ -168,7 +173,13 @@ final class DocumentSerializationPlanValidator
             && (
                 !$document->profile->isPdfA1()
                 || $annotation instanceof LinkAnnotation
-                || ($annotation instanceof PdfUaTaggedPageAnnotation && $document->profile->requiresTaggedPageAnnotations())
+                || (
+                    $document->profile->requiresTaggedPageAnnotations()
+                    && (
+                        ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $this->pdfA1aPageAnnotationPolicy->supports($annotation))
+                        || $annotation instanceof PdfUaTaggedPageAnnotation
+                    )
+                )
             )
             && $annotation instanceof AppearanceStreamAnnotation;
     }
@@ -311,8 +322,7 @@ final class DocumentSerializationPlanValidator
             foreach ($page->annotations as $annotation) {
                 if (
                     !$annotation instanceof LinkAnnotation
-                    && $annotation instanceof PdfUaTaggedPageAnnotation
-                    && $document->profile->requiresTaggedPageAnnotations()
+                    && $this->supportsTaggedPageAnnotation($document, $annotation)
                 ) {
                     return true;
                 }
@@ -324,6 +334,35 @@ final class DocumentSerializationPlanValidator
         }
 
         return true;
+    }
+
+    private function supportsTaggedPageAnnotation(Document $document, object $annotation): bool
+    {
+        if (!$document->profile->requiresTaggedPageAnnotations()) {
+            return false;
+        }
+
+        if ($annotation instanceof LinkAnnotation) {
+            return false;
+        }
+
+        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A') {
+            return $annotation instanceof PageAnnotation
+                && $this->pdfA1aPageAnnotationPolicy->supports($annotation);
+        }
+
+        return $annotation instanceof PdfUaTaggedPageAnnotation;
+    }
+
+    private function pageAnnotationAltText(Document $document, object $annotation): ?string
+    {
+        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof PageAnnotation) {
+            return $this->pdfA1aPageAnnotationPolicy->altText($annotation);
+        }
+
+        return $annotation instanceof PdfUaTaggedPageAnnotation
+            ? $annotation->taggedAnnotationAltText()
+            : null;
     }
 
     private function assertAcroFormRequirements(Document $document): void

@@ -27,6 +27,11 @@ use function usort;
 
 final class DocumentTaggedPdfObjectBuilder
 {
+    public function __construct(
+        private readonly PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
+    ) {
+    }
+
     /**
      * @return array{
      *   linkEntries: list<array{
@@ -159,11 +164,11 @@ final class DocumentTaggedPdfObjectBuilder
 
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
-                if ($annotation instanceof LinkAnnotation || !$annotation instanceof PdfUaTaggedPageAnnotation) {
+                if ($annotation instanceof LinkAnnotation || !$this->supportsTaggedPageAnnotation($document, $annotation)) {
                     continue;
                 }
 
-                $altText = $annotation->taggedAnnotationAltText();
+                $altText = $this->taggedPageAnnotationAltText($document, $annotation);
 
                 if ($altText === null || $altText === '') {
                     continue;
@@ -175,7 +180,7 @@ final class DocumentTaggedPdfObjectBuilder
                     'pageIndex' => $pageIndex,
                     'annotationIndex' => $annotationIndex,
                     'altText' => $altText,
-                    'tag' => $annotation->taggedAnnotationStructureTag(),
+                    'tag' => $this->taggedPageAnnotationStructureTag($document, $annotation) ?? 'Annot',
                 ];
                 $structParentIds[$pageIndex . ':' . $annotationIndex] = $nextStructParentId;
                 $parentTreeEntries[$nextStructParentId] = [$entryKey];
@@ -189,6 +194,42 @@ final class DocumentTaggedPdfObjectBuilder
             'structParentIds' => $structParentIds,
             'nextStructParentId' => $nextStructParentId,
         ];
+    }
+
+    private function supportsTaggedPageAnnotation(Document $document, object $annotation): bool
+    {
+        if (!$document->profile->requiresTaggedPageAnnotations() || $annotation instanceof LinkAnnotation) {
+            return false;
+        }
+
+        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A') {
+            return $annotation instanceof \Kalle\Pdf\Page\PageAnnotation
+                && $this->pdfA1aPageAnnotationPolicy->supports($annotation);
+        }
+
+        return $annotation instanceof PdfUaTaggedPageAnnotation;
+    }
+
+    private function taggedPageAnnotationAltText(Document $document, object $annotation): ?string
+    {
+        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof \Kalle\Pdf\Page\PageAnnotation) {
+            return $this->pdfA1aPageAnnotationPolicy->altText($annotation);
+        }
+
+        return $annotation instanceof PdfUaTaggedPageAnnotation
+            ? $annotation->taggedAnnotationAltText()
+            : null;
+    }
+
+    private function taggedPageAnnotationStructureTag(Document $document, object $annotation): ?string
+    {
+        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof \Kalle\Pdf\Page\PageAnnotation) {
+            return $this->pdfA1aPageAnnotationPolicy->structureTag($annotation);
+        }
+
+        return $annotation instanceof PdfUaTaggedPageAnnotation
+            ? $annotation->taggedAnnotationStructureTag()
+            : null;
     }
 
     /**
