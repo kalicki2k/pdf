@@ -265,6 +265,21 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertStringNotContainsString('72 684 Td', $document->pages[0]->contents);
     }
 
+    public function testItAcceptsTextSegmentsInTextLines(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textLines([
+                TextSegment::link('Docs', TextLink::externalUrl('https://example.com/docs')),
+                'Kontakt',
+            ])
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[0]);
+        self::assertSame('https://example.com/docs', $document->pages[0]->annotations[0]->target->externalUrlValue());
+        self::assertSame('Docs', $document->pages[0]->annotations[0]->contents);
+    }
+
     public function testParagraphLinesUseParagraphTagging(): void
     {
         $document = DefaultDocumentBuilder::make()

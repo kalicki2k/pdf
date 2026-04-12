@@ -73,7 +73,7 @@ final class PageDecorationContext
     }
 
     /**
-     * @param list<string> $lines
+     * @param list<string|TextSegment> $lines
      */
     public function textLines(array $lines, ?TextOptions $options = null): self
     {
@@ -107,7 +107,7 @@ final class PageDecorationContext
     }
 
     /**
-     * @param list<string> $lines
+     * @param list<string|TextSegment> $lines
      */
     public function paragraphLines(array $lines, ?TextOptions $options = null): self
     {

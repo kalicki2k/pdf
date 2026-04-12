@@ -413,7 +413,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<string> $lines
+     * @param list<string|TextSegment> $lines
      */
     public function textLines(array $lines, ?TextOptions $options = null): DocumentBuilder
     {
@@ -471,7 +471,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<string> $lines
+     * @param list<string|TextSegment> $lines
      */
     public function paragraphLines(array $lines, ?TextOptions $options = null): DocumentBuilder
     {
@@ -4235,9 +4235,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
-    /**
-     * @param array<int, mixed> $lines
-     */
     private function renderTextLines(array $lines, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
     {
         $clone = clone $this;
@@ -4249,16 +4246,27 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $validatedLines = [];
+        $validatedSegments = [];
+        $containsSegments = false;
 
         foreach ($lines as $index => $line) {
+            if ($line instanceof TextSegment) {
+                $validatedSegments[] = $line;
+                $validatedLines[] = $line->text;
+                $containsSegments = true;
+
+                continue;
+            }
+
             if (!is_string($line)) {
                 throw new InvalidArgumentException(sprintf(
-                    'Text line %d must be a string.',
+                    'Text line %d must be a string or TextSegment.',
                     $index + 1,
                 ));
             }
 
             $validatedLines[] = $line;
+            $validatedSegments[] = new TextSegment($line);
         }
 
         $font = $options->embeddedFont !== null
@@ -4266,36 +4274,59 @@ class DefaultDocumentBuilder implements DocumentBuilder
             : StandardFontDefinition::from($options->fontName);
         $textFlow = $clone->textFlow();
         $placement = $textFlow->placement($options, $font);
-        $wrappedLines = $clone->wrapExplicitTextLines($validatedLines, $options, $font, $textFlow, $placement['x']);
-        $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
-        $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, $shapedLines);
         $markedContentTag = $taggedTextTag !== null && $clone->requiresTaggedStructure()
             ? $taggedTextTag
             : null;
         $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
 
-        $textResult = $clone->buildWrappedTextContent(
-            $wrappedLines,
-            $shapedLines,
-            $options,
-            $textFlow,
-            $placement['x'],
-            $placement['y'],
-            $renderState['fontAlias'],
-            $font,
-            $renderState['embeddedPageFont'],
-            $renderState['useHexString'],
-            ($this->profile ?? Profile::standard())->version(),
-            $markedContentTag,
-            $markedContentId,
-            $artifact,
-        );
+        if ($containsSegments) {
+            $wrappedSegmentLines = $clone->wrapExplicitTextSegmentLines($validatedSegments, $options, $font, $textFlow, $placement['x']);
+            $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, []);
+            $textResult = $clone->buildWrappedTextSegmentsContent(
+                $wrappedSegmentLines,
+                $options,
+                $textFlow,
+                $placement['x'],
+                $placement['y'],
+                $renderState['fontAlias'],
+                $font,
+                $renderState['embeddedPageFont'],
+                $renderState['useHexString'],
+                ($this->profile ?? Profile::standard())->version(),
+                $markedContentTag,
+                $markedContentId,
+                $artifact,
+            );
+            $lineCount = count($wrappedSegmentLines);
+        } else {
+            $wrappedLines = $clone->wrapExplicitTextLines($validatedLines, $options, $font, $textFlow, $placement['x']);
+            $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
+            $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, $shapedLines);
+            $textResult = $clone->buildWrappedTextContent(
+                $wrappedLines,
+                $shapedLines,
+                $options,
+                $textFlow,
+                $placement['x'],
+                $placement['y'],
+                $renderState['fontAlias'],
+                $font,
+                $renderState['embeddedPageFont'],
+                $renderState['useHexString'],
+                ($this->profile ?? Profile::standard())->version(),
+                $markedContentTag,
+                $markedContentId,
+                $artifact,
+            );
+            $lineCount = count($wrappedLines);
+        }
+
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $textResult['contents'],
         );
         $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
-        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedLines));
+        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], $lineCount);
 
         if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
             $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
@@ -4374,6 +4405,35 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $wrappedLines = [
                 ...$wrappedLines,
                 ...$textFlow->wrapTextLines($line, $options, $font, $x),
+            ];
+        }
+
+        return $wrappedLines;
+    }
+
+    /**
+     * @param list<TextSegment> $lines
+     * @return list<list<TextSegment>>
+     */
+    private function wrapExplicitTextSegmentLines(
+        array $lines,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        TextFlow $textFlow,
+        float $x,
+    ): array {
+        $wrappedLines = [];
+
+        foreach ($lines as $line) {
+            if ($line->text === '') {
+                $wrappedLines[] = [];
+
+                continue;
+            }
+
+            $wrappedLines = [
+                ...$wrappedLines,
+                ...$textFlow->wrapSegmentLines([$line], $options, $font, $x),
             ];
         }
 

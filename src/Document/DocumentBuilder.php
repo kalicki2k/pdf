@@ -110,7 +110,7 @@ interface DocumentBuilder
     public function text(string | array $text, ?TextOptions $options = null): self;
 
     /**
-     * @param list<string> $lines
+     * @param list<string|TextSegment> $lines
      */
     public function textLines(array $lines, ?TextOptions $options = null): self;
 
@@ -124,7 +124,7 @@ interface DocumentBuilder
     public function paragraph(string | array $text, ?TextOptions $options = null): self;
 
     /**
-     * @param list<string> $lines
+     * @param list<string|TextSegment> $lines
      */
     public function paragraphLines(array $lines, ?TextOptions $options = null): self;
 
