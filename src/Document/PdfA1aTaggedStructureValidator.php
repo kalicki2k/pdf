@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function array_key_exists;
+use function array_map;
+use function implode;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
 use Kalle\Pdf\Writer\IndirectObject;
 
-use function array_key_exists;
-use function array_map;
-use function implode;
 use function ksort;
 use function min;
 use function preg_match;
@@ -626,13 +627,19 @@ final class PdfA1aTaggedStructureValidator
     {
         $entries = [];
         $sequence = 0;
+        $documentChildPositions = $this->documentChildPositions($state);
 
         if ($state->taggedStructure->documentChildKeysInOrder !== []) {
             foreach ($state->taggedStructure->documentChildKeysInOrder as $key) {
+                $position = $documentChildPositions[$key] ?? [
+                    'pageIndex' => 0,
+                    'orderIndex' => 1000000 + $sequence,
+                ];
+
                 $entries[] = [
                     'objectId' => $this->resolveDocumentChildObjectId($key, $state),
-                    'pageIndex' => 0,
-                    'orderIndex' => 0,
+                    'pageIndex' => $position['pageIndex'],
+                    'orderIndex' => $position['orderIndex'],
                     'sequence' => $sequence++,
                 ];
             }
@@ -690,6 +697,33 @@ final class PdfA1aTaggedStructureValidator
             static fn (array $entry): int => $entry['objectId'],
             $entries,
         );
+    }
+
+    /**
+     * @return array<string, array{pageIndex: int, orderIndex: int}>
+     */
+    private function documentChildPositions(DocumentSerializationPlanBuildState $state): array
+    {
+        $positions = [];
+
+        foreach ($state->taggedStructure->pageMarkedContentKeys as $pageIndex => $pageKeys) {
+            ksort($pageKeys);
+
+            foreach ($pageKeys as $markedContentId => $key) {
+                $documentChildKey = $this->documentChildKey($key);
+
+                if (isset($positions[$documentChildKey])) {
+                    continue;
+                }
+
+                $positions[$documentChildKey] = [
+                    'pageIndex' => $pageIndex,
+                    'orderIndex' => $markedContentId,
+                ];
+            }
+        }
+
+        return $positions;
     }
 
     private function resolveDocumentChildObjectId(string $key, DocumentSerializationPlanBuildState $state): int

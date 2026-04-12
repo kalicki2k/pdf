@@ -9,8 +9,8 @@ use function array_values;
 use function count;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\Form\RadioButtonGroup;
+use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\TaggedPdf\ParentTree;
 use Kalle\Pdf\Document\TaggedPdf\StructElem;
 use Kalle\Pdf\Document\TaggedPdf\StructTreeRoot;
@@ -18,6 +18,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
@@ -203,7 +204,7 @@ final class DocumentTaggedPdfObjectBuilder
         }
 
         if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A') {
-            return $annotation instanceof \Kalle\Pdf\Page\PageAnnotation
+            return $annotation instanceof PageAnnotation
                 && $this->pdfA1aPageAnnotationPolicy->supports($annotation);
         }
 
@@ -212,7 +213,7 @@ final class DocumentTaggedPdfObjectBuilder
 
     private function taggedPageAnnotationAltText(Document $document, object $annotation): ?string
     {
-        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof \Kalle\Pdf\Page\PageAnnotation) {
+        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof PageAnnotation) {
             return $this->pdfA1aPageAnnotationPolicy->altText($annotation);
         }
 
@@ -223,7 +224,7 @@ final class DocumentTaggedPdfObjectBuilder
 
     private function taggedPageAnnotationStructureTag(Document $document, object $annotation): ?string
     {
-        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof \Kalle\Pdf\Page\PageAnnotation) {
+        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof PageAnnotation) {
             return $this->pdfA1aPageAnnotationPolicy->structureTag($annotation);
         }
 
@@ -652,13 +653,19 @@ final class DocumentTaggedPdfObjectBuilder
     {
         $entries = [];
         $sequence = 0;
+        $documentChildPositions = $this->documentChildPositions($state);
 
         if ($state->taggedStructure->documentChildKeysInOrder !== []) {
             foreach ($state->taggedStructure->documentChildKeysInOrder as $key) {
+                $position = $documentChildPositions[$key] ?? [
+                    'pageIndex' => 0,
+                    'orderIndex' => 1000000 + $sequence,
+                ];
+
                 $entries[] = [
                     'key' => $key,
-                    'pageIndex' => 0,
-                    'orderIndex' => 0,
+                    'pageIndex' => $position['pageIndex'],
+                    'orderIndex' => $position['orderIndex'],
                     'sequence' => $sequence++,
                 ];
             }
@@ -715,6 +722,33 @@ final class DocumentTaggedPdfObjectBuilder
         );
 
         return $entries;
+    }
+
+    /**
+     * @return array<string, array{pageIndex: int, orderIndex: int}>
+     */
+    private function documentChildPositions(DocumentSerializationPlanBuildState $state): array
+    {
+        $positions = [];
+
+        foreach ($state->taggedStructure->pageMarkedContentKeys as $pageIndex => $pageKeys) {
+            ksort($pageKeys);
+
+            foreach ($pageKeys as $markedContentId => $key) {
+                $documentChildKey = $this->documentChildKey($key);
+
+                if (isset($positions[$documentChildKey])) {
+                    continue;
+                }
+
+                $positions[$documentChildKey] = [
+                    'pageIndex' => $pageIndex,
+                    'orderIndex' => $markedContentId,
+                ];
+            }
+        }
+
+        return $positions;
     }
 
     private function resolveDocumentKidObjectId(string $key, DocumentSerializationPlanBuildState $state): int
