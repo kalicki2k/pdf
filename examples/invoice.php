@@ -10,7 +10,6 @@ use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
-use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFont;
@@ -21,7 +20,7 @@ use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
-use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Text\TextSemantic;
 
 $outputDirectory = __DIR__ . '/../var/examples';
 
@@ -114,9 +113,11 @@ $document = Pdf::document()
             'Straße Hausnummer',
             'PLZ Ort',
             'Deutschland',
+            '',
             'Telefon: 0123 456789',
             'E-Mail: info@deinefirma.de',
             'Web: www.deinefirma.de',
+            '',
             'Steuernummer: 12/345/67890',
             'USt-IdNr.: DE123456789',
         ],
@@ -128,19 +129,7 @@ $document = Pdf::document()
             lineHeight: 11,
             // color: $textColor,
             align: TextAlign::RIGHT,
-            tag: TaggedStructureTag::SPAN,
-        ),
-    )
-    ->text(
-        "DEIN FIRMENNAME\nStrasse Hausnummer\nPLZ Ort\nDeutschland\n\nTelefon: 0123 456789\nE-Mail: info@deinefirma.de\nWeb: www.deinefirma.de\n\nSteuernummer: 12/345/67890\nUSt-IdNr.: DE123456789",
-        new TextOptions(
-            x: Units::mm(75),
-            y: Units::mm(255),
-            width: Units::mm(70),
-            fontSize: 9,
-            lineHeight: 11,
-            // color: $textColor,
-            align: TextAlign::RIGHT,
+            semantic: TextSemantic::ARTIFACT,
         ),
     );
 //    ->text(

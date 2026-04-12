@@ -438,7 +438,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-2b does not allow low-level key /Launch in annotation 1 on page 1.',
+            'Profile PDF/A-2b only allows Link, Text, Highlight and FreeText annotations in the current PDF/A-2/3 scope on page 1.',
         );
 
         $builder->build($document);
@@ -591,7 +591,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments.');
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments in the current PDF/A-2 scope.');
 
         $builder->build($document);
     }
@@ -665,7 +665,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.');
 
         $builder->build($document);
     }
@@ -892,7 +892,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.');
 
         $builder->build($document);
     }

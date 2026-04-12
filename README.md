@@ -6,10 +6,12 @@ Der aktuelle PDF/A-Scope ist bewusst konservativ und folgt eher dem Prinzip "har
 
 - `PDF/A-1b`: stabil fuer den aktuell freigegebenen Scope mit eingebetteten Fonts, XMP/Info-Metadaten, OutputIntent, Annotation-APs und den geprueften Farbpfaden.
 - `PDF/A-1a`: bewusst enger als das volle Normspektrum. Im Formularpfad sind nur `TextField`, `ComboBoxField` und `ListBoxField` freigegeben. Popup-Related-Objects sowie URI-Annotation-Actions sind im PDF/A-1-Pfad explizit verboten.
+- `PDF/A-2b`: explizit freigegeben fuer denselben kleinen Annotation-Scope wie `PDF/A-2u`, aber ohne Unicode-Extraktionspflicht. Freigegeben sind aktuell `Link`, `Text`, `Highlight` und `FreeText`. Popup-Related-Objects, Seiten-Dateianhang-Annotationen und AcroForm-Felder bleiben gesperrt.
 - `PDF/A-2u`: robuster Positivpfad fuer Unicode-Fonts, Metadaten, OutputIntent und einen bewusst kleinen Annotation-Scope. Freigegeben sind aktuell `Link`, `Text`, `Highlight` und `FreeText`. Externe `URI`-Links sind in diesem Profil ausdruecklich erlaubt. Popup-Related-Objects, Seiten-Dateianhang-Annotationen und AcroForm-Felder sind im aktuellen PDF/A-2-Scope gesperrt.
 - `PDF/A-3b`: dokumentweite Embedded Files und Associated Files am Catalog sind im aktuellen Scope abgedeckt. Erlaubt sind dokumentweite Associated Files am Catalog, nicht aber seitennahe Dateianhang-Annotationen, Popup-Related-Objects oder AcroForm-Felder.
+- `PDF/A-3u`: erweitert den aktuellen `PDF/A-3b`-Scope um den extractable-Unicode-Font-Pfad. Dokumentweite Associated Files am Catalog bleiben freigegeben; seitennahe Dateianhang-Annotationen, Popup-Related-Objects und AcroForm-Felder bleiben gesperrt.
 
-Die Engine validiert PDF/A-1 inzwischen nicht nur auf vorbereiteten Zwischenstrukturen, sondern auch gegen den finalen Objektgraphen vor dem Schreiben. Fuer PDF/A-2/3 laeuft derselbe finale Objektgraph-Check inzwischen fuer den gemeinsamen Catalog-, Metadata-, OutputIntent-, Attachment- und Seitenpfad.
+Die Engine validiert PDF/A-1 inzwischen nicht nur auf vorbereiteten Zwischenstrukturen, sondern auch gegen den finalen Objektgraphen vor dem Schreiben. Fuer PDF/A-2/3 laeuft derselbe finale Objektgraph-Check inzwischen fuer den gemeinsamen Catalog-, Metadata-, OutputIntent-, Attachment- und Seitenpfad. Die PDF/A-Regressionsskripte pruefen die geschriebenen Dateien zusaetzlich mit `qpdf --check`, bevor veraPDF laeuft.
 
 ## Struktur
 
@@ -244,6 +246,19 @@ $document = DefaultDocumentBuilder::make()
     ->text('Zitat', new TextOptions(
         embeddedFont: \Kalle\Pdf\Font\EmbeddedFontSource::fromPath('/path/to/font.ttf'),
         tag: \Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag::BLOCK_QUOTE,
+    ))
+    ->build();
+```
+
+Dekorativer Text wie Briefkopf, Seitenkopf oder Wasserzeichen kann ueber `TextOptions(semantic: TextSemantic::ARTIFACT)` aus der logischen Struktur herausgenommen werden:
+
+```php
+$document = DefaultDocumentBuilder::make()
+    ->profile(\Kalle\Pdf\Document\Profile::pdfA1a())
+    ->title('Archive Copy')
+    ->language('de-DE')
+    ->textLines(['DEIN FIRMENNAME', 'Strasse Hausnummer'], new TextOptions(
+        semantic: \Kalle\Pdf\Text\TextSemantic::ARTIFACT,
     ))
     ->build();
 ```

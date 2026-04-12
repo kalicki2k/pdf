@@ -73,6 +73,7 @@ use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Page\UnderlineAnnotation;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSemantic;
 use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
@@ -210,6 +211,36 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         DefaultDocumentBuilder::make()
             ->text('Kapitel', new TextOptions(tag: TaggedStructureTag::SECT))
+            ->build();
+    }
+
+    public function testItRendersArtifactTextOutsideTheLogicalStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->textLines(['DEIN FIRMENNAME', 'Strasse Hausnummer'], new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                semantic: TextSemantic::ARTIFACT,
+            ))
+            ->build();
+
+        self::assertStringContainsString("/Artifact BMC\nBT", $document->pages[0]->contents);
+        self::assertSame([], $document->taggedTextBlocks);
+        self::assertSame([], $document->taggedDocumentChildKeys);
+    }
+
+    public function testItRejectsArtifactTextWithATaggedRole(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Text options cannot combine semantic artifact with a tagged text role.');
+
+        DefaultDocumentBuilder::make()
+            ->text('Briefkopf', new TextOptions(
+                tag: TaggedStructureTag::SPAN,
+                semantic: TextSemantic::ARTIFACT,
+            ))
             ->build();
     }
 

@@ -4,4 +4,5 @@ set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+sh "${SCRIPT_DIR}/validate-qpdf.sh" "$1"
 sh "${SCRIPT_DIR}/validate-verapdf.sh" "$@"

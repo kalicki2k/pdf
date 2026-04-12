@@ -118,6 +118,7 @@ use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSemantic;
 
 use Kalle\Pdf\Text\TextSegment;
 
@@ -591,6 +592,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $options ??= new TextOptions();
+        $artifact = $options->semantic === TextSemantic::ARTIFACT;
 
         if ($segments === []) {
             return $clone;
@@ -607,7 +609,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $placement = $textFlow->placement($options, $font);
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, []);
-        $markedContentId = $clone->nextTaggedMarkedContentId();
+        $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
         $textResult = $clone->buildWrappedTextSegmentsContent(
             $wrappedSegmentLines,
             $options,
@@ -621,6 +623,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
+            $artifact,
         );
 
         $clone->currentPageContents = $this->appendPageContent(
@@ -2752,6 +2755,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $pdfVersion,
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
+        bool $artifact = false,
     ): array {
         $contents = [];
         $annotations = [];
@@ -2840,7 +2844,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $contentsString = implode("\n", $contents);
 
-        if ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
+        if ($contentsString !== '' && $artifact && $this->requiresTaggedPdfProfile()) {
+            $contentsString = $this->wrapArtifactGraphics($contentsString);
+        } elseif ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
             $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
         }
 
@@ -2867,6 +2873,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $pdfVersion,
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
+        bool $artifact = false,
     ): array {
         $contents = [];
         $annotations = [];
@@ -3012,7 +3019,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $contentsString = implode("\n", $contents);
 
-        if ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
+        if ($contentsString !== '' && $artifact && $this->requiresTaggedPdfProfile()) {
+            $contentsString = $this->wrapArtifactGraphics($contentsString);
+        } elseif ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
             $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
         }
 
@@ -3379,6 +3388,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             firstLineIndent: $options->firstLineIndent,
             hangingIndent: $options->hangingIndent,
             link: $link,
+            tag: $options->tag,
+            semantic: $options->semantic,
         );
     }
 
@@ -4043,6 +4054,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function resolveTaggedTextTag(?TextOptions $options, ?string $defaultTag = null): ?string
     {
+        if ($options?->semantic === TextSemantic::ARTIFACT) {
+            if ($options->tag !== null) {
+                throw new InvalidArgumentException('Text options cannot combine semantic artifact with a tagged text role.');
+            }
+
+            return null;
+        }
+
         $tag = $options?->tag?->value ?? $defaultTag;
 
         if ($tag === null) {
@@ -4172,6 +4191,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $options ??= new TextOptions();
+        $artifact = $options->semantic === TextSemantic::ARTIFACT;
         $font = $options->embeddedFont !== null
             ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
             : StandardFontDefinition::from($options->fontName);
@@ -4199,6 +4219,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
+            $artifact,
         );
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
@@ -4221,6 +4242,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $options ??= new TextOptions();
+        $artifact = $options->semantic === TextSemantic::ARTIFACT;
 
         if ($lines === []) {
             return $clone;
@@ -4262,6 +4284,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
+            $artifact,
         );
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
@@ -4290,6 +4313,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $markedContentTag,
         ?int $markedContentId,
     ): array {
+        $artifact = $options->semantic === TextSemantic::ARTIFACT;
         $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $x);
         $shapedLines = $this->shapeWrappedTextLines($wrappedLines, $options, $font);
         $renderState = $this->prepareTextRenderState(
@@ -4313,6 +4337,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
+            $artifact,
         );
 
         return [
@@ -4378,6 +4403,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             firstLineIndent: $options->firstLineIndent,
             hangingIndent: $options->hangingIndent,
             link: $options->link,
+            tag: $options->tag,
+            semantic: $options->semantic,
         );
     }
 
@@ -4442,6 +4469,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             firstLineIndent: $captionOptions->firstLineIndent,
             hangingIndent: $captionOptions->hangingIndent,
             link: $captionOptions->link,
+            tag: $captionOptions->tag,
+            semantic: $captionOptions->semantic,
         );
     }
 

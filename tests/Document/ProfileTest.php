@@ -23,6 +23,15 @@ final class ProfileTest extends TestCase
         self::assertTrue($profile->requiresExtractableEmbeddedUnicodeFonts());
     }
 
+    public function testPdfA3uRequiresExtractableEmbeddedUnicodeFontsAndAssociatedFiles(): void
+    {
+        $profile = Profile::pdfA3u();
+
+        self::assertTrue($profile->requiresExtractableEmbeddedUnicodeFonts());
+        self::assertTrue($profile->supportsDocumentEmbeddedFileAttachments());
+        self::assertTrue($profile->supportsDocumentAssociatedFiles());
+    }
+
     public function testPdfUaRequiresExtractableEmbeddedUnicodeFonts(): void
     {
         $profile = Profile::pdfUa1();

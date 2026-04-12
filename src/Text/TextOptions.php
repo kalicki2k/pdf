@@ -33,6 +33,7 @@ final readonly class TextOptions
         public float $hangingIndent = 0.0,
         public LinkTarget | TextLink | null $link = null,
         public ?TaggedStructureTag $tag = null,
+        public TextSemantic $semantic = TextSemantic::CONTENT,
     ) {
     }
 }
