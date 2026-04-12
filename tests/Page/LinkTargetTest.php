@@ -22,6 +22,7 @@ final class LinkTargetTest extends TestCase
     {
         $pageTarget = LinkTarget::page(2);
         $positionTarget = LinkTarget::position(3, 40, 500);
+        $namedDestinationTarget = LinkTarget::namedDestination('chapter-1');
 
         self::assertTrue($pageTarget->isPage());
         self::assertSame(2, $pageTarget->pageNumberValue());
@@ -29,6 +30,8 @@ final class LinkTargetTest extends TestCase
         self::assertSame(3, $positionTarget->pageNumberValue());
         self::assertSame(40.0, $positionTarget->xValue());
         self::assertSame(500.0, $positionTarget->yValue());
+        self::assertTrue($namedDestinationTarget->isNamedDestination());
+        self::assertSame('chapter-1', $namedDestinationTarget->namedDestinationValue());
     }
 
     public function testItRejectsInvalidPageNumbers(): void

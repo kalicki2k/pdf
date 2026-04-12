@@ -17,6 +17,7 @@ final readonly class Page
      * @param array<string, ImageSource> $imageResources
      * @param list<PageImage> $images
      * @param list<PageAnnotation> $annotations
+     * @param list<NamedDestination> $namedDestinations
      */
     public function __construct(
         public PageSize $size,
@@ -25,6 +26,7 @@ final readonly class Page
         public array $imageResources = [],
         public array $images = [],
         public array $annotations = [],
+        public array $namedDestinations = [],
         public ?Margin $margin = null,
         public ?Color $backgroundColor = null,
         public ?string $label = null,

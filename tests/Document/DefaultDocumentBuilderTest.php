@@ -213,4 +213,20 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame(72.0, $document->pages[2]->annotations[1]->target->xValue());
         self::assertSame(700.0, $document->pages[2]->annotations[1]->target->yValue());
     }
+
+    public function testItAddsNamedDestinationsAndTextLinks(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->namedDestination('intro')
+            ->text('Open intro', new TextOptions(
+                link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+            ))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->namedDestinations);
+        self::assertSame('intro', $document->pages[0]->namedDestinations[0]->name);
+        self::assertNotEmpty($document->pages[0]->annotations);
+        self::assertTrue($document->pages[0]->annotations[0]->target->isNamedDestination());
+        self::assertSame('intro', $document->pages[0]->annotations[0]->target->namedDestinationValue());
+    }
 }

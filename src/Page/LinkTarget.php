@@ -10,6 +10,7 @@ final readonly class LinkTarget
 {
     private function __construct(
         private ?string $externalUrl = null,
+        private ?string $namedDestination = null,
         private ?int $pageNumber = null,
         private ?float $x = null,
         private ?float $y = null,
@@ -23,6 +24,15 @@ final readonly class LinkTarget
         }
 
         return new self(externalUrl: $url);
+    }
+
+    public static function namedDestination(string $name): self
+    {
+        if ($name === '') {
+            throw new InvalidArgumentException('Link target destination name must not be empty.');
+        }
+
+        return new self(namedDestination: $name);
     }
 
     public static function page(int $pageNumber): self
@@ -53,6 +63,11 @@ final readonly class LinkTarget
         return $this->pageNumber !== null && $this->x === null && $this->y === null;
     }
 
+    public function isNamedDestination(): bool
+    {
+        return $this->namedDestination !== null;
+    }
+
     public function isPosition(): bool
     {
         return $this->pageNumber !== null && $this->x !== null && $this->y !== null;
@@ -65,6 +80,15 @@ final readonly class LinkTarget
         }
 
         return $this->externalUrl;
+    }
+
+    public function namedDestinationValue(): string
+    {
+        if ($this->namedDestination === null) {
+            throw new InvalidArgumentException('Link target does not contain a named destination.');
+        }
+
+        return $this->namedDestination;
     }
 
     public function pageNumberValue(): int

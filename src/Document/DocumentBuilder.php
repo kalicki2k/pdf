@@ -53,6 +53,8 @@ interface DocumentBuilder
 
     public function link(string $url, float $x, float $y, float $width, float $height, ?string $contents = null): self;
 
+    public function linkToNamedDestination(string $name, float $x, float $y, float $width, float $height, ?string $contents = null): self;
+
     public function linkToPage(int $pageNumber, float $x, float $y, float $width, float $height, ?string $contents = null): self;
 
     public function linkToPagePosition(
@@ -65,6 +67,10 @@ interface DocumentBuilder
         float $height,
         ?string $contents = null,
     ): self;
+
+    public function namedDestination(string $name): self;
+
+    public function namedDestinationPosition(string $name, float $x, float $y): self;
 
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): self;
 

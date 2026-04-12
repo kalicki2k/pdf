@@ -10,11 +10,13 @@ final readonly class PageAnnotationRenderContext
 {
     /**
      * @param array<int, int> $pageObjectIdsByPageNumber
+     * @param array<string, string> $namedDestinations
      */
     public function __construct(
         public int $pageObjectId,
         public bool $printable,
         public array $pageObjectIdsByPageNumber,
+        public array $namedDestinations = [],
         public ?int $structParentId = null,
     ) {
     }
@@ -31,5 +33,19 @@ final readonly class PageAnnotationRenderContext
         }
 
         return $pageObjectId;
+    }
+
+    public function namedDestination(string $name): string
+    {
+        $destination = $this->namedDestinations[$name] ?? null;
+
+        if ($destination === null) {
+            throw new InvalidArgumentException(sprintf(
+                'Named destination "%s" does not exist.',
+                $name,
+            ));
+        }
+
+        return $destination;
     }
 }

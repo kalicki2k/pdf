@@ -600,6 +600,9 @@ final class DocumentSerializationPlanBuilder
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
+    /**
+     * @param array<string, string> $namedDestinations
+     */
     private function buildCatalogDictionary(
         Document $document,
         ?int $metadataObjectId,
@@ -640,11 +643,13 @@ final class DocumentSerializationPlanBuilder
         }
 
         if ($namedDestinations !== []) {
-            $entries[] = '/Dests << ' . implode(' ', array_map(
-                static fn (string $name, string $destination): string => '/' . $name . ' ' . $destination,
-                array_keys($namedDestinations),
-                array_values($namedDestinations),
-            )) . ' >>';
+            $destEntries = [];
+
+            foreach ($namedDestinations as $name => $destination) {
+                $destEntries[] = '/' . $name . ' ' . $destination;
+            }
+
+            $entries[] = '/Dests << ' . implode(' ', $destEntries) . ' >>';
         }
 
         return '<< ' . implode(' ', $entries) . ' >>';

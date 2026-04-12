@@ -181,7 +181,27 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Dest [3 0 R /XYZ 72 700 null]', $pdf);
     }
 
-    public function testItRejectsCurrentPdfUaLinkAnnotationsDuringRendering(): void
+    public function testItRendersNamedDestinationLinks(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->namedDestination('intro')
+            ->text('Open intro', new TextOptions(
+                link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Dests << /intro [3 0 R /Fit] >>', $pdf);
+        self::assertStringContainsString('/Dest /intro', $pdf);
+    }
+
+    public function testItRendersTaggedPdfUaLinkAnnotations(): void
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfUa1())
@@ -193,9 +213,37 @@ final class DocumentRendererTest extends TestCase
         $renderer = new DocumentRenderer();
         $output = new StringOutput();
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('does not support the current page annotation implementation');
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Annots [5 0 R] /Tabs /S', $pdf);
+        self::assertStringContainsString('/StructParent 0', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Link', $pdf);
+        self::assertStringContainsString('/Alt (Open Example)', $pdf);
+        self::assertStringContainsString('/K [<< /Type /OBJR /Obj 5 0 R /Pg 3 0 R >>]', $pdf);
+    }
+
+    public function testItRendersTaggedPdfUaTextLinks(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->text('Read more', new TextOptions(
+                link: \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com'),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
 
         $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Link << /MCID 0 >> BDC', $pdf);
+        self::assertStringContainsString('/Contents (Read more)', $pdf);
+        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj 6 0 R /Pg 3 0 R >>]', $pdf);
     }
 }

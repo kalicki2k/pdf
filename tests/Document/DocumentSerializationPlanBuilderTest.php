@@ -13,6 +13,7 @@ use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Encryption\Encryption;
+use Kalle\Pdf\Encryption\Permissions;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
@@ -130,6 +131,22 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame("<< /Length 4 >>\nstream\nq\nQ\nendstream", $objects[3]->contents);
         self::assertSame('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 419.528 595.276] /Resources << >> /Contents 6 0 R >>', $objects[4]->contents);
         self::assertSame("<< /Length 0 >>\nstream\nendstream", $objects[5]->contents);
+    }
+
+    public function testItWritesSelectedEncryptionPermissionsIntoTheEncryptDictionary(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdf16(),
+            encryption: Encryption::aes128('user', 'owner')->withPermissions(
+                new Permissions(print: false, modify: true, copy: false, annotate: true),
+            ),
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/P -24', $objects[4]->contents);
     }
 
     public function testItRejectsEncryptionForPdfAProfiles(): void

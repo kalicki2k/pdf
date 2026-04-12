@@ -19,6 +19,7 @@ final readonly class LinkAnnotation implements PageAnnotation
         public float $width,
         public float $height,
         public ?string $contents = null,
+        public ?int $markedContentId = null,
         public ?int $structParentId = null,
     ) {
         if ($this->width <= 0.0) {
@@ -39,6 +40,7 @@ final readonly class LinkAnnotation implements PageAnnotation
             width: $this->width,
             height: $this->height,
             contents: $this->contents,
+            markedContentId: $this->markedContentId,
             structParentId: $structParentId,
         );
     }
@@ -64,6 +66,8 @@ final readonly class LinkAnnotation implements PageAnnotation
 
         if ($this->target->isExternalUrl()) {
             $entries[] = '/A << /S /URI /URI ' . $this->pdfString($this->target->externalUrlValue()) . ' >>';
+        } elseif ($this->target->isNamedDestination()) {
+            $entries[] = '/Dest /' . $this->pdfName($this->target->namedDestinationValue());
         } elseif ($this->target->isPage()) {
             $entries[] = '/Dest [' . $context->targetPageObjectId($this->target->pageNumberValue()) . ' 0 R /Fit]';
         } elseif ($this->target->isPosition()) {
@@ -85,6 +89,11 @@ final readonly class LinkAnnotation implements PageAnnotation
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
+    public function markedContentId(): ?int
+    {
+        return $this->markedContentId;
+    }
+
     private function formatNumber(float $value): string
     {
         $formatted = number_format($value, 3, '.', '');
@@ -99,5 +108,31 @@ final readonly class LinkAnnotation implements PageAnnotation
             ['\\\\', '\(', '\)'],
             $value,
         ) . ')';
+    }
+
+    private function pdfName(string $value): string
+    {
+        $encoded = '';
+
+        foreach (str_split($value) as $character) {
+            $ord = ord($character);
+
+            if (
+                ($ord >= 48 && $ord <= 57)
+                || ($ord >= 65 && $ord <= 90)
+                || ($ord >= 97 && $ord <= 122)
+                || $character === '-'
+                || $character === '_'
+                || $character === '.'
+            ) {
+                $encoded .= $character;
+
+                continue;
+            }
+
+            $encoded .= '#' . strtoupper(str_pad(dechex($ord), 2, '0', STR_PAD_LEFT));
+        }
+
+        return $encoded;
     }
 }
