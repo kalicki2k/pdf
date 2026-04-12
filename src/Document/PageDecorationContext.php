@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\Path;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Image\ImageAccessibility;
@@ -104,9 +105,16 @@ final class PageDecorationContext
         return $this;
     }
 
-    public function line(float $x1, float $y1, float $x2, float $y2, ?StrokeStyle $stroke = null): self
+    public function line(
+        float $x1,
+        float $y1,
+        float $x2,
+        float $y2,
+        ?StrokeStyle $stroke = null,
+        ?GraphicsAccessibility $accessibility = null,
+    ): self
     {
-        $this->builder = $this->builder->line($x1, $y1, $x2, $y2, $stroke);
+        $this->builder = $this->builder->line($x1, $y1, $x2, $y2, $stroke, $accessibility);
 
         return $this;
     }
@@ -118,8 +126,9 @@ final class PageDecorationContext
         float $height,
         ?StrokeStyle $stroke = null,
         ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
     ): self {
-        $this->builder = $this->builder->rectangle($x, $y, $width, $height, $stroke, $fillColor);
+        $this->builder = $this->builder->rectangle($x, $y, $width, $height, $stroke, $fillColor, $accessibility);
 
         return $this;
     }
@@ -132,15 +141,21 @@ final class PageDecorationContext
         float $radius,
         ?StrokeStyle $stroke = null,
         ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
     ): self {
-        $this->builder = $this->builder->roundedRectangle($x, $y, $width, $height, $radius, $stroke, $fillColor);
+        $this->builder = $this->builder->roundedRectangle($x, $y, $width, $height, $radius, $stroke, $fillColor, $accessibility);
 
         return $this;
     }
 
-    public function path(Path $path, ?StrokeStyle $stroke = null, ?Color $fillColor = null): self
+    public function path(
+        Path $path,
+        ?StrokeStyle $stroke = null,
+        ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
+    ): self
     {
-        $this->builder = $this->builder->path($path, $stroke, $fillColor);
+        $this->builder = $this->builder->path($path, $stroke, $fillColor, $accessibility);
 
         return $this;
     }

@@ -179,6 +179,65 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
         self::assertMatchesRegularExpression($this->textRegex('Footer 3/3'), $document->pages[2]->contents);
     }
 
+    public function testItAddsConveniencePageNumbersToTheFooter(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->pageNumbers(new TextOptions(
+                x: 24.0,
+                y: 20.0,
+                fontSize: 10.0,
+            ), 'Seite {{page}} von {{pages}}')
+            ->text('Page 1')
+            ->newPage()
+            ->text('Page 2')
+            ->build();
+
+        self::assertMatchesRegularExpression($this->textRegex('Seite 1 von 2'), $document->pages[0]->contents);
+        self::assertMatchesRegularExpression($this->textRegex('Seite 2 von 2'), $document->pages[1]->contents);
+    }
+
+    public function testItSupportsPredicateBasedHeadersAndFooters(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->headerOn(
+                static fn (PageDecorationContext $page): bool => !$page->isFirstPage(),
+                static function (PageDecorationContext $page): void {
+                    $page->text('Conditional header', new TextOptions(
+                        x: $page->page()->contentArea()->left,
+                        y: $page->page()->contentArea()->top,
+                        fontSize: 12.0,
+                    ));
+                },
+            )
+            ->footerOn(
+                static fn (PageDecorationContext $page): bool => $page->pageNumber() % 2 === 0,
+                static function (PageDecorationContext $page): void {
+                    $page->text('Even footer', new TextOptions(
+                        x: $page->page()->contentArea()->left,
+                        y: $page->page()->contentArea()->bottom + 12.0,
+                        fontSize: 12.0,
+                    ));
+                },
+            )
+            ->text('Page 1')
+            ->newPage()
+            ->text('Page 2')
+            ->newPage()
+            ->text('Page 3')
+            ->build();
+
+        self::assertDoesNotMatchRegularExpression($this->textRegex('Conditional header'), $document->pages[0]->contents);
+        self::assertMatchesRegularExpression($this->textRegex('Conditional header'), $document->pages[1]->contents);
+        self::assertMatchesRegularExpression($this->textRegex('Conditional header'), $document->pages[2]->contents);
+        self::assertDoesNotMatchRegularExpression($this->textRegex('Even footer'), $document->pages[0]->contents);
+        self::assertMatchesRegularExpression($this->textRegex('Even footer'), $document->pages[1]->contents);
+        self::assertDoesNotMatchRegularExpression($this->textRegex('Even footer'), $document->pages[2]->contents);
+    }
+
     public function testItRendersTaggedPageDecorationsAsArtifacts(): void
     {
         $document = DefaultDocumentBuilder::make()

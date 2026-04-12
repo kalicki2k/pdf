@@ -39,6 +39,17 @@ final class TaggedStructureCollector
             }
         }
 
+        foreach ($document->taggedFigures as $index => $figure) {
+            $key = 'figure:graphics:' . $index . ':' . $figure->pageIndex . ':' . $figure->markedContentId;
+            $this->addPageMarkedContentKey($pageMarkedContentKeys, $figure->pageIndex, $figure->markedContentId, $key);
+            $figureEntries[] = [
+                'key' => $key,
+                'pageIndex' => $figure->pageIndex,
+                'markedContentId' => $figure->markedContentId,
+                'altText' => $figure->altText,
+            ];
+        }
+
         foreach ($document->taggedTextBlocks as $index => $textBlock) {
             $key = 'text:' . $index . ':' . $textBlock->tag . ':' . $textBlock->pageIndex . ':' . $textBlock->markedContentId;
             $this->addPageMarkedContentKey($pageMarkedContentKeys, $textBlock->pageIndex, $textBlock->markedContentId, $key);

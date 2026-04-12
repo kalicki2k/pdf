@@ -8,6 +8,7 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\PageDecorationContext;
 use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\Path;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use PHPUnit\Framework\TestCase;
@@ -95,6 +96,27 @@ final class DefaultDocumentBuilderGraphicsTest extends TestCase
 
         self::assertStringContainsString('/Artifact BMC', $document->pages[0]->contents);
         self::assertStringContainsString('0 0 1 RG', $document->pages[0]->contents);
+    }
+
+    public function testItCanRenderSemanticGraphicsAsTaggedFigures(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Tagged graphics')
+            ->language('de-DE')
+            ->line(
+                10,
+                20,
+                100,
+                20,
+                new StrokeStyle(2.0, Color::rgb(0, 0, 1)),
+                GraphicsAccessibility::alternativeText('Blue separator line'),
+            )
+            ->build();
+
+        self::assertStringContainsString('/Figure << /MCID 0 >> BDC', $document->pages[0]->contents);
+        self::assertCount(1, $document->taggedFigures);
+        self::assertSame('Blue separator line', $document->taggedFigures[0]->altText);
     }
 
     public function testItExposesGraphicsMethodsInsidePageDecorations(): void

@@ -18,6 +18,7 @@ use Kalle\Pdf\Document\Form\TextField;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsEntry;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
@@ -128,6 +129,7 @@ final readonly class DocumentTableOfContentsBuilder
             creatorTool: $document->creatorTool,
             pdfaOutputIntent: $document->pdfaOutputIntent,
             encryption: $document->encryption,
+            taggedFigures: $this->shiftTaggedFigures($document->taggedFigures, $tocPageCount, $insertionIndex),
             taggedTables: $this->shiftTaggedTables($document->taggedTables, $tocPageCount, $insertionIndex),
             taggedTextBlocks: $this->shiftTaggedTextBlocks($document->taggedTextBlocks, $tocPageCount, $insertionIndex),
             attachments: $document->attachments,
@@ -557,6 +559,25 @@ final readonly class DocumentTableOfContentsBuilder
         }
 
         return $field;
+    }
+
+    /**
+     * @param list<TaggedFigure> $taggedFigures
+     * @return list<TaggedFigure>
+     */
+    private function shiftTaggedFigures(array $taggedFigures, int $tocPageCount, int $insertionIndex): array
+    {
+        $shifted = [];
+
+        foreach ($taggedFigures as $taggedFigure) {
+            $shifted[] = new TaggedFigure(
+                pageIndex: $this->shiftedPageIndex($taggedFigure->pageIndex, $tocPageCount, $insertionIndex),
+                markedContentId: $taggedFigure->markedContentId,
+                altText: $taggedFigure->altText,
+            );
+        }
+
+        return $shifted;
     }
 
     /**
