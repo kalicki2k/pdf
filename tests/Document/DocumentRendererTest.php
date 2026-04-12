@@ -304,6 +304,30 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Contents (Read docs)', $pdf);
     }
 
+    public function testItRendersWrappedTaggedPdfUaTextLinksAsOneLinkStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textSegments([
+                new TextSegment('Read docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+            ], new TextOptions(width: 45))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertSame(2, substr_count($pdf, '/Subtype /Link'));
+        self::assertSame(1, substr_count($pdf, '/Type /StructElem /S /Link'));
+        self::assertSame(2, substr_count($pdf, '/Type /OBJR /Obj'));
+        self::assertStringContainsString('/Alt (Read docs)', $pdf);
+    }
+
     public function testItRendersTaggedPdfUaTablesWithCaptionHeaderAndCells(): void
     {
         $table = Table::define(

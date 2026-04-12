@@ -14,6 +14,7 @@ use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 interface DocumentBuilder
 {
@@ -42,6 +43,11 @@ interface DocumentBuilder
     public function content(string $content): self;
 
     public function text(string $text, ?TextOptions $options = null): self;
+
+    /**
+     * @param list<TextSegment> $segments
+     */
+    public function textSegments(array $segments, ?TextOptions $options = null): self;
 
     public function paragraph(string $text, ?TextOptions $options = null): self;
 

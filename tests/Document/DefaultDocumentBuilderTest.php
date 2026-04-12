@@ -23,6 +23,7 @@ use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
 final class DefaultDocumentBuilderTest extends TestCase
@@ -228,5 +229,56 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertNotEmpty($document->pages[0]->annotations);
         self::assertTrue($document->pages[0]->annotations[0]->target->isNamedDestination());
         self::assertSame('intro', $document->pages[0]->annotations[0]->target->namedDestinationValue());
+    }
+
+    public function testItAddsMultipleLinkedTextSegmentsInOneCall(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textSegments([
+                new TextSegment('Docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' und '),
+                new TextSegment('API', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/api')),
+            ])
+            ->build();
+
+        self::assertCount(2, $document->pages[0]->annotations);
+        self::assertSame('https://example.com/docs', $document->pages[0]->annotations[0]->target->externalUrlValue());
+        self::assertSame('Docs', $document->pages[0]->annotations[0]->contents);
+        self::assertSame('https://example.com/api', $document->pages[0]->annotations[1]->target->externalUrlValue());
+        self::assertSame('API', $document->pages[0]->annotations[1]->contents);
+    }
+
+    public function testItMergesAdjacentTextSegmentsWithTheSameLink(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textSegments([
+                new TextSegment('Read', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' now'),
+            ])
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertSame('https://example.com/docs', $document->pages[0]->annotations[0]->target->externalUrlValue());
+        self::assertSame('Read docs', $document->pages[0]->annotations[0]->contents);
+    }
+
+    public function testItKeepsTheSameTaggedGroupForWrappedTextLinks(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textSegments([
+                new TextSegment('Read docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+            ], new TextOptions(width: 45))
+            ->build();
+
+        self::assertCount(2, $document->pages[0]->annotations);
+        self::assertSame(
+            $document->pages[0]->annotations[0]->taggedGroupKey,
+            $document->pages[0]->annotations[1]->taggedGroupKey,
+        );
+        self::assertNotNull($document->pages[0]->annotations[0]->taggedGroupKey);
     }
 }

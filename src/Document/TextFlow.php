@@ -11,6 +11,7 @@ use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Page;
 
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 use function max;
 use function preg_split;
@@ -107,6 +108,68 @@ final readonly class TextFlow
         return $lines;
     }
 
+    /**
+     * @param list<TextSegment> $segments
+     * @return list<list<TextSegment>>
+     */
+    public function wrapSegmentLines(
+        array $segments,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        float $x,
+    ): array {
+        $maxWidth = $this->lineAvailableWidth($x, $options, true);
+
+        if ($segments === [] || $maxWidth <= 0.0) {
+            return [$segments];
+        }
+
+        $paragraphs = $this->splitSegmentParagraphs($segments);
+        $lines = [];
+
+        foreach ($paragraphs as $paragraphIndex => $paragraphSegments) {
+            $tokens = $this->segmentTokens($paragraphSegments);
+
+            if ($tokens === []) {
+                $lines[] = [];
+
+                continue;
+            }
+
+            $currentLine = [];
+            $lineMaxWidth = $this->lineAvailableWidth($x, $options, true);
+
+            foreach ($tokens as $token) {
+                if ($currentLine === [] && trim($token->text) === '') {
+                    continue;
+                }
+
+                $candidateLine = [...$currentLine, $token];
+                $candidateWidth = $font->measureTextWidth($this->segmentsText($candidateLine), $options->fontSize);
+
+                if ($currentLine !== [] && $candidateWidth > $lineMaxWidth) {
+                    $lines[] = $currentLine;
+                    $currentLine = trim($token->text) === '' ? [] : [$token];
+                    $lineMaxWidth = $this->lineAvailableWidth($x, $options, false);
+
+                    continue;
+                }
+
+                $currentLine[] = $token;
+            }
+
+            if ($currentLine !== []) {
+                $lines[] = $currentLine;
+            }
+
+            if ($paragraphIndex < count($paragraphs) - 1) {
+                $lines[] = [];
+            }
+        }
+
+        return $lines;
+    }
+
     public function nextCursorY(TextOptions $options, float $resolvedY, int $lineCount = 1): float
     {
         return $resolvedY - ($this->lineHeight($options) * max($lineCount, 1)) - $this->spacingAfter($options);
@@ -179,5 +242,72 @@ final readonly class TextFlow
         return $isFirstLine
             ? max($options->firstLineIndent, 0.0)
             : max($options->hangingIndent, 0.0);
+    }
+
+    /**
+     * @param list<TextSegment> $segments
+     * @return list<list<TextSegment>>
+     */
+    private function splitSegmentParagraphs(array $segments): array
+    {
+        $paragraphs = [[]];
+
+        foreach ($segments as $segment) {
+            $parts = preg_split("/(\r\n|\r|\n)/", $segment->text, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$segment->text];
+
+            foreach ($parts as $part) {
+                if ($part === "\r\n" || $part === "\r" || $part === "\n") {
+                    $paragraphs[] = [];
+
+                    continue;
+                }
+
+                if ($part === '') {
+                    continue;
+                }
+
+                $paragraphs[array_key_last($paragraphs)][] = new TextSegment($part, $segment->link);
+            }
+        }
+
+        return $paragraphs;
+    }
+
+    /**
+     * @param list<TextSegment> $segments
+     * @return list<TextSegment>
+     */
+    private function segmentTokens(array $segments): array
+    {
+        $tokens = [];
+
+        foreach ($segments as $segment) {
+            $parts = preg_split('/(\s+)/u', $segment->text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [$segment->text];
+
+            foreach ($parts as $part) {
+                $tokens[] = new TextSegment($part, $segment->link);
+            }
+        }
+
+        while ($tokens !== [] && trim($tokens[0]->text) === '') {
+            array_shift($tokens);
+        }
+
+        while ($tokens !== [] && trim($tokens[array_key_last($tokens)]->text) === '') {
+            array_pop($tokens);
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param list<TextSegment> $segments
+     */
+    private function segmentsText(array $segments): string
+    {
+        return implode('', array_map(
+            static fn (TextSegment $segment): string => $segment->text,
+            $segments,
+        ));
     }
 }

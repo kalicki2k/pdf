@@ -877,9 +877,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $contents = [];
         $annotations = [];
         $availableWidth = $textFlow->availableTextWidthFrom($x, $options);
+        $currentPageIndex = count($this->pages);
+        $nextLinkGroupId = 0;
+        $continuingLinkGroup = null;
 
         foreach ($wrappedSegmentLines as $index => $lineSegments) {
             if ($lineSegments === []) {
+                $continuingLinkGroup = null;
                 continue;
             }
 
@@ -970,12 +974,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $runX += $mappedRun->width;
             }
 
-            foreach ($this->mergeRenderedSegmentEntries($renderedEntries) as $renderedEntry) {
+            $mergedRenderedEntries = $this->mergeRenderedSegmentEntries($renderedEntries);
+            $lastLinkedGroupOnLine = null;
+
+            foreach ($mergedRenderedEntries as $renderedEntryIndex => $renderedEntry) {
                 /** @var ?LinkTarget $link */
                 $link = $renderedEntry['link'];
                 $textBlockContent = $renderedEntry['textBlockContent'];
 
                 if ($link !== null && $renderedEntry['width'] > 0.0) {
+                    $groupKey = $renderedEntryIndex === 0
+                        && $continuingLinkGroup !== null
+                        && $this->sameLinkTarget($continuingLinkGroup['link'], $link)
+                        ? $continuingLinkGroup['key']
+                        : 'page-' . $currentPageIndex . '-text-link-' . $nextLinkGroupId++;
                     $linkResult = $this->buildLinkedTextRunContent(
                         $link,
                         $renderedEntry['text'],
@@ -985,13 +997,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $renderedEntry['width'],
                         $textFlow->lineHeight($options),
                         $font->ascent($options->fontSize),
+                        $groupKey,
                     );
                     $textBlockContent = $linkResult['contents'];
                     $annotations[] = $linkResult['annotation'];
+                    $lastLinkedGroupOnLine = [
+                        'key' => $groupKey,
+                        'link' => $link,
+                    ];
+                } else {
+                    $lastLinkedGroupOnLine = null;
                 }
 
                 $contents[] = $textBlockContent;
             }
+
+            $continuingLinkGroup = $lastLinkedGroupOnLine;
         }
 
         return [
@@ -1285,6 +1306,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $width,
         float $lineHeight,
         float $ascent,
+        ?string $taggedGroupKey = null,
     ): array {
         $markedContentId = ($this->profile ?? Profile::standard())->requiresTaggedLinkAnnotations()
             ? $this->nextMarkedContentId()
@@ -1308,6 +1330,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 height: $lineHeight,
                 contents: $text,
                 markedContentId: $markedContentId,
+                taggedGroupKey: $taggedGroupKey,
             ),
         ];
     }

@@ -567,6 +567,30 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Contents (Read docs)', $serialized);
     }
 
+    public function testItGroupsWrappedPdfUaTextLinksIntoOneStructElem(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textSegments([
+                new TextSegment('Read docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+            ], new TextOptions(width: 45))
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertSame(2, substr_count($serialized, '/Subtype /Link'));
+        self::assertSame(1, substr_count($serialized, '/Type /StructElem /S /Link'));
+        self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
+        self::assertStringContainsString('/Alt (Read docs)', $serialized);
+    }
+
     public function testItBuildsSoftMaskImageObjects(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
