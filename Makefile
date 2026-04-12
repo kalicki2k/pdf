@@ -86,6 +86,9 @@ test-pdfa1a-mixed-regression:
 test-pdfa1a-multipage-regression:
 	sh bin/test-pdfa1a-multipage-regression.sh
 
+test-pdfa1a-negative-regressions:
+	sh bin/test-pdfa1a-negative-regressions.sh
+
 test-pdfa2u-regressions:
 	sh bin/test-pdfa2u-regressions.sh
 
