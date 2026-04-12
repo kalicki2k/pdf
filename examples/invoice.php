@@ -184,8 +184,8 @@ $document = Pdf::document()
             TextSegment::plain(PHP_EOL . 'Leistungsdatum: 31.03.2026'),
         ],
         new TextOptions(
-            y: Units::mm(182),
-            width: Units::mm(80),
+            y: Units::mm(181),
+            width: Units::mm(   80),
             fontSize: 9,
             lineHeight: 12,
             fontName: StandardFont::HELVETICA->value,
