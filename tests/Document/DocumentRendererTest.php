@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use function dirname;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
@@ -207,7 +208,7 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
     }
 
-    public function testItRendersTaggedPdfA1aWithoutDocumentLanguage(): void
+    public function testItRejectsTaggedPdfA1aWithoutDocumentLanguage(): void
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1a())
@@ -224,13 +225,10 @@ final class DocumentRendererTest extends TestCase
         $renderer = new DocumentRenderer();
         $output = new StringOutput();
 
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a requires a document language.');
+
         $renderer->write($document, $output);
-
-        $pdf = $output->contents();
-
-        self::assertStringContainsString('/StructTreeRoot', $pdf);
-        self::assertStringContainsString('/MarkInfo << /Marked true >>', $pdf);
-        self::assertStringNotContainsString('/Lang (', $pdf);
     }
 
     public function testItRendersTaggedPdfA1aBulletListStructure(): void
@@ -1131,6 +1129,30 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('<< /Type /Outlines /First 9 0 R /Last 10 0 R /Count 2 >>', $pdf);
         self::assertStringContainsString('/Title (Intro) /Parent 8 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R', $pdf);
         self::assertStringContainsString('/Title (Details) /Parent 8 0 R /Dest [5 0 R /XYZ 72 640 null] /Prev 9 0 R', $pdf);
+    }
+
+    public function testItRendersNestedOutlines(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Chapter 1')
+            ->outlineLevel('Section 1.1', 2)
+            ->outlineLevel('Section 1.2', 2)
+            ->outlineLevel('Subsection 1.2.1', 3)
+            ->outline('Chapter 2')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('<< /Type /Outlines /First 6 0 R /Last 10 0 R /Count 5 >>', $pdf);
+        self::assertStringContainsString('/Title (Chapter 1) /Parent 5 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R /First 7 0 R /Last 8 0 R /Count 3', $pdf);
+        self::assertStringContainsString('/Title (Section 1.1) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 8 0 R', $pdf);
+        self::assertStringContainsString('/Title (Section 1.2) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Prev 7 0 R /First 9 0 R /Last 9 0 R /Count 1', $pdf);
+        self::assertStringContainsString('/Title (Subsection 1.2.1) /Parent 8 0 R /Dest [3 0 R /XYZ 0 841.89 null]', $pdf);
     }
 
     public function testItRendersTaggedPdfUaLinkAnnotations(): void

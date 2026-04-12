@@ -200,9 +200,23 @@ final class DocumentSerializationPlanValidator
     private function assertOutlineRequirements(Document $document): void
     {
         $pageCount = count($document->pages);
+        $previousLevel = null;
 
         foreach ($document->outlines as $outlineIndex => $outline) {
             if ($outline->pageNumber <= $pageCount) {
+                if ($outlineIndex === 0 && $outline->level !== 1) {
+                    throw new InvalidArgumentException('The first outline must use level 1.');
+                }
+
+                if ($previousLevel !== null && $outline->level > ($previousLevel + 1)) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Outline %d uses level %d, but outline nesting may only increase by one level at a time.',
+                        $outlineIndex + 1,
+                        $outline->level,
+                    ));
+                }
+
+                $previousLevel = $outline->level;
                 continue;
             }
 

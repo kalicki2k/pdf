@@ -643,18 +643,35 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->outline('Intro')
             ->text('Page 1')
             ->newPage()
-            ->outlineAt('Details', 2, 72, 640)
+            ->outlineAtLevel('Details', 2, 2, 72, 640)
             ->build();
 
         self::assertCount(2, $document->outlines);
         self::assertInstanceOf(Outline::class, $document->outlines[0]);
         self::assertSame('Intro', $document->outlines[0]->title);
         self::assertSame(1, $document->outlines[0]->pageNumber);
+        self::assertSame(1, $document->outlines[0]->level);
         self::assertFalse($document->outlines[0]->hasPosition());
         self::assertSame('Details', $document->outlines[1]->title);
         self::assertSame(2, $document->outlines[1]->pageNumber);
+        self::assertSame(2, $document->outlines[1]->level);
         self::assertSame(72.0, $document->outlines[1]->x);
         self::assertSame(640.0, $document->outlines[1]->y);
+    }
+
+    public function testItAddsNestedDocumentOutlinesByLevel(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Chapter 1')
+            ->outlineLevel('Section 1.1', 2)
+            ->outlineLevel('Section 1.2', 2)
+            ->outlineLevel('Subsection 1.2.1', 3)
+            ->build();
+
+        self::assertSame([1, 2, 2, 3], array_map(
+            static fn (Outline $outline): int => $outline->level,
+            $document->outlines,
+        ));
     }
 
     public function testItRejectsOutlineCoordinatesWhenOnlyOneCoordinateIsProvided(): void

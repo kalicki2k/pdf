@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Writer\IndirectObject;
 
+use function array_key_exists;
 use function count;
 use function implode;
 use function number_format;
@@ -35,27 +36,23 @@ final class DocumentOutlineObjectBuilder
             return [];
         }
 
+        $tree = $this->buildTree($document);
         $objects = [
             IndirectObject::plain(
                 $state->outlineRootObjectId,
-                $this->buildRootDictionary($state->outlineItemObjectIds),
+                $this->buildRootDictionary($state, $tree),
             ),
         ];
 
         foreach ($document->outlines as $index => $outline) {
-            $itemObjectId = $state->outlineItemObjectIds[$index];
-            $previousObjectId = $index > 0 ? $state->outlineItemObjectIds[$index - 1] : null;
-            $nextObjectId = $index < count($state->outlineItemObjectIds) - 1 ? $state->outlineItemObjectIds[$index + 1] : null;
-
             $objects[] = IndirectObject::plain(
-                $itemObjectId,
+                $state->outlineItemObjectIds[$index],
                 $this->buildItemDictionary(
                     $document,
                     $state,
                     $outline,
-                    $state->outlineRootObjectId,
-                    $previousObjectId,
-                    $nextObjectId,
+                    $index,
+                    $tree,
                 ),
             );
         }
@@ -64,42 +61,144 @@ final class DocumentOutlineObjectBuilder
     }
 
     /**
-     * @param list<int> $outlineItemObjectIds
+     * @param array{
+     *   parentIndices: array<int, ?int>,
+     *   children: array<int, list<int>>,
+     *   rootChildren: list<int>,
+     *   descendantCounts: array<int, int>
+     * } $tree
      */
-    private function buildRootDictionary(array $outlineItemObjectIds): string
+    private function buildRootDictionary(
+        DocumentSerializationPlanBuildState $state,
+        array $tree,
+    ): string
     {
+        $rootChildren = $tree['rootChildren'];
+
         return '<< /Type /Outlines /First '
-            . $outlineItemObjectIds[0]
+            . $state->outlineItemObjectIds[$rootChildren[0]]
             . ' 0 R /Last '
-            . $outlineItemObjectIds[count($outlineItemObjectIds) - 1]
+            . $state->outlineItemObjectIds[$rootChildren[count($rootChildren) - 1]]
             . ' 0 R /Count '
-            . count($outlineItemObjectIds)
+            . count($state->outlineItemObjectIds)
             . ' >>';
     }
 
+    /**
+     * @param array{
+     *   parentIndices: array<int, ?int>,
+     *   children: array<int, list<int>>,
+     *   rootChildren: list<int>,
+     *   descendantCounts: array<int, int>
+     * } $tree
+     */
     private function buildItemDictionary(
         Document $document,
         DocumentSerializationPlanBuildState $state,
         Outline $outline,
-        int $outlineRootObjectId,
-        ?int $previousObjectId,
-        ?int $nextObjectId,
+        int $outlineIndex,
+        array $tree,
     ): string {
+        $parentIndex = $tree['parentIndices'][$outlineIndex];
+        $siblings = $parentIndex === null
+            ? $tree['rootChildren']
+            : ($tree['children'][$parentIndex] ?? []);
+        $siblingOffset = array_search($outlineIndex, $siblings, true);
+        $previousIndex = $siblingOffset !== false && $siblingOffset > 0 ? $siblings[$siblingOffset - 1] : null;
+        $nextIndex = $siblingOffset !== false && $siblingOffset < count($siblings) - 1 ? $siblings[$siblingOffset + 1] : null;
+        $children = $tree['children'][$outlineIndex] ?? [];
         $entries = [
             '/Title ' . $this->pdfString($outline->title),
-            '/Parent ' . $outlineRootObjectId . ' 0 R',
+            '/Parent ' . ($parentIndex === null
+                ? $state->outlineRootObjectId . ' 0 R'
+                : $state->outlineItemObjectIds[$parentIndex] . ' 0 R'),
             '/Dest ' . $this->buildDestination($document, $state, $outline),
         ];
 
-        if ($previousObjectId !== null) {
-            $entries[] = '/Prev ' . $previousObjectId . ' 0 R';
+        if ($previousIndex !== null) {
+            $entries[] = '/Prev ' . $state->outlineItemObjectIds[$previousIndex] . ' 0 R';
         }
 
-        if ($nextObjectId !== null) {
-            $entries[] = '/Next ' . $nextObjectId . ' 0 R';
+        if ($nextIndex !== null) {
+            $entries[] = '/Next ' . $state->outlineItemObjectIds[$nextIndex] . ' 0 R';
+        }
+
+        if ($children !== []) {
+            $entries[] = '/First ' . $state->outlineItemObjectIds[$children[0]] . ' 0 R';
+            $entries[] = '/Last ' . $state->outlineItemObjectIds[$children[count($children) - 1]] . ' 0 R';
+            $entries[] = '/Count ' . $tree['descendantCounts'][$outlineIndex];
         }
 
         return '<< ' . implode(' ', $entries) . ' >>';
+    }
+
+    /**
+     * @return array{
+     *   parentIndices: array<int, ?int>,
+     *   children: array<int, list<int>>,
+     *   rootChildren: list<int>,
+     *   descendantCounts: array<int, int>
+     * }
+     */
+    private function buildTree(Document $document): array
+    {
+        $parentIndices = [];
+        $children = [];
+        $rootChildren = [];
+        $lastIndexByLevel = [];
+
+        foreach ($document->outlines as $index => $outline) {
+            $parentIndex = $outline->level === 1 ? null : ($lastIndexByLevel[$outline->level - 1] ?? null);
+            $parentIndices[$index] = $parentIndex;
+
+            if ($parentIndex === null) {
+                $rootChildren[] = $index;
+            } else {
+                $children[$parentIndex] ??= [];
+                $children[$parentIndex][] = $index;
+            }
+
+            $lastIndexByLevel[$outline->level] = $index;
+
+            foreach (array_keys($lastIndexByLevel) as $level) {
+                if ($level <= $outline->level) {
+                    continue;
+                }
+
+                unset($lastIndexByLevel[$level]);
+            }
+        }
+
+        $descendantCounts = [];
+
+        foreach (array_keys($document->outlines) as $index) {
+            $descendantCounts[$index] = $this->countDescendants($index, $children);
+        }
+
+        return [
+            'parentIndices' => $parentIndices,
+            'children' => $children,
+            'rootChildren' => $rootChildren,
+            'descendantCounts' => $descendantCounts,
+        ];
+    }
+
+    /**
+     * @param array<int, list<int>> $children
+     */
+    private function countDescendants(int $index, array $children): int
+    {
+        if (!array_key_exists($index, $children)) {
+            return 0;
+        }
+
+        $count = count($children[$index]);
+
+        foreach ($children[$index] as $childIndex) {
+            $count += $this->countDescendants($childIndex, $children);
+        }
+
+        return $count;
     }
 
     private function buildDestination(

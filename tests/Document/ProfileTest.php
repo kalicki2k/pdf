@@ -51,10 +51,14 @@ final class ProfileTest extends TestCase
         self::assertSame(1, $profile->pdfaPart());
         self::assertTrue($profile->requiresAnnotationAppearanceStreams());
         self::assertSame($requiresTaggedPdf, $profile->requiresTaggedPdf());
+        self::assertSame($requiresTaggedPdf, $profile->requiresTaggedImages());
+        self::assertSame($requiresTaggedPdf, $profile->requiresFigureAltText());
+        self::assertSame($requiresTaggedPdf, $profile->requiresTaggedLinkAnnotations());
+        self::assertSame($requiresTaggedPdf, $profile->requiresLinkAnnotationAlternativeDescriptions());
         self::assertTrue($profile->requiresPrintableAnnotations());
         self::assertSame($requiresExtractableEmbeddedUnicodeFonts, $profile->requiresEmbeddedUnicodeFonts());
         self::assertSame($requiresExtractableEmbeddedUnicodeFonts, $profile->requiresExtractableEmbeddedUnicodeFonts());
-        self::assertFalse($profile->requiresDocumentLanguage());
+        self::assertSame($requiresTaggedPdf, $profile->requiresDocumentLanguage());
         self::assertFalse($profile->supportsAcroForms());
         self::assertFalse($profile->supportsDocumentEmbeddedFileAttachments());
         self::assertFalse($profile->supportsDocumentAssociatedFiles());

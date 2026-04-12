@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kalle\Pdf\Document;
+namespace Kalle\Pdf\Document\TableOfContents;
 
 use InvalidArgumentException;
 
-final readonly class Outline
+final readonly class TableOfContentsEntry
 {
     private function __construct(
         public string $title,
@@ -16,19 +16,19 @@ final readonly class Outline
         public ?float $y = null,
     ) {
         if ($this->title === '') {
-            throw new InvalidArgumentException('Outline title must not be empty.');
+            throw new InvalidArgumentException('Table of contents entry title must not be empty.');
         }
 
         if ($this->pageNumber < 1) {
-            throw new InvalidArgumentException('Outline page number must be greater than zero.');
+            throw new InvalidArgumentException('Table of contents entry page number must be greater than zero.');
         }
 
         if ($this->level < 1) {
-            throw new InvalidArgumentException('Outline level must be greater than zero.');
+            throw new InvalidArgumentException('Table of contents entry level must be greater than zero.');
         }
 
         if (($this->x === null) !== ($this->y === null)) {
-            throw new InvalidArgumentException('Outline coordinates must be provided together.');
+            throw new InvalidArgumentException('Table of contents entry coordinates must be provided together.');
         }
     }
 

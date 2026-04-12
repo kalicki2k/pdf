@@ -138,6 +138,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
                     ImagePlacement::at(72, 440, 32, 32),
+                    ImageAccessibility::alternativeText('Project figure'),
                 )
                 ->build(),
         );

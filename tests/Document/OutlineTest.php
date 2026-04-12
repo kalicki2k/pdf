@@ -16,15 +16,17 @@ final class OutlineTest extends TestCase
 
         self::assertSame('Intro', $outline->title);
         self::assertSame(2, $outline->pageNumber);
+        self::assertSame(1, $outline->level);
         self::assertFalse($outline->hasPosition());
     }
 
     public function testItCreatesAPositionedOutline(): void
     {
-        $outline = Outline::position('Section', 3, 72.0, 640.0);
+        $outline = Outline::position('Section', 3, 72.0, 640.0, 2);
 
         self::assertSame(72.0, $outline->x);
         self::assertSame(640.0, $outline->y);
+        self::assertSame(2, $outline->level);
         self::assertTrue($outline->hasPosition());
     }
 
@@ -42,5 +44,13 @@ final class OutlineTest extends TestCase
         $this->expectExceptionMessage('Outline page number must be greater than zero.');
 
         Outline::page('Broken', 0);
+    }
+
+    public function testItRejectsAnInvalidLevel(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Outline level must be greater than zero.');
+
+        Outline::page('Broken', 1, 0);
     }
 }

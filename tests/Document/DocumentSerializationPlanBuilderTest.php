@@ -1291,6 +1291,49 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
     }
 
+    public function testItBuildsNestedOutlineRelationships(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Chapter 1')
+            ->outlineLevel('Section 1.1', 2)
+            ->outlineLevel('Section 1.2', 2)
+            ->outlineLevel('Subsection 1.2.1', 3)
+            ->outline('Chapter 2')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $objectsById = [];
+
+        foreach ($objects as $object) {
+            $objectsById[$object->objectId] = $object;
+        }
+
+        self::assertStringContainsString('/Outlines 5 0 R', $objectsById[1]->contents);
+        self::assertSame('<< /Type /Outlines /First 6 0 R /Last 10 0 R /Count 5 >>', $objectsById[5]->contents);
+        self::assertSame(
+            '<< /Title (Chapter 1) /Parent 5 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R /First 7 0 R /Last 8 0 R /Count 3 >>',
+            $objectsById[6]->contents,
+        );
+        self::assertSame(
+            '<< /Title (Section 1.1) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 8 0 R >>',
+            $objectsById[7]->contents,
+        );
+        self::assertSame(
+            '<< /Title (Section 1.2) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Prev 7 0 R /First 9 0 R /Last 9 0 R /Count 1 >>',
+            $objectsById[8]->contents,
+        );
+        self::assertSame(
+            '<< /Title (Subsection 1.2.1) /Parent 8 0 R /Dest [3 0 R /XYZ 0 841.89 null] >>',
+            $objectsById[9]->contents,
+        );
+        self::assertSame(
+            '<< /Title (Chapter 2) /Parent 5 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Prev 6 0 R >>',
+            $objectsById[10]->contents,
+        );
+    }
+
     public function testItRejectsOutlinesThatReferenceMissingPages(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1300,6 +1343,33 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Outline 1 references page 2, but the document only has 1 page(s).');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsNestedOutlinesThatSkipAParentLevel(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->outlineLevel('Broken', 2)
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The first outline must use level 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsNestedOutlinesThatJumpMoreThanOneLevel(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Top')
+            ->outlineLevel('Too Deep', 3)
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Outline 2 uses level 3, but outline nesting may only increase by one level at a time.');
 
         $builder->build($document);
     }
@@ -1326,6 +1396,31 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Type /OBJR /Obj', $serialized);
     }
 
+    public function testItAddsTaggedPdfA1aLinkAnnotations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->paragraph('Lead in text Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertMatchesRegularExpression('/\/StructParent \d+/', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Link', $serialized);
+        self::assertStringContainsString('/Type /OBJR /Obj', $serialized);
+        self::assertStringContainsString('/Alt (Open Example)', $serialized);
+    }
+
     public function testItRejectsPdfUaLinkAnnotationsWithoutAlternativeText(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1338,6 +1433,25 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('requires alternative text for link annotation 1 on page 1');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsPdfA1aLinkAnnotationsWithoutAlternativeText(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->paragraph('Lead in text Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->link('https://example.com', 40, 500, 120, 16)
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a requires alternative text for link annotation 1 on page 1.');
 
         $builder->build($document);
     }
@@ -1817,6 +1931,22 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testItRejectsPdfA1aImagesWithoutAccessibilityMetadata(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::at(40, 500, width: 120))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Tagged PDF profiles require accessibility metadata for image 1 on page 1.');
+
+        $builder->build($document);
+    }
+
     public function testItAddsCatalogMetadataLangAndMarkInfoForTaggedProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -2142,7 +2272,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
-    public function testItAllowsPdfA1aWithoutLanguage(): void
+    public function testItRejectsPdfA1aWithoutLanguage(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -2153,13 +2283,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ))
             ->build();
 
-        $serialized = implode("\n", array_map(
-            static fn ($object): string => $object->contents,
-            iterator_to_array($builder->build($document)->objects),
-        ));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a requires a document language.');
 
-        self::assertStringContainsString('/MarkInfo << /Marked true >>', $serialized);
-        self::assertStringNotContainsString('/Lang (', $serialized);
+        $builder->build($document);
     }
 
     public function testItRejectsStandardFontsForPdfAProfiles(): void
