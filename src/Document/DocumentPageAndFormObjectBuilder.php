@@ -231,12 +231,28 @@ final class DocumentPageAndFormObjectBuilder
             return '';
         }
 
-        return implode("\n", [
+        $contents = implode("\n", [
             'q',
             $this->buildFillColorOperator($color),
             '0 0 ' . $this->formatNumber($page->size->width()) . ' ' . $this->formatNumber($page->size->height()) . ' re',
             'f',
             'Q',
+        ]);
+
+        // Page backgrounds are presentation-only and must stay outside the tagged content tree.
+        return $this->wrapArtifactContents($contents);
+    }
+
+    private function wrapArtifactContents(string $contents): string
+    {
+        if ($contents === '') {
+            return '';
+        }
+
+        return implode("\n", [
+            '/Artifact BMC',
+            $contents,
+            'EMC',
         ]);
     }
 

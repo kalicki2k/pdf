@@ -7,12 +7,15 @@ namespace Kalle\Pdf\Document;
 use DateTimeImmutable;
 
 use function implode;
-use function sprintf;
-use function str_replace;
 use function substr;
 
 final class DocumentInfoDictionaryBuilder
 {
+    public function __construct(
+        private readonly PdfTextStringEncoder $textStringEncoder = new PdfTextStringEncoder(),
+    ) {
+    }
+
     public function build(Document $document, DateTimeImmutable $serializedAt): string
     {
         $entries = [];
@@ -61,13 +64,6 @@ final class DocumentInfoDictionaryBuilder
 
     private function pdfString(string $value): string
     {
-        return sprintf(
-            '(%s)',
-            str_replace(
-                ['\\', '(', ')', "\r"],
-                ['\\\\', '\\(', '\\)', '\r'],
-                $value,
-            ),
-        );
+        return $this->textStringEncoder->encodeLiteral($value);
     }
 }

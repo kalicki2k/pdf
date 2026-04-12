@@ -21,6 +21,7 @@ use Kalle\Pdf\Writer\IndirectObject;
 
 use function preg_match;
 use function sprintf;
+use function usort;
 
 final class DocumentTaggedPdfObjectBuilder
 {
@@ -202,33 +203,10 @@ final class DocumentTaggedPdfObjectBuilder
         }
 
         $objects = [];
-        $documentKidObjectIds = [];
-
-        foreach ($state->taggedStructure->figureEntries as $figureEntry) {
-            $documentKidObjectIds[] = $state->taggedStructureObjectIds->figureStructElemObjectIds[$figureEntry['key']];
-        }
-
-        foreach ($state->taggedStructure->textEntries as $textEntry) {
-            $documentKidObjectIds[] = $state->taggedStructureObjectIds->textStructElemObjectIds[$textEntry['key']];
-        }
-
-        foreach ($state->taggedStructure->listEntries as $listEntry) {
-            $documentKidObjectIds[] = $state->taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']];
-        }
-
-        foreach ($document->taggedTables as $taggedTable) {
-            $documentKidObjectIds[] = $state->taggedStructureObjectIds->tableStructElemObjectIds[
-                TaggedStructureObjectIds::tableKey($taggedTable->tableId)
-            ];
-        }
-
-        foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
-            $documentKidObjectIds[] = $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']];
-        }
-
-        foreach ($state->taggedFormStructure['entries'] as $formEntry) {
-            $documentKidObjectIds[] = $state->taggedFormStructElemObjectIds[$formEntry['key']];
-        }
+        $documentKidObjectIds = array_map(
+            fn (array $entry): int => $this->resolveDocumentKidObjectId($entry['key'], $state),
+            $this->documentChildEntriesInReadingOrder($state),
+        );
 
         $objects[] = new IndirectObject(
             $state->structTreeRootObjectId,
@@ -484,6 +462,63 @@ final class DocumentTaggedPdfObjectBuilder
         }
 
         return $objects;
+    }
+
+    /**
+     * @return list<array{key: string, pageIndex: int, orderIndex: int, sequence: int}>
+     */
+    private function documentChildEntriesInReadingOrder(DocumentSerializationPlanBuildState $state): array
+    {
+        $entries = [];
+        $sequence = 0;
+
+        foreach ($state->taggedStructure->documentChildEntries as $entry) {
+            $entries[] = [
+                'key' => $entry['key'],
+                'pageIndex' => $entry['pageIndex'],
+                'orderIndex' => $entry['markedContentId'],
+                'sequence' => $sequence++,
+            ];
+        }
+
+        foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
+            $entries[] = [
+                'key' => $linkEntry['key'],
+                'pageIndex' => $linkEntry['pageIndex'],
+                'orderIndex' => $linkEntry['markedContentIds'] !== []
+                    ? min($linkEntry['markedContentIds'])
+                    : 1000000 + ($linkEntry['annotationIndices'][0] ?? 0),
+                'sequence' => $sequence++,
+            ];
+        }
+
+        foreach ($state->taggedFormStructure['entries'] as $formEntry) {
+            $entries[] = [
+                'key' => $formEntry['key'],
+                'pageIndex' => $formEntry['pageIndex'],
+                'orderIndex' => 2000000,
+                'sequence' => $sequence++,
+            ];
+        }
+
+        usort(
+            $entries,
+            static fn (array $left, array $right): int => [$left['pageIndex'], $left['orderIndex'], $left['sequence']]
+                <=> [$right['pageIndex'], $right['orderIndex'], $right['sequence']],
+        );
+
+        return $entries;
+    }
+
+    private function resolveDocumentKidObjectId(string $key, DocumentSerializationPlanBuildState $state): int
+    {
+        return $state->taggedStructureObjectIds->figureStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->textStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->listStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->tableStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->linkStructElemObjectIds[$key]
+            ?? $state->taggedFormStructElemObjectIds[$key]
+            ?? throw new InvalidArgumentException(sprintf('Unknown tagged document child key "%s".', $key));
     }
 
     /**

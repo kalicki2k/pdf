@@ -78,4 +78,50 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
         self::assertSame('<< /Filter /Standard >>', $objects[2]->contents);
         self::assertFalse($objects[2]->encryptable);
     }
+
+    public function testItEncodesUnicodeMetadataIntoTheInfoDictionary(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Projektübersicht',
+            author: 'Jörg Example',
+            subject: 'Überblick',
+            creator: 'Rocket 🚀',
+            creatorTool: 'pdf2 Prüfsuite',
+        );
+        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+            $document,
+            static fn (int $nextStructParentId): array => [
+                'linkEntries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
+            static fn (array $fieldObjectIds, array $relatedObjectIds, int $nextStructParentId): array => [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+            ],
+            static fn (): array => [],
+        );
+
+        $objects = (new DocumentMetadataObjectBuilder())->buildObjects(
+            $document,
+            $state,
+            new DateTimeImmutable('2026-04-12T10:00:00+02:00'),
+            '',
+        );
+
+        self::assertCount(3, $objects);
+        self::assertStringContainsString('/Title (Projekt\\374bersicht)', $objects[2]->contents);
+        self::assertStringContainsString('/Author (J\\366rg Example)', $objects[2]->contents);
+        self::assertStringContainsString('/Subject (\\334berblick)', $objects[2]->contents);
+        self::assertStringContainsString('/Producer (pdf2 Pr\\374fsuite)', $objects[2]->contents);
+        self::assertStringContainsString('/Creator (\\376\\377', $objects[2]->contents);
+        self::assertStringNotContainsString('Projektübersicht', $objects[2]->contents);
+        self::assertStringNotContainsString('Jörg Example', $objects[2]->contents);
+        self::assertStringNotContainsString('Überblick', $objects[2]->contents);
+        self::assertStringContainsString('<rdf:li xml:lang="x-default">Projektübersicht</rdf:li>', $objects[0]->contents);
+        self::assertStringContainsString('<rdf:li>Jörg Example</rdf:li>', $objects[0]->contents);
+    }
 }

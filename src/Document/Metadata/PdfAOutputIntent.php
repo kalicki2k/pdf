@@ -31,4 +31,14 @@ final readonly class PdfAOutputIntent
     {
         return new self(IccProfile::defaultSrgbPath());
     }
+
+    public static function defaultCmyk(): self
+    {
+        return new self(
+            IccProfile::defaultCmykPath(),
+            'Artifex CMYK SWOP Profile',
+            'Artifex CMYK SWOP Profile',
+            4,
+        );
+    }
 }

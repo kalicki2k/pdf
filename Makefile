@@ -58,8 +58,10 @@ validate-pdfua:
 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose --defaultflavour ua1 --flavour ua1 "/app/$(PDF)"
 
 test-pdfa1b-regression:
-	$(DOCKER_COMPOSE) run --rm php php bin/generate-pdfa1b-regression.php /app/var/pdfa-regression/pdf-a-1b-minimal.pdf
-	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose /app/var/pdfa-regression/pdf-a-1b-minimal.pdf
+	sh bin/test-pdfa1b-regression.sh
+
+test-pdfa1b-regressions:
+	sh bin/test-pdfa1b-regressions.sh
 
 test-pdfa2u-regression:
 	$(DOCKER_COMPOSE) run --rm php php bin/generate-pdfa2u-regression.php /app/var/pdfa-regression/pdf-a-2u-minimal.pdf
@@ -80,6 +82,9 @@ test-pdfa1a-table-regression:
 
 test-pdfa1a-mixed-regression:
 	sh bin/test-pdfa1a-mixed-regression.sh
+
+test-pdfa1a-multipage-regression:
+	sh bin/test-pdfa1a-multipage-regression.sh
 
 test-pdfa2u-regressions:
 	sh bin/test-pdfa2u-regressions.sh

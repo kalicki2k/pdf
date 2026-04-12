@@ -30,6 +30,11 @@ final readonly class IccProfile
         return dirname(__DIR__, 3) . '/assets/color/icc/sRGB.icc';
     }
 
+    public static function defaultCmykPath(): string
+    {
+        return dirname(__DIR__, 3) . '/assets/color/icc/default_cmyk.icc';
+    }
+
     public static function fromPath(string $path, int $colorComponents = 3): self
     {
         $data = @file_get_contents($path);

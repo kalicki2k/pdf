@@ -396,6 +396,35 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertStringContainsString("/LBody << /MCID 3 >> BDC\nBT", $document->pages[0]->contents);
     }
 
+    public function testItWrapsTaggedTableDecorationGraphicsAsArtifacts(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->table(
+                \Kalle\Pdf\Document\Table::define(
+                    \Kalle\Pdf\Document\TableColumn::fixed(120.0),
+                )
+                    ->withPlacement(\Kalle\Pdf\Document\TablePlacement::at(72.0, 700.0, 120.0))
+                    ->withRows(
+                        \Kalle\Pdf\Document\TableRow::fromCells(
+                            \Kalle\Pdf\Document\TableCell::text('Cell')->withBackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
+                        ),
+                    )
+                    ->withTextOptions(new TextOptions(
+                        fontSize: 12,
+                        lineHeight: 15,
+                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    )),
+            )
+            ->build();
+
+        self::assertStringContainsString("/Artifact BMC\nq\n0.9 0.9 0.9 rg", $document->pages[0]->contents);
+        self::assertStringContainsString("/Artifact BMC\nq\n0.5 w", $document->pages[0]->contents);
+        self::assertStringContainsString('/TD << /MCID ', $document->pages[0]->contents);
+    }
+
     public function testItBuildsTaggedNumberedLists(): void
     {
         $document = DefaultDocumentBuilder::make()

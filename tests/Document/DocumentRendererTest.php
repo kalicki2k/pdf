@@ -207,6 +207,32 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
     }
 
+    public function testItRendersTaggedPdfA1aWithoutDocumentLanguage(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->paragraph('Absatztext Привет', new TextOptions(
+                x: 72,
+                y: 720,
+                width: 320,
+                fontSize: 12,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/StructTreeRoot', $pdf);
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $pdf);
+        self::assertStringNotContainsString('/Lang (', $pdf);
+    }
+
     public function testItRendersTaggedPdfA1aBulletListStructure(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -383,6 +409,195 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /Figure', $pdf);
         self::assertStringContainsString('/Subtype /Link', $pdf);
         self::assertStringContainsString('/AP << /N ', $pdf);
+    }
+
+    public function testItRendersTaggedPdfA1aLayoutGraphicsAsArtifacts(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->newPage(new \Kalle\Pdf\Page\PageOptions(
+                backgroundColor: Color::rgb(0.95, 0.95, 0.95),
+            ))
+            ->table(
+                Table::define(
+                    TableColumn::fixed(120.0),
+                )
+                    ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                    ->withRows(
+                        TableRow::fromCells(
+                            TableCell::text('Cell')->withBackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
+                        ),
+                    )
+                    ->withTextOptions(new TextOptions(
+                        fontSize: 12,
+                        lineHeight: 15,
+                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    )),
+            )
+            ->paragraph('Text content Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                ImagePlacement::at(240, 620, width: 80),
+                ImageAccessibility::alternativeText('Meaningful image'),
+            )
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 40, 40, ImageColorSpace::RGB),
+                ImagePlacement::at(340, 620, width: 32),
+                ImageAccessibility::decorative(),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString("/Artifact BMC\nq\n0.95 0.95 0.95 rg", $pdf);
+        self::assertStringContainsString("/Artifact BMC\nq\n0.9 0.9 0.9 rg", $pdf);
+        self::assertStringContainsString("/Artifact BMC\nq\n0.5 w", $pdf);
+        self::assertStringContainsString('/Figure << /MCID ', $pdf);
+        self::assertStringContainsString("/Artifact BMC\nq\n32 0 0 32 340 620 cm", $pdf);
+        self::assertStringContainsString('/P << /MCID ', $pdf);
+    }
+
+    public function testItRendersTheSupportedPdfA1aStructureSurface(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(120.0),
+            TableColumn::fixed(120.0),
+        )
+            ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
+            ->withCaption(TableCaption::text('Kurzuebersicht Привет'))
+            ->withHeaderRows(
+                TableRow::fromTexts('Spalte A', 'Spalte B'),
+            )
+            ->withRows(
+                TableRow::fromTexts('Wert 1', 'Wert 2'),
+            )
+            ->withTextOptions(new TextOptions(
+                fontSize: 12,
+                lineHeight: 15,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ));
+
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->heading('Ueberschrift Привет', 1, new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->paragraph('Absatztext Привет', new TextOptions(
+                x: 72,
+                y: 724,
+                width: 320,
+                fontSize: 12,
+                lineHeight: 16,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->list(
+                ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
+                text: new TextOptions(
+                    x: 72,
+                    y: 676,
+                    width: 220,
+                    fontSize: 12,
+                    lineHeight: 16,
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                ),
+            )
+            ->table($table)
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                ImagePlacement::at(320, 610, width: 140),
+                ImageAccessibility::alternativeText('Projektgrafik'),
+            )
+            ->link('https://example.com/spec', 72, 480, 180, 16, 'Spezifikation oeffnen')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Type /StructElem /S /H1', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /L', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /LI', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Lbl', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /LBody', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Table', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Caption', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /TR', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /TH', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /TD', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Figure', $pdf);
+        self::assertStringContainsString('/Subtype /Link', $pdf);
+        self::assertStringContainsString('/AP << /N ', $pdf);
+    }
+
+    public function testItRendersTaggedPdfA1aMultipageStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->heading('Kapitel Eins Привет', 1, new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->paragraph('Erste Seite Привет', new TextOptions(
+                x: 72,
+                y: 724,
+                width: 320,
+                fontSize: 12,
+                lineHeight: 16,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->newPage()
+            ->heading('Kapitel Zwei Привет', 1, new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->paragraph('Zweite Seite Привет', new TextOptions(
+                x: 72,
+                y: 724,
+                width: 320,
+                fontSize: 12,
+                lineHeight: 16,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/StructTreeRoot', $pdf);
+        self::assertStringContainsString('/StructParents 0', $pdf);
+        self::assertStringContainsString('/StructParents 1', $pdf);
+        self::assertStringContainsString('/Nums [0 [', $pdf);
+        self::assertStringContainsString('1 [', $pdf);
+        self::assertGreaterThanOrEqual(2, substr_count($pdf, '/Type /StructElem /S /H1'));
+        self::assertGreaterThanOrEqual(2, substr_count($pdf, '/Type /StructElem /S /P'));
     }
 
     public function testItRendersLinkAnnotations(): void

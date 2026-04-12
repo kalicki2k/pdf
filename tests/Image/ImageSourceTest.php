@@ -90,6 +90,26 @@ final class ImageSourceTest extends TestCase
         unlink($path);
     }
 
+    public function testItCreatesAnRgbJpegImageSourceFromAFilePath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, JpegFixture::tinyRgbJpegBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertSame('/DCTDecode', $source->filter);
+
+        unlink($path);
+    }
+
     public function testItRejectsNonGraySoftMasks(): void
     {
         $this->expectException(InvalidArgumentException::class);

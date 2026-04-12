@@ -7,7 +7,11 @@ namespace Kalle\Pdf\Document\TaggedPdf;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
 
+use function explode;
+use function ksort;
 use function sprintf;
+use function str_contains;
+use function str_starts_with;
 
 final class TaggedStructureCollector
 {
@@ -110,12 +114,46 @@ final class TaggedStructureCollector
             }
         }
 
+        $documentChildEntries = $this->collectDocumentChildEntries($pageMarkedContentKeys);
+
         return new CollectedTaggedStructure(
             $figureEntries,
             $textEntries,
             $listEntries,
+            $documentChildEntries,
             $pageMarkedContentKeys,
         );
+    }
+
+    /**
+     * @param array<int, array<int, string>> $pageMarkedContentKeys
+     * @return list<array{key: string, pageIndex: int, markedContentId: int}>
+     */
+    private function collectDocumentChildEntries(array $pageMarkedContentKeys): array
+    {
+        $entries = [];
+        $seenKeys = [];
+
+        foreach ($pageMarkedContentKeys as $pageIndex => $markedContentKeys) {
+            ksort($markedContentKeys);
+
+            foreach ($markedContentKeys as $markedContentId => $key) {
+                $documentChildKey = $this->documentChildKey($key);
+
+                if (isset($seenKeys[$documentChildKey])) {
+                    continue;
+                }
+
+                $seenKeys[$documentChildKey] = true;
+                $entries[] = [
+                    'key' => $documentChildKey,
+                    'pageIndex' => $pageIndex,
+                    'markedContentId' => $markedContentId,
+                ];
+            }
+        }
+
+        return $entries;
     }
 
     /**
@@ -162,6 +200,23 @@ final class TaggedStructureCollector
     private function tableCellKey(int $tableId, string $section, int $rowIndex, int $columnIndex): string
     {
         return 'table:' . $tableId . ':' . $section . ':cell:' . $rowIndex . ':' . $columnIndex;
+    }
+
+    private function documentChildKey(string $key): string
+    {
+        if (str_starts_with($key, 'list:') && str_contains($key, ':item:')) {
+            [$prefix, $listId] = explode(':', $key, 3);
+
+            return $prefix . ':' . $listId;
+        }
+
+        if (str_starts_with($key, 'table:')) {
+            [$prefix, $tableId] = explode(':', $key, 3);
+
+            return $prefix . ':' . $tableId;
+        }
+
+        return $key;
     }
 
     /**
