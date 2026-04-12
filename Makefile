@@ -69,6 +69,9 @@ test-pdfa2u-link-regression:
 	$(DOCKER_COMPOSE) run --rm php php bin/generate-pdfa2u-link-annotation-regression.php /app/var/pdfa-regression/pdf-a-2u-link-annotation.pdf
 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose /app/var/pdfa-regression/pdf-a-2u-link-annotation.pdf
 
+test-pdfa2u-regressions:
+	sh bin/test-pdfa2u-regressions.sh
+
 check-pdf:
 	@if [ -z "$(PDF)" ]; then echo "Usage: make check-pdf PDF=path/to/file.pdf"; exit 1; fi
 	$(MAKE) check-qpdf PDF="$(PDF)"

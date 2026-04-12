@@ -484,4 +484,90 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 180 16]', $pdf);
         self::assertStringContainsString('/F 4', $pdf);
     }
+
+    public function testItRendersPdfA2uInternalLinksAndNamedDestinations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Internal Link Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u internal link regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->namedDestination('intro')
+            ->text('Einleitung Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->newPage()
+            ->text('Linkseite Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->linkToPage(1, 72, 680, 180, 16, 'Back To Page One')
+            ->linkToPagePosition(1, 72, 760, 72, 650, 180, 16, 'Back To Heading')
+            ->text('Zur Einleitung Привет', new TextOptions(
+                x: 72,
+                y: 620,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Dests << /intro [3 0 R /Fit] >>', $pdf);
+        self::assertStringContainsString('/Dest [3 0 R /Fit]', $pdf);
+        self::assertStringContainsString('/Dest [3 0 R /XYZ 72 760 null]', $pdf);
+        self::assertStringContainsString('/Dest /intro', $pdf);
+        self::assertGreaterThanOrEqual(3, substr_count($pdf, '/AP << /N '));
+    }
+
+    public function testItRendersPdfA2uRgbImagesWithoutTaggedRequirements(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Image Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u image regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->text('PDF/A-2u Bild Regression Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                ImagePlacement::at(72, 610, width: 160),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Image', $pdf);
+        self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+        self::assertStringContainsString('/Filter /DCTDecode', $pdf);
+        self::assertStringNotContainsString('/SMask ', $pdf);
+    }
 }

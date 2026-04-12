@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-set -euo pipefail
+set -eu
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 if [ "$#" -lt 1 ]; then
     echo "Usage: bin/validate-pdfua.sh <pdf-file> [additional veraPDF args]" >&2
@@ -12,4 +12,4 @@ fi
 PDF_PATH="$1"
 shift
 
-bash "${SCRIPT_DIR}/validate-verapdf.sh" "${PDF_PATH}" --defaultflavour ua1 --flavour ua1 "$@"
+sh "${SCRIPT_DIR}/validate-verapdf.sh" "${PDF_PATH}" --defaultflavour ua1 --flavour ua1 "$@"

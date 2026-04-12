@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-set -euo pipefail
+set -eu
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-bash "${SCRIPT_DIR}/validate-verapdf.sh" "$@"
+sh "${SCRIPT_DIR}/validate-verapdf.sh" "$@"
