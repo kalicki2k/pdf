@@ -43,6 +43,8 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
+use Kalle\Pdf\Drawing\Path;
+use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 
@@ -61,15 +63,23 @@ use Kalle\Pdf\Layout\Table\TableLayoutCalculator;
 use Kalle\Pdf\Layout\Table\TableRowGroupLayout;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\AnnotationMetadata;
+use Kalle\Pdf\Page\CaretAnnotation;
+use Kalle\Pdf\Page\CaretAnnotationOptions;
+use Kalle\Pdf\Page\CircleAnnotation;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotationOptions;
+use Kalle\Pdf\Page\InkAnnotation;
+use Kalle\Pdf\Page\InkAnnotationOptions;
+use Kalle\Pdf\Page\LineAnnotation;
+use Kalle\Pdf\Page\LineAnnotationOptions;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
+use Kalle\Pdf\Page\MarkupAnnotationOptions;
 use Kalle\Pdf\Page\NamedDestination;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
@@ -78,8 +88,19 @@ use Kalle\Pdf\Page\PageImage;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\PolygonAnnotation;
+use Kalle\Pdf\Page\PolygonAnnotationOptions;
+use Kalle\Pdf\Page\PolyLineAnnotation;
+use Kalle\Pdf\Page\PolyLineAnnotationOptions;
+use Kalle\Pdf\Page\ShapeAnnotationOptions;
+use Kalle\Pdf\Page\SquareAnnotation;
+use Kalle\Pdf\Page\SquigglyAnnotation;
+use Kalle\Pdf\Page\StampAnnotation;
+use Kalle\Pdf\Page\StampAnnotationOptions;
+use Kalle\Pdf\Page\StrikeOutAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Page\TextAnnotationOptions;
+use Kalle\Pdf\Page\UnderlineAnnotation;
 use Kalle\Pdf\Text\MappedTextRun;
 use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
@@ -283,12 +304,63 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function headerOn(callable $predicate, callable $renderer): DocumentBuilder
+    {
+        return $this->header(
+            static function (PageDecorationContext $page, int $pageNumber) use ($predicate, $renderer): void {
+                if (!$predicate($page, $pageNumber)) {
+                    return;
+                }
+
+                $renderer($page, $pageNumber);
+            },
+        );
+    }
+
     public function footer(callable $renderer): DocumentBuilder
     {
         $clone = clone $this;
         $clone->footerRenderers = [...$clone->footerRenderers, $renderer];
 
         return $clone;
+    }
+
+    public function footerOn(callable $predicate, callable $renderer): DocumentBuilder
+    {
+        return $this->footer(
+            static function (PageDecorationContext $page, int $pageNumber) use ($predicate, $renderer): void {
+                if (!$predicate($page, $pageNumber)) {
+                    return;
+                }
+
+                $renderer($page, $pageNumber);
+            },
+        );
+    }
+
+    public function pageNumbers(
+        TextOptions $options,
+        string $template = 'Page {{page}} / {{pages}}',
+        bool $footer = true,
+    ): DocumentBuilder {
+        if ($template === '') {
+            throw new InvalidArgumentException('Page number template must not be empty.');
+        }
+
+        $renderer = static function (PageDecorationContext $page) use ($options, $template): void {
+            $page->text(
+                str_replace(
+                    ['{{page}}', '{{pages}}'],
+                    [(string) $page->pageNumber(), (string) $page->totalPages()],
+                    $template,
+                ),
+                $options,
+            );
+        };
+
+        return $footer
+            ? $this->footer($renderer)
+            : $this->header($renderer);
     }
 
     public function content(string $content): DocumentBuilder
@@ -687,6 +759,89 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->image(ImageSource::fromPath($path), $placement, $accessibility);
     }
 
+    public function line(float $x1, float $y1, float $x2, float $y2, ?StrokeStyle $stroke = null): DocumentBuilder
+    {
+        $clone = clone $this;
+        $stroke ??= new StrokeStyle();
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $this->buildGraphicsContent(implode("\n", [
+                'q',
+                ...$this->buildStrokeStyleOperators($stroke),
+                $this->formatNumber($x1) . ' ' . $this->formatNumber($y1) . ' m',
+                $this->formatNumber($x2) . ' ' . $this->formatNumber($y2) . ' l',
+                'S',
+                'Q',
+            ])),
+        );
+
+        return $clone;
+    }
+
+    public function rectangle(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?StrokeStyle $stroke = null,
+        ?Color $fillColor = null,
+    ): DocumentBuilder {
+        if ($width <= 0.0) {
+            throw new InvalidArgumentException('Rectangle width must be greater than zero.');
+        }
+
+        if ($height <= 0.0) {
+            throw new InvalidArgumentException('Rectangle height must be greater than zero.');
+        }
+
+        $stroke ??= $fillColor === null ? new StrokeStyle() : null;
+
+        if ($stroke === null && $fillColor === null) {
+            throw new InvalidArgumentException('Rectangle requires either a stroke or a fill.');
+        }
+
+        $clone = clone $this;
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $this->buildGraphicsContent($this->buildRectangleContent($x, $y, $width, $height, $stroke, $fillColor)),
+        );
+
+        return $clone;
+    }
+
+    public function roundedRectangle(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        float $radius,
+        ?StrokeStyle $stroke = null,
+        ?Color $fillColor = null,
+    ): DocumentBuilder {
+        return $this->path(
+            Path::roundedRectangle($x, $y, $width, $height, $radius),
+            $stroke ?? ($fillColor === null ? new StrokeStyle() : null),
+            $fillColor,
+        );
+    }
+
+    public function path(Path $path, ?StrokeStyle $stroke = null, ?Color $fillColor = null): DocumentBuilder
+    {
+        $stroke ??= $fillColor === null ? new StrokeStyle() : null;
+
+        if ($stroke === null && $fillColor === null) {
+            throw new InvalidArgumentException('Path requires either a stroke or a fill.');
+        }
+
+        $clone = clone $this;
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $this->buildGraphicsContent($this->buildPathContent($path, $stroke, $fillColor)),
+        );
+
+        return $clone;
+    }
+
     public function attachment(
         string $filename,
         string $contents,
@@ -1052,6 +1207,138 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function underlineAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->underlineAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            new MarkupAnnotationOptions(
+                color: $color,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function underlineAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        MarkupAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new UnderlineAnnotation(
+            $x,
+            $y,
+            $width,
+            $height,
+            $options->color,
+            $metadata->contents,
+            $metadata->title,
+        );
+
+        return $clone;
+    }
+
+    public function strikeOutAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->strikeOutAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            new MarkupAnnotationOptions(
+                color: $color,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function strikeOutAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        MarkupAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new StrikeOutAnnotation(
+            $x,
+            $y,
+            $width,
+            $height,
+            $options->color,
+            $metadata->contents,
+            $metadata->title,
+        );
+
+        return $clone;
+    }
+
+    public function squigglyAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->squigglyAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            new MarkupAnnotationOptions(
+                color: $color,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function squigglyAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        MarkupAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new SquigglyAnnotation(
+            $x,
+            $y,
+            $width,
+            $height,
+            $options->color,
+            $metadata->contents,
+            $metadata->title,
+        );
+
+        return $clone;
+    }
+
     public function freeTextAnnotation(
         string $contents,
         float $x,
@@ -1164,6 +1451,362 @@ class DefaultDocumentBuilder implements DocumentBuilder
             borderColor: $options->borderColor,
             fillColor: $options->fillColor,
             title: $metadata->title,
+        );
+
+        return $clone;
+    }
+
+    public function stampAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $icon = 'Draft',
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->stampAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            new StampAnnotationOptions(
+                icon: $icon,
+                color: $color,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function stampAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        StampAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new StampAnnotation(
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            icon: $options->icon,
+            color: $options->color,
+            contents: $metadata->contents,
+            title: $metadata->title,
+        );
+
+        return $clone;
+    }
+
+    public function squareAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->squareAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            new ShapeAnnotationOptions(
+                borderColor: $borderColor,
+                fillColor: $fillColor,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function squareAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ShapeAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new SquareAnnotation(
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            borderColor: $options->borderColor,
+            fillColor: $options->fillColor,
+            contents: $metadata->contents,
+            title: $metadata->title,
+            borderStyle: $options->borderStyle,
+        );
+
+        return $clone;
+    }
+
+    public function circleAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->circleAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            new ShapeAnnotationOptions(
+                borderColor: $borderColor,
+                fillColor: $fillColor,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function circleAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ShapeAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new CircleAnnotation(
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            borderColor: $options->borderColor,
+            fillColor: $options->fillColor,
+            contents: $metadata->contents,
+            title: $metadata->title,
+            borderStyle: $options->borderStyle,
+        );
+
+        return $clone;
+    }
+
+    public function caretAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $contents = null,
+        ?string $title = null,
+        string $symbol = 'None',
+    ): self {
+        return $this->caretAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            new CaretAnnotationOptions(
+                contents: $contents,
+                title: $title,
+                symbol: $symbol,
+            ),
+        );
+    }
+
+    public function caretAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        CaretAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new CaretAnnotation(
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            contents: $metadata->contents,
+            title: $metadata->title,
+            symbol: $options->symbol,
+        );
+
+        return $clone;
+    }
+
+    public function inkAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $paths,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->inkAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            $paths,
+            new InkAnnotationOptions(
+                color: $color,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function inkAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $paths,
+        InkAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new InkAnnotation(
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            paths: $paths,
+            color: $options->color,
+            contents: $metadata->contents,
+            title: $metadata->title,
+        );
+
+        return $clone;
+    }
+
+    public function lineAnnotation(
+        float $x1,
+        float $y1,
+        float $x2,
+        float $y2,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->lineAnnotationWithOptions(
+            $x1,
+            $y1,
+            $x2,
+            $y2,
+            new LineAnnotationOptions(
+                color: $color,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function lineAnnotationWithOptions(
+        float $x1,
+        float $y1,
+        float $x2,
+        float $y2,
+        LineAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new LineAnnotation(
+            x1: $x1,
+            y1: $y1,
+            x2: $x2,
+            y2: $y2,
+            color: $options->color,
+            contents: $metadata->contents,
+            title: $metadata->title,
+            startStyle: $options->startStyle,
+            endStyle: $options->endStyle,
+            subject: $metadata->subject,
+            borderStyle: $options->borderStyle,
+        );
+
+        return $clone;
+    }
+
+    public function polyLineAnnotation(
+        array $vertices,
+        ?Color $color = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->polyLineAnnotationWithOptions(
+            $vertices,
+            new PolyLineAnnotationOptions(
+                color: $color,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function polyLineAnnotationWithOptions(
+        array $vertices,
+        PolyLineAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new PolyLineAnnotation(
+            vertices: $vertices,
+            color: $options->color,
+            contents: $metadata->contents,
+            title: $metadata->title,
+            startStyle: $options->startStyle,
+            endStyle: $options->endStyle,
+            subject: $metadata->subject,
+            borderStyle: $options->borderStyle,
+        );
+
+        return $clone;
+    }
+
+    public function polygonAnnotation(
+        array $vertices,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $contents = null,
+        ?string $title = null,
+    ): self {
+        return $this->polygonAnnotationWithOptions(
+            $vertices,
+            new PolygonAnnotationOptions(
+                borderColor: $borderColor,
+                fillColor: $fillColor,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function polygonAnnotationWithOptions(
+        array $vertices,
+        PolygonAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new PolygonAnnotation(
+            vertices: $vertices,
+            borderColor: $options->borderColor,
+            fillColor: $options->fillColor,
+            contents: $metadata->contents,
+            title: $metadata->title,
+            subject: $metadata->subject,
+            borderStyle: $options->borderStyle,
         );
 
         return $clone;
@@ -1363,6 +2006,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function addOutline(Outline $outline): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->outlines[] = $outline;
+
+        return $clone;
+    }
+
     public function outline(string $title): DocumentBuilder
     {
         return $this->outlineLevel($title, 1);
@@ -1375,24 +2026,87 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     public function outlineLevel(string $title, int $level): DocumentBuilder
     {
-        $clone = clone $this;
-        $clone->outlines[] = Outline::page($title, count($this->pages) + 1, $level);
-
-        return $clone;
+        return $this->appendOutline($title, $level, count($this->pages) + 1, true);
     }
 
     public function outlineAtLevel(string $title, int $level, int $pageNumber, ?float $x = null, ?float $y = null): DocumentBuilder
     {
+        return $this->appendOutline($title, $level, $pageNumber, true, $x, $y);
+    }
+
+    public function outlineClosed(string $title): DocumentBuilder
+    {
+        return $this->outlineLevelClosed($title, 1);
+    }
+
+    public function outlineAtClosed(string $title, int $pageNumber, ?float $x = null, ?float $y = null): DocumentBuilder
+    {
+        return $this->outlineAtLevelClosed($title, 1, $pageNumber, $x, $y);
+    }
+
+    public function outlineLevelClosed(string $title, int $level): DocumentBuilder
+    {
+        return $this->appendOutline($title, $level, count($this->pages) + 1, false);
+    }
+
+    public function outlineAtLevelClosed(string $title, int $level, int $pageNumber, ?float $x = null, ?float $y = null): DocumentBuilder
+    {
+        return $this->appendOutline($title, $level, $pageNumber, false, $x, $y);
+    }
+
+    public function outlineChild(string $title): DocumentBuilder
+    {
+        return $this->appendRelativeOutline($title, 1, true);
+    }
+
+    public function outlineChildClosed(string $title): DocumentBuilder
+    {
+        return $this->appendRelativeOutline($title, 1, false);
+    }
+
+    public function outlineSibling(string $title): DocumentBuilder
+    {
+        return $this->appendRelativeOutline($title, 0, true);
+    }
+
+    public function outlineSiblingClosed(string $title): DocumentBuilder
+    {
+        return $this->appendRelativeOutline($title, 0, false);
+    }
+
+    private function appendOutline(
+        string $title,
+        int $level,
+        int $pageNumber,
+        bool $open,
+        ?float $x = null,
+        ?float $y = null,
+    ): DocumentBuilder {
         if (($x === null) !== ($y === null)) {
             throw new InvalidArgumentException('Outline coordinates must be provided together.');
         }
 
-        $clone = clone $this;
-        $clone->outlines[] = ($x === null && $y === null)
-            ? Outline::page($title, $pageNumber, $level)
-            : Outline::position($title, $pageNumber, $x, $y, $level);
+        return $this->addOutline(
+            ($x === null && $y === null)
+                ? Outline::page($title, $pageNumber, $level, $open)
+                : Outline::position($title, $pageNumber, $x, $y, $level, $open),
+        );
+    }
 
-        return $clone;
+    private function appendRelativeOutline(string $title, int $levelOffset, bool $open): DocumentBuilder
+    {
+        if ($this->outlines === []) {
+            throw new InvalidArgumentException('Relative outline helpers require an existing outline.');
+        }
+
+        $previousOutline = $this->outlines[count($this->outlines) - 1];
+
+        return $this->appendOutline(
+            $title,
+            $previousOutline->level + $levelOffset,
+            count($this->pages) + 1,
+            $open,
+        );
     }
 
     public function tableOfContents(?TableOfContentsOptions $options = null): DocumentBuilder
@@ -3272,6 +3986,91 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $contents,
             'EMC',
         ]);
+    }
+
+    private function buildGraphicsContent(string $contents): string
+    {
+        return $this->wrapArtifactGraphics($contents);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildStrokeStyleOperators(StrokeStyle $stroke): array
+    {
+        $operators = [];
+
+        if ($stroke->color !== null) {
+            $operators[] = $this->colorStrokeOperator($stroke->color);
+        }
+
+        $operators[] = $this->formatNumber($stroke->width) . ' w';
+
+        return $operators;
+    }
+
+    private function buildRectangleContent(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?StrokeStyle $stroke,
+        ?Color $fillColor,
+    ): string {
+        $lines = ['q'];
+
+        if ($stroke !== null) {
+            $lines = [...$lines, ...$this->buildStrokeStyleOperators($stroke)];
+        }
+
+        if ($fillColor !== null) {
+            $lines[] = $this->colorFillOperator($fillColor);
+        }
+
+        $lines[] = $this->formatNumber($x) . ' ' . $this->formatNumber($y) . ' '
+            . $this->formatNumber($width) . ' ' . $this->formatNumber($height) . ' re';
+        $lines[] = $this->graphicsPaintOperator($stroke, $fillColor);
+        $lines[] = 'Q';
+
+        return implode("\n", $lines);
+    }
+
+    private function buildPathContent(Path $path, ?StrokeStyle $stroke, ?Color $fillColor): string
+    {
+        $lines = ['q'];
+
+        if ($stroke !== null) {
+            $lines = [...$lines, ...$this->buildStrokeStyleOperators($stroke)];
+        }
+
+        if ($fillColor !== null) {
+            $lines[] = $this->colorFillOperator($fillColor);
+        }
+
+        foreach ($path->commands() as $command) {
+            $values = array_map(fn (float $value): string => $this->formatNumber($value), $command['values']);
+            $lines[] = $values === []
+                ? $command['operator']
+                : implode(' ', $values) . ' ' . $command['operator'];
+        }
+
+        $lines[] = $this->graphicsPaintOperator($stroke, $fillColor);
+        $lines[] = 'Q';
+
+        return implode("\n", $lines);
+    }
+
+    private function graphicsPaintOperator(?StrokeStyle $stroke, ?Color $fillColor): string
+    {
+        if ($stroke !== null && $fillColor !== null) {
+            return 'B';
+        }
+
+        if ($fillColor !== null) {
+            return 'f';
+        }
+
+        return 'S';
     }
 
     private function buildFillColorOperator(Color $color): string

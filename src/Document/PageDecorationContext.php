@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Drawing\Path;
+use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
@@ -97,6 +100,47 @@ final class PageDecorationContext
     public function imageFile(string $path, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self
     {
         $this->builder = $this->builder->imageFile($path, $placement, $accessibility);
+
+        return $this;
+    }
+
+    public function line(float $x1, float $y1, float $x2, float $y2, ?StrokeStyle $stroke = null): self
+    {
+        $this->builder = $this->builder->line($x1, $y1, $x2, $y2, $stroke);
+
+        return $this;
+    }
+
+    public function rectangle(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?StrokeStyle $stroke = null,
+        ?Color $fillColor = null,
+    ): self {
+        $this->builder = $this->builder->rectangle($x, $y, $width, $height, $stroke, $fillColor);
+
+        return $this;
+    }
+
+    public function roundedRectangle(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        float $radius,
+        ?StrokeStyle $stroke = null,
+        ?Color $fillColor = null,
+    ): self {
+        $this->builder = $this->builder->roundedRectangle($x, $y, $width, $height, $radius, $stroke, $fillColor);
+
+        return $this;
+    }
+
+    public function path(Path $path, ?StrokeStyle $stroke = null, ?Color $fillColor = null): self
+    {
+        $this->builder = $this->builder->path($path, $stroke, $fillColor);
 
         return $this;
     }
