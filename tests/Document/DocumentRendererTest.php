@@ -68,6 +68,7 @@ final class DocumentRendererTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->title('Example Title')
             ->author('Sebastian Kalicki')
+            ->keywords('archive, invoice')
             ->pageSize(PageSize::A5())
             ->text('Example Title', new TextOptions(
                 x: 72,
@@ -107,10 +108,12 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Info 7 0 R', $pdf);
         self::assertStringContainsString('/Title (Example Title)', $pdf);
         self::assertStringContainsString('/Author (Sebastian Kalicki)', $pdf);
+        self::assertStringContainsString('/Keywords (archive, invoice)', $pdf);
         self::assertStringContainsString('/CreationDate (', $pdf);
         self::assertStringContainsString('/ModDate (', $pdf);
         self::assertMatchesRegularExpression('/<xmp:CreateDate>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}<\/xmp:CreateDate>/', $pdf);
         self::assertStringContainsString('<rdf:li xml:lang="x-default">Example Title</rdf:li>', $pdf);
+        self::assertStringContainsString('<pdf:Keywords>archive, invoice</pdf:Keywords>', $pdf);
         self::assertStringEndsWith('%%EOF', $pdf);
     }
 
@@ -178,9 +181,9 @@ final class DocumentRendererTest extends TestCase
 
         $pdf = $output->contents();
 
-        self::assertStringContainsString("72 720 Td", $pdf);
-        self::assertStringContainsString("72 696 Td", $pdf);
-        self::assertStringNotContainsString("72 684 Td", $pdf);
+        self::assertStringContainsString('72 720 Td', $pdf);
+        self::assertStringContainsString('72 696 Td', $pdf);
+        self::assertStringNotContainsString('72 684 Td', $pdf);
     }
 
     public function testItRendersTaggedFigureStructureForPdfUaImages(): void

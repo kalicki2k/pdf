@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use function count;
-
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Page;

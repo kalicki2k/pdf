@@ -8,6 +8,10 @@ use function array_key_exists;
 
 use InvalidArgumentException;
 
+use Kalle\Pdf\Page\FreeTextAnnotation;
+use Kalle\Pdf\Page\HighlightAnnotation;
+use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 use function preg_match;
@@ -19,6 +23,7 @@ final class PdfAObjectGraphValidator
 {
     public function __construct(
         private readonly DocumentAttachmentRelationshipResolver $attachmentRelationshipResolver = new DocumentAttachmentRelationshipResolver(),
+        private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
     ) {
     }
 
@@ -38,14 +43,16 @@ final class PdfAObjectGraphValidator
         $this->assertCatalogObject($document, $state, $catalogObject);
         $this->assertPageTreeObject($state, $pageTreeObject);
         $this->assertMetadataObjects($state, $objectsById);
-        $this->assertAcroFormObjects($state, $catalogObject, $objectsById);
+        $this->assertAcroFormObjects($document, $state, $catalogObject, $objectsById);
         $this->assertTaggedObjects($document, $state, $catalogObject, $objectsById);
-        $this->assertAttachmentReferences($document, $state, $catalogObject);
+        $this->assertAttachmentReferences($document, $state, $catalogObject, $objectsById);
 
         foreach ($state->pageObjectIds as $pageIndex => $pageObjectId) {
             $pageObject = $this->assertObjectExists($objectsById, $pageObjectId, sprintf('page object %d', $pageIndex + 1));
             $this->assertPageObject($document, $state, $pageObject, $pageIndex);
         }
+
+        $this->assertAnnotationObjects($document, $state, $objectsById);
     }
 
     /**
@@ -143,10 +150,18 @@ final class PdfAObjectGraphValidator
      * @param array<int, IndirectObject> $objectsById
      */
     private function assertAcroFormObjects(
+        Document $document,
         DocumentSerializationPlanBuildState $state,
         IndirectObject $catalogObject,
         array $objectsById,
     ): void {
+        if (($document->profile->isPdfA2() || $document->profile->isPdfA3()) && $state->acroFormObjectId !== null) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s must not serialize AcroForm objects in the final PDF/A-2/3 object graph.',
+                $document->profile->name(),
+            ));
+        }
+
         if ($state->acroFormObjectId === null) {
             return;
         }
@@ -213,10 +228,14 @@ final class PdfAObjectGraphValidator
         }
     }
 
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
     private function assertAttachmentReferences(
         Document $document,
         DocumentSerializationPlanBuildState $state,
         IndirectObject $catalogObject,
+        array $objectsById,
     ): void {
         if ($state->attachmentObjectIds === []) {
             return;
@@ -234,10 +253,59 @@ final class PdfAObjectGraphValidator
             );
         }
 
+        foreach ($document->attachments as $attachmentIndex => $attachment) {
+            $attachmentObjectId = $state->attachmentObjectIds[$attachmentIndex];
+            $embeddedFileObjectId = $state->embeddedFileObjectIds[$attachmentIndex];
+            $attachmentObject = $this->assertObjectExists($objectsById, $attachmentObjectId, sprintf('attachment object %d', $attachmentIndex + 1));
+            $embeddedFileObject = $this->assertObjectExists($objectsById, $embeddedFileObjectId, sprintf('embedded file stream %d', $attachmentIndex + 1));
+
+            if (!str_contains($attachmentObject->contents, '/Type /Filespec')) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A attachment object %d must serialize as a /Filespec dictionary.',
+                    $attachmentIndex + 1,
+                ));
+            }
+
+            if (
+                preg_match('/\/EF\s*<<[^>]*\/F\s+' . preg_quote((string) $embeddedFileObjectId, '/') . '\s+0\s+R[^>]*>>/', $attachmentObject->contents) !== 1
+            ) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A attachment object %d must serialize an /EF dictionary that references embedded file stream %d via /F.',
+                    $attachmentIndex + 1,
+                    $embeddedFileObjectId,
+                ));
+            }
+
+            if ($embeddedFileObject->streamDictionaryContents === null || !str_contains($embeddedFileObject->streamDictionaryContents, '/Type /EmbeddedFile')) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A embedded file stream %d must serialize as an /EmbeddedFile stream object.',
+                    $attachmentIndex + 1,
+                ));
+            }
+
+            $relationship = $this->attachmentRelationshipResolver->resolve($document, $attachment);
+
+            if ($relationship !== null && !str_contains($attachmentObject->contents, '/AFRelationship /' . $relationship->value)) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A attachment object %d must serialize /AFRelationship /%s.',
+                    $attachmentIndex + 1,
+                    $relationship->value,
+                ));
+            }
+        }
+
         $associatedAttachmentObjectIds = [];
 
         foreach ($document->attachments as $attachmentIndex => $attachment) {
             if ($this->attachmentRelationshipResolver->resolve($document, $attachment) === null) {
+                if ($document->profile->isPdfA2() || $document->profile->isPdfA3()) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s must not serialize non-associated attachments in the final PDF/A-2/3 object graph (attachment %d).',
+                        $document->profile->name(),
+                        $attachmentIndex + 1,
+                    ));
+                }
+
                 continue;
             }
 
@@ -316,6 +384,154 @@ final class PdfAObjectGraphValidator
         }
     }
 
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertAnnotationObjects(
+        Document $document,
+        DocumentSerializationPlanBuildState $state,
+        array $objectsById,
+    ): void {
+        foreach ($document->pages as $pageIndex => $page) {
+            foreach ($page->annotations as $annotationIndex => $annotation) {
+                $annotationObjectId = $state->pageAnnotationObjectIds[$pageIndex][$annotationIndex] ?? null;
+
+                if ($annotationObjectId === null) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Missing serialized page annotation object allocation for annotation %d on page %d.',
+                        $annotationIndex + 1,
+                        $pageIndex + 1,
+                    ));
+                }
+
+                $annotationObject = $this->assertObjectExists(
+                    $objectsById,
+                    $annotationObjectId,
+                    sprintf('page annotation %d on page %d', $annotationIndex + 1, $pageIndex + 1),
+                );
+
+                $this->assertReferencePresent(
+                    $annotationObject->contents,
+                    $state->pageObjectIds[$pageIndex],
+                    sprintf(
+                        'PDF/A page annotation %d on page %d must reference its parent page object.',
+                        $annotationIndex + 1,
+                        $pageIndex + 1,
+                    ),
+                );
+
+                $this->assertPdfA23AnnotationObject($document, $annotation, $annotationObject, $pageIndex, $annotationIndex);
+
+                if (!$this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)) {
+                    continue;
+                }
+
+                $appearanceObjectId = $state->pageAnnotationAppearanceObjectIds[$pageIndex][$annotationIndex] ?? null;
+
+                if ($appearanceObjectId === null) {
+                    throw new InvalidArgumentException(sprintf(
+                        'PDF/A requires a serialized annotation appearance stream object for page annotation %d on page %d.',
+                        $annotationIndex + 1,
+                        $pageIndex + 1,
+                    ));
+                }
+
+                if (!$this->containsAppearanceReference($annotationObject->contents, $appearanceObjectId)) {
+                    throw new InvalidArgumentException(sprintf(
+                        'PDF/A requires page annotation %d on page %d to serialize /AP << /N %d 0 R >>.',
+                        $annotationIndex + 1,
+                        $pageIndex + 1,
+                        $appearanceObjectId,
+                    ));
+                }
+
+                $appearanceObject = $this->assertObjectExists(
+                    $objectsById,
+                    $appearanceObjectId,
+                    sprintf('annotation appearance stream for annotation %d on page %d', $annotationIndex + 1, $pageIndex + 1),
+                );
+
+                if (
+                    $appearanceObject->streamDictionaryContents === null
+                    || !str_contains($appearanceObject->streamDictionaryContents, '/Type /XObject')
+                    || !str_contains($appearanceObject->streamDictionaryContents, '/Subtype /Form')
+                ) {
+                    throw new InvalidArgumentException(sprintf(
+                        'PDF/A requires annotation appearance stream %d for page annotation %d on page %d to serialize as a form XObject stream.',
+                        $appearanceObjectId,
+                        $annotationIndex + 1,
+                        $pageIndex + 1,
+                    ));
+                }
+            }
+        }
+    }
+
+    private function assertPdfA23AnnotationObject(
+        Document $document,
+        object $annotation,
+        IndirectObject $annotationObject,
+        int $pageIndex,
+        int $annotationIndex,
+    ): void {
+        if (!$document->profile->isPdfA2() && !$document->profile->isPdfA3()) {
+            return;
+        }
+
+        $expectedSubtype = match (true) {
+            $annotation instanceof LinkAnnotation => 'Link',
+            $annotation instanceof TextAnnotation => 'Text',
+            $annotation instanceof HighlightAnnotation => 'Highlight',
+            $annotation instanceof FreeTextAnnotation => 'FreeText',
+            default => null,
+        };
+
+        if ($expectedSubtype === null) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s only supports the current explicit PDF/A-2/3 annotation scope in the final object graph for page annotation %d on page %d.',
+                $document->profile->name(),
+                $annotationIndex + 1,
+                $pageIndex + 1,
+            ));
+        }
+
+        if (!str_contains($annotationObject->contents, '/Subtype /' . $expectedSubtype)) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s requires page annotation %d on page %d to serialize /Subtype /%s in the final PDF/A-2/3 object graph.',
+                $document->profile->name(),
+                $annotationIndex + 1,
+                $pageIndex + 1,
+                $expectedSubtype,
+            ));
+        }
+
+        if (!$annotation instanceof LinkAnnotation) {
+            return;
+        }
+
+        if ($annotation->target->isExternalUrl()) {
+            if (!str_contains($annotationObject->contents, '/A << /S /URI /URI ')) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s requires external link annotation %d on page %d to serialize a URI action in the final PDF/A-2/3 object graph.',
+                    $document->profile->name(),
+                    $annotationIndex + 1,
+                    $pageIndex + 1,
+                ));
+            }
+
+            return;
+        }
+
+        if (!str_contains($annotationObject->contents, '/Dest ')) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s requires internal link annotation %d on page %d to serialize a /Dest target in the final PDF/A-2/3 object graph.',
+                $document->profile->name(),
+                $annotationIndex + 1,
+                $pageIndex + 1,
+            ));
+        }
+    }
+
     private function assertReferencePresent(string $contents, ?int $objectId, string $message): void
     {
         if ($objectId === null) {
@@ -325,6 +541,14 @@ final class PdfAObjectGraphValidator
         if (preg_match('/\b' . preg_quote((string) $objectId, '/') . '\s+0\s+R\b/', $contents) !== 1) {
             throw new InvalidArgumentException($message);
         }
+    }
+
+    private function containsAppearanceReference(string $contents, int $appearanceObjectId): bool
+    {
+        return preg_match(
+            '/\/AP\s*<<\s*\/N\s+' . preg_quote((string) $appearanceObjectId, '/') . '\s+0\s+R\s*>>/',
+            $contents,
+        ) === 1;
     }
 
     private function profileLabel(): string

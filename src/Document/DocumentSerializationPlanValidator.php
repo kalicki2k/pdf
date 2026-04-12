@@ -36,6 +36,7 @@ final class DocumentSerializationPlanValidator
         private readonly PdfA1AnnotationPolicy $pdfA1AnnotationPolicy = new PdfA1AnnotationPolicy(),
         private readonly PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
         private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
+        private readonly PdfA23ScopePolicy $pdfA23ScopePolicy = new PdfA23ScopePolicy(),
     ) {
     }
 
@@ -131,6 +132,8 @@ final class DocumentSerializationPlanValidator
                     ));
                 }
 
+                $this->pdfA23ScopePolicy->assertPageAnnotationAllowed($document, $annotation, $pageIndex, $annotationIndex);
+
                 if (
                     $document->profile->requiresAnnotationAppearanceStreams()
                     && !$this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)
@@ -197,6 +200,14 @@ final class DocumentSerializationPlanValidator
     {
         if ($document->attachments === []) {
             return;
+        }
+
+        foreach ($document->attachments as $attachmentIndex => $attachment) {
+            $this->pdfA23ScopePolicy->assertDocumentAttachmentAllowed(
+                $document,
+                $attachmentIndex,
+                $this->attachmentRelationshipResolver->resolve($document, $attachment) !== null,
+            );
         }
 
         if (!$document->profile->supportsDocumentEmbeddedFileAttachments()) {
@@ -357,6 +368,8 @@ final class DocumentSerializationPlanValidator
 
     private function assertAcroFormRequirements(Document $document): void
     {
+        $this->pdfA23ScopePolicy->assertAcroFormAllowed($document);
+
         if ($document->acroForm === null) {
             return;
         }

@@ -7,9 +7,11 @@ namespace Kalle\Pdf\Tests\Document;
 use function array_map;
 use function array_values;
 use function dirname;
-use function iterator_to_array;
 
 use InvalidArgumentException;
+
+use function iterator_to_array;
+
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
@@ -120,6 +122,213 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF/A catalog must serialize an /AF array for associated files.');
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA2uAnnotationObjectsWithoutAppearanceReferences(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Text Annotation Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u text annotation regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('PdfAObjectGraphValidatorTest')
+            ->textAnnotation(72, 680, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
+        $appearanceObjectId = $state->pageAnnotationAppearanceObjectIds[0][0];
+
+        self::assertNotNull($appearanceObjectId);
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($annotationObjectId, $appearanceObjectId): IndirectObject {
+                if ($object->objectId !== $annotationObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace(
+                    '/\s*\/AP\s*<<\s*\/N\s+' . $appearanceObjectId . '\s+0\s+R\s*>>/',
+                    '',
+                    $object->contents,
+                    1,
+                );
+
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            'PDF/A requires page annotation 1 on page 1 to serialize /AP << /N %d 0 R >>.',
+            $appearanceObjectId,
+        ));
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA2uLinkAnnotationsWithoutUriActions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Link Annotation Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u link annotation regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('PdfAObjectGraphValidatorTest')
+            ->link('https://example.com/spec', 72, 670, 180, 16, 'Specification Link')
+            ->build();
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($annotationObjectId): IndirectObject {
+                if ($object->objectId !== $annotationObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace('/\s*\/A\s*<<\s*\/S\s*\/URI\s*\/URI\s*\([^)]+\)\s*>>/', '', $object->contents, 1);
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2u requires external link annotation 1 on page 1 to serialize a URI action in the final PDF/A-2/3 object graph.',
+        );
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA2uAnnotationObjectsWithUnsupportedSerializedSubtypes(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u Text Annotation Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u text annotation regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('PdfAObjectGraphValidatorTest')
+            ->textAnnotation(72, 680, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($annotationObjectId): IndirectObject {
+                if ($object->objectId !== $annotationObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace('/\/Subtype\s*\/Text/', '/Subtype /Square', $object->contents, 1);
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2u requires page annotation 1 on page 1 to serialize /Subtype /Text in the final PDF/A-2/3 object graph.',
+        );
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA3bAttachmentObjectsWithoutAfRelationship(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3b())
+            ->title('Archive Package')
+            ->attachment(
+                'data.xml',
+                '<root/>',
+                'Source data',
+                'application/xml',
+                AssociatedFileRelationship::SOURCE,
+            )
+            ->build();
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $attachmentObjectId = $state->attachmentObjectIds[0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($attachmentObjectId): IndirectObject {
+                if ($object->objectId !== $attachmentObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace('/\s*\/AFRelationship\s+\/Source/', '', $object->contents, 1);
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF/A attachment object 1 must serialize /AFRelationship /Source.');
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA3bAttachmentObjectsWithoutEfReferences(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3b())
+            ->title('Archive Package')
+            ->attachment(
+                'data.xml',
+                '<root/>',
+                'Source data',
+                'application/xml',
+                AssociatedFileRelationship::SOURCE,
+            )
+            ->build();
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $attachmentObjectId = $state->attachmentObjectIds[0];
+        $embeddedFileObjectId = $state->embeddedFileObjectIds[0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($attachmentObjectId, $embeddedFileObjectId): IndirectObject {
+                if ($object->objectId !== $attachmentObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace(
+                    '/\s*\/F\s+' . $embeddedFileObjectId . '\s+0\s+R/',
+                    '',
+                    $object->contents,
+                    1,
+                );
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            'PDF/A attachment object 1 must serialize an /EF dictionary that references embedded file stream %d via /F.',
+            $embeddedFileObjectId,
+        ));
 
         (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
     }

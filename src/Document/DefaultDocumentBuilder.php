@@ -402,7 +402,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /**
      * @param string|list<TextSegment> $text
      */
-    public function text(string|array $text, ?TextOptions $options = null): DocumentBuilder
+    public function text(string | array $text, ?TextOptions $options = null): DocumentBuilder
     {
         if (is_array($text)) {
             return $this->renderTextSegments($text, $options, $this->resolveTaggedTextTag($options));
@@ -460,7 +460,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /**
      * @param string|list<TextSegment> $text
      */
-    public function paragraph(string|array $text, ?TextOptions $options = null): DocumentBuilder
+    public function paragraph(string | array $text, ?TextOptions $options = null): DocumentBuilder
     {
         if (is_array($text)) {
             return $this->renderTextSegments($text, $options, $this->resolveTaggedTextTag($options, 'P'));

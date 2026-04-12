@@ -6,8 +6,8 @@ Der aktuelle PDF/A-Scope ist bewusst konservativ und folgt eher dem Prinzip "har
 
 - `PDF/A-1b`: stabil fuer den aktuell freigegebenen Scope mit eingebetteten Fonts, XMP/Info-Metadaten, OutputIntent, Annotation-APs und den geprueften Farbpfaden.
 - `PDF/A-1a`: bewusst enger als das volle Normspektrum. Im Formularpfad sind nur `TextField`, `ComboBoxField` und `ListBoxField` freigegeben. Popup-Related-Objects sowie URI-Annotation-Actions sind im PDF/A-1-Pfad explizit verboten.
-- `PDF/A-2u`: robuster Positivpfad fuer Unicode-Fonts, Metadaten, OutputIntent und den aktuell freigegebenen Annotation-/Link-Scope.
-- `PDF/A-3b`: dokumentweite Embedded Files und Associated Files am Catalog sind im aktuellen Scope abgedeckt.
+- `PDF/A-2u`: robuster Positivpfad fuer Unicode-Fonts, Metadaten, OutputIntent und einen bewusst kleinen Annotation-Scope. Freigegeben sind aktuell `Link`, `Text`, `Highlight` und `FreeText`. Externe `URI`-Links sind in diesem Profil ausdruecklich erlaubt. Popup-Related-Objects, Seiten-Dateianhang-Annotationen und AcroForm-Felder sind im aktuellen PDF/A-2-Scope gesperrt.
+- `PDF/A-3b`: dokumentweite Embedded Files und Associated Files am Catalog sind im aktuellen Scope abgedeckt. Erlaubt sind dokumentweite Associated Files am Catalog, nicht aber seitennahe Dateianhang-Annotationen, Popup-Related-Objects oder AcroForm-Felder.
 
 Die Engine validiert PDF/A-1 inzwischen nicht nur auf vorbereiteten Zwischenstrukturen, sondern auch gegen den finalen Objektgraphen vor dem Schreiben. Fuer PDF/A-2/3 laeuft derselbe finale Objektgraph-Check inzwischen fuer den gemeinsamen Catalog-, Metadata-, OutputIntent-, Attachment- und Seitenpfad.
 
@@ -522,7 +522,7 @@ $document = DefaultDocumentBuilder::make()
 
 Der folgende Umfang ist der offizielle `PDF/A-1a`-Support-Scope der aktuellen `pdf2`-Version. Abgesichert und freigegeben sind Ueberschriften und Absaetze (`H1` bis `H6`, `P`), zusaetzliche Text-Strukturtypen (`BibEntry`, `BlockQuote`, `Code`, `Em`, `Note`, `Quote`, `Reference`, `Span`, `Strong`, `Title`), frei modellierbare Struktur-Container (`Art`, `BlockQuote`, `Div`, `Index`, `NonStruct`, `Note`, `Part`, `Private`, `Sect`, `TOC`, `TOCI`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure`, getaggte Seitenannotationen als `Annot`, getaggte Formular-/Widgetfelder als `Form` sowie Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Fuer diese Struktur prueft der Build-Pfad jetzt nicht nur die Existenz von Tagged Content, sondern auch die Konsistenz von `StructTreeRoot`, Dokumentwurzel, `ParentTree`, `/StructParents`, `MCID`-Zuordnung und der unterstuetzten Strukturelement-Hierarchie. Interne `PDF/A-1a`-Dokumentmodelle mit nicht freigegebenen Strukturtypen, mit leeren Tagged-Containern/Listen/Tabellen oder mit inkonsistenten Tagged-Referenzen werden explizit verworfen. Fuer Annotationen und Formularfelder erzwingt der `PDF/A-1a`-Pfad Alternativtexte, `/StructParent`-Eintraege und `OBJR`-basierte Strukturreferenzen.
 
-Der aktuelle Formularumfang umfasst Textfelder, Checkboxen, Radio-Button-Gruppen, ComboBoxen, ListBoxen, Signaturfelder und inerte Push Buttons im getaggten Strukturpfad. Push Buttons mit URI-Aktionen bleiben im `PDF/A-1a`-Pfad weiterhin gesperrt, weil der Widget-`/A`-Pfad nicht normkonform zu PDF/A-1a ist.
+Der aktuelle Formularumfang im offiziell freigegebenen `PDF/A-1a`-Pfad ist bewusst enger und umfasst nur `TextField`, `ComboBoxField` und `ListBoxField`. Checkboxen, Radio-Button-Gruppen, Push Buttons und Signaturfelder bleiben dort weiterhin gesperrt.
 
 ## Verschluesselung
 

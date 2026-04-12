@@ -65,7 +65,7 @@ final class PageDecorationContext
     /**
      * @param string|list<TextSegment> $text
      */
-    public function text(string|array $text, ?TextOptions $options = null): self
+    public function text(string | array $text, ?TextOptions $options = null): self
     {
         $this->builder = $this->builder->text($text, $options);
 
@@ -99,7 +99,7 @@ final class PageDecorationContext
     /**
      * @param string|list<TextSegment> $text
      */
-    public function paragraph(string|array $text, ?TextOptions $options = null): self
+    public function paragraph(string | array $text, ?TextOptions $options = null): self
     {
         $this->builder = $this->builder->paragraph($text, $options);
 

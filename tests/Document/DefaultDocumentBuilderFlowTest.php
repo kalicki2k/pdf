@@ -111,9 +111,9 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ))
             ->build();
 
-        self::assertStringContainsString("72 720 Td", $document->pages[0]->contents);
-        self::assertStringContainsString("72 696 Td", $document->pages[0]->contents);
-        self::assertStringNotContainsString("72 684 Td", $document->pages[0]->contents);
+        self::assertStringContainsString('72 720 Td', $document->pages[0]->contents);
+        self::assertStringContainsString('72 696 Td', $document->pages[0]->contents);
+        self::assertStringNotContainsString('72 684 Td', $document->pages[0]->contents);
     }
 
     public function testDoubleNewlinesStillProduceABlankLineInTextBlocks(): void
@@ -132,9 +132,9 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
             ))
             ->build();
 
-        self::assertStringContainsString("72 720 Td", $document->pages[0]->contents);
-        self::assertStringContainsString("72 696 Td", $document->pages[0]->contents);
-        self::assertStringContainsString("72 684 Td", $document->pages[0]->contents);
+        self::assertStringContainsString('72 720 Td', $document->pages[0]->contents);
+        self::assertStringContainsString('72 696 Td', $document->pages[0]->contents);
+        self::assertStringContainsString('72 684 Td', $document->pages[0]->contents);
     }
 
     public function testItAppliesSpacingAfterToTheNextImplicitTextCall(): void
