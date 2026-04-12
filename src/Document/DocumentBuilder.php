@@ -107,22 +107,21 @@ interface DocumentBuilder
     /**
      * @param string|list<TextSegment> $text
      */
-    public function text(string|array $text, ?TextOptions $options = null): self;
+    public function text(string | array $text, ?TextOptions $options = null): self;
 
     /**
      * @param list<string> $lines
      */
     public function textLines(array $lines, ?TextOptions $options = null): self;
 
-    /**
-     * @param callable(DocumentBuilder): DocumentBuilder $renderer
-     */
-    public function taggedStructure(TaggedStructureTag|string $tag, callable $renderer): self;
+    public function beginStructure(TaggedStructureTag $tag): self;
+
+    public function endStructure(): self;
 
     /**
      * @param string|list<TextSegment> $text
      */
-    public function paragraph(string|array $text, ?TextOptions $options = null): self;
+    public function paragraph(string | array $text, ?TextOptions $options = null): self;
 
     /**
      * @param list<string> $lines

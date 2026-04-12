@@ -82,12 +82,16 @@ final class PageDecorationContext
         return $this;
     }
 
-    /**
-     * @param callable(DocumentBuilder): DocumentBuilder $renderer
-     */
-    public function taggedStructure(TaggedStructureTag|string $tag, callable $renderer): self
+    public function beginStructure(TaggedStructureTag $tag): self
     {
-        $this->builder = $this->builder->taggedStructure($tag, $renderer);
+        $this->builder = $this->builder->beginStructure($tag);
+
+        return $this;
+    }
+
+    public function endStructure(): self
+    {
+        $this->builder = $this->builder->endStructure();
 
         return $this;
     }

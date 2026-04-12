@@ -419,13 +419,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->renderTextLines($lines, $options, $this->resolveTaggedTextTag($options));
     }
 
-    public function taggedStructure(TaggedStructureTag|string $tag, callable $renderer): DocumentBuilder
+    public function beginStructure(TaggedStructureTag $tag): DocumentBuilder
     {
-        $tag = $this->normalizeTaggedStructureTag($tag);
-
-        if ($tag === '') {
-            throw new InvalidArgumentException('Tagged structure tag must not be empty.');
-        }
+        $tag = $tag->value;
 
         $registry = new TaggedStructureRoleRegistry();
         $registry->assertKnownTag($tag);
@@ -445,15 +441,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ];
         $clone->attachTaggedStructureChildKey($key);
         $clone->taggedStructureStack[] = $key;
-        $result = $renderer($clone);
 
-        if (!$result instanceof self) {
-            throw new InvalidArgumentException('Tagged structure renderer must return a DefaultDocumentBuilder instance.');
+        return $clone;
+    }
+
+    public function endStructure(): DocumentBuilder
+    {
+        if ($this->taggedStructureStack === []) {
+            throw new InvalidArgumentException('No tagged structure is currently open.');
         }
 
-        array_pop($result->taggedStructureStack);
+        $clone = clone $this;
+        array_pop($clone->taggedStructureStack);
 
-        return $result;
+        return $clone;
     }
 
     /**
@@ -2557,6 +2558,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     public function build(): Document
     {
+        if ($this->taggedStructureStack !== []) {
+            throw new InvalidArgumentException('Cannot build document with unclosed tagged structures.');
+        }
+
         $pages = $this->applyPageDecorators([...$this->pages, $this->buildCurrentPage()]);
         $debugger = $this->buildDebugger();
         $document = new Document(
@@ -4055,15 +4060,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $this->requiresTaggedStructure() ? $tag : null;
-    }
-
-    private function normalizeTaggedStructureTag(TaggedStructureTag|string|null $tag): ?string
-    {
-        if ($tag instanceof TaggedStructureTag) {
-            return $tag->value;
-        }
-
-        return $tag;
     }
 
     private function requiresTaggedStructure(): bool
