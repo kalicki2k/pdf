@@ -33,6 +33,7 @@ use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
+use Kalle\Pdf\Page\NamedDestination;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageFont;
@@ -74,6 +75,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private array $currentPageImages = [];
     /** @var list<PageAnnotation> */
     private array $currentPageAnnotations = [];
+    /** @var list<NamedDestination> */
+    private array $currentPageNamedDestinations = [];
     private int $currentPageNextMarkedContentId = 0;
     private ?Margin $currentPageMargin = null;
     private ?float $currentPageCursorY = null;
@@ -207,22 +210,24 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, $shapedLines);
 
+        $textResult = $this->buildWrappedTextContent(
+            $wrappedLines,
+            $shapedLines,
+            $options,
+            $textFlow,
+            $placement['x'],
+            $placement['y'],
+            $renderState['fontAlias'],
+            $font,
+            $renderState['embeddedPageFont'],
+            $renderState['useHexString'],
+            ($this->profile ?? Profile::standard())->version(),
+        );
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
-            $this->buildWrappedTextContent(
-                $wrappedLines,
-                $shapedLines,
-                $options,
-                $textFlow,
-                $placement['x'],
-                $placement['y'],
-                $renderState['fontAlias'],
-                $font,
-                $renderState['embeddedPageFont'],
-                $renderState['useHexString'],
-                ($this->profile ?? Profile::standard())->version(),
-            ),
+            $textResult['contents'],
         );
+        $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
         $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedLines));
 
         return $clone;
@@ -254,6 +259,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $tableLayout = $calculator->layoutTable($table, $columnWidths, new TextFlow($page), $font);
         $cursorY = $clone->currentPageCursorY ?? $contentArea->top;
         $headerRenderedOnCurrentPage = false;
+        $minimumTableSegmentHeight = $table->cellPadding->vertical() + $clone->lineHeightForTable($table);
 
         if ($headerLayout !== null) {
             if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
@@ -270,31 +276,75 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         foreach ($tableLayout->rowGroups as $rowGroup) {
-            if ($rowGroup->height > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
-                $clone->startOverflowPage();
-                $page = $clone->buildCurrentPage();
-                $contentArea = $page->contentArea();
-                $cursorY = $contentArea->top;
-                $headerRenderedOnCurrentPage = false;
-            }
+            $segmentOffset = 0.0;
 
-            if (!$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak) {
-                if (($headerLayout->totalHeight() + $rowGroup->height) > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
+            while ($segmentOffset < $rowGroup->height) {
+                $availableHeight = $cursorY - $contentArea->bottom;
+                $remainingGroupHeight = $rowGroup->height - $segmentOffset;
+                $headerHeight = !$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak
+                    ? $headerLayout->totalHeight()
+                    : 0.0;
+                $availableHeightAfterHeader = $availableHeight - $headerHeight;
+                $groupFitsAfterHeader = $remainingGroupHeight <= $availableHeightAfterHeader;
+                $groupFitsOnFreshPage = $remainingGroupHeight <= ($contentArea->height() - $headerHeight);
+
+                if (($contentArea->height() - $headerHeight) < $minimumTableSegmentHeight) {
+                    throw new InvalidArgumentException('Page content area is too small to render table rows.');
+                }
+
+                if (!$groupFitsAfterHeader && $clone->currentPageCursorY !== null && $groupFitsOnFreshPage) {
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     $cursorY = $contentArea->top;
+                    $headerRenderedOnCurrentPage = false;
+                    continue;
                 }
 
-                $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left);
-                $cursorY -= $headerLayout->totalHeight();
-                $clone->currentPageCursorY = $cursorY;
-                $headerRenderedOnCurrentPage = true;
-            }
+                if (!$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak) {
+                    if ($availableHeightAfterHeader < $minimumTableSegmentHeight) {
+                        throw new InvalidArgumentException('Repeated table headers leave no space for table content on the page.');
+                    }
 
-            $clone->renderTableRowGroup($table, $tableLayout, $rowGroup, $font, $cursorY, $contentArea->left);
-            $cursorY -= $rowGroup->height;
-            $clone->currentPageCursorY = $cursorY;
+                    $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $contentArea->left);
+                    $cursorY -= $headerLayout->totalHeight();
+                    $clone->currentPageCursorY = $cursorY;
+                    $headerRenderedOnCurrentPage = true;
+                    $availableHeight = $cursorY - $contentArea->bottom;
+                }
+
+                if ($availableHeight < $minimumTableSegmentHeight) {
+                    $clone->startOverflowPage();
+                    $page = $clone->buildCurrentPage();
+                    $contentArea = $page->contentArea();
+                    $cursorY = $contentArea->top;
+                    $headerRenderedOnCurrentPage = false;
+                    continue;
+                }
+
+                $segmentHeight = min($remainingGroupHeight, $availableHeight);
+                $clone->renderTableRowGroupSegment(
+                    $table,
+                    $tableLayout,
+                    $rowGroup,
+                    $font,
+                    $cursorY,
+                    $contentArea->left,
+                    $segmentOffset,
+                    $segmentHeight,
+                );
+                $segmentOffset += $segmentHeight;
+                $cursorY -= $segmentHeight;
+                $clone->currentPageCursorY = $cursorY;
+
+                if ($segmentOffset < $rowGroup->height) {
+                    $clone->startOverflowPage();
+                    $page = $clone->buildCurrentPage();
+                    $contentArea = $page->contentArea();
+                    $cursorY = $contentArea->top;
+                    $headerRenderedOnCurrentPage = false;
+                }
+            }
         }
 
         return $clone;
@@ -341,6 +391,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function linkToNamedDestination(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $contents = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->currentPageAnnotations[] = new LinkAnnotation(LinkTarget::namedDestination($name), $x, $y, $width, $height, $contents);
+
+        return $clone;
+    }
+
     public function linkToPage(
         int $pageNumber,
         float $x,
@@ -374,6 +438,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $height,
             $contents,
         );
+
+        return $clone;
+    }
+
+    public function namedDestination(string $name): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->currentPageNamedDestinations[] = NamedDestination::fit($name);
+
+        return $clone;
+    }
+
+    public function namedDestinationPosition(string $name, float $x, float $y): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->currentPageNamedDestinations[] = NamedDestination::position($name, $x, $y);
 
         return $clone;
     }
@@ -492,6 +572,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             imageResources: $this->currentPageImageResources,
             images: $this->currentPageImages,
             annotations: $this->currentPageAnnotations,
+            namedDestinations: $this->currentPageNamedDestinations,
             margin: $this->currentPageMargin,
             backgroundColor: $this->currentPageBackgroundColor,
             label: $this->currentPageLabel,
@@ -507,6 +588,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageImageResources = [];
         $this->currentPageImages = [];
         $this->currentPageAnnotations = [];
+        $this->currentPageNamedDestinations = [];
         $this->currentPageMargin = $options !== null
             ? $options->margin ?? $this->defaultPageMargin
             : $this->defaultPageMargin;
@@ -559,8 +641,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?PageFont $embeddedPageFont,
         bool $useHexString,
         float $pdfVersion,
-    ): string {
+    ): array {
         $contents = [];
+        $annotations = [];
         $availableWidth = $textFlow->availableTextWidthFrom($x, $options);
 
         foreach ($shapedLines as $index => $lineRuns) {
@@ -609,7 +692,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             foreach ($mappedRuns as $mappedRun) {
-                $contents[] = $this->textBlockBuilder()->build(
+                $textBlockContent = $this->textBlockBuilder()->build(
                     $mappedRun->encodedText,
                     $options,
                     $runX,
@@ -621,11 +704,40 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $mappedRun->positionedFragments,
                     $mappedRun->useHexString,
                 );
+
+                if ($options->link !== null && $mappedRun->width > 0.0) {
+                    $markedContentId = ($this->profile ?? Profile::standard())->requiresTaggedLinkAnnotations()
+                        ? $this->nextMarkedContentId()
+                        : null;
+
+                    if ($markedContentId !== null) {
+                        $textBlockContent = implode("\n", [
+                            '/Link << /MCID ' . $markedContentId . ' >> BDC',
+                            $textBlockContent,
+                            'EMC',
+                        ]);
+                    }
+
+                    $annotations[] = new LinkAnnotation(
+                        target: $options->link,
+                        x: $runX,
+                        y: $runY - max($textFlow->lineHeight($options) - $font->ascent($options->fontSize), 0.0),
+                        width: $mappedRun->width,
+                        height: $textFlow->lineHeight($options),
+                        contents: $mappedRun->text,
+                        markedContentId: $markedContentId,
+                    );
+                }
+
+                $contents[] = $textBlockContent;
                 $runX += $mappedRun->width;
             }
         }
 
-        return implode("\n", $contents);
+        return [
+            'contents' => implode("\n", $contents),
+            'annotations' => $annotations,
+        ];
     }
 
     /**
@@ -748,17 +860,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
         TableCellLayout $cellLayout,
         StandardFontDefinition | EmbeddedFontDefinition $font,
         TextFlow $textFlow,
-        float $groupTopY,
+        float $segmentTopY,
         int $groupStartRowIndex,
+        float $segmentOffset,
+        float $segmentHeight,
         float $tableLeftX,
     ): string {
         $contents = [];
         $padding = $table->cellPadding;
-        $topY = $groupTopY;
         $x = $tableLeftX;
+        $cellTopOffset = 0.0;
 
         for ($index = $groupStartRowIndex; $index < $cellLayout->rowIndex; $index++) {
-            $topY -= $tableLayout->rowHeights[$index];
+            $cellTopOffset += $tableLayout->rowHeights[$index];
         }
 
         for ($index = 0; $index < $cellLayout->columnIndex; $index++) {
@@ -769,52 +883,66 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $shapedLines = $this->shapeWrappedTextLines($cellLayout->wrappedLines, $cellTextOptions, $font);
         $renderState = $this->prepareTextRenderState($cellLayout->cell->text, $cellTextOptions, $font, $shapedLines);
         $cellHeight = $tableLayout->cellHeight($cellLayout);
+        $cellBottomOffset = $cellTopOffset + $cellHeight;
+        $segmentBottomOffset = $segmentOffset + $segmentHeight;
+        $visibleTopOffset = max($cellTopOffset, $segmentOffset);
+        $visibleBottomOffset = min($cellBottomOffset, $segmentBottomOffset);
+
+        if ($visibleBottomOffset <= $visibleTopOffset) {
+            return '';
+        }
+
+        $visibleHeight = $visibleBottomOffset - $visibleTopOffset;
+        $topY = $segmentTopY - ($visibleTopOffset - $segmentOffset);
+        $rendersCellTop = $visibleTopOffset <= $cellTopOffset;
+        $rendersCellBottom = $visibleBottomOffset >= $cellBottomOffset;
 
         if ($cellLayout->cell->backgroundColor !== null) {
             $contents[] = $this->buildCellBackgroundContent(
                 $x,
                 $topY,
                 $cellLayout->width,
-                $cellHeight,
+                $visibleHeight,
                 $cellLayout->cell->backgroundColor,
             );
         }
 
-        $textTopY = $this->tableCellTextTopY(
-            $topY,
-            $cellHeight,
+        $segmentText = $this->visibleWrappedTextContentForCellSegment(
             $cellLayout,
-            $table->cellPadding,
             $cellTextOptions,
+            $cellHeight,
+            $shapedLines,
             $font,
+            $renderState['fontAlias'],
+            $renderState['embeddedPageFont'],
+            $renderState['useHexString'],
+            $textFlow,
+            $padding,
+            $x + $padding->left,
+            $segmentTopY,
+            $cellTopOffset,
+            $segmentOffset,
+            $segmentHeight,
         );
 
         if ($table->border->isVisible()) {
-            $contents[] = $this->buildCellBorderContent(
+            $contents[] = $this->buildCellBorderSegmentContent(
                 $x,
                 $topY,
                 $cellLayout->width,
-                $cellHeight,
+                $visibleHeight,
+                $rendersCellTop,
+                $rendersCellBottom,
                 $table->border,
             );
         }
 
-        $textContent = $this->buildWrappedTextContent(
-            $cellLayout->wrappedLines,
-            $shapedLines,
-            $cellTextOptions,
-            $textFlow,
-            $x + $padding->left,
-            $textTopY,
-            $renderState['fontAlias'],
-            $font,
-            $renderState['embeddedPageFont'],
-            $renderState['useHexString'],
-            ($this->profile ?? Profile::standard())->version(),
-        );
+        if ($segmentText !== null) {
+            if ($segmentText['contents'] !== '') {
+                $contents[] = $segmentText['contents'];
+            }
 
-        if ($textContent !== '') {
-            $contents[] = $textContent;
+            $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$segmentText['annotations']];
         }
 
         return implode("\n", array_filter($contents, static fn (string $content): bool => $content !== ''));
@@ -831,6 +959,78 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $topY
             - $font->ascent($textOptions->fontSize)
             - $this->tableCellVerticalOffset($cellHeight, $cellLayout, $cellPadding, $textOptions);
+    }
+
+    /**
+     * @param list<list<ShapedTextRun>> $shapedLines
+     * @return array{contents: string, annotations: list<PageAnnotation>}|null
+     */
+    private function visibleWrappedTextContentForCellSegment(
+        TableCellLayout $cellLayout,
+        TextOptions $cellTextOptions,
+        float $cellHeight,
+        array $shapedLines,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        string $fontAlias,
+        ?PageFont $embeddedPageFont,
+        bool $useHexString,
+        TextFlow $textFlow,
+        CellPadding $cellPadding,
+        float $x,
+        float $segmentTopY,
+        float $cellTopOffset,
+        float $segmentOffset,
+        float $segmentHeight,
+    ): ?array {
+        $lineHeight = $textFlow->lineHeight($cellTextOptions);
+        $textTopOffset = $cellTopOffset + $this->tableCellVerticalOffset(
+            $cellHeight,
+            $cellLayout,
+            $cellPadding,
+            $cellTextOptions,
+        );
+        $firstLineBaselineOffset = $textTopOffset + $font->ascent($cellTextOptions->fontSize);
+        $segmentBottomOffset = $segmentOffset + $segmentHeight;
+        $visibleLineIndexes = [];
+
+        foreach ($cellLayout->wrappedLines as $index => $_line) {
+            $lineTopOffset = $textTopOffset + ($lineHeight * $index);
+
+            if ($lineTopOffset < $segmentOffset || $lineTopOffset >= $segmentBottomOffset) {
+                continue;
+            }
+
+            $visibleLineIndexes[] = $index;
+        }
+
+        if ($visibleLineIndexes === []) {
+            return null;
+        }
+
+        $startIndex = $visibleLineIndexes[0];
+        $visibleWrappedLines = [];
+        $visibleShapedLines = [];
+
+        foreach ($visibleLineIndexes as $index) {
+            $visibleWrappedLines[] = $cellLayout->wrappedLines[$index];
+            $visibleShapedLines[] = $shapedLines[$index];
+        }
+
+        $firstLineY = $segmentTopY - (($firstLineBaselineOffset + ($lineHeight * $startIndex)) - $segmentOffset);
+
+        return $this->buildWrappedTextContent(
+            $visibleWrappedLines,
+            $visibleShapedLines,
+            $cellTextOptions,
+            $textFlow,
+            $x,
+            $firstLineY,
+            $fontAlias,
+            $font,
+            $embeddedPageFont,
+            $useHexString,
+            ($this->profile ?? Profile::standard())->version(),
+        );
     }
 
     private function tableCellVerticalOffset(
@@ -885,6 +1085,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 new TextFlow($this->buildCurrentPage()),
                 $topY,
                 0,
+                0.0,
+                $tableLayout->totalHeight(),
                 $leftX,
             );
         }
@@ -895,13 +1097,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
     }
 
-    private function renderTableRowGroup(
+    private function renderTableRowGroupSegment(
         Table $table,
         TableLayout $tableLayout,
         TableRowGroupLayout $rowGroup,
         StandardFontDefinition | EmbeddedFontDefinition $font,
         float $topY,
         float $leftX,
+        float $segmentOffset,
+        float $segmentHeight,
     ): void {
         $contents = [];
 
@@ -918,6 +1122,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 new TextFlow($this->buildCurrentPage()),
                 $topY,
                 $rowGroup->startRowIndex,
+                $segmentOffset,
+                $segmentHeight,
                 $leftX,
             );
         }
@@ -942,6 +1148,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
             baseDirection: $options->baseDirection,
             align: $options->align,
         );
+    }
+
+    private function lineHeightForTable(Table $table): float
+    {
+        return $table->textOptions->lineHeight ?? ($table->textOptions->fontSize * 1.2);
     }
 
     /**
@@ -990,18 +1201,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ];
     }
 
-    private function buildCellBorderContent(
+    private function buildCellBorderSegmentContent(
         float $x,
         float $topY,
         float $width,
         float $height,
+        bool $renderTopBorder,
+        bool $renderBottomBorder,
         Border $border,
     ): string {
         $segments = [];
         $rightX = $x + $width;
         $bottomY = $topY - $height;
 
-        if ($border->top > 0.0) {
+        if ($renderTopBorder && $border->top > 0.0) {
             $segments[] = $this->buildStrokeLineContent($x, $topY, $rightX, $topY, $border->top);
         }
 
@@ -1009,7 +1222,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $segments[] = $this->buildStrokeLineContent($rightX, $topY, $rightX, $bottomY, $border->right);
         }
 
-        if ($border->bottom > 0.0) {
+        if ($renderBottomBorder && $border->bottom > 0.0) {
             $segments[] = $this->buildStrokeLineContent($x, $bottomY, $rightX, $bottomY, $border->bottom);
         }
 
@@ -1096,6 +1309,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
             return null;
         }
 
+        $markedContentId = $this->currentPageNextMarkedContentId;
+        $this->currentPageNextMarkedContentId++;
+
+        return $markedContentId;
+    }
+
+    private function nextMarkedContentId(): int
+    {
         $markedContentId = $this->currentPageNextMarkedContentId;
         $this->currentPageNextMarkedContentId++;
 

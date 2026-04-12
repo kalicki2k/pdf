@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function implode;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Table;
@@ -17,6 +19,7 @@ use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
+
 use Kalle\Pdf\Text\TextOptions;
 
 use function number_format;
@@ -385,10 +388,116 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         self::assertStringContainsString('62.693 462.983 Td', $document->pages[0]->contents);
     }
 
+    public function testItSplitsATallSingleRowAcrossMultiplePages(): void
+    {
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+        )
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(
+                TableRow::fromTexts($this->multilineText(18)),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+        $firstColumnX = $document->pages[0]->contentArea()->left + 6.0;
+
+        self::assertGreaterThanOrEqual(2, count($document->pages));
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ',
+            $document->pages[0]->contents,
+        );
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ',
+            $document->pages[1]->contents,
+        );
+    }
+
+    public function testItSplitsATallRowspanGroupAcrossMultiplePages(): void
+    {
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(
+                TableRow::fromCells(
+                    TableCell::text($this->multilineText(18), rowspan: 2),
+                    TableCell::text('Top'),
+                ),
+                TableRow::fromCells(
+                    TableCell::text('Bottom'),
+                ),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+        $firstColumnX = $document->pages[0]->contentArea()->left + 6.0;
+
+        self::assertGreaterThanOrEqual(2, count($document->pages));
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ',
+            $document->pages[0]->contents,
+        );
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ',
+            $document->pages[1]->contents,
+        );
+    }
+
+    public function testItRepeatsHeadersWhenATallRowIsSplitAcrossPages(): void
+    {
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+        )
+            ->withHeaderRows(TableRow::fromTexts('Header'))
+            ->withRepeatedHeaderOnPageBreak()
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(
+                TableRow::fromTexts($this->multilineText(18)),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+        $font = StandardFontDefinition::from('Helvetica');
+        $firstColumnX = $document->pages[0]->contentArea()->left + 6.0;
+        $headerTextY = $document->pages[0]->contentArea()->top - 6.0 - $font->ascent(12.0);
+
+        self::assertGreaterThanOrEqual(2, count($document->pages));
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ' . $this->formatNumber($headerTextY) . ' Td',
+            $document->pages[0]->contents,
+        );
+        self::assertStringContainsString(
+            $this->formatNumber($firstColumnX) . ' ' . $this->formatNumber($headerTextY) . ' Td',
+            $document->pages[1]->contents,
+        );
+    }
+
     private function formatNumber(float $value): string
     {
         $formatted = number_format($value, 3, '.', '');
 
         return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    private function multilineText(int $lineCount): string
+    {
+        $lines = [];
+
+        for ($index = 1; $index <= $lineCount; $index++) {
+            $lines[] = 'Line ' . $index;
+        }
+
+        return implode("\n", $lines);
     }
 }
