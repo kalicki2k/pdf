@@ -16,6 +16,7 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
@@ -177,5 +178,39 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertNull($document->pages[0]->images[1]->markedContentId);
         self::assertStringContainsString("/Figure << /MCID 0 >> BDC\nq\n120 0 0 60 40 500 cm\n/Im1 Do\nQ\nEMC", $document->pages[0]->contents);
         self::assertStringContainsString("/Artifact BMC\nq\n120 0 0 60 40 420 cm\n/Im1 Do\nQ\nEMC", $document->pages[0]->contents);
+    }
+
+    public function testItAddsLinkAnnotationsToTheCurrentPage(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('Example')
+            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[0]);
+        self::assertTrue($document->pages[0]->annotations[0]->target->isExternalUrl());
+        self::assertSame('https://example.com', $document->pages[0]->annotations[0]->target->externalUrlValue());
+        self::assertSame('Open Example', $document->pages[0]->annotations[0]->contents);
+    }
+
+    public function testItAddsInternalLinkAnnotationsToTheCurrentPage(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('Page 1')
+            ->newPage()
+            ->text('Page 2')
+            ->newPage()
+            ->linkToPage(2, 40, 500, 120, 16, 'Go to page 2')
+            ->linkToPagePosition(1, 72, 700, 40, 460, 120, 16, 'Back to heading')
+            ->build();
+
+        self::assertCount(2, $document->pages[2]->annotations);
+        self::assertTrue($document->pages[2]->annotations[0]->target->isPage());
+        self::assertSame(2, $document->pages[2]->annotations[0]->target->pageNumberValue());
+        self::assertTrue($document->pages[2]->annotations[1]->target->isPosition());
+        self::assertSame(1, $document->pages[2]->annotations[1]->target->pageNumberValue());
+        self::assertSame(72.0, $document->pages[2]->annotations[1]->target->xValue());
+        self::assertSame(700.0, $document->pages[2]->annotations[1]->target->yValue());
     }
 }

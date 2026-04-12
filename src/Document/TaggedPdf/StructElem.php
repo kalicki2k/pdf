@@ -19,6 +19,7 @@ final readonly class StructElem
         private ?int $pageObjectId = null,
         private ?string $altText = null,
         private ?int $markedContentId = null,
+        private ?array $kidEntries = null,
     ) {
     }
 
@@ -40,6 +41,8 @@ final readonly class StructElem
 
         if ($this->markedContentId !== null) {
             $entries[] = '/K ' . $this->markedContentId;
+        } elseif ($this->kidEntries !== null) {
+            $entries[] = '/K [' . implode(' ', $this->kidEntries) . ']';
         } else {
             $references = implode(' ', array_map(
                 static fn (int $objectId): string => $objectId . ' 0 R',

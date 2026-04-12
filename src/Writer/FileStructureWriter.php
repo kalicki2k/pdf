@@ -45,6 +45,10 @@ final class FileStructureWriter
             $output->write(' /Encrypt ' . $trailer->encryptObjectId . ' 0 R');
         }
 
+        if ($trailer->documentId !== null) {
+            $output->write(' /ID [<' . $trailer->documentId . '> <' . $trailer->documentId . '>]');
+        }
+
         $output->write(" >>\n");
         $output->write("startxref\n");
         $output->write((string) $startXref . "\n");

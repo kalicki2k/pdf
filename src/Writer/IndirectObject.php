@@ -12,6 +12,7 @@ final readonly class IndirectObject
     public function __construct(
         public int $objectId,
         public string $contents,
+        public bool $encryptable = true,
     ) {
     }
 }

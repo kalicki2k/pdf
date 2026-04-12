@@ -141,4 +141,61 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Alt (Logo)', $pdf);
         self::assertStringContainsString('/Nums [0 [', $pdf);
     }
+
+    public function testItRendersLinkAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Annots [5 0 R]', $pdf);
+        self::assertStringContainsString('/Subtype /Link', $pdf);
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com) >>', $pdf);
+        self::assertStringContainsString('/Contents (Open Example)', $pdf);
+    }
+
+    public function testItRendersInternalLinkAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('Page 1')
+            ->newPage()
+            ->linkToPage(1, 40, 500, 120, 16, 'Back to page 1')
+            ->linkToPagePosition(1, 72, 700, 40, 460, 120, 16, 'Back to heading')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Dest [3 0 R /Fit]', $pdf);
+        self::assertStringContainsString('/Dest [3 0 R /XYZ 72 700 null]', $pdf);
+    }
+
+    public function testItRejectsCurrentPdfUaLinkAnnotationsDuringRendering(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('does not support the current page annotation implementation');
+
+        $renderer->write($document, $output);
+    }
 }

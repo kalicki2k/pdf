@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
@@ -11,6 +12,7 @@ use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
+use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
@@ -87,6 +89,27 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/ModDate (', $objects[5]->contents);
     }
 
+    public function testItAddsAnEncryptObjectAndTrailerEntriesForEncryptedDocuments(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdf14(),
+            encryption: Encryption::rc4_128('user', 'owner'),
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(6, $plan->fileStructure->trailer->size);
+        self::assertSame(5, $plan->fileStructure->trailer->encryptObjectId);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{32}$/i', (string) $plan->fileStructure->trailer->documentId);
+        self::assertNotNull($plan->objectEncryptor);
+        self::assertSame(5, $objects[4]->objectId);
+        self::assertFalse($objects[4]->encryptable);
+        self::assertStringStartsWith('<< /Filter /Standard /V 2 /R 3 /Length 128 /P -4 /O <', $objects[4]->contents);
+        self::assertStringContainsString('/R 3 /Length 128 /P -4', $objects[4]->contents);
+    }
+
     public function testItBuildsPageObjectsForAllDocumentPages(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -107,6 +130,35 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame("<< /Length 4 >>\nstream\nq\nQ\nendstream", $objects[3]->contents);
         self::assertSame('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 419.528 595.276] /Resources << >> /Contents 6 0 R >>', $objects[4]->contents);
         self::assertSame("<< /Length 0 >>\nstream\nendstream", $objects[5]->contents);
+    }
+
+    public function testItRejectsEncryptionForPdfAProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            encryption: Encryption::rc4_128('user', 'owner'),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow encryption.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsEncryptionForPdfA1Profiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA1b(),
+            title: 'Archive Copy',
+            encryption: Encryption::rc4_128('user', 'owner'),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow encryption.');
+
+        $builder->build($document);
     }
 
     public function testItKeepsMultiplePagesBuiltThroughTheBuilder(): void
@@ -258,6 +310,112 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
         self::assertStringContainsString('/Subtype /Image', $objects[4]->contents);
         self::assertStringContainsString('/Filter /DCTDecode', $objects[4]->contents);
+    }
+
+    public function testItAddsLinkAnnotationsToPageObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 4 0 R /Annots [5 0 R] >>',
+            $objects[2]->contents,
+        );
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Link /Rect [40 500 160 516] /Border [0 0 0] /P 3 0 R /A << /S /URI /URI (https://example.com) >> /Contents (Open Example) >>',
+            $objects[4]->contents,
+        );
+    }
+
+    public function testItAddsInternalLinkDestinationsToPageObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->text('Page 1')
+            ->newPage()
+            ->linkToPage(1, 40, 500, 120, 16, 'Back to page 1')
+            ->linkToPagePosition(1, 72, 700, 40, 460, 120, 16, 'Back to heading')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 6 0 R /Annots [8 0 R 9 0 R] >>',
+            $objects[4]->contents,
+        );
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Link /Rect [40 500 160 516] /Border [0 0 0] /P 5 0 R /Dest [3 0 R /Fit] /Contents (Back to page 1) >>',
+            $objects[7]->contents,
+        );
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Link /Rect [40 460 160 476] /Border [0 0 0] /P 5 0 R /Dest [3 0 R /XYZ 72 700 null] /Contents (Back to heading) >>',
+            $objects[8]->contents,
+        );
+    }
+
+    public function testItBuildsTaggedLinkAnnotationsForPdfUaProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/Annots [5 0 R] /Tabs /S', $objects[2]->contents);
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Link /Rect [40 500 160 516] /Border [0 0 0] /P 3 0 R /StructParent 0 /A << /S /URI /URI (https://example.com) >> /Contents (Open Example) >>',
+            $objects[4]->contents,
+        );
+        self::assertStringContainsString('<< /Nums [0 [9 0 R]] >>', $objects[7]->contents);
+        self::assertSame(
+            '<< /Type /StructElem /S /Link /P 7 0 R /Pg 3 0 R /Alt (Open Example) /K [<< /Type /OBJR /Obj 5 0 R /Pg 3 0 R >>] >>',
+            $objects[8]->contents,
+        );
+    }
+
+    public function testItRejectsPdfUaLinkAnnotationsWithoutAlternativeText(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->link('https://example.com', 40, 500, 120, 16)
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('requires alternative text for link annotation');
+
+        $builder->build($document);
+    }
+
+    public function testItAllowsLinkAnnotationsForPdfA1ProfilesAndMarksThemPrintable(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('A', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
+            ))
+            ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/F 4', $objects[8]->contents);
     }
 
     public function testItBuildsSoftMaskImageObjects(): void
@@ -416,6 +574,31 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-1b does not allow soft-mask image transparency for image resource 1 on page 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsCustomImageColorSpacesForPdfA1Profiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->image(
+                ImageSource::indexed(
+                    'palette-data',
+                    1,
+                    1,
+                    8,
+                    "\x80\x80\x80",
+                ),
+                ImagePlacement::at(10, 20),
+                ImageAccessibility::alternativeText('Indexed image'),
+            )
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1b does not allow custom image color space definitions in the current implementation for image resource 1 on page 1.');
 
         $builder->build($document);
     }

@@ -10,7 +10,9 @@ use function implode;
 use InvalidArgumentException;
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 
 use Kalle\Pdf\Font\StandardFontDefinition;
@@ -28,8 +30,11 @@ use Kalle\Pdf\Layout\Table\TableLayoutCalculator;
 use Kalle\Pdf\Layout\Table\TableRowGroupLayout;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\EmbeddedGlyph;
+use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageImage;
 use Kalle\Pdf\Page\PageOptions;
@@ -40,7 +45,9 @@ use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
 use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextAlign;
+
 use Kalle\Pdf\Text\TextOptions;
+
 use Kalle\Pdf\Writer\FileOutput;
 
 use Kalle\Pdf\Writer\StreamOutput;
@@ -65,6 +72,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private array $currentPageImageResources = [];
     /** @var list<PageImage> */
     private array $currentPageImages = [];
+    /** @var list<PageAnnotation> */
+    private array $currentPageAnnotations = [];
     private int $currentPageNextMarkedContentId = 0;
     private ?Margin $currentPageMargin = null;
     private ?float $currentPageCursorY = null;
@@ -78,6 +87,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private ?string $creator = null;
     private ?string $creatorTool = null;
     private ?PdfAOutputIntent $pdfaOutputIntent = null;
+    private ?Encryption $encryption = null;
     private ?Profile $profile = null;
 
     public static function make(): self
@@ -137,6 +147,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $clone->pdfaOutputIntent = $outputIntent;
+
+        return $clone;
+    }
+
+    public function encryption(Encryption $encryption): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->encryption = $encryption;
 
         return $clone;
     }
@@ -309,6 +327,57 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->image(ImageSource::fromPath($path), $placement, $accessibility);
     }
 
+    public function link(
+        string $url,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $contents = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->currentPageAnnotations[] = new LinkAnnotation(LinkTarget::externalUrl($url), $x, $y, $width, $height, $contents);
+
+        return $clone;
+    }
+
+    public function linkToPage(
+        int $pageNumber,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $contents = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->currentPageAnnotations[] = new LinkAnnotation(LinkTarget::page($pageNumber), $x, $y, $width, $height, $contents);
+
+        return $clone;
+    }
+
+    public function linkToPagePosition(
+        int $pageNumber,
+        float $targetX,
+        float $targetY,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $contents = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->currentPageAnnotations[] = new LinkAnnotation(
+            LinkTarget::position($pageNumber, $targetX, $targetY),
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+        );
+
+        return $clone;
+    }
+
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): DocumentBuilder
     {
         $clone = clone $this;
@@ -380,6 +449,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             creator: $this->creator,
             creatorTool: $this->creatorTool,
             pdfaOutputIntent: $this->pdfaOutputIntent,
+            encryption: $this->encryption,
         );
     }
 
@@ -421,6 +491,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             fontResources: $this->currentPageFontResources,
             imageResources: $this->currentPageImageResources,
             images: $this->currentPageImages,
+            annotations: $this->currentPageAnnotations,
             margin: $this->currentPageMargin,
             backgroundColor: $this->currentPageBackgroundColor,
             label: $this->currentPageLabel,
@@ -435,6 +506,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageFontResources = [];
         $this->currentPageImageResources = [];
         $this->currentPageImages = [];
+        $this->currentPageAnnotations = [];
         $this->currentPageMargin = $options !== null
             ? $options->margin ?? $this->defaultPageMargin
             : $this->defaultPageMargin;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Writer;
 
+use Kalle\Pdf\Encryption\ObjectEncryptor;
+
 /**
  * Bundles prepared serialization data for the PDF renderer.
  */
@@ -15,6 +17,7 @@ final readonly class DocumentSerializationPlan
     public function __construct(
         public iterable $objects,
         public FileStructure $fileStructure,
+        public ?ObjectEncryptor $objectEncryptor = null,
     ) {
     }
 }

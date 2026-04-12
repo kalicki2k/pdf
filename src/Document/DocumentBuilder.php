@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImagePlacement;
@@ -30,6 +31,8 @@ interface DocumentBuilder
 
     public function pdfaOutputIntent(PdfAOutputIntent $outputIntent): self;
 
+    public function encryption(Encryption $encryption): self;
+
     public function profile(Profile $profile): self;
 
     public function pageSize(PageSize $size): self;
@@ -47,6 +50,21 @@ interface DocumentBuilder
     public function image(ImageSource $source, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;
 
     public function imageFile(string $path, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;
+
+    public function link(string $url, float $x, float $y, float $width, float $height, ?string $contents = null): self;
+
+    public function linkToPage(int $pageNumber, float $x, float $y, float $width, float $height, ?string $contents = null): self;
+
+    public function linkToPagePosition(
+        int $pageNumber,
+        float $targetX,
+        float $targetY,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $contents = null,
+    ): self;
 
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): self;
 

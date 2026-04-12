@@ -18,11 +18,16 @@ final class BodyWriter
 
         foreach ($plan->objects as $object) {
             $offsets[$object->objectId] = $output->offset();
+            $contents = $object->contents;
+
+            if ($plan->objectEncryptor !== null && $object->encryptable) {
+                $contents = $plan->objectEncryptor->encryptObject($contents, $object->objectId);
+            }
 
             $output->write($object->objectId . " 0 obj\n");
-            $output->write($object->contents);
+            $output->write($contents);
 
-            if (!str_ends_with($object->contents, "\n")) {
+            if (!str_ends_with($contents, "\n")) {
                 $output->write("\n");
             }
 
