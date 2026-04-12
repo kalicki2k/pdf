@@ -30,7 +30,7 @@ final class PdfA1aTaggedStructureValidator
      */
     public function assertValid(Document $document, DocumentSerializationPlanBuildState $state, array $objects): void
     {
-        if (!$document->profile->isPdfA1() || $document->profile->pdfaConformance() !== 'A') {
+        if (!$document->profile->isPdfA() || $document->profile->pdfaConformance() !== 'A') {
             return;
         }
 

@@ -56,13 +56,6 @@ final class DocumentSerializationPlanValidator
 
     private function assertProfileRequirements(Document $document): void
     {
-        if ($document->profile->isPdfA() && $document->profile->pdfaConformance() === 'A' && !$document->profile->isPdfA1()) {
-            throw new InvalidArgumentException(sprintf(
-                'Profile %s is not yet supported as a tagged PDF/A profile in the current implementation. Use a B- or U-conformance profile instead.',
-                $document->profile->name(),
-            ));
-        }
-
         if ($document->profile->requiresDocumentLanguage() && $document->language === null) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s requires a document language.',
@@ -286,13 +279,13 @@ final class DocumentSerializationPlanValidator
 
     private function assertTaggedStructureRequirements(Document $document): void
     {
-        if (!$document->profile->isPdfA1() || $document->profile->pdfaConformance() !== 'A') {
+        if (!$document->profile->isPdfA() || $document->profile->pdfaConformance() !== 'A') {
             return;
         }
 
         $taggedStructure = $this->taggedStructureCollector->collect($document);
 
-        if (!$taggedStructure->hasStructuredContent() && !$this->documentHasTaggedPdfA1aNonMarkedContent($document)) {
+        if (!$taggedStructure->hasStructuredContent() && !$this->documentHasTaggedPdfANonMarkedContent($document)) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s requires structured content in the current implementation.',
                 $document->profile->name(),
@@ -324,7 +317,7 @@ final class DocumentSerializationPlanValidator
         return preg_match('/(?:^|\\s)BT(?:\\s|$)/', $page->contents) === 1;
     }
 
-    private function documentHasTaggedPdfA1aNonMarkedContent(Document $document): bool
+    private function documentHasTaggedPdfANonMarkedContent(Document $document): bool
     {
         foreach ($document->pages as $page) {
             foreach ($page->annotations as $annotation) {

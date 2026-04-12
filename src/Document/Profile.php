@@ -284,7 +284,7 @@ final readonly class Profile
     public function requiresDocumentLanguage(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresDocumentStructure(): bool
@@ -311,7 +311,7 @@ final readonly class Profile
     public function requiresFigureAltText(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresFormFieldAlternativeDescriptions(): bool
@@ -323,7 +323,7 @@ final readonly class Profile
     public function requiresLinkAnnotationAlternativeDescriptions(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresPageAnnotationAlternativeDescriptions(): bool
@@ -351,13 +351,13 @@ final readonly class Profile
     public function requiresTaggedImages(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresTaggedLinkAnnotations(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresTaggedPageAnnotations(): bool

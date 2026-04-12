@@ -30,7 +30,7 @@ final class PdfA1aSupportedStructureValidator
 
     public function assertSupported(Document $document): void
     {
-        if (!$document->profile->isPdfA1() || $document->profile->pdfaConformance() !== 'A') {
+        if (!$document->profile->isPdfA() || $document->profile->pdfaConformance() !== 'A') {
             return;
         }
 

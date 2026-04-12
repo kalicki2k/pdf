@@ -21,17 +21,23 @@ use PHPUnit\Framework\TestCase;
 
 final class PdfA23PolicyMatrixTest extends TestCase
 {
-    public function testItRejectsPdfA2aUntilTheTaggedScopeIsExplicitlyImplemented(): void
+    public function testItAllowsPdfA2aTaggedParagraphsWithinTheCurrentScope(): void
     {
         $document = $this->pdfA2BaselineBuilder(Profile::pdfA2a())
+            ->paragraph('Getaggter Absatz fuer PDF/A-2a. Привет.', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Profile PDF/A-2a is not yet supported as a tagged PDF/A profile in the current implementation. Use a B- or U-conformance profile instead.',
-        );
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+        ));
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $serialized);
+        self::assertStringContainsString('/Type /StructTreeRoot', $serialized);
+        self::assertStringContainsString('/S /Document', $serialized);
+        self::assertStringContainsString('/S /P', $serialized);
     }
 
     public function testItAllowsPdfA2bUriLinkAnnotationsWithinTheCurrentScope(): void
@@ -154,7 +160,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/Encoding /Identity-H', $serialized);
     }
 
-    public function testItRejectsPdfA3aUntilTheTaggedScopeIsExplicitlyImplemented(): void
+    public function testItAllowsPdfA3aTaggedDocumentsWithDocumentAssociatedFiles(): void
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA3a())
@@ -163,14 +169,18 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ->text('PDF/A-3a Package Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
+            ->attachment('data.xml', '<root/>', 'Source data', 'application/xml')
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Profile PDF/A-3a is not yet supported as a tagged PDF/A profile in the current implementation. Use a B- or U-conformance profile instead.',
-        );
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+        ));
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        self::assertStringContainsString('/AFRelationship /Data', $serialized);
+        self::assertStringContainsString('<pdfaid:part>3</pdfaid:part>', $serialized);
+        self::assertStringContainsString('<pdfaid:conformance>A</pdfaid:conformance>', $serialized);
+        self::assertStringContainsString('/Type /StructTreeRoot', $serialized);
     }
 
     private function pdfA2BaselineBuilder(Profile $profile): DefaultDocumentBuilder
