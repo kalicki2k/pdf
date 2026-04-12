@@ -35,6 +35,40 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+## Tabellen
+
+Die erste Tabelleniteration unterstützt Textzellen mit festen oder proportionalen Spaltenbreiten, Padding, einfachen Borders, `colspan`/`rowspan` und deterministischen Seitenumbrüchen zwischen ganzen Zeilen bzw. zusammenhängenden `rowspan`-Gruppen.
+
+```php
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Table;
+use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Layout\Table\CellPadding;
+
+$table = Table::define(
+    TableColumn::fixed(120),
+    TableColumn::proportional(1),
+)
+    ->withCellPadding(CellPadding::all(6))
+    ->withRows(
+        TableRow::fromCells(
+            \Kalle\Pdf\Document\TableCell::text('Artikel / Beschreibung', colspan: 2),
+        ),
+        TableRow::fromCells(
+            \Kalle\Pdf\Document\TableCell::text('A-100', rowspan: 2),
+            \Kalle\Pdf\Document\TableCell::text('Kompakter Einstieg in das Tabellenlayout von pdf2.'),
+        ),
+        TableRow::fromCells(
+            \Kalle\Pdf\Document\TableCell::text('Mit zusammenhängender Zeilengruppe über zwei Tabellenzeilen.'),
+        ),
+    );
+
+$document = DefaultDocumentBuilder::make()
+    ->table($table)
+    ->build();
+```
+
 ## Docker
 
 Die Entwicklung kann innerhalb des Docker-Containers erfolgen. Der Projektordner wird per Bind-Mount nach `/app` eingebunden, dadurch sind lokale Dateien direkt im Container sichtbar.

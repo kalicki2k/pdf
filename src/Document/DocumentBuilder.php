@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
+use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\Margin;
@@ -26,6 +28,8 @@ interface DocumentBuilder
 
     public function creatorTool(string $creatorTool): self;
 
+    public function pdfaOutputIntent(PdfAOutputIntent $outputIntent): self;
+
     public function profile(Profile $profile): self;
 
     public function pageSize(PageSize $size): self;
@@ -38,7 +42,11 @@ interface DocumentBuilder
 
     public function paragraph(string $text, ?TextOptions $options = null): self;
 
-    public function image(ImageSource $source, ImagePlacement $placement): self;
+    public function table(Table $table): self;
+
+    public function image(ImageSource $source, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;
+
+    public function imageFile(string $path, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;
 
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): self;
 
