@@ -32,6 +32,10 @@ final class DocumentInfoDictionaryBuilder
             $entries[] = '/Subject ' . $this->pdfString($document->subject);
         }
 
+        if ($document->keywords !== null) {
+            $entries[] = '/Keywords ' . $this->pdfString($document->keywords);
+        }
+
         if ($document->creator !== null) {
             $entries[] = '/Creator ' . $this->pdfString($document->creator);
         }

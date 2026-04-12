@@ -39,6 +39,7 @@ final class DocumentSerializationPlanBuilder
         private readonly DocumentMetadataObjectBuilder $metadataObjectBuilder = new DocumentMetadataObjectBuilder(),
         private readonly DocumentOutlineObjectBuilder $outlineObjectBuilder = new DocumentOutlineObjectBuilder(),
         private readonly DocumentTaggedPdfObjectBuilder $taggedPdfObjectBuilder = new DocumentTaggedPdfObjectBuilder(),
+        private readonly PdfA1ObjectGraphValidator $pdfA1ObjectGraphValidator = new PdfA1ObjectGraphValidator(),
     ) {
     }
 
@@ -134,6 +135,7 @@ final class DocumentSerializationPlanBuilder
 
         $metadataObjects = $this->metadataObjectBuilder->buildObjects($document, $state, $serializedAt, $encryptObjectContents);
         $objects = [...$objects, ...$metadataObjects];
+        $this->pdfA1ObjectGraphValidator->assertValid($document, $state, $objects);
         $this->logCreatedObjects($debugger, $objects);
 
         return new DocumentSerializationPlan(

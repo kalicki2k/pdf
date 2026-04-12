@@ -50,11 +50,13 @@ final class PdfA1MetadataConsistencyValidator
         $this->assertInfoValueEquals($document, $infoValues, 'Title', $document->title);
         $this->assertInfoValueEquals($document, $infoValues, 'Author', $document->author);
         $this->assertInfoValueEquals($document, $infoValues, 'Subject', $document->subject);
+        $this->assertInfoValueEquals($document, $infoValues, 'Keywords', $document->keywords);
         $this->assertInfoValueEquals($document, $infoValues, 'Creator', $document->creator);
         $this->assertInfoValueEquals($document, $infoValues, 'Producer', $document->creatorTool);
         $this->assertXmpScalarValueEquals($document, 'Title', $this->extractFirstAltValue($xmp, 'dc:title'), $document->title);
         $this->assertXmpScalarValueEquals($document, 'Author', $this->extractFirstSeqValue($xmp, 'dc:creator'), $document->author);
         $this->assertXmpScalarValueEquals($document, 'Subject', $this->extractFirstAltValue($xmp, 'dc:description'), $document->subject);
+        $this->assertXmpScalarValueEquals($document, 'Keywords', $this->extractFirstTagText($xmp, 'pdf:Keywords'), $document->keywords);
         $this->assertXmpScalarValueEquals($document, 'Creator', $this->extractFirstTagText($xmp, 'xmp:CreatorTool'), $document->creator);
         $this->assertXmpScalarValueEquals($document, 'Producer', $this->extractFirstTagText($xmp, 'pdf:Producer'), $document->creatorTool);
         $this->assertXmpScalarValueEquals($document, 'Language', $this->extractFirstBagValue($xmp, 'dc:language'), $document->language);

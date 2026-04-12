@@ -21,6 +21,7 @@ final class XmpMetadataTest extends TestCase
             title: 'Spec',
             author: 'Kalle',
             subject: 'Testing',
+            keywords: 'pdfa, regression',
             language: 'de-DE',
             creator: 'Invoice Service',
             creatorTool: 'pdf2 test suite',
@@ -33,6 +34,7 @@ final class XmpMetadataTest extends TestCase
         self::assertStringContainsString('<rdf:li xml:lang="x-default">Spec</rdf:li>', $contents);
         self::assertStringContainsString('<rdf:li>Kalle</rdf:li>', $contents);
         self::assertStringContainsString('<rdf:li xml:lang="x-default">Testing</rdf:li>', $contents);
+        self::assertStringContainsString('<pdf:Keywords>pdfa, regression</pdf:Keywords>', $contents);
         self::assertStringContainsString('<rdf:li>de-DE</rdf:li>', $contents);
         self::assertStringContainsString('<pdf:Producer>pdf2 test suite</pdf:Producer>', $contents);
         self::assertStringContainsString('<xmp:CreatorTool>Invoice Service</xmp:CreatorTool>', $contents);

@@ -127,6 +127,7 @@ final readonly class DocumentTableOfContentsBuilder
             title: $document->title,
             author: $document->author,
             subject: $document->subject,
+            keywords: $document->keywords,
             language: $document->language,
             creator: $document->creator,
             creatorTool: $document->creatorTool,

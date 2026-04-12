@@ -92,6 +92,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             title: 'Projektübersicht',
             author: 'Jörg Example',
             subject: 'Überblick',
+            keywords: 'prüfung, pdfa',
             creator: 'Rocket 🚀',
             creatorTool: 'pdf2 Prüfsuite',
         );
@@ -128,6 +129,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
         self::assertStringContainsString('/Title (Projekt\\374bersicht)', $objects[2]->contents);
         self::assertStringContainsString('/Author (J\\366rg Example)', $objects[2]->contents);
         self::assertStringContainsString('/Subject (\\334berblick)', $objects[2]->contents);
+        self::assertStringContainsString('/Keywords (pr\\374fung, pdfa)', $objects[2]->contents);
         self::assertStringContainsString('/Producer (pdf2 Pr\\374fsuite)', $objects[2]->contents);
         self::assertStringContainsString('/Creator (\\376\\377', $objects[2]->contents);
         self::assertStringNotContainsString('Projektübersicht', $objects[2]->contents);
@@ -135,6 +137,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
         self::assertStringNotContainsString('Überblick', $objects[2]->contents);
         self::assertStringContainsString('<rdf:li xml:lang="x-default">Projektübersicht</rdf:li>', $objects[0]->contents);
         self::assertStringContainsString('<rdf:li>Jörg Example</rdf:li>', $objects[0]->contents);
+        self::assertStringContainsString('<pdf:Keywords>prüfung, pdfa</pdf:Keywords>', $objects[0]->contents);
     }
 
     public function testItEscapesSpecialCharactersAndAvoidsRawUtf8AcrossInfoMetadataFields(): void
@@ -144,6 +147,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             title: 'Title (draft) \\ check',
             author: 'Jörg Example',
             subject: "Überblick\nQ2",
+            keywords: 'foo, (bar), €',
             creator: 'Rocket 🚀 \\ QA',
             creatorTool: 'pdf2 € suite',
         );
@@ -179,6 +183,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
         self::assertStringContainsString('/Title (Title \\(draft\\) \\\\ check)', $objects[2]->contents);
         self::assertStringContainsString('/Author (J\\366rg Example)', $objects[2]->contents);
         self::assertStringContainsString('/Subject (\\334berblick\\012Q2)', $objects[2]->contents);
+        self::assertStringContainsString('/Keywords (foo, \\(bar\\), \\240)', $objects[2]->contents);
         self::assertStringContainsString('/Producer (pdf2 \\240 suite)', $objects[2]->contents);
         self::assertStringContainsString('/Creator (\\376\\377', $objects[2]->contents);
         self::assertStringNotContainsString('🚀', $objects[2]->contents);
@@ -187,6 +192,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
         self::assertStringContainsString('<rdf:li>Jörg Example</rdf:li>', $objects[0]->contents);
         self::assertStringContainsString('<dc:description>', $objects[0]->contents);
         self::assertStringContainsString('<rdf:li xml:lang="x-default">Überblick', $objects[0]->contents);
+        self::assertStringContainsString('<pdf:Keywords>foo, (bar), €</pdf:Keywords>', $objects[0]->contents);
         self::assertStringContainsString('<xmp:CreatorTool>Rocket 🚀 \\ QA</xmp:CreatorTool>', $objects[0]->contents);
         self::assertStringContainsString('<pdf:Producer>pdf2 € suite</pdf:Producer>', $objects[0]->contents);
     }

@@ -179,6 +179,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private ?string $title = null;
     private ?string $author = null;
     private ?string $subject = null;
+    private ?string $keywords = null;
     private ?string $language = null;
     private ?string $creator = null;
     private ?string $creatorTool = null;
@@ -243,6 +244,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $clone->subject = $subject;
+
+        return $clone;
+    }
+
+    public function keywords(string $keywords): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->keywords = $keywords;
 
         return $clone;
     }
@@ -2530,6 +2539,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             title: $this->title,
             author: $this->author,
             subject: $this->subject,
+            keywords: $this->keywords,
             language: $this->language,
             creator: $this->creator,
             creatorTool: $this->creatorTool,

@@ -2046,7 +2046,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         }
     }
 
-    public function testItBuildsPdfA1aPopupRelatedObjects(): void
+    public function testItRejectsPdfA1aPopupRelatedObjects(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -2057,13 +2057,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->popupAnnotation(70, 520, 120, 60, true)
             ->build();
 
-        $serialized = implode("\n", array_map(
-            static fn ($object): string => $object->contents,
-            iterator_to_array($builder->build($document)->objects),
-        ));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a does not allow popup related objects for page annotation 1 on page 1.');
 
-        self::assertStringContainsString('/Subtype /Popup', $serialized);
-        self::assertMatchesRegularExpression('/\/Subtype \/Popup[\s\S]*\/Parent \d+ 0 R/', $serialized);
+        $builder->build($document);
     }
 
     public function testItRejectsInvalidIccProfilesForPdfA1Builds(): void
@@ -2087,6 +2084,41 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage(sprintf(
                 'ICC profile "%s" is too short to be a valid PDF/A output intent profile.',
+                $path,
+            ));
+
+            $builder->build($document);
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    public function testItRejectsIccProfilesWithoutTheIccSignatureForPdfA1Builds(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'icc');
+
+        if ($path === false) {
+            self::fail('Failed to create ICC temp file.');
+        }
+
+        $contents = str_repeat("\0", 132);
+        $contents = substr_replace($contents, pack('N', 132), 0, 4);
+        $contents = substr_replace($contents, 'mntr', 12, 4);
+        $contents = substr_replace($contents, 'RGB ', 16, 4);
+        $contents = substr_replace($contents, 'zzzz', 36, 4);
+        file_put_contents($path, $contents);
+
+        try {
+            $builder = new DocumentSerializationPlanBuilder();
+            $document = DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfA1b())
+                ->title('Archive Copy')
+                ->pdfaOutputIntent(new PdfAOutputIntent($path, 'Custom RGB', 'Broken profile', 3))
+                ->build();
+
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage(sprintf(
+                'ICC profile "%s" is missing the ICC signature.',
                 $path,
             ));
 

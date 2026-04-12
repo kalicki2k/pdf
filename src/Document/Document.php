@@ -25,6 +25,7 @@ final readonly class Document
     public ?string $title;
     public ?string $author;
     public ?string $subject;
+    public ?string $keywords;
     public ?string $language;
     public ?string $creator;
     public ?string $creatorTool;
@@ -72,6 +73,7 @@ final readonly class Document
         ?string $title = null,
         ?string $author = null,
         ?string $subject = null,
+        ?string $keywords = null,
         ?string $language = null,
         ?string $creator = null,
         ?string $creatorTool = null,
@@ -93,6 +95,7 @@ final readonly class Document
         $this->title = $title;
         $this->author = $author;
         $this->subject = $subject;
+        $this->keywords = $keywords;
         $this->language = $language;
         $this->creator = $creator;
         $this->creatorTool = $creatorTool;

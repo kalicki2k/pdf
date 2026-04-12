@@ -55,6 +55,8 @@ interface DocumentBuilder
 
     public function subject(string $subject): self;
 
+    public function keywords(string $keywords): self;
+
     public function language(string $language): self;
 
     public function creator(string $creator): self;

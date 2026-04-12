@@ -65,6 +65,10 @@ final readonly class XmpMetadata
             ...$this->renderBagPropertyLines('dc:language', $document->language !== null ? [$document->language] : []),
         ];
 
+        if ($document->keywords !== null && $document->keywords !== '') {
+            $lines[] = '    <pdf:Keywords>' . $this->escape($document->keywords) . '</pdf:Keywords>';
+        }
+
         if ($document->creatorTool !== null) {
             $lines[] = '    <pdf:Producer>' . $this->escape($document->creatorTool) . '</pdf:Producer>';
         }

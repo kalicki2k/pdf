@@ -13,6 +13,7 @@ final class DocumentMetadataInspector
         return $document->title !== null
             || $document->author !== null
             || $document->subject !== null
+            || $document->keywords !== null
             || $document->creator !== null
             || $document->creatorTool !== null;
     }

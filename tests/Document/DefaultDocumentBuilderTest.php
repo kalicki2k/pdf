@@ -236,6 +236,15 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame(4, $document->pdfaOutputIntent->colorComponents);
     }
 
+    public function testItBuildsADocumentWithKeywordsMetadata(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->keywords('archive, invoice')
+            ->build();
+
+        self::assertSame('archive, invoice', $document->keywords);
+    }
+
     public function testItAddsEmbeddedFileAttachmentsToTheDocument(): void
     {
         $document = DefaultDocumentBuilder::make()

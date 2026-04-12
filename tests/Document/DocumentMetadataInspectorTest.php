@@ -16,7 +16,7 @@ final class DocumentMetadataInspectorTest extends TestCase
     {
         $document = new Document(
             profile: Profile::standard(),
-            title: 'Example Title',
+            keywords: 'archive, pdfa',
         );
 
         self::assertTrue((new DocumentMetadataInspector())->hasInfoMetadata($document));
