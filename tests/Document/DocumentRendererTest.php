@@ -7,11 +7,17 @@ namespace Kalle\Pdf\Tests\Document;
 use function dirname;
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentRenderer;
+use Kalle\Pdf\Document\Form\AcroForm;
+use Kalle\Pdf\Document\Form\FormFieldRenderContext;
+use Kalle\Pdf\Document\Form\WidgetFormField;
+use Kalle\Pdf\Document\ListOptions;
+use Kalle\Pdf\Document\ListType;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
@@ -201,6 +207,184 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
     }
 
+    public function testItRendersTaggedPdfA1aBulletListStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->list(
+                ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
+                text: new TextOptions(
+                    x: 72,
+                    y: 760,
+                    width: 320,
+                    fontSize: 12,
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                ),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/StructTreeRoot', $pdf);
+        self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', $pdf);
+        self::assertStringContainsString('/LBody << /MCID 1 >> BDC', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /L', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /LI', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Lbl', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /LBody', $pdf);
+    }
+
+    public function testItRendersTaggedPdfA1aNumberedListStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->list(
+                ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
+                new ListOptions(type: ListType::NUMBERED, start: 3, marker: '%d)'),
+                new TextOptions(
+                    x: 72,
+                    y: 760,
+                    width: 320,
+                    fontSize: 12,
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                ),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/StructTreeRoot', $pdf);
+        self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', $pdf);
+        self::assertStringContainsString('/LBody << /MCID 1 >> BDC', $pdf);
+        self::assertStringContainsString('<00010002> Tj', $pdf);
+        self::assertStringContainsString('<00130002> Tj', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /L', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /LI', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Lbl', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /LBody', $pdf);
+    }
+
+    public function testItRendersTaggedPdfA1aTableStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->table(
+                Table::define(
+                    TableColumn::fixed(120.0),
+                    TableColumn::fixed(120.0),
+                    TableColumn::fixed(120.0),
+                )
+                    ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
+                    ->withCaption(TableCaption::text('Quarterly summary Привет'))
+                    ->withHeaderRows(
+                        TableRow::fromCells(
+                            TableCell::text('Регион', rowspan: 2)->withHeaderScope(TableHeaderScope::BOTH),
+                            TableCell::text('План', colspan: 2),
+                        ),
+                        TableRow::fromTexts('Q1', 'Q2 Привет'),
+                    )
+                    ->withRows(
+                        TableRow::fromCells(
+                            TableCell::text('Север')->withHeaderScope(TableHeaderScope::ROW),
+                            TableCell::text('12'),
+                            TableCell::text('14'),
+                        ),
+                        TableRow::fromTexts('Юг', '10', '11'),
+                    )
+                    ->withFooterRows(
+                        TableRow::fromTexts('Итого', '22', '25'),
+                    )
+                    ->withTextOptions(new TextOptions(
+                        fontSize: 12,
+                        lineHeight: 15,
+                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    )),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Type /StructElem /S /Table', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Sect', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /TH', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /TD', $pdf);
+    }
+
+    public function testItRendersMixedTaggedPdfA1aStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->heading('Projektübersicht Привет', 1, new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->paragraph('Absatztext Привет', new TextOptions(
+                x: 72,
+                y: 724,
+                width: 320,
+                fontSize: 12,
+                lineHeight: 16,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->list(
+                ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
+                text: new TextOptions(
+                    x: 72,
+                    y: 676,
+                    width: 220,
+                    fontSize: 12,
+                    lineHeight: 16,
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                ),
+            )
+            ->image(
+                ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+                ImagePlacement::at(320, 610, width: 140),
+                ImageAccessibility::alternativeText('Projektgrafik'),
+            )
+            ->link('https://example.com/spec', 72, 560, 180, 16, 'Spezifikation öffnen')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Type /StructElem /S /H1', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /L', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Figure', $pdf);
+        self::assertStringContainsString('/Subtype /Link', $pdf);
+        self::assertStringContainsString('/AP << /N ', $pdf);
+    }
+
     public function testItRendersLinkAnnotations(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -245,6 +429,217 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Desc (Demo attachment)', $pdf);
     }
 
+    public function testItRendersDocumentLevelAssociatedFilesForPdf20(): void
+    {
+        $document = new Document(
+            profile: Profile::pdf20(),
+            attachments: [
+                new FileAttachment(
+                    'data.xml',
+                    new EmbeddedFile('<root/>', 'application/xml'),
+                    'Machine-readable source',
+                    \Kalle\Pdf\Document\Attachment\AssociatedFileRelationship::DATA,
+                ),
+            ],
+        );
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/AF [6 0 R]', $pdf);
+        self::assertStringContainsString('/AFRelationship /Data', $pdf);
+        self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(data.xml) 6 0 R] >> >>', $pdf);
+    }
+
+    public function testItRendersAnAcroFormAndWidgetField(): void
+    {
+        $document = new Document(
+            acroForm: (new AcroForm())->withField($this->testWidgetField()),
+        );
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/AcroForm 5 0 R', $pdf);
+        self::assertStringContainsString('/Fields [6 0 R]', $pdf);
+        self::assertStringContainsString('/Subtype /Widget', $pdf);
+        self::assertStringContainsString('/FT /Tx', $pdf);
+        self::assertStringContainsString('/Annots [6 0 R]', $pdf);
+    }
+
+    public function testItRendersTaggedPdfUaSingleWidgetFormFields(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Form')
+            ->language('de-DE')
+            ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')
+            ->checkbox('accept_terms', 40, 460, 14, true, 'Accept terms')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Tabs /S', $pdf);
+        self::assertSame(2, substr_count($pdf, '/Type /StructElem /S /Form'));
+        self::assertStringContainsString('/StructParent 0', $pdf);
+        self::assertStringContainsString('/StructParent 1', $pdf);
+        self::assertStringContainsString('/Alt (Customer name)', $pdf);
+        self::assertStringContainsString('/Alt (Accept terms)', $pdf);
+        self::assertSame(2, substr_count($pdf, '/Type /OBJR /Obj'));
+    }
+
+    public function testItRendersATextField(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/AcroForm 5 0 R', $pdf);
+        self::assertStringContainsString('/FT /Tx', $pdf);
+        self::assertStringContainsString('/T (customer_name)', $pdf);
+        self::assertStringContainsString('/TU (Customer name)', $pdf);
+        self::assertStringContainsString('/DA (/Helv 12 Tf 0 g)', $pdf);
+        self::assertStringContainsString('/V (Ada)', $pdf);
+    }
+
+    public function testItRendersACheckboxWithAppearanceStreams(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->checkbox('accept_terms', 40, 500, 14, true, 'Accept terms')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/FT /Btn', $pdf);
+        self::assertStringContainsString('/T (accept_terms)', $pdf);
+        self::assertStringContainsString('/TU (Accept terms)', $pdf);
+        self::assertStringContainsString('/V /Yes', $pdf);
+        self::assertStringContainsString('/AS /Yes', $pdf);
+        self::assertStringContainsString('/Off 7 0 R /Yes 8 0 R', $pdf);
+        self::assertStringContainsString('/Subtype /Form', $pdf);
+    }
+
+    public function testItRendersARadioButtonGroup(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->radioButton('delivery', 'standard', 40, 500, 14, false, 'Standard delivery', 'Delivery method')
+            ->radioButton('delivery', 'express', 80, 500, 14, true, 'Express delivery')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Kids [7 0 R 10 0 R]', $pdf);
+        self::assertStringContainsString('/V /express', $pdf);
+        self::assertStringContainsString('/Parent 6 0 R', $pdf);
+        self::assertStringContainsString('/Annots [7 0 R 10 0 R]', $pdf);
+    }
+
+    public function testItRendersAComboBox(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/FT /Ch', $pdf);
+        self::assertStringContainsString('/Ff 131072', $pdf);
+        self::assertStringContainsString('/Opt [[(new) (New)] [(done) (Done)]]', $pdf);
+    }
+
+    public function testItRendersAListBox(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->listBox('skills', 40, 500, 120, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php', 'pdf'], 'Skills')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/FT /Ch', $pdf);
+        self::assertStringContainsString('/Ff 2097152', $pdf);
+        self::assertStringContainsString('/V [(php) (pdf)]', $pdf);
+    }
+
+    public function testItRendersAPushButton(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pushButton('open_docs', 'Open docs', 40, 500, 120, 18, 'Open documentation', 'https://example.com/docs')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/FT /Btn', $pdf);
+        self::assertStringContainsString('/Ff 65536', $pdf);
+        self::assertStringContainsString('/MK << /CA (Open docs) >>', $pdf);
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com/docs) >>', $pdf);
+    }
+
+    public function testItRendersASignatureField(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->signatureField('approval_signature', 40, 500, 140, 28, 'Approval signature')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/SigFlags 1', $pdf);
+        self::assertStringContainsString('/FT /Sig', $pdf);
+        self::assertStringContainsString('/T (approval_signature)', $pdf);
+        self::assertStringContainsString('/TU (Approval signature)', $pdf);
+        self::assertStringContainsString('/AP << /N 7 0 R >>', $pdf);
+        self::assertStringContainsString('/Subtype /Form', $pdf);
+    }
+
     public function testItRendersTextAnnotations(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -262,6 +657,22 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Subtype /Text', $pdf);
         self::assertStringContainsString('/Name /Comment', $pdf);
         self::assertStringContainsString('/Contents (Kommentar)', $pdf);
+    }
+
+    private function testWidgetField(int $pageNumber = 1): WidgetFormField
+    {
+        return new readonly class ('customer_name', $pageNumber, 10.0, 20.0, 80.0, 12.0, 'Customer name') extends WidgetFormField {
+            public function pdfObjectContents(
+                FormFieldRenderContext $context,
+                int $fieldObjectId,
+                array $relatedObjectIds = [],
+            ): string {
+                return '<< ' . implode(' ', [
+                    ...$this->widgetDictionaryEntries($context, $fieldObjectId),
+                    '/FT /Tx',
+                ]) . ' >>';
+            }
+        };
     }
 
     public function testItRendersHighlightAnnotations(): void

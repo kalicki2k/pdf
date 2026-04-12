@@ -181,6 +181,30 @@ $document = DefaultDocumentBuilder::make()
 
 Ein umfangreicheres Beispiel liegt in `examples/table.php`. Die aktuelle Tabellen-API deckt damit auch absolutes Start-`y`, Rich-Text-Zellen sowie Tagged-Table-Abschnitte `THead`, `TBody` und `TFoot` ab.
 
+## Listen
+
+Listen laufen ueber genau einen Builder-Einstieg. `ListOptions` steuert nur das Listenverhalten, `TextOptions` weiterhin das Textlayout.
+
+```php
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\ListOptions;
+use Kalle\Pdf\Document\ListType;
+use Kalle\Pdf\Text\TextOptions;
+
+$document = DefaultDocumentBuilder::make()
+    ->list(
+        ['Erster Punkt', 'Zweiter Punkt'],
+        new ListOptions(type: ListType::BULLET),
+        new TextOptions(x: 72, y: 720, width: 220, fontSize: 12),
+    )
+    ->list(
+        ['Schritt eins', 'Schritt zwei'],
+        new ListOptions(type: ListType::NUMBERED, start: 3, marker: '%d)'),
+        new TextOptions(width: 220, fontSize: 12, spacingAfter: 12),
+    )
+    ->build();
+```
+
 ## Verschluesselung
 
 Die aktuelle Encryption-API bleibt bewusst klein: Das Dokument bekommt ein explizites `Encryption`-Value-Object. Unterstuetzt sind aktuell `RC4-128`, `AES-128` und `AES-256` sowie eine kleine `Permissions`-API. PDF/A-Profile verbieten weiterhin Verschluesselung und scheitern deshalb mit einer klaren Exception.
@@ -210,6 +234,88 @@ $document = DefaultDocumentBuilder::make()
 ```
 
 Ein kleines ausfuehrbares Beispiel liegt in `examples/encryption.php`. Die externe `qpdf`-Regression fuer Permissions ist ueber `bin/test-encryption-permissions-regression.sh` abgedeckt.
+
+## Attachments
+
+Dokumentweite eingebettete Dateien koennen direkt ueber den Builder registriert werden. Der aktuelle Stand unterstuetzt nur dokumentweite Associated Files am Catalog (`/AF`), keine objekt- oder seitennahe Zuordnung. Fuer PDF/A-3 und PDF/A-4f werden solche Dokument-Attachments standardmaessig als Associated Files mit `AFRelationship /Data` serialisiert, solange keine explizite Beziehung gesetzt wird. Standard-PDF 2.0 kann dokumentweite Associated Files mit explizitem `AFRelationship` ebenfalls serialisieren.
+
+```php
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Profile;
+
+$document = DefaultDocumentBuilder::make()
+    ->profile(Profile::pdfA3b())
+    ->title('Invoice with source data')
+    ->attachment(
+        'invoice.xml',
+        '<invoice id="2026-001"/>',
+        'Machine-readable source data',
+        'application/xml',
+        AssociatedFileRelationship::DATA,
+    )
+    ->text('Human-readable invoice preview')
+    ->build();
+```
+
+Alternativ laesst sich eine Datei direkt von der Platte einlesen:
+
+```php
+$document = DefaultDocumentBuilder::make()
+    ->attachmentFromFile(
+        __DIR__ . '/fixtures/source-data.xml',
+        description: 'Imported XML payload',
+        mimeType: 'application/xml',
+    )
+    ->build();
+```
+
+## Formulare
+
+Die aktuelle AcroForm-API deckt fuer Standard-PDFs Textfelder, Checkboxen, Radio Buttons, ComboBoxen, ListBoxen, Push Buttons und Signaturfelder ab. Fuer PDF/UA-1 ist jetzt der erste Tagged-Form-Structure-Schritt fuer Single-Widget-Felder umgesetzt: Textfelder, Checkboxen, ComboBoxen, ListBoxen, Push Buttons und Signaturfelder werden als `/Form`-Strukturelemente mit `OBJR`/`ParentTree` serialisiert. Radio-Button-Gruppen bleiben im aktuellen Stand bewusst gesperrt, bis ihre Mehrfach-Widget-Struktur vollstaendig abgedeckt ist. Sichtbare Signaturfelder werden direkt ueber die Formular-API erzeugt; die kryptographische Signaturintegration fuer unterstuetzte Dokumente ist unten als separater Signier-Schritt beschrieben.
+
+```php
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+
+$document = DefaultDocumentBuilder::make()
+    ->text('Customer details')
+    ->textField('customer_name', 40, 720, 180, 18, 'Ada Lovelace', 'Customer name')
+    ->checkbox('accept_terms', 40, 680, 14, true, 'Accept terms')
+    ->radioButton('delivery', 'standard', 40, 640, 12, true, groupAlternativeName: 'Delivery method')
+    ->radioButton('delivery', 'express', 80, 640, 12, alternativeName: 'Express delivery')
+    ->comboBox('status', 40, 600, 140, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+    ->listBox('skills', 40, 540, 140, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php', 'pdf'], 'Skills')
+    ->pushButton('open_docs', 'Open docs', 40, 470, 120, 20, 'Open documentation', 'https://example.com/docs')
+    ->signatureField('approval_signature', 40, 420, 140, 28, 'Approval signature')
+    ->build();
+```
+
+## PDF-Signaturen
+
+Kryptographische PDF-Signaturen koennen fuer vorhandene `signatureField(...)`-Widgets direkt ueber die OpenSSL-PHP-Erweiterung erzeugt werden. Der aktuelle Stand unterstuetzt detached CMS-/PKCS#7-Signaturen fuer unverschluesselte Standard-PDFs. Verschluesselte Dokumente und mehrere inkrementelle Signaturrunden sind bewusst noch nicht Teil der API.
+
+```php
+use Kalle\Pdf\Document\Signature\OpenSslPemSigningCredentials;
+use Kalle\Pdf\Document\Signature\PdfSignatureOptions;
+use Kalle\Pdf\Pdf;
+
+$document = Pdf::document()
+    ->text('Approval')
+    ->signatureField('approval_signature', 40, 420, 140, 28, 'Approval signature')
+    ->build();
+
+$signedPdf = Pdf::signedContents(
+    $document,
+    new OpenSslPemSigningCredentials($certificatePem, $privateKeyPem, $privateKeyPassphrase),
+    new PdfSignatureOptions(
+        fieldName: 'approval_signature',
+        signerName: 'Ada Lovelace',
+        reason: 'Approval',
+        location: 'Berlin',
+        contactInfo: 'ada@example.com',
+    ),
+);
+```
 
 ## Docker
 
@@ -282,6 +388,9 @@ make validate-pdfa PDF=var/example.pdf
 make validate-pdfua PDF=var/example.pdf
 make test-pdfa1b-regression
 make test-pdfa1a-regression
+make test-pdfa1a-list-regression
+make test-pdfa1a-table-regression
+make test-pdfa1a-mixed-regression
 make check-pdf PDF=var/example.pdf
 ```
 
@@ -292,6 +401,9 @@ bin/validate-pdfa.sh var/example.pdf
 bin/validate-pdfua.sh var/example.pdf
 bin/test-pdfa1b-regression.sh
 bin/test-pdfa1a-regression.sh
+bin/test-pdfa1a-list-regression.sh
+bin/test-pdfa1a-table-regression.sh
+bin/test-pdfa1a-mixed-regression.sh
 ```
 
 Compose-Services starten:

@@ -4,9 +4,22 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests;
 
+use Kalle\Pdf\Document\Signature\OpenSslPemSigningCredentials;
+use Kalle\Pdf\Document\Signature\PdfSignatureOptions;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Writer\StringOutput;
+
+use function openssl_csr_new;
+
+use function openssl_csr_sign;
+
+use const OPENSSL_KEYTYPE_RSA;
+
+use function openssl_pkey_export;
+use function openssl_pkey_new;
+use function openssl_x509_export;
+
 use PHPUnit\Framework\TestCase;
 
 final class PdfTest extends TestCase
@@ -89,6 +102,24 @@ final class PdfTest extends TestCase
         fclose($stream);
     }
 
+    public function testItReturnsSignedDocumentContentsAsAString(): void
+    {
+        $document = Pdf::document()
+            ->text('Signed')
+            ->signatureField('approval_signature', 40, 500, 140, 28, 'Approval signature')
+            ->build();
+
+        $contents = Pdf::signedContents(
+            $document,
+            $this->testSigningCredentials(),
+            new PdfSignatureOptions(fieldName: 'approval_signature', signerName: 'QA Signer'),
+        );
+
+        self::assertStringStartsWith('%PDF-1.4', $contents);
+        self::assertStringContainsString('/FT /Sig', $contents);
+        self::assertStringContainsString('/SubFilter /adbe.pkcs7.detached', $contents);
+    }
+
     public function testItMeasuresTextWidthThroughTheFacade(): void
     {
         self::assertEqualsWithDelta(22.74, Pdf::measureTextWidth('Hello', 10, StandardFont::HELVETICA), 0.0001);
@@ -102,5 +133,38 @@ final class PdfTest extends TestCase
     public function testItMeasuresKerningAwareTextWidthThroughTheFacade(): void
     {
         self::assertEqualsWithDelta(12.63, Pdf::measureTextWidth('AV', 10, StandardFont::HELVETICA), 0.0001);
+    }
+
+    private function testSigningCredentials(): OpenSslPemSigningCredentials
+    {
+        $privateKey = openssl_pkey_new([
+            'private_key_bits' => 2048,
+            'private_key_type' => OPENSSL_KEYTYPE_RSA,
+            'digest_alg' => 'sha256',
+        ]);
+
+        self::assertNotFalse($privateKey);
+
+        $csr = openssl_csr_new(
+            ['commonName' => 'PDF2 Facade Signer'],
+            $privateKey,
+            ['digest_alg' => 'sha256'],
+        );
+
+        self::assertNotFalse($csr);
+
+        $certificate = openssl_csr_sign(
+            $csr,
+            null,
+            $privateKey,
+            1,
+            ['digest_alg' => 'sha256'],
+        );
+
+        self::assertNotFalse($certificate);
+        self::assertTrue(openssl_x509_export($certificate, $certificatePem));
+        self::assertTrue(openssl_pkey_export($privateKey, $privateKeyPem));
+
+        return new OpenSslPemSigningCredentials($certificatePem, $privateKeyPem);
     }
 }

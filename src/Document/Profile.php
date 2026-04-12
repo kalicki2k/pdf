@@ -257,6 +257,11 @@ final readonly class Profile
 
     public function defaultsAttachmentRelationshipToData(): bool
     {
+        return $this->defaultsDocumentAttachmentRelationshipToData();
+    }
+
+    public function defaultsDocumentAttachmentRelationshipToData(): bool
+    {
         return $this->isPdfA3()
             || $this->isPdfA4f();
     }
@@ -371,6 +376,11 @@ final readonly class Profile
 
     public function supportsAssociatedFiles(): bool
     {
+        return $this->supportsDocumentAssociatedFiles();
+    }
+
+    public function supportsDocumentAssociatedFiles(): bool
+    {
         return ($this->isStandard() && $this->version >= Version::V2_0)
             || $this->isPdfA3()
             || $this->isPdfA4f();
@@ -434,6 +444,11 @@ final readonly class Profile
     }
 
     public function supportsEmbeddedFileAttachments(): bool
+    {
+        return $this->supportsDocumentEmbeddedFileAttachments();
+    }
+
+    public function supportsDocumentEmbeddedFileAttachments(): bool
     {
         return $this->isStandard()
             || $this->isPdfUa()

@@ -121,7 +121,7 @@ final class ImageSourceTest extends TestCase
             self::fail('Unable to create a temporary image source path.');
         }
 
-        file_put_contents($path, 'not-a-jpeg');
+        file_put_contents($path, base64_decode('R0lGODdhAQABAIAAAP///////ywAAAAAAQABAAACAkQBADs=', true));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(

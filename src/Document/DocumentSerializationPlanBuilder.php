@@ -16,16 +16,25 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
+use Kalle\Pdf\Document\Form\CheckboxField;
+use Kalle\Pdf\Document\Form\ComboBoxField;
+use Kalle\Pdf\Document\Form\FormFieldRenderContext;
+use Kalle\Pdf\Document\Form\ListBoxField;
+use Kalle\Pdf\Document\Form\PushButtonField;
+use Kalle\Pdf\Document\Form\RadioButtonGroup;
+use Kalle\Pdf\Document\Form\SignatureField;
+use Kalle\Pdf\Document\Form\TextField;
+use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\Metadata\IccProfile;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Document\TaggedPdf\ParentTree;
 use Kalle\Pdf\Document\TaggedPdf\StructElem;
 use Kalle\Pdf\Document\TaggedPdf\StructTreeRoot;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureCollector;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
-use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
-use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Encryption\EncryptDictionaryBuilder;
 use Kalle\Pdf\Encryption\EncryptionProfileResolver;
 use Kalle\Pdf\Encryption\ObjectEncryptor;
@@ -63,7 +72,9 @@ final class DocumentSerializationPlanBuilder
     public function build(Document $document): DocumentSerializationPlan
     {
         $this->assertProfileRequirements($document);
+        $this->assertTaggedStructureRequirements($document);
         $this->assertAttachmentRequirements($document);
+        $this->assertAcroFormRequirements($document);
         $this->assertImageAccessibilityRequirements($document);
         $this->assertAnnotationRequirements($document);
         $this->assertNamedDestinationRequirements($document);
@@ -97,12 +108,23 @@ final class DocumentSerializationPlanBuilder
         $attachmentObjectIds = [];
         /** @var list<int> $embeddedFileObjectIds */
         $embeddedFileObjectIds = [];
+        $acroFormObjectId = null;
+        /** @var list<int> $acroFormFieldObjectIds */
+        $acroFormFieldObjectIds = [];
+        /** @var array<int, list<int>> $acroFormFieldRelatedObjectIds */
+        $acroFormFieldRelatedObjectIds = [];
+        /** @var array<int, list<int>> $pageFormWidgetObjectIds */
+        $pageFormWidgetObjectIds = [];
 
         foreach ($document->pages as $page) {
             $pageObjectIds[] = $nextObjectId;
             $nextObjectId++;
             $contentObjectIds[] = $nextObjectId;
             $nextObjectId++;
+        }
+
+        foreach (array_keys($document->pages) as $pageIndex) {
+            $pageFormWidgetObjectIds[$pageIndex] = [];
         }
 
         foreach ($document->pages as $pageIndex => $page) {
@@ -165,76 +187,65 @@ final class DocumentSerializationPlanBuilder
             $nextObjectId++;
         }
 
-        $taggedImageStructure = $this->collectTaggedFigureStructure($document);
-        $taggedTextStructure = $this->collectTaggedTextStructure($document);
-        $taggedTableStructure = $this->collectTaggedTableStructure($document);
-        $taggedPageContentKeys = $this->mergeTaggedPageContentKeys(
-            $taggedImageStructure['pageMarkedContentKeys'],
-            $taggedTextStructure['pageMarkedContentKeys'],
-            $taggedTableStructure['pageMarkedContentKeys'],
-        );
+        if ($document->acroForm !== null) {
+            $acroFormObjectId = $nextObjectId;
+            $nextObjectId++;
+
+            foreach ($document->acroForm->fields as $fieldIndex => $field) {
+                $fieldObjectId = $nextObjectId;
+                $acroFormFieldObjectIds[$fieldIndex] = $fieldObjectId;
+                $nextObjectId++;
+                $acroFormFieldRelatedObjectIds[$fieldIndex] = [];
+
+                for ($relatedObjectIndex = 0; $relatedObjectIndex < $field->relatedObjectCount(); $relatedObjectIndex++) {
+                    $acroFormFieldRelatedObjectIds[$fieldIndex][] = $nextObjectId;
+                    $nextObjectId++;
+                }
+
+                foreach ($field->pageAnnotationObjectIds($fieldObjectId, $acroFormFieldRelatedObjectIds[$fieldIndex]) as $pageNumber => $annotationObjectIds) {
+                    $pageIndex = $pageNumber - 1;
+
+                    if (!isset($pageFormWidgetObjectIds[$pageIndex])) {
+                        $pageFormWidgetObjectIds[$pageIndex] = [];
+                    }
+
+                    $pageFormWidgetObjectIds[$pageIndex] = [
+                        ...$pageFormWidgetObjectIds[$pageIndex],
+                        ...$annotationObjectIds,
+                    ];
+                }
+            }
+        }
+
+        $taggedStructure = (new TaggedStructureCollector())->collect($document);
+        $taggedPageContentKeys = $taggedStructure->pageMarkedContentKeys;
         $pageStructParentIds = $this->assignPageStructParentIds($taggedPageContentKeys);
         $taggedLinkStructure = $this->collectTaggedLinkStructure($document, count($pageStructParentIds));
+        $taggedFormStructure = $this->collectTaggedFormStructure(
+            $document,
+            array_values($acroFormFieldObjectIds),
+            $acroFormFieldRelatedObjectIds,
+            $taggedLinkStructure['nextStructParentId'],
+        );
         $namedDestinations = $this->collectNamedDestinations($document);
         $structTreeRootObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
         $documentStructElemObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
-        $parentTreeObjectId = ($taggedPageContentKeys !== [] || $taggedLinkStructure['parentTreeEntries'] !== [])
+        $parentTreeObjectId = ($taggedPageContentKeys !== []
+            || $taggedLinkStructure['parentTreeEntries'] !== []
+            || $taggedFormStructure['parentTreeEntries'] !== [])
             ? $nextObjectId++
             : null;
-        /** @var array<string, int> $figureStructElemObjectIds */
-        $figureStructElemObjectIds = [];
-        /** @var array<string, int> $textStructElemObjectIds */
-        $textStructElemObjectIds = [];
-        /** @var array<string, int> $tableStructElemObjectIds */
-        $tableStructElemObjectIds = [];
-        /** @var array<string, int> $captionStructElemObjectIds */
-        $captionStructElemObjectIds = [];
-        /** @var array<string, int> $tableSectionStructElemObjectIds */
-        $tableSectionStructElemObjectIds = [];
-        /** @var array<string, int> $rowStructElemObjectIds */
-        $rowStructElemObjectIds = [];
-        /** @var array<string, int> $cellStructElemObjectIds */
-        $cellStructElemObjectIds = [];
-        /** @var array<string, int> $linkStructElemObjectIds */
-        $linkStructElemObjectIds = [];
+        $taggedStructureObjectIds = TaggedStructureObjectIds::allocate(
+            $document,
+            $taggedStructure,
+            $taggedLinkStructure['linkEntries'],
+            $nextObjectId,
+        );
+        $nextObjectId = $taggedStructureObjectIds->nextObjectId;
+        $taggedFormStructElemObjectIds = [];
 
-        foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
-            $figureStructElemObjectIds[$figureEntry['key']] = $nextObjectId++;
-        }
-
-        foreach ($taggedTextStructure['textEntries'] as $textEntry) {
-            $textStructElemObjectIds[$textEntry['key']] = $nextObjectId++;
-        }
-
-        foreach ($document->taggedTables as $taggedTable) {
-            $tableStructElemObjectIds[$this->taggedTableKey($taggedTable->tableId)] = $nextObjectId++;
-
-            if ($taggedTable->hasCaption()) {
-                $captionStructElemObjectIds[$this->taggedTableCaptionKey($taggedTable->tableId)] = $nextObjectId++;
-            }
-
-            foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
-                if ($rows !== []) {
-                    $tableSectionStructElemObjectIds[$this->taggedTableSectionKey($taggedTable->tableId, $section)] = $nextObjectId++;
-                }
-
-                foreach ($rows as $row) {
-                    $rowStructElemObjectIds[$this->taggedTableRowKey($taggedTable->tableId, $section, $row->rowIndex)] = $nextObjectId++;
-
-                    foreach ($row->cells as $cell) {
-                        $cellStructElemObjectIds[$this->taggedTableCellKey(
-                            $taggedTable->tableId,
-                            $section,
-                            $row->rowIndex,
-                            $cell->columnIndex,
-                        )] = $nextObjectId++;
-                    }
-                }
-            }
-        }
-
-        foreach ($taggedLinkStructure['linkEntries'] as $linkEntry) {
-            $linkStructElemObjectIds[$linkEntry['key']] = $nextObjectId++;
+        foreach ($taggedFormStructure['entries'] as $formEntry) {
+            $taggedFormStructElemObjectIds[$formEntry['key']] = $nextObjectId++;
         }
 
         $metadataObjectId = $this->usesMetadataStream($document) ? $nextObjectId++ : null;
@@ -274,6 +285,7 @@ final class DocumentSerializationPlanBuilder
                     $structTreeRootObjectId,
                     $namedDestinations,
                     $attachmentObjectIds,
+                    $acroFormObjectId,
                 ),
             ),
             IndirectObject::plain(
@@ -286,6 +298,8 @@ final class DocumentSerializationPlanBuilder
             $pageObjectId = $pageObjectIds[$index];
             $contentObjectId = $contentObjectIds[$index];
             $annotationObjectIds = $pageAnnotationObjectIds[$index] ?? [];
+            $formWidgetObjectIds = $pageFormWidgetObjectIds[$index] ?? [];
+            $allAnnotationObjectIds = [...$annotationObjectIds, ...$formWidgetObjectIds];
             $annotationAppearanceContext = new AnnotationAppearanceRenderContext(
                 $this->pageFontObjectIdsByAlias($page->fontResources, $fontObjectIds),
             );
@@ -297,8 +311,8 @@ final class DocumentSerializationPlanBuilder
                 . $this->formatNumber($page->size->height()) . '] /Resources '
                 . $this->buildPageResources($page->fontResources, $page->imageResources, $fontObjectIds, $imageObjectIds) . ' /Contents '
                 . $contentObjectId . ' 0 R'
-                . $this->buildPageAnnotationsEntry($annotationObjectIds)
-                . $this->buildAnnotationTabOrderEntry($document, $annotationObjectIds)
+                . $this->buildPageAnnotationsEntry($allAnnotationObjectIds)
+                . $this->buildAnnotationTabOrderEntry($document, $allAnnotationObjectIds)
                 . $this->buildStructParentsEntry($pageStructParentIds[$index] ?? null)
                 . ' >>',
             );
@@ -437,23 +451,65 @@ final class DocumentSerializationPlanBuilder
             );
         }
 
+        if ($document->acroForm !== null) {
+            $objects[] = IndirectObject::plain(
+                $acroFormObjectId,
+                $document->acroForm->pdfObjectContents(array_values($acroFormFieldObjectIds)),
+            );
+
+            foreach ($document->acroForm->fields as $fieldIndex => $field) {
+                $objects[] = IndirectObject::plain(
+                    $acroFormFieldObjectIds[$fieldIndex],
+                    $field->pdfObjectContents(
+                        new FormFieldRenderContext(
+                            $this->pageObjectIdsByPageNumber($pageObjectIds),
+                            $taggedFormStructure['structParentIds'],
+                        ),
+                        $acroFormFieldObjectIds[$fieldIndex],
+                        $acroFormFieldRelatedObjectIds[$fieldIndex] ?? [],
+                    ),
+                );
+
+                foreach ($field->relatedObjects(
+                    new FormFieldRenderContext(
+                        $this->pageObjectIdsByPageNumber($pageObjectIds),
+                        $taggedFormStructure['structParentIds'],
+                    ),
+                    $acroFormFieldObjectIds[$fieldIndex],
+                    $acroFormFieldRelatedObjectIds[$fieldIndex] ?? [],
+                ) as $relatedObject) {
+                    $objects[] = $relatedObject;
+                }
+            }
+        }
+
         if ($structTreeRootObjectId !== null && $documentStructElemObjectId !== null) {
             $documentKidObjectIds = [];
 
-            foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
-                $documentKidObjectIds[] = $figureStructElemObjectIds[$figureEntry['key']];
+            foreach ($taggedStructure->figureEntries as $figureEntry) {
+                $documentKidObjectIds[] = $taggedStructureObjectIds->figureStructElemObjectIds[$figureEntry['key']];
             }
 
-            foreach ($taggedTextStructure['textEntries'] as $textEntry) {
-                $documentKidObjectIds[] = $textStructElemObjectIds[$textEntry['key']];
+            foreach ($taggedStructure->textEntries as $textEntry) {
+                $documentKidObjectIds[] = $taggedStructureObjectIds->textStructElemObjectIds[$textEntry['key']];
+            }
+
+            foreach ($taggedStructure->listEntries as $listEntry) {
+                $documentKidObjectIds[] = $taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']];
             }
 
             foreach ($document->taggedTables as $taggedTable) {
-                $documentKidObjectIds[] = $tableStructElemObjectIds[$this->taggedTableKey($taggedTable->tableId)];
+                $documentKidObjectIds[] = $taggedStructureObjectIds->tableStructElemObjectIds[
+                    TaggedStructureObjectIds::tableKey($taggedTable->tableId)
+                ];
             }
 
             foreach ($taggedLinkStructure['linkEntries'] as $linkEntry) {
-                $documentKidObjectIds[] = $linkStructElemObjectIds[$linkEntry['key']];
+                $documentKidObjectIds[] = $taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']];
+            }
+
+            foreach ($taggedFormStructure['entries'] as $formEntry) {
+                $documentKidObjectIds[] = $taggedFormStructElemObjectIds[$formEntry['key']];
             }
 
             $objects[] = new IndirectObject(
@@ -477,30 +533,31 @@ final class DocumentSerializationPlanBuilder
 
                     ksort($pageKeys);
                     $parentTreeEntries[$structParentId] = array_map(
-                        fn (string $key): int => $this->taggedPageContentObjectId(
-                            $key,
-                            $figureStructElemObjectIds,
-                            $textStructElemObjectIds,
-                            $captionStructElemObjectIds,
-                            $cellStructElemObjectIds,
-                        ),
+                        fn (string $key): int => $taggedStructureObjectIds->resolvePageContentObjectId($key),
                         array_values($pageKeys),
                     );
                 }
 
                 foreach ($taggedLinkStructure['parentTreeEntries'] as $structParentId => $linkKeys) {
                     $parentTreeEntries[$structParentId] = array_map(
-                        static fn (string $key): int => $linkStructElemObjectIds[$key],
+                        fn (string $key): int => $taggedStructureObjectIds->linkStructElemObjectIds[$key],
                         $linkKeys,
+                    );
+                }
+
+                foreach ($taggedFormStructure['parentTreeEntries'] as $structParentId => $formKeys) {
+                    $parentTreeEntries[$structParentId] = array_map(
+                        fn (string $key): int => $taggedFormStructElemObjectIds[$key],
+                        $formKeys,
                     );
                 }
 
                 $objects[] = new IndirectObject($parentTreeObjectId, (new ParentTree($parentTreeEntries))->objectContents());
             }
 
-            foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
+            foreach ($taggedStructure->figureEntries as $figureEntry) {
                 $objects[] = new IndirectObject(
-                    $figureStructElemObjectIds[$figureEntry['key']],
+                    $taggedStructureObjectIds->figureStructElemObjectIds[$figureEntry['key']],
                     (new StructElem(
                         'Figure',
                         $documentStructElemObjectId,
@@ -511,9 +568,9 @@ final class DocumentSerializationPlanBuilder
                 );
             }
 
-            foreach ($taggedTextStructure['textEntries'] as $textEntry) {
+            foreach ($taggedStructure->textEntries as $textEntry) {
                 $objects[] = new IndirectObject(
-                    $textStructElemObjectIds[$textEntry['key']],
+                    $taggedStructureObjectIds->textStructElemObjectIds[$textEntry['key']],
                     (new StructElem(
                         $textEntry['tag'],
                         $documentStructElemObjectId,
@@ -523,32 +580,79 @@ final class DocumentSerializationPlanBuilder
                 );
             }
 
+            foreach ($taggedStructure->listEntries as $listEntry) {
+                $listKidObjectIds = [];
+
+                foreach ($listEntry['itemEntries'] as $itemEntry) {
+                    $listKidObjectIds[] = $taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']];
+                }
+
+                $objects[] = new IndirectObject(
+                    $taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']],
+                    (new StructElem('L', $documentStructElemObjectId, $listKidObjectIds))->objectContents(),
+                );
+
+                foreach ($listEntry['itemEntries'] as $itemEntry) {
+                    $objects[] = new IndirectObject(
+                        $taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
+                        (new StructElem(
+                            'LI',
+                            $taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']],
+                            [
+                                $taggedStructureObjectIds->listLabelStructElemObjectIds[$itemEntry['labelKey']],
+                                $taggedStructureObjectIds->listBodyStructElemObjectIds[$itemEntry['bodyKey']],
+                            ],
+                        ))->objectContents(),
+                    );
+                    $objects[] = new IndirectObject(
+                        $taggedStructureObjectIds->listLabelStructElemObjectIds[$itemEntry['labelKey']],
+                        (new StructElem(
+                            'Lbl',
+                            $taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
+                            kidEntries: $this->taggedMarkedContentKidEntries([$itemEntry['labelReference']], $pageObjectIds),
+                        ))->objectContents(),
+                    );
+                    $objects[] = new IndirectObject(
+                        $taggedStructureObjectIds->listBodyStructElemObjectIds[$itemEntry['bodyKey']],
+                        (new StructElem(
+                            'LBody',
+                            $taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
+                            kidEntries: $this->taggedMarkedContentKidEntries([$itemEntry['bodyReference']], $pageObjectIds),
+                        ))->objectContents(),
+                    );
+                }
+            }
+
             foreach ($document->taggedTables as $taggedTable) {
-                $tableStructKey = $this->taggedTableKey($taggedTable->tableId);
+                $tableStructKey = TaggedStructureObjectIds::tableKey($taggedTable->tableId);
                 $tableKidObjectIds = [];
 
                 if ($taggedTable->hasCaption()) {
-                    $tableKidObjectIds[] = $captionStructElemObjectIds[$this->taggedTableCaptionKey($taggedTable->tableId)];
+                    $tableKidObjectIds[] = $taggedStructureObjectIds->captionStructElemObjectIds[
+                        TaggedStructureObjectIds::tableCaptionKey($taggedTable->tableId)
+                    ];
                 }
 
                 foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
                     if ($rows !== []) {
-                        $tableKidObjectIds[] = $tableSectionStructElemObjectIds[$this->taggedTableSectionKey($taggedTable->tableId, $section)];
+                        $tableKidObjectIds[] = $taggedStructureObjectIds->tableSectionStructElemObjectIds[
+                            TaggedStructureObjectIds::tableSectionKey($taggedTable->tableId, $section)
+                        ];
                     }
                 }
 
                 $objects[] = new IndirectObject(
-                    $tableStructElemObjectIds[$tableStructKey],
+                    $taggedStructureObjectIds->tableStructElemObjectIds[$tableStructKey],
                     (new StructElem('Table', $documentStructElemObjectId, $tableKidObjectIds))->objectContents(),
                 );
 
                 if ($taggedTable->hasCaption()) {
-                    $captionKey = $this->taggedTableCaptionKey($taggedTable->tableId);
+                    $captionKey = TaggedStructureObjectIds::tableCaptionKey($taggedTable->tableId);
                     $objects[] = new IndirectObject(
-                        $captionStructElemObjectIds[$captionKey],
+                        $taggedStructureObjectIds->captionStructElemObjectIds[$captionKey],
                         (new StructElem(
                             'Caption',
-                            $tableStructElemObjectIds[$tableStructKey],
+                            $taggedStructureObjectIds->tableStructElemObjectIds[$tableStructKey],
                             kidEntries: $this->taggedMarkedContentKidEntries($taggedTable->captionReferences, $pageObjectIds),
                         ))->objectContents(),
                     );
@@ -559,11 +663,11 @@ final class DocumentSerializationPlanBuilder
                         continue;
                     }
 
-                    $sectionKey = $this->taggedTableSectionKey($taggedTable->tableId, $section);
+                    $sectionKey = TaggedStructureObjectIds::tableSectionKey($taggedTable->tableId, $section);
                     $sectionKidObjectIds = [];
 
                     foreach ($rows as $row) {
-                        $sectionKidObjectIds[] = $rowStructElemObjectIds[$this->taggedTableRowKey(
+                        $sectionKidObjectIds[] = $taggedStructureObjectIds->rowStructElemObjectIds[TaggedStructureObjectIds::tableRowKey(
                             $taggedTable->tableId,
                             $section,
                             $row->rowIndex,
@@ -571,20 +675,20 @@ final class DocumentSerializationPlanBuilder
                     }
 
                     $objects[] = new IndirectObject(
-                        $tableSectionStructElemObjectIds[$sectionKey],
+                        $taggedStructureObjectIds->tableSectionStructElemObjectIds[$sectionKey],
                         (new StructElem(
-                            $this->taggedTableSectionTag($section),
-                            $tableStructElemObjectIds[$tableStructKey],
+                            $this->taggedTableSectionTag($document, $section),
+                            $taggedStructureObjectIds->tableStructElemObjectIds[$tableStructKey],
                             $sectionKidObjectIds,
                         ))->objectContents(),
                     );
 
                     foreach ($rows as $row) {
-                        $rowKey = $this->taggedTableRowKey($taggedTable->tableId, $section, $row->rowIndex);
+                        $rowKey = TaggedStructureObjectIds::tableRowKey($taggedTable->tableId, $section, $row->rowIndex);
                         $rowKidObjectIds = [];
 
                         foreach ($row->cells as $cell) {
-                            $rowKidObjectIds[] = $cellStructElemObjectIds[$this->taggedTableCellKey(
+                            $rowKidObjectIds[] = $taggedStructureObjectIds->cellStructElemObjectIds[TaggedStructureObjectIds::tableCellKey(
                                 $taggedTable->tableId,
                                 $section,
                                 $row->rowIndex,
@@ -593,17 +697,17 @@ final class DocumentSerializationPlanBuilder
                         }
 
                         $objects[] = new IndirectObject(
-                            $rowStructElemObjectIds[$rowKey],
-                            (new StructElem('TR', $tableSectionStructElemObjectIds[$sectionKey], $rowKidObjectIds))->objectContents(),
+                            $taggedStructureObjectIds->rowStructElemObjectIds[$rowKey],
+                            (new StructElem('TR', $taggedStructureObjectIds->tableSectionStructElemObjectIds[$sectionKey], $rowKidObjectIds))->objectContents(),
                         );
 
                         foreach ($row->cells as $cell) {
-                            $cellKey = $this->taggedTableCellKey($taggedTable->tableId, $section, $row->rowIndex, $cell->columnIndex);
+                            $cellKey = TaggedStructureObjectIds::tableCellKey($taggedTable->tableId, $section, $row->rowIndex, $cell->columnIndex);
                             $objects[] = new IndirectObject(
-                                $cellStructElemObjectIds[$cellKey],
+                                $taggedStructureObjectIds->cellStructElemObjectIds[$cellKey],
                                 (new StructElem(
                                     $cell->header ? 'TH' : 'TD',
-                                    $rowStructElemObjectIds[$rowKey],
+                                    $taggedStructureObjectIds->rowStructElemObjectIds[$rowKey],
                                     kidEntries: $this->taggedMarkedContentKidEntries($cell->contentReferences, $pageObjectIds),
                                     scope: $cell->headerScope?->value,
                                     rowSpan: $cell->rowspan > 1 ? $cell->rowspan : null,
@@ -629,13 +733,34 @@ final class DocumentSerializationPlanBuilder
                 }
 
                 $objects[] = IndirectObject::plain(
-                    $linkStructElemObjectIds[$linkEntry['key']],
+                    $taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']],
                     (new StructElem(
                         'Link',
                         $documentStructElemObjectId,
                         pageObjectId: $pageObjectId,
                         altText: $linkEntry['altText'],
                         kidEntries: $kidEntries,
+                    ))->objectContents(),
+                );
+            }
+
+            foreach ($taggedFormStructure['entries'] as $formEntry) {
+                $pageObjectId = $pageObjectIds[$formEntry['pageIndex']];
+
+                $objects[] = IndirectObject::plain(
+                    $taggedFormStructElemObjectIds[$formEntry['key']],
+                    (new StructElem(
+                        'Form',
+                        $documentStructElemObjectId,
+                        pageObjectId: $pageObjectId,
+                        altText: $formEntry['altText'],
+                        kidEntries: [
+                            '<< /Type /OBJR /Obj '
+                            . $formEntry['annotationObjectId']
+                            . ' 0 R /Pg '
+                            . $pageObjectId
+                            . ' 0 R >>',
+                        ],
                     ))->objectContents(),
                 );
             }
@@ -791,7 +916,7 @@ final class DocumentSerializationPlanBuilder
     private function annotationNeedsAppearanceStream(Document $document, object $annotation): bool
     {
         return $document->profile->requiresAnnotationAppearanceStreams()
-            && !$document->profile->isPdfA1()
+            && (!$document->profile->isPdfA1() || $annotation instanceof LinkAnnotation)
             && $annotation instanceof AppearanceStreamAnnotation;
     }
 
@@ -829,7 +954,7 @@ final class DocumentSerializationPlanBuilder
             return;
         }
 
-        if (!$document->profile->supportsEmbeddedFileAttachments()) {
+        if (!$document->profile->supportsDocumentEmbeddedFileAttachments()) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s does not allow embedded file attachments.',
                 $document->profile->name(),
@@ -839,12 +964,174 @@ final class DocumentSerializationPlanBuilder
         foreach ($document->attachments as $attachmentIndex => $attachment) {
             if (
                 $this->resolvedAssociatedFileRelationship($document, $attachment) !== null
-                && !$document->profile->supportsAssociatedFiles()
+                && !$document->profile->supportsDocumentAssociatedFiles()
             ) {
                 throw new InvalidArgumentException(sprintf(
-                    'Profile %s does not allow associated files for attachment %d.',
+                    'Profile %s does not allow document-level associated files for attachment %d.',
                     $document->profile->name(),
                     $attachmentIndex + 1,
+                ));
+            }
+        }
+    }
+
+    private function assertTaggedStructureRequirements(Document $document): void
+    {
+        if (!$document->profile->isPdfA1() || $document->profile->pdfaConformance() !== 'A') {
+            return;
+        }
+
+        $taggedStructure = (new TaggedStructureCollector())->collect($document);
+        if (!$taggedStructure->hasStructuredContent()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s requires structured content in the current implementation.',
+                $document->profile->name(),
+            ));
+        }
+
+        foreach ($document->pages as $pageIndex => $page) {
+            if (
+                !$this->pageContainsRenderableText($page)
+                || $taggedStructure->hasMarkedContentOnPage($pageIndex)
+            ) {
+                continue;
+            }
+
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s requires structured marked content on page %d when text resources are present.',
+                $document->profile->name(),
+                $pageIndex + 1,
+            ));
+        }
+    }
+
+    private function pageContainsRenderableText(Page $page): bool
+    {
+        if ($page->fontResources !== []) {
+            return true;
+        }
+
+        return preg_match('/(?:^|\\s)BT(?:\\s|$)/', $page->contents) === 1;
+    }
+
+    private function assertAcroFormRequirements(Document $document): void
+    {
+        if ($document->acroForm === null) {
+            return;
+        }
+
+        if (!$document->profile->supportsAcroForms() && !$document->profile->isPdfUa()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow AcroForm fields in the current implementation.',
+                $document->profile->name(),
+            ));
+        }
+
+        if ($document->profile->requiresFormFieldAlternativeDescriptions()) {
+            foreach ($document->acroForm->fields as $field) {
+                if (($field->alternativeName ?? '') !== '') {
+                    continue;
+                }
+
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s requires an alternative description for form field "%s".',
+                    $document->profile->name(),
+                    $field->name,
+                ));
+            }
+        }
+
+        if ($document->profile->requiresTaggedFormFields()) {
+            foreach ($document->acroForm->fields as $field) {
+                if ($field instanceof RadioButtonGroup) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s does not allow radio buttons in the current tagged form implementation.',
+                        $document->profile->name(),
+                    ));
+                }
+
+                if ($field instanceof WidgetFormField) {
+                    continue;
+                }
+
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s requires tagged form fields in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+        }
+
+        foreach ($document->acroForm->fields as $field) {
+            if ($field instanceof TextField && !$document->profile->supportsCurrentTextFieldImplementation()) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow text fields in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if ($field instanceof CheckboxField && !$document->profile->supportsCurrentCheckboxImplementation()) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow checkboxes in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if ($field instanceof RadioButtonGroup && !$document->profile->supportsCurrentRadioButtonImplementation()) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow radio buttons in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if ($field instanceof ComboBoxField && !$document->profile->supportsCurrentComboBoxImplementation()) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow combo boxes in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if ($field instanceof ListBoxField && !$document->profile->supportsCurrentListBoxImplementation()) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow list boxes in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if ($field instanceof PushButtonField && !$document->profile->supportsCurrentPushButtonImplementation()) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow push buttons in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if ($field instanceof SignatureField && !$document->profile->supportsCurrentSignatureFieldImplementation()) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow signature fields in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if (!$field instanceof WidgetFormField) {
+                if ($field instanceof RadioButtonGroup) {
+                    foreach ($field->choices as $choice) {
+                        if (!isset($document->pages[$choice->pageNumber - 1])) {
+                            throw new InvalidArgumentException(sprintf(
+                                'Form field "%s" targets page %d which does not exist.',
+                                $field->name,
+                                $choice->pageNumber,
+                            ));
+                        }
+                    }
+                }
+
+                continue;
+            }
+
+            if (!isset($document->pages[$field->pageNumber - 1])) {
+                throw new InvalidArgumentException(sprintf(
+                    'Form field "%s" targets page %d which does not exist.',
+                    $field->name,
+                    $field->pageNumber,
                 ));
             }
         }
@@ -905,6 +1192,7 @@ final class DocumentSerializationPlanBuilder
         ?int $structTreeRootObjectId,
         array $namedDestinations,
         array $attachmentObjectIds,
+        ?int $acroFormObjectId,
     ): string {
         $entries = [
             '/Type /Catalog',
@@ -958,6 +1246,10 @@ final class DocumentSerializationPlanBuilder
                 static fn (int $objectId): string => $objectId . ' 0 R',
                 $associatedFileObjectIds,
             )) . ']';
+        }
+
+        if ($acroFormObjectId !== null) {
+            $entries[] = '/AcroForm ' . $acroFormObjectId . ' 0 R';
         }
 
         return '<< ' . implode(' ', $entries) . ' >>';
@@ -1082,133 +1374,12 @@ final class DocumentSerializationPlanBuilder
             return $attachment->associatedFileRelationship;
         }
 
-        // PDF/A-3 and PDF/A-4f attachments default to associated files with AFRelationship /Data.
-        if ($document->profile->defaultsAttachmentRelationshipToData()) {
+        // PDF/A-3 and PDF/A-4f document attachments default to associated files with AFRelationship /Data.
+        if ($document->profile->defaultsDocumentAttachmentRelationshipToData()) {
             return AssociatedFileRelationship::DATA;
         }
 
         return null;
-    }
-
-    /**
-     * @return array{
-     *   figureEntries: list<array{key: string, pageIndex: int, markedContentId: int, altText: ?string}>,
-     *   pageMarkedContentKeys: array<int, array<int, string>>
-     * }
-     */
-    private function collectTaggedFigureStructure(Document $document): array
-    {
-        $figureEntries = [];
-        $pageMarkedContentKeys = [];
-
-        foreach ($document->pages as $pageIndex => $page) {
-            foreach ($page->images as $imageIndex => $pageImage) {
-                if ($pageImage->markedContentId === null) {
-                    continue;
-                }
-
-                $key = 'figure:' . $pageIndex . ':' . $imageIndex;
-                $pageMarkedContentKeys[$pageIndex][$pageImage->markedContentId] = $key;
-                $figureEntries[] = [
-                    'key' => $key,
-                    'pageIndex' => $pageIndex,
-                    'markedContentId' => $pageImage->markedContentId,
-                    'altText' => $pageImage->accessibility?->altText,
-                ];
-            }
-        }
-
-        return [
-            'figureEntries' => $figureEntries,
-            'pageMarkedContentKeys' => $pageMarkedContentKeys,
-        ];
-    }
-
-    /**
-     * @return array{
-     *   textEntries: list<array{key: string, tag: string, pageIndex: int, markedContentId: int}>,
-     *   pageMarkedContentKeys: array<int, array<int, string>>
-     * }
-     */
-    private function collectTaggedTextStructure(Document $document): array
-    {
-        $textEntries = [];
-        $pageMarkedContentKeys = [];
-
-        foreach ($document->taggedTextBlocks as $index => $textBlock) {
-            $key = $this->taggedTextKey($index, $textBlock);
-            $pageMarkedContentKeys[$textBlock->pageIndex][$textBlock->markedContentId] = $key;
-            $textEntries[] = [
-                'key' => $key,
-                'tag' => $textBlock->tag,
-                'pageIndex' => $textBlock->pageIndex,
-                'markedContentId' => $textBlock->markedContentId,
-            ];
-        }
-
-        return [
-            'textEntries' => $textEntries,
-            'pageMarkedContentKeys' => $pageMarkedContentKeys,
-        ];
-    }
-
-    /**
-     * @return array{
-     *   pageMarkedContentKeys: array<int, array<int, string>>
-     * }
-     */
-    private function collectTaggedTableStructure(Document $document): array
-    {
-        $pageMarkedContentKeys = [];
-
-        foreach ($document->taggedTables as $taggedTable) {
-            foreach ($taggedTable->captionReferences as $reference) {
-                $pageMarkedContentKeys[$reference->pageIndex][$reference->markedContentId] = $this->taggedTableCaptionKey($taggedTable->tableId);
-            }
-
-            foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
-                foreach ($rows as $row) {
-                    foreach ($row->cells as $cell) {
-                        $cellKey = $this->taggedTableCellKey($taggedTable->tableId, $section, $row->rowIndex, $cell->columnIndex);
-
-                        foreach ($cell->contentReferences as $reference) {
-                            $pageMarkedContentKeys[$reference->pageIndex][$reference->markedContentId] = $cellKey;
-                        }
-                    }
-                }
-            }
-        }
-
-        return [
-            'pageMarkedContentKeys' => $pageMarkedContentKeys,
-        ];
-    }
-
-    /**
-     * @param array<int, array<int, string>> ...$pageMarkedContentKeySets
-     * @return array<int, array<int, string>>
-     */
-    private function mergeTaggedPageContentKeys(array ...$pageMarkedContentKeySets): array
-    {
-        $merged = [];
-
-        foreach ($pageMarkedContentKeySets as $pageMarkedContentKeys) {
-            foreach ($pageMarkedContentKeys as $pageIndex => $pageKeys) {
-                foreach ($pageKeys as $markedContentId => $key) {
-                    if (isset($merged[$pageIndex][$markedContentId])) {
-                        throw new InvalidArgumentException(sprintf(
-                            'Duplicate marked-content id %d on page %d.',
-                            $markedContentId,
-                            $pageIndex + 1,
-                        ));
-                    }
-
-                    $merged[$pageIndex][$markedContentId] = $key;
-                }
-            }
-        }
-
-        return $merged;
     }
 
     /**
@@ -1246,6 +1417,20 @@ final class DocumentSerializationPlanBuilder
      *   structParentIds: array<string, int>
      * }
      */
+    /**
+     * @return array{
+     *   linkEntries: list<array{
+     *     key: string,
+     *     pageIndex: int,
+     *     annotationIndices: list<int>,
+     *     altText: string,
+     *     markedContentIds: list<int>
+     *   }>,
+     *   parentTreeEntries: array<int, list<string>>,
+     *   structParentIds: array<string, int>,
+     *   nextStructParentId: int
+     * }
+     */
     private function collectTaggedLinkStructure(Document $document, int $nextStructParentId): array
     {
         if (!$document->profile->requiresTaggedLinkAnnotations()) {
@@ -1253,6 +1438,7 @@ final class DocumentSerializationPlanBuilder
                 'linkEntries' => [],
                 'parentTreeEntries' => [],
                 'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
             ];
         }
 
@@ -1292,7 +1478,9 @@ final class DocumentSerializationPlanBuilder
                 $accessibleLabel = $annotation->accessibleLabelOrContents();
 
                 if ($accessibleLabel !== null && $accessibleLabel !== '') {
-                    $lastAltTextPart = $groupedLinkEntries[$groupKey]['altTextParts'][array_key_last($groupedLinkEntries[$groupKey]['altTextParts'])] ?? null;
+                    $lastAltTextPart = $groupedLinkEntries[$groupKey]['altTextParts'] === []
+                        ? null
+                        : $groupedLinkEntries[$groupKey]['altTextParts'][array_key_last($groupedLinkEntries[$groupKey]['altTextParts'])];
 
                     if ($lastAltTextPart !== $accessibleLabel) {
                         $groupedLinkEntries[$groupKey]['altTextParts'][] = $accessibleLabel;
@@ -1322,6 +1510,76 @@ final class DocumentSerializationPlanBuilder
 
         return [
             'linkEntries' => $linkEntries,
+            'parentTreeEntries' => $parentTreeEntries,
+            'structParentIds' => $structParentIds,
+            'nextStructParentId' => $nextStructParentId,
+        ];
+    }
+
+    /**
+     * @param list<int> $acroFormFieldObjectIds
+     * @param array<int, list<int>> $acroFormFieldRelatedObjectIds
+     * @return array{
+     *   entries: list<array{key: string, pageIndex: int, annotationObjectId: int, altText: string}>,
+     *   parentTreeEntries: array<int, list<string>>,
+     *   structParentIds: array<int, int>
+     * }
+     */
+    private function collectTaggedFormStructure(
+        Document $document,
+        array $acroFormFieldObjectIds,
+        array $acroFormFieldRelatedObjectIds,
+        int $nextStructParentId,
+    ): array {
+        if (!$document->profile->requiresTaggedFormFields() || $document->acroForm === null) {
+            return [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+            ];
+        }
+
+        $entries = [];
+        $parentTreeEntries = [];
+        $structParentIds = [];
+
+        foreach ($document->acroForm->fields as $fieldIndex => $field) {
+            if (!$field instanceof WidgetFormField) {
+                continue;
+            }
+
+            $annotationObjectIdsByPage = $field->pageAnnotationObjectIds(
+                $acroFormFieldObjectIds[$fieldIndex],
+                $acroFormFieldRelatedObjectIds[$fieldIndex] ?? [],
+            );
+            $annotationObjectIds = [];
+
+            foreach ($annotationObjectIdsByPage as $pageAnnotationObjectIds) {
+                $annotationObjectIds = [...$annotationObjectIds, ...$pageAnnotationObjectIds];
+            }
+
+            if (count($annotationObjectIds) !== 1) {
+                throw new InvalidArgumentException(sprintf(
+                    'Tagged PDF/UA form support currently requires exactly one widget annotation for field "%s".',
+                    $field->name,
+                ));
+            }
+
+            $entryKey = 'form:' . $field->name;
+            $annotationObjectId = $annotationObjectIds[0];
+            $entries[] = [
+                'key' => $entryKey,
+                'pageIndex' => $field->pageNumber - 1,
+                'annotationObjectId' => $annotationObjectId,
+                'altText' => $field->alternativeName ?? $field->name,
+            ];
+            $structParentIds[$annotationObjectId] = $nextStructParentId;
+            $parentTreeEntries[$nextStructParentId] = [$entryKey];
+            $nextStructParentId++;
+        }
+
+        return [
+            'entries' => $entries,
             'parentTreeEntries' => $parentTreeEntries,
             'structParentIds' => $structParentIds,
         ];
@@ -1387,38 +1645,12 @@ final class DocumentSerializationPlanBuilder
         ];
     }
 
-    private function taggedTableKey(int $tableId): string
+    private function taggedTableSectionTag(Document $document, string $section): string
     {
-        return 'table:' . $tableId;
-    }
+        if ($document->profile->isPdfA1()) {
+            return 'Sect';
+        }
 
-    private function taggedTableCaptionKey(int $tableId): string
-    {
-        return 'table:' . $tableId . ':caption';
-    }
-
-    private function taggedTextKey(int $index, TaggedTextBlock $textBlock): string
-    {
-        return 'text:' . $index . ':' . $textBlock->tag . ':' . $textBlock->pageIndex . ':' . $textBlock->markedContentId;
-    }
-
-    private function taggedTableSectionKey(int $tableId, string $section): string
-    {
-        return 'table:' . $tableId . ':' . $section . ':section';
-    }
-
-    private function taggedTableRowKey(int $tableId, string $section, int $rowIndex): string
-    {
-        return 'table:' . $tableId . ':' . $section . ':row:' . $rowIndex;
-    }
-
-    private function taggedTableCellKey(int $tableId, string $section, int $rowIndex, int $columnIndex): string
-    {
-        return 'table:' . $tableId . ':' . $section . ':cell:' . $rowIndex . ':' . $columnIndex;
-    }
-
-    private function taggedTableSectionTag(string $section): string
-    {
         return match ($section) {
             'header' => 'THead',
             'footer' => 'TFoot',
@@ -1427,34 +1659,14 @@ final class DocumentSerializationPlanBuilder
     }
 
     /**
-     * @param array<string, int> $figureStructElemObjectIds
-     * @param array<string, int> $textStructElemObjectIds
-     * @param array<string, int> $captionStructElemObjectIds
-     * @param array<string, int> $cellStructElemObjectIds
-     */
-    private function taggedPageContentObjectId(
-        string $key,
-        array $figureStructElemObjectIds,
-        array $textStructElemObjectIds,
-        array $captionStructElemObjectIds,
-        array $cellStructElemObjectIds,
-    ): int {
-        return $figureStructElemObjectIds[$key]
-            ?? $textStructElemObjectIds[$key]
-            ?? $captionStructElemObjectIds[$key]
-            ?? $cellStructElemObjectIds[$key]
-            ?? throw new InvalidArgumentException("Unknown tagged page content key '$key'.");
-    }
-
-    /**
-     * @param list<TaggedTableContentReference> $references
+     * @param list<object{pageIndex: int, markedContentId: int}> $references
      * @param list<int> $pageObjectIds
      * @return list<string>
      */
     private function taggedMarkedContentKidEntries(array $references, array $pageObjectIds): array
     {
         return array_map(
-            static fn (TaggedTableContentReference $reference): string => '<< /Type /MCR /Pg '
+            static fn (object $reference): string => '<< /Type /MCR /Pg '
                 . $pageObjectIds[$reference->pageIndex]
                 . ' 0 R /MCID '
                 . $reference->markedContentId

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
@@ -58,11 +59,120 @@ interface DocumentBuilder
 
     public function heading(string $text, int $level = 1, ?TextOptions $options = null): self;
 
+    /**
+     * @param list<string> $items
+     */
+    public function list(array $items, ?ListOptions $list = null, ?TextOptions $text = null): self;
+
     public function table(Table $table): self;
 
     public function image(ImageSource $source, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;
 
     public function imageFile(string $path, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;
+
+    public function attachment(
+        string $filename,
+        string $contents,
+        ?string $description = null,
+        ?string $mimeType = null,
+        ?AssociatedFileRelationship $associatedFileRelationship = null,
+    ): self;
+
+    public function attachmentFromFile(
+        string $path,
+        ?string $filename = null,
+        ?string $description = null,
+        ?string $mimeType = null,
+        ?AssociatedFileRelationship $associatedFileRelationship = null,
+    ): self;
+
+    public function textField(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $value = null,
+        ?string $alternativeName = null,
+        ?string $defaultValue = null,
+        float $fontSize = 12.0,
+        bool $multiline = false,
+    ): self;
+
+    public function checkbox(
+        string $name,
+        float $x,
+        float $y,
+        float $size,
+        bool $checked = false,
+        ?string $alternativeName = null,
+    ): self;
+
+    public function radioButton(
+        string $groupName,
+        string $exportValue,
+        float $x,
+        float $y,
+        float $size,
+        bool $checked = false,
+        ?string $alternativeName = null,
+        ?string $groupAlternativeName = null,
+    ): self;
+
+    /**
+     * @param array<string, string> $options
+     */
+    public function comboBox(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $options,
+        ?string $value = null,
+        ?string $alternativeName = null,
+        ?string $defaultValue = null,
+        float $fontSize = 12.0,
+    ): self;
+
+    /**
+     * @param array<string, string> $options
+     * @param list<string>|string|null $value
+     * @param list<string>|string|null $defaultValue
+     */
+    public function listBox(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $options,
+        string | array | null $value = null,
+        ?string $alternativeName = null,
+        string | array | null $defaultValue = null,
+        float $fontSize = 12.0,
+    ): self;
+
+    public function pushButton(
+        string $name,
+        string $label,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $alternativeName = null,
+        ?string $url = null,
+        float $fontSize = 12.0,
+    ): self;
+
+    public function signatureField(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $alternativeName = null,
+    ): self;
 
     public function textAnnotation(
         float $x,

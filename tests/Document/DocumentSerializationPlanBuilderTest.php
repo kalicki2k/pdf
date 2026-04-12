@@ -12,8 +12,28 @@ use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
+use Kalle\Pdf\Document\Form\AcroForm;
+use Kalle\Pdf\Document\Form\CheckboxField;
+use Kalle\Pdf\Document\Form\ComboBoxField;
+use Kalle\Pdf\Document\Form\FormFieldRenderContext;
+use Kalle\Pdf\Document\Form\ListBoxField;
+use Kalle\Pdf\Document\Form\PushButtonField;
+use Kalle\Pdf\Document\Form\RadioButtonChoice;
+use Kalle\Pdf\Document\Form\RadioButtonGroup;
+use Kalle\Pdf\Document\Form\SignatureField;
+use Kalle\Pdf\Document\Form\TextField;
+use Kalle\Pdf\Document\Form\WidgetFormField;
+use Kalle\Pdf\Document\ListOptions;
+use Kalle\Pdf\Document\ListType;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Document\Table;
+use Kalle\Pdf\Document\TableCaption;
+use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TablePlacement;
+use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Encryption\Permissions;
@@ -172,6 +192,69 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/AFRelationship /Data', $objects[5]->contents);
     }
 
+    public function testItDefaultsPdfA4fAttachmentsToAssociatedFiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA4f(),
+            attachments: [
+                new FileAttachment(
+                    'data.xml',
+                    new EmbeddedFile('<root/>', 'application/xml'),
+                    'Machine-readable source',
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/AF [6 0 R]', $objects[0]->contents);
+        self::assertStringContainsString('/AFRelationship /Data', $objects[5]->contents);
+    }
+
+    public function testItAllowsExplicitDocumentLevelAssociatedFilesForPdf20(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdf20(),
+            attachments: [
+                new FileAttachment(
+                    'data.xml',
+                    new EmbeddedFile('<root/>', 'application/xml'),
+                    associatedFileRelationship: AssociatedFileRelationship::SOURCE,
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/AF [6 0 R]', $objects[0]->contents);
+        self::assertStringContainsString('/AFRelationship /Source', $objects[5]->contents);
+    }
+
+    public function testItDoesNotMarkPlainPdf20AttachmentsAsAssociatedFilesWithoutRelationship(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdf20(),
+            attachments: [
+                new FileAttachment(
+                    'demo.txt',
+                    new EmbeddedFile('hello', 'text/plain'),
+                    'Demo attachment',
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringNotContainsString('/AF [', $objects[0]->contents);
+        self::assertStringNotContainsString('/AFRelationship /', $objects[5]->contents);
+    }
+
     public function testItRejectsEmbeddedFileAttachmentsForUnsupportedProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -203,7 +286,246 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile standard does not allow associated files for attachment 1.');
+        $this->expectExceptionMessage('Profile standard does not allow document-level associated files for attachment 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItAddsAnAcroFormAndWidgetFieldObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            acroForm: (new AcroForm())->withField($this->testWidgetField()),
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertCount(6, $objects);
+        self::assertSame('<< /Type /Catalog /Pages 2 0 R /AcroForm 5 0 R >>', $objects[0]->contents);
+        self::assertSame(
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 4 0 R /Annots [6 0 R] >>',
+            $objects[2]->contents,
+        );
+        self::assertSame('<< /Fields [6 0 R] /NeedAppearances true >>', $objects[4]->contents);
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Widget /Rect [10 20 90 32] /P 3 0 R /T (customer_name) /TU (Customer name) /FT /Tx >>',
+            $objects[5]->contents,
+        );
+    }
+
+    public function testItRejectsAcroFormsForUnsupportedProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            acroForm: (new AcroForm())->withField($this->testWidgetField()),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsFormFieldsThatReferenceMissingPages(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            acroForm: (new AcroForm())->withField($this->testWidgetField(pageNumber: 2)),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Form field "customer_name" targets page 2 which does not exist.');
+
+        $builder->build($document);
+    }
+
+    public function testItBuildsATextFieldWithDefaultResources(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            acroForm: (new AcroForm())->withField(
+                new TextField('customer_name', 1, 10.0, 20.0, 80.0, 12.0, 'Ada', 'Customer name'),
+            ),
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/AcroForm 5 0 R', $objects[0]->contents);
+        self::assertStringContainsString('/DR << /Font << /Helv << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> >> >>', $objects[4]->contents);
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Widget /Rect [10 20 90 32] /P 3 0 R /T (customer_name) /TU (Customer name) /FT /Tx /DA (/Helv 12 Tf 0 g) /V (Ada) >>',
+            $objects[5]->contents,
+        );
+    }
+
+    public function testItBuildsACheckboxWithAppearanceStreams(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            acroForm: (new AcroForm())->withField(
+                new CheckboxField('accept_terms', 1, 10.0, 20.0, 12.0, true, 'Accept terms'),
+            ),
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertCount(8, $objects);
+        self::assertStringContainsString('/Annots [6 0 R]', $objects[2]->contents);
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Widget /Rect [10 20 22 32] /P 3 0 R /T (accept_terms) /TU (Accept terms) /FT /Btn /V /Yes /AS /Yes /AP << /N << /Off 7 0 R /Yes 8 0 R >> >> >>',
+            $objects[5]->contents,
+        );
+        self::assertStringContainsString('/Subtype /Form', $objects[6]->contents);
+        self::assertStringContainsString('/Subtype /Form', $objects[7]->contents);
+    }
+
+    public function testItBuildsTaggedPdfUaSingleWidgetFormFields(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'Accessible Form',
+            language: 'de-DE',
+            acroForm: (new AcroForm())
+                ->withField(new TextField('customer_name', 1, 10.0, 20.0, 80.0, 12.0, 'Ada', 'Customer name'))
+                ->withField(new CheckboxField('accept_terms', 1, 10.0, 40.0, 12.0, true, 'Accept terms')),
+        );
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Tabs /S', $serialized);
+        self::assertSame(2, substr_count($serialized, '/Type /StructElem /S /Form'));
+        self::assertStringContainsString('/StructParent 0', $serialized);
+        self::assertStringContainsString('/StructParent 1', $serialized);
+        self::assertStringContainsString('/Alt (Customer name)', $serialized);
+        self::assertStringContainsString('/Alt (Accept terms)', $serialized);
+        self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
+    }
+
+    public function testItRejectsPdfUaRadioButtonsUntilTaggedChoiceStructureExists(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfUa1(),
+            title: 'Accessible Form',
+            language: 'de-DE',
+            acroForm: (new AcroForm())->withField(
+                (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))
+                    ->withChoice(new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'standard', true, 'Standard delivery'))
+                    ->withChoice(new RadioButtonChoice(1, 30.0, 20.0, 12.0, 'express', false, 'Express delivery')),
+            ),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 does not allow radio buttons in the current tagged form implementation.');
+
+        $builder->build($document);
+    }
+
+    public function testItBuildsARadioButtonGroupWithWidgetKids(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $group = (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))
+            ->withChoice(new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'standard'))
+            ->withChoice(new RadioButtonChoice(1, 30.0, 20.0, 12.0, 'express', true, 'Express delivery'));
+        $document = new Document(acroForm: (new AcroForm())->withField($group));
+
+        $objects = iterator_to_array($builder->build($document)->objects);
+
+        self::assertStringContainsString('/Fields [6 0 R]', $objects[4]->contents);
+        self::assertStringContainsString('/Kids [7 0 R 10 0 R]', $objects[5]->contents);
+        self::assertStringContainsString('/V /express', $objects[5]->contents);
+        self::assertStringContainsString('/Annots [7 0 R 10 0 R]', $objects[2]->contents);
+        self::assertStringContainsString('/Parent 6 0 R', $objects[6]->contents);
+        self::assertStringContainsString('/AS /express', $objects[9]->contents);
+    }
+
+    public function testItBuildsAComboBox(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            acroForm: (new AcroForm())->withField(
+                new ComboBoxField('status', 1, 10.0, 20.0, 80.0, 12.0, ['new' => 'New', 'done' => 'Done'], 'done', 'Status'),
+            ),
+        );
+
+        $objects = iterator_to_array($builder->build($document)->objects);
+
+        self::assertStringContainsString('/FT /Ch', $objects[5]->contents);
+        self::assertStringContainsString('/Ff 131072', $objects[5]->contents);
+        self::assertStringContainsString('/Opt [[(new) (New)] [(done) (Done)]]', $objects[5]->contents);
+    }
+
+    public function testItBuildsAListBox(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            acroForm: (new AcroForm())->withField(
+                new ListBoxField('skills', 1, 10.0, 20.0, 80.0, 40.0, ['php' => 'PHP', 'pdf' => 'PDF'], ['php', 'pdf'], 'Skills'),
+            ),
+        );
+
+        $objects = iterator_to_array($builder->build($document)->objects);
+
+        self::assertStringContainsString('/FT /Ch', $objects[5]->contents);
+        self::assertStringContainsString('/Ff 2097152', $objects[5]->contents);
+        self::assertStringContainsString('/V [(php) (pdf)]', $objects[5]->contents);
+    }
+
+    public function testItBuildsAPushButton(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            acroForm: (new AcroForm())->withField(
+                new PushButtonField('open_docs', 1, 10.0, 20.0, 90.0, 18.0, 'Open docs', 'Open documentation', 'https://example.com/docs'),
+            ),
+        );
+
+        $objects = iterator_to_array($builder->build($document)->objects);
+
+        self::assertStringContainsString('/FT /Btn', $objects[5]->contents);
+        self::assertStringContainsString('/Ff 65536', $objects[5]->contents);
+        self::assertStringContainsString('/MK << /CA (Open docs) >>', $objects[5]->contents);
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com/docs) >>', $objects[5]->contents);
+    }
+
+    public function testItBuildsASignatureField(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            acroForm: (new AcroForm())->withField(
+                new SignatureField('approval_signature', 1, 10.0, 20.0, 100.0, 30.0, 'Approval signature'),
+            ),
+        );
+
+        $objects = iterator_to_array($builder->build($document)->objects);
+
+        self::assertStringContainsString('/SigFlags 1', $objects[4]->contents);
+        self::assertStringContainsString('/FT /Sig', $objects[5]->contents);
+        self::assertStringContainsString('/AP << /N 7 0 R >>', $objects[5]->contents);
+        self::assertStringContainsString('/Annots [6 0 R]', $objects[2]->contents);
+        self::assertStringContainsString('/Subtype /Form', $objects[6]->contents);
+    }
+
+    public function testItRejectsSignatureFieldsForUnsupportedProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            acroForm: (new AcroForm())->withField(
+                new SignatureField('approval_signature', 1, 10.0, 20.0, 100.0, 30.0, 'Approval signature'),
+            ),
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current implementation.');
 
         $builder->build($document);
     }
@@ -228,6 +550,22 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame("<< /Length 3 >>\nstream\nq\nQ\nendstream", $objects[3]->contents);
         self::assertSame('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 419.528 595.276] /Resources << >> /Contents 6 0 R >>', $objects[4]->contents);
         self::assertSame("<< /Length 0 >>\nstream\nendstream", $objects[5]->contents);
+    }
+
+    private function testWidgetField(int $pageNumber = 1): WidgetFormField
+    {
+        return new readonly class ('customer_name', $pageNumber, 10.0, 20.0, 80.0, 12.0, 'Customer name') extends WidgetFormField {
+            public function pdfObjectContents(
+                FormFieldRenderContext $context,
+                int $fieldObjectId,
+                array $relatedObjectIds = [],
+            ): string {
+                return '<< ' . implode(' ', [
+                    ...$this->widgetDictionaryEntries($context, $fieldObjectId),
+                    '/FT /Tx',
+                ]) . ' >>';
+            }
+        };
     }
 
     public function testItWritesSelectedEncryptionPermissionsIntoTheEncryptDictionary(): void
@@ -606,22 +944,26 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
-    public function testItRejectsCurrentLinkAnnotationsForPdfA1Profiles(): void
+    public function testItBuildsPdfA1LinkAnnotationsWithAppearanceStreams(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('A', new TextOptions(
+            ->text('Ж', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
             ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('does not allow the current page annotation implementation because annotation appearance streams are required');
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
 
-        $builder->build($document);
+        self::assertStringContainsString('/Subtype /Link', $serialized);
+        self::assertStringContainsString('/AP << /N ', $serialized);
     }
 
     public function testItBuildsPdfA2uLinkAnnotationsWithAppearanceStreams(): void
@@ -1019,6 +1361,187 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /H1', $serialized);
         self::assertStringContainsString('/Type /StructElem /S /P', $serialized);
         self::assertStringContainsString('/Nums [0 [', $serialized);
+    }
+
+    public function testItAddsTaggedPdfA1aBulletListStructure(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->list(
+                ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
+                text: new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    width: 260,
+                ),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', $serialized);
+        self::assertStringContainsString('/LBody << /MCID 1 >> BDC', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /L', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /LI', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Lbl', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /LBody', $serialized);
+        self::assertStringContainsString('/Nums [0 [', $serialized);
+    }
+
+    public function testItAddsTaggedPdfA1aNumberedListStructure(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->list(
+                ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
+                new ListOptions(type: ListType::NUMBERED, start: 5),
+                new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    width: 260,
+                ),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', $serialized);
+        self::assertStringContainsString('/LBody << /MCID 1 >> BDC', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /L', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /LI', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Lbl', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /LBody', $serialized);
+        self::assertSame(2, substr_count($serialized, '/Type /StructElem /S /Lbl'));
+        self::assertStringContainsString('/Nums [0 [', $serialized);
+    }
+
+    public function testItAddsTaggedPdfA1aTableStructure(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->table(
+                Table::define(
+                    TableColumn::fixed(120.0),
+                    TableColumn::fixed(120.0),
+                    TableColumn::fixed(120.0),
+                )
+                    ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
+                    ->withCaption(TableCaption::text('Quarterly summary Привет'))
+                    ->withHeaderRows(
+                        TableRow::fromCells(
+                            TableCell::text('Регион', rowspan: 2)->withHeaderScope(TableHeaderScope::BOTH),
+                            TableCell::text('План', colspan: 2),
+                        ),
+                        TableRow::fromTexts('Q1', 'Q2 Привет'),
+                    )
+                    ->withRows(
+                        TableRow::fromCells(
+                            TableCell::text('Север')->withHeaderScope(TableHeaderScope::ROW),
+                            TableCell::text('12'),
+                            TableCell::text('14'),
+                        ),
+                        TableRow::fromTexts('Юг', '10', '11'),
+                    )
+                    ->withFooterRows(
+                        TableRow::fromTexts('Итого', '22', '25'),
+                    )
+                    ->withTextOptions(new TextOptions(
+                        fontSize: 12,
+                        lineHeight: 15,
+                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    )),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/Type /StructElem /S /Table', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Sect', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /TH', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /TD', $serialized);
+    }
+
+    public function testItRejectsPdfA1aPagesWithRawTextOperatorsWithoutTaggedStructure(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $structuredDocument = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->paragraph('Absatztext Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+        $rawTextPage = new Page(
+            $structuredDocument->pages[0]->size,
+            contents: $structuredDocument->pages[0]->contents,
+        );
+        $document = new Document(
+            profile: $structuredDocument->profile,
+            pages: [$structuredDocument->pages[0], $rawTextPage],
+            title: $structuredDocument->title,
+            language: $structuredDocument->language,
+            creator: $structuredDocument->creator,
+            creatorTool: $structuredDocument->creatorTool,
+            pdfaOutputIntent: $structuredDocument->pdfaOutputIntent,
+            taggedTextBlocks: $structuredDocument->taggedTextBlocks,
+            taggedLists: [],
+            taggedTables: [],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('requires structured marked content on page 2');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsPdfA1aPagesWithUnstructuredTextResources(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $structuredDocument = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->paragraph('Absatztext Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+        $document = new Document(
+            profile: $structuredDocument->profile,
+            pages: $structuredDocument->pages,
+            title: $structuredDocument->title,
+            language: $structuredDocument->language,
+            creator: $structuredDocument->creator,
+            creatorTool: $structuredDocument->creatorTool,
+            pdfaOutputIntent: $structuredDocument->pdfaOutputIntent,
+            taggedTextBlocks: [],
+            taggedLists: [],
+            taggedTables: [],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('requires structured content');
+
+        $builder->build($document);
     }
 
     public function testItAddsPdfAOutputIntentAndIdentificationMetadata(): void

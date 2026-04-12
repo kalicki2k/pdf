@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Document\Attachment\FileAttachment;
+use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Encryption\Encryption;
@@ -31,12 +33,17 @@ final readonly class Document
     public array $taggedTextBlocks;
     /** @var list<FileAttachment> */
     public array $attachments;
+    public ?AcroForm $acroForm;
+    /** @var list<TaggedList> */
+    public array $taggedLists;
 
     /**
      * @param list<Page>|null $pages
      * @param list<TaggedTable>|null $taggedTables
      * @param list<TaggedTextBlock>|null $taggedTextBlocks
      * @param list<FileAttachment>|null $attachments
+     * @param AcroForm|null $acroForm
+     * @param list<TaggedList>|null $taggedLists
      */
     public function __construct(
         ?Profile $profile = null,
@@ -52,6 +59,8 @@ final readonly class Document
         ?array $taggedTables = null,
         ?array $taggedTextBlocks = null,
         ?array $attachments = null,
+        ?AcroForm $acroForm = null,
+        ?array $taggedLists = null,
     ) {
         $this->profile = $profile ?? Profile::standard();
         $this->pages = $pages ?? [new Page(PageSize::A4())];
@@ -66,6 +75,8 @@ final readonly class Document
         $this->taggedTables = $taggedTables ?? [];
         $this->taggedTextBlocks = $taggedTextBlocks ?? [];
         $this->attachments = $attachments ?? [];
+        $this->acroForm = $acroForm;
+        $this->taggedLists = $taggedLists ?? [];
     }
 
     public function version(): float

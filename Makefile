@@ -72,6 +72,15 @@ test-pdfa2u-link-regression:
 test-pdfa1a-regression:
 	sh bin/test-pdfa1a-regression.sh
 
+test-pdfa1a-list-regression:
+	sh bin/test-pdfa1a-list-regression.sh
+
+test-pdfa1a-table-regression:
+	sh bin/test-pdfa1a-table-regression.sh
+
+test-pdfa1a-mixed-regression:
+	sh bin/test-pdfa1a-mixed-regression.sh
+
 test-pdfa2u-regressions:
 	sh bin/test-pdfa2u-regressions.sh
 

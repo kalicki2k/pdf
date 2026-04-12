@@ -39,6 +39,8 @@
   },
   "require": {
     "php": "^8.5",
-    "ext-exif": "*"
+    "ext-exif": "*",
+    "ext-mbstring": "*",
+    "ext-openssl": "*"
   }
 }

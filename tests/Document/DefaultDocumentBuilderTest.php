@@ -4,9 +4,20 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Form\CheckboxField;
+use Kalle\Pdf\Document\Form\ComboBoxField;
+use Kalle\Pdf\Document\Form\ListBoxField;
+use Kalle\Pdf\Document\Form\PushButtonField;
+use Kalle\Pdf\Document\Form\RadioButtonGroup;
+use Kalle\Pdf\Document\Form\SignatureField;
+use Kalle\Pdf\Document\Form\TextField;
+use Kalle\Pdf\Document\ListOptions;
+use Kalle\Pdf\Document\ListType;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
@@ -162,6 +173,153 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame(4, $document->pdfaOutputIntent->colorComponents);
     }
 
+    public function testItAddsEmbeddedFileAttachmentsToTheDocument(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->attachment(
+                'source-data.xml',
+                '<root/>',
+                'Machine-readable source',
+                'application/xml',
+                AssociatedFileRelationship::DATA,
+            )
+            ->build();
+
+        self::assertCount(1, $document->attachments);
+        self::assertSame('source-data.xml', $document->attachments[0]->filename);
+        self::assertSame('<root/>', $document->attachments[0]->embeddedFile->contents);
+        self::assertSame('application/xml', $document->attachments[0]->embeddedFile->mimeType);
+        self::assertSame('Machine-readable source', $document->attachments[0]->description);
+        self::assertSame(AssociatedFileRelationship::DATA, $document->attachments[0]->associatedFileRelationship);
+    }
+
+    public function testItAddsEmbeddedFileAttachmentsFromAFile(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-attachment-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary path for the attachment import test.');
+        }
+
+        file_put_contents($path, 'attachment-data');
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->attachmentFromFile(
+                    $path,
+                    filename: 'custom.txt',
+                    description: 'Imported attachment',
+                    mimeType: 'text/plain',
+                )
+                ->build();
+
+            self::assertCount(1, $document->attachments);
+            self::assertSame('custom.txt', $document->attachments[0]->filename);
+            self::assertSame('attachment-data', $document->attachments[0]->embeddedFile->contents);
+            self::assertSame('Imported attachment', $document->attachments[0]->description);
+            self::assertSame('text/plain', $document->attachments[0]->embeddedFile->mimeType);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsMissingAttachmentFiles(): void
+    {
+        $path = sys_get_temp_dir() . '/pdf2-missing-attachment-' . uniqid('', true);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Attachment file '$path' does not exist.");
+
+        DefaultDocumentBuilder::make()->attachmentFromFile($path);
+    }
+
+    public function testItAddsATextFieldToTheCurrentPageAcroForm(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')
+            ->build();
+
+        self::assertNotNull($document->acroForm);
+        self::assertCount(1, $document->acroForm->fields);
+        self::assertInstanceOf(TextField::class, $document->acroForm->fields[0]);
+        self::assertSame('customer_name', $document->acroForm->fields[0]->name);
+        self::assertSame(1, $document->acroForm->fields[0]->pageNumber);
+        self::assertSame('Ada', $document->acroForm->fields[0]->value);
+    }
+
+    public function testItAddsACheckboxToTheCurrentPageAcroForm(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->newPage()
+            ->checkbox('accept_terms', 40, 500, 14, true, 'Accept terms')
+            ->build();
+
+        self::assertNotNull($document->acroForm);
+        self::assertCount(1, $document->acroForm->fields);
+        self::assertInstanceOf(CheckboxField::class, $document->acroForm->fields[0]);
+        self::assertSame('accept_terms', $document->acroForm->fields[0]->name);
+        self::assertSame(2, $document->acroForm->fields[0]->pageNumber);
+        self::assertTrue($document->acroForm->fields[0]->checked);
+    }
+
+    public function testItGroupsRadioButtonsUnderASingleAcroFormField(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->radioButton('delivery', 'standard', 40, 500, 14, false, 'Standard delivery', 'Delivery method')
+            ->radioButton('delivery', 'express', 80, 500, 14, true, 'Express delivery')
+            ->build();
+
+        self::assertNotNull($document->acroForm);
+        self::assertCount(1, $document->acroForm->fields);
+        self::assertInstanceOf(RadioButtonGroup::class, $document->acroForm->fields[0]);
+        self::assertCount(2, $document->acroForm->fields[0]->choices);
+        self::assertSame('Delivery method', $document->acroForm->fields[0]->alternativeName);
+    }
+
+    public function testItAddsAComboBoxToTheCurrentPageAcroForm(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->build();
+
+        self::assertInstanceOf(ComboBoxField::class, $document->acroForm?->fields[0]);
+        self::assertSame('done', $document->acroForm?->fields[0]->value);
+    }
+
+    public function testItAddsAListBoxToTheCurrentPageAcroForm(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->listBox('skills', 40, 500, 120, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php', 'pdf'], 'Skills')
+            ->build();
+
+        self::assertInstanceOf(ListBoxField::class, $document->acroForm?->fields[0]);
+        self::assertSame(['php', 'pdf'], $document->acroForm?->fields[0]->value);
+    }
+
+    public function testItAddsAPushButtonToTheCurrentPageAcroForm(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->pushButton('open_docs', 'Open docs', 40, 500, 120, 18, 'Open documentation', 'https://example.com/docs')
+            ->build();
+
+        self::assertInstanceOf(PushButtonField::class, $document->acroForm?->fields[0]);
+        self::assertSame('Open docs', $document->acroForm?->fields[0]->label);
+        self::assertSame('https://example.com/docs', $document->acroForm?->fields[0]->url);
+    }
+
+    public function testItAddsASignatureFieldToTheCurrentPageAcroForm(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->newPage()
+            ->signatureField('approval_signature', 40, 500, 140, 28, 'Approval signature')
+            ->build();
+
+        self::assertInstanceOf(SignatureField::class, $document->acroForm?->fields[0]);
+        self::assertSame('approval_signature', $document->acroForm?->fields[0]->name);
+        self::assertSame(2, $document->acroForm?->fields[0]->pageNumber);
+        self::assertSame('Approval signature', $document->acroForm?->fields[0]->alternativeName);
+    }
+
     public function testItRegistersImageResourcesAndPlacementCommands(): void
     {
         $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
@@ -213,6 +371,53 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame('P', $document->taggedTextBlocks[1]->tag);
         self::assertStringContainsString("/H1 << /MCID 0 >> BDC\nBT", $document->pages[0]->contents);
         self::assertStringContainsString("/P << /MCID 1 >> BDC\nBT", $document->pages[0]->contents);
+    }
+
+    public function testItBuildsTaggedBulletLists(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->list(
+                ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
+                text: new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    width: 240,
+                ),
+            )
+            ->build();
+
+        self::assertCount(1, $document->taggedLists);
+        self::assertCount(2, $document->taggedLists[0]->items);
+        self::assertStringContainsString("/Lbl << /MCID 0 >> BDC\nBT", $document->pages[0]->contents);
+        self::assertStringContainsString("/LBody << /MCID 1 >> BDC\nBT", $document->pages[0]->contents);
+        self::assertStringContainsString("/Lbl << /MCID 2 >> BDC\nBT", $document->pages[0]->contents);
+        self::assertStringContainsString("/LBody << /MCID 3 >> BDC\nBT", $document->pages[0]->contents);
+    }
+
+    public function testItBuildsTaggedNumberedLists(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->list(
+                ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
+                new ListOptions(type: ListType::NUMBERED, start: 7),
+                new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    width: 240,
+                ),
+            )
+            ->build();
+
+        self::assertCount(1, $document->taggedLists);
+        self::assertCount(2, $document->taggedLists[0]->items);
+        self::assertStringContainsString('/Lbl << /MCID 0 >> BDC', $document->pages[0]->contents);
+        self::assertStringContainsString('/LBody << /MCID 1 >> BDC', $document->pages[0]->contents);
+        self::assertStringContainsString('<00010002> Tj', $document->pages[0]->contents);
+        self::assertStringContainsString('<00130002> Tj', $document->pages[0]->contents);
     }
 
     public function testItAddsLinkAnnotationsToTheCurrentPage(): void

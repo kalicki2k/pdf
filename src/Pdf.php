@@ -8,6 +8,9 @@ use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentBuilder;
 use Kalle\Pdf\Document\DocumentRenderer;
+use Kalle\Pdf\Document\Signature\DocumentSigner;
+use Kalle\Pdf\Document\Signature\OpenSslPemSigningCredentials;
+use Kalle\Pdf\Document\Signature\PdfSignatureOptions;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Text\TextMeasurer;
 use Kalle\Pdf\Writer\FileOutput;
@@ -63,6 +66,23 @@ final readonly class Pdf
         self::render($document, $output);
 
         return $output->contents();
+    }
+
+    public static function renderSigned(
+        Document $document,
+        Output $output,
+        OpenSslPemSigningCredentials $credentials,
+        PdfSignatureOptions $options,
+    ): void {
+        new DocumentSigner()->write($document, $output, $credentials, $options);
+    }
+
+    public static function signedContents(
+        Document $document,
+        OpenSslPemSigningCredentials $credentials,
+        PdfSignatureOptions $options,
+    ): string {
+        return (new DocumentSigner())->contents($document, $credentials, $options);
     }
 
     public static function measureTextWidth(string $text, float $fontSize, string | StandardFont $font = StandardFont::HELVETICA): float

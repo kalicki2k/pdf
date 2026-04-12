@@ -5,13 +5,32 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function count;
+use function file_exists;
+use function file_get_contents;
 use function implode;
 
 use InvalidArgumentException;
 
+use function is_readable;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Attachment\EmbeddedFile;
+use Kalle\Pdf\Document\Attachment\FileAttachment;
+use Kalle\Pdf\Document\Form\AcroForm;
+use Kalle\Pdf\Document\Form\CheckboxField;
+use Kalle\Pdf\Document\Form\ComboBoxField;
+use Kalle\Pdf\Document\Form\ListBoxField;
+use Kalle\Pdf\Document\Form\PushButtonField;
+use Kalle\Pdf\Document\Form\RadioButtonChoice;
+use Kalle\Pdf\Document\Form\RadioButtonGroup;
+use Kalle\Pdf\Document\Form\SignatureField;
+use Kalle\Pdf\Document\Form\TextField;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\TaggedPdf\TaggedList;
+use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
+use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
@@ -97,7 +116,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private array $taggedTables = [];
     /** @var list<array{tag: string, pageIndex: int, markedContentId: int}> */
     private array $taggedTextBlocks = [];
+    /** @var array<int, list<array{label: array{pageIndex: int, markedContentId: int}, body: array{pageIndex: int, markedContentId: int}}>> */
+    private array $taggedLists = [];
     private int $nextTaggedTableId = 0;
+    private int $nextTaggedListId = 0;
     private ?Margin $currentPageMargin = null;
     private ?float $currentPageCursorY = null;
     private ?Color $currentPageBackgroundColor = null;
@@ -112,6 +134,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private ?PdfAOutputIntent $pdfaOutputIntent = null;
     private ?Encryption $encryption = null;
     private ?Profile $profile = null;
+    /** @var list<FileAttachment> */
+    private array $attachments = [];
+    private ?AcroForm $acroForm = null;
 
     public static function make(): self
     {
@@ -236,6 +261,104 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->renderTextBlock($text, $options, 'H' . $level);
     }
 
+    /**
+     * @param list<string> $items
+     */
+    public function list(array $items, ?ListOptions $list = null, ?TextOptions $text = null): DocumentBuilder
+    {
+        $clone = clone $this;
+        $list ??= new ListOptions();
+        $text ??= new TextOptions();
+
+        if ($items === []) {
+            return $clone;
+        }
+
+        $font = $text->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($text->embeddedFont)
+            : StandardFontDefinition::from($text->fontName);
+        $textFlow = $clone->textFlow();
+        $placement = $textFlow->placement($text, $font);
+        $baseX = $placement['x'];
+        $currentY = $placement['y'];
+        $lineHeight = $textFlow->lineHeight($text);
+        $indent = max($text->fontSize * 1.5, 18.0);
+        $markerGap = max($text->fontSize * 0.5, 6.0);
+        $markerWidth = max($indent - $markerGap, 0.0);
+        $taggedListId = $clone->requiresTaggedStructure() ? $clone->nextTaggedListId++ : null;
+
+        foreach ($items as $index => $item) {
+            if ($item === '') {
+                throw new InvalidArgumentException(sprintf(
+                    'List item %d must not be empty.',
+                    $index + 1,
+                ));
+            }
+
+            $labelMarkedContentId = $taggedListId !== null ? $clone->nextTaggedMarkedContentId() : null;
+            $bodyMarkedContentId = $taggedListId !== null ? $clone->nextTaggedMarkedContentId() : null;
+            $labelOptions = $this->copyTextOptions(
+                $text,
+                x: $baseX,
+                y: $currentY,
+                width: $markerWidth > 0.0 ? $markerWidth : null,
+                spacingBefore: null,
+                spacingAfter: null,
+            );
+            $bodyWidth = $text->width !== null
+                ? max($text->width - $indent, 0.0)
+                : null;
+            $bodyOptions = $this->copyTextOptions(
+                $text,
+                x: $baseX + $indent,
+                y: $currentY,
+                width: $bodyWidth,
+                spacingBefore: null,
+                spacingAfter: null,
+            );
+            $labelResult = $clone->renderTextBlockAt(
+                $this->listItemLabel($list, $index),
+                $labelOptions,
+                $font,
+                $textFlow,
+                $baseX,
+                $currentY,
+                'Lbl',
+                $labelMarkedContentId,
+            );
+            $bodyResult = $clone->renderTextBlockAt(
+                $item,
+                $bodyOptions,
+                $font,
+                $textFlow,
+                $baseX + $indent,
+                $currentY,
+                'LBody',
+                $bodyMarkedContentId,
+            );
+
+            $clone->currentPageContents = $this->appendPageContent(
+                $clone->currentPageContents,
+                $this->appendPageContent($labelResult['contents'], $bodyResult['contents']),
+            );
+            $clone->currentPageAnnotations = [
+                ...$clone->currentPageAnnotations,
+                ...$labelResult['annotations'],
+                ...$bodyResult['annotations'],
+            ];
+
+            if ($taggedListId !== null && $labelMarkedContentId !== null && $bodyMarkedContentId !== null) {
+                $clone->registerTaggedListItem($taggedListId, $labelMarkedContentId, $bodyMarkedContentId);
+            }
+
+            $currentY -= $lineHeight * max($bodyResult['lineCount'], 1);
+        }
+
+        $clone->currentPageCursorY = $currentY - ($text->spacingAfter ?? 0.0);
+
+        return $clone;
+    }
+
     public function textSegments(array $segments, ?TextOptions $options = null): DocumentBuilder
     {
         $clone = clone $this;
@@ -257,7 +380,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, []);
         $markedContentTag = $clone->defaultTaggedTextTag();
-        $markedContentId = $markedContentTag !== null ? $clone->nextMarkedContentId() : null;
+        $markedContentId = $clone->nextTaggedMarkedContentId();
         $textResult = $clone->buildWrappedTextSegmentsContent(
             $wrappedSegmentLines,
             $options,
@@ -312,7 +435,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $footerLayout = $table->footerRows === []
             ? null
             : $calculator->layoutRows($table->footerRows, $table, $columnWidths, new TextFlow($page), $font);
-        $taggedTableId = ($clone->profile ?? Profile::standard())->requiresTaggedPdf()
+        $taggedTableId = $clone->requiresTaggedStructure()
             ? $clone->registerTaggedTable($headerLayout, $tableLayout, $footerLayout)
             : null;
         $explicitStartY = $table->placement?->y;
@@ -505,6 +628,279 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?ImageAccessibility $accessibility = null,
     ): DocumentBuilder {
         return $this->image(ImageSource::fromPath($path), $placement, $accessibility);
+    }
+
+    public function attachment(
+        string $filename,
+        string $contents,
+        ?string $description = null,
+        ?string $mimeType = null,
+        ?AssociatedFileRelationship $associatedFileRelationship = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->attachments[] = new FileAttachment(
+            $filename,
+            new EmbeddedFile($contents, $mimeType),
+            $description,
+            $associatedFileRelationship,
+        );
+
+        return $clone;
+    }
+
+    public function attachmentFromFile(
+        string $path,
+        ?string $filename = null,
+        ?string $description = null,
+        ?string $mimeType = null,
+        ?AssociatedFileRelationship $associatedFileRelationship = null,
+    ): DocumentBuilder {
+        if (!file_exists($path)) {
+            throw new InvalidArgumentException(sprintf(
+                "Attachment file '%s' does not exist.",
+                $path,
+            ));
+        }
+
+        if (!is_readable($path)) {
+            throw new InvalidArgumentException(sprintf(
+                "Attachment file '%s' could not be read.",
+                $path,
+            ));
+        }
+
+        $contents = file_get_contents($path);
+
+        if ($contents === false) {
+            throw new InvalidArgumentException(sprintf(
+                "Attachment file '%s' could not be read.",
+                $path,
+            ));
+        }
+
+        return $this->attachment(
+            $filename ?? basename($path),
+            $contents,
+            $description,
+            $mimeType,
+            $associatedFileRelationship,
+        );
+    }
+
+    public function textField(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $value = null,
+        ?string $alternativeName = null,
+        ?string $defaultValue = null,
+        float $fontSize = 12.0,
+        bool $multiline = false,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->acroForm = ($clone->acroForm ?? new AcroForm())->withField(
+            new TextField(
+                name: $name,
+                pageNumber: count($clone->pages) + 1,
+                x: $x,
+                y: $y,
+                width: $width,
+                height: $height,
+                value: $value,
+                alternativeName: $alternativeName,
+                defaultValue: $defaultValue,
+                fontSize: $fontSize,
+                multiline: $multiline,
+            ),
+        );
+
+        return $clone;
+    }
+
+    public function checkbox(
+        string $name,
+        float $x,
+        float $y,
+        float $size,
+        bool $checked = false,
+        ?string $alternativeName = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->acroForm = ($clone->acroForm ?? new AcroForm())->withField(
+            new CheckboxField(
+                name: $name,
+                pageNumber: count($clone->pages) + 1,
+                x: $x,
+                y: $y,
+                size: $size,
+                checked: $checked,
+                alternativeName: $alternativeName,
+            ),
+        );
+
+        return $clone;
+    }
+
+    public function radioButton(
+        string $groupName,
+        string $exportValue,
+        float $x,
+        float $y,
+        float $size,
+        bool $checked = false,
+        ?string $alternativeName = null,
+        ?string $groupAlternativeName = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $acroForm = $clone->acroForm ?? new AcroForm();
+        $existingField = $acroForm->field($groupName);
+
+        if ($existingField !== null && !$existingField instanceof RadioButtonGroup) {
+            throw new InvalidArgumentException(sprintf(
+                'AcroForm field "%s" is already registered with a different field type.',
+                $groupName,
+            ));
+        }
+
+        $group = $existingField ?? new RadioButtonGroup($groupName, alternativeName: $groupAlternativeName);
+
+        if ($groupAlternativeName !== null && $existingField instanceof RadioButtonGroup) {
+            $group = new RadioButtonGroup($group->name, $group->choices, $groupAlternativeName);
+        }
+
+        $group = $group->withChoice(new RadioButtonChoice(
+            pageNumber: count($clone->pages) + 1,
+            x: $x,
+            y: $y,
+            size: $size,
+            exportValue: $exportValue,
+            checked: $checked,
+            alternativeName: $alternativeName,
+        ));
+
+        $clone->acroForm = $acroForm->replacingField($group);
+
+        return $clone;
+    }
+
+    public function comboBox(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $options,
+        ?string $value = null,
+        ?string $alternativeName = null,
+        ?string $defaultValue = null,
+        float $fontSize = 12.0,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->acroForm = ($clone->acroForm ?? new AcroForm())->withField(
+            new ComboBoxField(
+                name: $name,
+                pageNumber: count($clone->pages) + 1,
+                x: $x,
+                y: $y,
+                width: $width,
+                height: $height,
+                options: $options,
+                value: $value,
+                alternativeName: $alternativeName,
+                defaultValue: $defaultValue,
+                fontSize: $fontSize,
+            ),
+        );
+
+        return $clone;
+    }
+
+    public function listBox(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        array $options,
+        string | array | null $value = null,
+        ?string $alternativeName = null,
+        string | array | null $defaultValue = null,
+        float $fontSize = 12.0,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->acroForm = ($clone->acroForm ?? new AcroForm())->withField(
+            new ListBoxField(
+                name: $name,
+                pageNumber: count($clone->pages) + 1,
+                x: $x,
+                y: $y,
+                width: $width,
+                height: $height,
+                options: $options,
+                value: $value,
+                alternativeName: $alternativeName,
+                defaultValue: $defaultValue,
+                fontSize: $fontSize,
+            ),
+        );
+
+        return $clone;
+    }
+
+    public function pushButton(
+        string $name,
+        string $label,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $alternativeName = null,
+        ?string $url = null,
+        float $fontSize = 12.0,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->acroForm = ($clone->acroForm ?? new AcroForm())->withField(
+            new PushButtonField(
+                name: $name,
+                pageNumber: count($clone->pages) + 1,
+                x: $x,
+                y: $y,
+                width: $width,
+                height: $height,
+                label: $label,
+                alternativeName: $alternativeName,
+                url: $url,
+                fontSize: $fontSize,
+            ),
+        );
+
+        return $clone;
+    }
+
+    public function signatureField(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $alternativeName = null,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->acroForm = ($clone->acroForm ?? new AcroForm())->withField(
+            new SignatureField(
+                name: $name,
+                pageNumber: count($clone->pages) + 1,
+                x: $x,
+                y: $y,
+                width: $width,
+                height: $height,
+                alternativeName: $alternativeName,
+            ),
+        );
+
+        return $clone;
     }
 
     public function textAnnotation(
@@ -984,6 +1380,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             encryption: $this->encryption,
             taggedTables: $this->buildTaggedTables(),
             taggedTextBlocks: $this->buildTaggedTextBlocks(),
+            attachments: $this->attachments,
+            acroForm: $this->acroForm,
+            taggedLists: $this->buildTaggedLists(),
         );
     }
 
@@ -1629,8 +2028,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?int $taggedTableId = null,
     ): void {
         $shapedLines = $this->shapeWrappedTextLines($captionLayout['wrappedLines'], $captionLayout['textOptions'], $font);
-        $renderState = $this->prepareTextRenderState($caption->text, $captionLayout['textOptions'], $font, $shapedLines);
-        $markedContentId = $taggedTableId !== null ? $this->nextMarkedContentId() : null;
+        $renderState = $this->prepareTextRenderState(
+            $caption->text,
+            $captionLayout['textOptions'],
+            $font,
+            $shapedLines,
+            ($this->profile ?? Profile::standard())->requiresEmbeddedUnicodeFonts(),
+        );
+        $markedContentId = $taggedTableId !== null ? $this->nextTaggedMarkedContentId() : null;
         $textResult = $this->buildWrappedTextContent(
             $captionLayout['wrappedLines'],
             $shapedLines,
@@ -1650,7 +2055,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageContents = $this->appendPageContent($this->currentPageContents, $textResult['contents']);
         $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
 
-        if ($taggedTableId !== null) {
+        if ($taggedTableId !== null && $markedContentId !== null) {
             $this->addTaggedTableCaptionReference($taggedTableId, $markedContentId);
         }
     }
@@ -1804,7 +2209,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $shapedLines = $cellLayout->usesRichText()
             ? []
             : $this->shapeWrappedTextLines($cellLayout->wrappedLines, $cellLayout->textOptions, $font);
-        $renderState = $this->prepareTextRenderState($cellLayout->cell->text, $cellLayout->textOptions, $font, $shapedLines);
+        $renderState = $this->prepareTextRenderState(
+            $cellLayout->cell->text,
+            $cellLayout->textOptions,
+            $font,
+            $shapedLines,
+            ($this->profile ?? Profile::standard())->requiresEmbeddedUnicodeFonts(),
+        );
         $cellHeight = $tableLayout->cellHeight($cellLayout);
         $cellBottomOffset = $cellTopOffset + $cellHeight;
         $segmentBottomOffset = $segmentOffset + $segmentHeight;
@@ -1831,7 +2242,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $markedContentId = $taggedTableId !== null && $taggedSection !== null
-            ? $this->nextMarkedContentId()
+            ? $this->nextTaggedMarkedContentId()
             : null;
         $segmentText = $this->visibleWrappedTextContentForCellSegment(
             $cellLayout,
@@ -2202,10 +2613,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function addTaggedTableCaptionReference(int $tableId, int $markedContentId): void
     {
-        $this->taggedTables[$tableId]['captionReferences'][] = [
-            'pageIndex' => count($this->pages),
-            'markedContentId' => $markedContentId,
-        ];
+        $this->taggedTables[$tableId]['captionReferences'][] = $this->taggedContentReference($markedContentId);
     }
 
     private function addTaggedTableCellReference(
@@ -2220,10 +2628,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'footer' => 'footerRows',
             default => 'bodyRows',
         };
-        $this->taggedTables[$tableId][$sectionKey][$rowIndex]['cells'][$columnIndex]['references'][] = [
-            'pageIndex' => count($this->pages),
-            'markedContentId' => $markedContentId,
-        ];
+        $this->taggedTables[$tableId][$sectionKey][$rowIndex]['cells'][$columnIndex]['references'][] = $this->taggedContentReference($markedContentId);
     }
 
     /**
@@ -2267,18 +2672,75 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
     }
 
+    /**
+     * @return list<TaggedList>
+     */
+    private function buildTaggedLists(): array
+    {
+        $taggedLists = [];
+
+        foreach ($this->taggedLists as $listId => $items) {
+            $taggedLists[] = new TaggedList(
+                listId: $listId,
+                items: array_map(
+                    static fn (array $item): TaggedListItem => new TaggedListItem(
+                        labelReference: new TaggedListContentReference(
+                            $item['label']['pageIndex'],
+                            $item['label']['markedContentId'],
+                        ),
+                        bodyReference: new TaggedListContentReference(
+                            $item['body']['pageIndex'],
+                            $item['body']['markedContentId'],
+                        ),
+                    ),
+                    $items,
+                ),
+            );
+        }
+
+        return $taggedLists;
+    }
+
     private function registerTaggedTextBlock(string $tag, int $markedContentId): void
     {
         $this->taggedTextBlocks[] = [
             'tag' => $tag,
-            'pageIndex' => count($this->pages),
-            'markedContentId' => $markedContentId,
+            ...$this->taggedContentReference($markedContentId),
+        ];
+    }
+
+    private function registerTaggedListItem(int $listId, int $labelMarkedContentId, int $bodyMarkedContentId): void
+    {
+        $this->taggedLists[$listId][] = [
+            'label' => $this->taggedContentReference($labelMarkedContentId),
+            'body' => $this->taggedContentReference($bodyMarkedContentId),
         ];
     }
 
     private function defaultTaggedTextTag(): ?string
     {
-        return ($this->profile ?? Profile::standard())->requiresTaggedPdf() ? 'P' : null;
+        return $this->requiresTaggedStructure() ? 'P' : null;
+    }
+
+    private function requiresTaggedStructure(): bool
+    {
+        return ($this->profile ?? Profile::standard())->requiresTaggedPdf();
+    }
+
+    private function nextTaggedMarkedContentId(): ?int
+    {
+        return $this->requiresTaggedStructure() ? $this->nextMarkedContentId() : null;
+    }
+
+    /**
+     * @return array{pageIndex: int, markedContentId: int}
+     */
+    private function taggedContentReference(int $markedContentId): array
+    {
+        return [
+            'pageIndex' => count($this->pages),
+            'markedContentId' => $markedContentId,
+        ];
     }
 
     private function renderTextBlock(string $text, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
@@ -2293,10 +2755,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
         $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, $shapedLines);
-        $markedContentTag = $taggedTextTag !== null && ($clone->profile ?? Profile::standard())->requiresTaggedPdf()
+        $markedContentTag = $taggedTextTag !== null && $clone->requiresTaggedStructure()
             ? $taggedTextTag
             : null;
-        $markedContentId = $markedContentTag !== null ? $clone->nextMarkedContentId() : null;
+        $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
 
         $textResult = $clone->buildWrappedTextContent(
             $wrappedLines,
@@ -2325,6 +2787,89 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $clone;
+    }
+
+    /**
+     * @return array{contents: string, annotations: list<PageAnnotation>, lineCount: int}
+     */
+    private function renderTextBlockAt(
+        string $text,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        TextFlow $textFlow,
+        float $x,
+        float $y,
+        ?string $markedContentTag,
+        ?int $markedContentId,
+    ): array {
+        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $x);
+        $shapedLines = $this->shapeWrappedTextLines($wrappedLines, $options, $font);
+        $renderState = $this->prepareTextRenderState(
+            $text,
+            $options,
+            $font,
+            $shapedLines,
+            ($this->profile ?? Profile::standard())->isPdfA() && $font instanceof EmbeddedFontDefinition,
+        );
+        $textResult = $this->buildWrappedTextContent(
+            $wrappedLines,
+            $shapedLines,
+            $options,
+            $textFlow,
+            $x,
+            $y,
+            $renderState['fontAlias'],
+            $font,
+            $renderState['embeddedPageFont'],
+            $renderState['useHexString'],
+            ($this->profile ?? Profile::standard())->version(),
+            $markedContentTag,
+            $markedContentId,
+        );
+
+        return [
+            'contents' => $textResult['contents'],
+            'annotations' => $textResult['annotations'],
+            'lineCount' => count($wrappedLines),
+        ];
+    }
+
+    private function copyTextOptions(
+        TextOptions $options,
+        ?float $x = null,
+        ?float $y = null,
+        ?float $width = null,
+        ?float $spacingBefore = null,
+        ?float $spacingAfter = null,
+    ): TextOptions {
+        return new TextOptions(
+            x: $x,
+            y: $y,
+            width: $width,
+            maxWidth: $options->maxWidth,
+            fontSize: $options->fontSize,
+            lineHeight: $options->lineHeight,
+            spacingBefore: $spacingBefore,
+            spacingAfter: $spacingAfter,
+            fontName: $options->fontName,
+            embeddedFont: $options->embeddedFont,
+            fontEncoding: $options->fontEncoding,
+            color: $options->color,
+            kerning: $options->kerning,
+            baseDirection: $options->baseDirection,
+            align: $options->align,
+            firstLineIndent: $options->firstLineIndent,
+            hangingIndent: $options->hangingIndent,
+            link: $options->link,
+        );
+    }
+
+    private function listItemLabel(ListOptions $list, int $index): string
+    {
+        return match ($list->type) {
+            ListType::BULLET => $list->marker ?? "\xE2\x80\xA2",
+            ListType::NUMBERED => sprintf($list->marker ?? '%d.', $list->start + $index),
+        };
     }
 
     /**
@@ -2438,9 +2983,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
         TextOptions $options,
         StandardFontDefinition | EmbeddedFontDefinition $font,
         array $shapedLines,
+        bool $forceUnicodeEmbeddedFont = false,
     ): array {
         $usesUnicodeEmbeddedFont = $font instanceof EmbeddedFontDefinition
             && (
+                $forceUnicodeEmbeddedFont
+                ||
                 !$font->supportsText($text)
                 || $this->containsShapedEmbeddedGlyphIds($shapedLines)
             );
