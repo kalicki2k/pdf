@@ -35,9 +35,29 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+## Links
+
+Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` an Link-Annotationen gebunden werden. Bei PDF/UA-Profilen dient der letzte Parameter aktuell zugleich als Annotation-`/Contents` und als Alternativtext fuer die Link-Struktur.
+
+```php
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+
+$document = DefaultDocumentBuilder::make()
+    ->text('Projektseite')
+    ->link('https://example.com', 40, 500, 120, 16, 'Projektseite oeffnen')
+    ->namedDestination('intro')
+    ->newPage()
+    ->linkToPage(1, 40, 500, 120, 16, 'Zurueck zur ersten Seite')
+    ->linkToPagePosition(1, 72, 720, 40, 470, 160, 16, 'Zur Ueberschrift')
+    ->text('Zur Einleitung', new \Kalle\Pdf\Text\TextOptions(
+        link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+    ))
+    ->build();
+```
+
 ## Tabellen
 
-Die erste Tabelleniteration unterstützt Textzellen mit festen oder proportionalen Spaltenbreiten, Padding, einfachen Borders, `colspan`/`rowspan` und deterministischen Seitenumbrüchen zwischen ganzen Zeilen bzw. zusammenhängenden `rowspan`-Gruppen.
+Die erste Tabelleniteration unterstützt Textzellen mit festen oder proportionalen Spaltenbreiten, Padding, einfachen Borders, `colspan`/`rowspan`, optionale Header-Zeilen mit Wiederholung auf Folgeseiten und deterministische Seitenumbrüche zwischen ganzen Zeilen bzw. zusammenhängenden `rowspan`-Gruppen.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -51,10 +71,11 @@ $table = Table::define(
     TableColumn::proportional(1),
 )
     ->withCellPadding(CellPadding::all(6))
+    ->withHeaderRows(
+        TableRow::fromTexts('Artikel', 'Beschreibung'),
+    )
+    ->withRepeatedHeaderOnPageBreak()
     ->withRows(
-        TableRow::fromCells(
-            \Kalle\Pdf\Document\TableCell::text('Artikel / Beschreibung', colspan: 2),
-        ),
         TableRow::fromCells(
             \Kalle\Pdf\Document\TableCell::text('A-100', rowspan: 2),
             \Kalle\Pdf\Document\TableCell::text('Kompakter Einstieg in das Tabellenlayout von pdf2.'),
@@ -130,6 +151,22 @@ PHPUnit im Container ausführen:
 
 ```bash
 make test
+```
+
+veraPDF im Container ausführen:
+
+```bash
+make verapdf-version
+make validate-pdfa PDF=var/example.pdf
+make validate-pdfua PDF=var/example.pdf
+make check-pdf PDF=var/example.pdf
+```
+
+Alternativ direkt über die Skripte:
+
+```bash
+bin/validate-pdfa.sh var/example.pdf
+bin/validate-pdfua.sh var/example.pdf
 ```
 
 Compose-Services starten:

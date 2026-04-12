@@ -17,12 +17,22 @@ use const ENT_XML1;
 
 final readonly class XmpMetadata
 {
-    public function objectContents(Document $document, ?DateTimeInterface $serializedAt = null): string
+    public function streamDictionaryContents(Document $document, ?DateTimeInterface $serializedAt = null): string
     {
         $xml = $this->xml($document, $serializedAt);
 
-        return '<< /Type /Metadata /Subtype /XML /Length ' . strlen($xml) . " >>\nstream\n"
-            . $xml
+        return '<< /Type /Metadata /Subtype /XML /Length ' . strlen($xml) . ' >>';
+    }
+
+    public function streamContents(Document $document, ?DateTimeInterface $serializedAt = null): string
+    {
+        return $this->xml($document, $serializedAt);
+    }
+
+    public function objectContents(Document $document, ?DateTimeInterface $serializedAt = null): string
+    {
+        return $this->streamDictionaryContents($document, $serializedAt) . "\nstream\n"
+            . $this->streamContents($document, $serializedAt)
             . 'endstream';
     }
 
@@ -54,9 +64,12 @@ final readonly class XmpMetadata
 
         if ($document->creatorTool !== null) {
             $lines[] = '    <pdf:Producer>' . $this->escape($document->creatorTool) . '</pdf:Producer>';
-            $lines[] = '    <xmp:CreatorTool>' . $this->escape($document->creatorTool) . '</xmp:CreatorTool>';
-        } elseif ($document->creator !== null) {
+        }
+
+        if ($document->creator !== null) {
             $lines[] = '    <xmp:CreatorTool>' . $this->escape($document->creator) . '</xmp:CreatorTool>';
+        } elseif ($document->creatorTool !== null) {
+            $lines[] = '    <xmp:CreatorTool>' . $this->escape($document->creatorTool) . '</xmp:CreatorTool>';
         }
 
         $lines[] = '    <xmp:CreateDate>' . $timestamp . '</xmp:CreateDate>';

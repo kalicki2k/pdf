@@ -89,6 +89,17 @@ final class EmbeddedFontDefinitionTest extends TestCase
         self::assertLessThan(strlen(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()), $this->extractLength($subsetStream));
     }
 
+    public function testItScalesPdfWidthsForUnicodeCidFontsToPdfTextSpace(): void
+    {
+        $font = EmbeddedFontDefinition::fromSource(
+            EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+        );
+        $glyphs = $font->embeddedGlyphsForCodePoints([0x0041]);
+        $contents = $font->unicodeCidFontObjectContentsForGlyphs(8, 9, $glyphs);
+
+        self::assertStringContainsString('/W [1 [690]]', $contents);
+    }
+
     private function extractLength(string $stream): int
     {
         self::assertMatchesRegularExpression('/\\/Length ([0-9]+)/', $stream);

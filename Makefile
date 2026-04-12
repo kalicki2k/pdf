@@ -38,29 +38,29 @@ php-version:
 qpdf-version:
 	$(DOCKER_COMPOSE) run --rm qpdf qpdf --version
 
-# verapdf-version:
-# 	$(DOCKER_COMPOSE) run --rm verapdf --version
+verapdf-version:
+	$(DOCKER_COMPOSE) run --rm verapdf --version
 
 check-qpdf:
 	@if [ -z "$(PDF)" ]; then echo "Usage: make check-qpdf PDF=path/to/file.pdf"; exit 1; fi
 	$(DOCKER_COMPOSE) run --rm qpdf qpdf --check "$(PDF)"
 
-# check-verapdf:
-# 	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-verapdf PDF=path/to/file.pdf"; exit 1; fi
-# 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose "/app/$(PDF)"
+check-verapdf:
+	@if [ -z "$(PDF)" ]; then echo "Usage: make check-verapdf PDF=path/to/file.pdf"; exit 1; fi
+	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose "/app/$(PDF)"
 
-# validate-pdfa:
-# 	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-pdfa PDF=path/to/file.pdf"; exit 1; fi
-# 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose "/app/$(PDF)"
+validate-pdfa:
+	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-pdfa PDF=path/to/file.pdf"; exit 1; fi
+	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose "/app/$(PDF)"
 
-# validate-pdfua:
-# 	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-pdfua PDF=path/to/file.pdf"; exit 1; fi
-# 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose --defaultflavour ua1 --flavour ua1 "/app/$(PDF)"
+validate-pdfua:
+	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-pdfua PDF=path/to/file.pdf"; exit 1; fi
+	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose --defaultflavour ua1 --flavour ua1 "/app/$(PDF)"
 
-# check-pdf:
-# 	@if [ -z "$(PDF)" ]; then echo "Usage: make check-pdf PDF=path/to/file.pdf"; exit 1; fi
-# 	$(MAKE) check-qpdf PDF="$(PDF)"
-# 	$(MAKE) check-verapdf PDF="$(PDF)"
+check-pdf:
+	@if [ -z "$(PDF)" ]; then echo "Usage: make check-pdf PDF=path/to/file.pdf"; exit 1; fi
+	$(MAKE) check-qpdf PDF="$(PDF)"
+	$(MAKE) check-verapdf PDF="$(PDF)"
 
 up:
 	$(DOCKER_COMPOSE) up

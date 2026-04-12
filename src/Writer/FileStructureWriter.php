@@ -15,6 +15,7 @@ final class FileStructureWriter
     public function writeHeader(FileStructure $fileStructure, Output $output): void
     {
         $output->write('%PDF-' . number_format($fileStructure->version, 1, '.', '') . "\n");
+        $output->write("%\xE2\xE3\xCF\xD3\n");
     }
 
     /**

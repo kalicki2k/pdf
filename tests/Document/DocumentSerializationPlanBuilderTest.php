@@ -83,7 +83,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertMatchesRegularExpression('/<xmp:CreateDate>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}<\/xmp:CreateDate>/', $objects[4]->contents);
         self::assertSame(6, $objects[5]->objectId);
         self::assertStringStartsWith(
-            '<< /Title (Example Title) /Author (Sebastian Kalicki) /Subject (Example Subject) /Creator (Kalle PDF) /Producer (pdf2 test suite) /CreationDate (',
+            '<< /Title (Example Title) /Author (Sebastian Kalicki) /Subject (Example Subject) /Creator (Kalle PDF) /Producer (pdf2 test suite) /CreationDate (D:',
             $objects[5]->contents,
         );
         self::assertStringContainsString('/ModDate (', $objects[5]->contents);
@@ -364,6 +364,26 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
     }
 
+    public function testItAddsNamedDestinationsToTheCatalogAndLinksCanReferenceThem(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->namedDestination('intro')
+            ->text('Open intro', new TextOptions(
+                link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+            ))
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/Dests << /intro [3 0 R /Fit] >>', $serialized);
+        self::assertStringContainsString('/Dest /intro', $serialized);
+    }
+
     public function testItRejectsCurrentLinkAnnotationsForPdfUaProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -410,6 +430,24 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('does not allow the current page annotation implementation because annotation appearance streams are required');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsCurrentTaggedTextLinksForPdfUaProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->text('Read more', new TextOptions(
+                link: \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com'),
+            ))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('does not support the current page annotation implementation');
 
         $builder->build($document);
     }

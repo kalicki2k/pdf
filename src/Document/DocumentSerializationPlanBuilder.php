@@ -28,6 +28,7 @@ use Kalle\Pdf\Font\OpenTypeOutlineType;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\NamedDestination;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
@@ -55,6 +56,7 @@ final class DocumentSerializationPlanBuilder
         $this->assertProfileRequirements($document);
         $this->assertImageAccessibilityRequirements($document);
         $this->assertAnnotationRequirements($document);
+        $this->assertNamedDestinationRequirements($document);
         $this->assertPdfARequirements($document);
         $serializedAt = new DateTimeImmutable('now');
 
@@ -133,6 +135,7 @@ final class DocumentSerializationPlanBuilder
 
         $taggedImageStructure = $this->collectTaggedImageStructure($document);
         $taggedLinkStructure = $this->collectTaggedLinkStructure($document, $taggedImageStructure['nextStructParentId']);
+        $namedDestinations = $this->collectNamedDestinations($document);
         $structTreeRootObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
         $documentStructElemObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
         $parentTreeObjectId = ($taggedImageStructure['parentTreeEntries'] !== [] || $taggedLinkStructure['parentTreeEntries'] !== [])
@@ -174,14 +177,22 @@ final class DocumentSerializationPlanBuilder
             );
             $objectEncryptor = new ObjectEncryptor($encryptionProfile, $securityHandlerData);
             $encryptObjectContents = $this->encryptDictionaryBuilder->build($encryptionProfile, $securityHandlerData);
+        } elseif ($document->profile->isPdfA()) {
+            $documentId = $this->generateDocumentId();
         }
 
         $objects = [
-            new IndirectObject(
+            IndirectObject::plain(
                 1,
-                $this->buildCatalogDictionary($document, $metadataObjectId, $iccProfileObjectId, $structTreeRootObjectId),
+                $this->buildCatalogDictionary(
+                    $document,
+                    $metadataObjectId,
+                    $iccProfileObjectId,
+                    $structTreeRootObjectId,
+                    $namedDestinations,
+                ),
             ),
-            new IndirectObject(
+            IndirectObject::plain(
                 2,
                 '<< /Type /Pages /Count ' . count($pageObjectIds) . ' /Kids [' . $this->buildKidsReferences($pageObjectIds) . '] >>',
             ),
@@ -192,7 +203,7 @@ final class DocumentSerializationPlanBuilder
             $contentObjectId = $contentObjectIds[$index];
             $annotationObjectIds = $pageAnnotationObjectIds[$index] ?? [];
 
-            $objects[] = new IndirectObject(
+            $objects[] = IndirectObject::plain(
                 $pageObjectId,
                 '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '
                 . $this->formatNumber($page->size->width()) . ' '
@@ -204,20 +215,22 @@ final class DocumentSerializationPlanBuilder
                 . $this->buildStructParentsEntry($taggedImageStructure['pageStructParentIds'][$index] ?? null)
                 . ' >>',
             );
-            $objects[] = new IndirectObject(
+            $objects[] = IndirectObject::stream(
                 $contentObjectId,
-                $this->buildContentStream($this->buildPageContents($page)),
+                $this->buildContentStreamDictionary($this->buildPageContents($page)),
+                $this->buildContentStreamContents($this->buildPageContents($page)),
             );
 
             foreach ($page->annotations as $annotationIndex => $annotation) {
                 $annotationKey = $index . ':' . $annotationIndex;
-                $objects[] = new IndirectObject(
+                $objects[] = IndirectObject::plain(
                     $annotationObjectIds[$annotationIndex],
                     $annotation->pdfObjectContents(
                         new PageAnnotationRenderContext(
                             pageObjectId: $pageObjectId,
                             printable: $document->profile->requiresPrintableAnnotations(),
                             pageObjectIdsByPageNumber: $this->pageObjectIdsByPageNumber($pageObjectIds),
+                            namedDestinations: $namedDestinations,
                             structParentId: $taggedLinkStructure['structParentIds'][$annotationKey] ?? null,
                         ),
                     ),
@@ -350,40 +363,52 @@ final class DocumentSerializationPlanBuilder
             foreach ($taggedLinkStructure['linkEntries'] as $linkEntry) {
                 $pageObjectId = $pageObjectIds[$linkEntry['pageIndex']];
                 $annotationObjectId = $pageAnnotationObjectIds[$linkEntry['pageIndex']][$linkEntry['annotationIndex']];
+                $kidEntries = [];
 
-                $objects[] = new IndirectObject(
+                if ($linkEntry['markedContentId'] !== null) {
+                    $kidEntries[] = (string) $linkEntry['markedContentId'];
+                }
+
+                $kidEntries[] = '<< /Type /OBJR /Obj ' . $annotationObjectId . ' 0 R /Pg ' . $pageObjectId . ' 0 R >>';
+
+                $objects[] = IndirectObject::plain(
                     $linkStructElemObjectIds[$linkEntry['key']],
                     (new StructElem(
                         'Link',
                         $documentStructElemObjectId,
                         pageObjectId: $pageObjectId,
                         altText: $linkEntry['altText'],
-                        kidEntries: [
-                            '<< /Type /OBJR /Obj ' . $annotationObjectId . ' 0 R /Pg ' . $pageObjectId . ' 0 R >>',
-                        ],
+                        kidEntries: $kidEntries,
                     ))->objectContents(),
                 );
             }
         }
 
         if ($metadataObjectId !== null) {
-            $objects[] = new IndirectObject($metadataObjectId, (new XmpMetadata())->objectContents($document, $serializedAt));
+            $xmpMetadata = new XmpMetadata();
+            $objects[] = IndirectObject::stream(
+                $metadataObjectId,
+                $xmpMetadata->streamDictionaryContents($document, $serializedAt),
+                $xmpMetadata->streamContents($document, $serializedAt),
+            );
         }
 
         if ($iccProfileObjectId !== null) {
             $outputIntent = $this->resolvePdfAOutputIntent($document);
-            $objects[] = new IndirectObject(
+            $iccProfile = IccProfile::fromPath($outputIntent->iccProfilePath, $outputIntent->colorComponents);
+            $objects[] = IndirectObject::stream(
                 $iccProfileObjectId,
-                IccProfile::fromPath($outputIntent->iccProfilePath, $outputIntent->colorComponents)->objectContents(),
+                $iccProfile->streamDictionaryContents(),
+                $iccProfile->streamContents(),
             );
         }
 
         if ($infoObjectId !== null) {
-            $objects[] = new IndirectObject($infoObjectId, $this->buildInfoDictionary($document, $serializedAt));
+            $objects[] = IndirectObject::plain($infoObjectId, $this->buildInfoDictionary($document, $serializedAt));
         }
 
         if ($encryptObjectId !== null) {
-            $objects[] = new IndirectObject(
+            $objects[] = IndirectObject::plain(
                 $encryptObjectId,
                 $encryptObjectContents,
                 false,
@@ -460,28 +485,30 @@ final class DocumentSerializationPlanBuilder
     {
         if ($document->profile->requiresAnnotationAppearanceStreams()) {
             foreach ($document->pages as $pageIndex => $page) {
-                if ($page->annotations === []) {
-                    continue;
-                }
+                foreach ($page->annotations as $annotation) {
+                    if ($annotation instanceof LinkAnnotation) {
+                        continue;
+                    }
 
-                throw new InvalidArgumentException(sprintf(
-                    'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page %d.',
-                    $document->profile->name(),
-                    $pageIndex + 1,
-                ));
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page %d.',
+                        $document->profile->name(),
+                        $pageIndex + 1,
+                    ));
+                }
             }
         }
 
         foreach ($document->pages as $pageIndex => $page) {
-            if (!$document->profile->supportsCurrentPageAnnotationsImplementation() && $page->annotations !== []) {
-                throw new InvalidArgumentException(sprintf(
-                    'Profile %s does not support the current page annotation implementation on page %d.',
-                    $document->profile->name(),
-                    $pageIndex + 1,
-                ));
-            }
-
             foreach ($page->annotations as $annotationIndex => $annotation) {
+                if (!$document->profile->supportsCurrentPageAnnotationsImplementation() && !$annotation instanceof LinkAnnotation) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s does not support the current page annotation implementation on page %d.',
+                        $document->profile->name(),
+                        $pageIndex + 1,
+                    ));
+                }
+
                 if (
                     $annotation instanceof LinkAnnotation
                     && (
@@ -497,6 +524,25 @@ final class DocumentSerializationPlanBuilder
                         $pageIndex + 1,
                     ));
                 }
+            }
+        }
+    }
+
+    private function assertNamedDestinationRequirements(Document $document): void
+    {
+        $destinations = [];
+
+        foreach ($document->pages as $pageIndex => $page) {
+            foreach ($page->namedDestinations as $destination) {
+                if (isset($destinations[$destination->name])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Named destination "%s" is defined more than once. Duplicate found on page %d.',
+                        $destination->name,
+                        $pageIndex + 1,
+                    ));
+                }
+
+                $destinations[$destination->name] = true;
             }
         }
     }
@@ -559,6 +605,7 @@ final class DocumentSerializationPlanBuilder
         ?int $metadataObjectId,
         ?int $iccProfileObjectId,
         ?int $structTreeRootObjectId,
+        array $namedDestinations,
     ): string
     {
         $entries = [
@@ -590,6 +637,14 @@ final class DocumentSerializationPlanBuilder
 
         if ($structTreeRootObjectId !== null) {
             $entries[] = '/StructTreeRoot ' . $structTreeRootObjectId . ' 0 R';
+        }
+
+        if ($namedDestinations !== []) {
+            $entries[] = '/Dests << ' . implode(' ', array_map(
+                static fn (string $name, string $destination): string => '/' . $name . ' ' . $destination,
+                array_keys($namedDestinations),
+                array_values($namedDestinations),
+            )) . ' >>';
         }
 
         return '<< ' . implode(' ', $entries) . ' >>';
@@ -684,7 +739,7 @@ final class DocumentSerializationPlanBuilder
 
     /**
      * @return array{
-     *   linkEntries: list<array{key: string, pageIndex: int, annotationIndex: int, altText: string}>,
+     *   linkEntries: list<array{key: string, pageIndex: int, annotationIndex: int, altText: string, markedContentId: ?int}>,
      *   parentTreeEntries: array<int, list<string>>,
      *   structParentIds: array<string, int>
      * }
@@ -715,6 +770,7 @@ final class DocumentSerializationPlanBuilder
                     'pageIndex' => $pageIndex,
                     'annotationIndex' => $annotationIndex,
                     'altText' => $annotation->contents ?? '',
+                    'markedContentId' => $annotation->markedContentId(),
                 ];
                 $structParentIds[$key] = $nextStructParentId;
                 $parentTreeEntries[$nextStructParentId] = [$key];
@@ -727,6 +783,30 @@ final class DocumentSerializationPlanBuilder
             'parentTreeEntries' => $parentTreeEntries,
             'structParentIds' => $structParentIds,
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function collectNamedDestinations(Document $document): array
+    {
+        $destinations = [];
+
+        foreach ($document->pages as $pageIndex => $page) {
+            foreach ($page->namedDestinations as $destination) {
+                $pageObjectId = 3 + ($pageIndex * 2);
+
+                $destinations[$this->pdfName($destination->name)] = $destination->isFit()
+                    ? '[' . $pageObjectId . ' 0 R /Fit]'
+                    : '[' . $pageObjectId . ' 0 R /XYZ '
+                        . $this->formatNumber($destination->x ?? 0.0)
+                        . ' '
+                        . $this->formatNumber($destination->y ?? 0.0)
+                        . ' null]';
+            }
+        }
+
+        return $destinations;
     }
 
     /**
@@ -806,7 +886,17 @@ final class DocumentSerializationPlanBuilder
 
     private function pdfDate(DateTimeImmutable $timestamp): string
     {
-        return $timestamp->format("YmdHisO");
+        $offset = $timestamp->format('O');
+
+        if ($offset === '+0000') {
+            return 'D:' . $timestamp->format('YmdHis') . 'Z';
+        }
+
+        return 'D:' . $timestamp->format('YmdHis')
+            . substr($offset, 0, 3)
+            . "'"
+            . substr($offset, 3, 2)
+            . "'";
     }
 
     private function generateDocumentId(): string
@@ -849,7 +939,33 @@ final class DocumentSerializationPlanBuilder
         ) . ')';
     }
 
-    private function buildContentStream(string $contents): string
+    private function pdfName(string $value): string
+    {
+        $encoded = '';
+
+        foreach (str_split($value) as $character) {
+            $ord = ord($character);
+
+            if (
+                ($ord >= 48 && $ord <= 57)
+                || ($ord >= 65 && $ord <= 90)
+                || ($ord >= 97 && $ord <= 122)
+                || $character === '-'
+                || $character === '_'
+                || $character === '.'
+            ) {
+                $encoded .= $character;
+
+                continue;
+            }
+
+            $encoded .= '#' . strtoupper(str_pad(dechex($ord), 2, '0', STR_PAD_LEFT));
+        }
+
+        return $encoded;
+    }
+
+    private function buildContentStreamDictionary(string $contents): string
     {
         $normalizedContents = $contents;
 
@@ -857,9 +973,16 @@ final class DocumentSerializationPlanBuilder
             $normalizedContents .= "\n";
         }
 
-        return '<< /Length ' . strlen($normalizedContents) . " >>\nstream\n"
-            . $normalizedContents
-            . 'endstream';
+        return '<< /Length ' . strlen($normalizedContents) . ' >>';
+    }
+
+    private function buildContentStreamContents(string $contents): string
+    {
+        if ($contents !== '' && !str_ends_with($contents, "\n")) {
+            return $contents . "\n";
+        }
+
+        return $contents;
     }
 
     private function buildPageContents(Page $page): string

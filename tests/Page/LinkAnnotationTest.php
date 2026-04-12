@@ -23,7 +23,7 @@ final class LinkAnnotationTest extends TestCase
         );
         self::assertSame(
             '<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 3 0 R /StructParent 7 /A << /S /URI /URI (https://example.com) >> /F 4 /Contents (Open Example) >>',
-            $annotation->pdfObjectContents(new PageAnnotationRenderContext(3, true, [1 => 3], 7)),
+            $annotation->pdfObjectContents(new PageAnnotationRenderContext(3, true, [1 => 3], [], 7)),
         );
     }
 
@@ -31,7 +31,8 @@ final class LinkAnnotationTest extends TestCase
     {
         $pageLink = new LinkAnnotation(LinkTarget::page(2), 10, 20, 80, 12);
         $positionLink = new LinkAnnotation(LinkTarget::position(2, 15, 25), 10, 20, 80, 12);
-        $context = new PageAnnotationRenderContext(3, false, [1 => 3, 2 => 7]);
+        $namedDestinationLink = new LinkAnnotation(LinkTarget::namedDestination('chapter-1'), 10, 20, 80, 12);
+        $context = new PageAnnotationRenderContext(3, false, [1 => 3, 2 => 7], ['chapter-1' => '/chapter-1']);
 
         self::assertSame(
             '<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 3 0 R /Dest [7 0 R /Fit] >>',
@@ -40,6 +41,10 @@ final class LinkAnnotationTest extends TestCase
         self::assertSame(
             '<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 3 0 R /Dest [7 0 R /XYZ 15 25 null] >>',
             $positionLink->pdfObjectContents($context),
+        );
+        self::assertSame(
+            '<< /Type /Annot /Subtype /Link /Rect [10 20 90 32] /Border [0 0 0] /P 3 0 R /Dest /chapter-1 >>',
+            $namedDestinationLink->pdfObjectContents($context),
         );
     }
 

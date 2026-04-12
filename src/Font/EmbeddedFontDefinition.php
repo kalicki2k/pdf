@@ -219,7 +219,7 @@ final readonly class EmbeddedFontDefinition
         for ($code = 32; $code <= 255; $code++) {
             $character = mb_convert_encoding(chr($code), 'UTF-8', 'Windows-1252');
             $glyphId = $this->parser->getGlyphIdForCharacter($character);
-            $widths[$code] = $this->parser->getAdvanceWidthForGlyphId($glyphId);
+            $widths[$code] = $this->pdfWidth($this->parser->getAdvanceWidthForGlyphId($glyphId));
         }
 
         return $widths;
@@ -284,11 +284,15 @@ final readonly class EmbeddedFontDefinition
         return '<< /Type /FontDescriptor'
             . ' /FontName /' . ($fontName ?? $this->metadata->postScriptName)
             . ' /Flags ' . $flags
-            . ' /FontBBox [' . $bbox->left . ' ' . $bbox->bottom . ' ' . $bbox->right . ' ' . $bbox->top . ']'
+            . ' /FontBBox ['
+            . $this->pdfMetric($bbox->left) . ' '
+            . $this->pdfMetric($bbox->bottom) . ' '
+            . $this->pdfMetric($bbox->right) . ' '
+            . $this->pdfMetric($bbox->top) . ']'
             . ' /ItalicAngle ' . $this->formatNumber($this->metadata->italicAngle)
-            . ' /Ascent ' . $this->metadata->ascent
-            . ' /Descent ' . $this->metadata->descent
-            . ' /CapHeight ' . $this->metadata->capHeight
+            . ' /Ascent ' . $this->pdfMetric($this->metadata->ascent)
+            . ' /Descent ' . $this->pdfMetric($this->metadata->descent)
+            . ' /CapHeight ' . $this->pdfMetric($this->metadata->capHeight)
             . ' /StemV 80'
             . ' /' . ($this->metadata->outlineType === OpenTypeOutlineType::CFF ? 'FontFile3' : 'FontFile2')
             . ' ' . $fontFileObjectId . ' 0 R'
@@ -356,7 +360,7 @@ final readonly class EmbeddedFontDefinition
             . ' /BaseFont /' . $this->unicodeBaseFontName($codePoints)
             . ' /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >>'
             . ' /FontDescriptor ' . $fontDescriptorObjectId . ' 0 R'
-            . ' /DW ' . $this->parser->getAdvanceWidthForGlyphId(0)
+            . ' /DW ' . $this->pdfWidth($this->parser->getAdvanceWidthForGlyphId(0))
             . ' /W ' . $this->unicodeWidthsArray($codePoints);
 
         if ($this->metadata->outlineType === OpenTypeOutlineType::TRUE_TYPE) {
@@ -383,7 +387,7 @@ final readonly class EmbeddedFontDefinition
             . ' /BaseFont /' . $this->unicodeBaseFontNameForGlyphs($glyphs)
             . ' /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >>'
             . ' /FontDescriptor ' . $fontDescriptorObjectId . ' 0 R'
-            . ' /DW ' . $this->parser->getAdvanceWidthForGlyphId(0)
+            . ' /DW ' . $this->pdfWidth($this->parser->getAdvanceWidthForGlyphId(0))
             . ' /W ' . $this->unicodeWidthsArrayForGlyphs($glyphs);
 
         if ($this->metadata->outlineType === OpenTypeOutlineType::TRUE_TYPE) {
@@ -540,9 +544,9 @@ final readonly class EmbeddedFontDefinition
         $entries = [];
 
         foreach ($codePoints as $index => $codePoint) {
-            $entries[] = (string) $this->unicodeCharCodeForCodePoint($codePoints, $codePoint) . ' [' . $this->parser->getAdvanceWidthForGlyphId(
+            $entries[] = (string) $this->unicodeCharCodeForCodePoint($codePoints, $codePoint) . ' [' . $this->pdfWidth($this->parser->getAdvanceWidthForGlyphId(
                 $this->parser->getGlyphIdForCodePoint($codePoint),
-            ) . ']';
+            )) . ']';
         }
 
         return '[' . implode(' ', $entries) . ']';
@@ -560,7 +564,7 @@ final readonly class EmbeddedFontDefinition
         $entries = [];
 
         foreach ($glyphs as $index => $glyph) {
-            $entries[] = (string) ($index + 1) . ' [' . $this->parser->getAdvanceWidthForGlyphId($glyph->glyphId) . ']';
+            $entries[] = (string) ($index + 1) . ' [' . $this->pdfWidth($this->parser->getAdvanceWidthForGlyphId($glyph->glyphId)) . ']';
         }
 
         return '[' . implode(' ', $entries) . ']';
@@ -635,5 +639,15 @@ final readonly class EmbeddedFontDefinition
         $formatted = number_format($value, 3, '.', '');
 
         return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    private function pdfWidth(int $fontUnits): int
+    {
+        return $this->pdfMetric($fontUnits);
+    }
+
+    private function pdfMetric(int $fontUnits): int
+    {
+        return (int) round(($fontUnits / $this->metadata->unitsPerEm) * 1000);
     }
 }

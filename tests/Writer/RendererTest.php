@@ -34,7 +34,7 @@ final class RendererTest extends TestCase
 
         $pdf = $output->contents();
 
-        self::assertStringStartsWith('%PDF-1.4', $pdf);
+        self::assertStringStartsWith("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", $pdf);
         self::assertStringContainsString("1 0 obj\n", $pdf);
         self::assertStringContainsString("2 0 obj\n", $pdf);
         self::assertStringContainsString("xref\n", $pdf);

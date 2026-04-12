@@ -35,11 +35,11 @@ final class XmpMetadataTest extends TestCase
         self::assertStringContainsString('<rdf:li xml:lang="x-default">Testing</rdf:li>', $contents);
         self::assertStringContainsString('<rdf:li>de-DE</rdf:li>', $contents);
         self::assertStringContainsString('<pdf:Producer>pdf2 test suite</pdf:Producer>', $contents);
-        self::assertStringContainsString('<xmp:CreatorTool>pdf2 test suite</xmp:CreatorTool>', $contents);
+        self::assertStringContainsString('<xmp:CreatorTool>Invoice Service</xmp:CreatorTool>', $contents);
         self::assertStringContainsString('<xmp:CreateDate>2026-04-12T13:14:15+00:00</xmp:CreateDate>', $contents);
         self::assertStringContainsString('<xmp:ModifyDate>2026-04-12T13:14:15+00:00</xmp:ModifyDate>', $contents);
         self::assertStringContainsString('<xmp:MetadataDate>2026-04-12T13:14:15+00:00</xmp:MetadataDate>', $contents);
-        self::assertStringNotContainsString('<xmp:CreatorTool>Invoice Service</xmp:CreatorTool>', $contents);
+        self::assertStringNotContainsString('<xmp:CreatorTool>pdf2 test suite</xmp:CreatorTool>', $contents);
         self::assertStringContainsString("<?xpacket end=\"w\"?>\nendstream", $contents);
     }
 
