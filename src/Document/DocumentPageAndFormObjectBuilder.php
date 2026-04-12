@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function array_map;
+use function count;
 use function implode;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AnnotationAppearanceRenderContext;
@@ -24,11 +26,16 @@ final class DocumentPageAndFormObjectBuilder
     /**
      * @return list<IndirectObject>
      */
-    public function buildPageObjects(Document $document, DocumentSerializationPlanBuildState $state): array
+    public function buildPageObjects(Document $document, DocumentSerializationPlanBuildState $state, ?Debugger $debugger = null): array
     {
+        $debugger ??= Debugger::disabled();
         $objects = [];
 
         foreach ($document->pages as $index => $page) {
+            $scope = $debugger->startPerformanceScope('page.render', [
+                'page' => $index + 1,
+                'page_count' => count($document->pages),
+            ]);
             $pageObjectId = $state->pageObjectIds[$index];
             $contentObjectId = $state->contentObjectIds[$index];
             $annotationObjectIds = $state->pageAnnotationObjectIds[$index] ?? [];
@@ -83,6 +90,12 @@ final class DocumentPageAndFormObjectBuilder
                     );
                 }
             }
+
+            $scope->stop([
+                'page' => $index + 1,
+                'page_object_id' => $pageObjectId,
+                'contents_id' => $contentObjectId,
+            ]);
         }
 
         return $objects;

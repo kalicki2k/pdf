@@ -7,6 +7,7 @@ Der Quellcode ist jetzt grob nach Verantwortlichkeiten organisiert:
 ```text
 src/
 ├─ Color/
+├─ Debug/
 ├─ Document/
 ├─ Drawing/
 ├─ Font/
@@ -15,6 +16,39 @@ src/
 ├─ Text/
 ├─ Writer/
 └─ Pdf.php
+```
+
+## Observability
+
+Die Engine unterstuetzt ein fokussiertes Debug-/Observability-System fuer Lifecycle-, PDF-Struktur- und Performance-Events. Es erzeugt keine visuelle Debug-Ausgabe im PDF, sondern nur strukturierte Events ueber einen `DebugSink`.
+
+```php
+use Kalle\Pdf\Debug\DebugConfig;
+use Kalle\Pdf\Debug\LogLevel;
+use Kalle\Pdf\Document\Document;
+
+$document = Document::make()
+    ->title('Rechnung 2026-001')
+    ->debug(
+        DebugConfig::make()
+            ->logLifecycle(LogLevel::Info)
+            ->logPdfStructure(LogLevel::Trace)
+            ->logPerformance(LogLevel::Info)
+    )
+    ->build();
+```
+
+- Lifecycle-Logging protokolliert Engine-Schritte wie `document.created`, `page.added`, `write.started` und `write.finished`.
+- PDF-Struktur-Debugging protokolliert PDF-nahe Ereignisse wie `object.created`, `object.serialized`, `stream.serialized`, `xref.written` und `trailer.written`.
+- Performance-Logging misst Render- und Write-Schritte wie `document.render`, `page.render` und `file.write` inklusive Laufzeit- und Speichermetriken.
+
+Optional kann statt eines eigenen Sinks auch direkt ein PSR-3-Logger angebunden werden:
+
+```php
+$document = Document::make()
+    ->debug(DebugConfig::make()->logLifecycle(LogLevel::Info))
+    ->withLogger($logger)
+    ->build();
 ```
 
 ## Bilder
@@ -205,6 +239,12 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+## PDF/A-1a Umfang
+
+Der aktuell abgesicherte `PDF/A-1a`-Pfad in `pdf2` deckt bewusst einen klar begrenzten Strukturumfang ab: Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer- und Builder-Tests abgesichert.
+
+Nicht Teil dieses Umfangs sind aktuell reichere Annotationstypen, Formulare, Signaturfelder oder weitergehende Strukturtypen ausserhalb dieses Satzes. Solche Faelle sollen fuer `PDF/A-1a` weiter explizit scheitern oder erst nach eigener Regressionserweiterung freigegeben werden.
+
 ## Verschluesselung
 
 Die aktuelle Encryption-API bleibt bewusst klein: Das Dokument bekommt ein explizites `Encryption`-Value-Object. Unterstuetzt sind aktuell `RC4-128`, `AES-128` und `AES-256` sowie eine kleine `Permissions`-API. PDF/A-Profile verbieten weiterhin Verschluesselung und scheitern deshalb mit einer klaren Exception.
@@ -387,10 +427,12 @@ make verapdf-version
 make validate-pdfa PDF=var/example.pdf
 make validate-pdfua PDF=var/example.pdf
 make test-pdfa1b-regression
+make test-pdfa1b-regressions
 make test-pdfa1a-regression
 make test-pdfa1a-list-regression
 make test-pdfa1a-table-regression
 make test-pdfa1a-mixed-regression
+make test-pdfa1a-multipage-regression
 make check-pdf PDF=var/example.pdf
 ```
 
@@ -400,10 +442,12 @@ Alternativ direkt über die Skripte:
 bin/validate-pdfa.sh var/example.pdf
 bin/validate-pdfua.sh var/example.pdf
 bin/test-pdfa1b-regression.sh
+bin/test-pdfa1b-regressions.sh
 bin/test-pdfa1a-regression.sh
 bin/test-pdfa1a-list-regression.sh
 bin/test-pdfa1a-table-regression.sh
 bin/test-pdfa1a-mixed-regression.sh
+bin/test-pdfa1a-multipage-regression.sh
 ```
 
 Compose-Services starten:

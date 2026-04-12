@@ -40,11 +40,19 @@ final readonly class Pdf
      */
     public static function writeToFile(Document $document, string $path): void
     {
+        $scope = $document->debugger->startPerformanceScope('file.write', [
+            'path' => $path,
+            'page_count' => count($document->pages),
+        ]);
         $output = new FileOutput($path);
 
         try {
             self::render($document, $output);
             $output->close();
+            $scope->stop([
+                'path' => $path,
+                'bytes' => $output->offset(),
+            ]);
         } catch (Throwable $throwable) {
             unset($output);
 

@@ -10,6 +10,7 @@ use DateTimeImmutable;
 
 use InvalidArgumentException;
 
+use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Encryption\EncryptDictionaryBuilder;
 use Kalle\Pdf\Encryption\EncryptionProfileResolver;
 use Kalle\Pdf\Encryption\ObjectEncryptor;
@@ -44,6 +45,7 @@ final class DocumentSerializationPlanBuilder
 
     public function build(Document $document): DocumentSerializationPlan
     {
+        $debugger = $document->debugger;
         $this->validator->assertBuildable($document);
         $serializedAt = new DateTimeImmutable('now');
         $collectTaggedLinkStructure = fn (int $nextStructParentId): array => $this->taggedPdfObjectBuilder->collectTaggedLinkStructure($document, $nextStructParentId);
@@ -109,33 +111,24 @@ final class DocumentSerializationPlanBuilder
             ),
         ];
 
-        $objects = [
-            ...$objects,
-            ...$this->pageAndFormObjectBuilder->buildPageObjects($document, $state),
-        ];
-        $objects = [
-            ...$objects,
-            ...$this->fontAndImageObjectBuilder->buildObjects($document, $state),
-        ];
-        $objects = [
-            ...$objects,
-            ...$this->attachmentObjectBuilder->buildObjects($document, $state),
-        ];
+        $pageObjects = $this->pageAndFormObjectBuilder->buildPageObjects($document, $state, $debugger);
+        $objects = [...$objects, ...$pageObjects];
 
-        $objects = [
-            ...$objects,
-            ...$this->pageAndFormObjectBuilder->buildAcroFormObjects($document, $state),
-        ];
+        $fontAndImageObjects = $this->fontAndImageObjectBuilder->buildObjects($document, $state);
+        $objects = [...$objects, ...$fontAndImageObjects];
 
-        $objects = [
-            ...$objects,
-            ...$this->taggedPdfObjectBuilder->buildObjects($document, $state),
-        ];
+        $attachmentObjects = $this->attachmentObjectBuilder->buildObjects($document, $state);
+        $objects = [...$objects, ...$attachmentObjects];
 
-        $objects = [
-            ...$objects,
-            ...$this->metadataObjectBuilder->buildObjects($document, $state, $serializedAt, $encryptObjectContents),
-        ];
+        $acroFormObjects = $this->pageAndFormObjectBuilder->buildAcroFormObjects($document, $state);
+        $objects = [...$objects, ...$acroFormObjects];
+
+        $taggedPdfObjects = $this->taggedPdfObjectBuilder->buildObjects($document, $state);
+        $objects = [...$objects, ...$taggedPdfObjects];
+
+        $metadataObjects = $this->metadataObjectBuilder->buildObjects($document, $state, $serializedAt, $encryptObjectContents);
+        $objects = [...$objects, ...$metadataObjects];
+        $this->logCreatedObjects($debugger, $objects);
 
         return new DocumentSerializationPlan(
             objects: $objects,
@@ -298,6 +291,43 @@ final class DocumentSerializationPlanBuilder
         }
 
         return $encoded;
+    }
+
+    /**
+     * @param list<IndirectObject> $objects
+     */
+    private function logCreatedObjects(Debugger $debugger, array $objects): void
+    {
+        $objectCount = count($objects);
+
+        foreach ($objects as $object) {
+            $debugger->pdf('object.created', [
+                'object_id' => $object->objectId,
+                'type' => $this->inferObjectType($object->contents),
+                'length' => strlen($object->contents),
+                'contents_id' => $this->extractReferenceObjectId($object->contents, '/Contents'),
+                'parent_id' => $this->extractReferenceObjectId($object->contents, '/Parent'),
+                'object_count' => $objectCount,
+            ]);
+        }
+    }
+
+    private function inferObjectType(string $contents): ?string
+    {
+        if (!preg_match('/\/Type\s*\/([A-Za-z0-9]+)/', $contents, $matches)) {
+            return null;
+        }
+
+        return $matches[1];
+    }
+
+    private function extractReferenceObjectId(string $contents, string $entry): ?int
+    {
+        if (!preg_match('/' . preg_quote($entry, '/') . '\s+(\d+)\s+0\s+R/', $contents, $matches)) {
+            return null;
+        }
+
+        return (int) $matches[1];
     }
 
 }

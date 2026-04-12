@@ -20,9 +20,33 @@ final readonly class DocumentRenderer
 
     public function write(Document $document, Output $output): void
     {
-        $this->renderer->write(
-            $this->planBuilder->build($document),
-            $output,
-        );
+        $debugger = $document->debugger;
+        $pageCount = count($document->pages);
+        $scope = $debugger->startPerformanceScope('document.render', [
+            'page_count' => $pageCount,
+            'profile' => $document->profile->name(),
+        ]);
+
+        $debugger->lifecycle('write.started', [
+            'title' => $document->title,
+            'page_count' => $pageCount,
+            'profile' => $document->profile->name(),
+            'output' => $output::class,
+        ]);
+
+        $this->renderer->write($this->planBuilder->build($document), $output, $debugger);
+
+        $scope->stop([
+            'bytes' => $output->offset(),
+            'page_count' => $pageCount,
+        ]);
+
+        $debugger->lifecycle('write.finished', [
+            'title' => $document->title,
+            'page_count' => $pageCount,
+            'profile' => $document->profile->name(),
+            'bytes' => $output->offset(),
+            'output' => $output::class,
+        ]);
     }
 }

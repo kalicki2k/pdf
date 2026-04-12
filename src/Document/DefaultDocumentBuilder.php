@@ -15,6 +15,11 @@ use function is_readable;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Debug\DebugConfig;
+use Kalle\Pdf\Debug\Debugger;
+use Kalle\Pdf\Debug\DebugSink;
+use Kalle\Pdf\Debug\NullDebugSink;
+use Kalle\Pdf\Debug\PsrDebugSink;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
@@ -91,6 +96,7 @@ use Kalle\Pdf\Writer\StringOutput;
 
 use function mb_ord;
 
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 class DefaultDocumentBuilder implements DocumentBuilder
@@ -137,10 +143,33 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /** @var list<FileAttachment> */
     private array $attachments = [];
     private ?AcroForm $acroForm = null;
+    private ?DebugConfig $debugConfig = null;
+    private ?DebugSink $debugSink = null;
 
     public static function make(): self
     {
         return new self();
+    }
+
+    public function debug(DebugConfig $config): self
+    {
+        $clone = clone $this;
+        $clone->debugConfig = $config;
+
+        return $clone;
+    }
+
+    public function withDebugSink(DebugSink $sink): self
+    {
+        $clone = clone $this;
+        $clone->debugSink = $sink;
+
+        return $clone;
+    }
+
+    public function withLogger(LoggerInterface $logger): self
+    {
+        return $this->withDebugSink(new PsrDebugSink($logger));
     }
 
     public function title(string $title): self
@@ -1367,9 +1396,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     public function build(): Document
     {
-        return new Document(
+        $pages = [...$this->pages, $this->buildCurrentPage()];
+        $debugger = $this->buildDebugger();
+        $document = new Document(
             profile: $this->profile ?? Profile::standard(),
-            pages: [...$this->pages, $this->buildCurrentPage()],
+            pages: $pages,
             title: $this->title,
             author: $this->author,
             subject: $this->subject,
@@ -1383,7 +1414,25 @@ class DefaultDocumentBuilder implements DocumentBuilder
             attachments: $this->attachments,
             acroForm: $this->acroForm,
             taggedLists: $this->buildTaggedLists(),
+            debugger: $debugger,
         );
+
+        $debugger->lifecycle('document.created', [
+            'title' => $document->title,
+            'page_count' => count($pages),
+            'profile' => $document->profile->name(),
+        ]);
+
+        foreach ($pages as $index => $page) {
+            $debugger->lifecycle('page.added', [
+                'page' => $index + 1,
+                'page_count' => count($pages),
+                'width' => round($page->size->width(), 3),
+                'height' => round($page->size->height(), 3),
+            ]);
+        }
+
+        return $document;
     }
 
     public function contents(): string
@@ -1404,16 +1453,37 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     public function writeToFile(string $path): void
     {
+        $document = $this->build();
+        $scope = $document->debugger->startPerformanceScope('file.write', [
+            'path' => $path,
+            'page_count' => count($document->pages),
+        ]);
         $output = new FileOutput($path);
 
         try {
-            new DocumentRenderer()->write($this->build(), $output);
+            new DocumentRenderer()->write($document, $output);
             $output->close();
+            $scope->stop([
+                'path' => $path,
+                'bytes' => $output->offset(),
+            ]);
         } catch (Throwable $throwable) {
             unset($output);
 
             throw $throwable;
         }
+    }
+
+    private function buildDebugger(): Debugger
+    {
+        if ($this->debugConfig === null) {
+            return Debugger::disabled();
+        }
+
+        return new Debugger(
+            config: $this->debugConfig,
+            sink: $this->debugSink ?? new NullDebugSink(),
+        );
     }
 
     private function buildCurrentPage(): Page

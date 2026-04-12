@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
@@ -36,6 +37,12 @@ final readonly class Document
     public ?AcroForm $acroForm;
     /** @var list<TaggedList> */
     public array $taggedLists;
+    public Debugger $debugger;
+
+    public static function make(): DocumentBuilder
+    {
+        return DefaultDocumentBuilder::make();
+    }
 
     /**
      * @param list<Page>|null $pages
@@ -61,6 +68,7 @@ final readonly class Document
         ?array $attachments = null,
         ?AcroForm $acroForm = null,
         ?array $taggedLists = null,
+        ?Debugger $debugger = null,
     ) {
         $this->profile = $profile ?? Profile::standard();
         $this->pages = $pages ?? [new Page(PageSize::A4())];
@@ -77,6 +85,7 @@ final readonly class Document
         $this->attachments = $attachments ?? [];
         $this->acroForm = $acroForm;
         $this->taggedLists = $taggedLists ?? [];
+        $this->debugger = $debugger ?? Debugger::disabled();
     }
 
     public function version(): float

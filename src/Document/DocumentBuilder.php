@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Debug\DebugConfig;
+use Kalle\Pdf\Debug\DebugSink;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Encryption\Encryption;
@@ -21,9 +23,16 @@ use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
+use Psr\Log\LoggerInterface;
 
 interface DocumentBuilder
 {
+    public function debug(DebugConfig $config): self;
+
+    public function withDebugSink(DebugSink $sink): self;
+
+    public function withLogger(LoggerInterface $logger): self;
+
     public function title(string $title): self;
 
     public function author(string $author): self;

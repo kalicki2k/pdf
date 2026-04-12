@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Writer;
 
+use Kalle\Pdf\Debug\Debugger;
+
 /**
  * Writes PDF file structure bytes such as the header, cross-reference table and trailer.
  */
@@ -21,8 +23,9 @@ final class FileStructureWriter
     /**
      * @param array<int, int> $offsets
      */
-    public function writeFooter(FileStructure $fileStructure, array $offsets, Output $output): void
+    public function writeFooter(FileStructure $fileStructure, array $offsets, Output $output, ?Debugger $debugger = null): void
     {
+        $debugger ??= Debugger::disabled();
         $startXref = $output->offset();
         $trailer = $fileStructure->trailer;
 
@@ -34,6 +37,12 @@ final class FileStructureWriter
             $offset = $offsets[$objectId] ?? 0;
             $output->write(sprintf("%010d 00000 n \n", $offset));
         }
+
+        $debugger->pdf('xref.written', [
+            'object_count' => $trailer->size - 1,
+            'size' => $trailer->size,
+            'start_offset' => $startXref,
+        ]);
 
         $output->write("trailer\n");
         $output->write('<< /Size ' . $trailer->size . ' /Root ' . $trailer->rootObjectId . ' 0 R');
@@ -54,5 +63,12 @@ final class FileStructureWriter
         $output->write("startxref\n");
         $output->write((string) $startXref . "\n");
         $output->write('%%EOF');
+
+        $debugger->pdf('trailer.written', [
+            'root_id' => $trailer->rootObjectId,
+            'info_id' => $trailer->infoObjectId,
+            'size' => $trailer->size,
+            'start_offset' => $startXref,
+        ]);
     }
 }
