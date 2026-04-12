@@ -1110,6 +1110,29 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Dest /intro', $pdf);
     }
 
+    public function testItRendersTopLevelOutlines(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Intro')
+            ->text('Page 1')
+            ->newPage()
+            ->outlineAt('Details', 2, 72, 640)
+            ->text('Page 2')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Outlines 8 0 R', $pdf);
+        self::assertStringContainsString('<< /Type /Outlines /First 9 0 R /Last 10 0 R /Count 2 >>', $pdf);
+        self::assertStringContainsString('/Title (Intro) /Parent 8 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R', $pdf);
+        self::assertStringContainsString('/Title (Details) /Parent 8 0 R /Dest [5 0 R /XYZ 72 640 null] /Prev 9 0 R', $pdf);
+    }
+
     public function testItRendersTaggedPdfUaLinkAnnotations(): void
     {
         $document = DefaultDocumentBuilder::make()

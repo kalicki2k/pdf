@@ -163,6 +163,18 @@ final class DocumentSerializationPlanObjectIdAllocator
         );
         /** @var array<string, string> $namedDestinations */
         $namedDestinations = $collectNamedDestinations();
+        $outlineRootObjectId = null;
+        /** @var list<int> $outlineItemObjectIds */
+        $outlineItemObjectIds = [];
+
+        if ($document->outlines !== []) {
+            $outlineRootObjectId = $nextObjectId++;
+
+            foreach ($document->outlines as $_outline) {
+                $outlineItemObjectIds[] = $nextObjectId++;
+            }
+        }
+
         $structTreeRootObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
         $documentStructElemObjectId = $document->profile->requiresTaggedPdf() ? $nextObjectId++ : null;
         $parentTreeObjectId = ($taggedStructure->pageMarkedContentKeys !== []
@@ -214,6 +226,8 @@ final class DocumentSerializationPlanObjectIdAllocator
             $taggedLinkStructure,
             $taggedFormStructure,
             $namedDestinations,
+            $outlineRootObjectId,
+            $outlineItemObjectIds,
             $structTreeRootObjectId,
             $documentStructElemObjectId,
             $parentTreeObjectId,

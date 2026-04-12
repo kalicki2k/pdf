@@ -142,6 +142,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private ?Profile $profile = null;
     /** @var list<FileAttachment> */
     private array $attachments = [];
+    /** @var list<Outline> */
+    private array $outlines = [];
     private ?AcroForm $acroForm = null;
     private ?DebugConfig $debugConfig = null;
     private ?DebugSink $debugSink = null;
@@ -1335,6 +1337,28 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function outline(string $title): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->outlines[] = Outline::page($title, count($this->pages) + 1);
+
+        return $clone;
+    }
+
+    public function outlineAt(string $title, int $pageNumber, ?float $x = null, ?float $y = null): DocumentBuilder
+    {
+        if (($x === null) !== ($y === null)) {
+            throw new InvalidArgumentException('Outline coordinates must be provided together.');
+        }
+
+        $clone = clone $this;
+        $clone->outlines[] = ($x === null && $y === null)
+            ? Outline::page($title, $pageNumber)
+            : Outline::position($title, $pageNumber, $x, $y);
+
+        return $clone;
+    }
+
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): DocumentBuilder
     {
         $clone = clone $this;
@@ -1412,6 +1436,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             taggedTables: $this->buildTaggedTables(),
             taggedTextBlocks: $this->buildTaggedTextBlocks(),
             attachments: $this->attachments,
+            outlines: $this->outlines,
             acroForm: $this->acroForm,
             taggedLists: $this->buildTaggedLists(),
             debugger: $debugger,

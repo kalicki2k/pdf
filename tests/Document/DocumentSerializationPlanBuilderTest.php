@@ -1260,6 +1260,50 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Dest /intro', $serialized);
     }
 
+    public function testItAddsTopLevelOutlinesToTheCatalogAndChainsItems(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Intro')
+            ->text('Page 1')
+            ->newPage()
+            ->outlineAt('Details', 2, 72, 640)
+            ->text('Page 2')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $objectsById = [];
+
+        foreach ($objects as $object) {
+            $objectsById[$object->objectId] = $object;
+        }
+
+        self::assertStringContainsString('/Outlines 8 0 R', $objectsById[1]->contents);
+        self::assertSame('<< /Type /Outlines /First 9 0 R /Last 10 0 R /Count 2 >>', $objectsById[8]->contents);
+        self::assertSame(
+            '<< /Title (Intro) /Parent 8 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R >>',
+            $objectsById[9]->contents,
+        );
+        self::assertSame(
+            '<< /Title (Details) /Parent 8 0 R /Dest [5 0 R /XYZ 72 640 null] /Prev 9 0 R >>',
+            $objectsById[10]->contents,
+        );
+    }
+
+    public function testItRejectsOutlinesThatReferenceMissingPages(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->outlineAt('Missing', 2)
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Outline 1 references page 2, but the document only has 1 page(s).');
+
+        $builder->build($document);
+    }
+
     public function testItAddsTaggedPdfUaLinkAnnotations(): void
     {
         $builder = new DocumentSerializationPlanBuilder();

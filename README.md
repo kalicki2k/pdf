@@ -120,6 +120,8 @@ $document = DefaultDocumentBuilder::make()
 
 Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Fuer explizitere Inline-Link-Spans steht `TextLink` zur Verfuegung, damit sichtbarer Text, Annotation-`/Contents`, PDF/UA-Alternativtext und Gruppierung getrennt steuerbar bleiben.
 
+Einfache dokumentweite PDF-Outlines/Bookmarks werden ebenfalls unterstuetzt. Die erste Iteration bildet nur Top-Level-Bookmarks ab und verwendet explizite Ziele auf Seiten oder Seitenpositionen.
+
 Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen.
 
 Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation mit festem Rechteck und eigenem `/AP`-Stream, die sich damit auch fuer den aktuellen PDF/A-2u-Pfad eignet. Dasselbe gilt jetzt fuer eine schlanke `Highlight`-Annotation mit festen `QuadPoints` und fuer `FreeText`, das seinen Appearance-Stream mit dem verwendeten Seitenfont rendert.
@@ -203,6 +205,18 @@ $document = DefaultDocumentBuilder::make()
             metadata: new \Kalle\Pdf\Page\AnnotationMetadata(title: 'QA'),
         ),
     )
+    ->build();
+```
+
+```php
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+
+$document = DefaultDocumentBuilder::make()
+    ->outline('Start')
+    ->text('Seite 1')
+    ->newPage()
+    ->outlineAt('Details', 2, 72, 640)
+    ->text('Seite 2')
     ->build();
 ```
 

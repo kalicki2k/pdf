@@ -51,6 +51,7 @@ final readonly class DocumentSerializationPlanBuildState
      *   parentTreeEntries: array<int, list<string>>
      * } $taggedFormStructure
      * @param array<string, string> $namedDestinations
+     * @param list<int> $outlineItemObjectIds
      * @param array<string, int> $taggedFormStructElemObjectIds
      */
     public function __construct(
@@ -77,6 +78,8 @@ final readonly class DocumentSerializationPlanBuildState
         public array $taggedLinkStructure,
         public array $taggedFormStructure,
         public array $namedDestinations,
+        public ?int $outlineRootObjectId,
+        public array $outlineItemObjectIds,
         public ?int $structTreeRootObjectId,
         public ?int $documentStructElemObjectId,
         public ?int $parentTreeObjectId,

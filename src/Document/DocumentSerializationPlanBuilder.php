@@ -39,6 +39,7 @@ final class DocumentSerializationPlanBuilder
         private readonly DocumentFontAndImageObjectBuilder $fontAndImageObjectBuilder = new DocumentFontAndImageObjectBuilder(),
         private readonly DocumentAttachmentObjectBuilder $attachmentObjectBuilder = new DocumentAttachmentObjectBuilder(),
         private readonly DocumentMetadataObjectBuilder $metadataObjectBuilder = new DocumentMetadataObjectBuilder(),
+        private readonly DocumentOutlineObjectBuilder $outlineObjectBuilder = new DocumentOutlineObjectBuilder(),
         private readonly DocumentTaggedPdfObjectBuilder $taggedPdfObjectBuilder = new DocumentTaggedPdfObjectBuilder(),
     ) {
     }
@@ -101,6 +102,7 @@ final class DocumentSerializationPlanBuilder
                     $state->iccProfileObjectId,
                     $state->structTreeRootObjectId,
                     $state->namedDestinations,
+                    $state->outlineRootObjectId,
                     $state->attachmentObjectIds,
                     $state->acroFormObjectId,
                 ),
@@ -119,6 +121,9 @@ final class DocumentSerializationPlanBuilder
 
         $attachmentObjects = $this->attachmentObjectBuilder->buildObjects($document, $state);
         $objects = [...$objects, ...$attachmentObjects];
+
+        $outlineObjects = $this->outlineObjectBuilder->buildObjects($document, $state);
+        $objects = [...$objects, ...$outlineObjects];
 
         $acroFormObjects = $this->pageAndFormObjectBuilder->buildAcroFormObjects($document, $state);
         $objects = [...$objects, ...$acroFormObjects];
@@ -156,6 +161,7 @@ final class DocumentSerializationPlanBuilder
         ?int $iccProfileObjectId,
         ?int $structTreeRootObjectId,
         array $namedDestinations,
+        ?int $outlineRootObjectId,
         array $attachmentObjectIds,
         ?int $acroFormObjectId,
     ): string {
@@ -190,6 +196,11 @@ final class DocumentSerializationPlanBuilder
 
             $entries[] = '/Dests << ' . implode(' ', $destEntries) . ' >>';
         }
+
+        $entries = [
+            ...$entries,
+            ...$this->outlineObjectBuilder->buildCatalogEntries($outlineRootObjectId),
+        ];
 
         $entries = [
             ...$entries,

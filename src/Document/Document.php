@@ -34,6 +34,8 @@ final readonly class Document
     public array $taggedTextBlocks;
     /** @var list<FileAttachment> */
     public array $attachments;
+    /** @var list<Outline> */
+    public array $outlines;
     public ?AcroForm $acroForm;
     /** @var list<TaggedList> */
     public array $taggedLists;
@@ -49,6 +51,7 @@ final readonly class Document
      * @param list<TaggedTable>|null $taggedTables
      * @param list<TaggedTextBlock>|null $taggedTextBlocks
      * @param list<FileAttachment>|null $attachments
+     * @param list<Outline>|null $outlines
      * @param AcroForm|null $acroForm
      * @param list<TaggedList>|null $taggedLists
      */
@@ -66,6 +69,7 @@ final readonly class Document
         ?array $taggedTables = null,
         ?array $taggedTextBlocks = null,
         ?array $attachments = null,
+        ?array $outlines = null,
         ?AcroForm $acroForm = null,
         ?array $taggedLists = null,
         ?Debugger $debugger = null,
@@ -83,6 +87,7 @@ final readonly class Document
         $this->taggedTables = $taggedTables ?? [];
         $this->taggedTextBlocks = $taggedTextBlocks ?? [];
         $this->attachments = $attachments ?? [];
+        $this->outlines = $outlines ?? [];
         $this->acroForm = $acroForm;
         $this->taggedLists = $taggedLists ?? [];
         $this->debugger = $debugger ?? Debugger::disabled();

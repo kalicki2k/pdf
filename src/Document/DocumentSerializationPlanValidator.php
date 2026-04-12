@@ -40,6 +40,7 @@ final class DocumentSerializationPlanValidator
         $this->assertImageAccessibilityRequirements($document);
         $this->assertAnnotationRequirements($document);
         $this->assertNamedDestinationRequirements($document);
+        $this->assertOutlineRequirements($document);
         $this->assertPdfARequirements($document);
     }
 
@@ -193,6 +194,24 @@ final class DocumentSerializationPlanValidator
                     $attachmentIndex + 1,
                 ));
             }
+        }
+    }
+
+    private function assertOutlineRequirements(Document $document): void
+    {
+        $pageCount = count($document->pages);
+
+        foreach ($document->outlines as $outlineIndex => $outline) {
+            if ($outline->pageNumber <= $pageCount) {
+                continue;
+            }
+
+            throw new InvalidArgumentException(sprintf(
+                'Outline %d references page %d, but the document only has %d page(s).',
+                $outlineIndex + 1,
+                $outline->pageNumber,
+                $pageCount,
+            ));
         }
     }
 

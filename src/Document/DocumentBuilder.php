@@ -282,6 +282,10 @@ interface DocumentBuilder
 
     public function namedDestinationPosition(string $name, float $x, float $y): self;
 
+    public function outline(string $title): self;
+
+    public function outlineAt(string $title, int $pageNumber, ?float $x = null, ?float $y = null): self;
+
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): self;
 
     public function newPage(?PageOptions $options = null): self;

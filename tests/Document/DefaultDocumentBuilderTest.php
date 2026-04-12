@@ -19,6 +19,7 @@ use Kalle\Pdf\Document\Form\TextField;
 use Kalle\Pdf\Document\ListOptions;
 use Kalle\Pdf\Document\ListType;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\Outline;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\Units;
@@ -634,6 +635,34 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertInstanceOf(LinkAnnotation::class, $document->pages[0]->annotations[0]);
         self::assertTrue($document->pages[0]->annotations[0]->target->isNamedDestination());
         self::assertSame('intro', $document->pages[0]->annotations[0]->target->namedDestinationValue());
+    }
+
+    public function testItAddsDocumentOutlines(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Intro')
+            ->text('Page 1')
+            ->newPage()
+            ->outlineAt('Details', 2, 72, 640)
+            ->build();
+
+        self::assertCount(2, $document->outlines);
+        self::assertInstanceOf(Outline::class, $document->outlines[0]);
+        self::assertSame('Intro', $document->outlines[0]->title);
+        self::assertSame(1, $document->outlines[0]->pageNumber);
+        self::assertFalse($document->outlines[0]->hasPosition());
+        self::assertSame('Details', $document->outlines[1]->title);
+        self::assertSame(2, $document->outlines[1]->pageNumber);
+        self::assertSame(72.0, $document->outlines[1]->x);
+        self::assertSame(640.0, $document->outlines[1]->y);
+    }
+
+    public function testItRejectsOutlineCoordinatesWhenOnlyOneCoordinateIsProvided(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Outline coordinates must be provided together.');
+
+        DefaultDocumentBuilder::make()->outlineAt('Broken', 1, 10);
     }
 
     public function testItAddsMultipleLinkedTextSegmentsInOneCall(): void
