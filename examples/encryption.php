@@ -16,15 +16,24 @@ if (!is_dir($outputDirectory) && !mkdir($outputDirectory, 0777, true) && !is_dir
     throw new RuntimeException('Unable to create example output directory.');
 }
 
-DefaultDocumentBuilder::make()
-    ->profile(Profile::pdf17())
-    ->title('Encryption Example')
-    ->author('Kalle PDF')
-    ->subject('Minimal AES-256 example with explicit permissions')
-    ->creator('examples/encryption.php')
-    ->creatorTool('pdf2')
-    ->encryption(
-        Encryption::aes256('user-secret', 'owner-secret')->withPermissions(
+$variants = [
+    'encryption-rc4-128.pdf' => [
+        'profile' => Profile::pdf14(),
+        'encryption' => Encryption::rc4_128('user-secret', 'owner-secret'),
+        'headline' => 'RC4-128 encryption',
+        'subject' => 'Minimal RC4-128 example',
+        'details' => 'This PDF uses RC4-128 with the same explicit user and owner password pair.',
+    ],
+    'encryption-aes-128.pdf' => [
+        'profile' => Profile::pdf16(),
+        'encryption' => Encryption::aes128('user-secret', 'owner-secret')->withPermissions(Permissions::readOnly()),
+        'headline' => 'AES-128 encryption',
+        'subject' => 'Minimal AES-128 example with read-only permissions',
+        'details' => 'This PDF uses AES-128 and disables printing, copying, modification and annotations in the permission flags.',
+    ],
+    'encryption-aes-256.pdf' => [
+        'profile' => Profile::pdf17(),
+        'encryption' => Encryption::aes256('user-secret', 'owner-secret')->withPermissions(
             new Permissions(
                 print: false,
                 modify: true,
@@ -32,13 +41,34 @@ DefaultDocumentBuilder::make()
                 annotate: true,
             ),
         ),
-    )
-    ->paragraph('This PDF uses AES-256 encryption with an explicit user and owner password.', new TextOptions(
-        fontSize: 14,
-        lineHeight: 18,
-    ))
-    ->paragraph('Printing and copying are disabled in the permission flags while modification and annotations remain allowed.', new TextOptions(
-        fontSize: 11,
-        lineHeight: 15,
-    ))
-    ->writeToFile($outputDirectory . '/encryption.pdf');
+        'headline' => 'AES-256 encryption',
+        'subject' => 'Minimal AES-256 example with explicit permissions',
+        'details' => 'This PDF uses AES-256 and keeps modification plus annotations allowed while printing and copying remain disabled.',
+    ],
+];
+
+foreach ($variants as $fileName => $variant) {
+    DefaultDocumentBuilder::make()
+        ->profile($variant['profile'])
+        ->title($variant['headline'])
+        ->author('Kalle PDF')
+        ->subject($variant['subject'])
+        ->creator('examples/encryption.php')
+        ->creatorTool('pdf2')
+        ->encryption($variant['encryption'])
+        ->paragraph($variant['headline'], new TextOptions(
+            fontSize: 14,
+            lineHeight: 18,
+        ))
+        ->paragraph('User password: user-secret | Owner password: owner-secret', new TextOptions(
+            fontSize: 11,
+            lineHeight: 15,
+        ))
+        ->paragraph($variant['details'], new TextOptions(
+            fontSize: 11,
+            lineHeight: 15,
+        ))
+        ->writeToFile($outputDirectory . '/' . $fileName);
+
+    fwrite(STDOUT, $outputDirectory . '/' . $fileName . PHP_EOL);
+}

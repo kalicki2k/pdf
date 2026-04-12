@@ -34,8 +34,11 @@ use Kalle\Pdf\Layout\Table\TableLayoutCalculator;
 use Kalle\Pdf\Layout\Table\TableRowGroupLayout;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\EmbeddedGlyph;
+use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotation;
+use Kalle\Pdf\Page\HighlightAnnotationOptions;
 use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\NamedDestination;
@@ -47,6 +50,7 @@ use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\TextAnnotation;
+use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\MappedTextRun;
 use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
@@ -505,9 +509,41 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $title = null,
         string $icon = 'Note',
         bool $open = false,
-    ): DocumentBuilder {
+    ): self {
+        return $this->textAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+            new TextAnnotationOptions(
+                title: $title,
+                icon: $icon,
+                open: $open,
+            ),
+        );
+    }
+
+    public function textAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $contents,
+        TextAnnotationOptions $options,
+    ): self {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new TextAnnotation($x, $y, $width, $height, $contents, $title, $icon, $open);
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new TextAnnotation(
+            $x,
+            $y,
+            $width,
+            $height,
+            $contents,
+            $metadata->title,
+            $options->icon,
+            $options->open,
+        );
 
         return $clone;
     }
@@ -520,9 +556,127 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
+    ): self {
+        return $this->highlightAnnotationWithOptions(
+            $x,
+            $y,
+            $width,
+            $height,
+            new HighlightAnnotationOptions(
+                color: $color,
+                contents: $contents,
+                title: $title,
+            ),
+        );
+    }
+
+    public function highlightAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        HighlightAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new HighlightAnnotation(
+            $x,
+            $y,
+            $width,
+            $height,
+            $options->color,
+            $metadata->contents,
+            $metadata->title,
+        );
+
+        return $clone;
+    }
+
+    public function freeTextAnnotation(
+        string $contents,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?TextOptions $options = null,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $title = null,
     ): DocumentBuilder {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new HighlightAnnotation($x, $y, $width, $height, $color, $contents, $title);
+        $options ??= new TextOptions(fontSize: 12.0);
+        $font = $options->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
+            : StandardFontDefinition::from($options->fontName);
+        $appearanceOptions = new TextOptions(
+            x: 2.0,
+            y: $height - 2.0 - $font->ascent($options->fontSize),
+            width: max($width - 4.0, 0.0),
+            fontSize: $options->fontSize,
+            lineHeight: $options->lineHeight,
+            fontName: $options->fontName,
+            embeddedFont: $options->embeddedFont,
+            fontEncoding: $options->fontEncoding,
+            color: $options->color,
+            kerning: $options->kerning,
+            baseDirection: $options->baseDirection,
+            align: $options->align,
+        );
+        $textFlow = new TextFlow(new Page(PageSize::custom($width, $height)));
+        $wrappedLines = $textFlow->wrapTextLines($contents, $appearanceOptions, $font, 2.0);
+        $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $appearanceOptions, $font);
+        $renderState = $clone->prepareTextRenderState($contents, $appearanceOptions, $font, $shapedLines);
+        $appearance = $clone->buildWrappedTextContent(
+            $wrappedLines,
+            $shapedLines,
+            $appearanceOptions,
+            $textFlow,
+            2.0,
+            $height - 2.0 - $font->ascent($options->fontSize),
+            $renderState['fontAlias'],
+            $font,
+            $renderState['embeddedPageFont'],
+            $renderState['useHexString'],
+            ($this->profile ?? Profile::standard())->version(),
+        );
+        $appearanceContents = $appearance['contents'];
+
+        if ($fillColor !== null || $borderColor !== null) {
+            $background = [];
+
+            if ($fillColor !== null) {
+                $background[] = $this->colorFillOperator($fillColor);
+            }
+
+            if ($borderColor !== null) {
+                $background[] = $this->colorStrokeOperator($borderColor);
+                $background[] = '1 w';
+                $background[] = '0.5 0.5 ' . $this->formatNumber($width - 1.0) . ' ' . $this->formatNumber($height - 1.0) . ' re';
+                $background[] = $fillColor !== null ? 'B' : 'S';
+            } elseif ($fillColor !== null) {
+                $background[] = '0 0 ' . $this->formatNumber($width) . ' ' . $this->formatNumber($height) . ' re';
+                $background[] = 'f';
+            }
+
+            if ($background !== []) {
+                $appearanceContents = implode("\n", [...$background, $appearanceContents]);
+            }
+        }
+
+        $clone->currentPageAnnotations[] = new FreeTextAnnotation(
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            contents: $contents,
+            fontAlias: $renderState['fontAlias'],
+            fontSize: $options->fontSize,
+            appearanceContents: $appearanceContents,
+            textColor: $options->color,
+            borderColor: $borderColor,
+            fillColor: $fillColor,
+            title: $title,
+        );
 
         return $clone;
     }
@@ -536,15 +690,35 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $contents = null,
         ?string $accessibleLabel = null,
     ): DocumentBuilder {
+        return $this->linkWithOptions(
+            $url,
+            $x,
+            $y,
+            $width,
+            $height,
+            new LinkAnnotationOptions(
+                contents: $contents,
+                accessibleLabel: $accessibleLabel,
+            ),
+        );
+    }
+
+    public function linkWithOptions(
+        string $url,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        LinkAnnotationOptions $options,
+    ): DocumentBuilder {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new LinkAnnotation(
+        $clone->currentPageAnnotations[] = $this->buildRectLinkAnnotation(
             LinkTarget::externalUrl($url),
             $x,
             $y,
             $width,
             $height,
-            $contents,
-            $accessibleLabel,
+            $options,
         );
 
         return $clone;
@@ -559,15 +733,35 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $contents = null,
         ?string $accessibleLabel = null,
     ): DocumentBuilder {
+        return $this->linkToNamedDestinationWithOptions(
+            $name,
+            $x,
+            $y,
+            $width,
+            $height,
+            new LinkAnnotationOptions(
+                contents: $contents,
+                accessibleLabel: $accessibleLabel,
+            ),
+        );
+    }
+
+    public function linkToNamedDestinationWithOptions(
+        string $name,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        LinkAnnotationOptions $options,
+    ): DocumentBuilder {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new LinkAnnotation(
+        $clone->currentPageAnnotations[] = $this->buildRectLinkAnnotation(
             LinkTarget::namedDestination($name),
             $x,
             $y,
             $width,
             $height,
-            $contents,
-            $accessibleLabel,
+            $options,
         );
 
         return $clone;
@@ -582,15 +776,35 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $contents = null,
         ?string $accessibleLabel = null,
     ): DocumentBuilder {
+        return $this->linkToPageWithOptions(
+            $pageNumber,
+            $x,
+            $y,
+            $width,
+            $height,
+            new LinkAnnotationOptions(
+                contents: $contents,
+                accessibleLabel: $accessibleLabel,
+            ),
+        );
+    }
+
+    public function linkToPageWithOptions(
+        int $pageNumber,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        LinkAnnotationOptions $options,
+    ): DocumentBuilder {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new LinkAnnotation(
+        $clone->currentPageAnnotations[] = $this->buildRectLinkAnnotation(
             LinkTarget::page($pageNumber),
             $x,
             $y,
             $width,
             $height,
-            $contents,
-            $accessibleLabel,
+            $options,
         );
 
         return $clone;
@@ -607,15 +821,39 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $contents = null,
         ?string $accessibleLabel = null,
     ): DocumentBuilder {
+        return $this->linkToPagePositionWithOptions(
+            $pageNumber,
+            $targetX,
+            $targetY,
+            $x,
+            $y,
+            $width,
+            $height,
+            new LinkAnnotationOptions(
+                contents: $contents,
+                accessibleLabel: $accessibleLabel,
+            ),
+        );
+    }
+
+    public function linkToPagePositionWithOptions(
+        int $pageNumber,
+        float $targetX,
+        float $targetY,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        LinkAnnotationOptions $options,
+    ): DocumentBuilder {
         $clone = clone $this;
-        $clone->currentPageAnnotations[] = new LinkAnnotation(
+        $clone->currentPageAnnotations[] = $this->buildRectLinkAnnotation(
             LinkTarget::position($pageNumber, $targetX, $targetY),
             $x,
             $y,
             $width,
             $height,
-            $contents,
-            $accessibleLabel,
+            $options,
         );
 
         return $clone;
@@ -1472,6 +1710,28 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $link instanceof TextLink ? $link->groupKey : null;
     }
 
+    private function buildRectLinkAnnotation(
+        LinkTarget $target,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        LinkAnnotationOptions $options,
+    ): LinkAnnotation {
+        $metadata = $options->metadata();
+
+        return new LinkAnnotation(
+            target: $target,
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            contents: $metadata->contents,
+            accessibleLabel: $metadata->accessibleLabel,
+            taggedGroupKey: $metadata->groupKey,
+        );
+    }
+
     private function buildTableCellContent(
         TableLayout $tableLayout,
         TableCellLayout $cellLayout,
@@ -2301,6 +2561,34 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageImageResources[$alias] = $source;
 
         return $alias;
+    }
+
+    private function colorFillOperator(Color $color): string
+    {
+        $components = implode(' ', array_map(
+            fn (float $value): string => $this->formatNumber($value),
+            $color->components(),
+        ));
+
+        return match ($color->space) {
+            ColorSpace::GRAY => $components . ' g',
+            ColorSpace::RGB => $components . ' rg',
+            ColorSpace::CMYK => $components . ' k',
+        };
+    }
+
+    private function colorStrokeOperator(Color $color): string
+    {
+        $components = implode(' ', array_map(
+            fn (float $value): string => $this->formatNumber($value),
+            $color->components(),
+        ));
+
+        return match ($color->space) {
+            ColorSpace::GRAY => $components . ' G',
+            ColorSpace::RGB => $components . ' RG',
+            ColorSpace::CMYK => $components . ' K',
+        };
     }
 
     private function formatNumber(float $value): string
