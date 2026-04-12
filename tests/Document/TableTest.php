@@ -9,6 +9,7 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TableRow;
 use PHPUnit\Framework\TestCase;
 
@@ -88,5 +89,12 @@ final class TableTest extends TestCase
 
         self::assertSame($caption, $table->caption);
         self::assertCount(1, $table->footerRows);
+    }
+
+    public function testItStoresExplicitHeaderScopeOnCells(): void
+    {
+        $cell = TableCell::text('North')->withHeaderScope(TableHeaderScope::ROW);
+
+        self::assertSame(TableHeaderScope::ROW, $cell->headerScope);
     }
 }

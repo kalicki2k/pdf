@@ -518,6 +518,7 @@ final class DocumentSerializationPlanBuilder
                                     $cell->header ? 'TH' : 'TD',
                                     $rowStructElemObjectIds[$rowKey],
                                     kidEntries: $this->taggedMarkedContentKidEntries($cell->contentReferences, $pageObjectIds),
+                                    scope: $cell->headerScope?->value,
                                 ))->objectContents(),
                             );
                         }

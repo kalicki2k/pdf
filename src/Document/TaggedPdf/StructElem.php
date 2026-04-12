@@ -11,6 +11,7 @@ final readonly class StructElem
 {
     /**
      * @param list<int> $kidObjectIds
+     * @param list<string>|null $kidEntries
      */
     public function __construct(
         private string $tag,
@@ -20,6 +21,7 @@ final readonly class StructElem
         private ?string $altText = null,
         private ?int $markedContentId = null,
         private ?array $kidEntries = null,
+        private ?string $scope = null,
     ) {
     }
 
@@ -37,6 +39,10 @@ final readonly class StructElem
 
         if ($this->altText !== null) {
             $entries[] = '/Alt ' . $this->pdfString($this->altText);
+        }
+
+        if ($this->scope !== null) {
+            $entries[] = '/A << /O /Table /Scope /' . $this->scope . ' >>';
         }
 
         if ($this->markedContentId !== null) {

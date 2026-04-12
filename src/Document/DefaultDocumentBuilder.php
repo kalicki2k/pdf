@@ -82,7 +82,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /** @var list<NamedDestination> */
     private array $currentPageNamedDestinations = [];
     private int $currentPageNextMarkedContentId = 0;
-    /** @var array<int, array{captionReferences: list<array{pageIndex: int, markedContentId: int}>, headerRows: array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}>, bodyRows: array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}>, footerRows: array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}>}> */
+    /** @var array<int, array{captionReferences: list<array{pageIndex: int, markedContentId: int}>, headerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}>, bodyRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}>, footerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}>}> */
     private array $taggedTables = [];
     private int $nextTaggedTableId = 0;
     private ?Margin $currentPageMargin = null;
@@ -738,6 +738,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /**
      * @param list<string> $wrappedLines
      * @param list<list<ShapedTextRun>> $shapedLines
+     * @return array{contents: string, annotations: list<PageAnnotation>}
      */
     private function buildWrappedTextContent(
         array $wrappedLines,
@@ -953,7 +954,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 /** @var MappedTextRun $mappedRun */
                 $mappedRun = $lineEntry['mappedRun'];
                 /** @var ?LinkTarget $link */
-                $link = $lineEntry['link'];
+                $link = $lineEntry['link'] ?? null;
                 $renderedEntries[] = [
                     'mappedRun' => $mappedRun,
                     'link' => $link,
@@ -1289,7 +1290,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageContents = $this->appendPageContent($this->currentPageContents, $textResult['contents']);
         $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
 
-        if ($taggedTableId !== null && $markedContentId !== null) {
+        if ($taggedTableId !== null) {
             $this->addTaggedTableCaptionReference($taggedTableId, $markedContentId);
         }
     }
@@ -1468,19 +1469,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return implode("\n", array_filter($contents, static fn (string $content): bool => $content !== ''));
-    }
-
-    private function tableCellTextTopY(
-        float $topY,
-        float $cellHeight,
-        TableCellLayout $cellLayout,
-        CellPadding $cellPadding,
-        TextOptions $textOptions,
-        StandardFontDefinition | EmbeddedFontDefinition $font,
-    ): float {
-        return $topY
-            - $font->ascent($textOptions->fontSize)
-            - $this->tableCellVerticalOffset($cellHeight, $cellLayout, $cellPadding, $textOptions);
     }
 
     /**
@@ -1686,7 +1674,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @return array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}>
+     * @return array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}>
      */
     private function initializeTaggedTableRows(TableLayout $tableLayout, bool $header): array
     {
@@ -1698,7 +1686,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         foreach ($tableLayout->cells as $cellLayout) {
             $rows[$cellLayout->rowIndex]['cells'][$cellLayout->columnIndex] = [
-                'header' => $header,
+                'header' => $header || $cellLayout->cell->headerScope !== null,
+                'headerScope' => $cellLayout->cell->headerScope ?? ($header ? TableHeaderScope::COLUMN : null),
                 'references' => [],
             ];
         }
@@ -1759,7 +1748,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param array<int, array{cells: array<int, array{header: bool, references: list<array{pageIndex: int, markedContentId: int}>}>}> $rows
+     * @param array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, references: list<array{pageIndex: int, markedContentId: int}>}>}> $rows
      * @return list<TaggedTableRow>
      */
     private function buildTaggedTableRows(array $rows): array
@@ -1774,6 +1763,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $taggedCells[] = new TaggedTableCell(
                     columnIndex: $columnIndex,
                     header: $cell['header'],
+                    headerScope: $cell['headerScope'],
                     contentReferences: array_map(
                         static fn (array $reference): TaggedTableContentReference => new TaggedTableContentReference(
                             $reference['pageIndex'],

@@ -12,7 +12,9 @@ use Kalle\Pdf\Document\DocumentRenderer;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
+use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Font\EmbeddedFontSource;
@@ -311,7 +313,7 @@ final class DocumentRendererTest extends TestCase
             ->title('Accessible Copy')
             ->language('de-DE')
             ->textSegments([
-                new TextSegment('Read docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
             ], new TextOptions(width: 45))
             ->build();
 
@@ -335,9 +337,15 @@ final class DocumentRendererTest extends TestCase
             TableColumn::fixed(90.0),
         )
             ->withCaption(TableCaption::text('Quarterly summary'))
-            ->withHeaderRows(TableRow::fromTexts('Label', 'Value'))
+            ->withHeaderRows(TableRow::fromCells(
+                TableCell::text('Label')->withHeaderScope(TableHeaderScope::BOTH),
+                TableCell::text('Value'),
+            ))
             ->withRows(
-                TableRow::fromTexts('North', '12'),
+                TableRow::fromCells(
+                    TableCell::text('North')->withHeaderScope(TableHeaderScope::ROW),
+                    TableCell::text('12'),
+                ),
             )
             ->withFooterRows(
                 TableRow::fromTexts('Total', '12'),
@@ -364,6 +372,8 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /TR', $pdf);
         self::assertStringContainsString('/Type /StructElem /S /TH', $pdf);
         self::assertStringContainsString('/Type /StructElem /S /TD', $pdf);
+        self::assertStringContainsString('/A << /O /Table /Scope /Both >>', $pdf);
+        self::assertStringContainsString('/A << /O /Table /Scope /Row >>', $pdf);
         self::assertStringContainsString('/Caption << /MCID ', $pdf);
         self::assertStringContainsString('/TH << /MCID ', $pdf);
         self::assertStringContainsString('/TD << /MCID ', $pdf);

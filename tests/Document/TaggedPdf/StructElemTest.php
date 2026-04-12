@@ -24,4 +24,19 @@ final class StructElemTest extends TestCase
             $structElem->objectContents(),
         );
     }
+
+    public function testItRendersTableScopeAttributes(): void
+    {
+        $structElem = new StructElem(
+            'TH',
+            4,
+            kidEntries: ['<< /Type /MCR /Pg 3 0 R /MCID 2 >>'],
+            scope: 'Row',
+        );
+
+        self::assertSame(
+            '<< /Type /StructElem /S /TH /P 4 0 R /A << /O /Table /Scope /Row >> /K [<< /Type /MCR /Pg 3 0 R /MCID 2 >>] >>',
+            $structElem->objectContents(),
+        );
+    }
 }

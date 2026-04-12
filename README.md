@@ -70,6 +70,7 @@ use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Layout\Table\CellPadding;
 
@@ -85,7 +86,7 @@ $table = Table::define(
     ->withRepeatedHeaderOnPageBreak()
     ->withRows(
         TableRow::fromCells(
-            \Kalle\Pdf\Document\TableCell::text('A-100', rowspan: 2),
+            \Kalle\Pdf\Document\TableCell::text('A-100', rowspan: 2)->withHeaderScope(TableHeaderScope::ROW),
             \Kalle\Pdf\Document\TableCell::text('Kompakter Einstieg in das Tabellenlayout von pdf2.'),
         ),
         TableRow::fromCells(
@@ -100,6 +101,8 @@ $document = DefaultDocumentBuilder::make()
     ->table($table)
     ->build();
 ```
+
+Ein umfangreicheres Beispiel liegt in `examples/table.php`.
 
 ## Docker
 
