@@ -116,11 +116,38 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+## Graphics
+
+`pdf2` stellt jetzt eine kleine explizite Public API fuer grafische Primitive bereit. Die erste Iteration deckt Linie, Rechteck, Rounded Rectangle und freie Pfade ab und bleibt bewusst konservativ: keine Raw-Content-Injection, keine Opacity-API und keine breite Formensammlung aus dem Altprojekt `pdf(1)`.
+
+```php
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Drawing\Path;
+use Kalle\Pdf\Drawing\StrokeStyle;
+
+$triangle = Path::builder()
+    ->moveTo(60, 640)
+    ->lineTo(120, 720)
+    ->lineTo(180, 640)
+    ->close()
+    ->build();
+
+$document = DefaultDocumentBuilder::make()
+    ->line(40, 760, 200, 760, new StrokeStyle(1.5, Color::gray(0.25)))
+    ->rectangle(40, 680, 120, 50, fillColor: Color::hex('#dbeafe'))
+    ->roundedRectangle(180, 680, 120, 50, 10, new StrokeStyle(1, Color::hex('#1d4ed8')))
+    ->path($triangle, new StrokeStyle(1, Color::hex('#991b1b')), Color::hex('#fecaca'))
+    ->build();
+```
+
+In Tagged-PDF-Profilen rendert diese Graphics-API aktuell bewusst als `/Artifact`, weil fuer semantisch bedeutungsvolle Vektorformen noch keine eigene Struktur-Tagschicht existiert.
+
 ## Header und Footer
 
 Dokumentweite Seitendekorationen koennen ueber `header()` und `footer()` registriert werden. Beide Callbacks laufen fuer jede erzeugte Seite, auch bei `newPage()` und automatischen Seitenumbruechen. Sie rendern in einem isolierten Seitendekorations-Context und greifen daher nicht in den normalen Content-Flow ein.
 
-Ein ausführbares Beispiel liegt in `examples/header-footer.php`.
+Ausführbare Beispiele liegen in `examples/header-footer.php` und `examples/header-footer-filters.php`.
 
 - Signatur: `static function (PageDecorationContext $page, int $pageNumber): void`
 - Reihenfolge pro Seite: Header, regulaerer Seiteninhalt, Footer
@@ -128,6 +155,7 @@ Ein ausführbares Beispiel liegt in `examples/header-footer.php`.
 - Die Seitennummer ist 1-basiert.
 - Fuer Seitennummern wie `Seite X von Y` steht zusaetzlich `$page->totalPages()` bereit.
 - Bedingte Dekorationen koennen direkt im Callback ueber `$page->isFirstPage()`, `$page->isLastPage()` oder `$page->pageNumber()` umgesetzt werden.
+- Fuer haeufige Faelle gibt es ausserdem `pageNumbers(...)` sowie praedikatbasierte Varianten `headerOn(...)` und `footerOn(...)`.
 - In Tagged-PDF-Profilen werden Header/Footer als Artefakt behandelt und nicht in die logische Dokumentstruktur aufgenommen.
 
 ```php
@@ -149,6 +177,26 @@ $document = DefaultDocumentBuilder::make()
             fontSize: 10,
         ));
     })
+    ->paragraph('Langer Inhalt ...')
+    ->build();
+```
+
+```php
+$document = DefaultDocumentBuilder::make()
+    ->pageNumbers(
+        new TextOptions(x: 40, y: 20, fontSize: 10),
+        'Seite {{page}} von {{pages}}',
+    )
+    ->headerOn(
+        static fn (PageDecorationContext $page): bool => !$page->isFirstPage(),
+        static function (PageDecorationContext $page): void {
+            $page->text('Kapitelkopf', new TextOptions(
+                x: $page->page()->contentArea()->left,
+                y: $page->page()->contentArea()->top,
+                fontSize: 12,
+            ));
+        },
+    )
     ->paragraph('Langer Inhalt ...')
     ->build();
 ```
@@ -366,7 +414,7 @@ $document = DefaultDocumentBuilder::make()
 
 ## PDF/A-1a Umfang
 
-Der aktuell abgesicherte `PDF/A-1a`-Pfad in `pdf2` deckt bewusst einen klar begrenzten Strukturumfang ab: Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Fuer diese Struktur prueft der Build-Pfad jetzt nicht nur die Existenz von Tagged Content, sondern auch die Konsistenz von `StructTreeRoot`, Dokumentwurzel, `ParentTree`, `/StructParents`, `MCID`-Zuordnung und der unterstuetzten Strukturelement-Hierarchie. Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer-, Builder- und Strukturvalidator-Tests abgesichert.
+Der aktuell abgesicherte `PDF/A-1a`-Pfad in `pdf2` deckt bewusst einen klar begrenzten Strukturumfang ab: Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Fuer diese Struktur prueft der Build-Pfad jetzt nicht nur die Existenz von Tagged Content, sondern auch die Konsistenz von `StructTreeRoot`, Dokumentwurzel, `ParentTree`, `/StructParents`, `MCID`-Zuordnung und der unterstuetzten Strukturelement-Hierarchie. Interne `PDF/A-1a`-Dokumentmodelle mit anderen Text-Tags als `H1` bis `H6` oder `P`, mit leeren Tagged-Listen/Tabellen oder mit inkonsistenten Tagged-Referenzen werden explizit verworfen. Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer-, Builder- und Strukturvalidator-Tests abgesichert.
 
 Nicht Teil dieses Umfangs sind aktuell reichere Annotationstypen, Formulare, Signaturfelder oder weitergehende Strukturtypen ausserhalb dieses Satzes. Solche Faelle sollen fuer `PDF/A-1a` weiter explizit scheitern oder erst nach eigener Regressionserweiterung freigegeben werden.
 
