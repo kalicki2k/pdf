@@ -21,6 +21,7 @@ final class EncryptionProfileResolver
 
         return match ($encryption->algorithm) {
             Algorithm::RC4_128 => $this->resolveRc4_128($documentProfile),
+            Algorithm::AES_128 => $this->resolveAes128($documentProfile),
         };
     }
 
@@ -35,6 +36,20 @@ final class EncryptionProfileResolver
             128,
             2,
             3,
+        );
+    }
+
+    private function resolveAes128(Profile $documentProfile): EncryptionProfile
+    {
+        if ($documentProfile->version() < Version::V1_6) {
+            throw new InvalidArgumentException('AES 128-bit encryption requires PDF 1.6 or newer.');
+        }
+
+        return new EncryptionProfile(
+            Algorithm::AES_128,
+            128,
+            4,
+            4,
         );
     }
 }

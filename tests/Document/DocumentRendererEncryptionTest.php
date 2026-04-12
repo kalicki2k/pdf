@@ -25,4 +25,21 @@ final class DocumentRendererEncryptionTest extends TestCase
         self::assertStringNotContainsString('Secret Author', $pdf);
         self::assertStringNotContainsString('Visible Secret', $pdf);
     }
+
+    public function testItDoesNotLeavePlaintextStringsInAnAes128EncryptedPdf(): void
+    {
+        $pdf = DefaultDocumentBuilder::make()
+            ->profile(\Kalle\Pdf\Document\Profile::pdf16())
+            ->title('AES Secret Title')
+            ->author('AES Secret Author')
+            ->encryption(Encryption::aes128('user', 'owner'))
+            ->text('Visible AES Secret')
+            ->contents();
+
+        self::assertStringContainsString('/Encrypt ', $pdf);
+        self::assertStringContainsString('/CF << /StdCF << /CFM /AESV2 /AuthEvent /DocOpen /Length 16 >> >>', $pdf);
+        self::assertStringNotContainsString('AES Secret Title', $pdf);
+        self::assertStringNotContainsString('AES Secret Author', $pdf);
+        self::assertStringNotContainsString('Visible AES Secret', $pdf);
+    }
 }

@@ -18,8 +18,8 @@ final class StandardSecurityHandler
 
     public function build(Encryption $encryption, EncryptionProfile $profile, string $documentId): StandardSecurityHandlerData
     {
-        if ($profile->revision !== 3) {
-            throw new InvalidArgumentException('Only standard security handler revision 3 is supported in this stage.');
+        if (!in_array($profile->revision, [3, 4], true)) {
+            throw new InvalidArgumentException('Only standard security handler revisions 3 and 4 are supported in this stage.');
         }
 
         $permissionBits = -4;
@@ -77,8 +77,8 @@ final class StandardSecurityHandler
 
     private function computeUserValue(EncryptionProfile $profile, string $encryptionKey, string $documentId): string
     {
-        if ($profile->revision !== 3) {
-            throw new InvalidArgumentException('Only standard security handler revision 3 is supported in this stage.');
+        if (!in_array($profile->revision, [3, 4], true)) {
+            throw new InvalidArgumentException('Only standard security handler revisions 3 and 4 are supported in this stage.');
         }
 
         $digest = md5(self::PASSWORD_PADDING . hex2bin($documentId), true);

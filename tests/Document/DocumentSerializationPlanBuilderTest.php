@@ -344,22 +344,27 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $plan = $builder->build($document);
         $objects = iterator_to_array($plan->objects);
+        $objectsById = [];
+
+        foreach ($objects as $object) {
+            $objectsById[$object->objectId] = $object;
+        }
 
         self::assertSame(
             '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 6 0 R /Annots [8 0 R 9 0 R] >>',
-            $objects[4]->contents,
+            $objectsById[5]->contents,
         );
         self::assertSame(
             '<< /Type /Annot /Subtype /Link /Rect [40 500 160 516] /Border [0 0 0] /P 5 0 R /Dest [3 0 R /Fit] /Contents (Back to page 1) >>',
-            $objects[7]->contents,
+            $objectsById[8]->contents,
         );
         self::assertSame(
             '<< /Type /Annot /Subtype /Link /Rect [40 460 160 476] /Border [0 0 0] /P 5 0 R /Dest [3 0 R /XYZ 72 700 null] /Contents (Back to heading) >>',
-            $objects[8]->contents,
+            $objectsById[9]->contents,
         );
     }
 
-    public function testItBuildsTaggedLinkAnnotationsForPdfUaProfiles(): void
+    public function testItRejectsCurrentLinkAnnotationsForPdfUaProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -369,19 +374,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
             ->build();
 
-        $plan = $builder->build($document);
-        $objects = iterator_to_array($plan->objects);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('does not support the current page annotation implementation');
 
-        self::assertStringContainsString('/Annots [5 0 R] /Tabs /S', $objects[2]->contents);
-        self::assertSame(
-            '<< /Type /Annot /Subtype /Link /Rect [40 500 160 516] /Border [0 0 0] /P 3 0 R /StructParent 0 /A << /S /URI /URI (https://example.com) >> /Contents (Open Example) >>',
-            $objects[4]->contents,
-        );
-        self::assertStringContainsString('<< /Nums [0 [9 0 R]] >>', $objects[7]->contents);
-        self::assertSame(
-            '<< /Type /StructElem /S /Link /P 7 0 R /Pg 3 0 R /Alt (Open Example) /K [<< /Type /OBJR /Obj 5 0 R /Pg 3 0 R >>] >>',
-            $objects[8]->contents,
-        );
+        $builder->build($document);
     }
 
     public function testItRejectsPdfUaLinkAnnotationsWithoutAlternativeText(): void
@@ -395,12 +391,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('requires alternative text for link annotation');
+        $this->expectExceptionMessage('does not support the current page annotation implementation');
 
         $builder->build($document);
     }
 
-    public function testItAllowsLinkAnnotationsForPdfA1ProfilesAndMarksThemPrintable(): void
+    public function testItRejectsCurrentLinkAnnotationsForPdfA1Profiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
@@ -412,10 +408,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
             ->build();
 
-        $plan = $builder->build($document);
-        $objects = iterator_to_array($plan->objects);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('does not allow the current page annotation implementation because annotation appearance streams are required');
 
-        self::assertStringContainsString('/F 4', $objects[8]->contents);
+        $builder->build($document);
     }
 
     public function testItBuildsSoftMaskImageObjects(): void

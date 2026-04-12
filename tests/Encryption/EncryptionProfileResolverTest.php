@@ -36,6 +36,19 @@ final class EncryptionProfileResolverTest extends TestCase
         $resolver->resolve(Profile::pdfA2u(), Encryption::rc4_128('user', 'owner'));
     }
 
+    public function testItResolvesAes128ForSupportedProfiles(): void
+    {
+        $profile = (new EncryptionProfileResolver())->resolve(
+            Profile::pdf16(),
+            Encryption::aes128('user', 'owner'),
+        );
+
+        self::assertSame(Algorithm::AES_128, $profile->algorithm);
+        self::assertSame(128, $profile->keyLengthInBits);
+        self::assertSame(4, $profile->dictionaryVersion);
+        self::assertSame(4, $profile->revision);
+    }
+
     public function testItRejectsRc4128ForTooOldPdfVersions(): void
     {
         $resolver = new EncryptionProfileResolver();
@@ -44,5 +57,15 @@ final class EncryptionProfileResolverTest extends TestCase
         $this->expectExceptionMessage('RC4 128-bit encryption requires PDF 1.4 or newer.');
 
         $resolver->resolve(Profile::pdf13(), Encryption::rc4_128('user', 'owner'));
+    }
+
+    public function testItRejectsAes128ForTooOldPdfVersions(): void
+    {
+        $resolver = new EncryptionProfileResolver();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('AES 128-bit encryption requires PDF 1.6 or newer.');
+
+        $resolver->resolve(Profile::pdf15(), Encryption::aes128('user', 'owner'));
     }
 }

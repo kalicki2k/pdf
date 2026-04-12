@@ -21,4 +21,13 @@ final readonly class Encryption
             $ownerPassword ?? $userPassword,
         );
     }
+
+    public static function aes128(string $userPassword, ?string $ownerPassword = null): self
+    {
+        return new self(
+            Algorithm::AES_128,
+            $userPassword,
+            $ownerPassword ?? $userPassword,
+        );
+    }
 }

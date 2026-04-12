@@ -12,7 +12,18 @@ final class ObjectEncryptor
         private readonly EncryptionProfile $profile,
         private readonly StandardSecurityHandlerData $securityHandlerData,
         private readonly Rc4Cipher $cipher = new Rc4Cipher(),
+        private readonly Aes128Cipher $aes128Cipher = new Aes128Cipher(),
     ) {
+    }
+
+    public function encryptLiteralStrings(string $contents, int $objectId): string
+    {
+        return $this->encryptLiteralStringContents($contents, $objectId);
+    }
+
+    public function encryptStreamContents(string $contents, int $objectId): string
+    {
+        return $this->encryptBytes($objectId, $contents);
     }
 
     public function encryptObject(string $renderedObject, int $objectId): string
@@ -21,7 +32,7 @@ final class ObjectEncryptor
         $streamOffset = strpos($renderedObject, $streamMarker);
 
         if ($streamOffset === false) {
-            return $this->encryptLiteralStrings($renderedObject, $objectId);
+            return $this->encryptLiteralStringContents($renderedObject, $objectId);
         }
 
         $streamStart = $streamOffset + strlen($streamMarker);
@@ -35,14 +46,14 @@ final class ObjectEncryptor
         $dictionary = substr($renderedObject, 0, $streamStart);
         $streamData = substr($renderedObject, $streamStart, $streamEnd - $streamStart);
         $suffix = substr($renderedObject, $streamEnd);
-        $encryptedStreamData = $this->encryptBytes($objectId, $streamData);
+        $encryptedStreamData = $this->encryptStreamContents($streamData, $objectId);
 
-        return $this->encryptLiteralStrings($dictionary, $objectId)
+        return $this->encryptLiteralStringContents($dictionary, $objectId)
             . $encryptedStreamData
             . $suffix;
     }
 
-    private function encryptLiteralStrings(string $contents, int $objectId): string
+    private function encryptLiteralStringContents(string $contents, int $objectId): string
     {
         $result = '';
         $offset = 0;
@@ -173,14 +184,23 @@ final class ObjectEncryptor
 
     private function encryptBytes(int $objectId, string $bytes): string
     {
-        return $this->cipher->encrypt($this->deriveObjectKey($objectId), $bytes);
+        return match ($this->profile->algorithm) {
+            Algorithm::RC4_128 => $this->cipher->encrypt($this->deriveObjectKey($objectId), $bytes),
+            Algorithm::AES_128 => $this->aes128Cipher->encrypt($this->deriveObjectKey($objectId, true), $bytes),
+        };
     }
 
-    private function deriveObjectKey(int $objectId): string
+    private function deriveObjectKey(int $objectId, bool $addAesSalt = false): string
     {
         $objectBytes = substr(pack('V', $objectId), 0, 3);
         $generationBytes = pack('v', 0);
-        $hash = md5($this->securityHandlerData->encryptionKey . $objectBytes . $generationBytes, true);
+        $material = $this->securityHandlerData->encryptionKey . $objectBytes . $generationBytes;
+
+        if ($addAesSalt) {
+            $material .= 'sAlT';
+        }
+
+        $hash = md5($material, true);
 
         return substr(
             $hash,

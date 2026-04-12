@@ -7,4 +7,5 @@ namespace Kalle\Pdf\Encryption;
 enum Algorithm
 {
     case RC4_128;
+    case AES_128;
 }
