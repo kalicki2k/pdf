@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TableRow;
-use Kalle\Pdf\Document\DefaultDocumentBuilder;
-use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Encryption\Permissions;
+use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
@@ -42,7 +43,7 @@ final class DocumentRendererEncryptionTest extends TestCase
     public function testItDoesNotLeavePlaintextStringsInAnAes128EncryptedPdf(): void
     {
         $pdf = DefaultDocumentBuilder::make()
-            ->profile(\Kalle\Pdf\Document\Profile::pdf16())
+            ->profile(Profile::pdf16())
             ->title('AES Secret Title')
             ->author('AES Secret Author')
             ->encryption(Encryption::aes128('user', 'owner'))
@@ -59,7 +60,7 @@ final class DocumentRendererEncryptionTest extends TestCase
     public function testItDoesNotLeavePlaintextStringsInAnAes256EncryptedPdf(): void
     {
         $pdf = DefaultDocumentBuilder::make()
-            ->profile(\Kalle\Pdf\Document\Profile::pdf17())
+            ->profile(Profile::pdf17())
             ->title('AES256 Secret Title')
             ->author('AES256 Secret Author')
             ->encryption(Encryption::aes256('user', 'owner'))
@@ -79,7 +80,7 @@ final class DocumentRendererEncryptionTest extends TestCase
     public function testItWritesConfiguredPermissionsIntoTheRenderedEncryptDictionary(): void
     {
         $pdf = DefaultDocumentBuilder::make()
-            ->profile(\Kalle\Pdf\Document\Profile::pdf16())
+            ->profile(Profile::pdf16())
             ->encryption(Encryption::aes128('user', 'owner')->withPermissions(
                 new Permissions(print: false, modify: true, copy: false, annotate: true),
             ))
@@ -111,7 +112,7 @@ final class DocumentRendererEncryptionTest extends TestCase
             );
 
         $pdf = DefaultDocumentBuilder::make()
-            ->profile(\Kalle\Pdf\Document\Profile::pdf17())
+            ->profile(Profile::pdf17())
             ->title('Complex Secret Title')
             ->author('Complex Secret Author')
             ->encryption(Encryption::aes256('user', 'owner'))

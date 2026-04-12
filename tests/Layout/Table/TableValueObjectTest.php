@@ -7,12 +7,15 @@ namespace Kalle\Pdf\Tests\Layout\Table;
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\TableCellContent;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\ColumnWidth;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
 final class TableValueObjectTest extends TestCase
@@ -45,6 +48,15 @@ final class TableValueObjectTest extends TestCase
         new TablePlacement(30.0, 0.0);
     }
 
+    public function testTablePlacementCanCarryAbsoluteYCoordinates(): void
+    {
+        $placement = TablePlacement::at(30.0, 420.0, 180.0);
+
+        self::assertSame(30.0, $placement->x);
+        self::assertSame(420.0, $placement->y);
+        self::assertSame(180.0, $placement->width);
+    }
+
     public function testTableCellCanCarryCellSpecificOverrides(): void
     {
         $cell = TableCell::text('Value')
@@ -59,5 +71,17 @@ final class TableValueObjectTest extends TestCase
         self::assertEquals(Color::hex('#ffeecc'), $cell->backgroundColor);
         self::assertEquals(CellPadding::symmetric(2.0, 6.0), $cell->padding);
         self::assertEquals(new Border(1.0, 0.0, 1.0, 0.0), $cell->border);
+    }
+
+    public function testTableCellContentSupportsRichTextSegments(): void
+    {
+        $content = TableCellContent::segments(
+            TextSegment::plain('Read '),
+            TextSegment::link('docs', TextLink::externalUrl('https://example.com/docs')),
+        );
+
+        self::assertTrue($content->isRichText());
+        self::assertSame('Read docs', $content->plainText);
+        self::assertCount(2, $content->segments);
     }
 }

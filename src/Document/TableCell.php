@@ -10,32 +10,62 @@ use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextSegment;
 
-final readonly class TableCell
+final class TableCell
 {
+    public readonly TableCellContent $content;
+    public readonly string $text;
+    public readonly int $colspan;
+    public readonly int $rowspan;
+    public readonly ?Color $backgroundColor;
+    public readonly VerticalAlign $verticalAlign;
+    public readonly ?TableHeaderScope $headerScope;
+    public readonly ?TextAlign $horizontalAlign;
+    public readonly ?CellPadding $padding;
+    public readonly ?Border $border;
+
     public function __construct(
-        public string $text,
-        public int $colspan = 1,
-        public int $rowspan = 1,
-        public ?Color $backgroundColor = null,
-        public VerticalAlign $verticalAlign = VerticalAlign::TOP,
-        public ?TableHeaderScope $headerScope = null,
-        public ?TextAlign $horizontalAlign = null,
-        public ?CellPadding $padding = null,
-        public ?Border $border = null,
+        string | TableCellContent $content,
+        int $colspan = 1,
+        int $rowspan = 1,
+        ?Color $backgroundColor = null,
+        VerticalAlign $verticalAlign = VerticalAlign::TOP,
+        ?TableHeaderScope $headerScope = null,
+        ?TextAlign $horizontalAlign = null,
+        ?CellPadding $padding = null,
+        ?Border $border = null,
     ) {
-        if ($this->colspan < 1) {
+        if ($colspan < 1) {
             throw new InvalidArgumentException('Table cell colspan must be at least 1.');
         }
 
-        if ($this->rowspan < 1) {
+        if ($rowspan < 1) {
             throw new InvalidArgumentException('Table cell rowspan must be at least 1.');
         }
+
+        $this->content = is_string($content)
+            ? TableCellContent::text($content)
+            : $content;
+        $this->text = $this->content->plainText;
+        $this->colspan = $colspan;
+        $this->rowspan = $rowspan;
+        $this->backgroundColor = $backgroundColor;
+        $this->verticalAlign = $verticalAlign;
+        $this->headerScope = $headerScope;
+        $this->horizontalAlign = $horizontalAlign;
+        $this->padding = $padding;
+        $this->border = $border;
     }
 
     public static function text(string $text, int $colspan = 1, int $rowspan = 1): self
     {
         return new self($text, $colspan, $rowspan);
+    }
+
+    public static function segments(TextSegment ...$segments): self
+    {
+        return new self(TableCellContent::segments(...$segments));
     }
 
     public function withColspan(int $colspan): self

@@ -17,7 +17,9 @@ use Kalle\Pdf\Layout\Table\TableLayoutCalculator;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
 final class TableLayoutCalculatorTest extends TestCase
@@ -146,5 +148,33 @@ final class TableLayoutCalculatorTest extends TestCase
         self::assertEquals(new Border(1.0, 2.0, 3.0, 4.0), $layout->cells[0]->border);
         self::assertSame(TextAlign::CENTER, $layout->cells[0]->textOptions->align);
         self::assertEquals(CellPadding::all(4.0), $layout->cells[1]->padding);
+    }
+
+    public function testItLayoutsRichTextCellsWithWrappedSegmentLines(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(90.0),
+        )
+            ->withCellPadding(CellPadding::all(5.0))
+            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withRows(TableRow::fromCells(
+                TableCell::segments(
+                    TextSegment::plain('Read the '),
+                    TextSegment::link('documentation', TextLink::externalUrl('https://example.com/docs')),
+                    TextSegment::plain(' carefully before rollout.'),
+                ),
+            ));
+
+        $layout = (new TableLayoutCalculator())->layoutTable(
+            $table,
+            [90.0],
+            new TextFlow(new Page(PageSize::A4())),
+            StandardFontDefinition::from('Helvetica'),
+        );
+
+        self::assertTrue($layout->cells[0]->usesRichText());
+        self::assertNotNull($layout->cells[0]->wrappedSegmentLines);
+        self::assertGreaterThan(1, $layout->cells[0]->lineCount());
+        self::assertSame($layout->cells[0]->lineCount(), count($layout->cells[0]->wrappedSegmentLines));
     }
 }

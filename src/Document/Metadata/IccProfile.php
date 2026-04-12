@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Metadata;
 
+use function dirname;
+
+use function file_get_contents;
+
 use InvalidArgumentException;
 
-use function dirname;
-use function file_get_contents;
 use function is_string;
 use function sprintf;
 use function strlen;

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
+use function array_merge;
+use function count;
+
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 
-use function array_merge;
-use function count;
 use function mb_ord;
 use function preg_match;
 use function preg_split;
@@ -53,8 +54,7 @@ final readonly class DevanagariScriptTextShaper implements ScriptTextShaper
         array $characters,
         int $clusterOffset,
         StandardFontDefinition | EmbeddedFontDefinition | null $font,
-    ): array
-    {
+    ): array {
         $baseIndex = $this->baseIndex($characters);
         $rephIndex = $this->rephIndex($characters, $baseIndex);
         $prefIndex = $this->prefIndex($characters, $baseIndex, $rephIndex);

@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Image;
 
-use InvalidArgumentException;
-
 use function array_key_exists;
+
 use function gzcompress;
 use function gzuncompress;
+
+use InvalidArgumentException;
+
 use function ord;
-use function strlen;
-use function substr;
-use function unpack;
 
 use RuntimeException;
+
+use function strlen;
+use function substr;
+
+use function unpack;
 
 final readonly class PngImageDecoder
 {

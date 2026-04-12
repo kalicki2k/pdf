@@ -6,6 +6,8 @@ namespace Kalle\Pdf\Tests\Image;
 
 use function base64_decode;
 
+use RuntimeException;
+
 final class PngFixture
 {
     public static function tinyRgbPngBytes(): string
@@ -41,7 +43,7 @@ final class PngFixture
         $bytes = base64_decode($encoded, true);
 
         if (!is_string($bytes)) {
-            throw new \RuntimeException('Unable to decode PNG fixture.');
+            throw new RuntimeException('Unable to decode PNG fixture.');
         }
 
         return $bytes;

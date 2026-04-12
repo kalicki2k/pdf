@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Image;
 
-use InvalidArgumentException;
-
 use function file_get_contents;
+
 use function get_debug_type;
 use function hash;
 use function implode;
+
+use InvalidArgumentException;
+
 use function is_file;
 use function is_scalar;
-use function strlen;
 
 use RuntimeException;
+
+use function strlen;
 
 final readonly class ImageSource
 {

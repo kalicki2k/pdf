@@ -18,6 +18,7 @@ use Kalle\Pdf\Document\TextFlow;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 
 use function max;
 
@@ -113,8 +114,13 @@ final class TableLayoutCalculator
                 $cellBorder = $cell->border ?? $table->border;
                 $contentWidth = max($cellWidth - $cellPadding->horizontal(), 0.0);
                 $cellOptions = $this->cellTextOptions($baseOptions, $cell, $contentWidth);
-                $wrappedLines = $textFlow->wrapTextLines($cell->text, $cellOptions, $font, 0.0);
-                $lineCount = max(count($wrappedLines), 1);
+                $wrappedSegmentLines = $cell->content->isRichText()
+                    ? $textFlow->wrapSegmentLines($cell->content->segments, $cellOptions, $font, 0.0)
+                    : null;
+                $wrappedLines = $wrappedSegmentLines !== null
+                    ? $this->wrappedLineTexts($wrappedSegmentLines)
+                    : $textFlow->wrapTextLines($cell->text, $cellOptions, $font, 0.0);
+                $lineCount = max($wrappedSegmentLines !== null ? count($wrappedSegmentLines) : count($wrappedLines), 1);
                 $cellHeight = ($lineCount * $textFlow->lineHeight($cellOptions)) + $cellPadding->vertical();
                 $cellLayouts[] = new TableCellLayout(
                     $cell,
@@ -127,6 +133,7 @@ final class TableLayoutCalculator
                     $cellBorder,
                     $cellOptions,
                     $wrappedLines,
+                    $wrappedSegmentLines,
                 );
 
                 if ($cell->rowspan === 1) {
@@ -227,6 +234,21 @@ final class TableLayoutCalculator
             kerning: $options->kerning,
             baseDirection: $options->baseDirection,
             align: $cell->horizontalAlign ?? $options->align,
+        );
+    }
+
+    /**
+     * @param list<list<TextSegment>> $wrappedSegmentLines
+     * @return list<string>
+     */
+    private function wrappedLineTexts(array $wrappedSegmentLines): array
+    {
+        return array_map(
+            static fn (array $line): string => implode('', array_map(
+                static fn (TextSegment $segment): string => $segment->text,
+                $line,
+            )),
+            $wrappedSegmentLines,
         );
     }
 }

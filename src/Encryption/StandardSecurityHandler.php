@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Encryption;
 
-use InvalidArgumentException;
 use Closure;
+use InvalidArgumentException;
 
 final class StandardSecurityHandler
 {

@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Metadata;
 
+use DateTimeImmutable;
 use DateTimeInterface;
-use Kalle\Pdf\Document\Document;
-
-use function htmlspecialchars;
-use function implode;
-use function strlen;
 
 use const ENT_QUOTES;
 use const ENT_SUBSTITUTE;
 use const ENT_XML1;
+
+use function htmlspecialchars;
+use function implode;
+
+use Kalle\Pdf\Document\Document;
+
+use function strlen;
 
 final readonly class XmpMetadata
 {
@@ -46,7 +49,7 @@ final readonly class XmpMetadata
      */
     private function buildXmlLines(Document $document, ?DateTimeInterface $serializedAt): array
     {
-        $timestamp = ($serializedAt ?? new \DateTimeImmutable('now'))->format('Y-m-d\TH:i:sP');
+        $timestamp = ($serializedAt ?? new DateTimeImmutable('now'))->format('Y-m-d\TH:i:sP');
         $lines = [
             '<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>',
             '<x:xmpmeta xmlns:x="adobe:ns:meta/">',

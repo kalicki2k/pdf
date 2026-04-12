@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use function implode;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Table;
@@ -20,11 +21,12 @@ use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\Margin;
-use Kalle\Pdf\Page\PageSize;
 
+use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+
 use Kalle\Pdf\Text\TextSegment;
 
 use function number_format;
@@ -140,7 +142,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
 
     public function testItRejectsExplicitTablePlacementYAboveTheCurrentFlowCursor(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Explicit table placement y must not be above the current flow cursor on the page.');
 
         $table = Table::define(

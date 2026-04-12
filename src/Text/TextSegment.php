@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
+use Kalle\Pdf\Page\LinkTarget;
+
 final readonly class TextSegment
 {
     public function __construct(
         public string $text,
-        public \Kalle\Pdf\Page\LinkTarget|TextLink|null $link = null,
+        public LinkTarget | TextLink | null $link = null,
     ) {
     }
 

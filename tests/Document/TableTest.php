@@ -8,10 +8,13 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\TableCellContent;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
 final class TableTest extends TestCase
@@ -100,5 +103,27 @@ final class TableTest extends TestCase
         $cell = TableCell::text('North')->withHeaderScope(TableHeaderScope::ROW);
 
         self::assertSame(TableHeaderScope::ROW, $cell->headerScope);
+    }
+
+    public function testItStoresAbsolutePlacementAndRichCellContentExplicitly(): void
+    {
+        $placement = TablePlacement::at(48.0, 460.0, 220.0);
+        $cell = TableCell::segments(
+            TextSegment::plain('Read '),
+            TextSegment::link('docs', TextLink::externalUrl('https://example.com/docs')),
+        );
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+        )
+            ->withPlacement($placement)
+            ->withRows(TableRow::fromCells($cell));
+
+        self::assertSame($placement, $table->placement);
+        self::assertTrue($table->rows[0]->cells[0]->content->isRichText());
+        self::assertSame('Read docs', $table->rows[0]->cells[0]->text);
+        self::assertEquals(TableCellContent::segments(
+            TextSegment::plain('Read '),
+            TextSegment::link('docs', TextLink::externalUrl('https://example.com/docs')),
+        ), $table->rows[0]->cells[0]->content);
     }
 }

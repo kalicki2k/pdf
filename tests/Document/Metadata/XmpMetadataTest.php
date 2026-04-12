@@ -28,7 +28,7 @@ final class XmpMetadataTest extends TestCase
 
         $contents = $metadata->objectContents($document, $serializedAt);
 
-        self::assertStringStartsWith("<< /Type /Metadata /Subtype /XML /Length ", $contents);
+        self::assertStringStartsWith('<< /Type /Metadata /Subtype /XML /Length ', $contents);
         self::assertStringContainsString('<dc:format>application/pdf</dc:format>', $contents);
         self::assertStringContainsString('<rdf:li xml:lang="x-default">Spec</rdf:li>', $contents);
         self::assertStringContainsString('<rdf:li>Kalle</rdf:li>', $contents);

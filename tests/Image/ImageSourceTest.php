@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Image;
 
+use function file_put_contents;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImageSource;
+
 use PHPUnit\Framework\TestCase;
 
-use function file_put_contents;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -43,7 +45,7 @@ final class ImageSourceTest extends TestCase
         );
         self::assertSame('rgb-data', $source->pdfObjectStreamContents());
         self::assertSame(
-            "<<" . ' /Type /XObject /Subtype /Image /Width 2 /Height 3 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Intent /Perceptual /Length 8 >>' . "\nstream\nrgb-data\nendstream",
+            '<<' . ' /Type /XObject /Subtype /Image /Width 2 /Height 3 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Intent /Perceptual /Length 8 >>' . "\nstream\nrgb-data\nendstream",
             $source->pdfObjectContents(),
         );
     }

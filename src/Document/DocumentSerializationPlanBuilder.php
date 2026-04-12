@@ -170,6 +170,8 @@ final class DocumentSerializationPlanBuilder
         $tableStructElemObjectIds = [];
         /** @var array<string, int> $captionStructElemObjectIds */
         $captionStructElemObjectIds = [];
+        /** @var array<string, int> $tableSectionStructElemObjectIds */
+        $tableSectionStructElemObjectIds = [];
         /** @var array<string, int> $rowStructElemObjectIds */
         $rowStructElemObjectIds = [];
         /** @var array<string, int> $cellStructElemObjectIds */
@@ -189,6 +191,10 @@ final class DocumentSerializationPlanBuilder
             }
 
             foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
+                if ($rows !== []) {
+                    $tableSectionStructElemObjectIds[$this->taggedTableSectionKey($taggedTable->tableId, $section)] = $nextObjectId++;
+                }
+
                 foreach ($rows as $row) {
                     $rowStructElemObjectIds[$this->taggedTableRowKey($taggedTable->tableId, $section, $row->rowIndex)] = $nextObjectId++;
 
@@ -470,12 +476,8 @@ final class DocumentSerializationPlanBuilder
                 }
 
                 foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
-                    foreach ($rows as $row) {
-                        $tableKidObjectIds[] = $rowStructElemObjectIds[$this->taggedTableRowKey(
-                            $taggedTable->tableId,
-                            $section,
-                            $row->rowIndex,
-                        )];
+                    if ($rows !== []) {
+                        $tableKidObjectIds[] = $tableSectionStructElemObjectIds[$this->taggedTableSectionKey($taggedTable->tableId, $section)];
                     }
                 }
 
@@ -497,6 +499,30 @@ final class DocumentSerializationPlanBuilder
                 }
 
                 foreach ($this->taggedTableSections($taggedTable) as $section => $rows) {
+                    if ($rows === []) {
+                        continue;
+                    }
+
+                    $sectionKey = $this->taggedTableSectionKey($taggedTable->tableId, $section);
+                    $sectionKidObjectIds = [];
+
+                    foreach ($rows as $row) {
+                        $sectionKidObjectIds[] = $rowStructElemObjectIds[$this->taggedTableRowKey(
+                            $taggedTable->tableId,
+                            $section,
+                            $row->rowIndex,
+                        )];
+                    }
+
+                    $objects[] = new IndirectObject(
+                        $tableSectionStructElemObjectIds[$sectionKey],
+                        (new StructElem(
+                            $this->taggedTableSectionTag($section),
+                            $tableStructElemObjectIds[$tableStructKey],
+                            $sectionKidObjectIds,
+                        ))->objectContents(),
+                    );
+
                     foreach ($rows as $row) {
                         $rowKey = $this->taggedTableRowKey($taggedTable->tableId, $section, $row->rowIndex);
                         $rowKidObjectIds = [];
@@ -512,7 +538,7 @@ final class DocumentSerializationPlanBuilder
 
                         $objects[] = new IndirectObject(
                             $rowStructElemObjectIds[$rowKey],
-                            (new StructElem('TR', $tableStructElemObjectIds[$tableStructKey], $rowKidObjectIds))->objectContents(),
+                            (new StructElem('TR', $tableSectionStructElemObjectIds[$sectionKey], $rowKidObjectIds))->objectContents(),
                         );
 
                         foreach ($row->cells as $cell) {
@@ -1153,6 +1179,11 @@ final class DocumentSerializationPlanBuilder
         return 'table:' . $tableId . ':caption';
     }
 
+    private function taggedTableSectionKey(int $tableId, string $section): string
+    {
+        return 'table:' . $tableId . ':' . $section . ':section';
+    }
+
     private function taggedTableRowKey(int $tableId, string $section, int $rowIndex): string
     {
         return 'table:' . $tableId . ':' . $section . ':row:' . $rowIndex;
@@ -1161,6 +1192,15 @@ final class DocumentSerializationPlanBuilder
     private function taggedTableCellKey(int $tableId, string $section, int $rowIndex, int $columnIndex): string
     {
         return 'table:' . $tableId . ':' . $section . ':cell:' . $rowIndex . ':' . $columnIndex;
+    }
+
+    private function taggedTableSectionTag(string $section): string
+    {
+        return match ($section) {
+            'header' => 'THead',
+            'footer' => 'TFoot',
+            default => 'TBody',
+        };
     }
 
     /**

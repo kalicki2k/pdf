@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Font;
 
 use function count;
+
+use InvalidArgumentException;
+
 use function str_pad;
 use function str_split;
 use function strlen;
@@ -1952,7 +1955,7 @@ final class TrueTypeFontFixture
             . "\x01"
             . implode('', array_map(static function (int $offset): string {
                 if ($offset > 255) {
-                    throw new \InvalidArgumentException('CFF index offset must fit into a single byte.');
+                    throw new InvalidArgumentException('CFF index offset must fit into a single byte.');
                 }
 
                 return chr($offset);

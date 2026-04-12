@@ -6,6 +6,8 @@ namespace Kalle\Pdf\Tests\Image;
 
 use function base64_decode;
 
+use RuntimeException;
+
 final class JpegFixture
 {
     public static function tinyGrayJpegBytes(): string
@@ -16,7 +18,7 @@ final class JpegFixture
         );
 
         if (!is_string($bytes)) {
-            throw new \RuntimeException('Unable to decode JPEG fixture.');
+            throw new RuntimeException('Unable to decode JPEG fixture.');
         }
 
         return $bytes;
@@ -30,7 +32,7 @@ final class JpegFixture
         );
 
         if (!is_string($bytes)) {
-            throw new \RuntimeException('Unable to decode JPEG fixture.');
+            throw new RuntimeException('Unable to decode JPEG fixture.');
         }
 
         return $bytes;

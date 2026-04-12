@@ -8,6 +8,8 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
+use Kalle\Pdf\Page\LinkTarget;
+
 final readonly class TextOptions
 {
     public function __construct(
@@ -28,7 +30,7 @@ final readonly class TextOptions
         public TextAlign $align = TextAlign::LEFT,
         public float $firstLineIndent = 0.0,
         public float $hangingIndent = 0.0,
-        public \Kalle\Pdf\Page\LinkTarget|TextLink|null $link = null,
+        public LinkTarget | TextLink | null $link = null,
     ) {
     }
 }
