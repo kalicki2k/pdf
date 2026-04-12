@@ -185,7 +185,7 @@ $document = Pdf::document()
         ],
         new TextOptions(
             y: Units::mm(181),
-            width: Units::mm(   80),
+            width: Units::mm(80),
             fontSize: 9,
             lineHeight: 12,
             fontName: StandardFont::HELVETICA->value,
