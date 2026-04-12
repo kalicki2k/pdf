@@ -26,4 +26,20 @@ final class IccProfileTest extends TestCase
 
         IccProfile::fromPath('/tmp/missing-srgb.icc');
     }
+
+    public function testItRejectsProfilesWithAnInvalidHeaderForPdfA1(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'icc-invalid-');
+
+        if ($path === false) {
+            self::fail('Failed to create ICC temp file.');
+        }
+
+        file_put_contents($path, str_repeat('X', 256));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf('ICC profile "%s" declares an invalid profile length.', $path));
+
+        IccProfile::fromPath($path)->assertPdfA1Compatible(new \Kalle\Pdf\Document\Metadata\PdfAOutputIntent($path));
+    }
 }

@@ -7,12 +7,14 @@ namespace Kalle\Pdf\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Document\Form\FormFieldRenderContext;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
-use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\PageAnnotationRenderContext;
+use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 
 use function sprintf;
 use function strlen;
@@ -49,6 +51,8 @@ final class PdfAColorPolicyValidator
         foreach ($document->pages as $pageIndex => $page) {
             $this->assertPageColors($document, $page, $pageIndex, $outputIntent);
         }
+
+        $this->assertAcroFormColors($document, $outputIntent);
     }
 
     private function assertPageColors(
@@ -74,16 +78,36 @@ final class PdfAColorPolicyValidator
         );
 
         foreach ($page->annotations as $annotationIndex => $annotation) {
-            if (!$annotation instanceof AppearanceStreamAnnotation || !$annotation instanceof LinkAnnotation) {
+            if ($annotation instanceof AppearanceStreamAnnotation) {
+                $this->assertContentStreamColors(
+                    $document,
+                    $annotation->appearanceStreamContents(),
+                    sprintf('annotation appearance stream %d on page %d', $annotationIndex + 1, $pageIndex + 1),
+                    $outputIntent,
+                );
+            }
+
+            if (!$annotation instanceof RelatedObjectsPageAnnotation) {
                 continue;
             }
 
-            $this->assertContentStreamColors(
-                $document,
-                $annotation->appearanceStreamContents(),
-                sprintf('annotation appearance stream %d on page %d', $annotationIndex + 1, $pageIndex + 1),
-                $outputIntent,
-            );
+            foreach ($annotation->relatedObjects(new PageAnnotationRenderContext(
+                pageObjectId: $pageIndex + 1,
+                printable: true,
+                pageObjectIdsByPageNumber: [$pageIndex + 1 => $pageIndex + 1],
+                relatedObjectIds: [1],
+            )) as $relatedObject) {
+                if ($relatedObject->streamContents === null) {
+                    continue;
+                }
+
+                $this->assertContentStreamColors(
+                    $document,
+                    $relatedObject->streamContents,
+                    sprintf('related annotation appearance stream %d on page %d', $annotationIndex + 1, $pageIndex + 1),
+                    $outputIntent,
+                );
+            }
         }
 
         $imageResourceIndex = 0;
@@ -92,6 +116,57 @@ final class PdfAColorPolicyValidator
             $imageResourceIndex++;
             $this->assertImageColorSpaceCompatible($document, $imageSource, $pageIndex, $imageResourceIndex, $outputIntent);
         }
+    }
+
+    private function assertAcroFormColors(Document $document, PdfAOutputIntent $outputIntent): void
+    {
+        if ($document->acroForm === null) {
+            return;
+        }
+
+        $pageObjectIdsByPageNumber = [];
+
+        foreach ($document->pages as $pageIndex => $_page) {
+            $pageObjectIdsByPageNumber[$pageIndex + 1] = $pageIndex + 1;
+        }
+
+        $context = $this->pdfAFormRenderContext($document, $pageObjectIdsByPageNumber);
+
+        foreach ($document->acroForm->fields as $fieldIndex => $field) {
+            foreach ($field->relatedObjects($context, $fieldIndex + 1, array_fill(0, $field->relatedObjectCount(), 1)) as $relatedObject) {
+                if ($relatedObject->streamContents === null) {
+                    continue;
+                }
+
+                $this->assertContentStreamColors(
+                    $document,
+                    $relatedObject->streamContents,
+                    sprintf('form appearance stream %d', $fieldIndex + 1),
+                    $outputIntent,
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<int, int> $pageObjectIdsByPageNumber
+     */
+    private function pdfAFormRenderContext(Document $document, array $pageObjectIdsByPageNumber): FormFieldRenderContext
+    {
+        foreach ($document->pages as $page) {
+            foreach ($page->fontResources as $pageFont) {
+                if ($pageFont->isEmbedded() && $pageFont->usesUnicodeCids()) {
+                    return new FormFieldRenderContext(
+                        $pageObjectIdsByPageNumber,
+                        defaultTextFont: $pageFont,
+                        defaultTextFontAlias: 'F0',
+                        defaultTextFontObjectId: 1,
+                    );
+                }
+            }
+        }
+
+        return new FormFieldRenderContext($pageObjectIdsByPageNumber);
     }
 
     private function assertImageColorSpaceCompatible(

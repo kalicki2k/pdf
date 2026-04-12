@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Document\TaggedPdf\CollectedTaggedStructure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
+use Kalle\Pdf\Page\PageFont;
 
 final readonly class DocumentSerializationPlanBuildState
 {
@@ -104,6 +105,8 @@ final readonly class DocumentSerializationPlanBuildState
         public ?int $iccProfileObjectId,
         public ?int $infoObjectId,
         public ?int $encryptObjectId,
+        public ?PageFont $acroFormDefaultFont = null,
+        public ?string $acroFormDefaultFontKey = null,
     ) {
     }
 }

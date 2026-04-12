@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function count;
+use function in_array;
+
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Form\FormFieldRenderContext;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AnnotationAppearanceRenderContext;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
-use Kalle\Pdf\Page\PageFont;
 
-use function in_array;
-use function count;
+use Kalle\Pdf\Page\PageFont;
+use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
+use Kalle\Pdf\Writer\IndirectObject;
+
 use function preg_match;
 use function sprintf;
 use function strlen;
@@ -83,6 +88,7 @@ final class PdfALowLevelPolicyValidator
         'GoToR',
         'Thread',
         'Trans',
+        'SubmitForm',
     ];
 
     /**
@@ -100,6 +106,26 @@ final class PdfALowLevelPolicyValidator
         'OPM',
         'CA',
         'ca',
+    ];
+
+    private const FORBIDDEN_FORM_KEYS = [
+        'AA',
+        'A',
+        'JS',
+        'JavaScript',
+        'Launch',
+        'SubmitForm',
+        'ResetForm',
+        'ImportData',
+        'Hide',
+        'Rendition',
+        'Movie',
+        'Sound',
+        'SetOCGState',
+        'Thread',
+        'URI',
+        'GoToR',
+        'EmbeddedGoTo',
     ];
 
     /**
@@ -204,6 +230,8 @@ final class PdfALowLevelPolicyValidator
         foreach ($document->pages as $pageIndex => $page) {
             $this->assertPageLowLevelSafety($document, $page, $pageIndex, $pageObjectIdsByPageNumber);
         }
+
+        $this->assertAcroFormLowLevelSafety($document, $pageObjectIdsByPageNumber);
     }
 
     /**
@@ -294,6 +322,14 @@ final class PdfALowLevelPolicyValidator
         );
 
         if (!$annotation instanceof AppearanceStreamAnnotation) {
+            $this->assertRelatedAnnotationObjectsLowLevelSafety(
+                $document,
+                $annotation,
+                $pageIndex,
+                $annotationIndex,
+                $annotationRenderContext,
+            );
+
             return;
         }
 
@@ -311,6 +347,104 @@ final class PdfALowLevelPolicyValidator
             $annotation->appearanceStreamContents($appearanceRenderContext),
             sprintf('annotation appearance stream %d on page %d', $annotationIndex, $pageIndex + 1),
         );
+
+        $this->assertRelatedAnnotationObjectsLowLevelSafety(
+            $document,
+            $annotation,
+            $pageIndex,
+            $annotationIndex,
+            $annotationRenderContext,
+        );
+    }
+
+    /**
+     * @param array<int, int> $pageObjectIdsByPageNumber
+     */
+    private function assertAcroFormLowLevelSafety(Document $document, array $pageObjectIdsByPageNumber): void
+    {
+        if ($document->acroForm === null) {
+            return;
+        }
+
+        $context = $this->pdfAFormRenderContext($document, $pageObjectIdsByPageNumber);
+
+        foreach ($document->acroForm->fields as $fieldIndex => $field) {
+            $fieldDictionaryContents = $field->pdfObjectContents(
+                $context,
+                $fieldIndex + 1,
+                array_fill(0, $field->relatedObjectCount(), 1),
+            );
+
+            $this->assertForbiddenDictionaryKeysAbsent(
+                $document,
+                $fieldDictionaryContents,
+                self::FORBIDDEN_FORM_KEYS,
+                sprintf('form field %d', $fieldIndex + 1),
+            );
+
+            foreach ($field->relatedObjects($context, $fieldIndex + 1, array_fill(0, $field->relatedObjectCount(), 1)) as $relatedObject) {
+                $this->assertIndirectObjectLowLevelSafety(
+                    $document,
+                    $relatedObject,
+                    sprintf('form field %d related object', $fieldIndex + 1),
+                );
+            }
+        }
+    }
+
+    private function assertRelatedAnnotationObjectsLowLevelSafety(
+        Document $document,
+        PageAnnotation $annotation,
+        int $pageIndex,
+        int $annotationIndex,
+        PageAnnotationRenderContext $annotationRenderContext,
+    ): void {
+        if (!$annotation instanceof RelatedObjectsPageAnnotation) {
+            return;
+        }
+
+        foreach ($annotation->relatedObjects($annotationRenderContext) as $relatedObject) {
+            $this->assertIndirectObjectLowLevelSafety(
+                $document,
+                $relatedObject,
+                sprintf('related annotation object %d on page %d', $annotationIndex, $pageIndex + 1),
+            );
+        }
+    }
+
+    private function assertIndirectObjectLowLevelSafety(Document $document, IndirectObject $object, string $context): void
+    {
+        $this->assertForbiddenDictionaryKeysAbsent(
+            $document,
+            $object->streamDictionaryContents ?? $object->contents,
+            self::FORBIDDEN_APPEARANCE_DICTIONARY_KEYS,
+            $context,
+        );
+
+        if ($object->streamContents !== null) {
+            $this->assertPdfAContentStreamSafe($document, $object->streamContents, $context);
+        }
+    }
+
+    /**
+     * @param array<int, int> $pageObjectIdsByPageNumber
+     */
+    private function pdfAFormRenderContext(Document $document, array $pageObjectIdsByPageNumber): FormFieldRenderContext
+    {
+        foreach ($document->pages as $page) {
+            foreach ($page->fontResources as $pageFont) {
+                if ($pageFont->isEmbedded() && $pageFont->usesUnicodeCids()) {
+                    return new FormFieldRenderContext(
+                        $pageObjectIdsByPageNumber,
+                        defaultTextFont: $pageFont,
+                        defaultTextFontAlias: 'F0',
+                        defaultTextFontObjectId: 1,
+                    );
+                }
+            }
+        }
+
+        return new FormFieldRenderContext($pageObjectIdsByPageNumber);
     }
 
     private function assertForbiddenDictionaryKeysAbsent(

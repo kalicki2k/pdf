@@ -8,11 +8,13 @@ use function array_map;
 use function array_values;
 use function count;
 use function implode;
+use function in_array;
 
 use InvalidArgumentException;
-use Kalle\Pdf\Writer\IndirectObject;
 
 use function is_string;
+
+use Kalle\Pdf\Writer\IndirectObject;
 
 final readonly class ListBoxField extends WidgetFormField
 {
@@ -60,7 +62,11 @@ final readonly class ListBoxField extends WidgetFormField
         $entries = [
             ...$this->widgetDictionaryEntries($context, $fieldObjectId),
             '/FT /Ch',
-            '/DA ' . $this->pdfString('/Helv ' . $this->formatNumber($this->fontSize) . ' Tf 0 g'),
+            '/DA ' . $this->pdfString(
+                $context->defaultTextFont !== null
+                    ? $this->pdfAFieldDa($context, $this->fontSize)
+                    : '/Helv ' . $this->formatNumber($this->fontSize) . ' Tf 0 g',
+            ),
             '/AP << /N ' . $relatedObjectIds[0] . ' 0 R >>',
             '/Opt [' . implode(' ', array_map(
                 fn (string $exportValue, string $label): string => '[' . $this->pdfString($exportValue) . ' ' . $this->pdfString($label) . ']',
@@ -101,8 +107,8 @@ final readonly class ListBoxField extends WidgetFormField
         return [
             IndirectObject::stream(
                 $relatedObjectIds[0],
-                $this->appearanceStreamDictionaryContents(),
-                $this->appearanceStreamContents(),
+                $this->appearanceStreamDictionaryContents($context),
+                $this->appearanceStreamContents($context),
             ),
         ];
     }
@@ -112,8 +118,12 @@ final readonly class ListBoxField extends WidgetFormField
         return true;
     }
 
-    private function appearanceStreamDictionaryContents(): string
+    private function appearanceStreamDictionaryContents(FormFieldRenderContext $context): string
     {
+        if ($context->defaultTextFont !== null) {
+            return $this->renderPdfAAppearanceDictionary($context, $this->width, $this->height);
+        }
+
         return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 '
             . $this->formatNumber($this->width)
             . ' '
@@ -121,8 +131,44 @@ final readonly class ListBoxField extends WidgetFormField
             . '] /Resources << >> /Length 0 >>';
     }
 
-    private function appearanceStreamContents(): string
+    private function appearanceStreamContents(FormFieldRenderContext $context): string
     {
+        if ($context->defaultTextFont !== null) {
+            $selectedValues = $this->value === null ? [] : (is_string($this->value) ? [$this->value] : $this->value);
+            $lines = [
+                '1 g',
+                '0 G',
+                '1 w',
+                '0 0 ' . $this->formatNumber($this->width) . ' ' . $this->formatNumber($this->height) . ' re',
+                'B',
+            ];
+            $lineIndex = 0;
+
+            foreach ($this->options as $exportValue => $label) {
+                $baseline = $this->height - (($lineIndex + 1) * ($this->fontSize + 2));
+
+                if ($baseline < 2) {
+                    break;
+                }
+
+                if (in_array($exportValue, $selectedValues, true)) {
+                    $lines[] = '0.85 g';
+                    $lines[] = '1 ' . $this->formatNumber($baseline - 2) . ' ' . $this->formatNumber($this->width - 2) . ' ' . $this->formatNumber($this->fontSize + 4) . ' re';
+                    $lines[] = 'f';
+                }
+
+                $lines[] = 'BT';
+                $lines[] = '/' . $context->requiresDefaultTextFontAlias() . ' ' . $this->formatNumber($this->fontSize) . ' Tf';
+                $lines[] = '0 g';
+                $lines[] = '2 ' . $this->formatNumber($baseline) . ' Td';
+                $lines[] = '<' . $this->pdfAEncodedTextHex($context, $label) . '> Tj';
+                $lines[] = 'ET';
+                $lineIndex++;
+            }
+
+            return implode("\n", $lines);
+        }
+
         return implode("\n", [
             '1 g',
             '0 G',

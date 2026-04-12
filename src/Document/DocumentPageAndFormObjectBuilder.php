@@ -166,7 +166,10 @@ final class DocumentPageAndFormObjectBuilder
         $objects = [
             IndirectObject::plain(
                 $acroFormObjectId,
-                $acroForm->pdfObjectContents($state->acroFormFieldObjectIds),
+                $acroForm->pdfObjectContents(
+                    $state->acroFormFieldObjectIds,
+                    $state->acroFormDefaultFontKey !== null ? ($state->fontObjectIds[$state->acroFormDefaultFontKey] ?? null) : null,
+                ),
             ),
         ];
 
@@ -174,6 +177,9 @@ final class DocumentPageAndFormObjectBuilder
             $context = new FormFieldRenderContext(
                 $this->pageObjectIdsByPageNumber($state->pageObjectIds),
                 $state->taggedFormStructure['structParentIds'],
+                $state->acroFormDefaultFont,
+                $state->acroFormDefaultFont !== null ? 'F0' : null,
+                $state->acroFormDefaultFontKey !== null ? ($state->fontObjectIds[$state->acroFormDefaultFontKey] ?? null) : null,
             );
 
             $objects[] = IndirectObject::plain(

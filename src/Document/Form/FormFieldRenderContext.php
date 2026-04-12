@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Form;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Page\PageFont;
 
 final readonly class FormFieldRenderContext
 {
@@ -15,6 +16,9 @@ final readonly class FormFieldRenderContext
     public function __construct(
         public array $pageObjectIdsByPageNumber,
         public array $structParentIdsByAnnotationObjectId = [],
+        public ?PageFont $defaultTextFont = null,
+        public ?string $defaultTextFontAlias = null,
+        public ?int $defaultTextFontObjectId = null,
     ) {
     }
 
@@ -35,5 +39,32 @@ final readonly class FormFieldRenderContext
     public function structParentId(int $annotationObjectId): ?int
     {
         return $this->structParentIdsByAnnotationObjectId[$annotationObjectId] ?? null;
+    }
+
+    public function requiresDefaultTextFont(): PageFont
+    {
+        if ($this->defaultTextFont === null) {
+            throw new InvalidArgumentException('Embedded default form font is not configured.');
+        }
+
+        return $this->defaultTextFont;
+    }
+
+    public function requiresDefaultTextFontAlias(): string
+    {
+        if ($this->defaultTextFontAlias === null) {
+            throw new InvalidArgumentException('Embedded default form font alias is not configured.');
+        }
+
+        return $this->defaultTextFontAlias;
+    }
+
+    public function requiresDefaultTextFontObjectId(): int
+    {
+        if ($this->defaultTextFontObjectId === null) {
+            throw new InvalidArgumentException('Embedded default form font object ID is not configured.');
+        }
+
+        return $this->defaultTextFontObjectId;
     }
 }

@@ -8,7 +8,10 @@ use function count;
 use function implode;
 
 use InvalidArgumentException;
+
 use Kalle\Pdf\Writer\IndirectObject;
+
+use function max;
 
 final readonly class PushButtonField extends WidgetFormField
 {
@@ -52,7 +55,11 @@ final readonly class PushButtonField extends WidgetFormField
             ...$this->widgetDictionaryEntries($context, $fieldObjectId),
             '/FT /Btn',
             '/Ff 65536',
-            '/DA ' . $this->pdfString('/Helv ' . $this->formatNumber($this->fontSize) . ' Tf 0 g'),
+            '/DA ' . $this->pdfString(
+                $context->defaultTextFont !== null
+                    ? $this->pdfAFieldDa($context, $this->fontSize)
+                    : '/Helv ' . $this->formatNumber($this->fontSize) . ' Tf 0 g',
+            ),
             '/AP << /N ' . $relatedObjectIds[0] . ' 0 R >>',
             '/MK << /CA ' . $this->pdfString($this->label) . ' >>',
         ];
@@ -81,8 +88,8 @@ final readonly class PushButtonField extends WidgetFormField
         return [
             IndirectObject::stream(
                 $relatedObjectIds[0],
-                $this->appearanceStreamDictionaryContents(),
-                $this->appearanceStreamContents(),
+                $this->appearanceStreamDictionaryContents($context),
+                $this->appearanceStreamContents($context),
             ),
         ];
     }
@@ -92,8 +99,12 @@ final readonly class PushButtonField extends WidgetFormField
         return true;
     }
 
-    private function appearanceStreamDictionaryContents(): string
+    private function appearanceStreamDictionaryContents(FormFieldRenderContext $context): string
     {
+        if ($context->defaultTextFont !== null) {
+            return $this->renderPdfAAppearanceDictionary($context, $this->width, $this->height);
+        }
+
         return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 '
             . $this->formatNumber($this->width)
             . ' '
@@ -101,8 +112,24 @@ final readonly class PushButtonField extends WidgetFormField
             . '] /Resources << >> /Length 0 >>';
     }
 
-    private function appearanceStreamContents(): string
+    private function appearanceStreamContents(FormFieldRenderContext $context): string
     {
+        if ($context->defaultTextFont !== null) {
+            return implode("\n", [
+                '0.95 g',
+                '0 G',
+                '1 w',
+                '0 0 ' . $this->formatNumber($this->width) . ' ' . $this->formatNumber($this->height) . ' re',
+                'B',
+                'BT',
+                '/' . $context->requiresDefaultTextFontAlias() . ' ' . $this->formatNumber($this->fontSize) . ' Tf',
+                '0 g',
+                '4 ' . $this->formatNumber(max(2.0, ($this->height - $this->fontSize) / 2)) . ' Td',
+                '<' . $this->pdfAEncodedTextHex($context, $this->label) . '> Tj',
+                'ET',
+            ]);
+        }
+
         return implode("\n", [
             '1 g',
             '0 G',

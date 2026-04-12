@@ -14,13 +14,13 @@ use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentRenderer;
-use Kalle\Pdf\Document\Outline;
-use Kalle\Pdf\Document\OutlineStyle;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
 use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\ListOptions;
 use Kalle\Pdf\Document\ListType;
+use Kalle\Pdf\Document\Outline;
+use Kalle\Pdf\Document\OutlineStyle;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
@@ -39,19 +39,20 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
-use Kalle\Pdf\Page\AnnotationMetadata;
 use Kalle\Pdf\Page\AnnotationBorderStyle;
+use Kalle\Pdf\Page\AnnotationMetadata;
 use Kalle\Pdf\Page\FileAttachmentAnnotationOptions;
 use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotationOptions;
 use Kalle\Pdf\Page\LineAnnotationOptions;
+use Kalle\Pdf\Page\LineEndingStyle;
 use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\MarkupAnnotationOptions;
+use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
-use Kalle\Pdf\Page\LineEndingStyle;
 use Kalle\Pdf\Page\ShapeAnnotationOptions;
 use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
@@ -454,7 +455,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->newPage(new \Kalle\Pdf\Page\PageOptions(
+            ->newPage(new PageOptions(
                 backgroundColor: Color::rgb(0.95, 0.95, 0.95),
             ))
             ->table(
@@ -509,7 +510,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->newPage(new \Kalle\Pdf\Page\PageOptions(
+            ->newPage(new PageOptions(
                 backgroundColor: Color::rgb(0.95, 0.95, 0.95),
             ))
             ->table(
@@ -737,7 +738,7 @@ final class DocumentRendererTest extends TestCase
                     'data.xml',
                     new EmbeddedFile('<root/>', 'application/xml'),
                     'Machine-readable source',
-                    \Kalle\Pdf\Document\Attachment\AssociatedFileRelationship::DATA,
+                    AssociatedFileRelationship::DATA,
                 ),
             ],
         );
@@ -811,18 +812,10 @@ final class DocumentRendererTest extends TestCase
             ->signatureField('approval_signature', 40, 420, 140, 28, 'Approval signature')
             ->build();
 
-        $renderer = new DocumentRenderer();
-        $output = new StringOutput();
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.');
 
-        $renderer->write($document, $output);
-
-        $pdf = $output->contents();
-
-        self::assertSame(3, substr_count($pdf, '/Type /StructElem /S /Form'));
-        self::assertStringContainsString('/Alt (Customer name)', $pdf);
-        self::assertStringContainsString('/Alt (Accept terms)', $pdf);
-        self::assertStringContainsString('/Alt (Approval signature)', $pdf);
-        self::assertStringContainsString('/FT /Sig', $pdf);
+        (new DocumentRenderer())->write($document, new StringOutput());
     }
 
     public function testItRendersTaggedPdfA1aRadioButtonGroups(): void
@@ -835,19 +828,10 @@ final class DocumentRendererTest extends TestCase
             ->radioButton('delivery', 'express', 80, 500, 14, true, 'Express delivery')
             ->build();
 
-        $renderer = new DocumentRenderer();
-        $output = new StringOutput();
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.');
 
-        $renderer->write($document, $output);
-
-        $pdf = $output->contents();
-
-        self::assertStringContainsString('/Kids [7 0 R 10 0 R]', $pdf);
-        self::assertStringContainsString('/StructParent 0', $pdf);
-        self::assertStringContainsString('/StructParent 1', $pdf);
-        self::assertSame(2, substr_count($pdf, '/Type /StructElem /S /Form'));
-        self::assertStringContainsString('/Alt (Standard delivery)', $pdf);
-        self::assertStringContainsString('/Alt (Express delivery)', $pdf);
+        (new DocumentRenderer())->write($document, new StringOutput());
     }
 
     public function testItRendersATextField(): void
@@ -989,6 +973,10 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Alt (Status)', $pdf);
         self::assertStringContainsString('/Alt (Skills)', $pdf);
         self::assertStringContainsString('/AP << /N ', $pdf);
+        self::assertStringContainsString('/DR << /Font << /F0 ', $pdf);
+        self::assertStringContainsString('/F0 12 Tf', $pdf);
+        self::assertStringContainsString(' Tj', $pdf);
+        self::assertStringNotContainsString('/Helv', $pdf);
     }
 
     public function testItRendersTaggedPdfA1aInertPushButtons(): void

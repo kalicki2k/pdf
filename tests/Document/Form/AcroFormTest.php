@@ -54,6 +54,16 @@ final class AcroFormTest extends TestCase
         self::assertStringContainsString('/DR << /Font << /Helv << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> >> >>', $acroForm->pdfObjectContents([7]));
     }
 
+    public function testItBuildsEmbeddedDefaultResourcesWhenAnEmbeddedFormFontIsProvided(): void
+    {
+        $acroForm = (new AcroForm())->withField(
+            new ComboBoxField('status', 1, 10, 20, 80, 12, ['new' => 'New'], 'new'),
+        );
+
+        self::assertStringContainsString('/DR << /Font << /F0 11 0 R >> >>', $acroForm->pdfObjectContents([7], 11));
+        self::assertStringNotContainsString('/Helv', $acroForm->pdfObjectContents([7], 11));
+    }
+
     public function testItStoresRadioButtonGroupsAsSingleFields(): void
     {
         $group = (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))

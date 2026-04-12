@@ -86,7 +86,7 @@ final readonly class AcroForm
     /**
      * @param list<int> $fieldObjectIds
      */
-    public function pdfObjectContents(array $fieldObjectIds): string
+    public function pdfObjectContents(array $fieldObjectIds, ?int $defaultTextFontObjectId = null, string $defaultTextFontAlias = 'F0'): string
     {
         if (count($fieldObjectIds) !== count($this->fields)) {
             throw new InvalidArgumentException('AcroForm field object IDs must match the registered field count.');
@@ -108,7 +108,11 @@ final readonly class AcroForm
         }
 
         if ($this->needsDefaultTextResources()) {
-            $entries[] = '/DR << /Font << /Helv << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> >> >>';
+            if ($defaultTextFontObjectId !== null) {
+                $entries[] = '/DR << /Font << /' . $defaultTextFontAlias . ' ' . $defaultTextFontObjectId . ' 0 R >> >>';
+            } else {
+                $entries[] = '/DR << /Font << /Helv << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> >> >>';
+            }
         }
 
         return '<< ' . implode(' ', $entries) . ' >>';

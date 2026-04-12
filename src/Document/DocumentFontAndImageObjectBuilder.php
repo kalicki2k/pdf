@@ -19,7 +19,13 @@ final class DocumentFontAndImageObjectBuilder
     {
         $objects = [];
 
-        foreach ($this->collectFonts($document->pages) as $fontKey => $pageFont) {
+        $fonts = $this->collectFonts($document->pages);
+
+        if ($state->acroFormDefaultFont !== null && $state->acroFormDefaultFontKey !== null) {
+            $fonts[$state->acroFormDefaultFontKey] = $state->acroFormDefaultFont;
+        }
+
+        foreach ($fonts as $fontKey => $pageFont) {
             $fontObjectId = $state->fontObjectIds[$fontKey];
 
             if ($pageFont->isEmbedded()) {

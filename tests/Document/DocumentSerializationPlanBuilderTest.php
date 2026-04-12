@@ -11,8 +11,6 @@ use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Outline;
-use Kalle\Pdf\Document\OutlineStyle;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\CheckboxField;
@@ -28,6 +26,8 @@ use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\ListOptions;
 use Kalle\Pdf\Document\ListType;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\Outline;
+use Kalle\Pdf\Document\OutlineStyle;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
@@ -36,6 +36,7 @@ use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\StrokeStyle;
@@ -50,10 +51,8 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\AnnotationAppearanceRenderContext;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
-use Kalle\Pdf\Page\FileAttachmentAnnotation;
-use Kalle\Pdf\Page\PopupAnnotationDefinition;
-use Kalle\Pdf\Page\TaggedPageAnnotation;
 use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
@@ -64,7 +63,9 @@ use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\TaggedPageAnnotation;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
+use Kalle\Pdf\Tests\Image\JpegFixture;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
@@ -401,7 +402,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItRejectsManualAnnotationsWithForbiddenActionsForPdfAProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $annotation = new readonly class implements PageAnnotation, AppearanceStreamAnnotation {
+        $annotation = new readonly class () implements PageAnnotation, AppearanceStreamAnnotation {
             public function pdfObjectContents(PageAnnotationRenderContext $context): string
             {
                 return '<< /Type /Annot /Subtype /Link /Rect [0 0 20 20] /P '
@@ -414,12 +415,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 return null;
             }
 
-            public function appearanceStreamDictionaryContents(?\Kalle\Pdf\Page\AnnotationAppearanceRenderContext $context = null): string
+            public function appearanceStreamDictionaryContents(?AnnotationAppearanceRenderContext $context = null): string
             {
                 return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 20 20] /Resources << >> /Length 0 >>';
             }
 
-            public function appearanceStreamContents(?\Kalle\Pdf\Page\AnnotationAppearanceRenderContext $context = null): string
+            public function appearanceStreamContents(?AnnotationAppearanceRenderContext $context = null): string
             {
                 return '';
             }
@@ -1588,6 +1589,28 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Alt (Open Example)', $serialized);
     }
 
+    public function testItRejectsRemotePdfA1OutlineActions(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->paragraph('Lead in text Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->addOutline(
+                Outline::named('Remote Intro', 'chapter-1', 1)
+                    ->withDestination(Outline::named('Remote Intro', 'chapter-1', 1)->destination->asRemoteGoTo('external.pdf', true)),
+            )
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a does not allow remote outline actions such as GoToR in outline 1.');
+
+        $builder->build($document);
+    }
+
     public function testItAddsTaggedPdfA1aPageAnnotations(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1648,7 +1671,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testPdfUaRequiresExplicitSupportedTaggedPageAnnotationOptIn(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $annotation = new readonly class implements PageAnnotation, TaggedPageAnnotation {
+        $annotation = new readonly class () implements PageAnnotation, TaggedPageAnnotation {
             public function pdfObjectContents(PageAnnotationRenderContext $context): string
             {
                 return '<< /Type /Annot /Subtype /Text /Rect [10 20 20 30] /P ' . $context->pageObjectId . ' 0 R /Contents (Demo) >>';
@@ -1723,7 +1746,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testPdfA1aRequiresExplicitSupportedTaggedPageAnnotationPolicy(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $annotation = new readonly class implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation {
+        $annotation = new readonly class () implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation {
             public function pdfObjectContents(PageAnnotationRenderContext $context): string
             {
                 return '<< /Type /Annot /Subtype /Text /Rect [10 20 20 30] /P ' . $context->pageObjectId . ' 0 R /Contents (Demo) /F 4 /AP << /N ' . $context->appearanceObjectId . ' 0 R >> >>';
@@ -1744,12 +1767,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 return 'Annot';
             }
 
-            public function appearanceStreamDictionaryContents(?\Kalle\Pdf\Page\AnnotationAppearanceRenderContext $context = null): string
+            public function appearanceStreamDictionaryContents(?AnnotationAppearanceRenderContext $context = null): string
             {
                 return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 10 10] /Resources << >> /Length 0 >>';
             }
 
-            public function appearanceStreamContents(?\Kalle\Pdf\Page\AnnotationAppearanceRenderContext $context = null): string
+            public function appearanceStreamContents(?AnnotationAppearanceRenderContext $context = null): string
             {
                 return '';
             }
@@ -1759,7 +1782,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             title: 'Archive Copy',
             language: 'de-DE',
             pages: [new Page(PageSize::A4(), contents: "/P << /MCID 0 >> BDC\nBT /F1 12 Tf 40 700 Td (Lead) Tj ET\nEMC", annotations: [$annotation])],
-            taggedTextBlocks: [new \Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock('P', 0, 0)],
+            taggedTextBlocks: [new TaggedTextBlock('P', 0, 0)],
         );
 
         $this->expectException(InvalidArgumentException::class);
@@ -1780,17 +1803,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->signatureField('approval_signature', 40, 420, 160, 24, 'Approval signature')
             ->build();
 
-        $serialized = implode("\n", array_map(
-            static fn ($object): string => $object->contents,
-            iterator_to_array($builder->build($document)->objects),
-        ));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.');
 
-        self::assertSame(3, substr_count($serialized, '/Type /StructElem /S /Form'));
-        self::assertStringContainsString('/Alt (Customer name)', $serialized);
-        self::assertStringContainsString('/Alt (Accept terms)', $serialized);
-        self::assertStringContainsString('/Alt (Approval signature)', $serialized);
-        self::assertStringContainsString('/FT /Sig', $serialized);
-        self::assertSame(3, substr_count($serialized, '/Type /OBJR /Obj'));
+        $builder->build($document);
     }
 
     public function testItBuildsTaggedPdfA1aChoiceAndPushButtonFields(): void
@@ -1813,6 +1829,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Alt (Status)', $serialized);
         self::assertStringContainsString('/Alt (Skills)', $serialized);
         self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
+        self::assertStringContainsString('/DR << /Font << /F0 ', $serialized);
+        self::assertStringContainsString('/F0 12 Tf', $serialized);
+        self::assertStringContainsString(' Tj', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
     }
 
     public function testItBuildsPdfA1aInertPushButtons(): void
@@ -1884,17 +1904,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ),
         );
 
-        $serialized = implode("\n", array_map(
-            static fn ($object): string => $object->contents,
-            iterator_to_array($builder->build($document)->objects),
-        ));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-1a currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.');
 
-        self::assertSame(2, substr_count($serialized, '/Type /StructElem /S /Form'));
-        self::assertStringContainsString('/StructParent 0', $serialized);
-        self::assertStringContainsString('/StructParent 1', $serialized);
-        self::assertStringContainsString('/Alt (Standard delivery)', $serialized);
-        self::assertStringContainsString('/Alt (Express delivery)', $serialized);
-        self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
+        $builder->build($document);
     }
 
     public function testItRejectsTaggedPdfA1aRadioButtonsWithoutChoiceAlternativeText(): void
@@ -2017,7 +2030,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('annotation appearance streams are required on page 1');
+        $this->expectExceptionMessage('does not support the current page annotation implementation on page 1');
 
         $builder->build($document);
     }
@@ -2058,7 +2071,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('annotation appearance streams are required on page 1');
+        $this->expectExceptionMessage('does not support the current page annotation implementation on page 1');
 
         $builder->build($document);
     }
@@ -2121,7 +2134,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('annotation appearance streams are required on page 1');
+        $this->expectExceptionMessage('does not support the current page annotation implementation on page 1');
 
         $builder->build($document);
     }
@@ -2863,12 +2876,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->pdfaOutputIntent(\Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk())
+            ->pdfaOutputIntent(PdfAOutputIntent::defaultCmyk())
             ->text('CMYK JPEG Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->image(
-                $this->jpegImageSourceFromBytes(\Kalle\Pdf\Tests\Image\JpegFixture::tinyCmykJpegBytes()),
+                $this->jpegImageSourceFromBytes(JpegFixture::tinyCmykJpegBytes()),
                 ImagePlacement::at(10, 20),
                 ImageAccessibility::alternativeText('CMYK image'),
             )
@@ -2891,7 +2904,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
             ->image(
-                $this->jpegImageSourceFromBytes(\Kalle\Pdf\Tests\Image\JpegFixture::tinyCmykJpegBytes()),
+                $this->jpegImageSourceFromBytes(JpegFixture::tinyCmykJpegBytes()),
                 ImagePlacement::at(10, 20),
                 ImageAccessibility::alternativeText('CMYK image'),
             )
@@ -2909,9 +2922,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->pdfaOutputIntent(\Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk())
+            ->pdfaOutputIntent(PdfAOutputIntent::defaultCmyk())
             ->image(
-                $this->jpegImageSourceFromBytes(\Kalle\Pdf\Tests\Image\JpegFixture::tinyRgbJpegBytes()),
+                $this->jpegImageSourceFromBytes(JpegFixture::tinyRgbJpegBytes()),
                 ImagePlacement::at(10, 20),
                 ImageAccessibility::alternativeText('RGB image'),
             )
@@ -2949,12 +2962,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $embeddedFont = EmbeddedFontDefinition::fromSource(
             EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
         );
-        $document = new \Kalle\Pdf\Document\Document(
+        $document = new Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
             pages: [
-                new \Kalle\Pdf\Page\Page(
-                    \Kalle\Pdf\Page\PageSize::A4(),
+                new Page(
+                    PageSize::A4(),
                     contents: "BT\n0.1 0.2 0.3 rg\n/F1 12 Tf\n10 20 Td\n(RGB) Tj\nET",
                     fontResources: [
                         'F1' => PageFont::embedded($embeddedFont),
@@ -2972,7 +2985,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->pdfaOutputIntent(\Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk())
+            ->pdfaOutputIntent(PdfAOutputIntent::defaultCmyk())
             ->text('RGB text', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 color: Color::rgb(0.1, 0.2, 0.3),
@@ -2993,13 +3006,13 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $embeddedFont = EmbeddedFontDefinition::fromSource(
             EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
         );
-        $document = new \Kalle\Pdf\Document\Document(
+        $document = new Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
-            pdfaOutputIntent: \Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk(),
+            pdfaOutputIntent: PdfAOutputIntent::defaultCmyk(),
             pages: [
-                new \Kalle\Pdf\Page\Page(
-                    \Kalle\Pdf\Page\PageSize::A4(),
+                new Page(
+                    PageSize::A4(),
                     contents: "BT\n0.1 0.2 0.3 0.4 k\n/F1 12 Tf\n10 20 Td\n(CMYK) Tj\nET",
                     fontResources: [
                         'F1' => PageFont::embedded($embeddedFont),
@@ -3014,12 +3027,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItRejectsCmykBackgroundGraphicsForPdfA1bWithRgbOutputIntent(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $document = new \Kalle\Pdf\Document\Document(
+        $document = new Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
             pages: [
-                new \Kalle\Pdf\Page\Page(
-                    \Kalle\Pdf\Page\PageSize::A4(),
+                new Page(
+                    PageSize::A4(),
                     backgroundColor: Color::cmyk(0.1, 0.2, 0.3, 0.4),
                 ),
             ],
@@ -3036,12 +3049,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItAllowsRgbBackgroundGraphicsForPdfA1bWithRgbOutputIntent(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $document = new \Kalle\Pdf\Document\Document(
+        $document = new Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
             pages: [
-                new \Kalle\Pdf\Page\Page(
-                    \Kalle\Pdf\Page\PageSize::A4(),
+                new Page(
+                    PageSize::A4(),
                     backgroundColor: Color::rgb(0.1, 0.2, 0.3),
                 ),
             ],
@@ -3053,13 +3066,13 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItRejectsRgbGraphicsOperatorsForPdfA1bWithCmykOutputIntent(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $document = new \Kalle\Pdf\Document\Document(
+        $document = new Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
-            pdfaOutputIntent: \Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk(),
+            pdfaOutputIntent: PdfAOutputIntent::defaultCmyk(),
             pages: [
-                new \Kalle\Pdf\Page\Page(
-                    \Kalle\Pdf\Page\PageSize::A4(),
+                new Page(
+                    PageSize::A4(),
                     contents: "0.1 0.2 0.3 RG\n10 10 m\n100 10 l\nS",
                 ),
             ],
@@ -3076,13 +3089,13 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItAllowsCmykGraphicsOperatorsForPdfA1bWithCmykOutputIntent(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $document = new \Kalle\Pdf\Document\Document(
+        $document = new Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
-            pdfaOutputIntent: \Kalle\Pdf\Document\Metadata\PdfAOutputIntent::defaultCmyk(),
+            pdfaOutputIntent: PdfAOutputIntent::defaultCmyk(),
             pages: [
-                new \Kalle\Pdf\Page\Page(
-                    \Kalle\Pdf\Page\PageSize::A4(),
+                new Page(
+                    PageSize::A4(),
                     contents: "0.1 0.2 0.3 0.4 K\n10 10 m\n100 10 l\nS",
                 ),
             ],

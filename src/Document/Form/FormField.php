@@ -9,6 +9,8 @@ use Kalle\Pdf\Writer\IndirectObject;
 
 abstract readonly class FormField
 {
+    protected const PDF_A_FORM_FONT_ALIAS = 'F0';
+
     public function __construct(
         public string $name,
         public ?string $alternativeName = null,
@@ -107,5 +109,28 @@ abstract readonly class FormField
         }
 
         return $encoded;
+    }
+
+    protected function renderPdfAAppearanceDictionary(FormFieldRenderContext $context, float $width, float $height): string
+    {
+        return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 '
+            . $this->formatNumber($width)
+            . ' '
+            . $this->formatNumber($height)
+            . '] /Resources << /Font << /'
+            . $context->requiresDefaultTextFontAlias()
+            . ' '
+            . $context->requiresDefaultTextFontObjectId()
+            . ' 0 R >> >> /Length 0 >>';
+    }
+
+    protected function pdfAEncodedTextHex(FormFieldRenderContext $context, string $text): string
+    {
+        return strtoupper(bin2hex($context->requiresDefaultTextFont()->encodeUnicodeText($text)));
+    }
+
+    protected function pdfAFieldDa(FormFieldRenderContext $context, float $fontSize): string
+    {
+        return '/' . $context->requiresDefaultTextFontAlias() . ' ' . $this->formatNumber($fontSize) . ' Tf 0 g';
     }
 }

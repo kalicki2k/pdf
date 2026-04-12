@@ -17,8 +17,8 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedStructureCollector;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
-use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 use Kalle\Pdf\Page\PageAnnotation;
+use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 
 use function preg_match;
 use function sprintf;
@@ -32,6 +32,8 @@ final class DocumentSerializationPlanValidator
         private readonly PdfALowLevelPolicyValidator $pdfALowLevelPolicyValidator = new PdfALowLevelPolicyValidator(),
         private readonly PdfA1aSupportedStructureValidator $pdfA1aSupportedStructureValidator = new PdfA1aSupportedStructureValidator(),
         private readonly PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
+        private readonly PdfA1AnnotationPolicy $pdfA1AnnotationPolicy = new PdfA1AnnotationPolicy(),
+        private readonly PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
     ) {
     }
 
@@ -104,9 +106,9 @@ final class DocumentSerializationPlanValidator
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
                 $supportsCurrentAnnotation = (
-                        !$document->profile->requiresTaggedPageAnnotations()
+                    !$document->profile->requiresTaggedPageAnnotations()
                         && $document->profile->supportsCurrentPageAnnotationsImplementation()
-                    )
+                )
                     || ($annotation instanceof LinkAnnotation && $document->profile->requiresTaggedLinkAnnotations())
                     || (
                         $document->profile->requiresTaggedPageAnnotations()
@@ -116,7 +118,10 @@ final class DocumentSerializationPlanValidator
                         )
                     );
 
-                if (!$supportsCurrentAnnotation) {
+                if (
+                    !$supportsCurrentAnnotation
+                    || ($document->profile->isPdfA1() && !$this->pdfA1AnnotationPolicy->supports($document, $annotation))
+                ) {
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s does not support the current page annotation implementation on page %d.',
                         $document->profile->name(),
@@ -449,9 +454,23 @@ final class DocumentSerializationPlanValidator
                 ));
             }
 
+            if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof CheckboxField) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
             if ($field instanceof RadioButtonGroup && !$document->profile->supportsCurrentRadioButtonImplementation()) {
                 throw new InvalidArgumentException(sprintf(
                     'Profile %s does not allow radio buttons in the current implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof RadioButtonGroup) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.',
                     $document->profile->name(),
                 ));
             }
@@ -503,6 +522,13 @@ final class DocumentSerializationPlanValidator
                 ));
             }
 
+            if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $field instanceof SignatureField) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s currently only allows text, choice, and inert push button fields in the PDF/A-1a form implementation.',
+                    $document->profile->name(),
+                ));
+            }
+
             if (!$field instanceof WidgetFormField) {
                 if ($field instanceof RadioButtonGroup) {
                     foreach ($field->choices as $choice) {
@@ -542,6 +568,7 @@ final class DocumentSerializationPlanValidator
             ));
         }
 
+        $this->pdfA1PolicyEnforcer->enforce($document);
         $this->pdfALowLevelPolicyValidator->assertDocumentLowLevelSafety($document);
         $this->pdfAColorPolicyValidator->assertDocumentColors($document);
 

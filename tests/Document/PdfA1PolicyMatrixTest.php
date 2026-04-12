@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function dirname;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
@@ -15,9 +17,10 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Text\TextOptions;
+
 use PHPUnit\Framework\TestCase;
 
-use function dirname;
 use function sprintf;
 
 final class PdfA1PolicyMatrixTest extends TestCase
@@ -56,7 +59,7 @@ final class PdfA1PolicyMatrixTest extends TestCase
 
         if ($profile->pdfaConformance() !== 'A') {
             $matrix['acroform'] = 'Profile %s does not allow AcroForm fields in the current implementation.';
-            $matrix['text-annotation'] = 'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page 1.';
+            $matrix['text-annotation'] = 'Profile %s does not support the current page annotation implementation on page 1.';
         }
 
         return $matrix;
@@ -109,7 +112,7 @@ final class PdfA1PolicyMatrixTest extends TestCase
             ->profile($profile)
             ->title('Archive Copy')
             ->language('de-DE')
-            ->paragraph('Baseline Absatz Привет', new \Kalle\Pdf\Text\TextOptions(
+            ->paragraph('Baseline Absatz Привет', new TextOptions(
                 x: 72,
                 y: 720,
                 width: 320,
