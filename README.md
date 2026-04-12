@@ -43,6 +43,7 @@ Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation 
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextSegment;
 
@@ -69,6 +70,18 @@ $document = DefaultDocumentBuilder::make()
         new TextSegment(' und '),
         TextSegment::link('API', TextLink::externalUrl('https://example.com/api')),
     ])
+    ->linkWithOptions(
+        'https://example.com/spec',
+        40,
+        500,
+        140,
+        16,
+        new LinkAnnotationOptions(
+            contents: 'Open specification',
+            accessibleLabel: 'Read the specification document',
+            groupKey: 'spec-link',
+        ),
+    )
     ->textAnnotation(40, 450, 18, 18, 'Kurzer Kommentar', 'QA', 'Comment', true)
     ->highlightAnnotation(40, 420, 120, 12, \Kalle\Pdf\Color\Color::rgb(1, 1, 0), 'Markierung', 'QA')
     ->build();
@@ -124,6 +137,36 @@ $document = DefaultDocumentBuilder::make()
 ```
 
 Ein umfangreicheres Beispiel liegt in `examples/table.php`.
+
+## Verschluesselung
+
+Die aktuelle Encryption-API bleibt bewusst klein: Das Dokument bekommt ein explizites `Encryption`-Value-Object. Unterstuetzt sind aktuell `RC4-128`, `AES-128` und `AES-256` sowie eine kleine `Permissions`-API. PDF/A-Profile verbieten weiterhin Verschluesselung und scheitern deshalb mit einer klaren Exception.
+
+```php
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Encryption\Encryption;
+use Kalle\Pdf\Encryption\Permissions;
+
+$document = DefaultDocumentBuilder::make()
+    ->profile(Profile::pdf17())
+    ->title('Encrypted Example')
+    ->author('Kalle PDF')
+    ->encryption(
+        Encryption::aes256('user-secret', 'owner-secret')->withPermissions(
+            new Permissions(
+                print: false,
+                modify: true,
+                copy: false,
+                annotate: true,
+            ),
+        ),
+    )
+    ->text('Confidential content')
+    ->build();
+```
+
+Ein kleines ausfuehrbares Beispiel liegt in `examples/encryption.php`. Die externe `qpdf`-Regression fuer Permissions ist ueber `bin/test-encryption-permissions-regression.sh` abgedeckt.
 
 ## Docker
 
