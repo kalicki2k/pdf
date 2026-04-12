@@ -95,6 +95,48 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 477.383 Td\n[", $document->pages[0]->contents);
     }
 
+    public function testSingleNewlinesAdvanceOnlyOneLineInTextBlocks(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text("Line 1\nLine 2", new TextOptions(
+                x: 72.0,
+                y: 720.0,
+                fontSize: 10.0,
+                lineHeight: 12.0,
+            ))
+            ->text('After', new TextOptions(
+                x: 72.0,
+                fontSize: 10.0,
+                lineHeight: 12.0,
+            ))
+            ->build();
+
+        self::assertStringContainsString("72 720 Td", $document->pages[0]->contents);
+        self::assertStringContainsString("72 696 Td", $document->pages[0]->contents);
+        self::assertStringNotContainsString("72 684 Td", $document->pages[0]->contents);
+    }
+
+    public function testDoubleNewlinesStillProduceABlankLineInTextBlocks(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text("Line 1\n\nLine 2", new TextOptions(
+                x: 72.0,
+                y: 720.0,
+                fontSize: 10.0,
+                lineHeight: 12.0,
+            ))
+            ->text('After', new TextOptions(
+                x: 72.0,
+                fontSize: 10.0,
+                lineHeight: 12.0,
+            ))
+            ->build();
+
+        self::assertStringContainsString("72 720 Td", $document->pages[0]->contents);
+        self::assertStringContainsString("72 696 Td", $document->pages[0]->contents);
+        self::assertStringContainsString("72 684 Td", $document->pages[0]->contents);
+    }
+
     public function testItAppliesSpacingAfterToTheNextImplicitTextCall(): void
     {
         $document = DefaultDocumentBuilder::make()

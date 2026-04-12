@@ -70,7 +70,7 @@ final readonly class TextFlow
         $paragraphs = preg_split("/\r\n|\r|\n/", $text) ?: [$text];
         $lines = [];
 
-        foreach ($paragraphs as $paragraphIndex => $paragraph) {
+        foreach ($paragraphs as $paragraph) {
             $trimmedParagraph = trim($paragraph);
 
             if ($trimmedParagraph === '') {
@@ -99,10 +99,6 @@ final readonly class TextFlow
             }
 
             $lines[] = $currentLine;
-
-            if ($paragraphIndex < count($paragraphs) - 1) {
-                $lines[] = '';
-            }
         }
 
         return $lines;
@@ -127,7 +123,7 @@ final readonly class TextFlow
         $paragraphs = $this->splitSegmentParagraphs($segments);
         $lines = [];
 
-        foreach ($paragraphs as $paragraphIndex => $paragraphSegments) {
+        foreach ($paragraphs as $paragraphSegments) {
             $tokens = $this->segmentTokens($paragraphSegments);
 
             if ($tokens === []) {
@@ -160,10 +156,6 @@ final readonly class TextFlow
 
             if ($currentLine !== []) {
                 $lines[] = $currentLine;
-            }
-
-            if ($paragraphIndex < count($paragraphs) - 1) {
-                $lines[] = [];
             }
         }
 
