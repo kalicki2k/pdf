@@ -8,9 +8,6 @@ use InvalidArgumentException;
 
 final readonly class Color
 {
-    /**
-     * @var array<string, array<string, string>>
-     */
     private const MATERIAL_PALETTE = [
         'red' => ['50' => '#FFEBEE', '100' => '#FFCDD2', '200' => '#EF9A9A', '300' => '#E57373', '400' => '#EF5350', '500' => '#F44336', '600' => '#E53935', '700' => '#D32F2F', '800' => '#C62828', '900' => '#B71C1C', 'A100' => '#FF8A80', 'A200' => '#FF5252', 'A400' => '#FF1744', 'A700' => '#D50000'],
         'pink' => ['50' => '#FCE4EC', '100' => '#F8BBD0', '200' => '#F48FB1', '300' => '#F06292', '400' => '#EC407A', '500' => '#E91E63', '600' => '#D81B60', '700' => '#C2185B', '800' => '#AD1457', '900' => '#880E4F', 'A100' => '#FF80AB', 'A200' => '#FF4081', 'A400' => '#F50057', 'A700' => '#C51162'],
@@ -178,7 +175,7 @@ final readonly class Color
         return self::hex('#c0c0c0');
     }
 
-    public static function material(MaterialColor $color, int|string $shade = 500): self
+    public static function material(MaterialColor $color, int | string $shade = 500): self
     {
         $palette = self::MATERIAL_PALETTE[$color->value];
         $shadeKey = is_int($shade) ? (string) $shade : strtoupper($shade);

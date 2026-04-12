@@ -4257,6 +4257,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    /**
+     * @param list<string|TextSegment> $lines
+     */
     private function renderTextLines(array $lines, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
     {
         $clone = clone $this;
@@ -4271,20 +4274,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $validatedSegments = [];
         $containsSegments = false;
 
-        foreach ($lines as $index => $line) {
+        foreach ($lines as $line) {
             if ($line instanceof TextSegment) {
                 $validatedSegments[] = $line;
                 $validatedLines[] = $line->text;
                 $containsSegments = true;
 
                 continue;
-            }
-
-            if (!is_string($line)) {
-                throw new InvalidArgumentException(sprintf(
-                    'Text line %d must be a string or TextSegment.',
-                    $index + 1,
-                ));
             }
 
             $validatedLines[] = $line;
