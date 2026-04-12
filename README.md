@@ -198,7 +198,7 @@ $document = DefaultDocumentBuilder::make()
             fontSize: 10,
         ));
     })
-    ->paragraph('Langer Inhalt ...')
+    ->text('Langer Inhalt ...')
     ->build();
 ```
 
@@ -218,7 +218,7 @@ $document = DefaultDocumentBuilder::make()
             ));
         },
     )
-    ->paragraph('Langer Inhalt ...')
+    ->text('Langer Inhalt ...')
     ->build();
 ```
 
@@ -226,11 +226,11 @@ $document = DefaultDocumentBuilder::make()
 
 Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Fuer explizitere Inline-Link-Spans steht `TextLink` zur Verfuegung, damit sichtbarer Text, Annotation-`/Contents`, PDF/UA-Alternativtext und Gruppierung getrennt steuerbar bleiben.
 
-Fuer explizite Zeilen ohne eingebettete Newline-Strings stehen ausserdem `textLines(...)` und `paragraphLines(...)` zur Verfuegung:
+Fuer explizite Zeilen ohne eingebettete Newline-Strings steht ausserdem `textLines(...)` zur Verfuegung:
 
 ```php
 $document = DefaultDocumentBuilder::make()
-    ->paragraphLines([
+    ->textLines([
         'DEIN FIRMENNAME',
         'Strasse Hausnummer',
         '12345 Musterstadt',
@@ -317,7 +317,7 @@ $builder = DefaultDocumentBuilder::make()
     ->text('Zur Einleitung', new \Kalle\Pdf\Text\TextOptions(
         link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
     ))
-    ->paragraph([
+    ->text([
         TextSegment::link(
             'Docs',
             TextLink::externalUrl(

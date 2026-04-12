@@ -69,14 +69,14 @@ $builder = DefaultDocumentBuilder::make()
     ->footer(static function (PageDecorationContext $page, int $pageNumber) use ($footerOptions): void {
         $page->text('Page ' . $pageNumber, $footerOptions);
     })
-    ->paragraph('Header / Footer Callbacks', new TextOptions(
+    ->text('Header / Footer Callbacks', new TextOptions(
         fontSize: 24,
         lineHeight: 28,
         spacingAfter: 8,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $titleColor,
     ))
-    ->paragraph(
+    ->text(
         'This example registers a document-wide header and footer callback. Both are applied to every generated page, including explicit new pages and pages created through overflow.',
         new TextOptions(
             fontSize: 11,
@@ -103,7 +103,7 @@ foreach ($sections as $title => $body) {
     }
 
     $builder = $builder
-        ->paragraph($title, new TextOptions(
+        ->text($title, new TextOptions(
             fontSize: 16,
             lineHeight: 20,
             spacingBefore: 10,
@@ -111,7 +111,7 @@ foreach ($sections as $title => $body) {
             fontName: StandardFont::HELVETICA_BOLD->value,
             color: $accentColor,
         ))
-        ->paragraph($body, new TextOptions(
+        ->text($body, new TextOptions(
             fontSize: 11,
             lineHeight: 16,
             spacingAfter: 10,

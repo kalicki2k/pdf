@@ -22,6 +22,7 @@ use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
@@ -73,7 +74,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->paragraph('Lead in text Привет', new TextOptions(
+            ->text('Lead in text Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
             ))
             ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
@@ -231,10 +232,11 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
             ->profile($profile)
             ->title('Archive Copy')
             ->language('de-DE')
-            ->heading('Heading Привет', 1, new TextOptions(
+            ->text('Heading Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
             ))
-            ->paragraph('Paragraph Привет', new TextOptions(
+            ->text('Paragraph Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
             ))
             ->list(
@@ -261,7 +263,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
                         embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                     )),
             )
-            ->paragraph('Read more Привет', new TextOptions(
+            ->text('Read more Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 link: LinkTarget::externalUrl('https://example.com/docs'),
             ))

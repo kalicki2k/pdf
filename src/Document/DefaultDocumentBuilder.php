@@ -462,35 +462,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param string|list<TextSegment> $text
-     */
-    public function paragraph(string | array $text, ?TextOptions $options = null): DocumentBuilder
-    {
-        if (is_array($text)) {
-            return $this->renderTextSegments($text, $options, $this->resolveTaggedTextTag($options, 'P'));
-        }
-
-        return $this->renderTextBlock($text, $options, $this->resolveTaggedTextTag($options, 'P'));
-    }
-
-    /**
-     * @param list<string|TextSegment> $lines
-     */
-    public function paragraphLines(array $lines, ?TextOptions $options = null): DocumentBuilder
-    {
-        return $this->renderTextLines($lines, $options, $this->resolveTaggedTextTag($options, 'P'));
-    }
-
-    public function heading(string $text, int $level = 1, ?TextOptions $options = null): DocumentBuilder
-    {
-        if ($level < 1 || $level > 6) {
-            throw new InvalidArgumentException('Heading level must be between 1 and 6.');
-        }
-
-        return $this->renderTextBlock($text, $options, $this->resolveTaggedTextTag($options, 'H' . $level));
-    }
-
-    /**
      * @param list<string> $items
      */
     public function list(array $items, ?ListOptions $list = null, ?TextOptions $text = null): DocumentBuilder

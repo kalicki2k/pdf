@@ -35,41 +35,41 @@ Pdf::document()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->margin($margin)
-    ->paragraph('Text Layout Options', new TextOptions(
+    ->text('Text Layout Options', new TextOptions(
         fontSize: 24,
         lineHeight: 28,
         spacingAfter: 8,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $headlineColor,
     ))
-    ->paragraph('This page demonstrates align, width, maxWidth, spacingBefore, spacingAfter, firstLineIndent, and hangingIndent.', new TextOptions(
+    ->text('This page demonstrates align, width, maxWidth, spacingBefore, spacingAfter, firstLineIndent, and hangingIndent.', new TextOptions(
         fontSize: 10,
         lineHeight: 14,
         spacingAfter: 16,
         color: $mutedColor,
     ))
-    ->paragraph('Left / width', new TextOptions(
+    ->text('Left / width', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 4,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->paragraph($sample, new TextOptions(
+    ->text($sample, new TextOptions(
         width: Units::mm(80),
         fontSize: 11,
         lineHeight: 14,
         spacingAfter: 10,
         color: $bodyColor,
     ))
-    ->paragraph('Center / width', new TextOptions(
+    ->text('Center / width', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 4,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->paragraph($sample, new TextOptions(
+    ->text($sample, new TextOptions(
         width: Units::mm(110),
         fontSize: 11,
         lineHeight: 14,
@@ -77,14 +77,14 @@ Pdf::document()
         color: $bodyColor,
         align: TextAlign::CENTER,
     ))
-    ->paragraph('Right / maxWidth', new TextOptions(
+    ->text('Right / maxWidth', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 4,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->paragraph($sample, new TextOptions(
+    ->text($sample, new TextOptions(
         maxWidth: Units::mm(90),
         fontSize: 11,
         lineHeight: 14,
@@ -92,14 +92,14 @@ Pdf::document()
         color: $bodyColor,
         align: TextAlign::RIGHT,
     ))
-    ->paragraph('Justify / width', new TextOptions(
+    ->text('Justify / width', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 4,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->paragraph($sample, new TextOptions(
+    ->text($sample, new TextOptions(
         width: Units::mm(120),
         fontSize: 10,
         lineHeight: 13,
@@ -108,7 +108,7 @@ Pdf::document()
         color: $bodyColor,
         align: TextAlign::JUSTIFY,
     ))
-    ->paragraph('Spacing Before / After', new TextOptions(
+    ->text('Spacing Before / After', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         spacingBefore: 8,
@@ -116,21 +116,21 @@ Pdf::document()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->paragraph('This paragraph starts after spacingBefore and leaves space for the next block via spacingAfter.', new TextOptions(
+    ->text('This paragraph starts after spacingBefore and leaves space for the next block via spacingAfter.', new TextOptions(
         width: Units::mm(110),
         fontSize: 11,
         lineHeight: 14,
         spacingAfter: 12,
         color: $bodyColor,
     ))
-    ->paragraph('First Line Indent', new TextOptions(
+    ->text('First Line Indent', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 4,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->paragraph($sample, new TextOptions(
+    ->text($sample, new TextOptions(
         width: Units::mm(120),
         fontSize: 11,
         lineHeight: 14,
@@ -138,14 +138,14 @@ Pdf::document()
         color: $bodyColor,
         firstLineIndent: Units::mm(12),
     ))
-    ->paragraph('Hanging Indent', new TextOptions(
+    ->text('Hanging Indent', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 4,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->paragraph($sample, new TextOptions(
+    ->text($sample, new TextOptions(
         width: Units::mm(120),
         fontSize: 11,
         lineHeight: 14,

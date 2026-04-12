@@ -56,15 +56,15 @@ foreach ($variants as $fileName => $variant) {
         ->creator('examples/encryption.php')
         ->creatorTool('pdf2')
         ->encryption($variant['encryption'])
-        ->paragraph($variant['headline'], new TextOptions(
+        ->text($variant['headline'], new TextOptions(
             fontSize: 14,
             lineHeight: 18,
         ))
-        ->paragraph('User password: user-secret | Owner password: owner-secret', new TextOptions(
+        ->text('User password: user-secret | Owner password: owner-secret', new TextOptions(
             fontSize: 11,
             lineHeight: 15,
         ))
-        ->paragraph($variant['details'], new TextOptions(
+        ->text($variant['details'], new TextOptions(
             fontSize: 11,
             lineHeight: 15,
         ))

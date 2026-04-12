@@ -48,8 +48,8 @@ DefaultDocumentBuilder::make()
         Outline::fit('Overview', 1)
             ->withStyle((new OutlineStyle())->withColor(Color::hex('#1d4ed8'))->withBold()),
     )
-    ->paragraph('Advanced Outlines', $headline)
-    ->paragraph(
+    ->text('Advanced Outlines', $headline)
+    ->text(
         'This example combines styled bookmarks, Fit and FitH destinations, a FitR target and the child or sibling helper methods.',
         $body,
     )
@@ -57,8 +57,8 @@ DefaultDocumentBuilder::make()
     ->outline('Chapter 1')
     ->outlineChild('Section 1.1')
     ->outlineSiblingClosed('Section 1.2')
-    ->paragraph('Chapter 1', $headline)
-    ->paragraph(
+    ->text('Chapter 1', $headline)
+    ->text(
         'The bookmark helpers make common hierarchy changes less mechanical than manually managing numeric levels.',
         $body,
     )
@@ -68,8 +68,8 @@ DefaultDocumentBuilder::make()
             ->italic()
             ->asGoToAction(),
     )
-    ->paragraph('Chapter 2', $headline)
-    ->paragraph(
+    ->text('Chapter 2', $headline)
+    ->text(
         'This bookmark uses a GoTo action with a FitH destination. Many viewers will open this page aligned to the requested top value.',
         $body,
     )
@@ -80,8 +80,8 @@ DefaultDocumentBuilder::make()
             ->bold()
             ->italic(),
     )
-    ->paragraph('Appendix', $headline)
-    ->paragraph(
+    ->text('Appendix', $headline)
+    ->text(
         'The last bookmark uses FitR and requests a tighter visible rectangle inside the page instead of a full-page or single-coordinate destination.',
         $body,
     )

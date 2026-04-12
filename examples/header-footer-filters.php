@@ -75,14 +75,14 @@ $builder = DefaultDocumentBuilder::make()
             ));
         },
     )
-    ->paragraph('Predicate-Based Page Decoration', new TextOptions(
+    ->text('Predicate-Based Page Decoration', new TextOptions(
         fontSize: 24,
         lineHeight: 28,
         spacingAfter: 8,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $titleColor,
     ))
-    ->paragraph(
+    ->text(
         'This example combines the pageNumbers() convenience helper with predicate-based headerOn() and footerOn() callbacks. The header is skipped on the cover page, while a small footer notice is shown only on even pages.',
         new TextOptions(
             fontSize: 11,
@@ -91,14 +91,14 @@ $builder = DefaultDocumentBuilder::make()
             color: $bodyColor,
         ),
     )
-    ->paragraph('Cover Page', new TextOptions(
+    ->text('Cover Page', new TextOptions(
         fontSize: 16,
         lineHeight: 20,
         spacingAfter: 6,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $warningColor,
     ))
-    ->paragraph(
+    ->text(
         'The first page keeps only the generated page number. The filtered header starts on the next page to leave the opening layout clean.',
         new TextOptions(
             fontSize: 11,
@@ -120,7 +120,7 @@ $sections = [
 foreach ($sections as $title => $body) {
     $builder = $builder
         ->newPage()
-        ->paragraph($title, new TextOptions(
+        ->text($title, new TextOptions(
             fontSize: 16,
             lineHeight: 20,
             spacingBefore: 10,
@@ -128,7 +128,7 @@ foreach ($sections as $title => $body) {
             fontName: StandardFont::HELVETICA_BOLD->value,
             color: $accentColor,
         ))
-        ->paragraph($body, new TextOptions(
+        ->text($body, new TextOptions(
             fontSize: 11,
             lineHeight: 16,
             spacingAfter: 10,

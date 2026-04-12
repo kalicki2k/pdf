@@ -180,10 +180,10 @@ $document = Pdf::document()
             TextSegment::plain('2026-0015', new TextOptions(
                 fontName: StandardFont::HELVETICA_BOLD->value,
             )),
-            TextSegment::plain("\nRechnungsdatum: 05.04.2026\nLeistungsdatum: 31.03.2026"),
+            TextSegment::plain(PHP_EOL . 'Rechnungsdatum: 05.04.2026'),
+            TextSegment::plain(PHP_EOL . 'Leistungsdatum: 31.03.2026'),
         ],
         new TextOptions(
-            //            x: $left,
             y: Units::mm(182),
             width: Units::mm(80),
             fontSize: 9,
@@ -192,7 +192,7 @@ $document = Pdf::document()
             color: $textColor,
         ),
     )
-    ->paragraph(
+    ->text(
         "Sehr geehrte Frau Mueller,\nhiermit berechne ich Ihnen folgende Leistungen:",
         new TextOptions(
             //            x: $left,
@@ -220,7 +220,7 @@ $document = Pdf::document()
             color: $textColor,
         ),
     )
-    ->paragraph(
+    ->text(
         "Bitte ueberweisen Sie den Gesamtbetrag innerhalb von 14 Tagen ohne Abzug.\nVielen Dank fuer Ihren Auftrag.",
         new TextOptions(
             x: Units::mm(120),

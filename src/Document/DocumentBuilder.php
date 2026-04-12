@@ -119,18 +119,6 @@ interface DocumentBuilder
     public function endStructure(): self;
 
     /**
-     * @param string|list<TextSegment> $text
-     */
-    public function paragraph(string | array $text, ?TextOptions $options = null): self;
-
-    /**
-     * @param list<string|TextSegment> $lines
-     */
-    public function paragraphLines(array $lines, ?TextOptions $options = null): self;
-
-    public function heading(string $text, int $level = 1, ?TextOptions $options = null): self;
-
-    /**
      * @param list<string> $items
      */
     public function list(array $items, ?ListOptions $list = null, ?TextOptions $text = null): self;

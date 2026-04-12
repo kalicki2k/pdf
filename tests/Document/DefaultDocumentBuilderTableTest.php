@@ -156,7 +156,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(24.0))
-            ->paragraph('Intro text', new TextOptions(
+            ->text('Intro text', new TextOptions(
                 fontSize: 18.0,
                 lineHeight: 22.0,
             ))

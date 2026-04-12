@@ -19,6 +19,7 @@ use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Font\EmbeddedFontSource;
@@ -117,10 +118,11 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfA1a())
                 ->title('Archive Copy')
                 ->language('de-DE')
-                ->heading('Heading Привет', 1, new TextOptions(
+                ->text('Heading Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
-                ->paragraph('Paragraph Привет', new TextOptions(
+                ->text('Paragraph Привет', new TextOptions(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->list(
@@ -168,10 +170,11 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfA1a())
                 ->title('Archive Copy')
                 ->language('de-DE')
-                ->heading('Page one heading Привет', 1, new TextOptions(
+                ->text('Page one heading Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
-                ->paragraph('Page one paragraph Привет', new TextOptions(
+                ->text('Page one paragraph Привет', new TextOptions(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->newPage()
@@ -206,7 +209,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
                 ->language('de-DE')
-                ->paragraph('Intro', new TextOptions(
+                ->text('Intro', new TextOptions(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->line(
@@ -233,10 +236,11 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
                 ->language('de-DE')
-                ->heading('Heading', 1, new TextOptions(
+                ->text('Heading', new TextOptions(
+                tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
-                ->paragraph('Paragraph', new TextOptions(
+                ->text('Paragraph', new TextOptions(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->text('Read more', new TextOptions(
@@ -277,7 +281,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
                 ->language('de-DE')
-                ->paragraph([
+                ->text([
                     new TextSegment(
                         'Read docs',
                         new TextLink(
@@ -290,7 +294,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->newPage()
-                ->paragraph([
+                ->text([
                     new TextSegment(
                         'Read docs',
                         new TextLink(
@@ -321,7 +325,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Form')
                 ->language('de-DE')
-                ->paragraph('Intro text', new TextOptions(
+                ->text('Intro text', new TextOptions(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')

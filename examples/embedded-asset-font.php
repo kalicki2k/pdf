@@ -36,13 +36,13 @@ Pdf::document()
         embeddedFont: $fontSource,
         color: Color::hex('#111827'),
     ))
-    ->paragraph('This example embeds Inter-Regular.ttf from assets/fonts and writes it into the PDF as an embedded TrueType font.', new TextOptions(
+    ->text('This example embeds Inter-Regular.ttf from assets/fonts and writes it into the PDF as an embedded TrueType font.', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         embeddedFont: $fontSource,
         color: Color::hex('#334155'),
     ))
-    ->paragraph('The goal is to keep the example small and explicit so the embedded-font API remains easy to inspect.', new TextOptions(
+    ->text('The goal is to keep the example small and explicit so the embedded-font API remains easy to inspect.', new TextOptions(
         fontSize: 12,
         lineHeight: 16,
         embeddedFont: $fontSource,

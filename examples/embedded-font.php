@@ -59,7 +59,7 @@ Pdf::document()
         embeddedFont: $fontSource,
         color: Color::hex('#0f172a'),
     ))
-    ->paragraph($body, new TextOptions(
+    ->text($body, new TextOptions(
         x: Units::mm(20),
         y: Units::mm(250),
         fontSize: 12,

@@ -140,13 +140,13 @@ DefaultDocumentBuilder::make()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A5())
     ->margin($margin)
-    ->paragraph('Table Example', new TextOptions(
+    ->text('Table Example', new TextOptions(
         fontSize: 18,
         lineHeight: 22,
         color: Color::hex('#0f172a'),
         spacingAfter: 8,
     ))
-    ->paragraph('This example deliberately exercises the current table foundation, including caption, repeated headers, row headers with explicit scope, colspan, rowspan, cell backgrounds, vertical alignment, footer rows and page breaks.', new TextOptions(
+    ->text('This example deliberately exercises the current table foundation, including caption, repeated headers, row headers with explicit scope, colspan, rowspan, cell backgrounds, vertical alignment, footer rows and page breaks.', new TextOptions(
         fontSize: 10,
         lineHeight: 14,
         color: Color::hex('#475569'),

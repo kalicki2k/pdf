@@ -286,7 +286,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->paragraphLines(['Zeile 1', 'Zeile 2'], new TextOptions(
+            ->textLines(['Zeile 1', 'Zeile 2'], new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -302,7 +302,8 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->title('Archive Copy')
             ->language('de-DE')
             ->beginStructure(TaggedStructureTag::SECT)
-            ->heading('Kapitel', 1, new TextOptions(
+            ->text('Kapitel', new TextOptions(
+                tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->text('Betont', new TextOptions(
@@ -544,10 +545,11 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->heading('Einleitung Привет', 1, new TextOptions(
+            ->text('Einleitung Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->paragraph('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -1077,7 +1079,7 @@ final class DefaultDocumentBuilderTest extends TestCase
     public function testItAddsMultipleLinkedTextSegmentsInOneCall(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->paragraph([
+            ->text([
                 new TextSegment('Docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' und '),
                 new TextSegment('API', LinkTarget::externalUrl('https://example.com/api')),
@@ -1111,7 +1113,7 @@ final class DefaultDocumentBuilderTest extends TestCase
     public function testItMergesAdjacentTextSegmentsWithTheSameLink(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->paragraph([
+            ->text([
                 new TextSegment('Read', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' now'),
@@ -1130,7 +1132,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->paragraph([
+            ->text([
                 new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
             ], new TextOptions(width: 45))
             ->build();
@@ -1189,7 +1191,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->paragraph([
+            ->text([
                 TextSegment::link(
                     'Docs',
                     TextLink::externalUrl(
@@ -1209,7 +1211,7 @@ final class DefaultDocumentBuilderTest extends TestCase
     public function testExplicitTextLinkGroupKeysCanPreventMergingForTheSameTarget(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->paragraph([
+            ->text([
                 TextSegment::link('Docs', TextLink::externalUrl('https://example.com/docs', groupKey: 'docs-a')),
                 TextSegment::link(' API', TextLink::externalUrl('https://example.com/docs', groupKey: 'docs-b')),
             ])

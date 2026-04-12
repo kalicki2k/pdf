@@ -51,26 +51,26 @@ DefaultDocumentBuilder::make()
     ->pageSize(PageSize::A4())
     ->margin($margin)
     ->outline('Overview')
-    ->paragraph('Outline Example', $headline)
-    ->paragraph(
+    ->text('Outline Example', $headline)
+    ->text(
         'This example creates a small nested outline tree with chapters, sections and a subsection. The first bookmark points to the current page, later bookmarks jump to explicit pages and positions.',
         $body,
     )
-    ->paragraph('Overview', $section)
-    ->paragraph(
+    ->text('Overview', $section)
+    ->text(
         'Use the bookmarks panel in your PDF viewer to jump between the pages in this document. The hierarchy in the viewer matches the explicit outline level used in the builder API.',
         $body,
     )
     ->newPage()
     ->outlineAt('Chapter 1', 2)
     ->outlineAtLevel('Highlights', 2, 2, 72, 720)
-    ->paragraph('Chapter 1', $headline)
-    ->paragraph(
+    ->text('Chapter 1', $headline)
+    ->text(
         'A top-level outline can target a whole page. In this first iteration pdf2 writes explicit /XYZ destinations and uses the page top when no coordinates are given.',
         $body,
     )
-    ->paragraph('Highlights', $section)
-    ->paragraph(
+    ->text('Highlights', $section)
+    ->text(
         'Chapter 1 has a nested section bookmark. This keeps the example small while still showing that child outline items are linked to their parent in the generated PDF outline tree.',
         $body,
     )
@@ -78,12 +78,12 @@ DefaultDocumentBuilder::make()
     ->outlineAt('Chapter 2', 3)
     ->outlineAtLevel('Target Section', 2, 3, 72, 620)
     ->outlineAtLevel('Implementation Notes', 3, 3, 72, 520)
-    ->paragraph('Chapter 2', $headline)
-    ->paragraph(
+    ->text('Chapter 2', $headline)
+    ->text(
         'This page contains more precise bookmark targets. One child outline points to the target section below instead of the page top, and a grandchild outline points even further down on the same page.',
         $body,
     )
-    ->paragraph('Target Section', new TextOptions(
+    ->text('Target Section', new TextOptions(
         x: 72,
         y: 620,
         fontSize: 18,
@@ -92,7 +92,7 @@ DefaultDocumentBuilder::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: Color::hex('#b45309'),
     ))
-    ->paragraph(
+    ->text(
         'The child outline named "Target Section" uses explicit coordinates so the viewer opens this page close to the highlighted block.',
         new TextOptions(
             x: 72,
@@ -103,7 +103,7 @@ DefaultDocumentBuilder::make()
             color: Color::hex('#334155'),
         ),
     )
-    ->paragraph('Implementation Notes', new TextOptions(
+    ->text('Implementation Notes', new TextOptions(
         x: 72,
         y: 520,
         fontSize: 16,
@@ -112,7 +112,7 @@ DefaultDocumentBuilder::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: Color::hex('#7c2d12'),
     ))
-    ->paragraph(
+    ->text(
         'This subsection bookmark demonstrates one additional nesting level. The current API keeps levels explicit, which makes the resulting hierarchy deterministic and easy to reason about.',
         new TextOptions(
             x: 72,
@@ -125,8 +125,8 @@ DefaultDocumentBuilder::make()
     )
     ->newPage()
     ->outlineAt('Appendix', 4)
-    ->paragraph('Appendix', $headline)
-    ->paragraph(
+    ->text('Appendix', $headline)
+    ->text(
         'The last bookmark points to this page. Together the bookmarks form a small but complete nested outline tree with top-level items, child items and one grandchild item.',
         $body,
     )

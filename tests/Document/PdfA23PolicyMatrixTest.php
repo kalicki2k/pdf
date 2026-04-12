@@ -24,7 +24,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
     public function testItAllowsPdfA2aTaggedParagraphsWithinTheCurrentScope(): void
     {
         $document = $this->pdfA2BaselineBuilder(Profile::pdfA2a())
-            ->paragraph('Getaggter Absatz fuer PDF/A-2a. Привет.', new TextOptions(
+            ->text('Getaggter Absatz fuer PDF/A-2a. Привет.', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();

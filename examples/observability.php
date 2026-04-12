@@ -7,6 +7,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Debug\DebugConfig;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Page\Margin;
@@ -140,14 +141,15 @@ foreach ($reportSections as $index => $section) {
     $builder = $builder
         ->newPage()
         ->namedDestination('section-' . $pageNumber)
-        ->heading($pageNumber . '. ' . $section['title'], 1, new TextOptions(
+        ->text($pageNumber . '. ' . $section['title'], new TextOptions(
+                tag: TaggedStructureTag::H1,
             fontSize: 21,
             lineHeight: 25,
             spacingAfter: 6,
             fontName: StandardFont::HELVETICA_BOLD->value,
             color: $titleColor,
         ))
-        ->paragraph(
+        ->text(
             'Region: ' . $section['region'] . '. Focus: ' . $section['focus'] . '. This page is intentionally dense enough to exercise object creation, stream serialization and performance scopes while remaining readable as a realistic operations review.',
             new TextOptions(
                 fontSize: 11,
@@ -156,7 +158,7 @@ foreach ($reportSections as $index => $section) {
                 color: $bodyColor,
             ),
         )
-        ->paragraph('Snapshot', new TextOptions(
+        ->text('Snapshot', new TextOptions(
             fontSize: 13,
             lineHeight: 17,
             spacingAfter: 4,
@@ -165,7 +167,7 @@ foreach ($reportSections as $index => $section) {
         ));
 
     for ($paragraphIndex = 1; $paragraphIndex <= 5; $paragraphIndex++) {
-        $builder = $builder->paragraph(
+        $builder = $builder->text(
             'Window ' . $paragraphIndex . ': render throughput remained predictable across daily export batches. The team observed bounded memory growth, deterministic page construction and stable write offsets during repeated document generation. Each batch recorded enough variation to make the performance logs interesting without turning the example into random noise. Review focus stayed on ' . $section['focus'] . ' for ' . $section['region'] . '.',
             new TextOptions(
                 fontSize: 10.5,
@@ -177,7 +179,7 @@ foreach ($reportSections as $index => $section) {
     }
 
     $builder = $builder
-        ->paragraph('Operational Notes', new TextOptions(
+        ->text('Operational Notes', new TextOptions(
             fontSize: 13,
             lineHeight: 17,
             spacingBefore: 6,
@@ -185,7 +187,7 @@ foreach ($reportSections as $index => $section) {
             fontName: StandardFont::HELVETICA_BOLD->value,
             color: $sectionColor,
         ))
-        ->paragraph(
+        ->text(
             'The JSON sink output for this example is easiest to inspect with jq or any structured log viewer. Lifecycle events show document creation and write boundaries. PDF events reveal indirect object creation and serialization. Performance events show document-level, page-level and file-write timings together with memory deltas.',
             new TextOptions(
                 fontSize: 10.5,
@@ -194,7 +196,7 @@ foreach ($reportSections as $index => $section) {
                 color: $bodyColor,
             ),
         )
-        ->paragraph(
+        ->text(
             'Use this file as a template when integrating your own debug sink setup. In production you would normally lower PDF structure logging from trace to debug or disable it outside focused investigations, while keeping lifecycle and performance channels enabled for operational visibility.',
             new TextOptions(
                 fontSize: 10.5,

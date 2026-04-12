@@ -96,33 +96,6 @@ final class PageDecorationContext
         return $this;
     }
 
-    /**
-     * @param string|list<TextSegment> $text
-     */
-    public function paragraph(string | array $text, ?TextOptions $options = null): self
-    {
-        $this->builder = $this->builder->paragraph($text, $options);
-
-        return $this;
-    }
-
-    /**
-     * @param list<string|TextSegment> $lines
-     */
-    public function paragraphLines(array $lines, ?TextOptions $options = null): self
-    {
-        $this->builder = $this->builder->paragraphLines($lines, $options);
-
-        return $this;
-    }
-
-    public function heading(string $text, int $level = 1, ?TextOptions $options = null): self
-    {
-        $this->builder = $this->builder->heading($text, $level, $options);
-
-        return $this;
-    }
-
     public function image(ImageSource $source, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self
     {
         $this->builder = $this->builder->image($source, $placement, $accessibility);

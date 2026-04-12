@@ -51,8 +51,8 @@ DefaultDocumentBuilder::make()
     ->pageSize(PageSize::A4())
     ->margin($margin)
     ->outline('Overview')
-    ->paragraph('Open And Closed Outlines', $headline)
-    ->paragraph(
+    ->text('Open And Closed Outlines', $headline)
+    ->text(
         'This example contains two top-level bookmark branches. The first one is open, so its children are visible immediately. The second one is closed, so the viewer should collapse its children until the user expands the node.',
         $body,
     )
@@ -60,12 +60,12 @@ DefaultDocumentBuilder::make()
     ->outlineAt('Open Chapter', 2)
     ->outlineAtLevel('Open Section 1', 2, 2, 72, 700)
     ->outlineAtLevel('Open Section 2', 2, 2, 72, 600)
-    ->paragraph('Open Chapter', $headline)
-    ->paragraph(
+    ->text('Open Chapter', $headline)
+    ->text(
         'The bookmark branch for this chapter is open. Its child bookmarks should already be visible in the bookmarks panel of the PDF viewer.',
         $body,
     )
-    ->paragraph('Open Section 1', new TextOptions(
+    ->text('Open Section 1', new TextOptions(
         x: 72,
         y: 700,
         fontSize: 16,
@@ -73,7 +73,7 @@ DefaultDocumentBuilder::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: Color::hex('#1d4ed8'),
     ))
-    ->paragraph(
+    ->text(
         'This target belongs to an outline child under an open parent node.',
         new TextOptions(
             x: 72,
@@ -84,7 +84,7 @@ DefaultDocumentBuilder::make()
             color: Color::hex('#334155'),
         ),
     )
-    ->paragraph('Open Section 2', new TextOptions(
+    ->text('Open Section 2', new TextOptions(
         x: 72,
         y: 600,
         fontSize: 16,
@@ -92,7 +92,7 @@ DefaultDocumentBuilder::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: Color::hex('#0f766e'),
     ))
-    ->paragraph(
+    ->text(
         'This second child stays visible in the outline tree because its parent node is open.',
         new TextOptions(
             x: 72,
@@ -107,12 +107,12 @@ DefaultDocumentBuilder::make()
     ->outlineAtClosed('Closed Chapter', 3)
     ->outlineAtLevelClosed('Collapsed Section', 2, 3, 72, 690)
     ->outlineAtLevel('Nested Detail', 3, 3, 72, 590)
-    ->paragraph('Closed Chapter', $headline)
-    ->paragraph(
+    ->text('Closed Chapter', $headline)
+    ->text(
         'The bookmark branch for this chapter is closed. Its child outline items still exist, but the viewer should start with this subtree collapsed.',
         $body,
     )
-    ->paragraph('Collapsed Section', new TextOptions(
+    ->text('Collapsed Section', new TextOptions(
         x: 72,
         y: 690,
         fontSize: 16,
@@ -120,7 +120,7 @@ DefaultDocumentBuilder::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: Color::hex('#b45309'),
     ))
-    ->paragraph(
+    ->text(
         'This section is itself closed and contains a nested child bookmark below.',
         new TextOptions(
             x: 72,
@@ -131,7 +131,7 @@ DefaultDocumentBuilder::make()
             color: Color::hex('#334155'),
         ),
     )
-    ->paragraph('Nested Detail', new TextOptions(
+    ->text('Nested Detail', new TextOptions(
         x: 72,
         y: 590,
         fontSize: 15,
@@ -139,7 +139,7 @@ DefaultDocumentBuilder::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: Color::hex('#7c2d12'),
     ))
-    ->paragraph(
+    ->text(
         'This bookmark target exists, but the closed ancestor path means it should not be expanded automatically when the document opens.',
         new TextOptions(
             x: 72,

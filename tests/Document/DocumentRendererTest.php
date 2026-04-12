@@ -29,6 +29,7 @@ use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\StrokeStyle;
@@ -248,14 +249,15 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->heading('Einleitung Привет', 1, new TextOptions(
+            ->text('Einleitung Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 color: Color::rgb(0.08, 0.16, 0.35),
             ))
-            ->paragraph('Erster Absatz mit strukturiertem Inhalt. Привет.', new TextOptions(
+            ->text('Erster Absatz mit strukturiertem Inhalt. Привет.', new TextOptions(
                 x: 72,
                 y: 720,
                 width: 320,
@@ -284,7 +286,7 @@ final class DocumentRendererTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
-            ->paragraph('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', new TextOptions(
                 x: 72,
                 y: 720,
                 width: 320,
@@ -432,13 +434,14 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->heading('Projektübersicht Привет', 1, new TextOptions(
+            ->text('Projektübersicht Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->paragraph('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', new TextOptions(
                 x: 72,
                 y: 724,
                 width: 320,
@@ -505,7 +508,7 @@ final class DocumentRendererTest extends TestCase
                         embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     )),
             )
-            ->paragraph('Text content Привет', new TextOptions(
+            ->text('Text content Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->image(
@@ -562,7 +565,7 @@ final class DocumentRendererTest extends TestCase
                         embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     )),
             )
-            ->paragraph('Text content Привет', new TextOptions(
+            ->text('Text content Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -606,13 +609,14 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->heading('Ueberschrift Привет', 1, new TextOptions(
+            ->text('Ueberschrift Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->paragraph('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', new TextOptions(
                 x: 72,
                 y: 724,
                 width: 320,
@@ -669,13 +673,14 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->heading('Kapitel Eins Привет', 1, new TextOptions(
+            ->text('Kapitel Eins Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->paragraph('Erste Seite Привет', new TextOptions(
+            ->text('Erste Seite Привет', new TextOptions(
                 x: 72,
                 y: 724,
                 width: 320,
@@ -684,13 +689,14 @@ final class DocumentRendererTest extends TestCase
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->newPage()
-            ->heading('Kapitel Zwei Привет', 1, new TextOptions(
+            ->text('Kapitel Zwei Привет', new TextOptions(
+                tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->paragraph('Zweite Seite Привет', new TextOptions(
+            ->text('Zweite Seite Привет', new TextOptions(
                 x: 72,
                 y: 724,
                 width: 320,
@@ -1511,7 +1517,7 @@ final class DocumentRendererTest extends TestCase
     public function testItRendersMultipleTextSegmentLinks(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->paragraph([
+            ->text([
                 new TextSegment('Docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' und '),
                 new TextSegment('API', LinkTarget::externalUrl('https://example.com/api')),
@@ -1537,7 +1543,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->paragraph([
+            ->text([
                 new TextSegment('Read', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' now'),
@@ -1562,7 +1568,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->paragraph([
+            ->text([
                 new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
             ], new TextOptions(width: 45))
             ->build();
@@ -1586,7 +1592,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->paragraph([
+            ->text([
                 TextSegment::link(
                     'Docs',
                     TextLink::externalUrl(

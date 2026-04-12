@@ -22,8 +22,8 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->paragraph('Hello world this wraps automatically across multiple lines.')
-            ->paragraph('After paragraph')
+            ->text('Hello world this wraps automatically across multiple lines.')
+            ->text('After paragraph')
             ->build();
 
         self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 520.583 Td\n[", $document->pages[0]->contents);

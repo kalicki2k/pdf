@@ -53,8 +53,8 @@ DefaultDocumentBuilder::make()
                 ->withAdditionalFlags(4),
         ),
     )
-    ->paragraph('Introduction', $headline)
-    ->paragraph(
+    ->text('Introduction', $headline)
+    ->text(
         'The first bookmark targets a named destination on this page and adds custom viewer flags on top of bold styling.',
         $body,
     )
@@ -63,8 +63,8 @@ DefaultDocumentBuilder::make()
     ->addOutline(
         Outline::named('Open Chapter 2 Via GoTo', 'chapter-2', 2)->asGoToAction(),
     )
-    ->paragraph('Chapter 2', $headline)
-    ->paragraph(
+    ->text('Chapter 2', $headline)
+    ->text(
         'This bookmark resolves through a named destination as a local GoTo action instead of a direct Dest entry.',
         $body,
     )
@@ -76,8 +76,8 @@ DefaultDocumentBuilder::make()
                 ->asRemoteGoTo('reference-manual.pdf', true),
         ),
     )
-    ->paragraph('External Reference', $headline)
-    ->paragraph(
+    ->text('External Reference', $headline)
+    ->text(
         'The last bookmark points into another PDF via a GoToR action and asks the viewer to open it in a new window.',
         $body,
     )
