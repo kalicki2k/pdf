@@ -11,18 +11,20 @@ final readonly class TextSegment
     public function __construct(
         public string $text,
         public LinkTarget | TextLink | null $link = null,
+        public ?TextOptions $options = null,
     ) {
     }
 
-    public static function plain(string $text): self
+    public static function plain(string $text, ?TextOptions $options = null): self
     {
-        return new self($text);
+        return new self($text, options: $options);
     }
 
     public static function link(
         string $text,
         TextLink $link,
+        ?TextOptions $options = null,
     ): self {
-        return new self($text, $link);
+        return new self($text, $link, $options);
     }
 }

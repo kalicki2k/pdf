@@ -53,6 +53,7 @@ use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 
+use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
@@ -116,6 +117,7 @@ use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
 use Kalle\Pdf\Text\SimpleTextShaper;
 use Kalle\Pdf\Text\TextAlign;
+use Kalle\Pdf\Text\TextDirection;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
@@ -610,7 +612,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $textFlow = $clone->textFlow();
         $placement = $textFlow->placement($options, $font);
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
-        $renderState = $clone->prepareTextRenderState($text, $options, $font, []);
         $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
         $textResult = $clone->buildWrappedTextSegmentsContent(
             $wrappedSegmentLines,
@@ -618,10 +619,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $textFlow,
             $placement['x'],
             $placement['y'],
-            $renderState['fontAlias'],
-            $font,
-            $renderState['embeddedPageFont'],
-            $renderState['useHexString'],
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
@@ -2879,10 +2876,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         TextFlow $textFlow,
         float $x,
         float $y,
-        string $fontAlias,
-        StandardFontDefinition | EmbeddedFontDefinition $font,
-        ?PageFont $embeddedPageFont,
-        bool $useHexString,
         float $pdfVersion,
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
@@ -2904,6 +2897,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $runY = $y - ($textFlow->lineHeight($options) * $index);
             $isFirstLineOfParagraph = $this->isFirstSegmentLineOfParagraph($wrappedSegmentLines, $index);
             $lineBaseX = $textFlow->lineX($x, $options, $isFirstLineOfParagraph);
+            /** @var list<array{mappedRun: MappedTextRun, link: LinkTarget|TextLink|null, options: TextOptions, font: StandardFontDefinition|EmbeddedFontDefinition, fontAlias: string}> $lineEntries */
             $lineEntries = [];
 
             foreach ($lineSegments as $segment) {
@@ -2911,17 +2905,26 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     continue;
                 }
 
-                $segmentOptions = $this->textOptionsWithLink($options, $segment->link);
-                $segmentRuns = $this->textShaper()->shape($segment->text, $segmentOptions->baseDirection, $font);
+                $segmentOptions = $this->textOptionsForSegment($options, $segment);
+                $segmentFont = $segmentOptions->embeddedFont !== null
+                    ? EmbeddedFontDefinition::fromSource($segmentOptions->embeddedFont)
+                    : StandardFontDefinition::from($segmentOptions->fontName);
+                $segmentRuns = $this->textShaper()->shape($segment->text, $segmentOptions->baseDirection, $segmentFont);
+                $segmentRenderState = $this->prepareTextRenderState(
+                    $segment->text,
+                    $segmentOptions,
+                    $segmentFont,
+                    [$segmentRuns],
+                );
 
                 foreach ($segmentRuns as $run) {
                     $mappedRun = $this->fontRunMapper()->map(
                         $run,
-                        $font,
+                        $segmentFont,
                         $segmentOptions,
                         $pdfVersion,
-                        $embeddedPageFont,
-                        $useHexString,
+                        $segmentRenderState['embeddedPageFont'],
+                        $segmentRenderState['useHexString'],
                     );
 
                     if ($mappedRun->text === '') {
@@ -2930,7 +2933,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
                     $lineEntries[] = [
                         'mappedRun' => $mappedRun,
-                        'link' => $segment->link,
+                        'link' => $segmentOptions->link,
+                        'options' => $segmentOptions,
+                        'font' => $segmentFont,
+                        'fontAlias' => $segmentRenderState['fontAlias'],
                     ];
                 }
             }
@@ -2964,21 +2970,30 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $renderedEntries = [];
 
             foreach ($lineEntries as $lineEntry) {
+                /** @var array{mappedRun: MappedTextRun, link: LinkTarget|TextLink|null, options: TextOptions, font: StandardFontDefinition|EmbeddedFontDefinition, fontAlias: string} $lineEntry */
                 /** @var MappedTextRun $mappedRun */
                 $mappedRun = $lineEntry['mappedRun'];
                 /** @var LinkTarget|TextLink|null $link */
                 $link = $lineEntry['link'] ?? null;
+                /** @var TextOptions $segmentOptions */
+                $segmentOptions = $lineEntry['options'];
+                /** @var StandardFontDefinition|EmbeddedFontDefinition $segmentFont */
+                $segmentFont = $lineEntry['font'];
+                /** @var string $segmentFontAlias */
+                $segmentFontAlias = $lineEntry['fontAlias'];
                 $renderedEntries[] = [
                     'mappedRun' => $mappedRun,
                     'link' => $link,
+                    'font' => $segmentFont,
+                    'options' => $segmentOptions,
                     'x' => $runX,
                     'textBlockContent' => $this->textBlockBuilder()->build(
                         $mappedRun->encodedText,
-                        $options,
+                        $segmentOptions,
                         $runX,
                         $runY,
-                        $fontAlias,
-                        $font,
+                        $segmentFontAlias,
+                        $segmentFont,
                         $mappedRun->glyphNames,
                         $mappedRun->textAdjustments,
                         $mappedRun->positionedFragments,
@@ -3010,8 +3025,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $renderedEntry['x'],
                         $runY,
                         $renderedEntry['width'],
-                        $textFlow->lineHeight($options),
-                        $font->ascent($options->fontSize),
+                        $textFlow->lineHeight($renderedEntry['options']),
+                        $renderedEntry['font']->ascent($renderedEntry['options']->fontSize),
                         $groupKey,
                     );
                     $textBlockContent = $linkResult['contents'];
@@ -3045,8 +3060,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<array{mappedRun: MappedTextRun, link: LinkTarget|TextLink|null, x: float, textBlockContent: string}> $renderedEntries
-     * @return list<array{link: LinkTarget|TextLink|null, x: float, width: float, text: string, textBlockContent: string}>
+     * @param list<array{mappedRun: MappedTextRun, link: LinkTarget|TextLink|null, font: StandardFontDefinition|EmbeddedFontDefinition, options: TextOptions, x: float, textBlockContent: string}> $renderedEntries
+     * @return list<array{link: LinkTarget|TextLink|null, font: StandardFontDefinition|EmbeddedFontDefinition, options: TextOptions, x: float, width: float, text: string, textBlockContent: string}>
      */
     private function mergeRenderedSegmentEntries(array $renderedEntries): array
     {
@@ -3068,12 +3083,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $mergedEntries[$lastIndex]['width'] += $mappedRun->width;
                 $mergedEntries[$lastIndex]['text'] .= $mappedRun->text;
                 $mergedEntries[$lastIndex]['textBlockContent'] .= "\n" . $renderedEntry['textBlockContent'];
+                if ($renderedEntry['font']->ascent($renderedEntry['options']->fontSize) > $mergedEntries[$lastIndex]['font']->ascent($mergedEntries[$lastIndex]['options']->fontSize)) {
+                    $mergedEntries[$lastIndex]['font'] = $renderedEntry['font'];
+                    $mergedEntries[$lastIndex]['options'] = $renderedEntry['options'];
+                }
 
                 continue;
             }
 
             $mergedEntries[] = [
                 'link' => $link,
+                'font' => $renderedEntry['font'],
+                'options' => $renderedEntry['options'],
                 'x' => $renderedEntry['x'],
                 'width' => $mappedRun->width,
                 'text' => $mappedRun->text,
@@ -3406,6 +3427,95 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
     }
 
+    private function textOptionsForSegment(TextOptions $options, TextSegment $segment): TextOptions
+    {
+        if ($segment->options === null) {
+            return $this->textOptionsWithLink($options, $segment->link);
+        }
+
+        $this->assertInlineSegmentTextOptions($segment->options);
+
+        return new TextOptions(
+            x: $options->x,
+            y: $options->y,
+            width: $options->width,
+            maxWidth: $options->maxWidth,
+            fontSize: $this->segmentFontSize($options, $segment->options),
+            lineHeight: $options->lineHeight,
+            spacingBefore: $options->spacingBefore,
+            spacingAfter: $options->spacingAfter,
+            fontName: $this->segmentFontName($options, $segment->options),
+            embeddedFont: $segment->options->embeddedFont ?? $options->embeddedFont,
+            fontEncoding: $segment->options->fontEncoding ?? $options->fontEncoding,
+            color: $segment->options->color ?? $options->color,
+            kerning: $this->segmentKerning($options, $segment->options),
+            baseDirection: $this->segmentBaseDirection($options, $segment->options),
+            align: $options->align,
+            firstLineIndent: $options->firstLineIndent,
+            hangingIndent: $options->hangingIndent,
+            link: $segment->link,
+            tag: $options->tag,
+            semantic: $options->semantic,
+        );
+    }
+
+    private function assertInlineSegmentTextOptions(TextOptions $options): void
+    {
+        if (
+            $options->x !== null
+            || $options->y !== null
+            || $options->width !== null
+            || $options->maxWidth !== null
+            || $options->lineHeight !== null
+            || $options->spacingBefore !== null
+            || $options->spacingAfter !== null
+            || $options->align !== TextAlign::LEFT
+            || $options->firstLineIndent !== 0.0
+            || $options->hangingIndent !== 0.0
+            || $options->link !== null
+            || $options->tag !== null
+            || $options->semantic !== TextSemantic::CONTENT
+        ) {
+            throw new InvalidArgumentException('TextSegment options only support inline text overrides.');
+        }
+    }
+
+    private function segmentFontSize(TextOptions $baseOptions, TextOptions $segmentOptions): float
+    {
+        if ($segmentOptions->fontSize === 18.0 && $baseOptions->fontSize !== 18.0) {
+            return $baseOptions->fontSize;
+        }
+
+        return $segmentOptions->fontSize;
+    }
+
+    private function segmentFontName(TextOptions $baseOptions, TextOptions $segmentOptions): string
+    {
+        if ($segmentOptions->fontName === StandardFont::HELVETICA->value && $baseOptions->fontName !== StandardFont::HELVETICA->value) {
+            return $baseOptions->fontName;
+        }
+
+        return $segmentOptions->fontName;
+    }
+
+    private function segmentKerning(TextOptions $baseOptions, TextOptions $segmentOptions): bool
+    {
+        if ($segmentOptions->kerning && !$baseOptions->kerning) {
+            return $baseOptions->kerning;
+        }
+
+        return $segmentOptions->kerning;
+    }
+
+    private function segmentBaseDirection(TextOptions $baseOptions, TextOptions $segmentOptions): TextDirection
+    {
+        if ($segmentOptions->baseDirection === TextDirection::LTR && $baseOptions->baseDirection !== TextDirection::LTR) {
+            return $baseOptions->baseDirection;
+        }
+
+        return $segmentOptions->baseDirection;
+    }
+
     private function linkTarget(LinkTarget | TextLink $link): LinkTarget
     {
         return $link instanceof TextLink ? $link->target : $link;
@@ -3732,10 +3842,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $textFlow,
             $x,
             $firstLineY,
-            $fontAlias,
-            $font,
-            $embeddedPageFont,
-            $useHexString,
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
@@ -4299,17 +4405,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         if ($containsSegments) {
             $wrappedSegmentLines = $clone->wrapExplicitTextSegmentLines($validatedSegments, $options, $font, $textFlow, $placement['x']);
-            $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, []);
             $textResult = $clone->buildWrappedTextSegmentsContent(
                 $wrappedSegmentLines,
                 $options,
                 $textFlow,
                 $placement['x'],
                 $placement['y'],
-                $renderState['fontAlias'],
-                $font,
-                $renderState['embeddedPageFont'],
-                $renderState['useHexString'],
                 ($this->profile ?? Profile::standard())->version(),
                 $markedContentTag,
                 $markedContentId,

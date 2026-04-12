@@ -1145,6 +1145,44 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertNotNull($document->pages[0]->annotations[0]->taggedGroupKey);
     }
 
+    public function testItSupportsInlineFontOverridesForTextSegments(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text([
+                TextSegment::plain('Rechnungsnummer: '),
+                TextSegment::plain(
+                    '2026-0015',
+                    new TextOptions(fontName: 'Helvetica-Bold'),
+                ),
+            ], new TextOptions(
+                x: Units::mm(20),
+                y: Units::mm(250),
+                fontSize: 9,
+                lineHeight: 12,
+                fontName: 'Helvetica',
+            ))
+            ->build();
+
+        self::assertStringContainsString('/F1 9 Tf', $document->pages[0]->contents);
+        self::assertStringContainsString('/F2 9 Tf', $document->pages[0]->contents);
+        self::assertArrayHasKey('F1', $document->pages[0]->fontResources);
+        self::assertArrayHasKey('F2', $document->pages[0]->fontResources);
+        self::assertSame('Helvetica', $document->pages[0]->fontResources['F1']->name);
+        self::assertSame('Helvetica-Bold', $document->pages[0]->fontResources['F2']->name);
+    }
+
+    public function testItRejectsLayoutOverridesOnInlineTextSegments(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('TextSegment options only support inline text overrides.');
+
+        DefaultDocumentBuilder::make()
+            ->text([
+                TextSegment::plain('Hello', new TextOptions(x: 20)),
+            ])
+            ->build();
+    }
+
     public function testItSeparatesAnnotationContentsFromAccessibleLinkLabel(): void
     {
         $document = DefaultDocumentBuilder::make()

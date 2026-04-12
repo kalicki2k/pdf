@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Color\MaterialColor;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
@@ -20,6 +21,7 @@ use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Text\TextSemantic;
 
 $outputDirectory = __DIR__ . '/../var/examples';
@@ -34,11 +36,11 @@ $left = Units::mm(20);
 $right = Units::mm(190);
 $contentWidth = $right - $left;
 
-$headlineColor = Color::hex('#dc143c');
-$textColor = Color::hex('#1f2937');
-$mutedColor = Color::hex('#64748b');
-$tableHeaderColor = Color::hex('#f1f5f9');
-$tableBorderColor = Color::gray(0.75);
+$headlineColor = Color::material(MaterialColor::RED, 700);
+$textColor = Color::material(MaterialColor::BLUE_GREY, 800);
+$mutedColor = Color::material(MaterialColor::BLUE_GREY, 500);
+$tableHeaderColor = Color::material(MaterialColor::BLUE_GREY, 50);
+$tableBorderColor = Color::material(MaterialColor::GREY, 400);
 
 $table = Table::define(
     TableColumn::fixed(Units::mm(15)),
@@ -127,7 +129,7 @@ $document = Pdf::document()
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 11,
-            // color: $textColor,
+            color: $textColor,
             align: TextAlign::RIGHT,
             semantic: TextSemantic::ARTIFACT,
         ),
@@ -135,7 +137,7 @@ $document = Pdf::document()
     ->text(
         'DEIN FIRMENNAME - Strasse Hausnummer - PLZ Ort - Deutschland',
         new TextOptions(
-            x: $left,
+            // x: $left,
             y: Units::mm(238),
             width: Units::mm(95),
             fontSize: 6,
@@ -143,90 +145,92 @@ $document = Pdf::document()
             color: $mutedColor,
             semantic: TextSemantic::ARTIFACT,
         ),
+    )
+    ->line(
+        $left,
+        Units::mm(236),
+        Units::mm(95),
+        Units::mm(236),
+        new StrokeStyle(width: 0.5, color: $tableBorderColor),
+    )
+    ->text(
+        "Kundenfirma Mueller GmbH\nz. Hd. Anna Mueller\nBeispielweg 8\n80331 Muenchen\nDeutschland",
+        new TextOptions(
+            //            x: $left,
+            // y: Units::mm(227),
+            width: Units::mm(75),
+            fontSize: 9,
+            lineHeight: 12,
+            color: $textColor,
+        ),
+    )
+    ->text(
+        'Rechnung',
+        new TextOptions(
+            //            x: $left,
+            y: Units::mm(188),
+            fontSize: 22,
+            fontName: StandardFont::HELVETICA_BOLD->value,
+            color: $headlineColor,
+        ),
+    )
+    ->text(
+        [
+            TextSegment::plain('Rechnungsnummer: '),
+            TextSegment::plain('2026-0015', new TextOptions(
+                fontName: StandardFont::HELVETICA_BOLD->value,
+            )),
+            TextSegment::plain("\nRechnungsdatum: 05.04.2026\nLeistungsdatum: 31.03.2026"),
+        ],
+        new TextOptions(
+            //            x: $left,
+            y: Units::mm(182),
+            width: Units::mm(80),
+            fontSize: 9,
+            lineHeight: 12,
+            fontName: StandardFont::HELVETICA->value,
+            color: $textColor,
+        ),
+    )
+    ->paragraph(
+        "Sehr geehrte Frau Mueller,\nhiermit berechne ich Ihnen folgende Leistungen:",
+        new TextOptions(
+            //            x: $left,
+            y: Units::mm(166),
+            width: $contentWidth,
+            fontSize: 9,
+            lineHeight: 13,
+            color: $textColor,
+        ),
+    )
+    ->table($table)
+    ->textLines(
+        [
+            TextSegment::plain('Zwischensumme: 1.730,00 EUR'),
+            TextSegment::plain('USt. 19 %: 328,70 EUR'),
+            TextSegment::plain('Gesamtbetrag: 2.058,70 EUR'),
+        ],
+        new TextOptions(
+            x: Units::mm(120),
+            y: Units::mm(72),
+            width: Units::mm(70),
+            fontSize: 10,
+            lineHeight: 14,
+            fontName: StandardFont::HELVETICA_BOLD->value,
+            color: $textColor,
+        ),
+    )
+    ->paragraph(
+        "Bitte ueberweisen Sie den Gesamtbetrag innerhalb von 14 Tagen ohne Abzug.\nVielen Dank fuer Ihren Auftrag.",
+        new TextOptions(
+            x: Units::mm(120),
+            y: Units::mm(52),
+            width: Units::mm(70),
+            fontSize: 9,
+            lineHeight: 13,
+            color: $textColor,
+        ),
     );
-//    ->line(
-//        $left,
-//        Units::mm(236),
-//        Units::mm(95),
-//        Units::mm(236),
-//        new StrokeStyle(width: 0.5, color: $tableBorderColor),
-//    )
-//    ->text(
-//        "Kundenfirma Mueller GmbH\nz. Hd. Anna Mueller\nBeispielweg 8\n80331 Muenchen\nDeutschland",
-//        new TextOptions(
-//            x: $left,
-//            y: Units::mm(224),
-//            width: Units::mm(75),
-//            fontSize: 9,
-//            lineHeight: 12,
-//            color: $textColor,
-//        ),
-//    )
-//    ->text(
-//        'Rechnung',
-//        new TextOptions(
-//            x: $left,
-//            y: Units::mm(198),
-//            fontSize: 22,
-//            fontName: StandardFont::HELVETICA_BOLD->value,
-//            color: $headlineColor,
-//        ),
-//    )
-//    ->textSegments(
-//        [
-//            TextSegment::plain('Rechnungsnummer: '),
-//            TextSegment::plain('2026-0015'),
-//            TextSegment::plain("\nRechnungsdatum: 05.04.2026\nLeistungsdatum: 31.03.2026"),
-//        ],
-//        new TextOptions(
-//            x: $left,
-//            y: Units::mm(182),
-//            width: Units::mm(80),
-//            fontSize: 9,
-//            lineHeight: 12,
-//            color: $textColor,
-//            fontName: StandardFont::HELVETICA->value,
-//        ),
-//    )
-//    ->paragraph(
-//        "Sehr geehrte Frau Mueller,\nhiermit berechne ich Ihnen folgende Leistungen:",
-//        new TextOptions(
-//            x: $left,
-//            y: Units::mm(166),
-//            width: $contentWidth,
-//            fontSize: 9,
-//            lineHeight: 13,
-//            color: $textColor,
-//        ),
-//    )
-//    ->table($table)
-//    ->textSegments(
-//        [
-//            TextSegment::plain("Zwischensumme: 1.730,00 EUR\n"),
-//            TextSegment::plain("USt. 19 %: 328,70 EUR\n"),
-//            TextSegment::plain('Gesamtbetrag: 2.058,70 EUR'),
-//        ],
-//        new TextOptions(
-//            x: Units::mm(120),
-//            y: Units::mm(72),
-//            width: Units::mm(70),
-//            fontSize: 10,
-//            lineHeight: 14,
-//            color: $textColor,
-//            fontName: StandardFont::HELVETICA_BOLD->value,
-//        ),
-//    )
-//    ->paragraph(
-//        "Bitte ueberweisen Sie den Gesamtbetrag innerhalb von 14 Tagen ohne Abzug.\nVielen Dank fuer Ihren Auftrag.",
-//        new TextOptions(
-//            x: Units::mm(120),
-//            y: Units::mm(52),
-//            width: Units::mm(70),
-//            fontSize: 9,
-//            lineHeight: 13,
-//            color: $textColor,
-//        ),
-//    );
 
 $targetPath = $outputDirectory . '/invoice.pdf';
 $document->writeToFile($targetPath);

@@ -6,8 +6,10 @@ namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
+use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Page\Page;
 
+use Kalle\Pdf\Text\TextDirection;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 
@@ -142,7 +144,7 @@ final readonly class TextFlow
                 }
 
                 $candidateLine = [...$currentLine, $token];
-                $candidateWidth = $font->measureTextWidth($this->segmentsText($candidateLine), $options->fontSize);
+                $candidateWidth = $this->segmentsWidth($candidateLine, $options);
 
                 if ($currentLine !== [] && $candidateWidth > $lineMaxWidth) {
                     $lines[] = $currentLine;
@@ -259,7 +261,7 @@ final readonly class TextFlow
                     continue;
                 }
 
-                $paragraphs[array_key_last($paragraphs)][] = new TextSegment($part, $segment->link);
+                $paragraphs[array_key_last($paragraphs)][] = new TextSegment($part, $segment->link, $segment->options);
             }
         }
 
@@ -279,7 +281,7 @@ final readonly class TextFlow
             $parts = preg_split('/(\s+)/u', $segment->text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [$segment->text];
 
             foreach ($parts as $part) {
-                $tokens[] = new TextSegment($part, $segment->link);
+                $tokens[] = new TextSegment($part, $segment->link, $segment->options);
             }
         }
 
@@ -297,11 +299,84 @@ final readonly class TextFlow
     /**
      * @param list<TextSegment> $segments
      */
-    private function segmentsText(array $segments): string
+    private function segmentsWidth(array $segments, TextOptions $baseOptions): float
     {
-        return implode('', array_map(
-            static fn (TextSegment $segment): string => $segment->text,
-            $segments,
-        ));
+        $width = 0.0;
+
+        foreach ($segments as $segment) {
+            $options = $this->segmentTextOptions($baseOptions, $segment);
+            $font = $options->embeddedFont !== null
+                ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
+                : StandardFontDefinition::from($options->fontName);
+            $width += $font->measureTextWidth($segment->text, $options->fontSize);
+        }
+
+        return $width;
+    }
+
+    private function segmentTextOptions(TextOptions $baseOptions, TextSegment $segment): TextOptions
+    {
+        if ($segment->options === null) {
+            return $baseOptions;
+        }
+
+        return new TextOptions(
+            x: $baseOptions->x,
+            y: $baseOptions->y,
+            width: $baseOptions->width,
+            maxWidth: $baseOptions->maxWidth,
+            fontSize: $this->segmentFontSize($baseOptions, $segment->options),
+            lineHeight: $baseOptions->lineHeight,
+            spacingBefore: $baseOptions->spacingBefore,
+            spacingAfter: $baseOptions->spacingAfter,
+            fontName: $this->segmentFontName($baseOptions, $segment->options),
+            embeddedFont: $segment->options->embeddedFont ?? $baseOptions->embeddedFont,
+            fontEncoding: $segment->options->fontEncoding ?? $baseOptions->fontEncoding,
+            color: $segment->options->color ?? $baseOptions->color,
+            kerning: $this->segmentKerning($baseOptions, $segment->options),
+            baseDirection: $this->segmentBaseDirection($baseOptions, $segment->options),
+            align: $baseOptions->align,
+            firstLineIndent: $baseOptions->firstLineIndent,
+            hangingIndent: $baseOptions->hangingIndent,
+            link: $segment->link ?? $baseOptions->link,
+            tag: $baseOptions->tag,
+            semantic: $baseOptions->semantic,
+        );
+    }
+
+    private function segmentFontSize(TextOptions $baseOptions, TextOptions $segmentOptions): float
+    {
+        if ($segmentOptions->fontSize === 18.0 && $baseOptions->fontSize !== 18.0) {
+            return $baseOptions->fontSize;
+        }
+
+        return $segmentOptions->fontSize;
+    }
+
+    private function segmentFontName(TextOptions $baseOptions, TextOptions $segmentOptions): string
+    {
+        if ($segmentOptions->fontName === StandardFont::HELVETICA->value && $baseOptions->fontName !== StandardFont::HELVETICA->value) {
+            return $baseOptions->fontName;
+        }
+
+        return $segmentOptions->fontName;
+    }
+
+    private function segmentKerning(TextOptions $baseOptions, TextOptions $segmentOptions): bool
+    {
+        if ($segmentOptions->kerning && !$baseOptions->kerning) {
+            return $baseOptions->kerning;
+        }
+
+        return $segmentOptions->kerning;
+    }
+
+    private function segmentBaseDirection(TextOptions $baseOptions, TextOptions $segmentOptions): TextDirection
+    {
+        if ($segmentOptions->baseDirection === TextDirection::LTR && $baseOptions->baseDirection !== TextDirection::LTR) {
+            return $baseOptions->baseDirection;
+        }
+
+        return $segmentOptions->baseDirection;
     }
 }
