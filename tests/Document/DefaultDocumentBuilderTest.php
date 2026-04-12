@@ -16,14 +16,21 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\AnnotationMetadata;
+use Kalle\Pdf\Page\FreeTextAnnotation;
+use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotation;
+use Kalle\Pdf\Page\HighlightAnnotationOptions;
 use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\LinkAnnotationOptions;
+use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\TextAnnotation;
+use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
@@ -235,6 +242,105 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame([1.0, 1.0, 0.0], $annotation->color?->components());
     }
 
+    public function testItAddsTextAnnotationsWithExplicitOptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textAnnotationWithOptions(
+                40,
+                500,
+                18,
+                18,
+                'Kommentar',
+                new TextAnnotationOptions(title: 'QA', icon: 'Help', open: true),
+            )
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        $annotation = $document->pages[0]->annotations[0];
+        self::assertInstanceOf(TextAnnotation::class, $annotation);
+        self::assertSame('QA', $annotation->title);
+        self::assertSame('Help', $annotation->icon);
+        self::assertTrue($annotation->open);
+    }
+
+    public function testItAddsHighlightAnnotationsWithExplicitOptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->highlightAnnotationWithOptions(
+                40,
+                500,
+                80,
+                10,
+                new HighlightAnnotationOptions(
+                    color: Color::rgb(0.9, 0.8, 0.2),
+                    contents: 'Markiert',
+                    title: 'QA',
+                ),
+            )
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        $annotation = $document->pages[0]->annotations[0];
+        self::assertInstanceOf(HighlightAnnotation::class, $annotation);
+        self::assertSame('Markiert', $annotation->contents);
+        self::assertSame('QA', $annotation->title);
+        self::assertSame([0.9, 0.8, 0.2], $annotation->color?->components());
+    }
+
+    public function testItAddsFreeTextAnnotationsToTheCurrentPage(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->freeTextAnnotation(
+                'Kommentar',
+                40,
+                500,
+                120,
+                32,
+                new TextOptions(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
+                Color::rgb(0.2, 0.2, 0.2),
+                Color::rgb(1, 1, 0.8),
+                'QA',
+            )
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertInstanceOf(FreeTextAnnotation::class, $document->pages[0]->annotations[0]);
+        $annotation = $document->pages[0]->annotations[0];
+        self::assertInstanceOf(FreeTextAnnotation::class, $annotation);
+        self::assertSame('Kommentar', $annotation->contents);
+        self::assertSame('QA', $annotation->title);
+        self::assertSame(12.0, $annotation->fontSize);
+        self::assertStringContainsString('/' . $annotation->fontAlias . ' 12 Tf', $annotation->appearanceContents);
+    }
+
+    public function testItAddsFreeTextAnnotationsWithExplicitOptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->freeTextAnnotationWithOptions(
+                'Kommentar',
+                40,
+                500,
+                120,
+                32,
+                new TextOptions(fontSize: 12),
+                new FreeTextAnnotationOptions(
+                    textColor: Color::rgb(0, 0, 0.4),
+                    borderColor: Color::rgb(0.2, 0.2, 0.2),
+                    fillColor: Color::rgb(1, 1, 0.8),
+                    metadata: new AnnotationMetadata(title: 'QA'),
+                ),
+            )
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        $annotation = $document->pages[0]->annotations[0];
+        self::assertInstanceOf(FreeTextAnnotation::class, $annotation);
+        self::assertSame('QA', $annotation->title);
+        self::assertSame([0.0, 0.0, 0.4], $annotation->textColor?->components());
+        self::assertSame([0.2, 0.2, 0.2], $annotation->borderColor?->components());
+        self::assertSame([1.0, 1.0, 0.8], $annotation->fillColor?->components());
+    }
+
     public function testItAddsInternalLinkAnnotationsToTheCurrentPage(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -262,7 +368,7 @@ final class DefaultDocumentBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->namedDestination('intro')
             ->text('Open intro', new TextOptions(
-                link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+                link: LinkTarget::namedDestination('intro'),
             ))
             ->build();
 
@@ -278,9 +384,9 @@ final class DefaultDocumentBuilderTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->textSegments([
-                new TextSegment('Docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment('Docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' und '),
-                new TextSegment('API', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/api')),
+                new TextSegment('API', LinkTarget::externalUrl('https://example.com/api')),
             ])
             ->build();
 
@@ -297,8 +403,8 @@ final class DefaultDocumentBuilderTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->textSegments([
-                new TextSegment('Read', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
-                new TextSegment(' docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment('Read', LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' now'),
             ])
             ->build();
@@ -316,7 +422,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->title('Accessible Copy')
             ->language('de-DE')
             ->textSegments([
-                new TextSegment('Read docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
             ], new TextOptions(width: 45))
             ->build();
 
@@ -363,5 +469,28 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->build();
 
         self::assertCount(2, $document->pages[0]->annotations);
+    }
+
+    public function testItAddsRectLinksWithExplicitOptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->linkWithOptions(
+                'https://example.com/docs',
+                40,
+                500,
+                120,
+                16,
+                new LinkAnnotationOptions(
+                    contents: 'Open docs section',
+                    accessibleLabel: 'Read the documentation section',
+                    groupKey: 'docs-link',
+                ),
+            )
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertSame('Open docs section', $document->pages[0]->annotations[0]->contents);
+        self::assertSame('Read the documentation section', $document->pages[0]->annotations[0]->accessibleLabel);
+        self::assertSame('docs-link', $document->pages[0]->annotations[0]->taggedGroupKey);
     }
 }

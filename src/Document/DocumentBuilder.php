@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\FreeTextAnnotationOptions;
+use Kalle\Pdf\Page\HighlightAnnotationOptions;
+use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 
@@ -68,21 +73,66 @@ interface DocumentBuilder
         bool $open = false,
     ): self;
 
+    public function textAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        string $contents,
+        TextAnnotationOptions $options,
+    ): self;
+
     public function highlightAnnotation(
         float $x,
         float $y,
         float $width,
         float $height,
-        ?\Kalle\Pdf\Color\Color $color = null,
+        ?Color $color = null,
         ?string $contents = null,
         ?string $title = null,
     ): self;
 
+    public function highlightAnnotationWithOptions(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        HighlightAnnotationOptions $options,
+    ): self;
+
+    public function freeTextAnnotation(
+        string $contents,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?TextOptions $options = null,
+        ?Color $borderColor = null,
+        ?Color $fillColor = null,
+        ?string $title = null,
+    ): self;
+
+    public function freeTextAnnotationWithOptions(
+        string $contents,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?TextOptions $textOptions = null,
+        ?FreeTextAnnotationOptions $options = null,
+    ): self;
+
     public function link(string $url, float $x, float $y, float $width, float $height, ?string $contents = null, ?string $accessibleLabel = null): self;
+
+    public function linkWithOptions(string $url, float $x, float $y, float $width, float $height, LinkAnnotationOptions $options): self;
 
     public function linkToNamedDestination(string $name, float $x, float $y, float $width, float $height, ?string $contents = null, ?string $accessibleLabel = null): self;
 
+    public function linkToNamedDestinationWithOptions(string $name, float $x, float $y, float $width, float $height, LinkAnnotationOptions $options): self;
+
     public function linkToPage(int $pageNumber, float $x, float $y, float $width, float $height, ?string $contents = null, ?string $accessibleLabel = null): self;
+
+    public function linkToPageWithOptions(int $pageNumber, float $x, float $y, float $width, float $height, LinkAnnotationOptions $options): self;
 
     public function linkToPagePosition(
         int $pageNumber,
@@ -94,6 +144,17 @@ interface DocumentBuilder
         float $height,
         ?string $contents = null,
         ?string $accessibleLabel = null,
+    ): self;
+
+    public function linkToPagePositionWithOptions(
+        int $pageNumber,
+        float $targetX,
+        float $targetY,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        LinkAnnotationOptions $options,
     ): self;
 
     public function namedDestination(string $name): self;

@@ -25,9 +25,14 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\AnnotationMetadata;
+use Kalle\Pdf\Page\FreeTextAnnotationOptions;
+use Kalle\Pdf\Page\HighlightAnnotationOptions;
+use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
@@ -213,6 +218,120 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Contents (Markiert)', $pdf);
     }
 
+    public function testItRendersTextAnnotationsWithExplicitOptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textAnnotationWithOptions(
+                40,
+                500,
+                18,
+                18,
+                'Kommentar',
+                new TextAnnotationOptions(title: 'QA', icon: 'Help', open: true),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Text', $pdf);
+        self::assertStringContainsString('/Name /Help', $pdf);
+        self::assertStringContainsString('/Open true', $pdf);
+    }
+
+    public function testItRendersHighlightAnnotationsWithExplicitOptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->highlightAnnotationWithOptions(
+                40,
+                500,
+                80,
+                10,
+                new HighlightAnnotationOptions(
+                    color: Color::rgb(0.9, 0.8, 0.2),
+                    contents: 'Markiert',
+                    title: 'QA',
+                ),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Highlight', $pdf);
+        self::assertStringContainsString('/C [0.9 0.8 0.2]', $pdf);
+        self::assertStringContainsString('/T (QA)', $pdf);
+    }
+
+    public function testItRendersFreeTextAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->freeTextAnnotation(
+                'Kommentar',
+                40,
+                500,
+                120,
+                32,
+                new TextOptions(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
+                Color::rgb(0.2, 0.2, 0.2),
+                Color::rgb(1, 1, 0.8),
+                'QA',
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /FreeText', $pdf);
+        self::assertStringContainsString('/DA (/', $pdf);
+        self::assertStringContainsString('/IC [1 1 0.8]', $pdf);
+        self::assertStringNotContainsString('/AP << /N ', $pdf);
+    }
+
+    public function testItRendersFreeTextAnnotationsWithExplicitOptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->freeTextAnnotationWithOptions(
+                'Kommentar',
+                40,
+                500,
+                120,
+                32,
+                new TextOptions(fontSize: 12),
+                new FreeTextAnnotationOptions(
+                    textColor: Color::rgb(0, 0, 0.4),
+                    borderColor: Color::rgb(0.2, 0.2, 0.2),
+                    fillColor: Color::rgb(1, 1, 0.8),
+                    metadata: new AnnotationMetadata(title: 'QA'),
+                ),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /FreeText', $pdf);
+        self::assertStringContainsString('/T (QA)', $pdf);
+        self::assertStringContainsString('/C [0.2 0.2 0.2]', $pdf);
+        self::assertStringContainsString('/IC [1 1 0.8]', $pdf);
+    }
+
     public function testItRendersInternalLinkAnnotations(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -396,6 +515,50 @@ final class DocumentRendererTest extends TestCase
         $pdf = $output->contents();
 
         self::assertStringContainsString('/Contents (Open docs section)', $pdf);
+        self::assertStringContainsString('/Alt (Read the documentation section)', $pdf);
+    }
+
+    public function testItRendersGroupedRectLinksWithExplicitOptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->linkWithOptions(
+                'https://example.com/docs',
+                40,
+                500,
+                120,
+                16,
+                new LinkAnnotationOptions(
+                    contents: 'Open docs section',
+                    accessibleLabel: 'Read the documentation section',
+                    groupKey: 'docs-link',
+                ),
+            )
+            ->linkWithOptions(
+                'https://example.com/docs',
+                40,
+                470,
+                120,
+                16,
+                new LinkAnnotationOptions(
+                    contents: 'Open docs section',
+                    accessibleLabel: 'Read the documentation section',
+                    groupKey: 'docs-link',
+                ),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertSame(2, substr_count($pdf, '/Subtype /Link'));
+        self::assertSame(1, substr_count($pdf, '/Type /StructElem /S /Link'));
         self::assertStringContainsString('/Alt (Read the documentation section)', $pdf);
     }
 
@@ -625,6 +788,48 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/QuadPoints [72 692 212 692 72 680 212 680]', $pdf);
         self::assertStringContainsString('/AP << /N ', $pdf);
         self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 140 12]', $pdf);
+        self::assertStringContainsString('/F 4', $pdf);
+    }
+
+    public function testItRendersPdfA2uFreeTextAnnotationsWithAppearanceStreams(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u FreeText Annotation Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u free text annotation regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->freeTextAnnotation(
+                'Kommentar Привет',
+                72,
+                680,
+                180,
+                40,
+                new TextOptions(
+                    fontSize: 12,
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    color: Color::rgb(0, 0, 0.4),
+                ),
+                Color::rgb(0.2, 0.2, 0.2),
+                Color::rgb(1, 1, 0.8),
+                'QA',
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /FreeText', $pdf);
+        self::assertStringContainsString('/DA (/', $pdf);
+        self::assertStringContainsString('/AP << /N ', $pdf);
+        self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 180 40]', $pdf);
+        self::assertStringContainsString('/Resources << /Font << /', $pdf);
         self::assertStringContainsString('/F 4', $pdf);
     }
 

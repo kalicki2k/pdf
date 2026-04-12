@@ -8,12 +8,13 @@ use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
+use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Encryption\Permissions;
+use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
@@ -22,14 +23,14 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
-use Kalle\Pdf\Page\HighlightAnnotation;
+use Kalle\Pdf\Page\LinkAnnotationOptions;
+use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
@@ -396,6 +397,34 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
     }
 
+    public function testItAddsFreeTextAnnotationsToPageObjects(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->freeTextAnnotation(
+                'Kommentar',
+                40,
+                500,
+                120,
+                32,
+                new TextOptions(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
+                Color::rgb(0.2, 0.2, 0.2),
+                Color::rgb(1, 1, 0.8),
+                'QA',
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /FreeText', $serialized);
+        self::assertStringContainsString('/DA (/', $serialized);
+        self::assertStringContainsString('/C [0.2 0.2 0.2]', $serialized);
+        self::assertStringContainsString('/IC [1 1 0.8]', $serialized);
+        self::assertStringContainsString('/Resources << /Font << /', $serialized);
+    }
+
     public function testItAddsInternalLinkDestinationsToPageObjects(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -434,7 +463,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->namedDestination('intro')
             ->text('Open intro', new TextOptions(
-                link: \Kalle\Pdf\Page\LinkTarget::namedDestination('intro'),
+                link: LinkTarget::namedDestination('intro'),
             ))
             ->build();
 
@@ -571,6 +600,40 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 80 10]', $serialized);
     }
 
+    public function testItBuildsPdfA2uFreeTextAnnotationsWithAppearanceStreams(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->freeTextAnnotation(
+                'Kommentar Привет',
+                40,
+                500,
+                160,
+                36,
+                new TextOptions(
+                    fontSize: 12,
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    color: Color::rgb(0, 0, 0.4),
+                ),
+                Color::rgb(0.2, 0.2, 0.2),
+                Color::rgb(1, 1, 0.8),
+                'QA',
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /FreeText', $serialized);
+        self::assertStringContainsString('/AP << /N ', $serialized);
+        self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 160 36]', $serialized);
+        self::assertStringContainsString('/Resources << /Font << /', $serialized);
+    }
+
     public function testItRejectsSimpleEmbeddedFontsForPdfAProfiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -596,7 +659,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->title('Accessible Copy')
             ->language('de-DE')
             ->text('Read more', new TextOptions(
-                link: \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com'),
+                link: LinkTarget::externalUrl('https://example.com'),
             ))
             ->build();
 
@@ -616,9 +679,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
             ->textSegments([
-                new TextSegment('Docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment('Docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' und '),
-                new TextSegment('API', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/api')),
+                new TextSegment('API', LinkTarget::externalUrl('https://example.com/api')),
             ])
             ->build();
 
@@ -639,8 +702,8 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
             ->textSegments([
-                new TextSegment('Read', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
-                new TextSegment(' docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment('Read', LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment(' docs', LinkTarget::externalUrl('https://example.com/docs')),
                 new TextSegment(' now'),
             ])
             ->build();
@@ -663,7 +726,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->title('Accessible Copy')
             ->language('de-DE')
             ->textSegments([
-                new TextSegment('Read docs', \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/docs')),
+                new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
             ], new TextOptions(width: 45))
             ->build();
 
@@ -705,6 +768,51 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         ));
 
         self::assertStringContainsString('/Contents (Open docs section)', $serialized);
+        self::assertStringContainsString('/Alt (Read the documentation section)', $serialized);
+    }
+
+    public function testItGroupsRectLinksWithExplicitOptionsIntoOnePdfUaLinkStructure(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->linkWithOptions(
+                'https://example.com/docs',
+                40,
+                500,
+                120,
+                16,
+                new LinkAnnotationOptions(
+                    contents: 'Open docs section',
+                    accessibleLabel: 'Read the documentation section',
+                    groupKey: 'docs-link',
+                ),
+            )
+            ->linkWithOptions(
+                'https://example.com/docs',
+                40,
+                470,
+                120,
+                16,
+                new LinkAnnotationOptions(
+                    contents: 'Open docs section',
+                    accessibleLabel: 'Read the documentation section',
+                    groupKey: 'docs-link',
+                ),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertSame(2, substr_count($serialized, '/Subtype /Link'));
+        self::assertSame(1, substr_count($serialized, '/Type /StructElem /S /Link'));
+        self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
         self::assertStringContainsString('/Alt (Read the documentation section)', $serialized);
     }
 
@@ -765,7 +873,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::at(40, 500, width: 120))
             ->build();
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Tagged PDF profiles require accessibility metadata for image 1 on page 1.');
 
         $builder->build($document);
@@ -831,7 +939,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             self::assertStringContainsString('/OutputConditionIdentifier (Custom RGB)', $objects[0]->contents);
             self::assertStringContainsString('/Info (Custom profile)', $objects[0]->contents);
             self::assertStringStartsWith("<< /N 4 /Length 3 >>\nstream\nICC", $objects[5]->contents);
-            self::assertStringEndsWith("endstream", $objects[5]->contents);
+            self::assertStringEndsWith('endstream', $objects[5]->contents);
         } finally {
             @unlink($path);
         }
@@ -845,7 +953,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             title: 'Accessible Copy',
         );
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires a document language.');
 
         $builder->build($document);
@@ -860,7 +968,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->text('Hello')
             ->build();
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-2u requires embedded fonts. Found standard font "Helvetica" on page 1.');
 
         $builder->build($document);
@@ -885,7 +993,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             )
             ->build();
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-1b does not allow soft-mask image transparency for image resource 1 on page 1.');
 
         $builder->build($document);
@@ -924,7 +1032,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             language: 'de-DE',
         );
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/UA-1 requires a document title.');
 
         $builder->build($document);
@@ -1003,7 +1111,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItBuildsManualEmbeddedTrueTypeFontFileAsAnExplicitStreamObject(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $font = \Kalle\Pdf\Font\EmbeddedFontDefinition::fromSource(
+        $font = EmbeddedFontDefinition::fromSource(
             EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalTrueTypeFontBytes()),
         );
         $document = new Document(

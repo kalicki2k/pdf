@@ -34,6 +34,9 @@ $fixtures = [
     $outputDir . '/pdf-a-2u-image.pdf' => createPdfA2uImageFixture(),
     $outputDir . '/pdf-a-2u-internal-links.pdf' => createPdfA2uInternalLinksFixture(),
     $outputDir . '/pdf-a-2u-link-annotation.pdf' => createPdfA2uLinkAnnotationFixture(),
+    $outputDir . '/pdf-a-2u-text-annotation.pdf' => createPdfA2uTextAnnotationFixture(),
+    $outputDir . '/pdf-a-2u-highlight-annotation.pdf' => createPdfA2uHighlightAnnotationFixture(),
+    $outputDir . '/pdf-a-2u-freetext-annotation.pdf' => createPdfA2uFreeTextAnnotationFixture(),
 ];
 
 $renderer = new DocumentRenderer();
@@ -156,6 +159,61 @@ function createPdfA2uLinkAnnotationFixture(): Document
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         ))
         ->link('https://example.com/spec', 72, 670, 180, 16, 'Specification Link')
+        ->build();
+}
+
+function createPdfA2uTextAnnotationFixture(): Document
+{
+    $fontPath = regressionFontPath();
+
+    return regressionBuilder('PDF/A-2u Text Annotation Regression', 'PDF/A-2u text annotation regression fixture')
+        ->text('PDF/A-2u Kommentar Regression Привет', new TextOptions(
+            x: 72,
+            y: 760,
+            fontSize: 18,
+            embeddedFont: EmbeddedFontSource::fromPath($fontPath),
+            color: Color::rgb(0.08, 0.16, 0.35),
+        ))
+        ->textAnnotation(72, 680, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+        ->build();
+}
+
+function createPdfA2uHighlightAnnotationFixture(): Document
+{
+    $fontPath = regressionFontPath();
+
+    return regressionBuilder('PDF/A-2u Highlight Annotation Regression', 'PDF/A-2u highlight annotation regression fixture')
+        ->text('PDF/A-2u Highlight Regression Привет', new TextOptions(
+            x: 72,
+            y: 760,
+            fontSize: 18,
+            embeddedFont: EmbeddedFontSource::fromPath($fontPath),
+            color: Color::rgb(0.08, 0.16, 0.35),
+        ))
+        ->highlightAnnotation(72, 680, 140, 12, Color::rgb(1, 1, 0), 'Markiert', 'QA')
+        ->build();
+}
+
+function createPdfA2uFreeTextAnnotationFixture(): Document
+{
+    $fontPath = regressionFontPath();
+
+    return regressionBuilder('PDF/A-2u FreeText Annotation Regression', 'PDF/A-2u free text annotation regression fixture')
+        ->freeTextAnnotation(
+            'Kommentar Привет',
+            72,
+            680,
+            180,
+            40,
+            new TextOptions(
+                fontSize: 12,
+                embeddedFont: EmbeddedFontSource::fromPath($fontPath),
+                color: Color::rgb(0, 0, 0.4),
+            ),
+            Color::rgb(0.2, 0.2, 0.2),
+            Color::rgb(1, 1, 0.8),
+            'QA',
+        )
         ->build();
 }
 

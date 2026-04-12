@@ -29,6 +29,7 @@ use Kalle\Pdf\Encryption\ObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandler;
 use Kalle\Pdf\Font\OpenTypeOutlineType;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\AnnotationAppearanceRenderContext;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\LinkAnnotation;
@@ -255,6 +256,9 @@ final class DocumentSerializationPlanBuilder
             $pageObjectId = $pageObjectIds[$index];
             $contentObjectId = $contentObjectIds[$index];
             $annotationObjectIds = $pageAnnotationObjectIds[$index] ?? [];
+            $annotationAppearanceContext = new AnnotationAppearanceRenderContext(
+                $this->pageFontObjectIdsByAlias($page->fontResources, $fontObjectIds),
+            );
 
             $objects[] = IndirectObject::plain(
                 $pageObjectId,
@@ -295,8 +299,8 @@ final class DocumentSerializationPlanBuilder
                 if ($appearanceObjectId !== null && $annotation instanceof AppearanceStreamAnnotation) {
                     $objects[] = IndirectObject::stream(
                         $appearanceObjectId,
-                        $annotation->appearanceStreamDictionaryContents(),
-                        $annotation->appearanceStreamContents(),
+                        $annotation->appearanceStreamDictionaryContents($annotationAppearanceContext),
+                        $annotation->appearanceStreamContents($annotationAppearanceContext),
                     );
                 }
             }
@@ -1044,7 +1048,11 @@ final class DocumentSerializationPlanBuilder
                 $accessibleLabel = $annotation->accessibleLabelOrContents();
 
                 if ($accessibleLabel !== null && $accessibleLabel !== '') {
-                    $groupedLinkEntries[$groupKey]['altTextParts'][] = $accessibleLabel;
+                    $lastAltTextPart = $groupedLinkEntries[$groupKey]['altTextParts'][array_key_last($groupedLinkEntries[$groupKey]['altTextParts'])] ?? null;
+
+                    if ($lastAltTextPart !== $accessibleLabel) {
+                        $groupedLinkEntries[$groupKey]['altTextParts'][] = $accessibleLabel;
+                    }
                 }
 
                 if ($annotation->markedContentId() !== null) {
@@ -1457,6 +1465,28 @@ final class DocumentSerializationPlanBuilder
         }
 
         return '<< ' . implode(' ', $resourceEntries) . ' >>';
+    }
+
+    /**
+     * @param array<string, PageFont> $fontResources
+     * @param array<string, int> $fontObjectIds
+     * @return array<string, int>
+     */
+    private function pageFontObjectIdsByAlias(array $fontResources, array $fontObjectIds): array
+    {
+        $objectIdsByAlias = [];
+
+        foreach ($fontResources as $fontAlias => $pageFont) {
+            $fontObjectId = $fontObjectIds[$this->fontObjectKey($pageFont)] ?? null;
+
+            if ($fontObjectId === null) {
+                continue;
+            }
+
+            $objectIdsByAlias[$fontAlias] = $fontObjectId;
+        }
+
+        return $objectIdsByAlias;
     }
 
     private function fontObjectKey(PageFont $pageFont): string

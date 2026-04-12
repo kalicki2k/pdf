@@ -7,46 +7,47 @@ namespace Kalle\Pdf\Page;
 use function implode;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Color\Color;
 
-use function sprintf;
+use Kalle\Pdf\Color\ColorSpace;
+
+use function number_format;
+use function rtrim;
 use function str_replace;
+use function strlen;
 
-final readonly class LinkAnnotation implements AppearanceStreamAnnotation, PageAnnotation
+final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, PageAnnotation
 {
     public function __construct(
-        public LinkTarget $target,
         public float $x,
         public float $y,
         public float $width,
         public float $height,
+        public ?Color $color = null,
         public ?string $contents = null,
-        public ?string $accessibleLabel = null,
-        public ?int $markedContentId = null,
+        public ?string $title = null,
         public ?int $structParentId = null,
-        public ?string $taggedGroupKey = null,
     ) {
         if ($this->width <= 0.0) {
-            throw new InvalidArgumentException('Link annotation width must be greater than zero.');
+            throw new InvalidArgumentException('Highlight annotation width must be greater than zero.');
         }
 
         if ($this->height <= 0.0) {
-            throw new InvalidArgumentException('Link annotation height must be greater than zero.');
+            throw new InvalidArgumentException('Highlight annotation height must be greater than zero.');
         }
     }
 
     public function withStructParent(int $structParentId): self
     {
         return new self(
-            target: $this->target,
             x: $this->x,
             y: $this->y,
             width: $this->width,
             height: $this->height,
+            color: $this->color,
             contents: $this->contents,
-            accessibleLabel: $this->accessibleLabel,
-            markedContentId: $this->markedContentId,
+            title: $this->title,
             structParentId: $structParentId,
-            taggedGroupKey: $this->taggedGroupKey,
         );
     }
 
@@ -54,13 +55,22 @@ final readonly class LinkAnnotation implements AppearanceStreamAnnotation, PageA
     {
         $entries = [
             '/Type /Annot',
-            '/Subtype /Link',
+            '/Subtype /Highlight',
             '/Rect [' . $this->formatNumber($this->x) . ' '
             . $this->formatNumber($this->y) . ' '
             . $this->formatNumber($this->x + $this->width) . ' '
             . $this->formatNumber($this->y + $this->height) . ']',
-            '/Border [0 0 0]',
             '/P ' . $context->pageObjectId . ' 0 R',
+            '/QuadPoints ['
+            . $this->formatNumber($this->x) . ' '
+            . $this->formatNumber($this->y + $this->height) . ' '
+            . $this->formatNumber($this->x + $this->width) . ' '
+            . $this->formatNumber($this->y + $this->height) . ' '
+            . $this->formatNumber($this->x) . ' '
+            . $this->formatNumber($this->y) . ' '
+            . $this->formatNumber($this->x + $this->width) . ' '
+            . $this->formatNumber($this->y)
+            . ']',
         ];
 
         $structParentId = $this->structParentId ?? $context->structParentId;
@@ -69,26 +79,20 @@ final readonly class LinkAnnotation implements AppearanceStreamAnnotation, PageA
             $entries[] = '/StructParent ' . $structParentId;
         }
 
-        if ($this->target->isExternalUrl()) {
-            $entries[] = '/A << /S /URI /URI ' . $this->pdfString($this->target->externalUrlValue()) . ' >>';
-        } elseif ($this->target->isNamedDestination()) {
-            $entries[] = '/Dest /' . $this->pdfName($this->target->namedDestinationValue());
-        } elseif ($this->target->isPage()) {
-            $entries[] = '/Dest [' . $context->targetPageObjectId($this->target->pageNumberValue()) . ' 0 R /Fit]';
-        } elseif ($this->target->isPosition()) {
-            $entries[] = '/Dest [' . $context->targetPageObjectId($this->target->pageNumberValue()) . ' 0 R /XYZ '
-                . $this->formatNumber($this->target->xValue()) . ' '
-                . $this->formatNumber($this->target->yValue()) . ' null]';
-        } else {
-            throw new InvalidArgumentException(sprintf('Unsupported link annotation target.'));
-        }
-
         if ($context->printable) {
             $entries[] = '/F 4';
         }
 
+        if ($this->color !== null) {
+            $entries[] = '/C [' . implode(' ', array_map($this->formatNumber(...), $this->color->components())) . ']';
+        }
+
         if ($this->contents !== null && $this->contents !== '') {
             $entries[] = '/Contents ' . $this->pdfString($this->contents);
+        }
+
+        if ($this->title !== null && $this->title !== '') {
+            $entries[] = '/T ' . $this->pdfString($this->title);
         }
 
         if ($context->appearanceObjectId !== null) {
@@ -100,12 +104,7 @@ final readonly class LinkAnnotation implements AppearanceStreamAnnotation, PageA
 
     public function markedContentId(): ?int
     {
-        return $this->markedContentId;
-    }
-
-    public function accessibleLabelOrContents(): ?string
-    {
-        return $this->accessibleLabel ?? $this->contents;
+        return null;
     }
 
     public function appearanceStreamDictionaryContents(?AnnotationAppearanceRenderContext $context = null): string
@@ -113,12 +112,30 @@ final readonly class LinkAnnotation implements AppearanceStreamAnnotation, PageA
         return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 '
             . $this->formatNumber($this->width) . ' '
             . $this->formatNumber($this->height)
-            . '] /Resources << >> /Length 0 >>';
+            . '] /Resources << >> /Length '
+            . strlen($this->appearanceStreamContents())
+            . ' >>';
     }
 
     public function appearanceStreamContents(?AnnotationAppearanceRenderContext $context = null): string
     {
-        return '';
+        $color = $this->color ?? Color::rgb(1, 1, 0);
+
+        return $this->nonStrokingColorOperator($color) . "\n0 0 "
+            . $this->formatNumber($this->width) . ' '
+            . $this->formatNumber($this->height)
+            . " re\nf";
+    }
+
+    private function nonStrokingColorOperator(Color $color): string
+    {
+        $components = implode(' ', array_map($this->formatNumber(...), $color->components()));
+
+        return match ($color->space) {
+            ColorSpace::GRAY => $components . ' g',
+            ColorSpace::RGB => $components . ' rg',
+            ColorSpace::CMYK => $components . ' k',
+        };
     }
 
     private function formatNumber(float $value): string
@@ -135,31 +152,5 @@ final readonly class LinkAnnotation implements AppearanceStreamAnnotation, PageA
             ['\\\\', '\(', '\)'],
             $value,
         ) . ')';
-    }
-
-    private function pdfName(string $value): string
-    {
-        $encoded = '';
-
-        foreach (str_split($value) as $character) {
-            $ord = ord($character);
-
-            if (
-                ($ord >= 48 && $ord <= 57)
-                || ($ord >= 65 && $ord <= 90)
-                || ($ord >= 97 && $ord <= 122)
-                || $character === '-'
-                || $character === '_'
-                || $character === '.'
-            ) {
-                $encoded .= $character;
-
-                continue;
-            }
-
-            $encoded .= '#' . strtoupper(str_pad(dechex($ord), 2, '0', STR_PAD_LEFT));
-        }
-
-        return $encoded;
     }
 }
