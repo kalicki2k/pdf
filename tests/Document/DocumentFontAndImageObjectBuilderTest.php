@@ -7,13 +7,13 @@ namespace Kalle\Pdf\Tests\Document;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentFontAndImageObjectBuilder;
 use Kalle\Pdf\Document\DocumentSerializationPlanObjectIdAllocator;
+use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Font\StandardFont;
-use Kalle\Pdf\Font\StandardFontEncoding;
 use PHPUnit\Framework\TestCase;
 
 final class DocumentFontAndImageObjectBuilderTest extends TestCase

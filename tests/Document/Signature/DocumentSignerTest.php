@@ -30,6 +30,10 @@ use function openssl_pkey_export;
 use function openssl_pkey_new;
 use function openssl_x509_export;
 
+use OpenSSLAsymmetricKey;
+
+use OpenSSLCertificate;
+use OpenSSLCertificateSigningRequest;
 use PHPUnit\Framework\TestCase;
 
 use function preg_match;
@@ -129,7 +133,7 @@ final class DocumentSignerTest extends TestCase
         if ($privateKey === false) {
             self::fail('Expected OpenSSL private key generation to succeed.');
         }
-        /** @var \OpenSSLAsymmetricKey $privateKey */
+        /** @var OpenSSLAsymmetricKey $privateKey */
 
         $csr = openssl_csr_new(
             ['commonName' => 'PDF2 Test Signer'],
@@ -141,7 +145,7 @@ final class DocumentSignerTest extends TestCase
         if ($csr === false) {
             self::fail('Expected OpenSSL CSR generation to succeed.');
         }
-        /** @var \OpenSSLCertificateSigningRequest $csr */
+        /** @var OpenSSLCertificateSigningRequest $csr */
 
         $certificate = openssl_csr_sign(
             $csr,
@@ -155,7 +159,7 @@ final class DocumentSignerTest extends TestCase
         if ($certificate === false) {
             self::fail('Expected OpenSSL certificate signing to succeed.');
         }
-        /** @var \OpenSSLCertificate $certificate */
+        /** @var OpenSSLCertificate $certificate */
         self::assertTrue(openssl_x509_export($certificate, $certificatePem));
         self::assertTrue(openssl_pkey_export($privateKey, $privateKeyPem));
         self::assertIsString($certificatePem);

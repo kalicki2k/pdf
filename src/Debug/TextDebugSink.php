@@ -96,7 +96,7 @@ final class TextDebugSink implements DebugSink
         return ' ' . implode(' ', $parts);
     }
 
-    private function stringifyValue(string|int|float|bool|null $value): string
+    private function stringifyValue(string | int | float | bool | null $value): string
     {
         return match (true) {
             $value === null => 'null',

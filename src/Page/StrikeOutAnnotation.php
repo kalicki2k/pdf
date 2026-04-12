@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
+use function implode;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
+
 use Kalle\Pdf\Writer\IndirectObject;
 
-use function implode;
 use function strlen;
 
 final readonly class StrikeOutAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation

@@ -6,15 +6,15 @@ namespace Kalle\Pdf\Tests\Page;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Page\AnnotationBorderStyle;
-use Kalle\Pdf\Page\AnnotationMetadata;
 use Kalle\Pdf\Page\AnnotationBorderStyleType;
+use Kalle\Pdf\Page\AnnotationMetadata;
 use Kalle\Pdf\Page\CaretAnnotationOptions;
 use Kalle\Pdf\Page\FileAttachmentAnnotationOptions;
 use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotationOptions;
 use Kalle\Pdf\Page\LineAnnotationOptions;
-use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LineEndingStyle;
+use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
 use Kalle\Pdf\Page\PolyLineAnnotationOptions;
 use Kalle\Pdf\Page\ShapeAnnotationOptions;

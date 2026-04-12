@@ -124,5 +124,5 @@ function writeTableOfContentsDemo(array $config): void
         ->tableOfContents($config['toc_options'])
         ->writeToFile($outputDirectory . '/' . $config['filename'] . '.pdf');
 
-    printf("Generated %s/%s.pdf%s", $outputDirectory, $config['filename'], PHP_EOL);
+    printf('Generated %s/%s.pdf%s', $outputDirectory, $config['filename'], PHP_EOL);
 }

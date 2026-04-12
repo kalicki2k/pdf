@@ -44,8 +44,7 @@ final class ProfileTest extends TestCase
         Profile $profile,
         bool $requiresTaggedPdf,
         bool $requiresExtractableEmbeddedUnicodeFonts,
-    ): void
-    {
+    ): void {
         self::assertTrue($profile->isPdfA());
         self::assertTrue($profile->isPdfA1());
         self::assertSame(1, $profile->pdfaPart());

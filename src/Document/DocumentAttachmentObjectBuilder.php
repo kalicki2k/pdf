@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function array_map;
+use function implode;
+
 use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Writer\IndirectObject;
 
-use function array_map;
-use function implode;
 use function str_replace;
 
 final class DocumentAttachmentObjectBuilder

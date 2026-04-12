@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Page;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
+use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\TextAnnotation;
 use PHPUnit\Framework\TestCase;
 
@@ -34,7 +35,7 @@ final class TextAnnotationTest extends TestCase
     public function testItCanReferenceAPopupAnnotation(): void
     {
         $annotation = (new TextAnnotation(10, 20, 18, 18, 'Kommentar'))
-            ->withPopup(new \Kalle\Pdf\Page\PopupAnnotationDefinition(20, 30, 60, 40, true));
+            ->withPopup(new PopupAnnotationDefinition(20, 30, 60, 40, true));
         $context = new PageAnnotationRenderContext(3, false, [1 => 3], [], null, null, 5, [6]);
 
         self::assertSame(

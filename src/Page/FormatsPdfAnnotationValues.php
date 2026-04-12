@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
+use function array_map;
+use function implode;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 
-use function array_map;
-use function implode;
 use function number_format;
 use function rtrim;
-use function sprintf;
 use function str_pad;
 use function str_replace;
 use function str_split;

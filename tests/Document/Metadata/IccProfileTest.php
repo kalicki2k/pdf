@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document\Metadata;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Metadata\IccProfile;
+use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use PHPUnit\Framework\TestCase;
 
 final class IccProfileTest extends TestCase
@@ -40,6 +41,6 @@ final class IccProfileTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf('ICC profile "%s" declares an invalid profile length.', $path));
 
-        IccProfile::fromPath($path)->assertPdfA1Compatible(new \Kalle\Pdf\Document\Metadata\PdfAOutputIntent($path));
+        IccProfile::fromPath($path)->assertPdfA1Compatible(new PdfAOutputIntent($path));
     }
 }

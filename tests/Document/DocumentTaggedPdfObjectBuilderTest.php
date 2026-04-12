@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function array_map;
+use function dirname;
+
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\DocumentSerializationPlanObjectIdAllocator;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
+use Kalle\Pdf\Document\DocumentSerializationPlanObjectIdAllocator;
 use Kalle\Pdf\Document\DocumentTaggedPdfObjectBuilder;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
@@ -27,11 +30,12 @@ use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
+
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
-use function array_map;
-use function dirname;
 use function preg_match_all;
 
 final class DocumentTaggedPdfObjectBuilderTest extends TestCase
@@ -274,9 +278,9 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->title('Accessible Copy')
                 ->language('de-DE')
                 ->textSegments([
-                    new \Kalle\Pdf\Text\TextSegment(
+                    new TextSegment(
                         'Read docs',
-                        new \Kalle\Pdf\Text\TextLink(
+                        new TextLink(
                             target: LinkTarget::externalUrl('https://example.com/docs'),
                             groupKey: 'docs-link',
                         ),
@@ -287,9 +291,9 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ))
                 ->newPage()
                 ->textSegments([
-                    new \Kalle\Pdf\Text\TextSegment(
+                    new TextSegment(
                         'Read docs',
-                        new \Kalle\Pdf\Text\TextLink(
+                        new TextLink(
                             target: LinkTarget::externalUrl('https://example.com/docs'),
                             groupKey: 'docs-link',
                         ),

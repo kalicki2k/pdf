@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function dirname;
+
 use InvalidArgumentException;
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
-use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
-use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureElement;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
@@ -21,11 +22,9 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\Page;
-use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
-use PHPUnit\Framework\TestCase;
 
-use function dirname;
+use PHPUnit\Framework\TestCase;
 
 final class PdfA1aSupportedStructureValidatorTest extends TestCase
 {
@@ -247,7 +246,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
 
     private function textPage(string $text): Page
     {
-        $document = \Kalle\Pdf\Document\DefaultDocumentBuilder::make()
+        $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
+use function implode;
+
+use function in_array;
+
 use InvalidArgumentException;
 
-use function implode;
-use function in_array;
 use function strlen;
 
 final readonly class CaretAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation

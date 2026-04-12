@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Tests\Document;
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Outline;
-use Kalle\Pdf\Document\OutlineDestination;
 use Kalle\Pdf\Document\OutlineStyle;
 use PHPUnit\Framework\TestCase;
 

@@ -8,6 +8,7 @@ use Kalle\Pdf\Debug\LogLevel;
 use Kalle\Pdf\Debug\PsrDebugSink;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\AbstractLogger;
+use Stringable;
 
 final class PsrDebugSinkTest extends TestCase
 {
@@ -39,7 +40,7 @@ final class CollectingLogger extends AbstractLogger
      * @param mixed $level
      * @param mixed[] $context
      */
-    public function log($level, string|\Stringable $message, array $context = []): void
+    public function log($level, string | Stringable $message, array $context = []): void
     {
         $this->records[] = [
             'level' => (string) $level,

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
+use function array_shift;
+use function count;
+
+use function implode;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 
-use function array_shift;
-use function count;
-use function implode;
 use function strlen;
 
 final readonly class InkAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation

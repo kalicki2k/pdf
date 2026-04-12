@@ -8,8 +8,9 @@ use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
-use Kalle\Pdf\Document\DocumentBuilder;
+use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\DocumentBuilder;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
 use Kalle\Pdf\Document\Form\ListBoxField;
@@ -22,50 +23,54 @@ use Kalle\Pdf\Document\ListType;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\Outline;
 use Kalle\Pdf\Document\Profile;
+use Kalle\Pdf\Document\Table;
+use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TablePlacement;
+use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\Units;
-use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
-use Kalle\Pdf\Page\AnnotationMetadata;
 use Kalle\Pdf\Page\AnnotationBorderStyle;
+use Kalle\Pdf\Page\AnnotationMetadata;
 use Kalle\Pdf\Page\CircleAnnotation;
 use Kalle\Pdf\Page\FileAttachmentAnnotation;
 use Kalle\Pdf\Page\FileAttachmentAnnotationOptions;
+use Kalle\Pdf\Page\FreeTextAnnotation;
+use Kalle\Pdf\Page\FreeTextAnnotationOptions;
+use Kalle\Pdf\Page\HighlightAnnotation;
+use Kalle\Pdf\Page\HighlightAnnotationOptions;
 use Kalle\Pdf\Page\InkAnnotation;
 use Kalle\Pdf\Page\LineAnnotation;
 use Kalle\Pdf\Page\LineAnnotationOptions;
 use Kalle\Pdf\Page\LineEndingStyle;
+use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\LinkAnnotationOptions;
+use Kalle\Pdf\Page\LinkTarget;
+use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\MarkupAnnotationOptions;
+use Kalle\Pdf\Page\PageAnnotationReference;
+use Kalle\Pdf\Page\PageFont;
+use Kalle\Pdf\Page\PageOptions;
+use Kalle\Pdf\Page\PageOrientation;
+use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\PolygonAnnotation;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
-use Kalle\Pdf\Page\PageAnnotationReference;
-use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\PolyLineAnnotation;
+use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\ShapeAnnotationOptions;
 use Kalle\Pdf\Page\SquareAnnotation;
 use Kalle\Pdf\Page\SquigglyAnnotation;
 use Kalle\Pdf\Page\StampAnnotation;
 use Kalle\Pdf\Page\StrikeOutAnnotation;
-use Kalle\Pdf\Page\FreeTextAnnotation;
-use Kalle\Pdf\Page\FreeTextAnnotationOptions;
-use Kalle\Pdf\Page\HighlightAnnotation;
-use Kalle\Pdf\Page\HighlightAnnotationOptions;
-use Kalle\Pdf\Page\LinkAnnotation;
-use Kalle\Pdf\Page\LinkAnnotationOptions;
-use Kalle\Pdf\Page\LinkTarget;
-use Kalle\Pdf\Page\Margin;
-use Kalle\Pdf\Page\PageFont;
-use Kalle\Pdf\Page\PageOptions;
-use Kalle\Pdf\Page\PageOrientation;
-use Kalle\Pdf\Page\PageSize;
-use Kalle\Pdf\Page\UnderlineAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Page\TextAnnotationOptions;
+use Kalle\Pdf\Page\UnderlineAnnotation;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
@@ -461,13 +466,13 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->title('Archive Copy')
             ->language('de-DE')
             ->table(
-                \Kalle\Pdf\Document\Table::define(
-                    \Kalle\Pdf\Document\TableColumn::fixed(120.0),
+                Table::define(
+                    TableColumn::fixed(120.0),
                 )
-                    ->withPlacement(\Kalle\Pdf\Document\TablePlacement::at(72.0, 700.0, 120.0))
+                    ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
                     ->withRows(
-                        \Kalle\Pdf\Document\TableRow::fromCells(
-                            \Kalle\Pdf\Document\TableCell::text('Cell')->withBackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
+                        TableRow::fromCells(
+                            TableCell::text('Cell')->withBackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
                         ),
                     )
                     ->withTextOptions(new TextOptions(

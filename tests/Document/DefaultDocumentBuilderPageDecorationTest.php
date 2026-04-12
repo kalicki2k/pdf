@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Image\ImageColorSpace;
-use Kalle\Pdf\Image\ImagePlacement;
-use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\PageDecorationContext;
 use Kalle\Pdf\Document\Profile;
@@ -15,6 +12,9 @@ use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\Units;
+use Kalle\Pdf\Image\ImageColorSpace;
+use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;

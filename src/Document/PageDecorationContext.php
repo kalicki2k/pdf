@@ -14,6 +14,7 @@ use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
+use LogicException;
 
 final class PageDecorationContext
 {
@@ -178,7 +179,7 @@ final class PageDecorationContext
     public function decoratedPage(): Page
     {
         if (!$this->builder instanceof DefaultDocumentBuilder) {
-            throw new \LogicException('Page decoration requires the default document builder implementation.');
+            throw new LogicException('Page decoration requires the default document builder implementation.');
         }
 
         return $this->builder->buildPageDecorationResult();

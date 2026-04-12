@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use Kalle\Pdf\Writer\IndirectObject;
-
 use function array_key_exists;
+
 use function count;
 use function implode;
+
+use Kalle\Pdf\Writer\IndirectObject;
+
 use function number_format;
 use function rtrim;
 use function str_replace;
@@ -72,8 +74,7 @@ final class DocumentOutlineObjectBuilder
     private function buildRootDictionary(
         DocumentSerializationPlanBuildState $state,
         array $tree,
-    ): string
-    {
+    ): string {
         $rootChildren = $tree['rootChildren'];
 
         return '<< /Type /Outlines /First '

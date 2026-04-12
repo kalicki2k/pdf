@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function array_map;
+use function dirname;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
@@ -26,11 +29,10 @@ use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Text\TextOptions;
+
 use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
 
-use function array_map;
-use function dirname;
 use function str_replace;
 
 final class PdfA1aTaggedStructureValidatorTest extends TestCase

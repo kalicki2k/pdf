@@ -9,8 +9,9 @@ use function implode;
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 
-use function strlen;
 use Kalle\Pdf\Writer\IndirectObject;
+
+use function strlen;
 
 final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {

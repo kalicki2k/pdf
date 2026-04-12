@@ -54,8 +54,7 @@ final readonly class TaggedStructureObjectIds
         array $taggedLinkEntries,
         array $taggedAnnotationEntries,
         int $nextObjectId,
-    ): self
-    {
+    ): self {
         $figureStructElemObjectIds = [];
         $textStructElemObjectIds = [];
         $listStructElemObjectIds = [];

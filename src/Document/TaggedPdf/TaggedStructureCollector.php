@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\TaggedPdf;
 
+use function explode;
+
 use InvalidArgumentException;
+
 use Kalle\Pdf\Document\Document;
 
-use function array_key_exists;
-use function array_map;
-use function array_values;
-use function explode;
 use function ksort;
 use function sprintf;
 use function str_contains;
