@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
-use function implode;
-
 use InvalidArgumentException;
-
-use function number_format;
-use function rtrim;
-use function sprintf;
-use function str_split;
-use function strlen;
-
+use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Writer\IndirectObject;
 
-final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
+use function implode;
+use function strlen;
+
+final readonly class SquigglyAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 
@@ -25,23 +20,18 @@ final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageA
         public float $y,
         public float $width,
         public float $height,
-        public string $contents,
+        public ?Color $color = null,
+        public ?string $contents = null,
         public ?string $title = null,
-        public string $icon = 'Note',
-        public bool $open = false,
         public ?int $structParentId = null,
         public ?PopupAnnotationDefinition $popup = null,
     ) {
         if ($this->width <= 0.0) {
-            throw new InvalidArgumentException('Text annotation width must be greater than zero.');
+            throw new InvalidArgumentException('Squiggly annotation width must be greater than zero.');
         }
 
         if ($this->height <= 0.0) {
-            throw new InvalidArgumentException('Text annotation height must be greater than zero.');
-        }
-
-        if ($this->contents === '') {
-            throw new InvalidArgumentException('Text annotation contents must not be empty.');
+            throw new InvalidArgumentException('Squiggly annotation height must be greater than zero.');
         }
     }
 
@@ -52,10 +42,9 @@ final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageA
             y: $this->y,
             width: $this->width,
             height: $this->height,
+            color: $this->color,
             contents: $this->contents,
             title: $this->title,
-            icon: $this->icon,
-            open: $this->open,
             structParentId: $structParentId,
             popup: $this->popup,
         );
@@ -68,10 +57,9 @@ final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageA
             y: $this->y,
             width: $this->width,
             height: $this->height,
+            color: $this->color,
             contents: $this->contents,
             title: $this->title,
-            icon: $this->icon,
-            open: $this->open,
             structParentId: $this->structParentId,
             popup: $popup,
         );
@@ -81,15 +69,10 @@ final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageA
     {
         $entries = [
             '/Type /Annot',
-            '/Subtype /Text',
-            '/Rect [' . $this->formatNumber($this->x) . ' '
-            . $this->formatNumber($this->y) . ' '
-            . $this->formatNumber($this->x + $this->width) . ' '
-            . $this->formatNumber($this->y + $this->height) . ']',
+            '/Subtype /Squiggly',
+            '/Rect ' . $this->rect($this->x, $this->y, $this->width, $this->height),
             '/P ' . $context->pageObjectId . ' 0 R',
-            '/Contents ' . $this->pdfString($this->contents),
-            '/Name /' . $this->pdfName($this->icon),
-            '/Open ' . ($this->open ? 'true' : 'false'),
+            '/QuadPoints ' . $this->quadPoints($this->x, $this->y, $this->width, $this->height),
         ];
 
         $structParentId = $this->structParentId ?? $context->structParentId;
@@ -100,6 +83,14 @@ final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageA
 
         if ($context->printable) {
             $entries[] = '/F 4';
+        }
+
+        if ($this->color !== null) {
+            $entries[] = '/C ' . $this->pdfColorArray($this->color);
+        }
+
+        if ($this->contents !== null && $this->contents !== '') {
+            $entries[] = '/Contents ' . $this->pdfString($this->contents);
         }
 
         if ($this->title !== null && $this->title !== '') {
@@ -134,10 +125,26 @@ final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageA
 
     public function appearanceStreamContents(?AnnotationAppearanceRenderContext $context = null): string
     {
-        return "1 g\n0 G\n1 w\n0 0 "
-            . $this->formatNumber($this->width) . ' '
-            . $this->formatNumber($this->height)
-            . " re\nB";
+        $step = max($this->width / 8.0, 2.0);
+        $baseline = max($this->height * 0.1, 0.5);
+        $peak = min($baseline + max($this->height * 0.4, 1.0), $this->height - 0.5);
+        $commands = [
+            $this->strokingColorOperator($this->color ?? Color::black()),
+            '1 w',
+            '0 ' . $this->formatNumber($baseline) . ' m',
+        ];
+        $x = 0.0;
+        $up = true;
+
+        while ($x < $this->width) {
+            $x = min($x + $step, $this->width);
+            $commands[] = $this->formatNumber($x) . ' ' . $this->formatNumber($up ? $peak : $baseline) . ' l';
+            $up = !$up;
+        }
+
+        $commands[] = 'S';
+
+        return implode("\n", $commands);
     }
 
     public function relatedObjectCount(): int

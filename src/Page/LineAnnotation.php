@@ -4,48 +4,53 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
-use function implode;
-
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
-
-use function strlen;
 use Kalle\Pdf\Writer\IndirectObject;
 
-final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
+use function implode;
+use function max;
+use function min;
+use function strlen;
+
+final readonly class LineAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 
     public function __construct(
-        public float $x,
-        public float $y,
-        public float $width,
-        public float $height,
+        public float $x1,
+        public float $y1,
+        public float $x2,
+        public float $y2,
         public ?Color $color = null,
         public ?string $contents = null,
         public ?string $title = null,
+        public ?LineEndingStyle $startStyle = null,
+        public ?LineEndingStyle $endStyle = null,
+        public ?string $subject = null,
+        public ?AnnotationBorderStyle $borderStyle = null,
         public ?int $structParentId = null,
         public ?PopupAnnotationDefinition $popup = null,
     ) {
-        if ($this->width <= 0.0) {
-            throw new InvalidArgumentException('Highlight annotation width must be greater than zero.');
-        }
-
-        if ($this->height <= 0.0) {
-            throw new InvalidArgumentException('Highlight annotation height must be greater than zero.');
+        if ($this->x1 === $this->x2 && $this->y1 === $this->y2) {
+            throw new InvalidArgumentException('Line annotation start and end points must differ.');
         }
     }
 
     public function withStructParent(int $structParentId): self
     {
         return new self(
-            x: $this->x,
-            y: $this->y,
-            width: $this->width,
-            height: $this->height,
+            x1: $this->x1,
+            y1: $this->y1,
+            x2: $this->x2,
+            y2: $this->y2,
             color: $this->color,
             contents: $this->contents,
             title: $this->title,
+            startStyle: $this->startStyle,
+            endStyle: $this->endStyle,
+            subject: $this->subject,
+            borderStyle: $this->borderStyle,
             structParentId: $structParentId,
             popup: $this->popup,
         );
@@ -54,13 +59,17 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
     public function withPopup(PopupAnnotationDefinition $popup): self
     {
         return new self(
-            x: $this->x,
-            y: $this->y,
-            width: $this->width,
-            height: $this->height,
+            x1: $this->x1,
+            y1: $this->y1,
+            x2: $this->x2,
+            y2: $this->y2,
             color: $this->color,
             contents: $this->contents,
             title: $this->title,
+            startStyle: $this->startStyle,
+            endStyle: $this->endStyle,
+            subject: $this->subject,
+            borderStyle: $this->borderStyle,
             structParentId: $this->structParentId,
             popup: $popup,
         );
@@ -70,22 +79,16 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
     {
         $entries = [
             '/Type /Annot',
-            '/Subtype /Highlight',
-            '/Rect [' . $this->formatNumber($this->x) . ' '
-            . $this->formatNumber($this->y) . ' '
-            . $this->formatNumber($this->x + $this->width) . ' '
-            . $this->formatNumber($this->y + $this->height) . ']',
+            '/Subtype /Line',
+            '/Rect [' . $this->formatNumber(min($this->x1, $this->x2)) . ' '
+            . $this->formatNumber(min($this->y1, $this->y2)) . ' '
+            . $this->formatNumber(max($this->x1, $this->x2)) . ' '
+            . $this->formatNumber(max($this->y1, $this->y2)) . ']',
             '/P ' . $context->pageObjectId . ' 0 R',
-            '/QuadPoints ['
-            . $this->formatNumber($this->x) . ' '
-            . $this->formatNumber($this->y + $this->height) . ' '
-            . $this->formatNumber($this->x + $this->width) . ' '
-            . $this->formatNumber($this->y + $this->height) . ' '
-            . $this->formatNumber($this->x) . ' '
-            . $this->formatNumber($this->y) . ' '
-            . $this->formatNumber($this->x + $this->width) . ' '
-            . $this->formatNumber($this->y)
-            . ']',
+            '/L [' . $this->formatNumber($this->x1) . ' '
+            . $this->formatNumber($this->y1) . ' '
+            . $this->formatNumber($this->x2) . ' '
+            . $this->formatNumber($this->y2) . ']',
         ];
 
         $structParentId = $this->structParentId ?? $context->structParentId;
@@ -99,7 +102,7 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
         }
 
         if ($this->color !== null) {
-            $entries[] = '/C [' . implode(' ', array_map($this->formatNumber(...), $this->color->components())) . ']';
+            $entries[] = '/C ' . $this->pdfColorArray($this->color);
         }
 
         if ($this->contents !== null && $this->contents !== '') {
@@ -108,6 +111,18 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
 
         if ($this->title !== null && $this->title !== '') {
             $entries[] = '/T ' . $this->pdfString($this->title);
+        }
+
+        if ($this->subject !== null && $this->subject !== '') {
+            $entries[] = '/Subj ' . $this->pdfString($this->subject);
+        }
+
+        if ($this->borderStyle !== null) {
+            $entries[] = '/BS ' . $this->borderStyleDictionary($this->borderStyle);
+        }
+
+        if ($this->startStyle !== null || $this->endStyle !== null) {
+            $entries[] = '/LE [/' . ($this->startStyle ?? LineEndingStyle::NONE)->value . ' /' . ($this->endStyle ?? LineEndingStyle::NONE)->value . ']';
         }
 
         if ($context->appearanceObjectId !== null) {
@@ -128,9 +143,12 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
 
     public function appearanceStreamDictionaryContents(?AnnotationAppearanceRenderContext $context = null): string
     {
+        $width = max(max($this->x1, $this->x2) - min($this->x1, $this->x2), 1.0);
+        $height = max(max($this->y1, $this->y2) - min($this->y1, $this->y2), 1.0);
+
         return '<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 '
-            . $this->formatNumber($this->width) . ' '
-            . $this->formatNumber($this->height)
+            . $this->formatNumber($width) . ' '
+            . $this->formatNumber($height)
             . '] /Resources << >> /Length '
             . strlen($this->appearanceStreamContents())
             . ' >>';
@@ -138,12 +156,17 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
 
     public function appearanceStreamContents(?AnnotationAppearanceRenderContext $context = null): string
     {
-        $color = $this->color ?? Color::rgb(1, 1, 0);
+        $minX = min($this->x1, $this->x2);
+        $minY = min($this->y1, $this->y2);
+        $borderWidth = $this->borderStyle?->width ?? 1.0;
 
-        return $this->nonStrokingColorOperator($color) . "\n0 0 "
-            . $this->formatNumber($this->width) . ' '
-            . $this->formatNumber($this->height)
-            . " re\nf";
+        return implode("\n", [
+            $this->strokingColorOperator($this->color ?? Color::black()),
+            $this->formatNumber($borderWidth) . ' w',
+            $this->formatNumber($this->x1 - $minX) . ' ' . $this->formatNumber($this->y1 - $minY) . ' m',
+            $this->formatNumber($this->x2 - $minX) . ' ' . $this->formatNumber($this->y2 - $minY) . ' l',
+            'S',
+        ]);
     }
 
     public function relatedObjectCount(): int

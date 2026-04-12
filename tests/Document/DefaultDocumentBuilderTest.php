@@ -23,6 +23,7 @@ use Kalle\Pdf\Document\Outline;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\Units;
+use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Image\ImageAccessibility;
@@ -702,7 +703,6 @@ final class DefaultDocumentBuilderTest extends TestCase
                 14,
                 new FileAttachmentAnnotationOptions(
                     description: 'Demo attachment',
-                    associatedFileRelationship: AssociatedFileRelationship::DATA,
                     icon: 'Graph',
                     contents: 'Anhang',
                 ),

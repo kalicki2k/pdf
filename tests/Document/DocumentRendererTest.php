@@ -30,6 +30,8 @@ use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\Version;
+use Kalle\Pdf\Drawing\GraphicsAccessibility;
+use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
@@ -178,6 +180,34 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Type /StructElem /S /Figure', $pdf);
         self::assertStringContainsString('/Alt (Logo)', $pdf);
         self::assertStringContainsString('/Nums [0 [', $pdf);
+    }
+
+    public function testItRendersTaggedFigureStructureForSemanticGraphics(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->line(
+                40,
+                500,
+                160,
+                500,
+                new StrokeStyle(2.0, Color::rgb(0, 0, 1)),
+                GraphicsAccessibility::alternativeText('Blue divider'),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Figure << /MCID 0 >> BDC', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Figure', $pdf);
+        self::assertStringContainsString('/Alt (Blue divider)', $pdf);
     }
 
     public function testItRendersTaggedPdfA1aTextStructure(): void
@@ -1140,7 +1170,6 @@ final class DocumentRendererTest extends TestCase
                 14,
                 new FileAttachmentAnnotationOptions(
                     description: 'Demo attachment',
-                    associatedFileRelationship: AssociatedFileRelationship::DATA,
                     icon: 'Graph',
                     contents: 'Anhang',
                 ),
@@ -1161,6 +1190,29 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Name /Graph', $pdf);
         self::assertStringContainsString('/Type /Filespec', $pdf);
         self::assertStringContainsString('/Type /EmbeddedFile', $pdf);
+    }
+
+    public function testItRendersTaggedPdfUaPageAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Text', $pdf);
+        self::assertStringContainsString('/StructParent 0', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Annot', $pdf);
+        self::assertStringContainsString('/Alt (Kommentar)', $pdf);
+        self::assertStringContainsString('/Type /OBJR /Obj', $pdf);
     }
 
     public function testItRendersInternalLinkAnnotations(): void

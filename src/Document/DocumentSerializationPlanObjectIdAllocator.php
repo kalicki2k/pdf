@@ -15,6 +15,7 @@ use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\PageFont;
+use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 
 final class DocumentSerializationPlanObjectIdAllocator
 {
@@ -27,6 +28,7 @@ final class DocumentSerializationPlanObjectIdAllocator
     public function allocate(
         Document $document,
         callable $collectTaggedLinkStructure,
+        callable $collectTaggedPageAnnotations,
         callable $collectTaggedFormStructure,
         callable $collectNamedDestinations,
     ): DocumentSerializationPlanBuildState {
@@ -53,6 +55,8 @@ final class DocumentSerializationPlanObjectIdAllocator
         $pageAnnotationObjectIds = [];
         /** @var array<int, list<?int>> $pageAnnotationAppearanceObjectIds */
         $pageAnnotationAppearanceObjectIds = [];
+        /** @var array<int, array<int, list<int>>> $pageAnnotationRelatedObjectIds */
+        $pageAnnotationRelatedObjectIds = [];
         /** @var list<int> $attachmentObjectIds */
         $attachmentObjectIds = [];
         /** @var list<int> $embeddedFileObjectIds */
@@ -95,12 +99,20 @@ final class DocumentSerializationPlanObjectIdAllocator
 
             $pageAnnotationObjectIds[$pageIndex] = [];
             $pageAnnotationAppearanceObjectIds[$pageIndex] = [];
+            $pageAnnotationRelatedObjectIds[$pageIndex] = [];
 
-            foreach ($page->annotations as $annotation) {
+            foreach ($page->annotations as $annotationIndex => $annotation) {
                 $pageAnnotationObjectIds[$pageIndex][] = $nextObjectId++;
                 $pageAnnotationAppearanceObjectIds[$pageIndex][] = $this->annotationNeedsAppearanceStream($document, $annotation)
                     ? $nextObjectId++
                     : null;
+                $pageAnnotationRelatedObjectIds[$pageIndex][$annotationIndex] = [];
+
+                if ($annotation instanceof RelatedObjectsPageAnnotation) {
+                    for ($relatedObjectIndex = 0; $relatedObjectIndex < $annotation->relatedObjectCount(); $relatedObjectIndex++) {
+                        $pageAnnotationRelatedObjectIds[$pageIndex][$annotationIndex][] = $nextObjectId++;
+                    }
+                }
             }
         }
 
@@ -149,6 +161,21 @@ final class DocumentSerializationPlanObjectIdAllocator
         /** @var array{
          *   entries: list<array{
          *     key: string,
+         *     pageIndex: int,
+         *     annotationIndex: int,
+         *     altText: string,
+         *     tag: string
+         *   }>,
+         *   structParentIds: array<string, int>,
+         *   parentTreeEntries: array<int, list<string>>,
+         *   nextStructParentId: int
+         * } $taggedPageAnnotationStructure */
+        $taggedPageAnnotationStructure = $collectTaggedPageAnnotations(
+            $taggedLinkStructure['nextStructParentId'],
+        );
+        /** @var array{
+         *   entries: list<array{
+         *     key: string,
          *     annotationObjectId: int,
          *     pageIndex: int,
          *     altText: string
@@ -159,7 +186,7 @@ final class DocumentSerializationPlanObjectIdAllocator
         $taggedFormStructure = $collectTaggedFormStructure(
             array_values($acroFormFieldObjectIds),
             $acroFormFieldRelatedObjectIds,
-            $taggedLinkStructure['nextStructParentId'],
+            $taggedPageAnnotationStructure['nextStructParentId'],
         );
         /** @var array<string, string> $namedDestinations */
         $namedDestinations = $collectNamedDestinations();
@@ -186,6 +213,7 @@ final class DocumentSerializationPlanObjectIdAllocator
             $document,
             $taggedStructure,
             $taggedLinkStructure['linkEntries'],
+            $taggedPageAnnotationStructure['entries'],
             $nextObjectId,
         );
         $nextObjectId = $taggedStructureObjectIds->nextObjectId;
@@ -215,6 +243,7 @@ final class DocumentSerializationPlanObjectIdAllocator
             $imageObjectIds,
             $pageAnnotationObjectIds,
             $pageAnnotationAppearanceObjectIds,
+            $pageAnnotationRelatedObjectIds,
             $attachmentObjectIds,
             $embeddedFileObjectIds,
             $acroFormObjectId,
@@ -224,6 +253,7 @@ final class DocumentSerializationPlanObjectIdAllocator
             $taggedStructure,
             $pageStructParentIds,
             $taggedLinkStructure,
+            $taggedPageAnnotationStructure,
             $taggedFormStructure,
             $namedDestinations,
             $outlineRootObjectId,

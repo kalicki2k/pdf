@@ -17,6 +17,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedStructureCollector;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\TaggedPageAnnotation;
 
 use function preg_match;
 use function sprintf;
@@ -117,7 +118,8 @@ final class DocumentSerializationPlanValidator
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
                 $supportsCurrentAnnotation = $document->profile->supportsCurrentPageAnnotationsImplementation()
-                    || ($annotation instanceof LinkAnnotation && $document->profile->requiresTaggedLinkAnnotations());
+                    || ($annotation instanceof LinkAnnotation && $document->profile->requiresTaggedLinkAnnotations())
+                    || ($annotation instanceof TaggedPageAnnotation && $document->profile->requiresTaggedPageAnnotations());
 
                 if (!$supportsCurrentAnnotation) {
                     throw new InvalidArgumentException(sprintf(
@@ -137,6 +139,20 @@ final class DocumentSerializationPlanValidator
                 ) {
                     throw new InvalidArgumentException(sprintf(
                         'Profile %s requires alternative text for link annotation %d on page %d.',
+                        $document->profile->name(),
+                        $annotationIndex + 1,
+                        $pageIndex + 1,
+                    ));
+                }
+
+                if (
+                    !$annotation instanceof LinkAnnotation
+                    && $annotation instanceof TaggedPageAnnotation
+                    && $document->profile->requiresPageAnnotationAlternativeDescriptions()
+                    && (($annotation->taggedAnnotationAltText() ?? '') === '')
+                ) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Profile %s requires alternative text for page annotation %d on page %d.',
                         $document->profile->name(),
                         $annotationIndex + 1,
                         $pageIndex + 1,

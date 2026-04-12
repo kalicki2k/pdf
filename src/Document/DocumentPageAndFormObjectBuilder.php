@@ -19,6 +19,7 @@ use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
+use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 final class DocumentPageAndFormObjectBuilder
@@ -44,6 +45,7 @@ final class DocumentPageAndFormObjectBuilder
             $annotationAppearanceContext = new AnnotationAppearanceRenderContext(
                 $this->pageFontObjectIdsByAlias($page->fontResources, $state->fontObjectIds),
             );
+            $attachmentObjectIdsByFilename = $this->attachmentObjectIdsByFilename($document, $state->attachmentObjectIds);
             $pageContents = $this->buildPageContents($document, $page);
 
             $objects[] = IndirectObject::plain(
@@ -74,8 +76,13 @@ final class DocumentPageAndFormObjectBuilder
                             printable: $document->profile->requiresPrintableAnnotations(),
                             pageObjectIdsByPageNumber: $this->pageObjectIdsByPageNumber($state->pageObjectIds),
                             namedDestinations: $state->namedDestinations,
-                            structParentId: $state->taggedLinkStructure['structParentIds'][$annotationKey] ?? null,
+                            structParentId: $state->taggedLinkStructure['structParentIds'][$annotationKey]
+                                ?? $state->taggedPageAnnotationStructure['structParentIds'][$annotationKey]
+                                ?? null,
                             appearanceObjectId: $state->pageAnnotationAppearanceObjectIds[$index][$annotationIndex] ?? null,
+                            annotationObjectId: $annotationObjectIds[$annotationIndex],
+                            relatedObjectIds: $state->pageAnnotationRelatedObjectIds[$index][$annotationIndex] ?? [],
+                            attachmentObjectIdsByFilename: $attachmentObjectIdsByFilename,
                         ),
                     ),
                 );
@@ -89,6 +96,27 @@ final class DocumentPageAndFormObjectBuilder
                         $annotation->appearanceStreamContents($annotationAppearanceContext),
                     );
                 }
+
+                if ($annotation instanceof RelatedObjectsPageAnnotation) {
+                    $objects = [
+                        ...$objects,
+                        ...$annotation->relatedObjects(
+                            new PageAnnotationRenderContext(
+                                pageObjectId: $pageObjectId,
+                                printable: $document->profile->requiresPrintableAnnotations(),
+                                pageObjectIdsByPageNumber: $this->pageObjectIdsByPageNumber($state->pageObjectIds),
+                                namedDestinations: $state->namedDestinations,
+                                structParentId: $state->taggedLinkStructure['structParentIds'][$annotationKey]
+                                    ?? $state->taggedPageAnnotationStructure['structParentIds'][$annotationKey]
+                                    ?? null,
+                                appearanceObjectId: $appearanceObjectId,
+                                annotationObjectId: $annotationObjectIds[$annotationIndex],
+                                relatedObjectIds: $state->pageAnnotationRelatedObjectIds[$index][$annotationIndex] ?? [],
+                                attachmentObjectIdsByFilename: $attachmentObjectIdsByFilename,
+                            ),
+                        ),
+                    ];
+                }
             }
 
             $scope->stop([
@@ -99,6 +127,21 @@ final class DocumentPageAndFormObjectBuilder
         }
 
         return $objects;
+    }
+
+    /**
+     * @param list<int> $attachmentObjectIds
+     * @return array<string, int>
+     */
+    private function attachmentObjectIdsByFilename(Document $document, array $attachmentObjectIds): array
+    {
+        $objectIds = [];
+
+        foreach ($document->attachments as $index => $attachment) {
+            $objectIds[$attachment->filename] = $attachmentObjectIds[$index];
+        }
+
+        return $objectIds;
     }
 
     /**

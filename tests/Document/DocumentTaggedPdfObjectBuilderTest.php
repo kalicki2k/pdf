@@ -16,6 +16,8 @@ use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Drawing\GraphicsAccessibility;
+use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
@@ -81,6 +83,12 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
+            static fn (int $nextStructParentId): array => [
+                'entries' => [],
                 'parentTreeEntries' => [],
                 'structParentIds' => [],
                 'nextStructParentId' => $nextStructParentId,
@@ -176,12 +184,40 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
                     ImagePlacement::at(72, 620, 32, 32),
+                    ImageAccessibility::alternativeText('Second page figure'),
                 )
                 ->build(),
         );
 
         self::assertSame(
             ['H1', 'P', 'Table', 'Figure'],
+            $this->documentChildTags(iterator_to_array($plan->objects)),
+        );
+    }
+
+    public function testItBuildsDocumentChildrenInReadingOrderWithSemanticGraphics(): void
+    {
+        $plan = (new DocumentSerializationPlanBuilder())->build(
+            DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfUa1())
+                ->title('Accessible Copy')
+                ->language('de-DE')
+                ->paragraph('Intro', new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                ))
+                ->line(
+                    72,
+                    700,
+                    200,
+                    700,
+                    new StrokeStyle(2.0),
+                    GraphicsAccessibility::alternativeText('Section divider'),
+                )
+                ->build(),
+        );
+
+        self::assertSame(
+            ['P', 'Figure'],
             $this->documentChildTags(iterator_to_array($plan->objects)),
         );
     }

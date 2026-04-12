@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
-use function implode;
-
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 
+use function implode;
 use function strlen;
-use Kalle\Pdf\Writer\IndirectObject;
 
-final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, TaggedPageAnnotation
+final readonly class StampAnnotation implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation
 {
     use FormatsPdfAnnotationValues;
 
@@ -21,18 +19,18 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
         public float $y,
         public float $width,
         public float $height,
+        public string $icon = 'Draft',
         public ?Color $color = null,
         public ?string $contents = null,
         public ?string $title = null,
         public ?int $structParentId = null,
-        public ?PopupAnnotationDefinition $popup = null,
     ) {
         if ($this->width <= 0.0) {
-            throw new InvalidArgumentException('Highlight annotation width must be greater than zero.');
+            throw new InvalidArgumentException('Stamp annotation width must be greater than zero.');
         }
 
         if ($this->height <= 0.0) {
-            throw new InvalidArgumentException('Highlight annotation height must be greater than zero.');
+            throw new InvalidArgumentException('Stamp annotation height must be greater than zero.');
         }
     }
 
@@ -43,26 +41,11 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
             y: $this->y,
             width: $this->width,
             height: $this->height,
+            icon: $this->icon,
             color: $this->color,
             contents: $this->contents,
             title: $this->title,
             structParentId: $structParentId,
-            popup: $this->popup,
-        );
-    }
-
-    public function withPopup(PopupAnnotationDefinition $popup): self
-    {
-        return new self(
-            x: $this->x,
-            y: $this->y,
-            width: $this->width,
-            height: $this->height,
-            color: $this->color,
-            contents: $this->contents,
-            title: $this->title,
-            structParentId: $this->structParentId,
-            popup: $popup,
         );
     }
 
@@ -70,22 +53,10 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
     {
         $entries = [
             '/Type /Annot',
-            '/Subtype /Highlight',
-            '/Rect [' . $this->formatNumber($this->x) . ' '
-            . $this->formatNumber($this->y) . ' '
-            . $this->formatNumber($this->x + $this->width) . ' '
-            . $this->formatNumber($this->y + $this->height) . ']',
+            '/Subtype /Stamp',
+            '/Rect ' . $this->rect($this->x, $this->y, $this->width, $this->height),
             '/P ' . $context->pageObjectId . ' 0 R',
-            '/QuadPoints ['
-            . $this->formatNumber($this->x) . ' '
-            . $this->formatNumber($this->y + $this->height) . ' '
-            . $this->formatNumber($this->x + $this->width) . ' '
-            . $this->formatNumber($this->y + $this->height) . ' '
-            . $this->formatNumber($this->x) . ' '
-            . $this->formatNumber($this->y) . ' '
-            . $this->formatNumber($this->x + $this->width) . ' '
-            . $this->formatNumber($this->y)
-            . ']',
+            '/Name /' . $this->pdfName($this->icon),
         ];
 
         $structParentId = $this->structParentId ?? $context->structParentId;
@@ -99,7 +70,7 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
         }
 
         if ($this->color !== null) {
-            $entries[] = '/C [' . implode(' ', array_map($this->formatNumber(...), $this->color->components())) . ']';
+            $entries[] = '/C ' . $this->pdfColorArray($this->color);
         }
 
         if ($this->contents !== null && $this->contents !== '') {
@@ -112,10 +83,6 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
 
         if ($context->appearanceObjectId !== null) {
             $entries[] = '/AP << /N ' . $context->appearanceObjectId . ' 0 R >>';
-        }
-
-        if ($this->popup !== null) {
-            $entries[] = '/Popup ' . $context->relatedObjectId(0) . ' 0 R';
         }
 
         return '<< ' . implode(' ', $entries) . ' >>';
@@ -138,31 +105,14 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
 
     public function appearanceStreamContents(?AnnotationAppearanceRenderContext $context = null): string
     {
-        $color = $this->color ?? Color::rgb(1, 1, 0);
+        $color = $this->color ?? Color::rgb(0.85, 0.2, 0.2);
 
-        return $this->nonStrokingColorOperator($color) . "\n0 0 "
-            . $this->formatNumber($this->width) . ' '
-            . $this->formatNumber($this->height)
-            . " re\nf";
-    }
-
-    public function relatedObjectCount(): int
-    {
-        return $this->popup !== null ? 1 : 0;
-    }
-
-    public function relatedObjects(PageAnnotationRenderContext $context): array
-    {
-        if ($this->popup === null) {
-            return [];
-        }
-
-        return [
-            IndirectObject::plain(
-                $context->relatedObjectId(0),
-                (new PopupAnnotation($this->popup))->pdfObjectContents($context),
-            ),
-        ];
+        return implode("\n", [
+            $this->strokingColorOperator($color),
+            '1 w',
+            '0.5 0.5 ' . $this->formatNumber($this->width - 1.0) . ' ' . $this->formatNumber($this->height - 1.0) . ' re',
+            'S',
+        ]);
     }
 
     public function taggedAnnotationAltText(): ?string

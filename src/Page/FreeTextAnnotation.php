@@ -16,7 +16,7 @@ use function rtrim;
 use function str_replace;
 use function strlen;
 
-final readonly class FreeTextAnnotation implements AppearanceStreamAnnotation, PageAnnotation
+final readonly class FreeTextAnnotation implements AppearanceStreamAnnotation, PageAnnotation, TaggedPageAnnotation
 {
     public function __construct(
         public float $x,
@@ -161,5 +161,15 @@ final readonly class FreeTextAnnotation implements AppearanceStreamAnnotation, P
             ['\\\\', '\(', '\)'],
             $value,
         ) . ')';
+    }
+
+    public function taggedAnnotationAltText(): ?string
+    {
+        return $this->contents;
+    }
+
+    public function taggedAnnotationStructureTag(): string
+    {
+        return 'Annot';
     }
 }

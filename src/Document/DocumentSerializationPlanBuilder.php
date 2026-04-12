@@ -51,6 +51,7 @@ final class DocumentSerializationPlanBuilder
         $this->validator->assertBuildable($document);
         $serializedAt = new DateTimeImmutable('now');
         $collectTaggedLinkStructure = fn (int $nextStructParentId): array => $this->taggedPdfObjectBuilder->collectTaggedLinkStructure($document, $nextStructParentId);
+        $collectTaggedPageAnnotationStructure = fn (int $nextStructParentId): array => $this->taggedPdfObjectBuilder->collectTaggedPageAnnotationStructure($document, $nextStructParentId);
         $collectTaggedFormStructure = function (
             array $acroFormFieldObjectIds,
             array $acroFormFieldRelatedObjectIds,
@@ -73,6 +74,7 @@ final class DocumentSerializationPlanBuilder
         $state = $this->objectIdAllocator->allocate(
             $document,
             $collectTaggedLinkStructure,
+            $collectTaggedPageAnnotationStructure,
             $collectTaggedFormStructure,
             $collectNamedDestinations,
         );

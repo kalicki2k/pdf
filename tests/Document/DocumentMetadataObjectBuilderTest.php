@@ -57,6 +57,12 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
                 'structParentIds' => [],
                 'nextStructParentId' => $nextStructParentId,
             ],
+            static fn (int $nextStructParentId): array => [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
             static fn (array $fieldObjectIds, array $relatedObjectIds, int $nextStructParentId): array => [
                 'entries' => [],
                 'parentTreeEntries' => [],
@@ -93,6 +99,12 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
+            static fn (int $nextStructParentId): array => [
+                'entries' => [],
                 'parentTreeEntries' => [],
                 'structParentIds' => [],
                 'nextStructParentId' => $nextStructParentId,
@@ -139,6 +151,12 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
+            static fn (int $nextStructParentId): array => [
+                'entries' => [],
                 'parentTreeEntries' => [],
                 'structParentIds' => [],
                 'nextStructParentId' => $nextStructParentId,

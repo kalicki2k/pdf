@@ -11,6 +11,8 @@ final readonly class PageAnnotationRenderContext
     /**
      * @param array<int, int> $pageObjectIdsByPageNumber
      * @param array<string, string> $namedDestinations
+     * @param list<int> $relatedObjectIds
+     * @param array<string, int> $attachmentObjectIdsByFilename
      */
     public function __construct(
         public int $pageObjectId,
@@ -19,6 +21,9 @@ final readonly class PageAnnotationRenderContext
         public array $namedDestinations = [],
         public ?int $structParentId = null,
         public ?int $appearanceObjectId = null,
+        public ?int $annotationObjectId = null,
+        public array $relatedObjectIds = [],
+        public array $attachmentObjectIdsByFilename = [],
     ) {
     }
 
@@ -48,5 +53,33 @@ final readonly class PageAnnotationRenderContext
         }
 
         return $destination;
+    }
+
+    public function relatedObjectId(int $index): int
+    {
+        $objectId = $this->relatedObjectIds[$index] ?? null;
+
+        if ($objectId === null) {
+            throw new InvalidArgumentException(sprintf(
+                'Related annotation object %d is not available.',
+                $index + 1,
+            ));
+        }
+
+        return $objectId;
+    }
+
+    public function attachmentObjectId(string $filename): int
+    {
+        $objectId = $this->attachmentObjectIdsByFilename[$filename] ?? null;
+
+        if ($objectId === null) {
+            throw new InvalidArgumentException(sprintf(
+                'Attachment "%s" is not available for file attachment annotations.',
+                $filename,
+            ));
+        }
+
+        return $objectId;
     }
 }

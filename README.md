@@ -123,6 +123,7 @@ $document = DefaultDocumentBuilder::make()
 ```php
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\Path;
 use Kalle\Pdf\Drawing\StrokeStyle;
 
@@ -137,11 +138,16 @@ $document = DefaultDocumentBuilder::make()
     ->line(40, 760, 200, 760, new StrokeStyle(1.5, Color::gray(0.25)))
     ->rectangle(40, 680, 120, 50, fillColor: Color::hex('#dbeafe'))
     ->roundedRectangle(180, 680, 120, 50, 10, new StrokeStyle(1, Color::hex('#1d4ed8')))
-    ->path($triangle, new StrokeStyle(1, Color::hex('#991b1b')), Color::hex('#fecaca'))
+    ->path(
+        $triangle,
+        new StrokeStyle(1, Color::hex('#991b1b')),
+        Color::hex('#fecaca'),
+        GraphicsAccessibility::alternativeText('Warning triangle'),
+    )
     ->build();
 ```
 
-In Tagged-PDF-Profilen rendert diese Graphics-API aktuell bewusst als `/Artifact`, weil fuer semantisch bedeutungsvolle Vektorformen noch keine eigene Struktur-Tagschicht existiert.
+In Tagged-PDF-Profilen rendert die Graphics-API standardmaessig weiter als `/Artifact`. Semantisch relevante Vektorgrafik kann explizit ueber `GraphicsAccessibility::alternativeText(...)` als `/Figure` in die Tagged-Struktur aufgenommen werden; dekorative Grafik bleibt Artifact.
 
 ## Header und Footer
 
@@ -234,7 +240,7 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen. Dasselbe Muster deckt inzwischen auch weitere Markup- und Geometrie-Typen wie `Underline`, `StrikeOut`, `Squiggly`, `Stamp`, `Square`, `Circle`, `Caret`, `Ink`, `Line`, `PolyLine` und `Polygon` ab.
+Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen. Dasselbe Muster deckt inzwischen auch weitere Markup- und Geometrie-Typen wie `Underline`, `StrikeOut`, `Squiggly`, `Stamp`, `Square`, `Circle`, `Caret`, `Ink`, `Line`, `PolyLine` und `Polygon` ab. Popups koennen ueber `popupAnnotation(...)` an die zuletzt hinzugefuegte kompatible Seitenannotation gebunden werden; seitengebundene Dateianhaenge setzen auf derselben Builder-API auf und verwenden intern die bestehende Attachment-Infrastruktur.
 
 Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation mit festem Rechteck und eigenem `/AP`-Stream, die sich damit auch fuer den aktuellen PDF/A-2u-Pfad eignet. Dasselbe gilt jetzt fuer eine schlanke `Highlight`-Annotation mit festen `QuadPoints` und fuer `FreeText`, das seinen Appearance-Stream mit dem verwendeten Seitenfont rendert.
 
@@ -311,6 +317,20 @@ $document = DefaultDocumentBuilder::make()
             subject: 'Pruefpfad',
         ),
     ))
+    ->popupAnnotation(190, 300, 160, 70, true)
+    ->fileAttachmentAnnotationWithOptions(
+        'demo.txt',
+        new \Kalle\Pdf\Document\Attachment\EmbeddedFile('hello', 'text/plain'),
+        40,
+        270,
+        12,
+        14,
+        new \Kalle\Pdf\Page\FileAttachmentAnnotationOptions(
+            description: 'Demo attachment',
+            icon: 'Graph',
+            contents: 'Anhang',
+        ),
+    )
     ->freeTextAnnotation(
         'Kommentar im Dokument',
         40,
@@ -339,7 +359,7 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-`Popup`-Annotationen und seitengebundene `FileAttachment`-Annotationen aus dem Altprojekt sind in `pdf2` noch nicht uebernommen. Beide Faelle brauchen in der aktuellen Architektur zusaetzliche Related-Object-Verkabelung ueber mehrere PDF-Objekte; statt einer halb portierten Sonderloesung bleiben sie deshalb vorerst explizite Folgearbeit.
+Die aktuelle `pdf2`-Implementierung deckt damit nun auch Popups und seitengebundene Dateianhang-Annotationen ab. Fuer PDF/UA-1 werden neben Links und Formularfeldern jetzt auch allgemeine Seitenannotationen als getaggte `Annot`-StructElems mit `/OBJR`, `/StructParent` und Alternativtext geschrieben. Die Freigabe bleibt dabei bewusst streng: fehlt fuer eine solche Annotation ein brauchbarer Alternativtext, scheitert `pdf2` weiterhin explizit.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -449,9 +469,9 @@ $document = DefaultDocumentBuilder::make()
 
 ## PDF/A-1a Umfang
 
-Der aktuell abgesicherte `PDF/A-1a`-Pfad in `pdf2` deckt bewusst einen klar begrenzten Strukturumfang ab: Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Fuer diese Struktur prueft der Build-Pfad jetzt nicht nur die Existenz von Tagged Content, sondern auch die Konsistenz von `StructTreeRoot`, Dokumentwurzel, `ParentTree`, `/StructParents`, `MCID`-Zuordnung und der unterstuetzten Strukturelement-Hierarchie. Interne `PDF/A-1a`-Dokumentmodelle mit anderen Text-Tags als `H1` bis `H6` oder `P`, mit leeren Tagged-Listen/Tabellen oder mit inkonsistenten Tagged-Referenzen werden explizit verworfen. Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer-, Builder- und Strukturvalidator-Tests abgesichert.
+Der folgende Umfang ist der offizielle `PDF/A-1a`-Support-Scope der aktuellen `pdf2`-Version. Abgesichert und freigegeben sind Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Fuer diese Struktur prueft der Build-Pfad jetzt nicht nur die Existenz von Tagged Content, sondern auch die Konsistenz von `StructTreeRoot`, Dokumentwurzel, `ParentTree`, `/StructParents`, `MCID`-Zuordnung und der unterstuetzten Strukturelement-Hierarchie. Interne `PDF/A-1a`-Dokumentmodelle mit anderen Text-Tags als `H1` bis `H6` oder `P`, mit leeren Tagged-Listen/Tabellen oder mit inkonsistenten Tagged-Referenzen werden explizit verworfen. Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer-, Builder- und Strukturvalidator-Tests abgesichert.
 
-Nicht Teil dieses Umfangs sind aktuell reichere Annotationstypen, Formulare, Signaturfelder oder weitergehende Strukturtypen ausserhalb dieses Satzes. Solche Faelle sollen fuer `PDF/A-1a` weiter explizit scheitern oder erst nach eigener Regressionserweiterung freigegeben werden.
+Nicht Teil dieses offiziellen Umfangs sind aktuell reichere Annotationstypen, Formulare, Signaturfelder oder weitergehende Strukturtypen ausserhalb dieses Satzes. Solche Faelle gelten in `pdf2` fuer `PDF/A-1a` derzeit nicht als unterstuetzt und sollen weiter explizit scheitern oder erst nach eigener Regressionserweiterung freigegeben werden.
 
 ## Verschluesselung
 

@@ -142,6 +142,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
             $document,
             fn (int $nextStructParentId): array => $taggedPdfObjectBuilder->collectTaggedLinkStructure($document, $nextStructParentId),
+            fn (int $nextStructParentId): array => $taggedPdfObjectBuilder->collectTaggedPageAnnotationStructure($document, $nextStructParentId),
             function (array $fieldObjectIds, array $relatedObjectIds, int $nextStructParentId) use ($document, $taggedPdfObjectBuilder): array {
                 return $taggedPdfObjectBuilder->collectTaggedFormStructure(
                     $document,

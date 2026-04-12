@@ -56,6 +56,12 @@ final class DocumentAttachmentObjectBuilderTest extends TestCase
                 'structParentIds' => [],
                 'nextStructParentId' => $nextStructParentId,
             ],
+            static fn (int $nextStructParentId): array => [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
             static fn (array $fieldObjectIds, array $relatedObjectIds, int $nextStructParentId): array => [
                 'entries' => [],
                 'parentTreeEntries' => [],

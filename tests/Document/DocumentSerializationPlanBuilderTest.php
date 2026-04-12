@@ -37,6 +37,8 @@ use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\Version;
+use Kalle\Pdf\Drawing\GraphicsAccessibility;
+use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Encryption\Permissions;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
@@ -49,6 +51,8 @@ use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
+use Kalle\Pdf\Page\FileAttachmentAnnotation;
+use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
@@ -90,6 +94,36 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 4 0 R >>', $objects[2]->contents);
         self::assertSame(4, $objects[3]->objectId);
         self::assertSame("<< /Length 0 >>\nstream\nendstream", $objects[3]->contents);
+    }
+
+    public function testItAllocatesRelatedObjectsForPopupAndFileAttachmentAnnotations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
+            ->popupAnnotation(70, 520, 120, 60, true)
+            ->fileAttachmentAnnotation(
+                'demo.txt',
+                new EmbeddedFile('hello', 'text/plain'),
+                40,
+                460,
+                12,
+                14,
+                'Demo attachment',
+                'Graph',
+                'Anhang',
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $popupObject = current(array_filter($objects, static fn (IndirectObject $object): bool => str_contains($object->contents, '/Subtype /Popup')));
+        $fileAttachmentObject = current(array_filter($objects, static fn (IndirectObject $object): bool => str_contains($object->contents, '/Subtype /FileAttachment')));
+
+        self::assertNotFalse($popupObject);
+        self::assertNotFalse($fileAttachmentObject);
+        self::assertStringContainsString('/Parent 5 0 R', $popupObject->contents);
+        self::assertMatchesRegularExpression('/\/FS \d+ 0 R/', $fileAttachmentObject->contents);
     }
 
     public function testItAddsAnInfoObjectWhenDocumentMetadataIsPresent(): void
@@ -1495,6 +1529,29 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Type /OBJR /Obj', $serialized);
     }
 
+    public function testItAddsTaggedPdfUaPageAnnotations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/Tabs /S', $serialized);
+        self::assertStringContainsString('/StructParent 0', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Annot', $serialized);
+        self::assertStringContainsString('/Alt (Kommentar)', $serialized);
+        self::assertStringContainsString('/Type /OBJR /Obj', $serialized);
+    }
+
     public function testItAddsTaggedPdfA1aLinkAnnotations(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1532,6 +1589,22 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('requires alternative text for link annotation 1 on page 1');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsPdfUaPageAnnotationsWithoutAlternativeText(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->highlightAnnotation(40, 500, 120, 12, Color::rgb(1, 1, 0))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/UA-1 requires alternative text for page annotation 1 on page 1.');
 
         $builder->build($document);
     }
@@ -2770,6 +2843,34 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame('<< /Type /StructElem /S /Document /P 6 0 R /K [9 0 R] >>', $objects[6]->contents);
         self::assertSame('<< /Nums [0 [9 0 R]] >>', $objects[7]->contents);
         self::assertSame('<< /Type /StructElem /S /Figure /P 7 0 R /Pg 3 0 R /Alt (Logo) /K 0 >>', $objects[8]->contents);
+    }
+
+    public function testItBuildsTaggedFigureStructureForSemanticGraphics(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->line(
+                40,
+                500,
+                160,
+                500,
+                new StrokeStyle(2.0, Color::rgb(0, 0, 1)),
+                GraphicsAccessibility::alternativeText('Blue divider'),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn (IndirectObject $object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Figure << /MCID 0 >> BDC', $objects[3]->contents);
+        self::assertStringContainsString('/Type /StructTreeRoot', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Document', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /Figure', $serialized);
+        self::assertStringContainsString('/Alt (Blue divider)', $serialized);
     }
 
     public function testItBuildsEmbeddedTrueTypeFontObjects(): void

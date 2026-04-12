@@ -11,6 +11,7 @@ final readonly class AnnotationMetadata
         public ?string $title = null,
         public ?string $accessibleLabel = null,
         public ?string $groupKey = null,
+        public ?string $subject = null,
     ) {
     }
 }

@@ -17,6 +17,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\TaggedPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 use function preg_match;
@@ -120,6 +121,69 @@ final class DocumentTaggedPdfObjectBuilder
 
         return [
             'linkEntries' => $linkEntries,
+            'parentTreeEntries' => $parentTreeEntries,
+            'structParentIds' => $structParentIds,
+            'nextStructParentId' => $nextStructParentId,
+        ];
+    }
+
+    /**
+     * @return array{
+     *   entries: list<array{
+     *     key: string,
+     *     pageIndex: int,
+     *     annotationIndex: int,
+     *     altText: string,
+     *     tag: string
+     *   }>,
+     *   parentTreeEntries: array<int, list<string>>,
+     *   structParentIds: array<string, int>,
+     *   nextStructParentId: int
+     * }
+     */
+    public function collectTaggedPageAnnotationStructure(Document $document, int $nextStructParentId): array
+    {
+        if (!$document->profile->requiresTaggedPageAnnotations()) {
+            return [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ];
+        }
+
+        $entries = [];
+        $parentTreeEntries = [];
+        $structParentIds = [];
+
+        foreach ($document->pages as $pageIndex => $page) {
+            foreach ($page->annotations as $annotationIndex => $annotation) {
+                if ($annotation instanceof LinkAnnotation || !$annotation instanceof TaggedPageAnnotation) {
+                    continue;
+                }
+
+                $altText = $annotation->taggedAnnotationAltText();
+
+                if ($altText === null || $altText === '') {
+                    continue;
+                }
+
+                $entryKey = 'annotation:' . $pageIndex . ':' . $annotationIndex;
+                $entries[] = [
+                    'key' => $entryKey,
+                    'pageIndex' => $pageIndex,
+                    'annotationIndex' => $annotationIndex,
+                    'altText' => $altText,
+                    'tag' => $annotation->taggedAnnotationStructureTag(),
+                ];
+                $structParentIds[$pageIndex . ':' . $annotationIndex] = $nextStructParentId;
+                $parentTreeEntries[$nextStructParentId] = [$entryKey];
+                $nextStructParentId++;
+            }
+        }
+
+        return [
+            'entries' => $entries,
             'parentTreeEntries' => $parentTreeEntries,
             'structParentIds' => $structParentIds,
             'nextStructParentId' => $nextStructParentId,
@@ -240,6 +304,13 @@ final class DocumentTaggedPdfObjectBuilder
                 $parentTreeEntries[$structParentId] = array_map(
                     fn (string $key): int => $state->taggedStructureObjectIds->linkStructElemObjectIds[$key],
                     $linkKeys,
+                );
+            }
+
+            foreach ($state->taggedPageAnnotationStructure['parentTreeEntries'] as $structParentId => $annotationKeys) {
+                $parentTreeEntries[$structParentId] = array_map(
+                    fn (string $key): int => $state->taggedStructureObjectIds->annotationStructElemObjectIds[$key],
+                    $annotationKeys,
                 );
             }
 
@@ -442,6 +513,28 @@ final class DocumentTaggedPdfObjectBuilder
             );
         }
 
+        foreach ($state->taggedPageAnnotationStructure['entries'] as $annotationEntry) {
+            $pageObjectId = $state->pageObjectIds[$annotationEntry['pageIndex']];
+            $annotationObjectId = $state->pageAnnotationObjectIds[$annotationEntry['pageIndex']][$annotationEntry['annotationIndex']];
+
+            $objects[] = IndirectObject::plain(
+                $state->taggedStructureObjectIds->annotationStructElemObjectIds[$annotationEntry['key']],
+                (new StructElem(
+                    $annotationEntry['tag'],
+                    $state->documentStructElemObjectId,
+                    pageObjectId: $pageObjectId,
+                    altText: $annotationEntry['altText'],
+                    kidEntries: [
+                        '<< /Type /OBJR /Obj '
+                        . $annotationObjectId
+                        . ' 0 R /Pg '
+                        . $pageObjectId
+                        . ' 0 R >>',
+                    ],
+                ))->objectContents(),
+            );
+        }
+
         foreach ($state->taggedFormStructure['entries'] as $formEntry) {
             $pageObjectId = $state->pageObjectIds[$formEntry['pageIndex']];
 
@@ -494,6 +587,15 @@ final class DocumentTaggedPdfObjectBuilder
             ];
         }
 
+        foreach ($state->taggedPageAnnotationStructure['entries'] as $annotationEntry) {
+            $entries[] = [
+                'key' => $annotationEntry['key'],
+                'pageIndex' => $annotationEntry['pageIndex'],
+                'orderIndex' => 1500000 + $annotationEntry['annotationIndex'],
+                'sequence' => $sequence++,
+            ];
+        }
+
         foreach ($state->taggedFormStructure['entries'] as $formEntry) {
             $entries[] = [
                 'key' => $formEntry['key'],
@@ -521,6 +623,7 @@ final class DocumentTaggedPdfObjectBuilder
             ?? $state->taggedStructureObjectIds->listStructElemObjectIds[$key]
             ?? $state->taggedStructureObjectIds->tableStructElemObjectIds[$key]
             ?? $state->taggedStructureObjectIds->linkStructElemObjectIds[$key]
+            ?? $state->taggedStructureObjectIds->annotationStructElemObjectIds[$key]
             ?? $state->taggedFormStructElemObjectIds[$key]
             ?? throw new InvalidArgumentException(sprintf('Unknown tagged document child key "%s".', $key));
     }

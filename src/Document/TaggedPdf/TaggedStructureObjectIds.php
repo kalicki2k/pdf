@@ -22,6 +22,7 @@ final readonly class TaggedStructureObjectIds
      * @param array<string, int> $rowStructElemObjectIds
      * @param array<string, int> $cellStructElemObjectIds
      * @param array<string, int> $linkStructElemObjectIds
+     * @param array<string, int> $annotationStructElemObjectIds
      */
     public function __construct(
         public array $figureStructElemObjectIds,
@@ -36,14 +37,22 @@ final readonly class TaggedStructureObjectIds
         public array $rowStructElemObjectIds,
         public array $cellStructElemObjectIds,
         public array $linkStructElemObjectIds,
+        public array $annotationStructElemObjectIds,
         public int $nextObjectId,
     ) {
     }
 
     /**
      * @param list<array{key: string}> $taggedLinkEntries
+     * @param list<array{key: string}> $taggedAnnotationEntries
      */
-    public static function allocate(Document $document, CollectedTaggedStructure $structure, array $taggedLinkEntries, int $nextObjectId): self
+    public static function allocate(
+        Document $document,
+        CollectedTaggedStructure $structure,
+        array $taggedLinkEntries,
+        array $taggedAnnotationEntries,
+        int $nextObjectId,
+    ): self
     {
         $figureStructElemObjectIds = [];
         $textStructElemObjectIds = [];
@@ -57,6 +66,7 @@ final readonly class TaggedStructureObjectIds
         $rowStructElemObjectIds = [];
         $cellStructElemObjectIds = [];
         $linkStructElemObjectIds = [];
+        $annotationStructElemObjectIds = [];
 
         foreach ($structure->figureEntries as $figureEntry) {
             $figureStructElemObjectIds[$figureEntry['key']] = $nextObjectId++;
@@ -107,6 +117,10 @@ final readonly class TaggedStructureObjectIds
             $linkStructElemObjectIds[$linkEntry['key']] = $nextObjectId++;
         }
 
+        foreach ($taggedAnnotationEntries as $annotationEntry) {
+            $annotationStructElemObjectIds[$annotationEntry['key']] = $nextObjectId++;
+        }
+
         return new self(
             $figureStructElemObjectIds,
             $textStructElemObjectIds,
@@ -120,6 +134,7 @@ final readonly class TaggedStructureObjectIds
             $rowStructElemObjectIds,
             $cellStructElemObjectIds,
             $linkStructElemObjectIds,
+            $annotationStructElemObjectIds,
             $nextObjectId,
         );
     }

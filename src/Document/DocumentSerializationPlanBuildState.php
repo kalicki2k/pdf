@@ -22,6 +22,7 @@ final readonly class DocumentSerializationPlanBuildState
      * @param array<string, int> $imageObjectIds
      * @param array<int, list<int>> $pageAnnotationObjectIds
      * @param array<int, list<?int>> $pageAnnotationAppearanceObjectIds
+     * @param array<int, array<int, list<int>>> $pageAnnotationRelatedObjectIds
      * @param list<int> $attachmentObjectIds
      * @param list<int> $embeddedFileObjectIds
      * @param list<int> $acroFormFieldObjectIds
@@ -40,6 +41,18 @@ final readonly class DocumentSerializationPlanBuildState
      *   parentTreeEntries: array<int, list<string>>,
      *   nextStructParentId: int
      * } $taggedLinkStructure
+     * @param array{
+     *   entries: list<array{
+     *     key: string,
+     *     pageIndex: int,
+     *     annotationIndex: int,
+     *     altText: string,
+     *     tag: string
+     *   }>,
+     *   structParentIds: array<string, int>,
+     *   parentTreeEntries: array<int, list<string>>,
+     *   nextStructParentId: int
+     * } $taggedPageAnnotationStructure
      * @param array{
      *   entries: list<array{
      *     key: string,
@@ -67,6 +80,7 @@ final readonly class DocumentSerializationPlanBuildState
         public array $imageObjectIds,
         public array $pageAnnotationObjectIds,
         public array $pageAnnotationAppearanceObjectIds,
+        public array $pageAnnotationRelatedObjectIds,
         public array $attachmentObjectIds,
         public array $embeddedFileObjectIds,
         public ?int $acroFormObjectId,
@@ -76,6 +90,7 @@ final readonly class DocumentSerializationPlanBuildState
         public CollectedTaggedStructure $taggedStructure,
         public array $pageStructParentIds,
         public array $taggedLinkStructure,
+        public array $taggedPageAnnotationStructure,
         public array $taggedFormStructure,
         public array $namedDestinations,
         public ?int $outlineRootObjectId,
