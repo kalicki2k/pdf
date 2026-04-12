@@ -12,6 +12,7 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFontDefinition;
@@ -21,6 +22,7 @@ use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 
+use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
 
 use function number_format;
@@ -65,6 +67,83 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         );
         self::assertStringContainsString(
             "BT\n/F1 12 Tf\n" . $this->formatNumber($secondColumnX) . ' ' . $this->formatNumber($firstRowTextY) . ' Td',
+            $page->contents,
+        );
+    }
+
+    public function testItUsesExplicitTablePlacementAndCellPaddingOverrides(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(90.0),
+            TableColumn::fixed(90.0),
+        )
+            ->withPlacement(new TablePlacement(70.0, 180.0))
+            ->withCellPadding(CellPadding::all(4.0))
+            ->withRows(
+                TableRow::fromCells(
+                    TableCell::text('Left')->withPadding(CellPadding::symmetric(10.0, 12.0)),
+                    TableCell::text('Right'),
+                ),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->table($table)
+            ->build();
+
+        $page = $document->pages[0];
+        $font = StandardFontDefinition::from('Helvetica');
+
+        self::assertStringContainsString(
+            '0.5 w' . "\n" . '70 ' . $this->formatNumber($page->contentArea()->top) . ' m',
+            $page->contents,
+        );
+        self::assertStringContainsString(
+            '82 ' . $this->formatNumber($page->contentArea()->top - 10.0 - $font->ascent(12.0)) . ' Td',
+            $page->contents,
+        );
+        self::assertStringContainsString(
+            '164 ' . $this->formatNumber($page->contentArea()->top - 4.0 - $font->ascent(12.0)) . ' Td',
+            $page->contents,
+        );
+    }
+
+    public function testItAppliesHorizontalAlignmentAndCellSpecificBorders(): void
+    {
+        $font = StandardFontDefinition::from('Helvetica');
+        $cellTextWidth = $font->measureTextWidth('7', 12.0);
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )
+            ->withPlacement(new TablePlacement(60.0, 160.0))
+            ->withBorder(Border::none())
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withRows(
+                TableRow::fromCells(
+                    TableCell::text('7')->withHorizontalAlign(TextAlign::RIGHT),
+                    TableCell::text('Border')->withBorder(Border::all(1.0)),
+                ),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->table($table)
+            ->build();
+
+        $page = $document->pages[0];
+        $rightAlignedX = 60.0 + 6.0 + (68.0 - $cellTextWidth);
+
+        self::assertStringContainsString(
+            $this->formatNumber($rightAlignedX) . ' ' . $this->formatNumber($page->contentArea()->top - 6.0 - $font->ascent(12.0)) . ' Td',
+            $page->contents,
+        );
+        self::assertStringContainsString(
+            '1 w' . "\n" . '140 ' . $this->formatNumber($page->contentArea()->top) . ' m',
+            $page->contents,
+        );
+        self::assertStringNotContainsString(
+            '0.5 w' . "\n" . '60 ' . $this->formatNumber($page->contentArea()->top) . ' m',
             $page->contents,
         );
     }

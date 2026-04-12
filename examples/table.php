@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Layout\Table\Border;
@@ -18,6 +19,7 @@ use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
 
 $outputDirectory = __DIR__ . '/../var/examples';
@@ -42,6 +44,7 @@ $table = Table::define(
     TableColumn::fixed(58.0),
     TableColumn::proportional(1.0),
 )
+    ->withPlacement(new TablePlacement(50.0, 320.0))
     ->withCaption(
         TableCaption::text('Tables in pdf2: caption, repeated headers, row headers, spans, backgrounds, vertical alignment, footer and tagged PDF scope')
             ->withTextOptions($captionText)
@@ -52,21 +55,32 @@ $table = Table::define(
     ->withTextOptions($tableText)
     ->withHeaderRows(
         TableRow::fromCells(
-            TableCell::text('Region / Item')->withHeaderScope(TableHeaderScope::BOTH)->withBackgroundColor(Color::hex('#dbeafe')),
-            TableCell::text('Metric')->withBackgroundColor(Color::hex('#dbeafe')),
-            TableCell::text('Notes')->withBackgroundColor(Color::hex('#dbeafe')),
+            TableCell::text('Region / Item')
+                ->withHeaderScope(TableHeaderScope::BOTH)
+                ->withBackgroundColor(Color::hex('#dbeafe'))
+                ->withHorizontalAlign(TextAlign::CENTER),
+            TableCell::text('Metric')
+                ->withBackgroundColor(Color::hex('#dbeafe'))
+                ->withHorizontalAlign(TextAlign::CENTER),
+            TableCell::text('Notes')
+                ->withBackgroundColor(Color::hex('#dbeafe'))
+                ->withHorizontalAlign(TextAlign::CENTER),
         ),
     )
     ->withRepeatedHeaderOnPageBreak()
     ->withRows(
         TableRow::fromCells(
-            TableCell::text('North', rowspan: 2)->withHeaderScope(TableHeaderScope::ROW)->withBackgroundColor(Color::hex('#f8fafc')),
+            TableCell::text('North', rowspan: 2)
+                ->withHeaderScope(TableHeaderScope::ROW)
+                ->withBackgroundColor(Color::hex('#f8fafc'))
+                ->withPadding(CellPadding::symmetric(10.0, 8.0)),
             TableCell::text('Availability'),
-            TableCell::text("Stable overall.\nMinor fluctuations remained below threshold."),
+            TableCell::text("Stable overall.\nMinor fluctuations remained below threshold.")
+                ->withBorder(new Border(1.0, 1.0, 1.0, 1.0)),
         ),
         TableRow::fromCells(
             TableCell::text('Response time'),
-            TableCell::text('Within SLA in all weekly samples.'),
+            TableCell::text('Within SLA in all weekly samples.')->withHorizontalAlign(TextAlign::RIGHT),
         ),
         TableRow::fromCells(
             TableCell::text('North summary')->withHeaderScope(TableHeaderScope::ROW)->withBackgroundColor(Color::hex('#fef3c7')),

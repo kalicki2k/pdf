@@ -7,13 +7,16 @@ namespace Kalle\Pdf\Tests\Layout\Table;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TextFlow;
 use Kalle\Pdf\Font\StandardFontDefinition;
+use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\TableLayoutCalculator;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -110,5 +113,38 @@ final class TableLayoutCalculatorTest extends TestCase
         self::assertGreaterThan(22.0, $layout->rowHeights[1]);
         self::assertSame($layout->cells[0]->height, $layout->cellHeight($layout->cells[0]));
         self::assertSame(1, count($layout->rowGroups));
+    }
+
+    public function testItUsesCellSpecificPaddingBorderAndHorizontalAlignmentDuringLayout(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )
+            ->withCellPadding(CellPadding::all(4.0))
+            ->withBorder(Border::all(0.5))
+            ->withPlacement(new TablePlacement(40.0, 160.0))
+            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withRows(TableRow::fromCells(
+                TableCell::text('Alpha')
+                    ->withPadding(CellPadding::symmetric(8.0, 10.0))
+                    ->withBorder(new Border(1.0, 2.0, 3.0, 4.0))
+                    ->withHorizontalAlign(TextAlign::CENTER),
+                TableCell::text('Beta'),
+            ));
+
+        $layout = (new TableLayoutCalculator())->layoutTable(
+            $table,
+            [80.0, 80.0],
+            new TextFlow(new Page(PageSize::A4())),
+            StandardFontDefinition::from('Helvetica'),
+        );
+
+        self::assertSame(60.0, $layout->cells[0]->contentWidth);
+        self::assertSame(28.0, $layout->cells[0]->height);
+        self::assertEquals(CellPadding::symmetric(8.0, 10.0), $layout->cells[0]->padding);
+        self::assertEquals(new Border(1.0, 2.0, 3.0, 4.0), $layout->cells[0]->border);
+        self::assertSame(TextAlign::CENTER, $layout->cells[0]->textOptions->align);
+        self::assertEquals(CellPadding::all(4.0), $layout->cells[1]->padding);
     }
 }

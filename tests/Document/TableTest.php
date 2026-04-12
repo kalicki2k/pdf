@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use PHPUnit\Framework\TestCase;
 
@@ -79,15 +80,18 @@ final class TableTest extends TestCase
     public function testItStoresCaptionAndFooterRowsExplicitly(): void
     {
         $caption = TableCaption::text('Quarterly overview')->withSpacingAfter(8.0);
+        $placement = new TablePlacement(48.0, 220.0);
         $table = Table::define(
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
         )
             ->withCaption($caption)
+            ->withPlacement($placement)
             ->withRows(TableRow::fromTexts('A', 'B'))
             ->withFooterRows(TableRow::fromTexts('Total', '2'));
 
         self::assertSame($caption, $table->caption);
+        self::assertSame($placement, $table->placement);
         self::assertCount(1, $table->footerRows);
     }
 

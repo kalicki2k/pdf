@@ -12,6 +12,7 @@ use InvalidArgumentException;
 
 use Kalle\Pdf\Document\Table;
 
+use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TextFlow;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
@@ -213,7 +214,7 @@ final class TableLayoutCalculator
         return $rowGroups;
     }
 
-    private function cellTextOptions(TextOptions $options, \Kalle\Pdf\Document\TableCell $cell, float $contentWidth): TextOptions
+    private function cellTextOptions(TextOptions $options, TableCell $cell, float $contentWidth): TextOptions
     {
         return new TextOptions(
             width: $contentWidth,

@@ -32,10 +32,12 @@ final class StructElemTest extends TestCase
             4,
             kidEntries: ['<< /Type /MCR /Pg 3 0 R /MCID 2 >>'],
             scope: 'Row',
+            rowSpan: 2,
+            colSpan: 3,
         );
 
         self::assertSame(
-            '<< /Type /StructElem /S /TH /P 4 0 R /A << /O /Table /Scope /Row >> /K [<< /Type /MCR /Pg 3 0 R /MCID 2 >>] >>',
+            '<< /Type /StructElem /S /TH /P 4 0 R /A << /O /Table /Scope /Row /RowSpan 2 /ColSpan 3 >> /K [<< /Type /MCR /Pg 3 0 R /MCID 2 >>] >>',
             $structElem->objectContents(),
         );
     }
