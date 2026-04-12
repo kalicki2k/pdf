@@ -14,6 +14,8 @@ use InvalidArgumentException;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\Metadata\IccProfile;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\Metadata\XmpMetadata;
@@ -23,6 +25,7 @@ use Kalle\Pdf\Document\TaggedPdf\StructTreeRoot;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Encryption\EncryptDictionaryBuilder;
 use Kalle\Pdf\Encryption\EncryptionProfileResolver;
 use Kalle\Pdf\Encryption\ObjectEncryptor;
@@ -60,6 +63,7 @@ final class DocumentSerializationPlanBuilder
     public function build(Document $document): DocumentSerializationPlan
     {
         $this->assertProfileRequirements($document);
+        $this->assertAttachmentRequirements($document);
         $this->assertImageAccessibilityRequirements($document);
         $this->assertAnnotationRequirements($document);
         $this->assertNamedDestinationRequirements($document);
@@ -89,6 +93,10 @@ final class DocumentSerializationPlanBuilder
         $pageAnnotationObjectIds = [];
         /** @var array<int, list<?int>> $pageAnnotationAppearanceObjectIds */
         $pageAnnotationAppearanceObjectIds = [];
+        /** @var list<int> $attachmentObjectIds */
+        $attachmentObjectIds = [];
+        /** @var list<int> $embeddedFileObjectIds */
+        $embeddedFileObjectIds = [];
 
         foreach ($document->pages as $page) {
             $pageObjectIds[] = $nextObjectId;
@@ -150,10 +158,19 @@ final class DocumentSerializationPlanBuilder
             }
         }
 
+        foreach ($document->attachments as $attachment) {
+            $embeddedFileObjectIds[] = $nextObjectId;
+            $nextObjectId++;
+            $attachmentObjectIds[] = $nextObjectId;
+            $nextObjectId++;
+        }
+
         $taggedImageStructure = $this->collectTaggedFigureStructure($document);
+        $taggedTextStructure = $this->collectTaggedTextStructure($document);
         $taggedTableStructure = $this->collectTaggedTableStructure($document);
         $taggedPageContentKeys = $this->mergeTaggedPageContentKeys(
             $taggedImageStructure['pageMarkedContentKeys'],
+            $taggedTextStructure['pageMarkedContentKeys'],
             $taggedTableStructure['pageMarkedContentKeys'],
         );
         $pageStructParentIds = $this->assignPageStructParentIds($taggedPageContentKeys);
@@ -166,6 +183,8 @@ final class DocumentSerializationPlanBuilder
             : null;
         /** @var array<string, int> $figureStructElemObjectIds */
         $figureStructElemObjectIds = [];
+        /** @var array<string, int> $textStructElemObjectIds */
+        $textStructElemObjectIds = [];
         /** @var array<string, int> $tableStructElemObjectIds */
         $tableStructElemObjectIds = [];
         /** @var array<string, int> $captionStructElemObjectIds */
@@ -181,6 +200,10 @@ final class DocumentSerializationPlanBuilder
 
         foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
             $figureStructElemObjectIds[$figureEntry['key']] = $nextObjectId++;
+        }
+
+        foreach ($taggedTextStructure['textEntries'] as $textEntry) {
+            $textStructElemObjectIds[$textEntry['key']] = $nextObjectId++;
         }
 
         foreach ($document->taggedTables as $taggedTable) {
@@ -250,6 +273,7 @@ final class DocumentSerializationPlanBuilder
                     $iccProfileObjectId,
                     $structTreeRootObjectId,
                     $namedDestinations,
+                    $attachmentObjectIds,
                 ),
             ),
             IndirectObject::plain(
@@ -398,11 +422,30 @@ final class DocumentSerializationPlanBuilder
             );
         }
 
+        foreach ($document->attachments as $attachmentIndex => $attachment) {
+            $embeddedFileObjectId = $embeddedFileObjectIds[$attachmentIndex];
+            $attachmentObjectId = $attachmentObjectIds[$attachmentIndex];
+
+            $objects[] = IndirectObject::stream(
+                $embeddedFileObjectId,
+                $this->buildEmbeddedFileStreamDictionary($attachment),
+                $attachment->embeddedFile->contents,
+            );
+            $objects[] = IndirectObject::plain(
+                $attachmentObjectId,
+                $this->buildFileSpecificationDictionary($document, $attachment, $embeddedFileObjectId),
+            );
+        }
+
         if ($structTreeRootObjectId !== null && $documentStructElemObjectId !== null) {
             $documentKidObjectIds = [];
 
             foreach ($taggedImageStructure['figureEntries'] as $figureEntry) {
                 $documentKidObjectIds[] = $figureStructElemObjectIds[$figureEntry['key']];
+            }
+
+            foreach ($taggedTextStructure['textEntries'] as $textEntry) {
+                $documentKidObjectIds[] = $textStructElemObjectIds[$textEntry['key']];
             }
 
             foreach ($document->taggedTables as $taggedTable) {
@@ -437,6 +480,7 @@ final class DocumentSerializationPlanBuilder
                         fn (string $key): int => $this->taggedPageContentObjectId(
                             $key,
                             $figureStructElemObjectIds,
+                            $textStructElemObjectIds,
                             $captionStructElemObjectIds,
                             $cellStructElemObjectIds,
                         ),
@@ -463,6 +507,18 @@ final class DocumentSerializationPlanBuilder
                         pageObjectId: $pageObjectIds[$figureEntry['pageIndex']],
                         altText: $figureEntry['altText'],
                         markedContentId: $figureEntry['markedContentId'],
+                    ))->objectContents(),
+                );
+            }
+
+            foreach ($taggedTextStructure['textEntries'] as $textEntry) {
+                $objects[] = new IndirectObject(
+                    $textStructElemObjectIds[$textEntry['key']],
+                    (new StructElem(
+                        $textEntry['tag'],
+                        $documentStructElemObjectId,
+                        pageObjectId: $pageObjectIds[$textEntry['pageIndex']],
+                        markedContentId: $textEntry['markedContentId'],
                     ))->objectContents(),
                 );
             }
@@ -767,6 +823,33 @@ final class DocumentSerializationPlanBuilder
             || $document->creatorTool !== null;
     }
 
+    private function assertAttachmentRequirements(Document $document): void
+    {
+        if ($document->attachments === []) {
+            return;
+        }
+
+        if (!$document->profile->supportsEmbeddedFileAttachments()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow embedded file attachments.',
+                $document->profile->name(),
+            ));
+        }
+
+        foreach ($document->attachments as $attachmentIndex => $attachment) {
+            if (
+                $this->resolvedAssociatedFileRelationship($document, $attachment) !== null
+                && !$document->profile->supportsAssociatedFiles()
+            ) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s does not allow associated files for attachment %d.',
+                    $document->profile->name(),
+                    $attachmentIndex + 1,
+                ));
+            }
+        }
+    }
+
     private function usesMetadataStream(Document $document): bool
     {
         if (!$document->profile->supportsXmpMetadata()) {
@@ -813,6 +896,7 @@ final class DocumentSerializationPlanBuilder
 
     /**
      * @param array<string, string> $namedDestinations
+     * @param list<int> $attachmentObjectIds
      */
     private function buildCatalogDictionary(
         Document $document,
@@ -820,6 +904,7 @@ final class DocumentSerializationPlanBuilder
         ?int $iccProfileObjectId,
         ?int $structTreeRootObjectId,
         array $namedDestinations,
+        array $attachmentObjectIds,
     ): string {
         $entries = [
             '/Type /Catalog',
@@ -862,6 +947,19 @@ final class DocumentSerializationPlanBuilder
             $entries[] = '/Dests << ' . implode(' ', $destEntries) . ' >>';
         }
 
+        if ($attachmentObjectIds !== []) {
+            $entries[] = '/Names ' . $this->buildEmbeddedFilesNameDictionary($document, $attachmentObjectIds);
+        }
+
+        $associatedFileObjectIds = $this->associatedFileObjectIds($document, $attachmentObjectIds);
+
+        if ($associatedFileObjectIds !== []) {
+            $entries[] = '/AF [' . implode(' ', array_map(
+                static fn (int $objectId): string => $objectId . ' 0 R',
+                $associatedFileObjectIds,
+            )) . ']';
+        }
+
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
@@ -902,6 +1000,97 @@ final class DocumentSerializationPlanBuilder
     }
 
     /**
+     * @param list<int> $attachmentObjectIds
+     */
+    private function buildEmbeddedFilesNameDictionary(Document $document, array $attachmentObjectIds): string
+    {
+        $entries = [];
+
+        foreach ($document->attachments as $attachmentIndex => $attachment) {
+            $entries[] = $this->pdfString($attachment->filename);
+            $entries[] = $attachmentObjectIds[$attachmentIndex] . ' 0 R';
+        }
+
+        return '<< /EmbeddedFiles << /Names [' . implode(' ', $entries) . '] >> >>';
+    }
+
+    private function buildEmbeddedFileStreamDictionary(FileAttachment $attachment): string
+    {
+        $size = $attachment->embeddedFile->size();
+        $entries = [
+            '/Type /EmbeddedFile',
+            '/Length ' . $size,
+            '/Params << /Size ' . $size . ' >>',
+        ];
+
+        if ($attachment->embeddedFile->mimeType !== null) {
+            $entries[] = '/Subtype /' . $this->pdfName($attachment->embeddedFile->mimeType);
+        }
+
+        return '<< ' . implode(' ', $entries) . ' >>';
+    }
+
+    private function buildFileSpecificationDictionary(
+        Document $document,
+        FileAttachment $attachment,
+        int $embeddedFileObjectId,
+    ): string {
+        $entries = [
+            '/Type /Filespec',
+            '/F ' . $this->pdfString($attachment->filename),
+            '/UF ' . $this->pdfString($attachment->filename),
+            '/EF << /F ' . $embeddedFileObjectId . ' 0 R /UF ' . $embeddedFileObjectId . ' 0 R >>',
+        ];
+
+        if ($attachment->description !== null && $attachment->description !== '') {
+            $entries[] = '/Desc ' . $this->pdfString($attachment->description);
+        }
+
+        $relationship = $this->resolvedAssociatedFileRelationship($document, $attachment);
+
+        if ($relationship !== null) {
+            $entries[] = '/AFRelationship /' . $relationship->value;
+        }
+
+        return '<< ' . implode(' ', $entries) . ' >>';
+    }
+
+    /**
+     * @param list<int> $attachmentObjectIds
+     * @return list<int>
+     */
+    private function associatedFileObjectIds(Document $document, array $attachmentObjectIds): array
+    {
+        $associatedFileObjectIds = [];
+
+        foreach ($document->attachments as $attachmentIndex => $attachment) {
+            if ($this->resolvedAssociatedFileRelationship($document, $attachment) === null) {
+                continue;
+            }
+
+            $associatedFileObjectIds[] = $attachmentObjectIds[$attachmentIndex];
+        }
+
+        return $associatedFileObjectIds;
+    }
+
+    private function resolvedAssociatedFileRelationship(
+        Document $document,
+        FileAttachment $attachment,
+    ): ?AssociatedFileRelationship {
+        if ($attachment->associatedFileRelationship !== null) {
+            return $attachment->associatedFileRelationship;
+        }
+
+        // PDF/A-3 and PDF/A-4f attachments default to associated files with AFRelationship /Data.
+        if ($document->profile->defaultsAttachmentRelationshipToData()) {
+            return AssociatedFileRelationship::DATA;
+        }
+
+        return null;
+    }
+
+    /**
      * @return array{
      *   figureEntries: list<array{key: string, pageIndex: int, markedContentId: int, altText: ?string}>,
      *   pageMarkedContentKeys: array<int, array<int, string>>
@@ -931,6 +1120,34 @@ final class DocumentSerializationPlanBuilder
 
         return [
             'figureEntries' => $figureEntries,
+            'pageMarkedContentKeys' => $pageMarkedContentKeys,
+        ];
+    }
+
+    /**
+     * @return array{
+     *   textEntries: list<array{key: string, tag: string, pageIndex: int, markedContentId: int}>,
+     *   pageMarkedContentKeys: array<int, array<int, string>>
+     * }
+     */
+    private function collectTaggedTextStructure(Document $document): array
+    {
+        $textEntries = [];
+        $pageMarkedContentKeys = [];
+
+        foreach ($document->taggedTextBlocks as $index => $textBlock) {
+            $key = $this->taggedTextKey($index, $textBlock);
+            $pageMarkedContentKeys[$textBlock->pageIndex][$textBlock->markedContentId] = $key;
+            $textEntries[] = [
+                'key' => $key,
+                'tag' => $textBlock->tag,
+                'pageIndex' => $textBlock->pageIndex,
+                'markedContentId' => $textBlock->markedContentId,
+            ];
+        }
+
+        return [
+            'textEntries' => $textEntries,
             'pageMarkedContentKeys' => $pageMarkedContentKeys,
         ];
     }
@@ -968,25 +1185,26 @@ final class DocumentSerializationPlanBuilder
     }
 
     /**
-     * @param array<int, array<int, string>> $left
-     * @param array<int, array<int, string>> $right
+     * @param array<int, array<int, string>> ...$pageMarkedContentKeySets
      * @return array<int, array<int, string>>
      */
-    private function mergeTaggedPageContentKeys(array $left, array $right): array
+    private function mergeTaggedPageContentKeys(array ...$pageMarkedContentKeySets): array
     {
-        $merged = $left;
+        $merged = [];
 
-        foreach ($right as $pageIndex => $pageKeys) {
-            foreach ($pageKeys as $markedContentId => $key) {
-                if (isset($merged[$pageIndex][$markedContentId])) {
-                    throw new InvalidArgumentException(sprintf(
-                        'Duplicate marked-content id %d on page %d.',
-                        $markedContentId,
-                        $pageIndex + 1,
-                    ));
+        foreach ($pageMarkedContentKeySets as $pageMarkedContentKeys) {
+            foreach ($pageMarkedContentKeys as $pageIndex => $pageKeys) {
+                foreach ($pageKeys as $markedContentId => $key) {
+                    if (isset($merged[$pageIndex][$markedContentId])) {
+                        throw new InvalidArgumentException(sprintf(
+                            'Duplicate marked-content id %d on page %d.',
+                            $markedContentId,
+                            $pageIndex + 1,
+                        ));
+                    }
+
+                    $merged[$pageIndex][$markedContentId] = $key;
                 }
-
-                $merged[$pageIndex][$markedContentId] = $key;
             }
         }
 
@@ -1179,6 +1397,11 @@ final class DocumentSerializationPlanBuilder
         return 'table:' . $tableId . ':caption';
     }
 
+    private function taggedTextKey(int $index, TaggedTextBlock $textBlock): string
+    {
+        return 'text:' . $index . ':' . $textBlock->tag . ':' . $textBlock->pageIndex . ':' . $textBlock->markedContentId;
+    }
+
     private function taggedTableSectionKey(int $tableId, string $section): string
     {
         return 'table:' . $tableId . ':' . $section . ':section';
@@ -1205,16 +1428,19 @@ final class DocumentSerializationPlanBuilder
 
     /**
      * @param array<string, int> $figureStructElemObjectIds
+     * @param array<string, int> $textStructElemObjectIds
      * @param array<string, int> $captionStructElemObjectIds
      * @param array<string, int> $cellStructElemObjectIds
      */
     private function taggedPageContentObjectId(
         string $key,
         array $figureStructElemObjectIds,
+        array $textStructElemObjectIds,
         array $captionStructElemObjectIds,
         array $cellStructElemObjectIds,
     ): int {
         return $figureStructElemObjectIds[$key]
+            ?? $textStructElemObjectIds[$key]
             ?? $captionStructElemObjectIds[$key]
             ?? $cellStructElemObjectIds[$key]
             ?? throw new InvalidArgumentException("Unknown tagged page content key '$key'.");

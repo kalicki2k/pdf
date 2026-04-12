@@ -56,6 +56,8 @@ interface DocumentBuilder
 
     public function paragraph(string $text, ?TextOptions $options = null): self;
 
+    public function heading(string $text, int $level = 1, ?TextOptions $options = null): self;
+
     public function table(Table $table): self;
 
     public function image(ImageSource $source, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;

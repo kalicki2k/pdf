@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
@@ -25,10 +27,16 @@ final readonly class Document
     public ?Encryption $encryption;
     /** @var list<TaggedTable> */
     public array $taggedTables;
+    /** @var list<TaggedTextBlock> */
+    public array $taggedTextBlocks;
+    /** @var list<FileAttachment> */
+    public array $attachments;
 
     /**
      * @param list<Page>|null $pages
      * @param list<TaggedTable>|null $taggedTables
+     * @param list<TaggedTextBlock>|null $taggedTextBlocks
+     * @param list<FileAttachment>|null $attachments
      */
     public function __construct(
         ?Profile $profile = null,
@@ -42,6 +50,8 @@ final readonly class Document
         ?PdfAOutputIntent $pdfaOutputIntent = null,
         ?Encryption $encryption = null,
         ?array $taggedTables = null,
+        ?array $taggedTextBlocks = null,
+        ?array $attachments = null,
     ) {
         $this->profile = $profile ?? Profile::standard();
         $this->pages = $pages ?? [new Page(PageSize::A4())];
@@ -54,6 +64,8 @@ final readonly class Document
         $this->pdfaOutputIntent = $pdfaOutputIntent;
         $this->encryption = $encryption;
         $this->taggedTables = $taggedTables ?? [];
+        $this->taggedTextBlocks = $taggedTextBlocks ?? [];
+        $this->attachments = $attachments ?? [];
     }
 
     public function version(): float

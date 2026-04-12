@@ -281,6 +281,7 @@ make verapdf-version
 make validate-pdfa PDF=var/example.pdf
 make validate-pdfua PDF=var/example.pdf
 make test-pdfa1b-regression
+make test-pdfa1a-regression
 make check-pdf PDF=var/example.pdf
 ```
 
@@ -290,6 +291,7 @@ Alternativ direkt über die Skripte:
 bin/validate-pdfa.sh var/example.pdf
 bin/validate-pdfua.sh var/example.pdf
 bin/test-pdfa1b-regression.sh
+bin/test-pdfa1a-regression.sh
 ```
 
 Compose-Services starten:

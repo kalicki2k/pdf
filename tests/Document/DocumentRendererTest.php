@@ -7,7 +7,10 @@ namespace Kalle\Pdf\Tests\Document;
 use function dirname;
 
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Document\Attachment\EmbeddedFile;
+use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentRenderer;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
@@ -161,6 +164,43 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Nums [0 [', $pdf);
     }
 
+    public function testItRendersTaggedPdfA1aTextStructure(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->heading('Einleitung Привет', 1, new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->paragraph('Erster Absatz mit strukturiertem Inhalt. Привет.', new TextOptions(
+                x: 72,
+                y: 720,
+                width: 320,
+                fontSize: 12,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/StructTreeRoot', $pdf);
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $pdf);
+        self::assertStringContainsString('/H1 << /MCID 0 >> BDC', $pdf);
+        self::assertStringContainsString('/P << /MCID 1 >> BDC', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /H1', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
+    }
+
     public function testItRendersLinkAnnotations(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -178,6 +218,31 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Subtype /Link', $pdf);
         self::assertStringContainsString('/A << /S /URI /URI (https://example.com) >>', $pdf);
         self::assertStringContainsString('/Contents (Open Example)', $pdf);
+    }
+
+    public function testItRendersEmbeddedFileAttachments(): void
+    {
+        $document = new Document(
+            attachments: [
+                new FileAttachment(
+                    'demo.txt',
+                    new EmbeddedFile('hello', 'text/plain'),
+                    'Demo attachment',
+                ),
+            ],
+        );
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Names << /EmbeddedFiles << /Names [(demo.txt) 6 0 R] >> >>', $pdf);
+        self::assertStringContainsString('<< /Type /EmbeddedFile /Length 5 /Params << /Size 5 >> /Subtype /text#2Fplain >>', $pdf);
+        self::assertStringContainsString('/Type /Filespec /F (demo.txt) /UF (demo.txt)', $pdf);
+        self::assertStringContainsString('/Desc (Demo attachment)', $pdf);
     }
 
     public function testItRendersTextAnnotations(): void
@@ -412,9 +477,10 @@ final class DocumentRendererTest extends TestCase
 
         $pdf = $output->contents();
 
-        self::assertStringContainsString('/Link << /MCID 0 >> BDC', $pdf);
-        self::assertStringContainsString('/StructParent 0', $pdf);
-        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj', $pdf);
+        self::assertStringContainsString('/P << /MCID 0 >> BDC', $pdf);
+        self::assertStringContainsString('/Link << /MCID 1 >> BDC', $pdf);
+        self::assertStringContainsString('/StructParent 1', $pdf);
+        self::assertStringContainsString('/K [1 << /Type /OBJR /Obj', $pdf);
     }
 
     public function testItRendersMultipleTextSegmentLinks(): void

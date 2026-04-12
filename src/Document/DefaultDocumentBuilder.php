@@ -16,6 +16,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 
@@ -94,6 +95,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private int $currentPageNextMarkedContentId = 0;
     /** @var array<int, array{captionReferences: list<array{pageIndex: int, markedContentId: int}>, headerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>, bodyRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>, footerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>}> */
     private array $taggedTables = [];
+    /** @var list<array{tag: string, pageIndex: int, markedContentId: int}> */
+    private array $taggedTextBlocks = [];
     private int $nextTaggedTableId = 0;
     private ?Margin $currentPageMargin = null;
     private ?float $currentPageCursorY = null;
@@ -216,43 +219,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     public function text(string $text, ?TextOptions $options = null): DocumentBuilder
     {
-        $clone = clone $this;
-        $options ??= new TextOptions();
-        $font = $options->embeddedFont !== null
-            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
-            : StandardFontDefinition::from($options->fontName);
-        $textFlow = $clone->textFlow();
-        $placement = $textFlow->placement($options, $font);
-        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
-        $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
-        $renderState = $clone->prepareTextRenderState($text, $options, $font, $shapedLines);
-
-        $textResult = $this->buildWrappedTextContent(
-            $wrappedLines,
-            $shapedLines,
-            $options,
-            $textFlow,
-            $placement['x'],
-            $placement['y'],
-            $renderState['fontAlias'],
-            $font,
-            $renderState['embeddedPageFont'],
-            $renderState['useHexString'],
-            ($this->profile ?? Profile::standard())->version(),
-        );
-        $clone->currentPageContents = $this->appendPageContent(
-            $clone->currentPageContents,
-            $textResult['contents'],
-        );
-        $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
-        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedLines));
-
-        return $clone;
+        return $this->renderTextBlock($text, $options, $this->defaultTaggedTextTag());
     }
 
     public function paragraph(string $text, ?TextOptions $options = null): DocumentBuilder
     {
-        return $this->text($text, $options);
+        return $this->renderTextBlock($text, $options, 'P');
+    }
+
+    public function heading(string $text, int $level = 1, ?TextOptions $options = null): DocumentBuilder
+    {
+        if ($level < 1 || $level > 6) {
+            throw new InvalidArgumentException('Heading level must be between 1 and 6.');
+        }
+
+        return $this->renderTextBlock($text, $options, 'H' . $level);
     }
 
     public function textSegments(array $segments, ?TextOptions $options = null): DocumentBuilder
@@ -275,6 +256,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $placement = $textFlow->placement($options, $font);
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, []);
+        $markedContentTag = $clone->defaultTaggedTextTag();
+        $markedContentId = $markedContentTag !== null ? $clone->nextMarkedContentId() : null;
         $textResult = $clone->buildWrappedTextSegmentsContent(
             $wrappedSegmentLines,
             $options,
@@ -286,6 +269,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $renderState['embeddedPageFont'],
             $renderState['useHexString'],
             ($this->profile ?? Profile::standard())->version(),
+            $markedContentTag,
+            $markedContentId,
         );
 
         $clone->currentPageContents = $this->appendPageContent(
@@ -294,6 +279,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
         $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
         $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedSegmentLines));
+        if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
+            $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
+        }
 
         return $clone;
     }
@@ -995,6 +983,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             pdfaOutputIntent: $this->pdfaOutputIntent,
             encryption: $this->encryption,
             taggedTables: $this->buildTaggedTables(),
+            taggedTextBlocks: $this->buildTaggedTextBlocks(),
         );
     }
 
@@ -2261,6 +2250,81 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $taggedTables;
+    }
+
+    /**
+     * @return list<TaggedTextBlock>
+     */
+    private function buildTaggedTextBlocks(): array
+    {
+        return array_map(
+            static fn (array $block): TaggedTextBlock => new TaggedTextBlock(
+                tag: $block['tag'],
+                pageIndex: $block['pageIndex'],
+                markedContentId: $block['markedContentId'],
+            ),
+            $this->taggedTextBlocks,
+        );
+    }
+
+    private function registerTaggedTextBlock(string $tag, int $markedContentId): void
+    {
+        $this->taggedTextBlocks[] = [
+            'tag' => $tag,
+            'pageIndex' => count($this->pages),
+            'markedContentId' => $markedContentId,
+        ];
+    }
+
+    private function defaultTaggedTextTag(): ?string
+    {
+        return ($this->profile ?? Profile::standard())->requiresTaggedPdf() ? 'P' : null;
+    }
+
+    private function renderTextBlock(string $text, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
+    {
+        $clone = clone $this;
+        $options ??= new TextOptions();
+        $font = $options->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
+            : StandardFontDefinition::from($options->fontName);
+        $textFlow = $clone->textFlow();
+        $placement = $textFlow->placement($options, $font);
+        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
+        $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
+        $renderState = $clone->prepareTextRenderState($text, $options, $font, $shapedLines);
+        $markedContentTag = $taggedTextTag !== null && ($clone->profile ?? Profile::standard())->requiresTaggedPdf()
+            ? $taggedTextTag
+            : null;
+        $markedContentId = $markedContentTag !== null ? $clone->nextMarkedContentId() : null;
+
+        $textResult = $clone->buildWrappedTextContent(
+            $wrappedLines,
+            $shapedLines,
+            $options,
+            $textFlow,
+            $placement['x'],
+            $placement['y'],
+            $renderState['fontAlias'],
+            $font,
+            $renderState['embeddedPageFont'],
+            $renderState['useHexString'],
+            ($this->profile ?? Profile::standard())->version(),
+            $markedContentTag,
+            $markedContentId,
+        );
+        $clone->currentPageContents = $this->appendPageContent(
+            $clone->currentPageContents,
+            $textResult['contents'],
+        );
+        $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
+        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedLines));
+
+        if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
+            $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
+        }
+
+        return $clone;
     }
 
     /**

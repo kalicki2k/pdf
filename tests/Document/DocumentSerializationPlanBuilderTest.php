@@ -6,6 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Attachment\EmbeddedFile;
+use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
@@ -115,6 +118,94 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertFalse($objects[4]->encryptable);
         self::assertStringStartsWith('<< /Filter /Standard /V 2 /R 3 /Length 128 /P -4 /O <', $objects[4]->contents);
         self::assertStringContainsString('/R 3 /Length 128 /P -4', $objects[4]->contents);
+    }
+
+    public function testItBuildsEmbeddedFileObjectsAndCatalogEntries(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            attachments: [
+                new FileAttachment(
+                    'demo.txt',
+                    new EmbeddedFile('hello', 'text/plain'),
+                    'Demo attachment',
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles << /Names [(demo.txt) 6 0 R] >> >> >>',
+            $objects[0]->contents,
+        );
+        self::assertSame(5, $objects[4]->objectId);
+        self::assertSame(
+            "<< /Type /EmbeddedFile /Length 5 /Params << /Size 5 >> /Subtype /text#2Fplain >>\nstream\nhello\nendstream",
+            $objects[4]->contents,
+        );
+        self::assertSame(
+            '<< /Type /Filespec /F (demo.txt) /UF (demo.txt) /EF << /F 5 0 R /UF 5 0 R >> /Desc (Demo attachment) >>',
+            $objects[5]->contents,
+        );
+    }
+
+    public function testItDefaultsPdfA3AttachmentsToAssociatedFiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA3b(),
+            attachments: [
+                new FileAttachment(
+                    'data.xml',
+                    new EmbeddedFile('<root/>', 'application/xml'),
+                    'Machine-readable source',
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/AF [6 0 R]', $objects[0]->contents);
+        self::assertStringContainsString('/AFRelationship /Data', $objects[5]->contents);
+    }
+
+    public function testItRejectsEmbeddedFileAttachmentsForUnsupportedProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA2u(),
+            attachments: [
+                new FileAttachment('demo.txt', new EmbeddedFile('hello')),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-2u does not allow embedded file attachments.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsAssociatedFilesForUnsupportedProfiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdf17(),
+            attachments: [
+                new FileAttachment(
+                    'data.xml',
+                    new EmbeddedFile('<root/>', 'application/xml'),
+                    associatedFileRelationship: AssociatedFileRelationship::DATA,
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile standard does not allow associated files for attachment 1.');
+
+        $builder->build($document);
     }
 
     public function testItBuildsPageObjectsForAllDocumentPages(): void
@@ -669,9 +760,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             iterator_to_array($plan->objects),
         ));
 
-        self::assertStringContainsString('/Link << /MCID 0 >> BDC', $serialized);
-        self::assertStringContainsString('/StructParent 0', $serialized);
-        self::assertStringContainsString('/K [0 << /Type /OBJR /Obj', $serialized);
+        self::assertStringContainsString('/P << /MCID 0 >> BDC', $serialized);
+        self::assertStringContainsString('/Link << /MCID 1 >> BDC', $serialized);
+        self::assertStringContainsString('/StructParent 1', $serialized);
+        self::assertStringContainsString('/K [1 << /Type /OBJR /Obj', $serialized);
     }
 
     public function testItAddsMultipleTextSegmentLinksToSerialization(): void
@@ -898,6 +990,35 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame('<< /Type /StructTreeRoot /K [6 0 R] >>', $objects[4]->contents);
         self::assertSame('<< /Type /StructElem /S /Document /P 5 0 R /K [] >>', $objects[5]->contents);
         self::assertStringContainsString('<pdfuaid:part>1</pdfuaid:part>', $objects[6]->contents);
+    }
+
+    public function testItAddsTaggedPdfA1aTextStructure(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->heading('Einleitung Привет', 1, new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->paragraph('Absatztext Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $serialized);
+        self::assertStringContainsString('/H1 << /MCID 0 >> BDC', $serialized);
+        self::assertStringContainsString('/P << /MCID 1 >> BDC', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /H1', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /P', $serialized);
+        self::assertStringContainsString('/Nums [0 [', $serialized);
     }
 
     public function testItAddsPdfAOutputIntentAndIdentificationMetadata(): void

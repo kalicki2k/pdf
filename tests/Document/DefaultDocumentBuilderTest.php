@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Version;
 use Kalle\Pdf\Drawing\Units;
+use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
@@ -191,6 +192,27 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertNull($document->pages[0]->images[1]->markedContentId);
         self::assertStringContainsString("/Figure << /MCID 0 >> BDC\nq\n120 0 0 60 40 500 cm\n/Im1 Do\nQ\nEMC", $document->pages[0]->contents);
         self::assertStringContainsString("/Artifact BMC\nq\n120 0 0 60 40 420 cm\n/Im1 Do\nQ\nEMC", $document->pages[0]->contents);
+    }
+
+    public function testItWrapsTaggedPdfTextBlocksInMarkedContent(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->heading('Einleitung Привет', 1, new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->paragraph('Absatztext Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        self::assertCount(2, $document->taggedTextBlocks);
+        self::assertSame('H1', $document->taggedTextBlocks[0]->tag);
+        self::assertSame('P', $document->taggedTextBlocks[1]->tag);
+        self::assertStringContainsString("/H1 << /MCID 0 >> BDC\nBT", $document->pages[0]->contents);
+        self::assertStringContainsString("/P << /MCID 1 >> BDC\nBT", $document->pages[0]->contents);
     }
 
     public function testItAddsLinkAnnotationsToTheCurrentPage(): void
