@@ -205,22 +205,36 @@ $document = DefaultDocumentBuilder::make()
 
 Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Fuer explizitere Inline-Link-Spans steht `TextLink` zur Verfuegung, damit sichtbarer Text, Annotation-`/Contents`, PDF/UA-Alternativtext und Gruppierung getrennt steuerbar bleiben.
 
-Dokumentweite PDF-Outlines/Bookmarks werden ebenfalls unterstuetzt. Neben Top-Level-Bookmarks koennen Outlines jetzt auch explizit verschachtelt werden. Ziele verwenden explizite Ziele auf Seiten oder Seitenpositionen.
+Dokumentweite PDF-Outlines/Bookmarks werden ebenfalls unterstuetzt. Neben Top-Level-Bookmarks koennen Outlines explizit verschachtelt, offen oder geschlossen markiert und mit Stilinformationen versehen werden. Zusaetzlich zu `XYZ` werden auch `Fit`, `FitH`, `FitR`, benannte Ziele sowie lokale und externe `GoTo`-Actions unterstuetzt.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Outline;
+use Kalle\Pdf\Document\OutlineStyle;
+use Kalle\Pdf\Color\Color;
 
 $document = DefaultDocumentBuilder::make()
+    ->namedDestination('intro')
     ->outline('Start')
     ->text('Seite 1')
     ->newPage()
     ->outlineAt('Kapitel 1', 2)
-    ->outlineAtLevel('Abschnitt 1.1', 2, 2, 72, 640)
+    ->outlineChild('Abschnitt 1.1')
+    ->outlineSiblingClosed('Abschnitt 1.2')
+    ->addOutline(
+        Outline::fitHorizontal('Anhang', 3, 720)
+            ->withStyle((new OutlineStyle())->withColor(Color::hex('#1d4ed8'))->withBold())
+            ->asGoToAction(),
+    )
+    ->addOutline(Outline::named('Einleitung', 'intro', 1))
+    ->addOutline(Outline::fit('Externes PDF', 4)->withDestination(
+        Outline::fit('Externes PDF', 4)->destination->asRemoteGoTo('appendix.pdf', true),
+    ))
     ->text('Seite 2')
     ->build();
 ```
 
-Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen.
+Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen. Dasselbe Muster deckt inzwischen auch weitere Markup- und Geometrie-Typen wie `Underline`, `StrikeOut`, `Squiggly`, `Stamp`, `Square`, `Circle`, `Caret`, `Ink`, `Line`, `PolyLine` und `Polygon` ab.
 
 Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation mit festem Rechteck und eigenem `/AP`-Stream, die sich damit auch fuer den aktuellen PDF/A-2u-Pfad eignet. Dasselbe gilt jetzt fuer eine schlanke `Highlight`-Annotation mit festen `QuadPoints` und fuer `FreeText`, das seinen Appearance-Stream mit dem verwendeten Seitenfont rendert.
 
@@ -278,6 +292,25 @@ $document = DefaultDocumentBuilder::make()
         contents: 'Markierung',
         title: 'QA',
     ))
+    ->underlineAnnotation(40, 400, 120, 12, \Kalle\Pdf\Color\Color::rgb(1, 0, 0), 'Unterstrichen', 'QA')
+    ->squareAnnotationWithOptions(40, 350, 140, 36, new \Kalle\Pdf\Page\ShapeAnnotationOptions(
+        borderColor: \Kalle\Pdf\Color\Color::rgb(0.8, 0.1, 0.1),
+        fillColor: \Kalle\Pdf\Color\Color::rgb(1, 0.98, 0.9),
+        borderStyle: \Kalle\Pdf\Page\AnnotationBorderStyle::dashed(1.5),
+        contents: 'Bereichshinweis',
+        title: 'QA',
+        subject: 'Freigabebereich',
+    ))
+    ->lineAnnotationWithOptions(40, 310, 180, 330, new \Kalle\Pdf\Page\LineAnnotationOptions(
+        color: \Kalle\Pdf\Color\Color::rgb(0, 0.2, 0.8),
+        startStyle: \Kalle\Pdf\Page\LineEndingStyle::CIRCLE,
+        endStyle: \Kalle\Pdf\Page\LineEndingStyle::CLOSED_ARROW,
+        metadata: new \Kalle\Pdf\Page\AnnotationMetadata(
+            contents: 'Verweislinie',
+            title: 'QA',
+            subject: 'Pruefpfad',
+        ),
+    ))
     ->freeTextAnnotation(
         'Kommentar im Dokument',
         40,
@@ -305,6 +338,8 @@ $document = DefaultDocumentBuilder::make()
     )
     ->build();
 ```
+
+`Popup`-Annotationen und seitengebundene `FileAttachment`-Annotationen aus dem Altprojekt sind in `pdf2` noch nicht uebernommen. Beide Faelle brauchen in der aktuellen Architektur zusaetzliche Related-Object-Verkabelung ueber mehrere PDF-Objekte; statt einer halb portierten Sonderloesung bleiben sie deshalb vorerst explizite Folgearbeit.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -606,6 +641,7 @@ make test-pdfa1a-list-regression
 make test-pdfa1a-table-regression
 make test-pdfa1a-mixed-regression
 make test-pdfa1a-multipage-regression
+make test-pdfa1a-negative-regressions
 make check-pdf PDF=var/example.pdf
 ```
 
@@ -621,6 +657,7 @@ bin/test-pdfa1a-list-regression.sh
 bin/test-pdfa1a-table-regression.sh
 bin/test-pdfa1a-mixed-regression.sh
 bin/test-pdfa1a-multipage-regression.sh
+bin/test-pdfa1a-negative-regressions.sh
 ```
 
 Compose-Services starten:

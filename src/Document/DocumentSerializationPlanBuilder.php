@@ -34,6 +34,7 @@ final class DocumentSerializationPlanBuilder
         private readonly StandardSecurityHandler $standardSecurityHandler = new StandardSecurityHandler(),
         private readonly EncryptDictionaryBuilder $encryptDictionaryBuilder = new EncryptDictionaryBuilder(),
         private readonly DocumentSerializationPlanValidator $validator = new DocumentSerializationPlanValidator(),
+        private readonly PdfA1aTaggedStructureValidator $pdfA1aTaggedStructureValidator = new PdfA1aTaggedStructureValidator(),
         private readonly DocumentSerializationPlanObjectIdAllocator $objectIdAllocator = new DocumentSerializationPlanObjectIdAllocator(),
         private readonly DocumentPageAndFormObjectBuilder $pageAndFormObjectBuilder = new DocumentPageAndFormObjectBuilder(),
         private readonly DocumentFontAndImageObjectBuilder $fontAndImageObjectBuilder = new DocumentFontAndImageObjectBuilder(),
@@ -130,6 +131,7 @@ final class DocumentSerializationPlanBuilder
 
         $taggedPdfObjects = $this->taggedPdfObjectBuilder->buildObjects($document, $state);
         $objects = [...$objects, ...$taggedPdfObjects];
+        $this->pdfA1aTaggedStructureValidator->assertValid($document, $state, $objects);
 
         $metadataObjects = $this->metadataObjectBuilder->buildObjects($document, $state, $serializedAt, $encryptObjectContents);
         $objects = [...$objects, ...$metadataObjects];

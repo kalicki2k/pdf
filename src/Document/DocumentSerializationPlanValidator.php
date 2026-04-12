@@ -28,12 +28,14 @@ final class DocumentSerializationPlanValidator
         private readonly DocumentAttachmentRelationshipResolver $attachmentRelationshipResolver = new DocumentAttachmentRelationshipResolver(),
         private readonly PdfAColorPolicyValidator $pdfAColorPolicyValidator = new PdfAColorPolicyValidator(),
         private readonly PdfALowLevelPolicyValidator $pdfALowLevelPolicyValidator = new PdfALowLevelPolicyValidator(),
+        private readonly PdfA1aSupportedStructureValidator $pdfA1aSupportedStructureValidator = new PdfA1aSupportedStructureValidator(),
     ) {
     }
 
     public function assertBuildable(Document $document): void
     {
         $this->assertProfileRequirements($document);
+        $this->pdfA1aSupportedStructureValidator->assertSupported($document);
         $this->assertTaggedStructureRequirements($document);
         $this->assertAttachmentRequirements($document);
         $this->assertAcroFormRequirements($document);
@@ -201,31 +203,45 @@ final class DocumentSerializationPlanValidator
     {
         $pageCount = count($document->pages);
         $previousLevel = null;
+        $namedDestinations = [];
+
+        foreach ($document->pages as $page) {
+            foreach ($page->namedDestinations as $destination) {
+                $namedDestinations[$destination->name] = true;
+            }
+        }
 
         foreach ($document->outlines as $outlineIndex => $outline) {
-            if ($outline->pageNumber <= $pageCount) {
-                if ($outlineIndex === 0 && $outline->level !== 1) {
-                    throw new InvalidArgumentException('The first outline must use level 1.');
-                }
-
-                if ($previousLevel !== null && $outline->level > ($previousLevel + 1)) {
+            if ($outline->destination->isNamed() && !$outline->destination->isRemote()) {
+                if (!isset($namedDestinations[$outline->destination->namedDestination ?? ''])) {
                     throw new InvalidArgumentException(sprintf(
-                        'Outline %d uses level %d, but outline nesting may only increase by one level at a time.',
+                        'Outline %d references unknown named destination "%s".',
                         $outlineIndex + 1,
-                        $outline->level,
+                        $outline->destination->namedDestination ?? '',
                     ));
                 }
-
-                $previousLevel = $outline->level;
-                continue;
+            } elseif (!$outline->destination->isRemote() && $outline->pageNumber > $pageCount) {
+                throw new InvalidArgumentException(sprintf(
+                    'Outline %d references page %d, but the document only has %d page(s).',
+                    $outlineIndex + 1,
+                    $outline->pageNumber,
+                    $pageCount,
+                ));
             }
 
-            throw new InvalidArgumentException(sprintf(
-                'Outline %d references page %d, but the document only has %d page(s).',
-                $outlineIndex + 1,
-                $outline->pageNumber,
-                $pageCount,
-            ));
+            if ($outlineIndex === 0 && $outline->level !== 1) {
+                throw new InvalidArgumentException('The first outline must use level 1.');
+            }
+
+            if ($previousLevel !== null && $outline->level > ($previousLevel + 1)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Outline %d uses level %d, but outline nesting may only increase by one level at a time.',
+                    $outlineIndex + 1,
+                    $outline->level,
+                ));
+            }
+
+            $previousLevel = $outline->level;
         }
     }
 

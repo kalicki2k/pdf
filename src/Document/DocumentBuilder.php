@@ -8,8 +8,10 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Debug\DebugConfig;
 use Kalle\Pdf\Debug\DebugSink;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\Path;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Encryption\Encryption;
@@ -18,6 +20,7 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\CaretAnnotationOptions;
+use Kalle\Pdf\Page\FileAttachmentAnnotationOptions;
 use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotationOptions;
 use Kalle\Pdf\Page\InkAnnotationOptions;
@@ -28,6 +31,7 @@ use Kalle\Pdf\Page\MarkupAnnotationOptions;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
+use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\PolyLineAnnotationOptions;
 use Kalle\Pdf\Page\ShapeAnnotationOptions;
 use Kalle\Pdf\Page\StampAnnotationOptions;
@@ -118,7 +122,14 @@ interface DocumentBuilder
 
     public function imageFile(string $path, ImagePlacement $placement, ?ImageAccessibility $accessibility = null): self;
 
-    public function line(float $x1, float $y1, float $x2, float $y2, ?StrokeStyle $stroke = null): self;
+    public function line(
+        float $x1,
+        float $y1,
+        float $x2,
+        float $y2,
+        ?StrokeStyle $stroke = null,
+        ?GraphicsAccessibility $accessibility = null,
+    ): self;
 
     public function rectangle(
         float $x,
@@ -127,6 +138,7 @@ interface DocumentBuilder
         float $height,
         ?StrokeStyle $stroke = null,
         ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
     ): self;
 
     public function roundedRectangle(
@@ -137,9 +149,15 @@ interface DocumentBuilder
         float $radius,
         ?StrokeStyle $stroke = null,
         ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
     ): self;
 
-    public function path(Path $path, ?StrokeStyle $stroke = null, ?Color $fillColor = null): self;
+    public function path(
+        Path $path,
+        ?StrokeStyle $stroke = null,
+        ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
+    ): self;
 
     public function attachment(
         string $filename,
@@ -513,6 +531,39 @@ interface DocumentBuilder
     public function polygonAnnotationWithOptions(
         array $vertices,
         PolygonAnnotationOptions $options,
+    ): self;
+
+    public function popupAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        bool $open = false,
+    ): self;
+
+    public function popupAnnotationWithDefinition(PopupAnnotationDefinition $definition): self;
+
+    public function fileAttachmentAnnotation(
+        string $filename,
+        EmbeddedFile $embeddedFile,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $description = null,
+        string $icon = 'PushPin',
+        ?string $contents = null,
+        ?AssociatedFileRelationship $associatedFileRelationship = null,
+    ): self;
+
+    public function fileAttachmentAnnotationWithOptions(
+        string $filename,
+        EmbeddedFile $embeddedFile,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        FileAttachmentAnnotationOptions $options,
     ): self;
 
     public function link(string $url, float $x, float $y, float $width, float $height, ?string $contents = null, ?string $accessibleLabel = null): self;

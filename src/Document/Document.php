@@ -8,6 +8,7 @@ use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
@@ -28,6 +29,8 @@ final readonly class Document
     public ?string $creatorTool;
     public ?PdfAOutputIntent $pdfaOutputIntent;
     public ?Encryption $encryption;
+    /** @var list<TaggedFigure> */
+    public array $taggedFigures;
     /** @var list<TaggedTable> */
     public array $taggedTables;
     /** @var list<TaggedTextBlock> */
@@ -48,6 +51,7 @@ final readonly class Document
 
     /**
      * @param list<Page>|null $pages
+     * @param list<TaggedFigure>|null $taggedFigures
      * @param list<TaggedTable>|null $taggedTables
      * @param list<TaggedTextBlock>|null $taggedTextBlocks
      * @param list<FileAttachment>|null $attachments
@@ -66,6 +70,7 @@ final readonly class Document
         ?string $creatorTool = null,
         ?PdfAOutputIntent $pdfaOutputIntent = null,
         ?Encryption $encryption = null,
+        ?array $taggedFigures = null,
         ?array $taggedTables = null,
         ?array $taggedTextBlocks = null,
         ?array $attachments = null,
@@ -84,6 +89,7 @@ final readonly class Document
         $this->creatorTool = $creatorTool;
         $this->pdfaOutputIntent = $pdfaOutputIntent;
         $this->encryption = $encryption;
+        $this->taggedFigures = $taggedFigures ?? [];
         $this->taggedTables = $taggedTables ?? [];
         $this->taggedTextBlocks = $taggedTextBlocks ?? [];
         $this->attachments = $attachments ?? [];

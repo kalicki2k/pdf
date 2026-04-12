@@ -151,8 +151,14 @@ final readonly class DocumentTableOfContentsBuilder
         $entries = [];
 
         foreach ($document->outlines as $outline) {
-            $entries[] = $outline->hasPosition()
-                ? TableOfContentsEntry::position($outline->title, $outline->pageNumber, $outline->x ?? 0.0, $outline->y ?? 0.0, $outline->level)
+            $entries[] = $outline->destination->hasExplicitPosition()
+                ? TableOfContentsEntry::position(
+                    $outline->title,
+                    $outline->pageNumber,
+                    $outline->destination->x ?? 0.0,
+                    $outline->destination->y ?? 0.0,
+                    $outline->level,
+                )
                 : TableOfContentsEntry::page($outline->title, $outline->pageNumber, $outline->level);
         }
 
@@ -393,12 +399,35 @@ final readonly class DocumentTableOfContentsBuilder
 
         foreach ($outlines as $outline) {
             $pageNumber = $this->shiftedPageNumber($outline->pageNumber, $tocPageCount, $insertionIndex);
-            $shifted[] = $outline->hasPosition()
-                ? Outline::position($outline->title, $pageNumber, $outline->x ?? 0.0, $outline->y ?? 0.0, $outline->level)
-                : Outline::page($outline->title, $pageNumber, $outline->level);
+            $shifted[] = $outline
+                ->withDestination($this->shiftOutlineDestination($outline->destination, $pageNumber))
+                ->withLevel($outline->level);
         }
 
         return $shifted;
+    }
+
+    private function shiftOutlineDestination(OutlineDestination $destination, int $pageNumber): OutlineDestination
+    {
+        if ($destination->isFit()) {
+            $shifted = OutlineDestination::fit($pageNumber);
+        } elseif ($destination->isFitHorizontal()) {
+            $shifted = OutlineDestination::fitHorizontal($pageNumber, $destination->top ?? 0.0);
+        } elseif ($destination->isFitRectangle()) {
+            $shifted = OutlineDestination::fitRectangle(
+                $pageNumber,
+                $destination->left ?? 0.0,
+                $destination->bottom ?? 0.0,
+                $destination->right ?? 0.0,
+                $destination->top ?? 0.0,
+            );
+        } elseif ($destination->hasExplicitPosition()) {
+            $shifted = OutlineDestination::xyz($pageNumber, $destination->x ?? 0.0, $destination->y ?? 0.0);
+        } else {
+            $shifted = OutlineDestination::xyzPage($pageNumber);
+        }
+
+        return $destination->useGoToAction ? $shifted->asGoToAction() : $shifted;
     }
 
     private function shiftAcroForm(?AcroForm $acroForm, int $tocPageCount, int $insertionIndex): ?AcroForm

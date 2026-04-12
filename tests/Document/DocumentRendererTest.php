@@ -14,6 +14,8 @@ use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentRenderer;
+use Kalle\Pdf\Document\Outline;
+use Kalle\Pdf\Document\OutlineStyle;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
 use Kalle\Pdf\Document\Form\WidgetFormField;
@@ -36,12 +38,19 @@ use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AnnotationMetadata;
+use Kalle\Pdf\Page\AnnotationBorderStyle;
+use Kalle\Pdf\Page\FileAttachmentAnnotationOptions;
 use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotationOptions;
+use Kalle\Pdf\Page\LineAnnotationOptions;
 use Kalle\Pdf\Page\LinkAnnotationOptions;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
+use Kalle\Pdf\Page\MarkupAnnotationOptions;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\PolygonAnnotationOptions;
+use Kalle\Pdf\Page\LineEndingStyle;
+use Kalle\Pdf\Page\ShapeAnnotationOptions;
 use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
@@ -1068,6 +1077,92 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/IC [1 1 0.8]', $pdf);
     }
 
+    public function testItRendersAdditionalAnnotationTypes(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->underlineAnnotationWithOptions(40, 500, 80, 10, new MarkupAnnotationOptions(
+                color: Color::rgb(1, 0, 0),
+                contents: 'Underline',
+                title: 'QA',
+            ))
+            ->stampAnnotation(40, 470, 80, 18, 'Approved', Color::rgb(1, 0, 0), 'Stamp', 'QA')
+            ->squareAnnotationWithOptions(40, 430, 80, 24, new ShapeAnnotationOptions(
+                borderColor: Color::rgb(1, 0, 0),
+                fillColor: Color::gray(0.9),
+                borderStyle: AnnotationBorderStyle::dashed(2.0),
+                contents: 'Square',
+                title: 'QA',
+            ))
+            ->lineAnnotationWithOptions(40, 380, 120, 410, new LineAnnotationOptions(
+                color: Color::rgb(0, 0, 1),
+                startStyle: LineEndingStyle::CIRCLE,
+                endStyle: LineEndingStyle::CLOSED_ARROW,
+                borderStyle: AnnotationBorderStyle::solid(2.0),
+                metadata: new AnnotationMetadata(contents: 'Line', title: 'QA', subject: 'Guide'),
+            ))
+            ->polygonAnnotationWithOptions([[140.0, 380.0], [180.0, 410.0], [220.0, 392.0]], new PolygonAnnotationOptions(
+                borderColor: Color::rgb(1, 0, 0),
+                fillColor: Color::gray(0.9),
+                metadata: new AnnotationMetadata(contents: 'Polygon', title: 'QA', subject: 'Area'),
+            ))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Underline', $pdf);
+        self::assertStringContainsString('/Subtype /Stamp', $pdf);
+        self::assertStringContainsString('/Name /Approved', $pdf);
+        self::assertStringContainsString('/Subtype /Square', $pdf);
+        self::assertStringContainsString('/BS << /W 2 /S /D /D [3 2] >>', $pdf);
+        self::assertStringContainsString('/Subtype /Line', $pdf);
+        self::assertStringContainsString('/LE [/Circle /ClosedArrow]', $pdf);
+        self::assertStringContainsString('/Subj (Guide)', $pdf);
+        self::assertStringContainsString('/Subtype /Polygon', $pdf);
+        self::assertStringContainsString('/Subj (Area)', $pdf);
+    }
+
+    public function testItRendersPopupAndFileAttachmentAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
+            ->popupAnnotation(70, 520, 120, 60, true)
+            ->fileAttachmentAnnotationWithOptions(
+                'demo.txt',
+                new EmbeddedFile('hello', 'text/plain'),
+                40,
+                460,
+                12,
+                14,
+                new FileAttachmentAnnotationOptions(
+                    description: 'Demo attachment',
+                    associatedFileRelationship: AssociatedFileRelationship::DATA,
+                    icon: 'Graph',
+                    contents: 'Anhang',
+                ),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Popup', $pdf);
+        self::assertStringContainsString('/Open true', $pdf);
+        self::assertStringContainsString('/Subtype /FileAttachment', $pdf);
+        self::assertStringContainsString('/FS ', $pdf);
+        self::assertStringContainsString('/Name /Graph', $pdf);
+        self::assertStringContainsString('/Type /Filespec', $pdf);
+        self::assertStringContainsString('/Type /EmbeddedFile', $pdf);
+    }
+
     public function testItRendersInternalLinkAnnotations(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -1134,9 +1229,9 @@ final class DocumentRendererTest extends TestCase
     public function testItRendersNestedOutlines(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->outline('Chapter 1')
+            ->outlineClosed('Chapter 1')
             ->outlineLevel('Section 1.1', 2)
-            ->outlineLevel('Section 1.2', 2)
+            ->outlineLevelClosed('Section 1.2', 2)
             ->outlineLevel('Subsection 1.2.1', 3)
             ->outline('Chapter 2')
             ->build();
@@ -1148,11 +1243,62 @@ final class DocumentRendererTest extends TestCase
 
         $pdf = $output->contents();
 
-        self::assertStringContainsString('<< /Type /Outlines /First 6 0 R /Last 10 0 R /Count 5 >>', $pdf);
-        self::assertStringContainsString('/Title (Chapter 1) /Parent 5 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R /First 7 0 R /Last 8 0 R /Count 3', $pdf);
+        self::assertStringContainsString('<< /Type /Outlines /First 6 0 R /Last 10 0 R /Count 2 >>', $pdf);
+        self::assertStringContainsString('/Title (Chapter 1) /Parent 5 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R /First 7 0 R /Last 8 0 R /Count -2', $pdf);
         self::assertStringContainsString('/Title (Section 1.1) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 8 0 R', $pdf);
-        self::assertStringContainsString('/Title (Section 1.2) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Prev 7 0 R /First 9 0 R /Last 9 0 R /Count 1', $pdf);
+        self::assertStringContainsString('/Title (Section 1.2) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Prev 7 0 R /First 9 0 R /Last 9 0 R /Count -1', $pdf);
         self::assertStringContainsString('/Title (Subsection 1.2.1) /Parent 8 0 R /Dest [3 0 R /XYZ 0 841.89 null]', $pdf);
+    }
+
+    public function testItRendersStyledOutlineDestinationsAndGoToActions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->newPage()
+            ->newPage()
+            ->addOutline(
+                Outline::fit('Whole Page', 1)
+                    ->withStyle((new OutlineStyle())->withColor(Color::rgb(0.2, 0.4, 0.6))->withBold()->withItalic()->withAdditionalFlags(4)),
+            )
+            ->addOutline(Outline::fitHorizontal('Fit Horizontally', 2, 700)->asGoToAction())
+            ->addOutline(Outline::fitRectangle('Fit Rectangle', 3, 40, 100, 220, 620))
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Dest [3 0 R /Fit]', $pdf);
+        self::assertStringContainsString('/A << /S /GoTo /D [5 0 R /FitH 700] >>', $pdf);
+        self::assertStringContainsString('/Dest [7 0 R /FitR 40 100 220 620]', $pdf);
+        self::assertStringContainsString('/C [0.2 0.4 0.6]', $pdf);
+        self::assertStringContainsString('/F 7', $pdf);
+    }
+
+    public function testItRendersNamedAndRemoteOutlineDestinations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->namedDestination('intro')
+            ->addOutline(Outline::named('Intro Bookmark', 'intro', 1))
+            ->newPage()
+            ->newPage()
+            ->addOutline(
+                Outline::named('Remote Intro', 'chapter-1', 3)
+                    ->withDestination(Outline::named('Remote Intro', 'chapter-1', 3)->destination->asRemoteGoTo('external.pdf', true)),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Dest /intro', $pdf);
+        self::assertStringContainsString('/A << /S /GoToR /F (external.pdf) /D /chapter-1 /NewWindow true >>', $pdf);
     }
 
     public function testItRendersTaggedPdfUaLinkAnnotations(): void

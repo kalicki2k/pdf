@@ -30,6 +30,24 @@ use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AnnotationMetadata;
+use Kalle\Pdf\Page\AnnotationBorderStyle;
+use Kalle\Pdf\Page\CircleAnnotation;
+use Kalle\Pdf\Page\FileAttachmentAnnotation;
+use Kalle\Pdf\Page\FileAttachmentAnnotationOptions;
+use Kalle\Pdf\Page\InkAnnotation;
+use Kalle\Pdf\Page\LineAnnotation;
+use Kalle\Pdf\Page\LineAnnotationOptions;
+use Kalle\Pdf\Page\LineEndingStyle;
+use Kalle\Pdf\Page\MarkupAnnotationOptions;
+use Kalle\Pdf\Page\PolygonAnnotation;
+use Kalle\Pdf\Page\PolygonAnnotationOptions;
+use Kalle\Pdf\Page\PopupAnnotationDefinition;
+use Kalle\Pdf\Page\PolyLineAnnotation;
+use Kalle\Pdf\Page\ShapeAnnotationOptions;
+use Kalle\Pdf\Page\SquareAnnotation;
+use Kalle\Pdf\Page\SquigglyAnnotation;
+use Kalle\Pdf\Page\StampAnnotation;
+use Kalle\Pdf\Page\StrikeOutAnnotation;
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotation;
@@ -42,6 +60,7 @@ use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\UnderlineAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
@@ -598,6 +617,105 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame([1.0, 1.0, 0.8], $annotation->fillColor?->components());
     }
 
+    public function testItAddsAdditionalAnnotationTypesToTheCurrentPage(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->underlineAnnotationWithOptions(40, 500, 80, 10, new MarkupAnnotationOptions(
+                color: Color::rgb(1, 0, 0),
+                contents: 'Underline',
+                title: 'QA',
+            ))
+            ->strikeOutAnnotation(40, 480, 80, 10, Color::rgb(0, 0, 1), 'Strike', 'QA')
+            ->squigglyAnnotation(40, 460, 80, 10, Color::rgb(0, 0.5, 0), 'Squiggle', 'QA')
+            ->stampAnnotation(40, 430, 80, 18, 'Approved', Color::rgb(1, 0, 0), 'Stamp', 'QA')
+            ->squareAnnotationWithOptions(40, 390, 80, 24, new ShapeAnnotationOptions(
+                borderColor: Color::rgb(1, 0, 0),
+                fillColor: Color::gray(0.9),
+                borderStyle: AnnotationBorderStyle::dashed(2.0),
+                contents: 'Square',
+                title: 'QA',
+            ))
+            ->circleAnnotation(140, 390, 80, 24, Color::rgb(1, 0, 0), Color::gray(0.9), 'Circle', 'QA')
+            ->inkAnnotation(40, 340, 80, 24, [[[10.0, 20.0], [20.0, 30.0]]], Color::black(), 'Ink', 'QA')
+            ->lineAnnotationWithOptions(40, 300, 120, 330, new LineAnnotationOptions(
+                color: Color::rgb(0, 0, 1),
+                startStyle: LineEndingStyle::CIRCLE,
+                endStyle: LineEndingStyle::CLOSED_ARROW,
+                borderStyle: AnnotationBorderStyle::solid(2.0),
+                metadata: new AnnotationMetadata(contents: 'Line', title: 'QA', subject: 'Guide'),
+            ))
+            ->polyLineAnnotation([[40.0, 250.0], [80.0, 280.0], [120.0, 262.0]], Color::rgb(0, 0, 1), 'Polyline', 'QA')
+            ->polygonAnnotationWithOptions([[140.0, 250.0], [180.0, 280.0], [220.0, 262.0]], new PolygonAnnotationOptions(
+                borderColor: Color::rgb(1, 0, 0),
+                fillColor: Color::gray(0.9),
+                metadata: new AnnotationMetadata(contents: 'Polygon', title: 'QA', subject: 'Area'),
+            ))
+            ->build();
+
+        self::assertCount(10, $document->pages[0]->annotations);
+        self::assertInstanceOf(UnderlineAnnotation::class, $document->pages[0]->annotations[0]);
+        self::assertInstanceOf(StrikeOutAnnotation::class, $document->pages[0]->annotations[1]);
+        self::assertInstanceOf(SquigglyAnnotation::class, $document->pages[0]->annotations[2]);
+        self::assertInstanceOf(StampAnnotation::class, $document->pages[0]->annotations[3]);
+        self::assertInstanceOf(SquareAnnotation::class, $document->pages[0]->annotations[4]);
+        self::assertInstanceOf(CircleAnnotation::class, $document->pages[0]->annotations[5]);
+        self::assertInstanceOf(InkAnnotation::class, $document->pages[0]->annotations[6]);
+        self::assertInstanceOf(LineAnnotation::class, $document->pages[0]->annotations[7]);
+        self::assertInstanceOf(PolyLineAnnotation::class, $document->pages[0]->annotations[8]);
+        self::assertInstanceOf(PolygonAnnotation::class, $document->pages[0]->annotations[9]);
+        self::assertSame('Guide', $document->pages[0]->annotations[7]->subject);
+        self::assertSame('Area', $document->pages[0]->annotations[9]->subject);
+    }
+
+    public function testItAttachesPopupAnnotationsToThePreviousSupportedAnnotation(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
+            ->popupAnnotation(70, 520, 120, 60, true)
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertInstanceOf(TextAnnotation::class, $document->pages[0]->annotations[0]);
+        self::assertSame(70.0, $document->pages[0]->annotations[0]->popup?->x);
+        self::assertTrue($document->pages[0]->annotations[0]->popup?->open ?? false);
+    }
+
+    public function testItRejectsPopupAnnotationsWithoutASupportedParent(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Popup annotations require a preceding page annotation on the current page.');
+
+        DefaultDocumentBuilder::make()
+            ->popupAnnotationWithDefinition(new PopupAnnotationDefinition(10, 20, 30, 40))
+            ->build();
+    }
+
+    public function testItAddsFileAttachmentAnnotationsAndDocumentAttachments(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->fileAttachmentAnnotationWithOptions(
+                'demo.txt',
+                new EmbeddedFile('hello', 'text/plain'),
+                40,
+                500,
+                12,
+                14,
+                new FileAttachmentAnnotationOptions(
+                    description: 'Demo attachment',
+                    associatedFileRelationship: AssociatedFileRelationship::DATA,
+                    icon: 'Graph',
+                    contents: 'Anhang',
+                ),
+            )
+            ->build();
+
+        self::assertCount(1, $document->attachments);
+        self::assertCount(1, $document->pages[0]->annotations);
+        self::assertInstanceOf(FileAttachmentAnnotation::class, $document->pages[0]->annotations[0]);
+        self::assertSame('demo.txt', $document->pages[0]->annotations[0]->attachmentFilename);
+        self::assertSame('Graph', $document->pages[0]->annotations[0]->icon);
+    }
+
     public function testItAddsInternalLinkAnnotationsToTheCurrentPage(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -665,11 +783,15 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->outline('Chapter 1')
             ->outlineLevel('Section 1.1', 2)
             ->outlineLevel('Section 1.2', 2)
-            ->outlineLevel('Subsection 1.2.1', 3)
+            ->outlineLevelClosed('Subsection 1.2.1', 3)
             ->build();
 
         self::assertSame([1, 2, 2, 3], array_map(
             static fn (Outline $outline): int => $outline->level,
+            $document->outlines,
+        ));
+        self::assertSame([true, true, true, false], array_map(
+            static fn (Outline $outline): bool => $outline->open,
             $document->outlines,
         ));
     }
@@ -680,6 +802,47 @@ final class DefaultDocumentBuilderTest extends TestCase
         $this->expectExceptionMessage('Outline coordinates must be provided together.');
 
         DefaultDocumentBuilder::make()->outlineAt('Broken', 1, 10);
+    }
+
+    public function testItAddsRelativeOutlineHelpersAndAdvancedOutlineObjects(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Chapter 1')
+            ->outlineChild('Section 1.1')
+            ->outlineSiblingClosed('Section 1.2')
+            ->addOutline(
+                Outline::fit('Appendix', 3)
+                    ->withLevel(1)
+                    ->asGoToAction(),
+            )
+            ->build();
+
+        self::assertSame([1, 2, 2, 1], array_map(
+            static fn (Outline $outline): int => $outline->level,
+            $document->outlines,
+        ));
+        self::assertSame([true, true, false, true], array_map(
+            static fn (Outline $outline): bool => $outline->open,
+            $document->outlines,
+        ));
+        self::assertTrue($document->outlines[3]->destination->isFit());
+        self::assertTrue($document->outlines[3]->destination->useGoToAction);
+    }
+
+    public function testItAddsNamedAndRemoteOutlines(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->namedDestination('intro')
+            ->addOutline(Outline::named('Intro Bookmark', 'intro', 1))
+            ->addOutline(Outline::fit('Remote Appendix', 7)->withDestination(
+                Outline::fit('Remote Appendix', 7)->destination->asRemoteGoTo('appendix.pdf', true),
+            ))
+            ->build();
+
+        self::assertTrue($document->outlines[0]->destination->isNamed());
+        self::assertSame('intro', $document->outlines[0]->destination->namedDestination);
+        self::assertTrue($document->outlines[1]->destination->isRemote());
+        self::assertSame('appendix.pdf', $document->outlines[1]->destination->remoteFile);
     }
 
     public function testItAddsMultipleLinkedTextSegmentsInOneCall(): void

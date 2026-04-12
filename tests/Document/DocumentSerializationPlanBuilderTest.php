@@ -11,6 +11,8 @@ use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\Outline;
+use Kalle\Pdf\Document\OutlineStyle;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\CheckboxField;
@@ -1295,9 +1297,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
-            ->outline('Chapter 1')
+            ->outlineClosed('Chapter 1')
             ->outlineLevel('Section 1.1', 2)
-            ->outlineLevel('Section 1.2', 2)
+            ->outlineLevelClosed('Section 1.2', 2)
             ->outlineLevel('Subsection 1.2.1', 3)
             ->outline('Chapter 2')
             ->build();
@@ -1311,9 +1313,9 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         }
 
         self::assertStringContainsString('/Outlines 5 0 R', $objectsById[1]->contents);
-        self::assertSame('<< /Type /Outlines /First 6 0 R /Last 10 0 R /Count 5 >>', $objectsById[5]->contents);
+        self::assertSame('<< /Type /Outlines /First 6 0 R /Last 10 0 R /Count 2 >>', $objectsById[5]->contents);
         self::assertSame(
-            '<< /Title (Chapter 1) /Parent 5 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R /First 7 0 R /Last 8 0 R /Count 3 >>',
+            '<< /Title (Chapter 1) /Parent 5 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Next 10 0 R /First 7 0 R /Last 8 0 R /Count -2 >>',
             $objectsById[6]->contents,
         );
         self::assertSame(
@@ -1321,7 +1323,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             $objectsById[7]->contents,
         );
         self::assertSame(
-            '<< /Title (Section 1.2) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Prev 7 0 R /First 9 0 R /Last 9 0 R /Count 1 >>',
+            '<< /Title (Section 1.2) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Prev 7 0 R /First 9 0 R /Last 9 0 R /Count -1 >>',
             $objectsById[8]->contents,
         );
         self::assertSame(
@@ -1334,6 +1336,90 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
     }
 
+    public function testItWritesPositiveCountForOpenOutlineChildren(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->outline('Chapter 1')
+            ->outlineLevel('Section 1.1', 2)
+            ->outlineLevelClosed('Section 1.2', 2)
+            ->outlineLevel('Subsection 1.2.1', 3)
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $objectsById = [];
+
+        foreach ($objects as $object) {
+            $objectsById[$object->objectId] = $object;
+        }
+
+        self::assertSame('<< /Type /Outlines /First 6 0 R /Last 6 0 R /Count 3 >>', $objectsById[5]->contents);
+        self::assertSame(
+            '<< /Title (Chapter 1) /Parent 5 0 R /Dest [3 0 R /XYZ 0 841.89 null] /First 7 0 R /Last 8 0 R /Count 2 >>',
+            $objectsById[6]->contents,
+        );
+        self::assertSame(
+            '<< /Title (Section 1.2) /Parent 6 0 R /Dest [3 0 R /XYZ 0 841.89 null] /Prev 7 0 R /First 9 0 R /Last 9 0 R /Count -1 >>',
+            $objectsById[8]->contents,
+        );
+    }
+
+    public function testItSerializesStyledOutlinesWithAdditionalDestinationTypes(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->newPage()
+            ->newPage()
+            ->addOutline(
+                Outline::fit('Whole Page', 1)
+                    ->withStyle((new OutlineStyle())->withColor(Color::rgb(0.2, 0.4, 0.6))->withBold()->withItalic()->withAdditionalFlags(4)),
+            )
+            ->addOutline(
+                Outline::fitHorizontal('Fit Horizontally', 2, 700)
+                    ->asGoToAction(),
+            )
+            ->addOutline(
+                Outline::fitRectangle('Fit Rectangle', 3, 40, 100, 220, 620),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            $objects,
+        ));
+
+        self::assertStringContainsString('/Title (Whole Page) /Parent 9 0 R /Dest [3 0 R /Fit] /Next 11 0 R /C [0.2 0.4 0.6] /F 7', $serialized);
+        self::assertStringContainsString('/Title (Fit Horizontally) /Parent 9 0 R /A << /S /GoTo /D [5 0 R /FitH 700] >> /Prev 10 0 R /Next 12 0 R', $serialized);
+        self::assertStringContainsString('/Title (Fit Rectangle) /Parent 9 0 R /Dest [7 0 R /FitR 40 100 220 620] /Prev 11 0 R', $serialized);
+    }
+
+    public function testItSerializesNamedAndRemoteOutlineDestinations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->namedDestination('intro')
+            ->addOutline(Outline::named('Intro Bookmark', 'intro', 1))
+            ->addOutline(
+                Outline::named('Remote Intro', 'chapter-1', 3)
+                    ->withDestination(Outline::named('Remote Intro', 'chapter-1', 3)->destination->asRemoteGoTo('external.pdf', true)),
+            )
+            ->newPage()
+            ->newPage()
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($plan->objects),
+        ));
+
+        self::assertStringContainsString('/Title (Intro Bookmark) /Parent 9 0 R /Dest /intro /Next 11 0 R', $serialized);
+        self::assertStringContainsString('/Title (Remote Intro) /Parent 9 0 R /A << /S /GoToR /F (external.pdf) /D /chapter-1 /NewWindow true >> /Prev 10 0 R', $serialized);
+    }
+
     public function testItRejectsOutlinesThatReferenceMissingPages(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
@@ -1343,6 +1429,19 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Outline 1 references page 2, but the document only has 1 page(s).');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsOutlinesThatReferenceUnknownNamedDestinations(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->addOutline(Outline::named('Broken', 'missing', 1))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Outline 1 references unknown named destination "missing".');
 
         $builder->build($document);
     }

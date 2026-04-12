@@ -36,6 +36,7 @@ use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsEntry;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
+use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
@@ -43,6 +44,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
+use Kalle\Pdf\Drawing\GraphicsAccessibility;
 use Kalle\Pdf\Drawing\Path;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Encryption\Encryption;
@@ -67,6 +69,8 @@ use Kalle\Pdf\Page\CaretAnnotation;
 use Kalle\Pdf\Page\CaretAnnotationOptions;
 use Kalle\Pdf\Page\CircleAnnotation;
 use Kalle\Pdf\Page\EmbeddedGlyph;
+use Kalle\Pdf\Page\FileAttachmentAnnotation;
+use Kalle\Pdf\Page\FileAttachmentAnnotationOptions;
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\FreeTextAnnotationOptions;
 use Kalle\Pdf\Page\HighlightAnnotation;
@@ -90,6 +94,7 @@ use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\PolygonAnnotation;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
+use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\PolyLineAnnotation;
 use Kalle\Pdf\Page\PolyLineAnnotationOptions;
 use Kalle\Pdf\Page\ShapeAnnotationOptions;
@@ -101,6 +106,7 @@ use Kalle\Pdf\Page\StrikeOutAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Page\UnderlineAnnotation;
+use Kalle\Pdf\Page\SupportsPopupAnnotation;
 use Kalle\Pdf\Text\MappedTextRun;
 use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
@@ -147,6 +153,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private int $currentPageNextMarkedContentId = 0;
     /** @var array<int, array{captionReferences: list<array{pageIndex: int, markedContentId: int}>, headerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>, bodyRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>, footerRows: array<int, array{cells: array<int, array{header: bool, headerScope: ?TableHeaderScope, rowspan: int, colspan: int, references: list<array{pageIndex: int, markedContentId: int}>}>}>}> */
     private array $taggedTables = [];
+    /** @var list<array{pageIndex: int, markedContentId: int, altText: ?string}> */
+    private array $taggedFigures = [];
     /** @var list<array{tag: string, pageIndex: int, markedContentId: int}> */
     private array $taggedTextBlocks = [];
     /** @var array<int, list<array{label: array{pageIndex: int, markedContentId: int}, body: array{pageIndex: int, markedContentId: int}}>> */
@@ -759,10 +767,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $this->image(ImageSource::fromPath($path), $placement, $accessibility);
     }
 
-    public function line(float $x1, float $y1, float $x2, float $y2, ?StrokeStyle $stroke = null): DocumentBuilder
+    public function line(
+        float $x1,
+        float $y1,
+        float $x2,
+        float $y2,
+        ?StrokeStyle $stroke = null,
+        ?GraphicsAccessibility $accessibility = null,
+    ): DocumentBuilder
     {
         $clone = clone $this;
         $stroke ??= new StrokeStyle();
+        $markedContentId = $clone->markedContentIdForGraphic($accessibility);
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
             $this->buildGraphicsContent(implode("\n", [
@@ -772,8 +788,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $this->formatNumber($x2) . ' ' . $this->formatNumber($y2) . ' l',
                 'S',
                 'Q',
-            ])),
+            ]), $accessibility, $markedContentId),
         );
+
+        if ($markedContentId !== null) {
+            $clone->registerTaggedFigure($markedContentId, $accessibility?->altText);
+        }
 
         return $clone;
     }
@@ -785,6 +805,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $height,
         ?StrokeStyle $stroke = null,
         ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
     ): DocumentBuilder {
         if ($width <= 0.0) {
             throw new InvalidArgumentException('Rectangle width must be greater than zero.');
@@ -801,10 +822,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $clone = clone $this;
+        $markedContentId = $clone->markedContentIdForGraphic($accessibility);
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
-            $this->buildGraphicsContent($this->buildRectangleContent($x, $y, $width, $height, $stroke, $fillColor)),
+            $this->buildGraphicsContent(
+                $this->buildRectangleContent($x, $y, $width, $height, $stroke, $fillColor),
+                $accessibility,
+                $markedContentId,
+            ),
         );
+
+        if ($markedContentId !== null) {
+            $clone->registerTaggedFigure($markedContentId, $accessibility?->altText);
+        }
 
         return $clone;
     }
@@ -817,15 +847,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $radius,
         ?StrokeStyle $stroke = null,
         ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
     ): DocumentBuilder {
         return $this->path(
             Path::roundedRectangle($x, $y, $width, $height, $radius),
             $stroke ?? ($fillColor === null ? new StrokeStyle() : null),
             $fillColor,
+            $accessibility,
         );
     }
 
-    public function path(Path $path, ?StrokeStyle $stroke = null, ?Color $fillColor = null): DocumentBuilder
+    public function path(
+        Path $path,
+        ?StrokeStyle $stroke = null,
+        ?Color $fillColor = null,
+        ?GraphicsAccessibility $accessibility = null,
+    ): DocumentBuilder
     {
         $stroke ??= $fillColor === null ? new StrokeStyle() : null;
 
@@ -834,10 +871,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $clone = clone $this;
+        $markedContentId = $clone->markedContentIdForGraphic($accessibility);
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
-            $this->buildGraphicsContent($this->buildPathContent($path, $stroke, $fillColor)),
+            $this->buildGraphicsContent(
+                $this->buildPathContent($path, $stroke, $fillColor),
+                $accessibility,
+                $markedContentId,
+            ),
         );
+
+        if ($markedContentId !== null) {
+            $clone->registerTaggedFigure($markedContentId, $accessibility?->altText);
+        }
 
         return $clone;
     }
@@ -1812,6 +1858,111 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function popupAnnotation(
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        bool $open = false,
+    ): self {
+        return $this->popupAnnotationWithDefinition(
+            new PopupAnnotationDefinition(
+                x: $x,
+                y: $y,
+                width: $width,
+                height: $height,
+                open: $open,
+            ),
+        );
+    }
+
+    public function popupAnnotationWithDefinition(PopupAnnotationDefinition $definition): self
+    {
+        $clone = clone $this;
+        $annotationIndex = array_key_last($clone->currentPageAnnotations);
+
+        if ($annotationIndex === null) {
+            throw new InvalidArgumentException('Popup annotations require a preceding page annotation on the current page.');
+        }
+
+        $annotation = $clone->currentPageAnnotations[$annotationIndex];
+
+        if (!$annotation instanceof SupportsPopupAnnotation) {
+            throw new InvalidArgumentException('The last page annotation does not support popup annotations.');
+        }
+
+        $clone->currentPageAnnotations[$annotationIndex] = $annotation->withPopup($definition);
+
+        return $clone;
+    }
+
+    public function fileAttachmentAnnotation(
+        string $filename,
+        EmbeddedFile $embeddedFile,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        ?string $description = null,
+        string $icon = 'PushPin',
+        ?string $contents = null,
+        ?AssociatedFileRelationship $associatedFileRelationship = null,
+    ): self {
+        return $this->fileAttachmentAnnotationWithOptions(
+            $filename,
+            $embeddedFile,
+            $x,
+            $y,
+            $width,
+            $height,
+            new FileAttachmentAnnotationOptions(
+                description: $description,
+                associatedFileRelationship: $associatedFileRelationship,
+                icon: $icon,
+                contents: $contents,
+            ),
+        );
+    }
+
+    public function fileAttachmentAnnotationWithOptions(
+        string $filename,
+        EmbeddedFile $embeddedFile,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        FileAttachmentAnnotationOptions $options,
+    ): self {
+        $clone = clone $this;
+
+        if (!$clone->profileOrDefault()->supportsEmbeddedFileAttachments()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow embedded file attachments.',
+                $clone->profileOrDefault()->name(),
+            ));
+        }
+
+        $attachment = new FileAttachment(
+            filename: $filename,
+            embeddedFile: $embeddedFile,
+            description: $options->description,
+            associatedFileRelationship: $options->associatedFileRelationship,
+        );
+        $clone->attachments[] = $attachment;
+        $metadata = $options->metadata();
+        $clone->currentPageAnnotations[] = new FileAttachmentAnnotation(
+            x: $x,
+            y: $y,
+            width: $width,
+            height: $height,
+            attachmentFilename: $attachment->filename,
+            icon: $options->icon,
+            contents: $metadata->contents,
+        );
+
+        return $clone;
+    }
+
     public function link(
         string $url,
         float $x,
@@ -2213,6 +2364,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             creatorTool: $this->creatorTool,
             pdfaOutputIntent: $this->pdfaOutputIntent,
             encryption: $this->encryption,
+            taggedFigures: $this->buildTaggedFigures(),
             taggedTables: $this->buildTaggedTables(),
             taggedTextBlocks: $this->buildTaggedTextBlocks(),
             attachments: $this->attachments,
@@ -3547,6 +3699,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
+     * @return list<TaggedFigure>
+     */
+    private function buildTaggedFigures(): array
+    {
+        return array_map(
+            static fn (array $figure): TaggedFigure => new TaggedFigure(
+                pageIndex: $figure['pageIndex'],
+                markedContentId: $figure['markedContentId'],
+                altText: $figure['altText'],
+            ),
+            $this->taggedFigures,
+        );
+    }
+
+    /**
      * @return list<TaggedTextBlock>
      */
     private function buildTaggedTextBlocks(): array
@@ -3598,6 +3765,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ];
     }
 
+    private function registerTaggedFigure(int $markedContentId, ?string $altText): void
+    {
+        $this->taggedFigures[] = [
+            ...$this->taggedContentReference($markedContentId),
+            'altText' => $altText,
+        ];
+    }
+
     private function registerTaggedListItem(int $listId, int $labelMarkedContentId, int $bodyMarkedContentId): void
     {
         $this->taggedLists[$listId][] = [
@@ -3632,6 +3807,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return ($this->profile ?? Profile::standard())->requiresTaggedLinkAnnotations();
+    }
+
+    private function profileOrDefault(): Profile
+    {
+        return $this->profile ?? Profile::standard();
     }
 
     private function nextTaggedMarkedContentId(): ?int
@@ -3988,9 +4168,25 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ]);
     }
 
-    private function buildGraphicsContent(string $contents): string
+    private function buildGraphicsContent(
+        string $contents,
+        ?GraphicsAccessibility $accessibility = null,
+        ?int $markedContentId = null,
+    ): string
     {
-        return $this->wrapArtifactGraphics($contents);
+        if (!$this->requiresTaggedPdfProfile()) {
+            return $contents;
+        }
+
+        if ($accessibility?->decorative === true || $accessibility === null || $markedContentId === null) {
+            return $this->wrapArtifactGraphics($contents);
+        }
+
+        return implode("\n", [
+            '/Figure << /MCID ' . $markedContentId . ' >> BDC',
+            $contents,
+            'EMC',
+        ]);
     }
 
     /**
@@ -4134,6 +4330,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         if ($accessibility?->decorative === true) {
+            return null;
+        }
+
+        $markedContentId = $this->currentPageNextMarkedContentId;
+        $this->currentPageNextMarkedContentId++;
+
+        return $markedContentId;
+    }
+
+    private function markedContentIdForGraphic(?GraphicsAccessibility $accessibility): ?int
+    {
+        if (!$this->requiresTaggedStructure()) {
+            return null;
+        }
+
+        if ($accessibility === null || $accessibility->decorative) {
             return null;
         }
 
@@ -4466,6 +4678,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone->currentPageNextMarkedContentId = 0;
         $clone->renderingPageDecoration = true;
         $clone->taggedTables = [];
+        $clone->taggedFigures = [];
         $clone->taggedTextBlocks = [];
         $clone->taggedLists = [];
         $clone->nextTaggedTableId = 0;

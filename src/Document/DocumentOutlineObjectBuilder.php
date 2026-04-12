@@ -65,7 +65,8 @@ final class DocumentOutlineObjectBuilder
      *   parentIndices: array<int, ?int>,
      *   children: array<int, list<int>>,
      *   rootChildren: list<int>,
-     *   descendantCounts: array<int, int>
+     *   visibleDescendantCounts: array<int, int>,
+     *   rootVisibleCount: int
      * } $tree
      */
     private function buildRootDictionary(
@@ -80,7 +81,7 @@ final class DocumentOutlineObjectBuilder
             . ' 0 R /Last '
             . $state->outlineItemObjectIds[$rootChildren[count($rootChildren) - 1]]
             . ' 0 R /Count '
-            . count($state->outlineItemObjectIds)
+            . $tree['rootVisibleCount']
             . ' >>';
     }
 
@@ -89,7 +90,8 @@ final class DocumentOutlineObjectBuilder
      *   parentIndices: array<int, ?int>,
      *   children: array<int, list<int>>,
      *   rootChildren: list<int>,
-     *   descendantCounts: array<int, int>
+     *   visibleDescendantCounts: array<int, int>,
+     *   rootVisibleCount: int
      * } $tree
      */
     private function buildItemDictionary(
@@ -112,8 +114,10 @@ final class DocumentOutlineObjectBuilder
             '/Parent ' . ($parentIndex === null
                 ? $state->outlineRootObjectId . ' 0 R'
                 : $state->outlineItemObjectIds[$parentIndex] . ' 0 R'),
-            '/Dest ' . $this->buildDestination($document, $state, $outline),
         ];
+
+        $destination = $this->buildDestination($document, $state, $outline);
+        $entries[] = $this->buildDestinationEntry($outline, $destination);
 
         if ($previousIndex !== null) {
             $entries[] = '/Prev ' . $state->outlineItemObjectIds[$previousIndex] . ' 0 R';
@@ -126,8 +130,13 @@ final class DocumentOutlineObjectBuilder
         if ($children !== []) {
             $entries[] = '/First ' . $state->outlineItemObjectIds[$children[0]] . ' 0 R';
             $entries[] = '/Last ' . $state->outlineItemObjectIds[$children[count($children) - 1]] . ' 0 R';
-            $entries[] = '/Count ' . $tree['descendantCounts'][$outlineIndex];
+            $entries[] = '/Count ' . ($outline->open
+                ? $tree['visibleDescendantCounts'][$outlineIndex]
+                : -$tree['visibleDescendantCounts'][$outlineIndex]);
         }
+
+        $styleEntries = $this->buildStyleEntries($outline);
+        $entries = [...$entries, ...$styleEntries];
 
         return '<< ' . implode(' ', $entries) . ' >>';
     }
@@ -137,7 +146,8 @@ final class DocumentOutlineObjectBuilder
      *   parentIndices: array<int, ?int>,
      *   children: array<int, list<int>>,
      *   rootChildren: list<int>,
-     *   descendantCounts: array<int, int>
+     *   visibleDescendantCounts: array<int, int>,
+     *   rootVisibleCount: int
      * }
      */
     private function buildTree(Document $document): array
@@ -169,33 +179,47 @@ final class DocumentOutlineObjectBuilder
             }
         }
 
-        $descendantCounts = [];
+        $visibleDescendantCounts = [];
 
         foreach (array_keys($document->outlines) as $index) {
-            $descendantCounts[$index] = $this->countDescendants($index, $children);
+            $visibleDescendantCounts[$index] = $this->countVisibleDescendants($document, $index, $children);
         }
 
         return [
             'parentIndices' => $parentIndices,
             'children' => $children,
             'rootChildren' => $rootChildren,
-            'descendantCounts' => $descendantCounts,
+            'visibleDescendantCounts' => $visibleDescendantCounts,
+            'rootVisibleCount' => $this->countVisibleChildren($document, $rootChildren, $children),
         ];
     }
 
     /**
      * @param array<int, list<int>> $children
      */
-    private function countDescendants(int $index, array $children): int
+    private function countVisibleDescendants(Document $document, int $index, array $children): int
     {
         if (!array_key_exists($index, $children)) {
             return 0;
         }
 
-        $count = count($children[$index]);
+        return $this->countVisibleChildren($document, $children[$index], $children);
+    }
 
-        foreach ($children[$index] as $childIndex) {
-            $count += $this->countDescendants($childIndex, $children);
+    /**
+     * @param list<int> $childIndices
+     * @param array<int, list<int>> $children
+     */
+    private function countVisibleChildren(Document $document, array $childIndices, array $children): int
+    {
+        $count = count($childIndices);
+
+        foreach ($childIndices as $childIndex) {
+            if (!$document->outlines[$childIndex]->open) {
+                continue;
+            }
+
+            $count += $this->countVisibleDescendants($document, $childIndex, $children);
         }
 
         return $count;
@@ -206,24 +230,96 @@ final class DocumentOutlineObjectBuilder
         DocumentSerializationPlanBuildState $state,
         Outline $outline,
     ): string {
-        $pageIndex = $outline->pageNumber - 1;
-        $pageObjectId = $state->pageObjectIds[$pageIndex];
+        if ($outline->destination->isNamed()) {
+            return '/' . $this->pdfName($outline->destination->namedDestination ?? '');
+        }
 
-        if ($outline->hasPosition()) {
+        $pageIndex = $outline->destination->pageNumber - 1;
+        $pageReference = $outline->destination->isRemote()
+            ? (string) ($outline->destination->pageNumber - 1)
+            : $state->pageObjectIds[$pageIndex] . ' 0 R';
+
+        if ($outline->destination->isFit()) {
+            return '[' . $pageReference . ' /Fit]';
+        }
+
+        if ($outline->destination->isFitHorizontal()) {
             return '['
-                . $pageObjectId
-                . ' 0 R /XYZ '
-                . $this->formatNumber($outline->x ?? 0.0)
+                . $pageReference
+                . ' /FitH '
+                . $this->formatNumber($outline->destination->top ?? 0.0)
+                . ']';
+        }
+
+        if ($outline->destination->isFitRectangle()) {
+            return '['
+                . $pageReference
+                . ' /FitR '
+                . $this->formatNumber($outline->destination->left ?? 0.0)
                 . ' '
-                . $this->formatNumber($outline->y ?? 0.0)
-                . ' null]';
+                . $this->formatNumber($outline->destination->bottom ?? 0.0)
+                . ' '
+                . $this->formatNumber($outline->destination->right ?? 0.0)
+                . ' '
+                . $this->formatNumber($outline->destination->top ?? 0.0)
+                . ']';
         }
 
         return '['
-            . $pageObjectId
-            . ' 0 R /XYZ 0 '
-            . $this->formatNumber($document->pages[$pageIndex]->size->height())
+            . $pageReference
+            . ' /XYZ '
+            . $this->formatNumber($outline->destination->x ?? 0.0)
+            . ' '
+            . $this->formatNumber($outline->destination->y ?? $document->pages[$pageIndex]->size->height())
             . ' null]';
+    }
+
+    private function buildDestinationEntry(Outline $outline, string $destination): string
+    {
+        if (!$outline->destination->useGoToAction) {
+            return '/Dest ' . $destination;
+        }
+
+        if ($outline->destination->isRemote()) {
+            $entries = [
+                '/S /GoToR',
+                '/F ' . $this->pdfString($outline->destination->remoteFile ?? ''),
+                '/D ' . $destination,
+            ];
+
+            if ($outline->destination->newWindow) {
+                $entries[] = '/NewWindow true';
+            }
+
+            return '/A << ' . implode(' ', $entries) . ' >>';
+        }
+
+        return '/A << /S /GoTo /D ' . $destination . ' >>';
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildStyleEntries(Outline $outline): array
+    {
+        if ($outline->style === null) {
+            return [];
+        }
+
+        $entries = [];
+        $rgbComponents = $outline->style->pdfRgbComponents();
+
+        if ($rgbComponents !== null) {
+            $entries[] = '/C [' . implode(' ', array_map($this->formatNumber(...), $rgbComponents)) . ']';
+        }
+
+        $flags = $outline->style->pdfFlags();
+
+        if ($flags !== 0) {
+            $entries[] = '/F ' . $flags;
+        }
+
+        return $entries;
     }
 
     private function formatNumber(float $value): string
@@ -240,5 +336,31 @@ final class DocumentOutlineObjectBuilder
             ['\\\\', '\(', '\)'],
             $value,
         ) . ')';
+    }
+
+    private function pdfName(string $value): string
+    {
+        $encoded = '';
+
+        foreach (str_split($value) as $character) {
+            $ord = ord($character);
+
+            if (
+                ($ord >= 48 && $ord <= 57)
+                || ($ord >= 65 && $ord <= 90)
+                || ($ord >= 97 && $ord <= 122)
+                || $character === '-'
+                || $character === '_'
+                || $character === '.'
+            ) {
+                $encoded .= $character;
+
+                continue;
+            }
+
+            $encoded .= '#' . strtoupper(str_pad(dechex($ord), 2, '0', STR_PAD_LEFT));
+        }
+
+        return $encoded;
     }
 }
