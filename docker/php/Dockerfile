@@ -4,6 +4,7 @@ ARG APP_UID=1000
 ARG APP_GID=1000
 
 RUN apk add --no-cache $PHPIZE_DEPS linux-headers \
+    && docker-php-ext-install exif \
     && pecl install xdebug \
     && docker-php-ext-enable xdebug \
     && apk del $PHPIZE_DEPS linux-headers \
