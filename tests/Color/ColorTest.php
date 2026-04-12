@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Color;
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Color\MaterialColor;
 use PHPUnit\Framework\TestCase;
 
 final class ColorTest extends TestCase
@@ -63,11 +64,27 @@ final class ColorTest extends TestCase
         self::assertEquals(Color::hex('#c0c0c0'), Color::silver());
     }
 
+    public function testItBuildsMaterialColors(): void
+    {
+        self::assertEquals(Color::hex('#F44336'), Color::material(MaterialColor::RED));
+        self::assertEquals(Color::hex('#2196F3'), Color::material(MaterialColor::BLUE, 500));
+        self::assertEquals(Color::hex('#82B1FF'), Color::material(MaterialColor::BLUE, 'A100'));
+        self::assertEquals(Color::hex('#607D8B'), Color::material(MaterialColor::BLUE_GREY));
+        self::assertEquals(Color::hex('#212121'), Color::material(MaterialColor::GREY, 900));
+    }
+
     public function testItRejectsInvalidHexValues(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
         Color::hex('oops');
+    }
+
+    public function testItRejectsUnsupportedMaterialShades(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Color::material(MaterialColor::GREY, 'A100');
     }
 
     public function testItRejectsOutOfRangeChannels(): void
