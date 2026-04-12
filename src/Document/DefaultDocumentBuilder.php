@@ -33,6 +33,8 @@ use Kalle\Pdf\Document\Form\RadioButtonGroup;
 use Kalle\Pdf\Document\Form\SignatureField;
 use Kalle\Pdf\Document\Form\TextField;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsEntry;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
@@ -101,6 +103,10 @@ use Throwable;
 
 class DefaultDocumentBuilder implements DocumentBuilder
 {
+    /** @var list<callable(PageDecorationContext, int): void> */
+    private array $headerRenderers = [];
+    /** @var list<callable(PageDecorationContext, int): void> */
+    private array $footerRenderers = [];
     /** @var list<Page> */
     private array $pages = [];
     private ?PageSize $defaultPageSize = null;
@@ -144,9 +150,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private array $attachments = [];
     /** @var list<Outline> */
     private array $outlines = [];
+    /** @var list<TableOfContentsEntry> */
+    private array $tableOfContentsEntries = [];
+    private ?TableOfContentsOptions $tableOfContentsOptions = null;
     private ?AcroForm $acroForm = null;
     private ?DebugConfig $debugConfig = null;
     private ?DebugSink $debugSink = null;
+    private bool $renderingPageDecoration = false;
 
     public static function make(): self
     {
@@ -261,6 +271,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone->defaultPageMargin = $margin;
         $clone->currentPageMargin = $margin;
         $clone->currentPageCursorY = null;
+
+        return $clone;
+    }
+
+    public function header(callable $renderer): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->headerRenderers = [...$clone->headerRenderers, $renderer];
+
+        return $clone;
+    }
+
+    public function footer(callable $renderer): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->footerRenderers = [...$clone->footerRenderers, $renderer];
 
         return $clone;
     }
@@ -1339,13 +1365,23 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     public function outline(string $title): DocumentBuilder
     {
+        return $this->outlineLevel($title, 1);
+    }
+
+    public function outlineAt(string $title, int $pageNumber, ?float $x = null, ?float $y = null): DocumentBuilder
+    {
+        return $this->outlineAtLevel($title, 1, $pageNumber, $x, $y);
+    }
+
+    public function outlineLevel(string $title, int $level): DocumentBuilder
+    {
         $clone = clone $this;
-        $clone->outlines[] = Outline::page($title, count($this->pages) + 1);
+        $clone->outlines[] = Outline::page($title, count($this->pages) + 1, $level);
 
         return $clone;
     }
 
-    public function outlineAt(string $title, int $pageNumber, ?float $x = null, ?float $y = null): DocumentBuilder
+    public function outlineAtLevel(string $title, int $level, int $pageNumber, ?float $x = null, ?float $y = null): DocumentBuilder
     {
         if (($x === null) !== ($y === null)) {
             throw new InvalidArgumentException('Outline coordinates must be provided together.');
@@ -1353,8 +1389,38 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $clone = clone $this;
         $clone->outlines[] = ($x === null && $y === null)
-            ? Outline::page($title, $pageNumber)
-            : Outline::position($title, $pageNumber, $x, $y);
+            ? Outline::page($title, $pageNumber, $level)
+            : Outline::position($title, $pageNumber, $x, $y, $level);
+
+        return $clone;
+    }
+
+    public function tableOfContents(?TableOfContentsOptions $options = null): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->tableOfContentsOptions = $options ?? new TableOfContentsOptions();
+
+        return $clone;
+    }
+
+    public function tableOfContentsEntry(string $title): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->tableOfContentsEntries[] = TableOfContentsEntry::page($title, count($this->pages) + 1);
+
+        return $clone;
+    }
+
+    public function tableOfContentsEntryAt(string $title, int $pageNumber, ?float $x = null, ?float $y = null): DocumentBuilder
+    {
+        if (($x === null) !== ($y === null)) {
+            throw new InvalidArgumentException('Table of contents entry coordinates must be provided together.');
+        }
+
+        $clone = clone $this;
+        $clone->tableOfContentsEntries[] = ($x === null && $y === null)
+            ? TableOfContentsEntry::page($title, $pageNumber)
+            : TableOfContentsEntry::position($title, $pageNumber, $x, $y);
 
         return $clone;
     }
@@ -1420,7 +1486,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     public function build(): Document
     {
-        $pages = [...$this->pages, $this->buildCurrentPage()];
+        $pages = $this->applyPageDecorators([...$this->pages, $this->buildCurrentPage()]);
         $debugger = $this->buildDebugger();
         $document = new Document(
             profile: $this->profile ?? Profile::standard(),
@@ -1441,6 +1507,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
             taggedLists: $this->buildTaggedLists(),
             debugger: $debugger,
         );
+
+        if ($this->tableOfContentsOptions !== null) {
+            $document = (new DocumentTableOfContentsBuilder())->build(
+                $document,
+                $this->tableOfContentsOptions,
+                $this->tableOfContentsEntries,
+            );
+            $pages = $document->pages;
+        }
 
         $debugger->lifecycle('document.created', [
             'title' => $document->title,
@@ -1526,6 +1601,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
             label: $this->currentPageLabel,
             name: $this->currentPageName,
         );
+    }
+
+    public function buildPageDecorationResult(): Page
+    {
+        return $this->buildCurrentPage();
     }
 
     private function resetCurrentPage(?PageOptions $options): void
@@ -2170,7 +2250,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $ascent,
         ?string $taggedGroupKey = null,
     ): array {
-        $markedContentId = ($this->profile ?? Profile::standard())->requiresTaggedLinkAnnotations()
+        $markedContentId = $this->requiresTaggedLinkAnnotations()
             ? $this->nextMarkedContentId()
             : null;
 
@@ -2819,7 +2899,25 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function requiresTaggedStructure(): bool
     {
+        if ($this->renderingPageDecoration) {
+            return false;
+        }
+
         return ($this->profile ?? Profile::standard())->requiresTaggedPdf();
+    }
+
+    private function requiresTaggedPdfProfile(): bool
+    {
+        return ($this->profile ?? Profile::standard())->requiresTaggedPdf();
+    }
+
+    private function requiresTaggedLinkAnnotations(): bool
+    {
+        if ($this->renderingPageDecoration) {
+            return false;
+        }
+
+        return ($this->profile ?? Profile::standard())->requiresTaggedLinkAnnotations();
     }
 
     private function nextTaggedMarkedContentId(): ?int
@@ -3164,7 +3262,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function wrapArtifactGraphics(string $contents): string
     {
-        if ($contents === '' || !($this->profile ?? Profile::standard())->requiresTaggedPdf()) {
+        if ($contents === '' || !$this->requiresTaggedPdfProfile()) {
             return $contents;
         }
 
@@ -3207,7 +3305,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'Q',
         ];
 
-        if (!($this->profile ?? Profile::standard())->requiresTaggedPdf()) {
+        if (!$this->requiresTaggedPdfProfile()) {
             return implode("\n", $lines);
         }
 
@@ -3232,7 +3330,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function markedContentIdForImage(?ImageAccessibility $accessibility): ?int
     {
-        if (!($this->profile ?? Profile::standard())->requiresTaggedPdf()) {
+        if (!$this->requiresTaggedStructure()) {
             return null;
         }
 
@@ -3477,6 +3575,95 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $formatted = number_format($value, 3, '.', '');
 
         return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    /**
+     * @param list<Page> $pages
+     * @return list<Page>
+     */
+    private function applyPageDecorators(array $pages): array
+    {
+        if ($this->headerRenderers === [] && $this->footerRenderers === []) {
+            return $pages;
+        }
+
+        foreach ($pages as $index => $page) {
+            $pageNumber = $index + 1;
+
+            if ($this->headerRenderers !== []) {
+                $page = $this->applyPageDecoration($page, $pageNumber, $this->headerRenderers, true);
+            }
+
+            if ($this->footerRenderers !== []) {
+                $page = $this->applyPageDecoration($page, $pageNumber, $this->footerRenderers, false);
+            }
+
+            $pages[$index] = $page;
+        }
+
+        return $pages;
+    }
+
+    /**
+     * @param list<callable(PageDecorationContext, int): void> $renderers
+     */
+    private function applyPageDecoration(Page $page, int $pageNumber, array $renderers, bool $prependContents): Page
+    {
+        $context = new PageDecorationContext(
+            $this->createPageDecorationBuilder($page),
+            $page,
+            $pageNumber,
+        );
+
+        foreach ($renderers as $renderer) {
+            $renderer($context, $pageNumber);
+        }
+
+        $decorationPage = $context->decoratedPage();
+        $decorationContents = $this->wrapArtifactGraphics($decorationPage->contents);
+
+        return new Page(
+            size: $page->size,
+            contents: $prependContents
+                ? $this->appendPageContent($decorationContents, $page->contents)
+                : $this->appendPageContent($page->contents, $decorationContents),
+            fontResources: [...$page->fontResources, ...$decorationPage->fontResources],
+            imageResources: [...$page->imageResources, ...$decorationPage->imageResources],
+            images: [...$page->images, ...$decorationPage->images],
+            annotations: [...$page->annotations, ...$decorationPage->annotations],
+            namedDestinations: [...$page->namedDestinations, ...$decorationPage->namedDestinations],
+            margin: $page->margin,
+            backgroundColor: $page->backgroundColor,
+            label: $page->label,
+            name: $page->name,
+        );
+    }
+
+    private function createPageDecorationBuilder(Page $page): self
+    {
+        $clone = clone $this;
+        $clone->pages = [];
+        $clone->currentPageSize = $page->size;
+        $clone->currentPageContents = '';
+        $clone->currentPageFontResources = $page->fontResources;
+        $clone->currentPageImageResources = $page->imageResources;
+        $clone->currentPageImages = [];
+        $clone->currentPageAnnotations = [];
+        $clone->currentPageNamedDestinations = [];
+        $clone->currentPageMargin = $page->margin;
+        $clone->currentPageCursorY = null;
+        $clone->currentPageBackgroundColor = $page->backgroundColor;
+        $clone->currentPageLabel = $page->label;
+        $clone->currentPageName = $page->name;
+        $clone->currentPageNextMarkedContentId = 0;
+        $clone->renderingPageDecoration = true;
+        $clone->taggedTables = [];
+        $clone->taggedTextBlocks = [];
+        $clone->taggedLists = [];
+        $clone->nextTaggedTableId = 0;
+        $clone->nextTaggedListId = 0;
+
+        return $clone;
     }
 
 }

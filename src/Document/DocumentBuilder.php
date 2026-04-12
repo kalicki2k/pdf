@@ -9,6 +9,7 @@ use Kalle\Pdf\Debug\DebugConfig;
 use Kalle\Pdf\Debug\DebugSink;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Image\ImageAccessibility;
@@ -54,6 +55,16 @@ interface DocumentBuilder
     public function pageSize(PageSize $size): self;
 
     public function margin(Margin $margin): self;
+
+    /**
+     * @param callable(PageDecorationContext, int): void $renderer
+     */
+    public function header(callable $renderer): self;
+
+    /**
+     * @param callable(PageDecorationContext, int): void $renderer
+     */
+    public function footer(callable $renderer): self;
 
     public function content(string $content): self;
 
@@ -285,6 +296,16 @@ interface DocumentBuilder
     public function outline(string $title): self;
 
     public function outlineAt(string $title, int $pageNumber, ?float $x = null, ?float $y = null): self;
+
+    public function outlineLevel(string $title, int $level): self;
+
+    public function outlineAtLevel(string $title, int $level, int $pageNumber, ?float $x = null, ?float $y = null): self;
+
+    public function tableOfContents(?TableOfContentsOptions $options = null): self;
+
+    public function tableOfContentsEntry(string $title): self;
+
+    public function tableOfContentsEntryAt(string $title, int $pageNumber, ?float $x = null, ?float $y = null): self;
 
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): self;
 

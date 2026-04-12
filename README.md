@@ -116,11 +116,53 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+## Header und Footer
+
+Dokumentweite Seitendekorationen koennen ueber `header()` und `footer()` registriert werden. Beide Callbacks laufen fuer jede erzeugte Seite, auch bei `newPage()` und automatischen Seitenumbruechen. Sie rendern in einem isolierten Seitendekorations-Context und greifen daher nicht in den normalen Content-Flow ein.
+
+Ein ausführbares Beispiel liegt in `examples/header-footer.php`.
+
+```php
+use Kalle\Pdf\Document\PageDecorationContext;
+use Kalle\Pdf\Text\TextOptions;
+
+$document = DefaultDocumentBuilder::make()
+    ->header(static function (PageDecorationContext $page, int $pageNumber): void {
+        $page->text('Projektstatus', new TextOptions(
+            x: $page->page()->contentArea()->left,
+            y: $page->page()->contentArea()->top,
+            fontSize: 12,
+        ));
+    })
+    ->footer(static function (PageDecorationContext $page, int $pageNumber): void {
+        $page->text('Seite ' . $pageNumber, new TextOptions(
+            x: $page->page()->contentArea()->left,
+            y: $page->page()->contentArea()->bottom + 12,
+            fontSize: 10,
+        ));
+    })
+    ->paragraph('Langer Inhalt ...')
+    ->build();
+```
+
 ## Links
 
 Die erste Annotations-Anbindung unterstützt aktuell schlanke Link-Annotationen mit explizitem Rechteck auf der Seite, sowohl fuer externe URLs als auch fuer interne Spruenge auf andere Seiten, Zielpositionen oder Named Destinations. Text kann ausserdem direkt mit `TextOptions(link: ...)` oder mit mehreren unterschiedlich verlinkten `TextSegment`-Runs an Link-Annotationen gebunden werden. Fuer explizitere Inline-Link-Spans steht `TextLink` zur Verfuegung, damit sichtbarer Text, Annotation-`/Contents`, PDF/UA-Alternativtext und Gruppierung getrennt steuerbar bleiben.
 
-Einfache dokumentweite PDF-Outlines/Bookmarks werden ebenfalls unterstuetzt. Die erste Iteration bildet nur Top-Level-Bookmarks ab und verwendet explizite Ziele auf Seiten oder Seitenpositionen.
+Dokumentweite PDF-Outlines/Bookmarks werden ebenfalls unterstuetzt. Neben Top-Level-Bookmarks koennen Outlines jetzt auch explizit verschachtelt werden. Ziele verwenden explizite Ziele auf Seiten oder Seitenpositionen.
+
+```php
+use Kalle\Pdf\Document\DefaultDocumentBuilder;
+
+$document = DefaultDocumentBuilder::make()
+    ->outline('Start')
+    ->text('Seite 1')
+    ->newPage()
+    ->outlineAt('Kapitel 1', 2)
+    ->outlineAtLevel('Abschnitt 1.1', 2, 2, 72, 640)
+    ->text('Seite 2')
+    ->build();
+```
 
 Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen.
 
@@ -210,6 +252,10 @@ $document = DefaultDocumentBuilder::make()
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsLeaderStyle;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsPlacement;
+use Kalle\Pdf\Document\TableOfContents\TableOfContentsStyle;
 
 $document = DefaultDocumentBuilder::make()
     ->outline('Start')
@@ -217,8 +263,18 @@ $document = DefaultDocumentBuilder::make()
     ->newPage()
     ->outlineAt('Details', 2, 72, 640)
     ->text('Seite 2')
+    ->tableOfContents(new TableOfContentsOptions(
+        placement: TableOfContentsPlacement::start(),
+        style: new TableOfContentsStyle(
+            leaderStyle: TableOfContentsLeaderStyle::DOTS,
+        ),
+    ))
     ->build();
 ```
+
+Alternativ koennen TOC-Eintraege explizit ueber `tableOfContentsEntry(...)` oder `tableOfContentsEntryAt(...)` registriert werden. In der aktuellen ersten Iteration verwendet die TOC entweder die expliziten TOC-Eintraege oder, wenn keine gesetzt sind, die vorhandenen Outlines. Platzierungen am Anfang, Ende oder nach einer bestimmten Seite werden unterstuetzt; logische Seitennummerierung und Header/Footer auf automatisch erzeugten TOC-Seiten sind gegenueber dem Altprojekt noch nicht uebernommen.
+
+Ein ausfuehrbares Beispiel liegt in `examples/table-of-contents.php`.
 
 ## Tabellen
 
@@ -302,7 +358,7 @@ $document = DefaultDocumentBuilder::make()
 
 ## PDF/A-1a Umfang
 
-Der aktuell abgesicherte `PDF/A-1a`-Pfad in `pdf2` deckt bewusst einen klar begrenzten Strukturumfang ab: Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer- und Builder-Tests abgesichert.
+Der aktuell abgesicherte `PDF/A-1a`-Pfad in `pdf2` deckt bewusst einen klar begrenzten Strukturumfang ab: Ueberschriften und Absaetze (`H1` bis `H6`, `P`), Listen (`L`, `LI`, `Lbl`, `LBody`), Tabellen (`Table`, `Caption`, `TR`, `TH`, `TD`), Bilder mit Alternativtext als `Figure` und einfache Link-Annotationen. Dokumente in diesem Pfad brauchen ausserdem einen gesetzten Sprachwert auf Dokumentebene (`/Lang`). Diese Kombination ist ueber die `PDF/A-1a`-Regressionen sowie ueber Renderer- und Builder-Tests abgesichert.
 
 Nicht Teil dieses Umfangs sind aktuell reichere Annotationstypen, Formulare, Signaturfelder oder weitergehende Strukturtypen ausserhalb dieses Satzes. Solche Faelle sollen fuer `PDF/A-1a` weiter explizit scheitern oder erst nach eigener Regressionserweiterung freigegeben werden.
 
