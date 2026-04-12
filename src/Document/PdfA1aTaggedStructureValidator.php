@@ -10,6 +10,8 @@ use function implode;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Writer\IndirectObject;
 
 use function ksort;
@@ -777,8 +779,15 @@ final class PdfA1aTaggedStructureValidator
         return $objectsById[$objectId]->contents;
     }
 
-    private function assertStructElemTagAndParent(string $contents, string $tag, int $parentObjectId): void
+    private function assertStructElemTagAndParent(string $contents, string $tag, ?int $parentObjectId): void
     {
+        if ($parentObjectId === null) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-1a structure element /S /%s requires a parent object id.',
+                $tag,
+            ));
+        }
+
         if (!str_contains($contents, '/Type /StructElem') || !str_contains($contents, '/S /' . $tag)) {
             throw new InvalidArgumentException(sprintf(
                 'PDF/A-1a structure element must use /Type /StructElem and /S /%s.',
@@ -920,6 +929,9 @@ final class PdfA1aTaggedStructureValidator
         return $entries;
     }
 
+    /**
+     * @param array<int, list<int>> $entries
+     */
     private function formatParentTreeEntries(array $entries): string
     {
         $parts = [];
@@ -961,9 +973,9 @@ final class PdfA1aTaggedStructureValidator
     }
 
     /**
-     * @return array<string, list<object>>
+     * @return array{header: list<TaggedTableRow>, body: list<TaggedTableRow>, footer: list<TaggedTableRow>}
      */
-    private function taggedTableSections(Document $document, object $taggedTable): array
+    private function taggedTableSections(Document $document, TaggedTable $taggedTable): array
     {
         return [
             'header' => $taggedTable->headerRows,

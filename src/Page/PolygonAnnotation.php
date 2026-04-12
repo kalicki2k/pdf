@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
+use function array_map;
+use function array_shift;
+use function count;
+
+use function implode;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Writer\IndirectObject;
 
-use function array_map;
-use function array_shift;
-use function count;
-use function implode;
 use function max;
 use function min;
 use function strlen;
@@ -174,11 +176,8 @@ final readonly class PolygonAnnotation implements AppearanceStreamAnnotation, Pa
             $commands[] = $this->strokingColorOperator($this->borderColor);
         }
 
-        $commands[] = $this->formatNumber($this->borderStyle?->width ?? 1.0) . ' w';
-
-        if ($first !== null) {
-            $commands[] = $this->formatNumber($first[0] - $minX) . ' ' . $this->formatNumber($first[1] - $minY) . ' m';
-        }
+        $commands[] = $this->formatNumber($this->borderStyle !== null ? $this->borderStyle->width : 1.0) . ' w';
+        $commands[] = $this->formatNumber($first[0] - $minX) . ' ' . $this->formatNumber($first[1] - $minY) . ' m';
 
         foreach ($localVertices as [$x, $y]) {
             $commands[] = $this->formatNumber($x - $minX) . ' ' . $this->formatNumber($y - $minY) . ' l';

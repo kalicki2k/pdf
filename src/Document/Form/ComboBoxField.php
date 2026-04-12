@@ -136,8 +136,8 @@ final readonly class ComboBoxField extends WidgetFormField
     private function appearanceStreamContents(FormFieldRenderContext $context): string
     {
         if ($context->defaultTextFont !== null) {
-            $selected = $this->value ?? $this->defaultValue ?? array_key_first($this->options);
-            $label = $selected !== null ? ($this->options[$selected] ?? '') : '';
+            $selected = $this->value ?? array_key_first($this->options);
+            $label = $this->options[$selected] ?? '';
 
             return implode("\n", [
                 '1 g',

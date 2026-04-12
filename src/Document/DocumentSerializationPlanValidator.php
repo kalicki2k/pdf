@@ -181,7 +181,9 @@ final class DocumentSerializationPlanValidator
                 || (
                     $document->profile->requiresTaggedPageAnnotations()
                     && (
-                        ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $this->pdfA1aPageAnnotationPolicy->supports($annotation))
+                        ($document->profile->pdfaConformance() === 'A'
+                            && $annotation instanceof PageAnnotation
+                            && $this->pdfA1aPageAnnotationPolicy->supports($annotation))
                         || $annotation instanceof PdfUaTaggedPageAnnotation
                     )
                 )

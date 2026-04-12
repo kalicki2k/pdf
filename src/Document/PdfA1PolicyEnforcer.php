@@ -32,7 +32,7 @@ final class PdfA1PolicyEnforcer
             }
         }
 
-        foreach (($acroForm ?? $document->acroForm)?->fields ?? [] as $field) {
+        foreach (($acroForm ?? $document->acroForm)->fields ?? [] as $field) {
             $this->actionPolicy->assertFormFieldAllowed($document, $field);
         }
 

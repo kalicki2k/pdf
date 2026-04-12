@@ -10,6 +10,7 @@ final readonly class StructTreeRoot
 {
     /**
      * @param list<int> $kidObjectIds
+     * @param array<string, string> $roleMap
      */
     public function __construct(
         private array $kidObjectIds,
@@ -33,11 +34,13 @@ final readonly class StructTreeRoot
         }
 
         if ($this->roleMap !== []) {
-            $entries[] = '/RoleMap << ' . implode(' ', array_map(
-                static fn (string $standardType, string $customType): string => '/' . $customType . ' /' . $standardType,
-                $this->roleMap,
-                array_keys($this->roleMap),
-            )) . ' >>';
+            $roleMapEntries = [];
+
+            foreach ($this->roleMap as $customType => $standardType) {
+                $roleMapEntries[] = '/' . $customType . ' /' . $standardType;
+            }
+
+            $entries[] = '/RoleMap << ' . implode(' ', $roleMapEntries) . ' >>';
         }
 
         return '<< ' . implode(' ', $entries) . ' >>';

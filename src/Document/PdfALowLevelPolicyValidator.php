@@ -447,6 +447,9 @@ final class PdfALowLevelPolicyValidator
         return new FormFieldRenderContext($pageObjectIdsByPageNumber);
     }
 
+    /**
+     * @param list<string> $forbiddenKeys
+     */
     private function assertForbiddenDictionaryKeysAbsent(
         Document $document,
         string $dictionaryContents,
@@ -736,6 +739,9 @@ final class PdfALowLevelPolicyValidator
         return preg_match('/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/', $token) === 1;
     }
 
+    /**
+     * @param-out null $currentTextFontAlias
+     */
     private function assertBeginTextObject(
         Document $document,
         string $context,
@@ -754,6 +760,9 @@ final class PdfALowLevelPolicyValidator
         $currentTextFontAlias = null;
     }
 
+    /**
+     * @param-out null $currentTextFontAlias
+     */
     private function assertEndTextObject(
         Document $document,
         string $context,
@@ -908,7 +917,7 @@ final class PdfALowLevelPolicyValidator
             && in_array($operands[0], self::ALLOWED_MARKED_CONTENT_TAGS, true)
             && $operands[1] === '<<'
             && $operands[2] === '/MCID'
-            && $this->isOperandToken($operands[3] ?? '')
+            && $this->isOperandToken($operands[3])
             && $operands[4] === '>>'
         ) {
             return;

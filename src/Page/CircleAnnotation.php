@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
+use function implode;
+
 use InvalidArgumentException;
+
 use Kalle\Pdf\Color\Color;
 
-use function implode;
 use function strlen;
 
 final readonly class CircleAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation
@@ -124,7 +126,7 @@ final readonly class CircleAnnotation implements AppearanceStreamAnnotation, Pag
             $commands[] = $this->strokingColorOperator($this->borderColor);
         }
 
-        $borderWidth = $this->borderStyle?->width ?? 1.0;
+        $borderWidth = $this->borderStyle !== null ? $this->borderStyle->width : 1.0;
         $commands[] = $this->formatNumber($borderWidth) . ' w';
         $commands[] = $this->ellipsePathContents();
         $commands[] = $this->fillColor !== null && $this->borderColor !== null ? 'B' : ($this->fillColor !== null ? 'f' : 'S');

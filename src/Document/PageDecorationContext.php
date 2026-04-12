@@ -17,7 +17,7 @@ use Kalle\Pdf\Text\TextSegment;
 
 final class PageDecorationContext
 {
-    private DefaultDocumentBuilder $builder;
+    private DocumentBuilder $builder;
 
     public function __construct(
         DefaultDocumentBuilder $builder,
@@ -129,8 +129,7 @@ final class PageDecorationContext
         float $y2,
         ?StrokeStyle $stroke = null,
         ?GraphicsAccessibility $accessibility = null,
-    ): self
-    {
+    ): self {
         $this->builder = $this->builder->line($x1, $y1, $x2, $y2, $stroke, $accessibility);
 
         return $this;
@@ -170,8 +169,7 @@ final class PageDecorationContext
         ?StrokeStyle $stroke = null,
         ?Color $fillColor = null,
         ?GraphicsAccessibility $accessibility = null,
-    ): self
-    {
+    ): self {
         $this->builder = $this->builder->path($path, $stroke, $fillColor, $accessibility);
 
         return $this;
@@ -179,6 +177,10 @@ final class PageDecorationContext
 
     public function decoratedPage(): Page
     {
+        if (!$this->builder instanceof DefaultDocumentBuilder) {
+            throw new \LogicException('Page decoration requires the default document builder implementation.');
+        }
+
         return $this->builder->buildPageDecorationResult();
     }
 }

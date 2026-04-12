@@ -35,8 +35,8 @@ use Kalle\Pdf\Document\Form\TextField;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsEntry;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
-use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
+use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListItem;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureElement;
@@ -97,19 +97,19 @@ use Kalle\Pdf\Page\PageOrientation;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\PolygonAnnotation;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
-use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\PolyLineAnnotation;
 use Kalle\Pdf\Page\PolyLineAnnotationOptions;
+use Kalle\Pdf\Page\PopupAnnotationDefinition;
 use Kalle\Pdf\Page\ShapeAnnotationOptions;
 use Kalle\Pdf\Page\SquareAnnotation;
 use Kalle\Pdf\Page\SquigglyAnnotation;
 use Kalle\Pdf\Page\StampAnnotation;
 use Kalle\Pdf\Page\StampAnnotationOptions;
 use Kalle\Pdf\Page\StrikeOutAnnotation;
+use Kalle\Pdf\Page\SupportsPopupAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Page\UnderlineAnnotation;
-use Kalle\Pdf\Page\SupportsPopupAnnotation;
 use Kalle\Pdf\Text\MappedTextRun;
 use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
@@ -841,8 +841,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $y2,
         ?StrokeStyle $stroke = null,
         ?GraphicsAccessibility $accessibility = null,
-    ): DocumentBuilder
-    {
+    ): DocumentBuilder {
         $clone = clone $this;
         $stroke ??= new StrokeStyle();
         $markedContentId = $clone->markedContentIdForGraphic($accessibility);
@@ -929,8 +928,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?StrokeStyle $stroke = null,
         ?Color $fillColor = null,
         ?GraphicsAccessibility $accessibility = null,
-    ): DocumentBuilder
-    {
+    ): DocumentBuilder {
         $stroke ??= $fillColor === null ? new StrokeStyle() : null;
 
         if ($stroke === null && $fillColor === null) {
@@ -1979,7 +1977,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
             throw new InvalidArgumentException('The referenced page annotation does not support popup annotations.');
         }
 
-        $clone->currentPageAnnotations[$annotationIndex] = $annotation->withPopup($definition);
+        $updatedAnnotation = $annotation->withPopup($definition);
+
+        if (!$updatedAnnotation instanceof PageAnnotation) {
+            throw new InvalidArgumentException('Popup annotation support must return a page annotation instance.');
+        }
+
+        $updatedAnnotations = $clone->currentPageAnnotations;
+        $updatedAnnotations[$annotationIndex] = $updatedAnnotation;
+        /** @var list<PageAnnotation> $normalizedAnnotations */
+        $normalizedAnnotations = array_values($updatedAnnotations);
+        $clone->currentPageAnnotations = $normalizedAnnotations;
 
         return $clone;
     }
@@ -2400,11 +2408,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
             throw new InvalidArgumentException('Outline coordinates must be provided together.');
         }
 
-        return $this->addOutline(
-            ($x === null && $y === null)
-                ? Outline::page($title, $pageNumber, $level, $open)
-                : Outline::position($title, $pageNumber, $x, $y, $level, $open),
-        );
+        if ($x === null || $y === null) {
+            return $this->addOutline(Outline::page($title, $pageNumber, $level, $open));
+        }
+
+        return $this->addOutline(Outline::position($title, $pageNumber, $x, $y, $level, $open));
     }
 
     private function appendRelativeOutline(string $title, int $levelOffset, bool $open): DocumentBuilder
@@ -2446,7 +2454,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $clone = clone $this;
-        $clone->tableOfContentsEntries[] = ($x === null && $y === null)
+        $clone->tableOfContentsEntries[] = ($x === null || $y === null)
             ? TableOfContentsEntry::page($title, $pageNumber)
             : TableOfContentsEntry::position($title, $pageNumber, $x, $y);
 
@@ -4445,8 +4453,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         string $contents,
         ?GraphicsAccessibility $accessibility = null,
         ?int $markedContentId = null,
-    ): string
-    {
+    ): string {
         if (!$this->requiresTaggedPdfProfile()) {
             return $contents;
         }
@@ -4899,8 +4906,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         int $totalPages,
         array $renderers,
         bool $prependContents,
-    ): Page
-    {
+    ): Page {
         $context = new PageDecorationContext(
             $this->createPageDecorationBuilder($page),
             $page,

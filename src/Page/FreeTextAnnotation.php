@@ -163,7 +163,7 @@ final readonly class FreeTextAnnotation implements AppearanceStreamAnnotation, P
         ) . ')';
     }
 
-    public function taggedAnnotationAltText(): ?string
+    public function taggedAnnotationAltText(): string
     {
         return $this->contents;
     }

@@ -8,13 +8,9 @@ use function implode;
 
 use InvalidArgumentException;
 
-use function number_format;
-use function rtrim;
-use function sprintf;
-use function str_split;
-use function strlen;
-
 use Kalle\Pdf\Writer\IndirectObject;
+
+use function strlen;
 
 final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {
@@ -159,7 +155,7 @@ final readonly class TextAnnotation implements AppearanceStreamAnnotation, PageA
         ];
     }
 
-    public function taggedAnnotationAltText(): ?string
+    public function taggedAnnotationAltText(): string
     {
         return $this->contents;
     }

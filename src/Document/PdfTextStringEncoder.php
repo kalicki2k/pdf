@@ -69,6 +69,7 @@ final class PdfTextStringEncoder
                 return null;
             }
 
+            /** @var int<0, 255> $pdfDocEncoding */
             $bytes .= chr($pdfDocEncoding);
         }
 

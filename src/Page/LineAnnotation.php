@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
+use function implode;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
+
 use Kalle\Pdf\Writer\IndirectObject;
 
-use function implode;
 use function max;
 use function min;
 use function strlen;
@@ -158,7 +160,7 @@ final readonly class LineAnnotation implements AppearanceStreamAnnotation, PageA
     {
         $minX = min($this->x1, $this->x2);
         $minY = min($this->y1, $this->y2);
-        $borderWidth = $this->borderStyle?->width ?? 1.0;
+        $borderWidth = $this->borderStyle !== null ? $this->borderStyle->width : 1.0;
 
         return implode("\n", [
             $this->strokingColorOperator($this->color ?? Color::black()),

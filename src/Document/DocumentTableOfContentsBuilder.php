@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function array_merge;
+use function array_slice;
+use function count;
+use function floor;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\CheckboxField;
@@ -28,22 +33,20 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
+use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\NamedDestination;
 use Kalle\Pdf\Page\Page;
+
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageOptions;
+use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
 
-use function array_merge;
-use function array_slice;
-use function count;
-use function floor;
 use function max;
 use function preg_split;
 use function rtrim;
-use function sprintf;
 use function str_repeat;
 
 /**
@@ -182,7 +185,7 @@ final readonly class DocumentTableOfContentsBuilder
      *   newPageEntryY: float
      * }
      */
-    private function layout(TableOfContentsOptions $options, \Kalle\Pdf\Page\PageSize $pageSize): array
+    private function layout(TableOfContentsOptions $options, PageSize $pageSize): array
     {
         $left = $options->margin->left;
         $right = $pageSize->width() - $options->margin->right;
@@ -267,7 +270,7 @@ final readonly class DocumentTableOfContentsBuilder
      */
     private function buildTocPages(
         array $resolvedEntries,
-        \Kalle\Pdf\Page\PageSize $pageSize,
+        PageSize $pageSize,
         array $layout,
         TableOfContentsOptions $options,
     ): array {
@@ -761,7 +764,7 @@ final readonly class DocumentTableOfContentsBuilder
             return EmbeddedFontDefinition::fromSource($options->embeddedFont)->measureTextWidth($text, $fontSize);
         }
 
-        return \Kalle\Pdf\Font\StandardFontDefinition::from($options->fontName)->measureTextWidth($text, $fontSize);
+        return StandardFontDefinition::from($options->fontName)->measureTextWidth($text, $fontSize);
     }
 
     private function fitTextToWidth(string $text, float $maxWidth, TableOfContentsOptions $options): string
@@ -801,12 +804,7 @@ final readonly class DocumentTableOfContentsBuilder
         $leaderCharacter = match ($options->style->leaderStyle) {
             TableOfContentsLeaderStyle::DOTS => '.',
             TableOfContentsLeaderStyle::DASHES => '-',
-            TableOfContentsLeaderStyle::NONE => '',
         };
-
-        if ($leaderCharacter === '') {
-            return '';
-        }
 
         $characterWidth = max(0.0001, $this->measureTextWidth($leaderCharacter, $options));
         $characterCount = max(3, (int) floor($leaderWidth / $characterWidth));
