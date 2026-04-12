@@ -21,6 +21,19 @@ use PHPUnit\Framework\TestCase;
 
 final class PdfA23PolicyMatrixTest extends TestCase
 {
+    public function testItRejectsPdfA2aUntilTheTaggedScopeIsExplicitlyImplemented(): void
+    {
+        $document = $this->pdfA2BaselineBuilder(Profile::pdfA2a())
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2a is not yet supported as a tagged PDF/A profile in the current implementation. Use a B- or U-conformance profile instead.',
+        );
+
+        (new DocumentSerializationPlanBuilder())->build($document);
+    }
+
     public function testItAllowsPdfA2bUriLinkAnnotationsWithinTheCurrentScope(): void
     {
         $document = $this->pdfA2BaselineBuilder(Profile::pdfA2b())
@@ -139,6 +152,25 @@ final class PdfA23PolicyMatrixTest extends TestCase
         self::assertStringContainsString('<pdfaid:part>3</pdfaid:part>', $serialized);
         self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $serialized);
         self::assertStringContainsString('/Encoding /Identity-H', $serialized);
+    }
+
+    public function testItRejectsPdfA3aUntilTheTaggedScopeIsExplicitlyImplemented(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3a())
+            ->title('Archive Package')
+            ->language('de-DE')
+            ->text('PDF/A-3a Package Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-3a is not yet supported as a tagged PDF/A profile in the current implementation. Use a B- or U-conformance profile instead.',
+        );
+
+        (new DocumentSerializationPlanBuilder())->build($document);
     }
 
     private function pdfA2BaselineBuilder(Profile $profile): DefaultDocumentBuilder

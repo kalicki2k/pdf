@@ -131,18 +131,19 @@ $document = Pdf::document()
             align: TextAlign::RIGHT,
             semantic: TextSemantic::ARTIFACT,
         ),
+    )
+    ->text(
+        'DEIN FIRMENNAME - Strasse Hausnummer - PLZ Ort - Deutschland',
+        new TextOptions(
+            x: $left,
+            y: Units::mm(238),
+            width: Units::mm(95),
+            fontSize: 6,
+            lineHeight: 8,
+            color: $mutedColor,
+            semantic: TextSemantic::ARTIFACT,
+        ),
     );
-//    ->text(
-//        'DEIN FIRMENNAME - Strasse Hausnummer - PLZ Ort - Deutschland',
-//        new TextOptions(
-//            x: $left,
-//            y: Units::mm(238),
-//            width: Units::mm(95),
-//            fontSize: 6,
-//            lineHeight: 8,
-//            color: $mutedColor,
-//        ),
-//    )
 //    ->line(
 //        $left,
 //        Units::mm(236),

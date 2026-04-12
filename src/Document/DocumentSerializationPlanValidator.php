@@ -56,6 +56,13 @@ final class DocumentSerializationPlanValidator
 
     private function assertProfileRequirements(Document $document): void
     {
+        if ($document->profile->isPdfA() && $document->profile->pdfaConformance() === 'A' && !$document->profile->isPdfA1()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s is not yet supported as a tagged PDF/A profile in the current implementation. Use a B- or U-conformance profile instead.',
+                $document->profile->name(),
+            ));
+        }
+
         if ($document->profile->requiresDocumentLanguage() && $document->language === null) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s requires a document language.',
