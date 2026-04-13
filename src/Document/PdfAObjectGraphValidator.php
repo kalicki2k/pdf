@@ -547,7 +547,7 @@ final class PdfAObjectGraphValidator
                     ),
                 );
 
-                $this->assertPdfA23AnnotationObject($document, $annotation, $annotationObject, $pageIndex, $annotationIndex);
+                $this->assertPdfAAnnotationObject($document, $annotation, $annotationObject, $pageIndex, $annotationIndex);
 
                 if (!$this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)) {
                     continue;
@@ -594,14 +594,14 @@ final class PdfAObjectGraphValidator
         }
     }
 
-    private function assertPdfA23AnnotationObject(
+    private function assertPdfAAnnotationObject(
         Document $document,
         object $annotation,
         IndirectObject $annotationObject,
         int $pageIndex,
         int $annotationIndex,
     ): void {
-        if (!$document->profile->isPdfA2() && !$document->profile->isPdfA3()) {
+        if (!$document->profile->isPdfA2() && !$document->profile->isPdfA3() && !$document->profile->isPdfA4()) {
             return;
         }
 
@@ -624,7 +624,7 @@ final class PdfAObjectGraphValidator
 
         if (!str_contains($annotationObject->contents, '/Subtype /' . $expectedSubtype)) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
-                'Profile %s requires page annotation %d on page %d to serialize /Subtype /%s in the final PDF/A-2/3 object graph.',
+                'Profile %s requires page annotation %d on page %d to serialize /Subtype /%s in the final PDF/A object graph.',
                 $document->profile->name(),
                 $annotationIndex + 1,
                 $pageIndex + 1,
@@ -639,7 +639,7 @@ final class PdfAObjectGraphValidator
         if ($annotation->target->isExternalUrl()) {
             if (!str_contains($annotationObject->contents, '/A << /S /URI /URI ')) {
                 throw new DocumentValidationException(DocumentBuildError::PDFA_ACTION_NOT_ALLOWED, sprintf(
-                    'Profile %s requires external link annotation %d on page %d to serialize a URI action in the final PDF/A-2/3 object graph.',
+                    'Profile %s requires external link annotation %d on page %d to serialize a URI action in the final PDF/A object graph.',
                     $document->profile->name(),
                     $annotationIndex + 1,
                     $pageIndex + 1,
@@ -651,7 +651,7 @@ final class PdfAObjectGraphValidator
 
         if (!str_contains($annotationObject->contents, '/Dest ')) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_ACTION_NOT_ALLOWED, sprintf(
-                'Profile %s requires internal link annotation %d on page %d to serialize a /Dest target in the final PDF/A-2/3 object graph.',
+                'Profile %s requires internal link annotation %d on page %d to serialize a /Dest target in the final PDF/A object graph.',
                 $document->profile->name(),
                 $annotationIndex + 1,
                 $pageIndex + 1,

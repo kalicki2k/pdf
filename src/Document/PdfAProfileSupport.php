@@ -173,14 +173,14 @@ final readonly class PdfAProfileSupport
             'PDF/A-4' => new self(
                 'PDF/A-4',
                 true,
-                'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and the currently blocked annotation/form/attachment features.',
+                'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and link annotations; forms, general page annotations and attachments remain blocked.',
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: false,
                     outputIntent: false,
                     infoDictionary: false,
-                    linkAnnotations: false,
+                    linkAnnotations: true,
                     nonLinkPageAnnotations: false,
                     acroFormFields: false,
                     documentAssociatedFiles: false,
@@ -209,14 +209,14 @@ final readonly class PdfAProfileSupport
             'PDF/A-4f' => new self(
                 'PDF/A-4f',
                 true,
-                'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and document-level associated-file attachments.',
+                'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, link annotations and document-level associated-file attachments.',
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: false,
                     outputIntent: false,
                     infoDictionary: false,
-                    linkAnnotations: false,
+                    linkAnnotations: true,
                     nonLinkPageAnnotations: false,
                     acroFormFields: false,
                     documentAssociatedFiles: true,

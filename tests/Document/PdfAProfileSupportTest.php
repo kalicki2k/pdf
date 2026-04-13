@@ -45,7 +45,7 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertFalse($support->capabilityRule(PdfACapability::TRANSPARENCY)->allowed);
     }
 
-    public function testPdfA4fCapabilityMatrixStaysExplicitlyBlockedDespiteAttachmentPlumbing(): void
+    public function testPdfA4fCapabilityMatrixReflectsTheCurrentAttachmentAndLinkScope(): void
     {
         $support = Profile::pdfA4f()->pdfaSupport();
 
@@ -53,7 +53,7 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertTrue($support->isSupported);
         self::assertTrue($support->capabilityRule(PdfACapability::DOCUMENT_ASSOCIATED_FILES)->allowed);
         self::assertTrue($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
-        self::assertFalse($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
+        self::assertTrue($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
     }
 
     public function testPdfA4BaseCapabilityMatrixReflectsTheCurrentSupportedScope(): void
@@ -63,9 +63,9 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertNotNull($support);
         self::assertTrue($support->isSupported);
         self::assertTrue($support->capabilityRule(PdfACapability::EMBEDDED_FONTS)->required);
+        self::assertTrue($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
         self::assertFalse($support->capabilityRule(PdfACapability::OUTPUT_INTENT)->allowed);
         self::assertFalse($support->capabilityRule(PdfACapability::INFO_DICTIONARY)->allowed);
-        self::assertFalse($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
         self::assertFalse($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
     }
 

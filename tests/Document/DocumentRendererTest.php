@@ -198,6 +198,34 @@ final class DocumentRendererTest extends TestCase
         self::assertStringNotContainsString("\n/Info ", $pdf);
     }
 
+    public function testItRendersPdfA4LinkAnnotationsWithinTheCurrentScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4())
+            ->title('Archive Copy')
+            ->text(
+                'Archive Copy',
+                new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+                ),
+            )
+            ->link('https://example.com/spec', 72, 670, 180, 16, 'Specification Link')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Link', $pdf);
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com/spec) >>', $pdf);
+        self::assertStringContainsString('/AP << /N ', $pdf);
+        self::assertStringNotContainsString('/OutputIntents', $pdf);
+        self::assertStringNotContainsString("\n/Info ", $pdf);
+    }
+
     public function testItRendersEmbeddedFontTextWithNewlines(): void
     {
         $document = DefaultDocumentBuilder::make()

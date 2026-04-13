@@ -207,7 +207,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-2u requires external link annotation 1 on page 1 to serialize a URI action in the final PDF/A-2/3 object graph.',
+            'Profile PDF/A-2u requires external link annotation 1 on page 1 to serialize a URI action in the final PDF/A object graph.',
         );
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
@@ -245,7 +245,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-2u requires page annotation 1 on page 1 to serialize /Subtype /Text in the final PDF/A-2/3 object graph.',
+            'Profile PDF/A-2u requires page annotation 1 on page 1 to serialize /Subtype /Text in the final PDF/A object graph.',
         );
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);

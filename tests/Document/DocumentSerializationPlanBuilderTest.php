@@ -566,6 +566,30 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame(2.0, $plan->fileStructure->version);
     }
 
+    public function testItBuildsPdfA4LinkAnnotationsWithinTheCurrentScope(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4())
+            ->title('Archive Copy')
+            ->text(
+                'Archive Copy',
+                new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+                ),
+            )
+            ->link('https://example.com/spec', 40, 500, 120, 16, 'Specification Link')
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, $objects));
+
+        self::assertStringContainsString('/Subtype /Link', $serialized);
+        self::assertStringContainsString('/A << /S /URI /URI (https://example.com/spec) >>', $serialized);
+        self::assertStringContainsString('/AP << /N ', $serialized);
+    }
+
     public function testItAllowsExplicitDocumentLevelAssociatedFilesForPdf20(): void
     {
         $builder = new DocumentSerializationPlanBuilder();

@@ -77,17 +77,17 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdfA3b()->writesPdfARevisionMetadata());
         self::assertTrue(Profile::pdfA4()->supportsTransparency());
         self::assertTrue(Profile::pdfA4f()->supportsTransparency());
-        self::assertFalse(Profile::pdfA4()->supportsCurrentPageAnnotationsImplementation());
+        self::assertTrue(Profile::pdfA4()->supportsCurrentPageAnnotationsImplementation());
         self::assertFalse(Profile::pdfA4()->supportsCurrentTextFieldImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentAssociatedFiles());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentEmbeddedFileAttachments());
 
         self::assertSame(
-            'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and the currently blocked annotation/form/attachment features.',
+            'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and link annotations; forms, general page annotations and attachments remain blocked.',
             Profile::pdfA4()->pdfaSupport()?->supportSummary,
         );
         self::assertSame(
-            'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and document-level associated-file attachments.',
+            'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, link annotations and document-level associated-file attachments.',
             Profile::pdfA4f()->pdfaSupport()?->supportSummary,
         );
     }
