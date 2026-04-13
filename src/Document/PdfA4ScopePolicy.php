@@ -33,6 +33,10 @@ final class PdfA4ScopePolicy
             return;
         }
 
+        if ($document->profile->pdfaConformance() === null) {
+            return;
+        }
+
         if ($document->profile->pdfaConformance() === 'E') {
             throw new DocumentValidationException(
                 DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED,
@@ -49,7 +53,10 @@ final class PdfA4ScopePolicy
 
         throw new DocumentValidationException(
             DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED,
-            'Profile PDF/A-4 is blocked until the dedicated PDF/A-4 policy matrix and PDF 2.0 validation path are implemented.',
+            sprintf(
+                'Profile %s is not modeled in the current PDF/A-4 scope policy.',
+                $document->profile->name(),
+            ),
         );
     }
 

@@ -14,18 +14,9 @@ use PHPUnit\Framework\TestCase;
 
 final class PdfA4ScopePolicyTest extends TestCase
 {
-    public function testItRejectsPdfA4(): void
+    public function testItAllowsBasePdfA4(): void
     {
-        try {
-            new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4()));
-            self::fail('Expected DocumentValidationException for blocked PDF/A-4 profile.');
-        } catch (DocumentValidationException $exception) {
-            self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
-            self::assertSame(
-                'Profile PDF/A-4 is blocked until the dedicated PDF/A-4 policy matrix and PDF 2.0 validation path are implemented.',
-                $exception->getMessage(),
-            );
-        }
+        self::assertNull((new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4())));
     }
 
     public function testItRejectsPdfA4e(): void

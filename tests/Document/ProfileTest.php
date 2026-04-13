@@ -65,9 +65,9 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA2b()->supportsCurrentPageAnnotationsImplementation());
     }
 
-    public function testPdfA4FamilyIsExplicitlyBlockedUntilImplemented(): void
+    public function testPdfA4FamilySupportMatrixIsExplicit(): void
     {
-        self::assertFalse(Profile::pdfA4()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA4()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4e()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4f()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4()->usesPdfAOutputIntent());
@@ -75,6 +75,7 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA4()->writesPdfARevisionMetadata());
         self::assertTrue(Profile::pdfA4f()->writesPdfARevisionMetadata());
         self::assertFalse(Profile::pdfA3b()->writesPdfARevisionMetadata());
+        self::assertTrue(Profile::pdfA4()->supportsTransparency());
         self::assertFalse(Profile::pdfA4f()->supportsTransparency());
         self::assertFalse(Profile::pdfA4()->supportsCurrentPageAnnotationsImplementation());
         self::assertFalse(Profile::pdfA4()->supportsCurrentTextFieldImplementation());
@@ -82,7 +83,7 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA4f()->supportsDocumentEmbeddedFileAttachments());
 
         self::assertSame(
-            'PDF/A-4 is blocked behind a dedicated PDF/A-4 policy and PDF 2.0 validation path.',
+            'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and the currently blocked annotation/form/attachment features.',
             Profile::pdfA4()->pdfaSupport()?->supportSummary,
         );
     }

@@ -172,8 +172,8 @@ final readonly class PdfAProfileSupport
             ),
             'PDF/A-4' => new self(
                 'PDF/A-4',
-                false,
-                'PDF/A-4 is blocked behind a dedicated PDF/A-4 policy and PDF 2.0 validation path.',
+                true,
+                'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and the currently blocked annotation/form/attachment features.',
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -185,7 +185,7 @@ final readonly class PdfAProfileSupport
                     acroFormFields: false,
                     documentAssociatedFiles: false,
                     documentEmbeddedAttachments: false,
-                    transparency: false,
+                    transparency: true,
                 ),
             ),
             'PDF/A-4e' => new self(

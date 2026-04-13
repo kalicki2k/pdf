@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function dirname;
 use function preg_match;
 
 use InvalidArgumentException;
@@ -539,6 +540,29 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
 
         $builder->build($document);
+    }
+
+    public function testItBuildsBasePdfA4DocumentsWithinTheCurrentSupportedScope(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4())
+            ->title('Archive Copy')
+            ->text(
+                'Archive Copy',
+                new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+                ),
+            )
+            ->build();
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertStringContainsString('/Metadata ', $objects[0]->contents);
+        self::assertStringNotContainsString('/OutputIntents', $objects[0]->contents);
+        self::assertNull($plan->fileStructure->trailer->infoObjectId);
+        self::assertSame(2.0, $plan->fileStructure->version);
     }
 
     public function testItAllowsExplicitDocumentLevelAssociatedFilesForPdf20(): void

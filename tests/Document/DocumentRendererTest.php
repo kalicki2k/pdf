@@ -140,6 +140,33 @@ final class DocumentRendererTest extends TestCase
         $renderer->write($document, $output);
     }
 
+    public function testItRendersBasePdfA4DocumentsWithinTheCurrentSupportedScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4())
+            ->title('Archive Copy')
+            ->text(
+                'Archive Copy',
+                new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+                ),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringStartsWith('%PDF-2.0', $pdf);
+        self::assertStringContainsString('<pdfaid:part>4</pdfaid:part>', $pdf);
+        self::assertStringContainsString('<pdfaid:rev>2020</pdfaid:rev>', $pdf);
+        self::assertStringNotContainsString('/OutputIntents', $pdf);
+        self::assertStringNotContainsString("\n/Info ", $pdf);
+    }
+
     public function testItRendersEmbeddedFontTextWithNewlines(): void
     {
         $document = DefaultDocumentBuilder::make()

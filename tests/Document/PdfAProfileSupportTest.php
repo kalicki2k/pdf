@@ -56,9 +56,22 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertFalse($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
     }
 
-    public function testUnsupportedPdfAProfilesRaiseACodedValidationError(): void
+    public function testPdfA4BaseCapabilityMatrixReflectsTheCurrentSupportedScope(): void
     {
         $support = Profile::pdfA4()->pdfaSupport();
+
+        self::assertNotNull($support);
+        self::assertTrue($support->isSupported);
+        self::assertTrue($support->capabilityRule(PdfACapability::EMBEDDED_FONTS)->required);
+        self::assertFalse($support->capabilityRule(PdfACapability::OUTPUT_INTENT)->allowed);
+        self::assertFalse($support->capabilityRule(PdfACapability::INFO_DICTIONARY)->allowed);
+        self::assertFalse($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
+        self::assertFalse($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
+    }
+
+    public function testUnsupportedPdfAProfilesRaiseACodedValidationError(): void
+    {
+        $support = Profile::pdfA4f()->pdfaSupport();
 
         self::assertNotNull($support);
 
@@ -68,7 +81,7 @@ final class PdfAProfileSupportTest extends TestCase
         } catch (DocumentValidationException $exception) {
             self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
             self::assertSame(
-                'Profile PDF/A-4 is not supported yet: PDF/A-4 is blocked behind a dedicated PDF/A-4 policy and PDF 2.0 validation path.',
+                'Profile PDF/A-4f is not supported yet: PDF/A-4f is blocked behind a dedicated attachment policy and PDF 2.0 validation path.',
                 $exception->getMessage(),
             );
         }
