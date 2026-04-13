@@ -9,6 +9,8 @@ use function count;
 use function implode;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 
 final readonly class AcroForm
 {
@@ -92,7 +94,10 @@ final readonly class AcroForm
         bool $allowBuiltinDefaultTextFontFallback = true,
     ): string {
         if (count($fieldObjectIds) !== count($this->fields)) {
-            throw new InvalidArgumentException('AcroForm field object IDs must match the registered field count.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'AcroForm field object IDs must match the registered field count.',
+            );
         }
 
         $entries = [
@@ -114,7 +119,8 @@ final readonly class AcroForm
             if ($defaultTextFontObjectId !== null) {
                 $entries[] = '/DR << /Font << /' . $defaultTextFontAlias . ' ' . $defaultTextFontObjectId . ' 0 R >> >>';
             } elseif (!$allowBuiltinDefaultTextFontFallback) {
-                throw new InvalidArgumentException(
+                throw new DocumentValidationException(
+                    DocumentBuildError::BUILD_STATE_INVALID,
                     'PDF/A form resources require an embedded default font. The built-in /Helv fallback is not allowed.',
                 );
             } else {

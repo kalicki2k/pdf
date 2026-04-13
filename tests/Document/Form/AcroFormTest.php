@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document\Form;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\ComboBoxField;
 use Kalle\Pdf\Document\Form\FormField;
@@ -70,12 +72,16 @@ final class AcroFormTest extends TestCase
             new ComboBoxField('status', 1, 10, 20, 80, 12, ['new' => 'New'], 'new'),
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'PDF/A form resources require an embedded default font. The built-in /Helv fallback is not allowed.',
-        );
-
-        $acroForm->pdfObjectContents([7], allowBuiltinDefaultTextFontFallback: false);
+        try {
+            $acroForm->pdfObjectContents([7], allowBuiltinDefaultTextFontFallback: false);
+            self::fail('Expected coded build-state validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::BUILD_STATE_INVALID, $exception->error);
+            self::assertSame(
+                'PDF/A form resources require an embedded default font. The built-in /Helv fallback is not allowed.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItStoresRadioButtonGroupsAsSingleFields(): void
@@ -110,6 +116,40 @@ final class AcroFormTest extends TestCase
         self::assertStringContainsString('/T (customer_name)', $contents);
         self::assertStringContainsString('/TU (Customer name)', $contents);
         self::assertStringContainsString('/FT /Tx', $contents);
+    }
+
+    public function testItRaisesACodedBuildStateErrorWhenAcroFormFieldObjectIdsDoNotMatch(): void
+    {
+        $acroForm = new AcroForm()
+            ->withField($this->testField('customer_name'))
+            ->withField($this->testField('customer_email'));
+
+        try {
+            $acroForm->pdfObjectContents([7]);
+            self::fail('Expected coded build-state validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::BUILD_STATE_INVALID, $exception->error);
+            self::assertSame(
+                'AcroForm field object IDs must match the registered field count.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    public function testItRaisesACodedFormFieldPageErrorForUnknownWidgetPages(): void
+    {
+        $field = $this->testWidgetField(2);
+
+        try {
+            $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7);
+            self::fail('Expected coded form-field page validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::FORM_FIELD_PAGE_INVALID, $exception->error);
+            self::assertSame(
+                'Form field target page 2 does not exist.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     private function testField(string $name): FormField

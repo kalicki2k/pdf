@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Form;
 
-use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Page\PageFont;
 
 final readonly class FormFieldRenderContext
@@ -27,10 +28,13 @@ final readonly class FormFieldRenderContext
         $pageObjectId = $this->pageObjectIdsByPageNumber[$pageNumber] ?? null;
 
         if ($pageObjectId === null) {
-            throw new InvalidArgumentException(sprintf(
-                'Form field target page %d does not exist.',
-                $pageNumber,
-            ));
+            throw new DocumentValidationException(
+                DocumentBuildError::FORM_FIELD_PAGE_INVALID,
+                sprintf(
+                    'Form field target page %d does not exist.',
+                    $pageNumber,
+                ),
+            );
         }
 
         return $pageObjectId;
@@ -44,7 +48,10 @@ final readonly class FormFieldRenderContext
     public function requiresDefaultTextFont(): PageFont
     {
         if ($this->defaultTextFont === null) {
-            throw new InvalidArgumentException('Embedded default form font is not configured.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Embedded default form font is not configured.',
+            );
         }
 
         return $this->defaultTextFont;
@@ -53,7 +60,10 @@ final readonly class FormFieldRenderContext
     public function requiresDefaultTextFontAlias(): string
     {
         if ($this->defaultTextFontAlias === null) {
-            throw new InvalidArgumentException('Embedded default form font alias is not configured.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Embedded default form font alias is not configured.',
+            );
         }
 
         return $this->defaultTextFontAlias;
@@ -62,7 +72,10 @@ final readonly class FormFieldRenderContext
     public function requiresDefaultTextFontObjectId(): int
     {
         if ($this->defaultTextFontObjectId === null) {
-            throw new InvalidArgumentException('Embedded default form font object ID is not configured.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Embedded default form font object ID is not configured.',
+            );
         }
 
         return $this->defaultTextFontObjectId;
