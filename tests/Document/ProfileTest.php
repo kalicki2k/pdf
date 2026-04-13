@@ -87,6 +87,9 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA4()->supportsTransparency());
         self::assertTrue(Profile::pdfA4e()->supportsTransparency());
         self::assertTrue(Profile::pdfA4f()->supportsTransparency());
+        self::assertFalse(Profile::pdfA4()->supportsOptionalContentGroups());
+        self::assertFalse(Profile::pdfA4e()->supportsOptionalContentGroups());
+        self::assertFalse(Profile::pdfA4f()->supportsOptionalContentGroups());
         self::assertTrue(Profile::pdfA4()->supportsCurrentPageAnnotationsImplementation());
         self::assertTrue(Profile::pdfA4e()->supportsCurrentPageAnnotationsImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsCurrentPageAnnotationsImplementation());

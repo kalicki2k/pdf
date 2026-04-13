@@ -92,6 +92,7 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertTrue($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
         self::assertTrue($support->capabilityRule(PdfACapability::NON_LINK_PAGE_ANNOTATIONS)->allowed);
         self::assertTrue($support->capabilityRule(PdfACapability::ACRO_FORM_FIELDS)->allowed);
+        self::assertFalse($support->capabilityRule(PdfACapability::OPTIONAL_CONTENT_GROUPS)->allowed);
         self::assertFalse($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
         self::assertFalse($support->capabilityRule(PdfACapability::OUTPUT_INTENT)->allowed);
     }

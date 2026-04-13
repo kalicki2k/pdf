@@ -451,7 +451,11 @@ final readonly class Profile
 
     public function supportsCurrentOptionalContentGroupImplementation(): bool
     {
-        return !$this->isPdfA();
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::OPTIONAL_CONTENT_GROUPS);
+        }
+
+        return true;
     }
 
     public function supportsCurrentPageAnnotationsImplementation(): bool
@@ -539,7 +543,11 @@ final readonly class Profile
 
     public function supportsOptionalContentGroups(): bool
     {
-        return $this->version >= Version::V1_5 && !$this->isPdfA();
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::OPTIONAL_CONTENT_GROUPS);
+        }
+
+        return $this->version >= Version::V1_5;
     }
 
     public function supportsRc440Encryption(): bool
