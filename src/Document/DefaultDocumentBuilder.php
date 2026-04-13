@@ -4793,15 +4793,24 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         if ($table->placement->x < $contentArea->left) {
-            throw new InvalidArgumentException('Table placement x must not start left of the page content area.');
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_LAYOUT_INVALID,
+                'Table placement x must not start left of the page content area.',
+            );
         }
 
         if (($table->placement->x + $table->placement->width) > $contentArea->right) {
-            throw new InvalidArgumentException('Table placement width exceeds the page content area.');
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_LAYOUT_INVALID,
+                'Table placement width exceeds the page content area.',
+            );
         }
 
         if ($table->placement->y !== null && ($table->placement->y > $contentArea->top || $table->placement->y < $contentArea->bottom)) {
-            throw new InvalidArgumentException('Table placement y must stay within the page content area.');
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_LAYOUT_INVALID,
+                'Table placement y must stay within the page content area.',
+            );
         }
 
         return [

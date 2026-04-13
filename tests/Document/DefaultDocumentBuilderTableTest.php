@@ -166,6 +166,81 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         }
     }
 
+    public function testItRejectsTablePlacementLeftOfThePageContentArea(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(90.0),
+        )
+            ->withPlacement(new TablePlacement(10.0, 90.0))
+            ->withRows(
+                TableRow::fromTexts('Value'),
+            );
+
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A5())
+                ->margin(Margin::all(24.0))
+                ->table($table);
+            self::fail('Expected coded table layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TABLE_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Table placement x must not start left of the page content area.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    public function testItRejectsTablePlacementWidthBeyondThePageContentArea(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(360.0),
+        )
+            ->withPlacement(new TablePlacement(70.0, 360.0))
+            ->withRows(
+                TableRow::fromTexts('Value'),
+            );
+
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A5())
+                ->margin(Margin::all(24.0))
+                ->table($table);
+            self::fail('Expected coded table layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TABLE_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Table placement width exceeds the page content area.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    public function testItRejectsTablePlacementYOutsideThePageContentArea(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(90.0),
+        )
+            ->withPlacement(TablePlacement::at(60.0, 20.0, 90.0))
+            ->withRows(
+                TableRow::fromTexts('Value'),
+            );
+
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A5())
+                ->margin(Margin::all(24.0))
+                ->table($table);
+            self::fail('Expected coded table layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TABLE_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Table placement y must stay within the page content area.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
     public function testItAppliesHorizontalAlignmentAndCellSpecificBorders(): void
     {
         $font = StandardFontDefinition::from('Helvetica');
