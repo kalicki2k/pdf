@@ -190,6 +190,47 @@ final class ImageSourceTest extends TestCase
         unlink($path);
     }
 
+    public function testItCreatesACompressedMonochromeImageSourceFromAnUncompressedTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedBilevelTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(8, $source->width);
+        self::assertSame(2, $source->height);
+        self::assertSame(ImageColorSpace::GRAY, $source->colorSpace);
+        self::assertSame(1, $source->bitsPerComponent);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode', '/CCITTFaxDecode']);
+
+        unlink($path);
+    }
+
+    public function testItCreatesACompressedMonochromeImageSourceFromAMultiStripUncompressedTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyMultiStripUncompressedBilevelTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(8, $source->width);
+        self::assertSame(2, $source->height);
+        self::assertSame(ImageColorSpace::GRAY, $source->colorSpace);
+        self::assertSame(1, $source->bitsPerComponent);
+
+        unlink($path);
+    }
+
     public function testItRejectsNonGraySoftMasks(): void
     {
         $this->expectException(InvalidArgumentException::class);

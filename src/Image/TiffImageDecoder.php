@@ -28,6 +28,9 @@ final readonly class TiffImageDecoder
     private const int TAG_SAMPLES_PER_PIXEL = 277;
     private const int TAG_ROWS_PER_STRIP = 278;
     private const int TAG_STRIP_BYTE_COUNTS = 279;
+    private const int COMPRESSION_NONE = 1;
+    private const int COMPRESSION_CCITT_GROUP_3 = 3;
+    private const int COMPRESSION_CCITT_GROUP_4 = 4;
 
     public function decode(string $data, string $path = 'memory'): ImageSource
     {
@@ -66,8 +69,8 @@ final readonly class TiffImageDecoder
         $bitsPerSample = $this->requiredSingleInt($entries, self::TAG_BITS_PER_SAMPLE, $path);
         $compression = $this->requiredSingleInt($entries, self::TAG_COMPRESSION, $path);
         $photometricInterpretation = $this->requiredSingleInt($entries, self::TAG_PHOTOMETRIC_INTERPRETATION, $path);
-        $stripOffset = $this->requiredSingleInt($entries, self::TAG_STRIP_OFFSETS, $path);
-        $stripByteCount = $this->requiredSingleInt($entries, self::TAG_STRIP_BYTE_COUNTS, $path);
+        $stripOffsets = $this->requiredIntList($entries, self::TAG_STRIP_OFFSETS, $path);
+        $stripByteCounts = $this->requiredIntList($entries, self::TAG_STRIP_BYTE_COUNTS, $path);
         $rowsPerStrip = $this->requiredSingleInt($entries, self::TAG_ROWS_PER_STRIP, $path);
         $samplesPerPixel = $this->optionalSingleInt($entries, self::TAG_SAMPLES_PER_PIXEL) ?? 1;
 
@@ -87,36 +90,140 @@ final readonly class TiffImageDecoder
             ));
         }
 
-        if ($rowsPerStrip !== $height) {
+        if (count($stripOffsets) !== count($stripByteCounts)) {
             throw new InvalidArgumentException(sprintf(
-                "TIFF image '%s' must use a single strip in the current implementation.",
+                "TIFF image '%s' has mismatching strip offset and byte-count tables.",
                 $path,
             ));
         }
 
-        if ($compression !== 4) {
-            throw new InvalidArgumentException(sprintf(
-                "TIFF image '%s' uses unsupported TIFF compression %d; only CCITT Group 4 is currently supported.",
+        return match ($compression) {
+            self::COMPRESSION_NONE => $this->decodeUncompressedBilevel(
+                $data,
+                $path,
+                $width,
+                $height,
+                $photometricInterpretation,
+                $stripOffsets,
+                $stripByteCounts,
+                $rowsPerStrip,
+            ),
+            self::COMPRESSION_CCITT_GROUP_3 => $this->decodeCcittBilevel(
+                $data,
+                $path,
+                $width,
+                $height,
+                $photometricInterpretation,
+                $stripOffsets,
+                $stripByteCounts,
+                rowsPerStrip: $rowsPerStrip,
+                k: 0,
+            ),
+            self::COMPRESSION_CCITT_GROUP_4 => $this->decodeCcittBilevel(
+                $data,
+                $path,
+                $width,
+                $height,
+                $photometricInterpretation,
+                $stripOffsets,
+                $stripByteCounts,
+                rowsPerStrip: $rowsPerStrip,
+                k: -1,
+            ),
+            default => throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' uses unsupported TIFF compression %d.",
                 $path,
                 $compression,
+            )),
+        };
+    }
+
+    /**
+     * @param list<int> $stripOffsets
+     * @param list<int> $stripByteCounts
+     */
+    private function decodeUncompressedBilevel(
+        string $data,
+        string $path,
+        int $width,
+        int $height,
+        int $photometricInterpretation,
+        array $stripOffsets,
+        array $stripByteCounts,
+        int $rowsPerStrip,
+    ): ImageSource {
+        $expectedRows = 0;
+        $bitmap = '';
+        $rowByteLength = intdiv($width + 7, 8);
+
+        foreach ($stripOffsets as $index => $stripOffset) {
+            $stripByteCount = $stripByteCounts[$index];
+            $stripData = substr($data, $stripOffset, $stripByteCount);
+
+            if (strlen($stripData) !== $stripByteCount) {
+                throw new InvalidArgumentException(sprintf(
+                    "TIFF image '%s' strip data is truncated.",
+                    $path,
+                ));
+            }
+
+            $rowsInStrip = min($rowsPerStrip, $height - $expectedRows);
+
+            if ($stripByteCount !== $rowByteLength * $rowsInStrip) {
+                throw new InvalidArgumentException(sprintf(
+                    "TIFF image '%s' uses unsupported uncompressed strip layout.",
+                    $path,
+                ));
+            }
+
+            $bitmap .= $stripData;
+            $expectedRows += $rowsInStrip;
+        }
+
+        if ($expectedRows !== $height) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' strip table does not cover the declared image height.",
+                $path,
             ));
         }
 
-        $stripData = substr($data, $stripOffset, $stripByteCount);
+        if ($photometricInterpretation === 1) {
+            $bitmap = $this->invertPackedBitmap($bitmap);
+        }
 
-        if (strlen($stripData) !== $stripByteCount) {
+        return ImageSource::compressed($bitmap, $width, $height, ImageColorSpace::GRAY, 1);
+    }
+
+    /**
+     * @param list<int> $stripOffsets
+     * @param list<int> $stripByteCounts
+     */
+    private function decodeCcittBilevel(
+        string $data,
+        string $path,
+        int $width,
+        int $height,
+        int $photometricInterpretation,
+        array $stripOffsets,
+        array $stripByteCounts,
+        int $rowsPerStrip,
+        int $k,
+    ): ImageSource {
+        if (count($stripOffsets) !== 1) {
             throw new InvalidArgumentException(sprintf(
-                "TIFF image '%s' strip data is truncated.",
+                "TIFF image '%s' uses multiple compressed strips, which are not yet supported for CCITT TIFF import.",
                 $path,
             ));
         }
 
         return ImageSource::ccittFax(
-            data: $stripData,
+            data: $this->readStripData($data, $path, $stripOffsets[0], $stripByteCounts[0]),
             width: $width,
             height: $height,
-            k: -1,
+            k: $k,
             blackIs1: $photometricInterpretation === 1,
+            endOfLine: $k === 0,
+            endOfBlock: $rowsPerStrip === $height,
         );
     }
 
@@ -199,6 +306,50 @@ final readonly class TiffImageDecoder
         }
 
         return $values[0];
+    }
+
+    /**
+     * @param array<int, list<int>> $entries
+     * @return list<int>
+     */
+    private function requiredIntList(array $entries, int $tag, string $path): array
+    {
+        $values = $entries[$tag] ?? null;
+
+        if ($values === null || $values === []) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' is missing required tag %d.",
+                $path,
+                $tag,
+            ));
+        }
+
+        return $values;
+    }
+
+    private function readStripData(string $data, string $path, int $offset, int $length): string
+    {
+        $stripData = substr($data, $offset, $length);
+
+        if (strlen($stripData) !== $length) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' strip data is truncated.",
+                $path,
+            ));
+        }
+
+        return $stripData;
+    }
+
+    private function invertPackedBitmap(string $bitmap): string
+    {
+        $inverted = '';
+
+        for ($index = 0; $index < strlen($bitmap); $index++) {
+            $inverted .= chr(ord($bitmap[$index]) ^ 0xFF);
+        }
+
+        return $inverted;
     }
 
     private function readUint16(string $bytes, string $byteOrder): int

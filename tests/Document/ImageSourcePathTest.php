@@ -143,4 +143,25 @@ final class ImageSourcePathTest extends TestCase
 
         unlink($path);
     }
+
+    public function testItBuildsPageImageResourcesFromAnUncompressedBilevelTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedBilevelTiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/ColorSpace /DeviceGray', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/BitsPerComponent 1', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
 }
