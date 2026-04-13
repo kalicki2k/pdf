@@ -20,6 +20,7 @@ use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuildState;
 use Kalle\Pdf\Document\DocumentSerializationPlanObjectIdAllocator;
 use Kalle\Pdf\Document\DocumentTaggedPdfObjectBuilder;
+use Kalle\Pdf\Document\OptionalContentConfiguration;
 use Kalle\Pdf\Document\PdfAObjectGraphValidator;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
@@ -602,6 +603,44 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4e must serialize /OCProperties when optional content groups are used.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4eOptionalContentConfigurationsWithoutConfigsArray(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Layers',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Layer1 BDC\nq\n0 0 20 20 re\nf\nQ\nEMC",
+                    optionalContentGroups: [
+                        'Layer1' => new OptionalContentGroup('Base Geometry'),
+                    ],
+                ),
+            ],
+            optionalContentConfigurations: [
+                new OptionalContentConfiguration('Exploded View', ['Layer1']),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+
+        $objects = array_map(
+            static function (IndirectObject $object): IndirectObject {
+                if ($object->objectId !== 1) {
+                    return $object;
+                }
+
+                return IndirectObject::plain($object->objectId, str_replace('/Configs [', '/BrokenConfigs [', $object->contents));
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e must serialize /Configs when optional content configurations are used.');
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }

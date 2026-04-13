@@ -16,6 +16,7 @@ use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\OptionalContentStateAction;
 use Kalle\Pdf\Document\Form\PushButtonField;
+use Kalle\Pdf\Document\OptionalContentConfiguration;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\OptionalContentGroup;
@@ -196,6 +197,41 @@ final class PdfA4PolicyMatrixTest extends TestCase
 
         self::assertStringContainsString('/Type /OCG /Name (Hidden Engineering View)', $serialized);
         self::assertStringContainsString('/OFF [', $serialized);
+    }
+
+    public function testItAllowsPdfA4eOptionalContentConfigurationsWithinTheCurrentConstrainedScope(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Layers',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Layer1 BDC\nq\n0 0 20 20 re\nf\nQ\nEMC",
+                    optionalContentGroups: [
+                        'Layer1' => new OptionalContentGroup('Base Geometry'),
+                        'Layer2' => new OptionalContentGroup('Dimensions', visible: false),
+                    ],
+                ),
+            ],
+            optionalContentConfigurations: [
+                new OptionalContentConfiguration(
+                    'Exploded View',
+                    ['Layer1', 'Layer2'],
+                    initialOn: ['Layer1'],
+                    initialOff: ['Layer2'],
+                ),
+            ],
+        );
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Configs [', $serialized);
+        self::assertStringContainsString('/Name (Exploded View)', $serialized);
+        self::assertStringContainsString('/Order [', $serialized);
     }
 
     public function testItAllowsPdfA4eOptionalContentMembershipDictionariesWithinTheCurrentConstrainedScope(): void

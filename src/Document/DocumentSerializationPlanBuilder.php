@@ -335,9 +335,48 @@ final readonly class DocumentSerializationPlanBuilder
             $defaultConfigEntries[] = '/OFF [' . implode(' ', $offReferences) . ']';
         }
 
-        return [
-            '/OCProperties << /OCGs [' . $references . '] /D << ' . implode(' ', $defaultConfigEntries) . ' >> >>',
+        $additionalConfigs = [];
+
+        foreach ($document->optionalContentConfigurations as $configuration) {
+            $configEntries = [
+                '/Name ' . $this->pdfString($configuration->name),
+                '/Order [' . implode(' ', array_values(array_filter(array_map(
+                    fn (string $alias): ?string => $this->optionalContentAliasReference($document, $state, $alias),
+                    $configuration->order,
+                )))) . ']',
+            ];
+
+            $onReferences = array_values(array_filter(array_map(
+                fn (string $alias): ?string => $this->optionalContentAliasReference($document, $state, $alias),
+                $configuration->initialOn,
+            )));
+            $offReferences = array_values(array_filter(array_map(
+                fn (string $alias): ?string => $this->optionalContentAliasReference($document, $state, $alias),
+                $configuration->initialOff,
+            )));
+
+            if ($onReferences !== []) {
+                $configEntries[] = '/ON [' . implode(' ', $onReferences) . ']';
+            }
+
+            if ($offReferences !== []) {
+                $configEntries[] = '/OFF [' . implode(' ', $offReferences) . ']';
+            }
+
+            $additionalConfigs[] = '<< ' . implode(' ', $configEntries) . ' >>';
+        }
+
+        $entries = [
+            '/OCProperties << /OCGs [' . $references . '] /D << ' . implode(' ', $defaultConfigEntries) . ' >>',
         ];
+
+        if ($additionalConfigs !== []) {
+            $entries[] = '/Configs [' . implode(' ', $additionalConfigs) . ']';
+        }
+
+        $entries[] = '>>';
+
+        return [implode(' ', $entries)];
     }
 
     /**
@@ -354,6 +393,26 @@ final readonly class DocumentSerializationPlanBuilder
         }
 
         return $groups;
+    }
+
+    private function optionalContentAliasReference(
+        Document $document,
+        DocumentSerializationPlanBuildState $state,
+        string $alias,
+    ): ?string {
+        foreach ($document->pages as $page) {
+            $group = $page->optionalContentGroups[$alias] ?? null;
+
+            if ($group === null) {
+                continue;
+            }
+
+            $objectId = $state->optionalContentGroupObjectIds[$group->key()] ?? null;
+
+            return $objectId === null ? null : $objectId . ' 0 R';
+        }
+
+        return null;
     }
 
     /**

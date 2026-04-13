@@ -795,6 +795,37 @@ final class PdfAObjectGraphValidator
                 );
             }
 
+            foreach ($document->optionalContentConfigurations as $configuration) {
+                if (!str_contains($catalogObject->contents, '/Configs [')) {
+                    throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                        'Profile %s must serialize /Configs when optional content configurations are used.',
+                        $document->profile->name(),
+                    ));
+                }
+
+                if (!str_contains($catalogObject->contents, '/Name ' . $this->pdfString($configuration->name))) {
+                    throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                        'Profile %s must serialize optional content configuration "%s" in /Configs.',
+                        $document->profile->name(),
+                        $configuration->name,
+                    ));
+                }
+
+                foreach ($configuration->order as $alias) {
+                    $objectId = $this->optionalContentGroupObjectIdByAlias($document, $state, $alias);
+
+                    $this->assertReferencePresent(
+                        $catalogObject->contents,
+                        $objectId,
+                        sprintf(
+                            'Profile %s must reference optional content group alias /%s in /Configs.',
+                            $document->profile->name(),
+                            $alias,
+                        ),
+                    );
+                }
+            }
+
             foreach ($document->pages as $page) {
                 foreach ($page->optionalContentGroups as $optionalContentGroup) {
                     $objectId = $state->optionalContentGroupObjectIds[$optionalContentGroup->key()] ?? null;
@@ -987,6 +1018,24 @@ final class PdfAObjectGraphValidator
     private function profileLabel(): string
     {
         return $this->activeProfile?->name() ?? 'PDF/A';
+    }
+
+    private function optionalContentGroupObjectIdByAlias(
+        Document $document,
+        DocumentSerializationPlanBuildState $state,
+        string $alias,
+    ): ?int {
+        foreach ($document->pages as $page) {
+            $group = $page->optionalContentGroups[$alias] ?? null;
+
+            if ($group === null) {
+                continue;
+            }
+
+            return $state->optionalContentGroupObjectIds[$group->key()] ?? null;
+        }
+
+        return null;
     }
 
     private function assertPdfA4OptionalContentPushButtonAction(

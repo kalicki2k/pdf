@@ -38,6 +38,8 @@ final readonly class Document
     public array $taggedStructureElements;
     /** @var list<string> */
     public array $taggedDocumentChildKeys;
+    /** @var list<OptionalContentConfiguration> */
+    public array $optionalContentConfigurations;
     public Debugger $debugger;
 
     public static function make(): DocumentBuilder
@@ -56,6 +58,7 @@ final readonly class Document
      * @param list<TaggedList>|null $taggedLists
      * @param list<TaggedStructureElement>|null $taggedStructureElements
      * @param list<string>|null $taggedDocumentChildKeys
+     * @param list<OptionalContentConfiguration>|null $optionalContentConfigurations
      */
     public function __construct(
         ?Profile $profile = null,
@@ -79,6 +82,7 @@ final readonly class Document
         ?array $taggedStructureElements = null,
         ?array $taggedDocumentChildKeys = null,
         ?Debugger $debugger = null,
+        ?array $optionalContentConfigurations = null,
     ) {
         $this->profile = $profile ?? Profile::standard();
         $this->pages = $pages ?? [new Page(PageSize::A4())];
@@ -90,6 +94,7 @@ final readonly class Document
         $this->taggedLists = $taggedLists ?? [];
         $this->taggedStructureElements = $taggedStructureElements ?? [];
         $this->taggedDocumentChildKeys = $taggedDocumentChildKeys ?? [];
+        $this->optionalContentConfigurations = $optionalContentConfigurations ?? [];
         $this->debugger = $debugger ?? Debugger::disabled();
     }
 
