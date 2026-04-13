@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function preg_match;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
@@ -11,7 +13,9 @@ use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildError;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
@@ -72,8 +76,6 @@ use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
-
-use function preg_match;
 
 final class DocumentSerializationPlanBuilderTest extends TestCase
 {
@@ -664,10 +666,16 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ],
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Attachment filename "demo.txt" is used more than once. Duplicate found at attachment 2.');
-
-        $builder->build($document);
+        try {
+            $builder->build($document);
+            self::fail('Expected duplicate attachment filename validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::DUPLICATE_ATTACHMENT_FILENAME, $exception->error);
+            self::assertSame(
+                'Attachment filename "demo.txt" is used more than once. Duplicate found at attachment 2.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItAddsAnAcroFormAndWidgetFieldObjects(): void
@@ -729,10 +737,16 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             acroForm: new AcroForm()->withField($this->testWidgetField(pageNumber: 2)),
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Form field "customer_name" targets page 2 which does not exist.');
-
-        $builder->build($document);
+        try {
+            $builder->build($document);
+            self::fail('Expected form field page validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::FORM_FIELD_PAGE_INVALID, $exception->error);
+            self::assertSame(
+                'Form field "customer_name" targets page 2 which does not exist.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItBuildsATextFieldWithDefaultResources(): void
@@ -1511,10 +1525,16 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->outlineAt('Missing', 2)
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Outline 1 references page 2, but the document only has 1 page(s).');
-
-        $builder->build($document);
+        try {
+            $builder->build($document);
+            self::fail('Expected outline page reference validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::OUTLINE_REFERENCE_INVALID, $exception->error);
+            self::assertSame(
+                'Outline 1 references page 2, but the document only has 1 page(s).',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItRejectsOutlinesThatReferenceUnknownNamedDestinations(): void
@@ -1524,10 +1544,16 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->addOutline(Outline::named('Broken', 'missing', 1))
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Outline 1 references unknown named destination "missing".');
-
-        $builder->build($document);
+        try {
+            $builder->build($document);
+            self::fail('Expected outline named destination validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::OUTLINE_REFERENCE_INVALID, $exception->error);
+            self::assertSame(
+                'Outline 1 references unknown named destination "missing".',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItRejectsNestedOutlinesThatSkipAParentLevel(): void
@@ -1537,10 +1563,13 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->outlineLevel('Broken', 2)
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The first outline must use level 1.');
-
-        $builder->build($document);
+        try {
+            $builder->build($document);
+            self::fail('Expected outline hierarchy validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::OUTLINE_HIERARCHY_INVALID, $exception->error);
+            self::assertSame('The first outline must use level 1.', $exception->getMessage());
+        }
     }
 
     public function testItRejectsNestedOutlinesThatJumpMoreThanOneLevel(): void
@@ -1551,10 +1580,16 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->outlineLevel('Too Deep', 3)
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Outline 2 uses level 3, but outline nesting may only increase by one level at a time.');
-
-        $builder->build($document);
+        try {
+            $builder->build($document);
+            self::fail('Expected outline hierarchy jump validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::OUTLINE_HIERARCHY_INVALID, $exception->error);
+            self::assertSame(
+                'Outline 2 uses level 3, but outline nesting may only increase by one level at a time.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItAddsTaggedPdfUaLinkAnnotations(): void
