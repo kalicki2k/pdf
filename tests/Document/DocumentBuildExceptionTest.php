@@ -398,4 +398,24 @@ final class DocumentBuildExceptionTest extends TestCase
             $exception->hint,
         );
     }
+
+    public function testItDoesNotUseLegacyStringFallbackForTransparencyAnyMore(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1b()),
+            new InvalidArgumentException('Profile PDF/A-1b does not allow soft-mask image transparency for image resource 1 on page 1.'),
+        );
+
+        self::assertNull($exception->hint);
+    }
+
+    public function testItDoesNotUseLegacyStringFallbackForAttachmentMimeTypeAnyMore(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA3b()),
+            new InvalidArgumentException('Profile PDF/A-3b requires an embedded file MIME type for attachment 1.'),
+        );
+
+        self::assertNull($exception->hint);
+    }
 }

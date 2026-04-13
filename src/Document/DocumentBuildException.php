@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use InvalidArgumentException;
-use RuntimeException;
-
 use function sprintf;
 use function str_contains;
+
+use InvalidArgumentException;
+use RuntimeException;
 
 final class DocumentBuildException extends RuntimeException
 {
@@ -181,91 +181,6 @@ final class DocumentBuildException extends RuntimeException
             ])
         ) {
             return 'Use beginStructure()/endStructure() for containers and TextOptions(tag: ...) for leaf roles.';
-        }
-
-        if (
-            !$document->profile->supportsCurrentTransparencyImplementation()
-            && str_contains($reason, 'does not allow soft-mask image transparency')
-        ) {
-            return 'Remove soft masks from image resources or flatten transparency before rendering in this profile.';
-        }
-
-        if (
-            !$document->profile->supportsAcroForms()
-            && self::containsAny($reason, [
-                'does not allow AcroForm fields',
-                'does not allow text fields',
-                'does not allow checkboxes',
-                'does not allow radio buttons',
-                'does not allow combo boxes',
-                'does not allow list boxes',
-                'does not allow push buttons',
-                'does not allow signature fields',
-            ])
-        ) {
-            return 'Remove AcroForm fields for this profile, or switch to a non-PDF/A profile. Only the constrained PDF/A-1a form scope is currently supported.';
-        }
-
-        if (
-            $document->profile->requiresTaggedFormFields()
-            && self::containsAny($reason, [
-                'only allows text and choice fields in the PDF/A-1a form policy',
-                'requires tagged form fields in the current implementation',
-            ])
-        ) {
-            return 'Use only the currently supported tagged form subset for this profile and provide alternative descriptions for each field.';
-        }
-
-        if (
-            !$document->profile->supportsDocumentEmbeddedFileAttachments()
-            && self::containsAny($reason, [
-                'does not allow embedded file attachments',
-                'does not allow page-level file attachment annotations',
-            ])
-        ) {
-            return 'Remove embedded attachments for this profile, or switch to a profile that explicitly allows the current attachment path.';
-        }
-
-        if (
-            $document->profile->supportsDocumentEmbeddedFileAttachments()
-            && str_contains($reason, 'requires an embedded file MIME type')
-        ) {
-            return 'Set a MIME type on each EmbeddedFile so the attachment can be serialized as a valid associated file.';
-        }
-
-        if (
-            !$document->profile->supportsDocumentAssociatedFiles()
-            && self::containsAny($reason, [
-                'does not allow document-level associated files',
-                'only allows document-level associated files',
-            ])
-        ) {
-            return 'Use plain attachments only where the profile allows them, or switch to a profile with document-level associated file support.';
-        }
-
-        if (
-            $document->profile->usesPdfAOutputIntent()
-            && self::containsAny($reason, [
-                'catalog must serialize an OutputIntents array',
-                'PDF/A output intent',
-                'ICC profile',
-            ])
-        ) {
-            return 'Use the default PDF/A output intent or pass ->pdfaOutputIntent(...) with a readable ICC profile that matches the document color usage.';
-        }
-
-        if (
-            $document->profile->isPdfA4()
-            && self::containsAny($reason, [
-                'must not serialize OutputIntents',
-                'must not serialize an Info dictionary',
-                'metadata stream must serialize <pdfaid:part>4</pdfaid:part>',
-                'metadata stream must serialize <pdfaid:rev>2020</pdfaid:rev>',
-                'metadata stream must not serialize a pdfaid:conformance marker',
-                'metadata stream must serialize <pdfaid:conformance>',
-            ])
-        ) {
-            return 'Keep PDF/A-4 metadata on the dedicated PDF 2.0 path: write pdfaid:part=4 and pdfaid:rev=2020, omit Info/OutputIntents, and only write pdfaid:conformance for 4e/4f.';
         }
 
         return null;
