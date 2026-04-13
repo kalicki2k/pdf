@@ -102,13 +102,7 @@ final readonly class ThreeDAnnotation implements AppearanceStreamAnnotation, Pag
 
     public function appearanceStreamContents(?AnnotationAppearanceRenderContext $context = null): string
     {
-        return implode("\n", [
-            '0.9 g',
-            '0 G',
-            '1 w',
-            '0 0 ' . $this->formatNumber($this->width) . ' ' . $this->formatNumber($this->height) . ' re',
-            'B',
-        ]);
+        return '';
     }
 
     public function relatedObjectCount(): int

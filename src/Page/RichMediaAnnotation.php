@@ -8,6 +8,7 @@ use function implode;
 use function strlen;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Writer\IndirectObject;
 
@@ -109,13 +110,7 @@ final readonly class RichMediaAnnotation implements AppearanceStreamAnnotation, 
 
     public function appearanceStreamContents(?AnnotationAppearanceRenderContext $context = null): string
     {
-        return implode("\n", [
-            '0.95 g',
-            '0 G',
-            '1 w',
-            '0 0 ' . $this->formatNumber($this->width) . ' ' . $this->formatNumber($this->height) . ' re',
-            'B',
-        ]);
+        return '';
     }
 
     public function relatedObjectCount(): int
@@ -167,6 +162,7 @@ final readonly class RichMediaAnnotation implements AppearanceStreamAnnotation, 
             '/F ' . $this->pdfString($this->filename),
             '/UF ' . $this->pdfString($this->filename),
             '/EF << /F ' . $embeddedFileObjectId . ' 0 R /UF ' . $embeddedFileObjectId . ' 0 R >>',
+            '/AFRelationship /' . AssociatedFileRelationship::SUPPLEMENT->value,
         ];
 
         if ($this->contents !== null && $this->contents !== '') {
