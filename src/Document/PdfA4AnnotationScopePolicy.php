@@ -12,6 +12,7 @@ use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
+use Kalle\Pdf\Page\RichMediaAnnotation;
 use Kalle\Pdf\Page\SupportsPopupAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
 
@@ -30,7 +31,8 @@ final class PdfA4AnnotationScopePolicy
         return $annotation instanceof LinkAnnotation
             || $annotation instanceof TextAnnotation
             || $annotation instanceof HighlightAnnotation
-            || $annotation instanceof FreeTextAnnotation;
+            || $annotation instanceof FreeTextAnnotation
+            || ($document->profile->pdfaConformance() === 'E' && $annotation instanceof RichMediaAnnotation);
     }
 
     public function assertPageAnnotationAllowed(Document $document, PageAnnotation $annotation, int $pageIndex, int $annotationIndex): void
@@ -64,8 +66,9 @@ final class PdfA4AnnotationScopePolicy
         }
 
         throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
-            'Profile %s only allows Link, Text, Highlight and FreeText annotations in the %s on page %d.',
+            'Profile %s only allows Link, Text, Highlight%s FreeText annotations in the %s on page %d.',
             $document->profile->name(),
+            $document->profile->pdfaConformance() === 'E' ? ', RichMedia and' : ' and',
             $scopeLabel,
             $pageIndex + 1,
         ));

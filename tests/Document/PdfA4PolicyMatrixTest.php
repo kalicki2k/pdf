@@ -24,6 +24,8 @@ use Kalle\Pdf\Page\OptionalContentMembership;
 use Kalle\Pdf\Page\OptionalContentVisibilityExpression;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\RichMediaAnnotation;
+use Kalle\Pdf\Page\RichMediaAssetType;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -232,6 +234,41 @@ final class PdfA4PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/Configs [', $serialized);
         self::assertStringContainsString('/Name (Exploded View)', $serialized);
         self::assertStringContainsString('/Order [', $serialized);
+    }
+
+    public function testItAllowsPdfA4eRichMediaAnnotationsWithinTheCurrentConstrainedScope(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Media',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    annotations: [
+                        new RichMediaAnnotation(
+                            40,
+                            500,
+                            160,
+                            90,
+                            'demo.mp4',
+                            new EmbeddedFile('demo-video', 'video/mp4'),
+                            RichMediaAssetType::VIDEO,
+                            'Demo video',
+                        ),
+                    ],
+                ),
+            ],
+        );
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Subtype /RichMedia', $serialized);
+        self::assertStringContainsString('/RichMediaContent ', $serialized);
+        self::assertStringContainsString('/RichMediaSettings ', $serialized);
+        self::assertStringContainsString('/Type /RichMediaConfiguration /Subtype /Video', $serialized);
     }
 
     public function testItAllowsPdfA4eOptionalContentMembershipDictionariesWithinTheCurrentConstrainedScope(): void

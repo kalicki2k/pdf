@@ -13,6 +13,7 @@ use function preg_replace;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentMetadataObjectBuilder;
@@ -29,6 +30,8 @@ use Kalle\Pdf\Page\OptionalContentMembership;
 use Kalle\Pdf\Page\OptionalContentVisibilityExpression;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
+use Kalle\Pdf\Page\RichMediaAnnotation;
+use Kalle\Pdf\Page\RichMediaAssetType;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
@@ -641,6 +644,53 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4e must serialize /Configs when optional content configurations are used.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4eRichMediaAnnotationsWithoutRichMediaContentReference(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Media',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    annotations: [
+                        new RichMediaAnnotation(
+                            40,
+                            500,
+                            160,
+                            90,
+                            'demo.mp4',
+                            new EmbeddedFile('demo-video', 'video/mp4'),
+                            RichMediaAssetType::VIDEO,
+                            'Demo video',
+                        ),
+                    ],
+                ),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+        $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($annotationObjectId): IndirectObject {
+                if ($object->objectId !== $annotationObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace('/\s*\/RichMediaContent\s+\d+\s+0\s+R/', '', $object->contents, 1);
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e requires RichMedia annotation 1 on page 1 to serialize /RichMediaContent and /RichMediaSettings.');
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }

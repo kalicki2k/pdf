@@ -248,7 +248,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
                 true,
-                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset including optional-content state push buttons, and the simple optional-content group, configuration, membership and visibility-expression subset; RichMedia, 3D and other engineering features remain blocked.',
+                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText/RichMedia annotation subset, the constrained AcroForm subset including optional-content state push buttons, and the simple optional-content group, configuration, membership and visibility-expression subset; 3D and other engineering features remain blocked.',
                 self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -265,7 +265,7 @@ final readonly class PdfAProfileSupport
                     PdfACapability::NON_LINK_PAGE_ANNOTATIONS->value => new PdfACapabilityRule(
                         true,
                         false,
-                        'Text, Highlight and FreeText annotations are allowed within the currently validated PDF/A-4e scope; popup-related objects, file-attachment annotations and engineering-specific page annotations remain blocked.',
+                        'Text, Highlight, FreeText and constrained RichMedia annotations are allowed within the currently validated PDF/A-4e scope; popup-related objects, file-attachment annotations, 3D and broader engineering-specific page annotations remain blocked.',
                     ),
                     PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
                         true,

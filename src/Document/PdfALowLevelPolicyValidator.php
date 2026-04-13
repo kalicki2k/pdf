@@ -21,6 +21,7 @@ use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
+use Kalle\Pdf\Page\RichMediaAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 /**
@@ -339,19 +340,24 @@ final readonly class PdfALowLevelPolicyValidator
         AnnotationAppearanceRenderContext $appearanceRenderContext,
     ): void {
         $dictionaryContents = $annotation->pdfObjectContents($annotationRenderContext);
+        $isPdfA4RichMediaAnnotation = $document->profile->isPdfA4()
+            && $document->profile->pdfaConformance() === 'E'
+            && $annotation instanceof RichMediaAnnotation;
 
-        $this->assertPdfA4EngineeringKeysAbsent(
-            $document,
-            $dictionaryContents,
-            sprintf('annotation %d on page %d', $annotationIndex, $pageIndex + 1),
-        );
+        if (!$isPdfA4RichMediaAnnotation) {
+            $this->assertPdfA4EngineeringKeysAbsent(
+                $document,
+                $dictionaryContents,
+                sprintf('annotation %d on page %d', $annotationIndex, $pageIndex + 1),
+            );
 
-        $this->assertForbiddenDictionaryKeysAbsent(
-            $document,
-            $dictionaryContents,
-            self::FORBIDDEN_ANNOTATION_KEYS,
-            sprintf('annotation %d on page %d', $annotationIndex, $pageIndex + 1),
-        );
+            $this->assertForbiddenDictionaryKeysAbsent(
+                $document,
+                $dictionaryContents,
+                self::FORBIDDEN_ANNOTATION_KEYS,
+                sprintf('annotation %d on page %d', $annotationIndex, $pageIndex + 1),
+            );
+        }
 
         if (!$annotation instanceof AppearanceStreamAnnotation) {
             $this->assertRelatedAnnotationObjectsLowLevelSafety(
