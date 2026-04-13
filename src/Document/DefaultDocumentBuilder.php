@@ -643,8 +643,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $cursorY = $explicitStartY ?? $clone->currentPageCursorY ?? $contentArea->top;
         $headerRenderedOnCurrentPage = false;
+        $bodyRenderedOnCurrentPage = false;
         $minimumTableSegmentHeight = $table->cellPadding->vertical() + $clone->lineHeightForTable($table);
         $minimumTableStartHeight = $minimumTableSegmentHeight + ($headerLayout?->totalHeight() ?? 0.0);
+        $repeatedFooterHeight = $footerLayout !== null && $table->repeatFooterOnPageBreak
+            ? $footerLayout->totalHeight()
+            : 0.0;
 
         if ($captionLayout !== null) {
             if (($captionLayout['height'] + $minimumTableStartHeight) > $contentArea->height()) {
@@ -707,11 +711,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $headerHeight = !$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak
                     ? $headerLayout->totalHeight()
                     : 0.0;
-                $availableHeightAfterHeader = $availableHeight - $headerHeight;
+                $availableHeightAfterHeader = $availableHeight - $headerHeight - $repeatedFooterHeight;
                 $groupFitsAfterHeader = $remainingGroupHeight <= $availableHeightAfterHeader;
-                $groupFitsOnFreshPage = $remainingGroupHeight <= ($contentArea->height() - $headerHeight);
+                $groupFitsOnFreshPage = $remainingGroupHeight <= ($contentArea->height() - $headerHeight - $repeatedFooterHeight);
 
-                if (($contentArea->height() - $headerHeight) < $minimumTableSegmentHeight) {
+                if (($contentArea->height() - $headerHeight - $repeatedFooterHeight) < $minimumTableSegmentHeight) {
                     throw new DocumentValidationException(
                         DocumentBuildError::TABLE_LAYOUT_INVALID,
                         'Page content area is too small to render table rows.',
@@ -719,12 +723,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 }
 
                 if (!$groupFitsAfterHeader && $clone->currentPageCursorY !== null && $groupFitsOnFreshPage) {
+                    if ($bodyRenderedOnCurrentPage && $footerLayout !== null && $table->repeatFooterOnPageBreak) {
+                        $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
+                        $cursorY -= $footerLayout->totalHeight();
+                        $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+                        $clone->currentPageCursorYIsTopBoundary = false;
+                    }
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                     $cursorY = $contentArea->top;
                     $headerRenderedOnCurrentPage = false;
+                    $bodyRenderedOnCurrentPage = false;
                     continue;
                 }
 
@@ -741,16 +752,23 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                     $clone->currentPageCursorYIsTopBoundary = false;
                     $headerRenderedOnCurrentPage = true;
-                    $availableHeight = $cursorY - $contentArea->bottom;
+                    $availableHeight = $cursorY - $contentArea->bottom - $repeatedFooterHeight;
                 }
 
                 if ($availableHeight < $minimumTableSegmentHeight) {
+                    if ($bodyRenderedOnCurrentPage && $footerLayout !== null && $table->repeatFooterOnPageBreak) {
+                        $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
+                        $cursorY -= $footerLayout->totalHeight();
+                        $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+                        $clone->currentPageCursorYIsTopBoundary = false;
+                    }
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                     $cursorY = $contentArea->top;
                     $headerRenderedOnCurrentPage = false;
+                    $bodyRenderedOnCurrentPage = false;
                     continue;
                 }
 
@@ -769,16 +787,24 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 );
                 $segmentOffset += $segmentHeight;
                 $cursorY -= $segmentHeight;
+                $bodyRenderedOnCurrentPage = true;
                 $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                 $clone->currentPageCursorYIsTopBoundary = false;
 
                 if ($segmentOffset < $rowGroup->height) {
+                    if ($footerLayout !== null && $table->repeatFooterOnPageBreak) {
+                        $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
+                        $cursorY -= $footerLayout->totalHeight();
+                        $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
+                        $clone->currentPageCursorYIsTopBoundary = false;
+                    }
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
                     $cursorY = $contentArea->top;
                     $headerRenderedOnCurrentPage = false;
+                    $bodyRenderedOnCurrentPage = false;
                 }
             }
         }

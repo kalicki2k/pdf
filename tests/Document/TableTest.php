@@ -11,9 +11,13 @@ use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableCellContent;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Layout\Table\Border;
+use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
@@ -74,10 +78,12 @@ final class TableTest extends TestCase
         )
             ->withHeaderRows(TableRow::fromTexts('H1', 'H2'))
             ->withRows(TableRow::fromTexts('A', 'B'))
-            ->withRepeatedHeaderOnPageBreak();
+            ->withRepeatedHeaderOnPageBreak()
+            ->withRepeatedFooterOnPageBreak();
 
         self::assertCount(1, $table->headerRows);
         self::assertTrue($table->repeatHeaderOnPageBreak);
+        self::assertTrue($table->repeatFooterOnPageBreak);
     }
 
     public function testItStoresCaptionAndFooterRowsExplicitly(): void
@@ -125,5 +131,44 @@ final class TableTest extends TestCase
             TextSegment::plain('Read '),
             TextSegment::link('docs', TextLink::externalUrl('https://example.com/docs')),
         ), $table->rows[0]->cells[0]->content);
+    }
+
+    public function testItAppliesTableOptionsAsTheSingleTableOptionSource(): void
+    {
+        $caption = TableCaption::text('Quarterly overview');
+        $placement = TablePlacement::at(48.0, 460.0, 220.0);
+        $padding = CellPadding::symmetric(2.0, 3.0);
+        $border = Border::all(1.0);
+        $text = new TextOptions(fontSize: 9.0, lineHeight: 12.0);
+
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )->withTableOptions(new TableOptions(
+            caption: $caption,
+            placement: $placement,
+            cellPadding: $padding,
+            border: $border,
+            textOptions: $text,
+            repeatHeaderOnPageBreak: true,
+            repeatFooterOnPageBreak: true,
+        ));
+
+        self::assertEquals($table->options, new TableOptions(
+            caption: $caption,
+            placement: $placement,
+            cellPadding: $padding,
+            border: $border,
+            textOptions: $text,
+            repeatHeaderOnPageBreak: true,
+            repeatFooterOnPageBreak: true,
+        ));
+        self::assertSame($caption, $table->caption);
+        self::assertSame($placement, $table->placement);
+        self::assertSame($padding, $table->cellPadding);
+        self::assertSame($border, $table->border);
+        self::assertSame($text, $table->textOptions);
+        self::assertTrue($table->repeatHeaderOnPageBreak);
+        self::assertTrue($table->repeatFooterOnPageBreak);
     }
 }

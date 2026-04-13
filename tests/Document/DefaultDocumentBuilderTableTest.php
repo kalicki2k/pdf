@@ -600,6 +600,61 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         );
     }
 
+    public function testItDoesNotRepeatFooterRowsByDefault(): void
+    {
+        $rows = [];
+
+        for ($index = 1; $index <= 10; $index++) {
+            $rows[] = TableRow::fromTexts('Item ' . $index, 'Value ' . $index);
+        }
+
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(...$rows)
+            ->withFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'));
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertStringNotContainsString($this->encodedFootLeftSnippet(), $document->pages[0]->contents);
+        self::assertStringContainsString($this->encodedFootLeftSnippet(), $document->pages[1]->contents);
+    }
+
+    public function testItRepeatsFooterRowsOnFollowUpPagesWhenEnabled(): void
+    {
+        $rows = [];
+
+        for ($index = 1; $index <= 10; $index++) {
+            $rows[] = TableRow::fromTexts('Item ' . $index, 'Value ' . $index);
+        }
+
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withCellPadding(CellPadding::all(6.0))
+            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withRows(...$rows)
+            ->withFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'))
+            ->withRepeatedFooterOnPageBreak();
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertStringContainsString($this->encodedFootLeftSnippet(), $document->pages[0]->contents);
+        self::assertStringContainsString($this->encodedFootLeftSnippet(), $document->pages[1]->contents);
+    }
+
     public function testItRendersAColspanCellAcrossMultipleColumns(): void
     {
         $padding = CellPadding::all(6.0);
@@ -899,5 +954,10 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         }
 
         return implode("\n", $lines);
+    }
+
+    private function encodedFootLeftSnippet(): string
+    {
+        return '[<46> 21 <6f> <6f> 9 <74> <20> <4c> 12 <65> 10 <66> -23 <74>] TJ';
     }
 }

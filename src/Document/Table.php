@@ -14,27 +14,38 @@ use Kalle\Pdf\Text\TextOptions;
 
 final readonly class Table
 {
+    public ?TableCaption $caption;
+    public ?TablePlacement $placement;
+    public CellPadding $cellPadding;
+    public Border $border;
+    public TextOptions $textOptions;
+    public bool $repeatHeaderOnPageBreak;
+    public bool $repeatFooterOnPageBreak;
+
     /**
      * @param list<TableColumn> $columns
-     * @param list<TableRow> $headerRows
      * @param list<TableRow> $rows
+     * @param list<TableRow> $headerRows
      * @param list<TableRow> $footerRows
      */
     public function __construct(
         public array $columns,
-        public ?TableCaption $caption = null,
-        public array $headerRows = [],
         public array $rows = [],
+        public array $headerRows = [],
         public array $footerRows = [],
-        public ?TablePlacement $placement = null,
-        public CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
-        public Border $border = new Border(0.5, 0.5, 0.5, 0.5),
-        public TextOptions $textOptions = new TextOptions(fontSize: 12.0, lineHeight: 14.4),
-        public bool $repeatHeaderOnPageBreak = false,
+        public TableOptions $options = new TableOptions(),
     ) {
         if (count($this->columns) === 0) {
             throw new InvalidArgumentException('A table must contain at least one column.');
         }
+
+        $this->caption = $this->options->caption;
+        $this->placement = $this->options->placement;
+        $this->cellPadding = $this->options->cellPadding;
+        $this->border = $this->options->border;
+        $this->textOptions = $this->options->textOptions;
+        $this->repeatHeaderOnPageBreak = $this->options->repeatHeaderOnPageBreak;
+        $this->repeatFooterOnPageBreak = $this->options->repeatFooterOnPageBreak;
 
         $this->assertRowsMatchGrid($this->headerRows);
         $this->assertRowsMatchGrid($this->rows);
@@ -51,15 +62,10 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $this->headerRows,
             rows: [...$this->rows, $row],
+            headerRows: $this->headerRows,
             footerRows: $this->footerRows,
-            placement: $this->placement,
-            cellPadding: $this->cellPadding,
-            border: $this->border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+            options: $this->options,
         );
     }
 
@@ -68,15 +74,10 @@ final readonly class Table
         /** @var list<TableRow> $rows */
         return new self(
             columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $this->headerRows,
             rows: $rows,
+            headerRows: $this->headerRows,
             footerRows: $this->footerRows,
-            placement: $this->placement,
-            cellPadding: $this->cellPadding,
-            border: $this->border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+            options: $this->options,
         );
     }
 
@@ -85,15 +86,10 @@ final readonly class Table
         /** @var list<TableRow> $headerRows */
         return new self(
             columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $headerRows,
             rows: $this->rows,
+            headerRows: $headerRows,
             footerRows: $this->footerRows,
-            placement: $this->placement,
-            cellPadding: $this->cellPadding,
-            border: $this->border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+            options: $this->options,
         );
     }
 
@@ -102,111 +98,61 @@ final readonly class Table
         /** @var list<TableRow> $footerRows */
         return new self(
             columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $this->headerRows,
             rows: $this->rows,
+            headerRows: $this->headerRows,
             footerRows: $footerRows,
-            placement: $this->placement,
-            cellPadding: $this->cellPadding,
-            border: $this->border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+            options: $this->options,
         );
     }
 
     public function withCaption(TableCaption $caption): self
     {
-        return new self(
-            columns: $this->columns,
-            caption: $caption,
-            headerRows: $this->headerRows,
-            rows: $this->rows,
-            footerRows: $this->footerRows,
-            placement: $this->placement,
-            cellPadding: $this->cellPadding,
-            border: $this->border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
-        );
+        return $this->withTableOptions($this->options->withCaption($caption));
     }
 
     public function withPlacement(TablePlacement $placement): self
     {
-        return new self(
-            columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $this->headerRows,
-            rows: $this->rows,
-            footerRows: $this->footerRows,
-            placement: $placement,
-            cellPadding: $this->cellPadding,
-            border: $this->border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
-        );
+        return $this->withTableOptions($this->options->withPlacement($placement));
     }
 
     public function withRepeatedHeaderOnPageBreak(bool $repeatHeaderOnPageBreak = true): self
     {
-        return new self(
-            columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $this->headerRows,
-            rows: $this->rows,
-            footerRows: $this->footerRows,
-            placement: $this->placement,
-            cellPadding: $this->cellPadding,
-            border: $this->border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $repeatHeaderOnPageBreak,
-        );
+        return $this->withTableOptions($this->options->withRepeatedHeaderOnPageBreak($repeatHeaderOnPageBreak));
+    }
+
+    public function withRepeatedFooterOnPageBreak(bool $repeatFooterOnPageBreak = true): self
+    {
+        return $this->withTableOptions($this->options->withRepeatedFooterOnPageBreak($repeatFooterOnPageBreak));
     }
 
     public function withCellPadding(CellPadding $cellPadding): self
     {
-        return new self(
-            columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $this->headerRows,
-            rows: $this->rows,
-            footerRows: $this->footerRows,
-            placement: $this->placement,
-            cellPadding: $cellPadding,
-            border: $this->border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
-        );
+        return $this->withTableOptions($this->options->withCellPadding($cellPadding));
     }
 
     public function withBorder(Border $border): self
     {
-        return new self(
-            columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $this->headerRows,
-            rows: $this->rows,
-            footerRows: $this->footerRows,
-            placement: $this->placement,
-            cellPadding: $this->cellPadding,
-            border: $border,
-            textOptions: $this->textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
-        );
+        return $this->withTableOptions($this->options->withBorder($border));
     }
 
     public function withTextOptions(TextOptions $textOptions): self
     {
+        return $this->withTableOptions($this->options->withTextOptions($textOptions));
+    }
+
+    public function withOptions(TableOptions $options): self
+    {
+        return $this->withTableOptions($options);
+    }
+
+    public function withTableOptions(TableOptions $options): self
+    {
         return new self(
             columns: $this->columns,
-            caption: $this->caption,
-            headerRows: $this->headerRows,
             rows: $this->rows,
+            headerRows: $this->headerRows,
             footerRows: $this->footerRows,
-            placement: $this->placement,
-            cellPadding: $this->cellPadding,
-            border: $this->border,
-            textOptions: $textOptions,
-            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+            options: $options,
         );
     }
 
