@@ -2741,6 +2741,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $contents = [];
         $annotations = [];
         $availableWidth = $textFlow->availableTextWidthFrom($x, $options);
+        $fontRunMapper = $this->fontRunMapper();
+        $textBlockBuilder = $this->textBlockBuilder();
 
         foreach ($shapedLines as $index => $lineRuns) {
             if ($lineRuns === []) {
@@ -2753,7 +2755,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $mappedRuns = [];
 
             foreach ($lineRuns as $run) {
-                $mappedRun = $this->fontRunMapper()->map(
+                $mappedRun = $fontRunMapper->map(
                     $run,
                     $font,
                     $options,
@@ -2788,7 +2790,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             foreach ($mappedRuns as $mappedRun) {
-                $textBlockContent = $this->textBlockBuilder()->build(
+                $textBlockContent = $textBlockBuilder->build(
                     $mappedRun->encodedText,
                     $options,
                     $runX,
@@ -2858,6 +2860,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $currentPageIndex = count($this->pages);
         $nextLinkGroupId = 0;
         $continuingLinkGroup = null;
+        $fontRunMapper = $this->fontRunMapper();
+        $textShaper = $this->textShaper();
+        $textBlockBuilder = $this->textBlockBuilder();
 
         foreach ($wrappedSegmentLines as $index => $lineSegments) {
             if ($lineSegments === []) {
@@ -2880,7 +2885,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $segmentFont = $segmentOptions->embeddedFont !== null
                     ? EmbeddedFontDefinition::fromSource($segmentOptions->embeddedFont)
                     : StandardFontDefinition::from($segmentOptions->fontName);
-                $segmentRuns = $this->textShaper()->shape($segment->text, $segmentOptions->baseDirection, $segmentFont);
+                $segmentRuns = $textShaper->shape($segment->text, $segmentOptions->baseDirection, $segmentFont);
                 $segmentRenderState = $this->prepareTextRenderState(
                     $segment->text,
                     $segmentOptions,
@@ -2889,7 +2894,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 );
 
                 foreach ($segmentRuns as $run) {
-                    $mappedRun = $this->fontRunMapper()->map(
+                    $mappedRun = $fontRunMapper->map(
                         $run,
                         $segmentFont,
                         $segmentOptions,
@@ -2958,7 +2963,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     'font' => $segmentFont,
                     'options' => $segmentOptions,
                     'x' => $runX,
-                    'textBlockContent' => $this->textBlockBuilder()->build(
+                    'textBlockContent' => $textBlockBuilder->build(
                         $mappedRun->encodedText,
                         $segmentOptions,
                         $runX,
@@ -5014,17 +5019,26 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function textBlockBuilder(): TextBlockBuilder
     {
-        return new TextBlockBuilder();
+        /** @var TextBlockBuilder|null $builder */
+        static $builder = null;
+
+        return $builder ??= new TextBlockBuilder();
     }
 
     private function textShaper(): SimpleTextShaper
     {
-        return new SimpleTextShaper();
+        /** @var SimpleTextShaper|null $shaper */
+        static $shaper = null;
+
+        return $shaper ??= new SimpleTextShaper();
     }
 
     private function fontRunMapper(): SimpleFontRunMapper
     {
-        return new SimpleFontRunMapper();
+        /** @var SimpleFontRunMapper|null $mapper */
+        static $mapper = null;
+
+        return $mapper ??= new SimpleFontRunMapper();
     }
 
     /**
@@ -5037,11 +5051,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
         StandardFontDefinition | EmbeddedFontDefinition $font,
     ): array {
         $shapedLines = [];
+        $textShaper = $this->textShaper();
 
         foreach ($lines as $line) {
             $shapedLines[] = $line === ''
                 ? []
-                : $this->textShaper()->shape($line, $options->baseDirection, $font);
+                : $textShaper->shape($line, $options->baseDirection, $font);
         }
 
         return $shapedLines;

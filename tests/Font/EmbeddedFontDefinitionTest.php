@@ -136,6 +136,16 @@ final class EmbeddedFontDefinitionTest extends TestCase
         self::assertStringContainsString('<0002> <4E2D>', $font->unicodeToUnicodeStreamDataForGlyphs($glyphs));
     }
 
+    public function testItCachesDefinitionsPerEmbeddedFontSourceInstance(): void
+    {
+        $source = EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes());
+
+        $first = EmbeddedFontDefinition::fromSource($source);
+        $second = EmbeddedFontDefinition::fromSource($source);
+
+        self::assertSame($first, $second);
+    }
+
     private function extractLength(string $stream): int
     {
         self::assertMatchesRegularExpression('/\\/Length ([0-9]+)/', $stream);

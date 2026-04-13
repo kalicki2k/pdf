@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
-use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Page;
 
 use Kalle\Pdf\Text\TextDirection;
@@ -83,21 +83,28 @@ final readonly class TextFlow
             }
 
             $words = preg_split('/ +/u', $trimmedParagraph, -1, PREG_SPLIT_NO_EMPTY) ?: [$trimmedParagraph];
-            $currentLine = array_shift($words);
+            $currentLine = $words[0];
+            unset($words[0]);
+            $wordWidths = [];
+            $spaceWidth = $font->measureTextWidth(' ', $options->fontSize);
+            $wordWidths[$currentLine] = $font->measureTextWidth($currentLine, $options->fontSize);
+            $currentLineWidth = $wordWidths[$currentLine];
             $lineMaxWidth = $this->lineAvailableWidth($x, $options, true);
 
             foreach ($words as $word) {
-                $candidate = $currentLine . ' ' . $word;
-                $candidateWidth = $font->measureTextWidth($candidate, $options->fontSize);
+                $wordWidth = $wordWidths[$word] ??= $font->measureTextWidth($word, $options->fontSize);
+                $candidateWidth = $currentLineWidth + $spaceWidth + $wordWidth;
 
                 if ($candidateWidth <= $lineMaxWidth) {
-                    $currentLine = $candidate;
+                    $currentLine .= ' ' . $word;
+                    $currentLineWidth = $candidateWidth;
 
                     continue;
                 }
 
                 $lines[] = $currentLine;
                 $currentLine = $word;
+                $currentLineWidth = $wordWidth;
                 $lineMaxWidth = $this->lineAvailableWidth($x, $options, false);
             }
 

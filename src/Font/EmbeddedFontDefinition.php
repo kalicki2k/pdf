@@ -24,42 +24,74 @@ use function str_pad;
 use function strlen;
 use function strtoupper;
 
-final readonly class EmbeddedFontDefinition
+use WeakMap;
+
+final class EmbeddedFontDefinition
 {
+    /**
+     * Reuse parsed embedded font metadata for repeated rendering with the same source instance.
+     *
+     * @var WeakMap<EmbeddedFontSource, self>|null
+     */
+    private static ?WeakMap $cache = null;
+
+    /** @var array<string, bool> */
+    private array $supportsTextCache = [];
+
+    /** @var array<string, bool> */
+    private array $supportsUnicodeTextCache = [];
+
+    /** @var array<string, float> */
+    private array $textWidthCache = [];
+
     private function __construct(
-        public EmbeddedFontSource $source,
-        public OpenTypeFontParser $parser,
-        public EmbeddedFontMetadata $metadata,
+        public readonly EmbeddedFontSource $source,
+        public readonly OpenTypeFontParser $parser,
+        public readonly EmbeddedFontMetadata $metadata,
     ) {
     }
 
     public static function fromSource(EmbeddedFontSource $source): self
     {
+        $cache = self::$cache ??= new WeakMap();
+
+        if (isset($cache[$source])) {
+            return $cache[$source];
+        }
+
         $parser = new OpenTypeFontParser($source);
 
-        return new self(
+        $definition = new self(
             source: $source,
             parser: $parser,
             metadata: $parser->metadata(),
         );
+
+        $cache[$source] = $definition;
+
+        return $definition;
     }
 
     public function supportsText(string $text): bool
     {
+        if (isset($this->supportsTextCache[$text])) {
+            return $this->supportsTextCache[$text];
+        }
+
         $encoded = mb_convert_encoding($text, 'Windows-1252', 'UTF-8');
         $roundTrip = mb_convert_encoding($encoded, 'UTF-8', 'Windows-1252');
 
         if ($roundTrip !== $text) {
-            return false;
+            return $this->supportsTextCache[$text] = false;
         }
 
         foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
             if ($this->parser->getGlyphIdForCharacter($character) === 0) {
-                return false;
+                return $this->supportsTextCache[$text] = false;
             }
         }
 
-        return true;
+        return $this->supportsTextCache[$text] = true;
     }
 
     public function encodeText(string $text): string
@@ -76,15 +108,19 @@ final readonly class EmbeddedFontDefinition
 
     public function supportsUnicodeText(string $text): bool
     {
+        if (isset($this->supportsUnicodeTextCache[$text])) {
+            return $this->supportsUnicodeTextCache[$text];
+        }
+
         foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
             $codePoint = mb_ord($character, 'UTF-8');
 
             if ($this->parser->getGlyphIdForCodePoint($codePoint) === 0) {
-                return false;
+                return $this->supportsUnicodeTextCache[$text] = false;
             }
         }
 
-        return true;
+        return $this->supportsUnicodeTextCache[$text] = true;
     }
 
     public function encodeUnicodeText(string $text): string
@@ -137,6 +173,12 @@ final readonly class EmbeddedFontDefinition
             return 0.0;
         }
 
+        $cacheKey = $fontSize . "\0" . $text;
+
+        if (isset($this->textWidthCache[$cacheKey])) {
+            return $this->textWidthCache[$cacheKey];
+        }
+
         $width = 0;
 
         foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character) {
@@ -144,7 +186,10 @@ final readonly class EmbeddedFontDefinition
             $width += $this->parser->getAdvanceWidthForGlyphId($glyphId);
         }
 
-        return ($width / $this->metadata->unitsPerEm) * $fontSize;
+        $measuredWidth = ($width / $this->metadata->unitsPerEm) * $fontSize;
+        $this->textWidthCache[$cacheKey] = $measuredWidth;
+
+        return $measuredWidth;
     }
 
     public function ascent(float $fontSize): float

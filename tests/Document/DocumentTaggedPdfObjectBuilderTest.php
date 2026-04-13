@@ -119,7 +119,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->title('Archive Copy')
                 ->language('de-DE')
                 ->text('Heading Привет', new TextOptions(
-                tag: TaggedStructureTag::H1,
+                    tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->text('Paragraph Привет', new TextOptions(
@@ -171,7 +171,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->title('Archive Copy')
                 ->language('de-DE')
                 ->text('Page one heading Привет', new TextOptions(
-                tag: TaggedStructureTag::H1,
+                    tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->text('Page one paragraph Привет', new TextOptions(
@@ -237,7 +237,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->title('Accessible Copy')
                 ->language('de-DE')
                 ->text('Heading', new TextOptions(
-                tag: TaggedStructureTag::H1,
+                    tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->text('Paragraph', new TextOptions(

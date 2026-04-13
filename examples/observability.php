@@ -142,7 +142,7 @@ foreach ($reportSections as $index => $section) {
         ->newPage()
         ->namedDestination('section-' . $pageNumber)
         ->text($pageNumber . '. ' . $section['title'], new TextOptions(
-                tag: TaggedStructureTag::H1,
+            tag: TaggedStructureTag::H1,
             fontSize: 21,
             lineHeight: 25,
             spacingAfter: 6,
