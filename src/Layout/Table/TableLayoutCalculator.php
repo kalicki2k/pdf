@@ -14,6 +14,7 @@ use function trim;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
+use Kalle\Pdf\Document\TableFooterContext;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TextFlow;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
@@ -312,7 +313,13 @@ final class TableLayoutCalculator
         StandardFontDefinition | EmbeddedFontDefinition $font,
     ): array {
         $autoWidths = array_fill(0, count($table->columns), 0.0);
-        $rows = [...$table->headerRows, ...$table->rows, ...$table->repeatedFooterRows, ...$table->finalFooterRows];
+        $rows = [
+            ...$table->headerRows,
+            ...$table->rows,
+            ...$table->repeatedFooterRows,
+            ...$table->finalFooterRows,
+            ...$this->sampleDynamicFooterRows($table),
+        ];
 
         foreach ($rows as $row) {
             $columnIndex = 0;
@@ -434,5 +441,40 @@ final class TableLayoutCalculator
     private function tokenizeForMinimumWidth(string $text): array
     {
         return preg_split('/(\s+)/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [$text];
+    }
+
+    /**
+     * @return list<TableRow>
+     */
+    private function sampleDynamicFooterRows(Table $table): array
+    {
+        $rows = [];
+        $totalBodyRowCount = count($table->rows);
+
+        if ($table->repeatedFooterRenderer !== null) {
+            $rows = [
+                ...$rows,
+                ...$table->resolveRepeatedFooterRows(new TableFooterContext(
+                    pageNumber: 1,
+                    completedBodyRowCount: $totalBodyRowCount,
+                    totalBodyRowCount: $totalBodyRowCount,
+                    isLastPage: false,
+                )),
+            ];
+        }
+
+        if ($table->finalFooterRenderer !== null) {
+            $rows = [
+                ...$rows,
+                ...$table->resolveFinalFooterRows(new TableFooterContext(
+                    pageNumber: 1,
+                    completedBodyRowCount: $totalBodyRowCount,
+                    totalBodyRowCount: $totalBodyRowCount,
+                    isLastPage: true,
+                )),
+            ];
+        }
+
+        return $rows;
     }
 }

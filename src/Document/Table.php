@@ -6,7 +6,9 @@ namespace Kalle\Pdf\Document;
 
 use function array_fill;
 use function count;
+use function is_array;
 
+use Closure;
 use InvalidArgumentException;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
@@ -31,6 +33,8 @@ final readonly class Table
     public float $spacingAfter;
     public bool $repeatHeaderOnPageBreak;
     public bool $repeatFooterOnPageBreak;
+    public ?Closure $repeatedFooterRenderer;
+    public ?Closure $finalFooterRenderer;
 
     /**
      * @param list<TableColumn> $columns
@@ -46,6 +50,8 @@ final readonly class Table
         public array $headerRows = [],
         public array $repeatedFooterRows = [],
         public array $finalFooterRows = [],
+        ?Closure $repeatedFooterRenderer = null,
+        ?Closure $finalFooterRenderer = null,
     ) {
         if (count($this->columns) === 0) {
             throw new InvalidArgumentException('A table must contain at least one column.');
@@ -63,6 +69,8 @@ final readonly class Table
         $this->repeatHeaderOnPageBreak = $this->options->repeatHeaderOnPageBreak;
         $this->repeatFooterOnPageBreak = $this->options->repeatFooterOnPageBreak;
         $this->footerRows = $this->finalFooterRows;
+        $this->repeatedFooterRenderer = $repeatedFooterRenderer;
+        $this->finalFooterRenderer = $finalFooterRenderer;
 
         $this->assertRowsMatchGrid($this->headerRows);
         $this->assertRowsMatchGrid($this->rows);
@@ -84,6 +92,8 @@ final readonly class Table
             headerRows: $this->headerRows,
             repeatedFooterRows: $this->repeatedFooterRows,
             finalFooterRows: $this->finalFooterRows,
+            repeatedFooterRenderer: $this->repeatedFooterRenderer,
+            finalFooterRenderer: $this->finalFooterRenderer,
             options: $this->options,
         );
     }
@@ -97,6 +107,8 @@ final readonly class Table
             headerRows: $this->headerRows,
             repeatedFooterRows: $this->repeatedFooterRows,
             finalFooterRows: $this->finalFooterRows,
+            repeatedFooterRenderer: $this->repeatedFooterRenderer,
+            finalFooterRenderer: $this->finalFooterRenderer,
             options: $this->options,
         );
     }
@@ -110,6 +122,8 @@ final readonly class Table
             headerRows: $headerRows,
             repeatedFooterRows: $this->repeatedFooterRows,
             finalFooterRows: $this->finalFooterRows,
+            repeatedFooterRenderer: $this->repeatedFooterRenderer,
+            finalFooterRenderer: $this->finalFooterRenderer,
             options: $this->options,
         );
     }
@@ -128,6 +142,8 @@ final readonly class Table
             headerRows: $this->headerRows,
             repeatedFooterRows: $footerRows,
             finalFooterRows: $this->finalFooterRows,
+            repeatedFooterRenderer: null,
+            finalFooterRenderer: $this->finalFooterRenderer,
             options: $this->options,
         );
     }
@@ -141,8 +157,59 @@ final readonly class Table
             headerRows: $this->headerRows,
             repeatedFooterRows: $this->repeatedFooterRows,
             finalFooterRows: $footerRows,
+            repeatedFooterRenderer: $this->repeatedFooterRenderer,
+            finalFooterRenderer: null,
             options: $this->options,
         );
+    }
+
+    public function withRepeatedFooter(callable $renderer): self
+    {
+        return new self(
+            columns: $this->columns,
+            rows: $this->rows,
+            headerRows: $this->headerRows,
+            repeatedFooterRows: [],
+            finalFooterRows: $this->finalFooterRows,
+            repeatedFooterRenderer: $renderer(...),
+            finalFooterRenderer: $this->finalFooterRenderer,
+            options: $this->options,
+        );
+    }
+
+    public function withFinalFooter(callable $renderer): self
+    {
+        return new self(
+            columns: $this->columns,
+            rows: $this->rows,
+            headerRows: $this->headerRows,
+            repeatedFooterRows: $this->repeatedFooterRows,
+            finalFooterRows: [],
+            repeatedFooterRenderer: $this->repeatedFooterRenderer,
+            finalFooterRenderer: $renderer(...),
+            options: $this->options,
+        );
+    }
+
+    public function withFooter(callable $renderer): self
+    {
+        return $this->withFinalFooter($renderer);
+    }
+
+    /**
+     * @return list<TableRow>
+     */
+    public function resolveRepeatedFooterRows(TableFooterContext $context): array
+    {
+        return $this->resolveFooterRows($this->repeatedFooterRenderer, $this->repeatedFooterRows, $context);
+    }
+
+    /**
+     * @return list<TableRow>
+     */
+    public function resolveFinalFooterRows(TableFooterContext $context): array
+    {
+        return $this->resolveFooterRows($this->finalFooterRenderer, $this->finalFooterRows, $context);
     }
 
     public function withOptions(TableOptions $options): self
@@ -153,6 +220,8 @@ final readonly class Table
             headerRows: $this->headerRows,
             repeatedFooterRows: $this->repeatedFooterRows,
             finalFooterRows: $this->finalFooterRows,
+            repeatedFooterRenderer: $this->repeatedFooterRenderer,
+            finalFooterRenderer: $this->finalFooterRenderer,
             options: $options,
         );
     }
@@ -201,5 +270,31 @@ final readonly class Table
                 }
             }
         }
+    }
+
+    /**
+     * @param list<TableRow> $fallbackRows
+     * @return list<TableRow>
+     */
+    private function resolveFooterRows(?Closure $renderer, array $fallbackRows, TableFooterContext $context): array
+    {
+        if ($renderer === null) {
+            return $fallbackRows;
+        }
+
+        $rows = $renderer($context);
+
+        if (!is_array($rows)) {
+            throw new InvalidArgumentException('Dynamic table footer renderer must return an array of TableRow objects.');
+        }
+
+        foreach ($rows as $row) {
+            if (!$row instanceof TableRow) {
+                throw new InvalidArgumentException('Dynamic table footer renderer must return only TableRow objects.');
+            }
+        }
+
+        /** @var list<TableRow> $rows */
+        return $rows;
     }
 }

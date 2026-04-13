@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableFooterContext;
 use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\StrokeStyle;
@@ -67,17 +68,27 @@ $lineItems = [
     ['period' => '24.03.2026', 'description' => 'QA und Abnahmebegleitung fuer das Release 2026.03 inkl. Smoke Tests', 'quantity' => 3.0, 'unit' => 'Std.', 'unitPrice' => 119.00],
     ['period' => '27.03.2026', 'description' => 'Datenbereinigung und Redirect-Plan fuer auslaufende Sortimente', 'quantity' => 2.0, 'unit' => 'Std.', 'unitPrice' => 98.00],
     ['period' => '31.03.2026', 'description' => 'Monatliches Reporting, Handlungsempfehlungen und Abstimmung mit Vertrieb und E-Commerce-Leitung', 'quantity' => 2.0, 'unit' => 'Std.', 'unitPrice' => 135.00],
+    ['period' => '01.04.2026', 'description' => 'Review der Warenkorb-Events fuer das BI-Team inkl. Mapping-Korrekturen im Tracking-Konzept', 'quantity' => 3.5, 'unit' => 'Std.', 'unitPrice' => 116.00],
+    ['period' => '02.04.2026', 'description' => 'Beseitigung eines Preisrundungsfehlers im B2B-Checkout inklusive Regressionstest', 'quantity' => 4.0, 'unit' => 'Std.', 'unitPrice' => 128.00],
+    ['period' => '04.04.2026', 'description' => 'Optimierung der Bildauslieferung fuer Kategorieseiten mit WebP-Fallback und Cache-Headern', 'quantity' => 2.5, 'unit' => 'Std.', 'unitPrice' => 102.00],
+    ['period' => '06.04.2026', 'description' => 'Abgleich der ERP-Fehlerqueues nach Monatsabschluss und Dokumentation offener Importabweichungen', 'quantity' => 3.0, 'unit' => 'Std.', 'unitPrice' => 124.00],
+    ['period' => '07.04.2026', 'description' => 'Einrichtung eines gesonderten Monitoring-Alerts fuer Ruecklaeufer im Zahlungsprozess', 'quantity' => 2.5, 'unit' => 'Std.', 'unitPrice' => 118.00],
+    ['period' => '08.04.2026', 'description' => 'Unterstuetzung beim Fachbereichstest fuer neue Produktbundles inkl. Preis- und Bestandspruefung', 'quantity' => 4.5, 'unit' => 'Std.', 'unitPrice' => 112.00],
+    ['period' => '10.04.2026', 'description' => 'Erweiterung des Status-Reports fuer die Geschaeftsfuehrung um KPI-Kommentare und Risikoampel', 'quantity' => 2.0, 'unit' => 'Std.', 'unitPrice' => 135.00],
+    ['period' => '11.04.2026', 'description' => 'Vorbereitung des Sprint-Reviews mit Demo-Daten, Freigabecheck und technischer Risikoabschaetzung', 'quantity' => 3.0, 'unit' => 'Std.', 'unitPrice' => 110.00],
 ];
 
 $formatAmount = static fn (float $amount): string => number_format($amount, 2, ',', '.') . ' €';
 $formatQuantity = static fn (float $quantity): string => rtrim(rtrim(number_format($quantity, 2, ',', '.'), '0'), ',');
 
 $subtotal = 0.0;
+$runningNetTotals = [0.0];
 $tableRows = [];
 
 foreach ($lineItems as $index => $item) {
     $lineTotal = $item['quantity'] * $item['unitPrice'];
     $subtotal += $lineTotal;
+    $runningNetTotals[] = $subtotal;
 
     $tableRows[] = TableRow::fromCells(
         TableCell::text((string) ($index + 1))->withHorizontalAlign(TextAlign::CENTER),
@@ -136,22 +147,26 @@ $table = Table::define(
         ),
     )
     ->withRows(...$tableRows)
-    ->withRepeatedFooterRows(
-        TableRow::fromCells(
-            TableCell::segments(
-                TextSegment::plain('Zwischensumme netto:', TextOptions::make(
-                    embeddedFont: $fontBold,
-                    color: $textColor,
-                )),
-            )->withColspan(5)->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
-            TableCell::segments(
-                TextSegment::plain($formatAmount($subtotal), TextOptions::make(
-                    embeddedFont: $fontBold,
-                    color: $textColor,
-                )),
-            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
-        ),
-    )
+    ->withRepeatedFooter(static function (TableFooterContext $context) use ($runningNetTotals, $fontBold, $textColor, $tableFooterColor, $formatAmount): array {
+        $runningTotal = $runningNetTotals[$context->completedBodyRowCount] ?? 0.0;
+
+        return [
+            TableRow::fromCells(
+                TableCell::segments(
+                    TextSegment::plain('Zwischensumme netto:', TextOptions::make(
+                        embeddedFont: $fontBold,
+                        color: $textColor,
+                    )),
+                )->withColspan(5)->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
+                TableCell::segments(
+                    TextSegment::plain($formatAmount($runningTotal), TextOptions::make(
+                        embeddedFont: $fontBold,
+                        color: $textColor,
+                    )),
+                )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
+            ),
+        ];
+    })
     ->withFinalFooterRows(
         TableRow::fromCells(
             TableCell::segments(

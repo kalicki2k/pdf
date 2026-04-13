@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableFooterContext;
 use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
@@ -717,6 +718,54 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         self::assertStringContainsString($this->encodedFootLeftSnippet(), $document->pages[0]->contents);
         self::assertStringNotContainsString($this->encodedFootLeftSnippet(), $document->pages[1]->contents);
         self::assertStringContainsString('[<46> 10 <69> <6e> <61> <6c> <20> <4c> 12 <65> 10 <66> -23 <74>] TJ', $document->pages[1]->contents);
+    }
+
+    public function testItResolvesDynamicFooterContextsPerPage(): void
+    {
+        $rows = [];
+
+        for ($index = 1; $index <= 10; $index++) {
+            $rows[] = TableRow::fromTexts('Item ' . $index, 'Value ' . $index);
+        }
+
+        $repeatedContexts = [];
+        $finalContexts = [];
+
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withOptions(
+                (TableOptions::make())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(TextOptions::make(fontSize: 12.0, lineHeight: 14.4))
+                    ->withRepeatedFooterOnPageBreak(),
+            )
+            ->withRows(...$rows)
+            ->withRepeatedFooter(static function (TableFooterContext $context) use (&$repeatedContexts): array {
+                $repeatedContexts[] = $context;
+
+                return [TableRow::fromTexts('Running', (string) $context->completedBodyRowCount)];
+            })
+            ->withFinalFooter(static function (TableFooterContext $context) use (&$finalContexts): array {
+                $finalContexts[] = $context;
+
+                return [TableRow::fromTexts('Final', (string) $context->totalBodyRowCount)];
+            });
+
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->table($table)
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertNotSame([], $repeatedContexts);
+        self::assertNotSame([], $finalContexts);
+        self::assertGreaterThan(0, $repeatedContexts[count($repeatedContexts) - 1]->completedBodyRowCount);
+        self::assertLessThan(10, $repeatedContexts[count($repeatedContexts) - 1]->completedBodyRowCount);
+        self::assertSame(10, $finalContexts[count($finalContexts) - 1]->completedBodyRowCount);
+        self::assertTrue($finalContexts[count($finalContexts) - 1]->isLastPage);
     }
 
     public function testItRendersAColspanCellAcrossMultipleColumns(): void

@@ -10,6 +10,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableCellContent;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableFooterContext;
 use Kalle\Pdf\Document\TableHeaderScope;
 use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
@@ -126,6 +127,27 @@ final class TableTest extends TestCase
         self::assertCount(1, $table->finalFooterRows);
         self::assertCount(1, $table->footerRows);
         self::assertSame('Final total', $table->footerRows[0]->cells[0]->text);
+    }
+
+    public function testItStoresDynamicFooterRenderersSeparately(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )
+            ->withRows(TableRow::fromTexts('A', 'B'))
+            ->withRepeatedFooter(static fn (TableFooterContext $context): array => [
+                TableRow::fromTexts('Running total', (string) $context->completedBodyRowCount),
+            ])
+            ->withFinalFooter(static fn (TableFooterContext $context): array => [
+                TableRow::fromTexts('Final total', (string) $context->totalBodyRowCount),
+            ]);
+
+        self::assertNotNull($table->repeatedFooterRenderer);
+        self::assertNotNull($table->finalFooterRenderer);
+        self::assertCount(0, $table->repeatedFooterRows);
+        self::assertCount(0, $table->finalFooterRows);
+        self::assertCount(0, $table->footerRows);
     }
 
     public function testItStoresExplicitHeaderScopeOnCells(): void

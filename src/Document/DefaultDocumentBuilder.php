@@ -627,12 +627,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ? null
             : $calculator->layoutRows($table->headerRows, $table, $columnWidths, new TextFlow($page), $font);
         $tableLayout = $calculator->layoutTable($table, $columnWidths, new TextFlow($page), $font);
-        $repeatedFooterLayout = $table->repeatedFooterRows === []
-            ? null
-            : $calculator->layoutRows($table->repeatedFooterRows, $table, $columnWidths, new TextFlow($page), $font);
-        $finalFooterLayout = $table->finalFooterRows === []
-            ? null
-            : $calculator->layoutRows($table->finalFooterRows, $table, $columnWidths, new TextFlow($page), $font);
+        $repeatedFooterLayout = $clone->layoutTableFooter(
+            $table,
+            $columnWidths,
+            $page,
+            $font,
+            $clone->tableFooterContext($table, count($table->rows), false),
+            repeated: true,
+        );
+        $finalFooterLayout = $clone->layoutTableFooter(
+            $table,
+            $columnWidths,
+            $page,
+            $font,
+            $clone->tableFooterContext($table, count($table->rows), true),
+            repeated: false,
+        );
         $taggedTableId = $clone->requiresTaggedStructure()
             ? $clone->registerTaggedTable($headerLayout, $tableLayout, $repeatedFooterLayout, $finalFooterLayout)
             : null;
@@ -649,11 +659,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ?? (($clone->currentPageCursorY ?? $contentArea->top) - $table->spacingBefore);
         $headerRenderedOnCurrentPage = false;
         $bodyRenderedOnCurrentPage = false;
+        $completedBodyRowCount = 0;
         $minimumTableSegmentHeight = $table->cellPadding->vertical() + $clone->lineHeightForTable($table);
         $minimumTableStartHeight = $minimumTableSegmentHeight + ($headerLayout?->totalHeight() ?? 0.0);
-        $repeatedFooterHeight = $repeatedFooterLayout !== null && $table->repeatFooterOnPageBreak
-            ? $repeatedFooterLayout->totalHeight()
-            : 0.0;
 
         if ($captionLayout !== null) {
             if (($captionLayout['height'] + $minimumTableStartHeight) > $contentArea->height()) {
@@ -711,6 +719,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $segmentOffset = 0.0;
 
             while ($segmentOffset < $rowGroup->height) {
+                $repeatedFooterLayout = $clone->layoutTableFooter(
+                    $table,
+                    $columnWidths,
+                    $page,
+                    $font,
+                    $clone->tableFooterContext($table, $completedBodyRowCount, false),
+                    repeated: true,
+                );
+                $repeatedFooterHeight = $repeatedFooterLayout !== null && $table->repeatFooterOnPageBreak
+                    ? $repeatedFooterLayout->totalHeight()
+                    : 0.0;
                 $availableHeight = $cursorY - $contentArea->bottom;
                 $remainingGroupHeight = $rowGroup->height - $segmentOffset;
                 $headerHeight = !$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak
@@ -795,6 +814,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $bodyRenderedOnCurrentPage = true;
                 $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                 $clone->currentPageCursorYIsTopBoundary = true;
+                if ($segmentOffset >= $rowGroup->height) {
+                    $completedBodyRowCount = $rowGroup->endRowIndex + 1;
+                }
 
                 if ($segmentOffset < $rowGroup->height) {
                     if ($repeatedFooterLayout !== null && $table->repeatFooterOnPageBreak) {
@@ -812,6 +834,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $bodyRenderedOnCurrentPage = false;
                 }
             }
+        }
+
+        if ($finalFooterLayout !== null) {
+            $finalFooterLayout = $clone->layoutTableFooter(
+                $table,
+                $columnWidths,
+                $page,
+                $font,
+                $clone->tableFooterContext($table, $completedBodyRowCount, true),
+                repeated: false,
+            );
         }
 
         if ($finalFooterLayout !== null) {
@@ -4939,6 +4972,52 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return min($this->currentPageCursorY ?? $page->contentArea()->top, $tableBottomY);
+    }
+
+    private function tableFooterContext(Table $table, int $completedBodyRowCount, bool $isLastPage): TableFooterContext
+    {
+        return new TableFooterContext(
+            pageNumber: count($this->pages) + 1,
+            completedBodyRowCount: $completedBodyRowCount,
+            totalBodyRowCount: count($table->rows),
+            isLastPage: $isLastPage,
+        );
+    }
+
+    /**
+     * @param list<float> $columnWidths
+     */
+    private function layoutTableFooter(
+        Table $table,
+        array $columnWidths,
+        Page $page,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        TableFooterContext $context,
+        bool $repeated,
+    ): ?TableLayout {
+        $rows = $this->resolveTableFooterRows($table, $context, $repeated);
+
+        if ($rows === []) {
+            return null;
+        }
+
+        return $this->tableLayoutCalculator()->layoutRows(
+            $rows,
+            $table,
+            $columnWidths,
+            new TextFlow($page),
+            $font,
+        );
+    }
+
+    /**
+     * @return list<TableRow>
+     */
+    private function resolveTableFooterRows(Table $table, TableFooterContext $context, bool $repeated): array
+    {
+        return $repeated
+            ? $table->resolveRepeatedFooterRows($context)
+            : $table->resolveFinalFooterRows($context);
     }
 
     /**

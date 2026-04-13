@@ -528,6 +528,8 @@ $document = DefaultDocumentBuilder::make()
 
 `withFooterRows(...)` bleibt als Alias für `withFinalFooterRows(...)` erhalten. Für Mehrseiten-Layouts mit Übertrag und Schlussbetrag stehen zusätzlich `withRepeatedFooterRows(...)` und `withFinalFooterRows(...)` zur Verfügung.
 
+Für laufende Seitensummen oder andere seitenabhängige Werte kann der Footer auch dynamisch über `withRepeatedFooter(...)` oder `withFinalFooter(...)` aufgebaut werden. Der Callback erhält einen `TableFooterContext` mit `pageNumber`, `completedBodyRowCount`, `totalBodyRowCount` und `isLastPage`.
+
 Ein umfangreicheres Beispiel liegt in `examples/table.php`; ein professionelles Mehrseiten-Beispiel mit wiederholtem Header, wiederholtem Zwischenfooter und finalem Schlussfooter in `examples/table-repeated-footer.php`. Die aktuelle Tabellen-API deckt damit auch absolutes Start-`y`, Rich-Text-Zellen sowie Tagged-Table-Abschnitte `THead`, `TBody` und `TFoot` ab.
 
 ## Listen
