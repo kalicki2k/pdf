@@ -10,8 +10,9 @@ use function sprintf;
 use function str_contains;
 use function str_starts_with;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 
 final class TaggedStructureCollector
 {
@@ -136,10 +137,13 @@ final class TaggedStructureCollector
 
             foreach ($element->childKeys as $childKey) {
                 if (isset($explicitParentKeys[$childKey])) {
-                    throw new InvalidArgumentException(sprintf(
-                        'Tagged structure child "%s" is assigned to more than one parent container.',
-                        $childKey,
-                    ));
+                    throw new DocumentValidationException(
+                        DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                        sprintf(
+                            'Tagged structure child "%s" is assigned to more than one parent container.',
+                            $childKey,
+                        ),
+                    );
                 }
 
                 $explicitParentKeys[$childKey] = $element->key;
@@ -200,11 +204,14 @@ final class TaggedStructureCollector
     private function addPageMarkedContentKey(array &$pageMarkedContentKeys, int $pageIndex, int $markedContentId, string $key): void
     {
         if (isset($pageMarkedContentKeys[$pageIndex][$markedContentId])) {
-            throw new InvalidArgumentException(sprintf(
-                'Duplicate marked-content id %d on page %d.',
-                $markedContentId,
-                $pageIndex + 1,
-            ));
+            throw new DocumentValidationException(
+                DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                sprintf(
+                    'Duplicate marked-content id %d on page %d.',
+                    $markedContentId,
+                    $pageIndex + 1,
+                ),
+            );
         }
 
         $pageMarkedContentKeys[$pageIndex][$markedContentId] = $key;

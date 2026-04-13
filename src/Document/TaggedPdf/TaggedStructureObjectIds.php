@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\TaggedPdf;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 
 final readonly class TaggedStructureObjectIds
 {
@@ -154,7 +155,10 @@ final readonly class TaggedStructureObjectIds
             ?? $this->listBodyStructElemObjectIds[$key]
             ?? $this->captionStructElemObjectIds[$key]
             ?? $this->cellStructElemObjectIds[$key]
-            ?? throw new InvalidArgumentException("Unknown tagged page content key '$key'.");
+            ?? throw new DocumentValidationException(
+                DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                "Unknown tagged page content key '$key'.",
+            );
     }
 
     public function resolveStructElemObjectId(string $key): int
@@ -173,7 +177,10 @@ final readonly class TaggedStructureObjectIds
             ?? $this->cellStructElemObjectIds[$key]
             ?? $this->linkStructElemObjectIds[$key]
             ?? $this->annotationStructElemObjectIds[$key]
-            ?? throw new InvalidArgumentException("Unknown tagged structure key '$key'.");
+            ?? throw new DocumentValidationException(
+                DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                "Unknown tagged structure key '$key'.",
+            );
     }
 
     public static function tableKey(int $tableId): string
