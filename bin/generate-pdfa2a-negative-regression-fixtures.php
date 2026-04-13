@@ -46,7 +46,7 @@ $baseDocument = DefaultDocumentBuilder::make()
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->paragraph('Getaggter Absatz fuer den PDF/A-2a-Negativpfad. Привет.', new TextOptions(
+    ->text('Getaggter Absatz fuer den PDF/A-2a-Negativpfad. Привет.', new TextOptions(
         x: 72,
         y: 724,
         width: 360,

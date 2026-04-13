@@ -40,7 +40,7 @@ $document = DefaultDocumentBuilder::make()
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->paragraph('Erster Absatz mit strukturiertem Inhalt. Привет.', new TextOptions(
+    ->text('Erster Absatz mit strukturiertem Inhalt. Привет.', new TextOptions(
         x: 72,
         y: 720,
         width: 360,
@@ -48,7 +48,7 @@ $document = DefaultDocumentBuilder::make()
         lineHeight: 16,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
     ))
-    ->paragraph('Zweiter Absatz fuer den Minimalpfad von PDF/A-1a. Привет.', new TextOptions(
+    ->text('Zweiter Absatz fuer den Minimalpfad von PDF/A-1a. Привет.', new TextOptions(
         x: 72,
         y: 680,
         width: 360,

@@ -44,7 +44,7 @@ $document = DefaultDocumentBuilder::make()
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->paragraph('Die erste Seite prueft die strukturierte Lesereihenfolge mit Ueberschrift, Absatz und Liste. Привет.', new TextOptions(
+    ->text('Die erste Seite prueft die strukturierte Lesereihenfolge mit Ueberschrift, Absatz und Liste. Привет.', new TextOptions(
         x: 72,
         y: 724,
         width: 360,
@@ -71,7 +71,7 @@ $document = DefaultDocumentBuilder::make()
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->paragraph('Die zweite Seite fuehrt den Strukturbaum mit Absatz, Bild und Link fort. Привет.', new TextOptions(
+    ->text('Die zweite Seite fuehrt den Strukturbaum mit Absatz, Bild und Link fort. Привет.', new TextOptions(
         x: 72,
         y: 724,
         width: 360,

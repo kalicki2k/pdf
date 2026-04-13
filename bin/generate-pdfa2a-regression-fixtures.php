@@ -52,7 +52,7 @@ function createPdfA2aMinimalFixture(): Document
             color: Color::rgb(0.08, 0.16, 0.35),
             tag: TaggedStructureTag::P,
         ))
-        ->paragraph('Getaggter Absatz fuer den PDF/A-2a-Pfad. Привет.', new TextOptions(
+        ->text('Getaggter Absatz fuer den PDF/A-2a-Pfad. Привет.', new TextOptions(
             x: 72,
             y: 724,
             width: 360,

@@ -47,7 +47,7 @@ $baseDocument = DefaultDocumentBuilder::make()
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->paragraph('Getaggter Absatz mit zugeordnetem Datenpaket. Привет.', new TextOptions(
+    ->text('Getaggter Absatz mit zugeordnetem Datenpaket. Привет.', new TextOptions(
         x: 72,
         y: 724,
         width: 360,

@@ -44,7 +44,7 @@ $document = DefaultDocumentBuilder::make()
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->paragraph('Dieses Dokument kombiniert Überschrift, Absatz, Liste, Bild und Link in einem PDF/A-1a-Fall. Привет.', new TextOptions(
+    ->text('Dieses Dokument kombiniert Überschrift, Absatz, Liste, Bild und Link in einem PDF/A-1a-Fall. Привет.', new TextOptions(
         x: 72,
         y: 724,
         width: 360,

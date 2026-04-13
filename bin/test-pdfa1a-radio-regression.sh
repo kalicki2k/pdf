@@ -21,7 +21,7 @@ if [ "${STATUS}" -eq 0 ]; then
     exit 1
 fi
 
-EXPECTED='Profile PDF/A-1a currently only allows text and choice fields in the PDF/A-1a form implementation.'
+EXPECTED='Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.'
 
 if ! grep -F "${EXPECTED}" "${OUTPUT_LOG}" >/dev/null 2>&1; then
     echo "Expected radio regression failure message was not found." >&2

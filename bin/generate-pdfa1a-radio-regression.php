@@ -33,7 +33,7 @@ $document = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-radio-regression.php')
-    ->paragraph('Lieferart auswaehlen. Привет.', new TextOptions(
+    ->text('Lieferart auswaehlen. Привет.', new TextOptions(
         x: 72,
         y: 760,
         width: 360,
