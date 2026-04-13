@@ -565,6 +565,46 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
+    public function testItRejectsPdfA4eCatalogsWithOptionalContentProperties(): void
+    {
+        [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4e());
+
+        $objects = array_map(
+            static function (IndirectObject $object): IndirectObject {
+                if ($object->objectId !== 1) {
+                    return $object;
+                }
+
+                return IndirectObject::plain(
+                    $object->objectId,
+                    str_replace(
+                        '>>',
+                        ' /OCProperties << /OCGs [] /D << /Name (Engineering View) >> >> >>',
+                        $object->contents,
+                    ),
+                );
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e must not serialize /OCProperties in the current PDF/A-4 object graph.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4eRichMediaObjects(): void
+    {
+        [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4e());
+
+        $objects[] = IndirectObject::plain(99, '<< /Type /Annot /Subtype /RichMedia /Rect [0 0 10 10] >>');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e must not serialize RichMedia annotations or assets in the current PDF/A-4 object graph.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
     public function testItRejectsPdfA4ThreeDObjects(): void
     {
         [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4());
