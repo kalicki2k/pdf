@@ -16,6 +16,7 @@ use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\OptionalContentGroup;
+use Kalle\Pdf\Page\OptionalContentMembership;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
@@ -191,6 +192,42 @@ final class PdfA4PolicyMatrixTest extends TestCase
 
         self::assertStringContainsString('/Type /OCG /Name (Hidden Engineering View)', $serialized);
         self::assertStringContainsString('/OFF [', $serialized);
+    }
+
+    public function testItAllowsPdfA4eOptionalContentMembershipDictionariesWithinTheCurrentConstrainedScope(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Memberships',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Assembly BDC\nq\n0 0 20 20 re\nf\nQ\nEMC",
+                    optionalContentGroups: [
+                        'LayerA' => new OptionalContentGroup('Base Geometry'),
+                        'LayerB' => new OptionalContentGroup('Dimensions'),
+                    ],
+                    optionalContentMemberships: [
+                        'Assembly' => new OptionalContentMembership(
+                            'Assembly View',
+                            ['LayerA', 'LayerB'],
+                            OptionalContentMembership::POLICY_ALL_ON,
+                        ),
+                    ],
+                ),
+            ],
+        );
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Type /OCMD /Name (Assembly View)', $serialized);
+        self::assertStringContainsString('/OCGs [', $serialized);
+        self::assertStringContainsString('/P /AllOn', $serialized);
+        self::assertStringContainsString('/Properties << /LayerA ', $serialized);
+        self::assertStringContainsString('/Assembly ', $serialized);
     }
 
     public function testItRejectsPdfA4PopupRelatedObjects(): void

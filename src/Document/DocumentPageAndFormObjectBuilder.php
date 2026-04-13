@@ -16,6 +16,7 @@ use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AnnotationAppearanceRenderContext;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\OptionalContentGroup;
+use Kalle\Pdf\Page\OptionalContentMembership;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
@@ -59,9 +60,11 @@ final class DocumentPageAndFormObjectBuilder
                     $page->fontResources,
                     $page->imageResources,
                     $page->optionalContentGroups,
+                    $page->optionalContentMemberships,
                     $state->fontObjectIds,
                     $state->imageObjectIds,
                     $state->optionalContentGroupObjectIds,
+                    $state->pageOptionalContentMembershipObjectIds[$index] ?? [],
                 ) . ' /Contents '
                 . $contentObjectId . ' 0 R'
                 . $this->buildPageAnnotationsEntry($allAnnotationObjectIds)
@@ -354,19 +357,23 @@ final class DocumentPageAndFormObjectBuilder
      * @param array<string, PageFont> $fontResources
      * @param array<string, ImageSource> $imageResources
      * @param array<string, OptionalContentGroup> $optionalContentGroups
+     * @param array<string, OptionalContentMembership> $optionalContentMemberships
      * @param array<string, int> $fontObjectIds
      * @param array<string, int> $imageObjectIds
      * @param array<string, int> $optionalContentGroupObjectIds
+     * @param array<string, int> $optionalContentMembershipObjectIds
      */
     private function buildPageResources(
         array $fontResources,
         array $imageResources,
         array $optionalContentGroups,
+        array $optionalContentMemberships,
         array $fontObjectIds,
         array $imageObjectIds,
         array $optionalContentGroupObjectIds,
+        array $optionalContentMembershipObjectIds,
     ): string {
-        if ($fontResources === [] && $imageResources === [] && $optionalContentGroups === []) {
+        if ($fontResources === [] && $imageResources === [] && $optionalContentGroups === [] && $optionalContentMemberships === []) {
             return '<< >>';
         }
 
@@ -396,6 +403,16 @@ final class DocumentPageAndFormObjectBuilder
 
         foreach ($optionalContentGroups as $alias => $optionalContentGroup) {
             $objectId = $optionalContentGroupObjectIds[$optionalContentGroup->key()] ?? null;
+
+            if ($objectId === null) {
+                continue;
+            }
+
+            $optionalContentEntries[] = '/' . $alias . ' ' . $objectId . ' 0 R';
+        }
+
+        foreach ($optionalContentMemberships as $alias => $_optionalContentMembership) {
+            $objectId = $optionalContentMembershipObjectIds[$alias] ?? null;
 
             if ($objectId === null) {
                 continue;

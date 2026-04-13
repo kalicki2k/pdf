@@ -52,6 +52,8 @@ final readonly class DocumentSerializationPlanObjectIdAllocator
         $imageObjectIds = [];
         /** @var array<string, int> $optionalContentGroupObjectIds */
         $optionalContentGroupObjectIds = [];
+        /** @var array<int, array<string, int>> $pageOptionalContentMembershipObjectIds */
+        $pageOptionalContentMembershipObjectIds = [];
         /** @var array<int, list<int>> $pageAnnotationObjectIds */
         $pageAnnotationObjectIds = [];
         /** @var array<int, list<?int>> $pageAnnotationAppearanceObjectIds */
@@ -106,6 +108,12 @@ final readonly class DocumentSerializationPlanObjectIdAllocator
                 if (!isset($optionalContentGroupObjectIds[$key])) {
                     $optionalContentGroupObjectIds[$key] = $nextObjectId++;
                 }
+            }
+
+            $pageOptionalContentMembershipObjectIds[$pageIndex] = [];
+
+            foreach ($page->optionalContentMemberships as $alias => $_membership) {
+                $pageOptionalContentMembershipObjectIds[$pageIndex][$alias] = $nextObjectId++;
             }
 
             $pageAnnotationObjectIds[$pageIndex] = [];
@@ -297,6 +305,7 @@ final readonly class DocumentSerializationPlanObjectIdAllocator
             $infoObjectId,
             $encryptObjectId,
             $optionalContentGroupObjectIds,
+            $pageOptionalContentMembershipObjectIds,
             $acroFormDefaultFont,
             $acroFormDefaultFontKey,
         );

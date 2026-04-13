@@ -16,6 +16,7 @@ final readonly class Page
      * @param array<string, PageFont> $fontResources
      * @param array<string, ImageSource> $imageResources
      * @param array<string, OptionalContentGroup> $optionalContentGroups
+     * @param array<string, OptionalContentMembership> $optionalContentMemberships
      * @param list<PageImage> $images
      * @param list<PageAnnotation> $annotations
      * @param list<NamedDestination> $namedDestinations
@@ -33,6 +34,7 @@ final readonly class Page
         public ?Color $backgroundColor = null,
         public ?string $label = null,
         public ?string $name = null,
+        public array $optionalContentMemberships = [],
     ) {
     }
 

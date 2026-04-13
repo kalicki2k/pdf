@@ -249,6 +249,41 @@ final readonly class DocumentSerializationPlanBuilder
             );
         }
 
+        foreach ($document->pages as $pageIndex => $page) {
+            foreach ($page->optionalContentMemberships as $alias => $membership) {
+                $objectId = $state->pageOptionalContentMembershipObjectIds[$pageIndex][$alias] ?? null;
+
+                if ($objectId === null) {
+                    continue;
+                }
+
+                $groupReferences = [];
+
+                foreach ($membership->groupAliases as $groupAlias) {
+                    $group = $page->optionalContentGroups[$groupAlias] ?? null;
+
+                    if ($group === null) {
+                        continue;
+                    }
+
+                    $groupObjectId = $state->optionalContentGroupObjectIds[$group->key()] ?? null;
+
+                    if ($groupObjectId === null) {
+                        continue;
+                    }
+
+                    $groupReferences[] = $groupObjectId . ' 0 R';
+                }
+
+                $objects[] = IndirectObject::plain(
+                    $objectId,
+                    '<< /Type /OCMD /Name '
+                    . $this->pdfString($membership->name)
+                    . ' /OCGs [' . implode(' ', $groupReferences) . '] /P /' . $membership->visibilityPolicy . ' >>',
+                );
+            }
+        }
+
         return $objects;
     }
 

@@ -98,6 +98,8 @@ final class DocumentPageAndFormObjectBuilderTest extends TestCase
             iccProfileObjectId: $state->iccProfileObjectId,
             infoObjectId: $state->infoObjectId,
             encryptObjectId: $state->encryptObjectId,
+            optionalContentGroupObjectIds: $state->optionalContentGroupObjectIds,
+            pageOptionalContentMembershipObjectIds: $state->pageOptionalContentMembershipObjectIds,
             acroFormDefaultFont: $state->acroFormDefaultFont,
             acroFormDefaultFontKey: $state->acroFormDefaultFontKey,
         );

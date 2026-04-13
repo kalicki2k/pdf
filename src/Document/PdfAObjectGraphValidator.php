@@ -526,7 +526,10 @@ final class PdfAObjectGraphValidator
             ));
         }
 
-        if ($document->profile->pdfaConformance() !== 'E' || $document->pages[$pageIndex]->optionalContentGroups === []) {
+        if (
+            $document->profile->pdfaConformance() !== 'E'
+            || ($document->pages[$pageIndex]->optionalContentGroups === [] && $document->pages[$pageIndex]->optionalContentMemberships === [])
+        ) {
             return;
         }
 
@@ -550,9 +553,32 @@ final class PdfAObjectGraphValidator
                 ));
             }
 
-            if (!str_contains($pageObject->contents, '/Properties << /' . $alias . ' ' . $objectId . ' 0 R')) {
+            if (!$this->containsPropertyAliasReference($pageObject->contents, $alias, $objectId)) {
                 throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                     'Profile %s must serialize page resource alias /%s to optional content group object %d on page %d.',
+                    $document->profile->name(),
+                    $alias,
+                    $objectId,
+                    $pageIndex + 1,
+                ));
+            }
+        }
+
+        foreach ($document->pages[$pageIndex]->optionalContentMemberships as $alias => $_optionalContentMembership) {
+            $objectId = $state->pageOptionalContentMembershipObjectIds[$pageIndex][$alias] ?? null;
+
+            if ($objectId === null) {
+                throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                    'Profile %s is missing an allocated optional content membership object for alias /%s on page %d.',
+                    $document->profile->name(),
+                    $alias,
+                    $pageIndex + 1,
+                ));
+            }
+
+            if (!$this->containsPropertyAliasReference($pageObject->contents, $alias, $objectId)) {
+                throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                    'Profile %s must serialize page resource alias /%s to optional content membership object %d on page %d.',
                     $document->profile->name(),
                     $alias,
                     $objectId,
@@ -773,7 +799,7 @@ final class PdfAObjectGraphValidator
                         ));
                     }
 
-                    if ($optionalContentGroup->visible && !str_contains($catalogObject->contents, '/ON [' . $reference)) {
+                    if ($optionalContentGroup->visible && !$this->containsOptionalContentListReference($catalogObject->contents, 'ON', $reference)) {
                         throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                             'Profile %s must list visible optional content group object %d in /ON.',
                             $document->profile->name(),
@@ -781,12 +807,71 @@ final class PdfAObjectGraphValidator
                         ));
                     }
 
-                    if (!$optionalContentGroup->visible && !str_contains($catalogObject->contents, '/OFF [' . $reference)) {
+                    if (!$optionalContentGroup->visible && !$this->containsOptionalContentListReference($catalogObject->contents, 'OFF', $reference)) {
                         throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                             'Profile %s must list hidden optional content group object %d in /OFF.',
                             $document->profile->name(),
                             $objectId,
                         ));
+                    }
+                }
+            }
+
+            foreach ($document->pages as $pageIndex => $page) {
+                foreach ($page->optionalContentMemberships as $alias => $membership) {
+                    $objectId = $state->pageOptionalContentMembershipObjectIds[$pageIndex][$alias] ?? null;
+
+                    if ($objectId === null) {
+                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                            'Profile %s must allocate an optional content membership object for alias /%s on page %d.',
+                            $document->profile->name(),
+                            $alias,
+                            $pageIndex + 1,
+                        ));
+                    }
+
+                    $object = $this->assertObjectExists($objectsById, $objectId, 'optional content membership');
+
+                    if (!str_contains($object->contents, '/Type /OCMD') || !str_contains($object->contents, '/OCGs [')) {
+                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                            'Profile %s must serialize optional content membership object %d as an /OCMD dictionary with /OCGs.',
+                            $document->profile->name(),
+                            $objectId,
+                        ));
+                    }
+
+                    if (!str_contains($object->contents, '/P /AnyOn') && !str_contains($object->contents, '/P /AllOn')) {
+                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                            'Profile %s must serialize optional content membership object %d with /P /AnyOn or /P /AllOn.',
+                            $document->profile->name(),
+                            $objectId,
+                        ));
+                    }
+
+                    foreach ($membership->groupAliases as $groupAlias) {
+                        $group = $page->optionalContentGroups[$groupAlias] ?? null;
+
+                        if ($group === null) {
+                            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                                'Profile %s must resolve optional content membership alias /%s to an existing optional content group on page %d.',
+                                $document->profile->name(),
+                                $groupAlias,
+                                $pageIndex + 1,
+                            ));
+                        }
+
+                        $groupObjectId = $state->optionalContentGroupObjectIds[$group->key()] ?? null;
+
+                        $this->assertReferencePresent(
+                            $object->contents,
+                            $groupObjectId,
+                            sprintf(
+                                'Profile %s must reference optional content group objects for membership alias /%s on page %d.',
+                                $document->profile->name(),
+                                $alias,
+                                $pageIndex + 1,
+                            ),
+                        );
                     }
                 }
             }
@@ -824,6 +909,22 @@ final class PdfAObjectGraphValidator
     {
         return preg_match(
             '/\/AP\s*<<\s*\/N\s+' . preg_quote((string) $appearanceObjectId, '/') . '\s+0\s+R\s*>>/',
+            $contents,
+        ) === 1;
+    }
+
+    private function containsOptionalContentListReference(string $contents, string $listName, string $reference): bool
+    {
+        return preg_match(
+            '/\/' . preg_quote($listName, '/') . '\s*\[[^\]]*\b' . preg_quote($reference, '/') . '\b[^\]]*\]/',
+            $contents,
+        ) === 1;
+    }
+
+    private function containsPropertyAliasReference(string $contents, string $alias, int $objectId): bool
+    {
+        return preg_match(
+            '/\/Properties\s*<<[^>]*\/' . preg_quote($alias, '/') . '\s+' . preg_quote((string) $objectId, '/') . '\s+0\s+R\b[^>]*>>/',
             $contents,
         ) === 1;
     }

@@ -24,6 +24,7 @@ use Kalle\Pdf\Document\PdfAObjectGraphValidator;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\OptionalContentGroup;
+use Kalle\Pdf\Page\OptionalContentMembership;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
@@ -600,6 +601,48 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4e must serialize /OCProperties when optional content groups are used.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4eOptionalContentMembershipObjectsWithoutOcgReferences(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Memberships',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Assembly BDC\nq\n0 0 20 20 re\nf\nQ\nEMC",
+                    optionalContentGroups: [
+                        'LayerA' => new OptionalContentGroup('Base Geometry'),
+                    ],
+                    optionalContentMemberships: [
+                        'Assembly' => new OptionalContentMembership('Assembly View', ['LayerA']),
+                    ],
+                ),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+        $membershipObjectId = array_values($state->pageOptionalContentMembershipObjectIds[0])[0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($membershipObjectId): IndirectObject {
+                if ($object->objectId !== $membershipObjectId) {
+                    return $object;
+                }
+
+                return IndirectObject::plain(
+                    $object->objectId,
+                    '<< /Type /OCMD /Name (Assembly View) /P /AnyOn >>',
+                );
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e must serialize optional content membership object ' . $membershipObjectId . ' as an /OCMD dictionary with /OCGs.');
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }

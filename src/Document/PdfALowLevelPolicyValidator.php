@@ -973,7 +973,10 @@ final readonly class PdfALowLevelPolicyValidator
             if (
                 $document->profile->pdfaConformance() === 'E'
                 && count($operands) === 2
-                && isset($page->optionalContentGroups[ltrim($operands[1], '/')])
+                && (
+                    isset($page->optionalContentGroups[ltrim($operands[1], '/')])
+                    || isset($page->optionalContentMemberships[ltrim($operands[1], '/')])
+                )
             ) {
                 return;
             }
