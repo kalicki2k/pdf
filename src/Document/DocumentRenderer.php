@@ -36,10 +36,12 @@ final readonly class DocumentRenderer
         ]);
 
         try {
-            $this->renderer->write($this->planBuilder->build($document), $output, $debugger);
+            $plan = $this->planBuilder->build($document);
         } catch (InvalidArgumentException $exception) {
             throw DocumentBuildException::fromValidationFailure($document, $exception);
         }
+
+        $this->renderer->write($plan, $output, $debugger);
 
         $scope->stop([
             'bytes' => $output->offset(),

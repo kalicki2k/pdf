@@ -11,9 +11,9 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
-use Kalle\Pdf\Document\DocumentBuildException;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildException;
 use Kalle\Pdf\Document\DocumentRenderer;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
@@ -60,6 +60,7 @@ use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Writer\Output;
 use Kalle\Pdf\Writer\StringOutput;
 use PHPUnit\Framework\TestCase;
 
@@ -132,9 +133,34 @@ final class DocumentRendererTest extends TestCase
         $output = new StringOutput();
 
         $this->expectException(DocumentBuildException::class);
-        $this->expectExceptionMessage('Document build failed for profile pdfa-3b.');
-        $this->expectExceptionMessage('non-embedded font resource');
+        $this->expectExceptionMessage('Document build failed for profile PDF/A-3b.');
+        $this->expectExceptionMessage('requires embedded fonts');
         $this->expectExceptionMessage('Use embedded fonts via TextOptions(embeddedFont: ...)');
+
+        $renderer->write($document, $output);
+    }
+
+    public function testItDoesNotWrapWriterPhaseInvalidArgumentExceptionsAsBuildExceptions(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->title('Example Title')
+            ->text('Hello world')
+            ->build();
+        $renderer = new DocumentRenderer();
+        $output = new class () implements Output {
+            public function write(string $bytes): void
+            {
+                throw new InvalidArgumentException('Output rejected bytes.');
+            }
+
+            public function offset(): int
+            {
+                return 0;
+            }
+        };
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Output rejected bytes.');
 
         $renderer->write($document, $output);
     }
