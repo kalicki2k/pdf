@@ -37,15 +37,6 @@ final readonly class DecodedRasterImage
 
     public function toImageSource(string $path = 'memory'): ImageSource
     {
-        $compressedPixelData = gzcompress($this->pixelData);
-
-        if (!is_string($compressedPixelData)) {
-            throw new RuntimeException(sprintf(
-                "Unable to compress decoded raster image '%s'.",
-                $path,
-            ));
-        }
-
         $softMask = null;
 
         if ($this->alphaData !== null) {
@@ -67,6 +58,15 @@ final readonly class DecodedRasterImage
         }
 
         if ($this->lookupTable !== null) {
+            $compressedPixelData = gzcompress($this->pixelData);
+
+            if (!is_string($compressedPixelData)) {
+                throw new RuntimeException(sprintf(
+                    "Unable to compress decoded raster image '%s'.",
+                    $path,
+                ));
+            }
+
             return ImageSource::indexed(
                 data: $compressedPixelData,
                 width: $this->width,
@@ -77,8 +77,8 @@ final readonly class DecodedRasterImage
             );
         }
 
-        return ImageSource::flate(
-            data: $compressedPixelData,
+        return ImageSource::compressed(
+            data: $this->pixelData,
             width: $this->width,
             height: $this->height,
             colorSpace: $this->colorSpace,

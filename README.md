@@ -134,7 +134,7 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-Fuer vorbereitete Rasterdaten stehen neben `ImageSource::jpeg(...)` jetzt auch explizite PDF-Filterfabriken wie `ImageSource::flate(...)`, `ImageSource::lzw(...)`, `ImageSource::runLength(...)` und `ImageSource::ccittFax(...)` bereit. Fuer rohe Rasterdaten kann `ImageSource::compressed(...)` eine kompakte PDF-Kompression automatisch auswaehlen. `ImageSource::monochrome(...)` packt rohe 1-Bit-Zeilen in ein bilevel PDF-Bild und beruecksichtigt dabei jetzt auch CCITT-Fax-Kompression; `ImageSource::monochromeCcitt(...)` erzwingt diesen Pfad explizit.
+Fuer vorbereitete Rasterdaten stehen neben `ImageSource::jpeg(...)` jetzt auch explizite PDF-Filterfabriken wie `ImageSource::flate(...)`, `ImageSource::lzw(...)`, `ImageSource::runLength(...)` und `ImageSource::ccittFax(...)` bereit. Fuer rohe Rasterdaten kann `ImageSource::compressed(...)` eine kompakte PDF-Kompression automatisch auswaehlen. Dieser Auswahlpfad wird inzwischen auch von dekodierten Rasterimporten fuer nicht-indizierte Pixelbilder genutzt, damit `fromPath(...)` und manuell erzeugte Raster dieselbe Kompressionsstrategie teilen. `ImageSource::monochrome(...)` packt rohe 1-Bit-Zeilen in ein bilevel PDF-Bild und beruecksichtigt dabei jetzt auch CCITT-Fax-Kompression; `ImageSource::monochromeCcitt(...)` erzwingt diesen Pfad explizit.
 
 Aktueller Bild-Scope von `ImageSource::fromPath(...)`:
 

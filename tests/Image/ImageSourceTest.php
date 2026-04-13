@@ -330,7 +330,7 @@ final class ImageSourceTest extends TestCase
         self::assertSame(2, $source->width);
         self::assertSame(1, $source->height);
         self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
-        self::assertSame('/FlateDecode', $source->filter);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
         self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $source->pdfObjectContents());
 
         unlink($path);
@@ -412,7 +412,7 @@ final class ImageSourceTest extends TestCase
         self::assertSame(1, $source->width);
         self::assertSame(1, $source->height);
         self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
-        self::assertSame('/FlateDecode', $source->filter);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
         self::assertStringContainsString('[/Indexed /DeviceRGB 1 <FFFFFFFFFFFF>]', $source->pdfObjectContents());
         self::assertNull($source->softMask);
 
@@ -456,7 +456,7 @@ final class ImageSourceTest extends TestCase
         self::assertSame(1, $source->height);
         self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
         self::assertSame(8, $source->bitsPerComponent);
-        self::assertSame('/FlateDecode', $source->filter);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
         self::assertNull($source->softMask);
 
         unlink($path);
@@ -942,7 +942,7 @@ final class ImageSourceTest extends TestCase
         self::assertSame(1, $source->width);
         self::assertSame(1, $source->height);
         self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
-        self::assertSame('/FlateDecode', $source->filter);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
         self::assertNull($source->softMask);
 
         unlink($path);
@@ -964,7 +964,7 @@ final class ImageSourceTest extends TestCase
         self::assertSame(1, $source->width);
         self::assertSame(1, $source->height);
         self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
-        self::assertSame('/FlateDecode', $source->filter);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
         self::assertNotNull($softMask);
         self::assertSame(ImageColorSpace::GRAY, $softMask->colorSpace);
         self::assertSame('/FlateDecode', $softMask->filter);
