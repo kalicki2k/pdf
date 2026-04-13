@@ -73,6 +73,7 @@ use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\TaggedPageAnnotation;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 use Kalle\Pdf\Tests\Image\JpegFixture;
+use Kalle\Pdf\Tests\Image\TiffFixture;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
@@ -3396,6 +3397,44 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Filter /CCITTFaxDecode', $serialized);
         self::assertStringContainsString('/ColorSpace /DeviceGray', $serialized);
         self::assertStringContainsString('/BitsPerComponent 1', $serialized);
+    }
+
+    public function testItAllowsPredictorLzwGrayscaleTiffImagesForPdfA1Profiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-pdfa1-tiff-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary TIFF path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorLzwGrayscaleTiffBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfA1b())
+                ->title('Archive Copy')
+                ->text('Predictor TIFF Привет', TextOptions::make(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                ))
+                ->imageFile(
+                    $path,
+                    ImagePlacement::at(10, 20),
+                    ImageAccessibility::alternativeText('Predictor grayscale TIFF'),
+                )
+                ->build();
+
+            $serialized = implode("\n", array_map(
+                static fn ($object): string => $object->contents,
+                iterator_to_array($builder->build($document)->objects),
+            ));
+
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $serialized);
+            self::assertStringContainsString('/BitsPerComponent 8', $serialized);
+            self::assertStringNotContainsString('/SMask ', $serialized);
+        } finally {
+            unlink($path);
+        }
     }
 
     public function testItRejectsCmykTextForPdfA1bWithRgbOutputIntent(): void

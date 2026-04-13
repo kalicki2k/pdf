@@ -58,10 +58,12 @@ use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\PolygonAnnotationOptions;
 use Kalle\Pdf\Page\ShapeAnnotationOptions;
 use Kalle\Pdf\Page\TextAnnotationOptions;
+use Kalle\Pdf\Tests\Image\BmpFixture;
+use Kalle\Pdf\Tests\Image\GifFixture;
+use Kalle\Pdf\Tests\Image\TiffFixture;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
-use Kalle\Pdf\Tests\Image\TiffFixture;
 use Kalle\Pdf\Writer\Output;
 use Kalle\Pdf\Writer\StringOutput;
 use PHPUnit\Framework\TestCase;
@@ -2334,6 +2336,56 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/DecodeParms << /K 0 /Columns 8 /Rows 2 /BlackIs1 true /EndOfLine true >>', $pdf);
     }
 
+    public function testItRendersPdfA2uTiffPredictorAndMultiStripCcittImages(): void
+    {
+        $rgbPath = tempnam(sys_get_temp_dir(), 'pdf2-pdfa2u-rgb-tiff-');
+        $ccittPath = tempnam(sys_get_temp_dir(), 'pdf2-pdfa2u-ccitt-tiff-');
+
+        if ($rgbPath === false || $ccittPath === false) {
+            self::fail('Unable to allocate temporary TIFF fixture paths.');
+        }
+
+        file_put_contents($rgbPath, TiffFixture::tinyPredictorDeflateRgbTiffBytes());
+        file_put_contents($ccittPath, TiffFixture::tinyMultiStripCcittGroup3TiffBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfA2u())
+                ->title('PDF/A-2u TIFF Regression')
+                ->author('kalle/pdf2')
+                ->subject('PDF/A-2u TIFF predictor and CCITT regression fixture')
+                ->language('de-DE')
+                ->creator('Regression Fixture')
+                ->creatorTool('DocumentRendererTest')
+                ->text('PDF/A-2u TIFF Regression Привет', TextOptions::make(
+                    x: 72,
+                    y: 760,
+                    fontSize: 18,
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    color: Color::rgb(0.08, 0.16, 0.35),
+                ))
+                ->imageFile($rgbPath, ImagePlacement::at(72, 610, width: 120))
+                ->imageFile($ccittPath, ImagePlacement::at(220, 610, width: 120))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $pdf);
+            self::assertStringContainsString('/Filter /CCITTFaxDecode', $pdf);
+            self::assertStringContainsString('/EndOfBlock false', $pdf);
+        } finally {
+            unlink($rgbPath);
+            unlink($ccittPath);
+        }
+    }
+
     public function testItRendersMixedTiffFixturesEndToEnd(): void
     {
         $grayPath = tempnam(sys_get_temp_dir(), 'pdf2-tiff-gray-');
@@ -2372,6 +2424,68 @@ final class DocumentRendererTest extends TestCase
             unlink($grayPath);
             unlink($rgbPath);
             unlink($ccittPath);
+        }
+    }
+
+    public function testItRendersImportedGifImagesWithSoftMasks(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-gif-render-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary GIF fixture path.');
+        }
+
+        file_put_contents($path, GifFixture::tinyTransparentGifBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000000000>]', $pdf);
+            self::assertStringContainsString('/SMask ', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $pdf);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRendersImportedBmpImagesWithSoftMasks(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-bmp-render-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary BMP fixture path.');
+        }
+
+        file_put_contents($path, BmpFixture::tiny32BitRgbaBmpBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+            self::assertStringContainsString('/BitsPerComponent 8', $pdf);
+            self::assertStringContainsString('/SMask ', $pdf);
+        } finally {
+            unlink($path);
         }
     }
 }
