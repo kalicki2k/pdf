@@ -333,7 +333,7 @@ final readonly class Profile
     public function requiresFormFieldAlternativeDescriptions(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresLinkAnnotationAlternativeDescriptions(): bool
@@ -345,7 +345,7 @@ final readonly class Profile
     public function requiresPageAnnotationAlternativeDescriptions(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresPageAnnotationTabOrder(): bool
@@ -361,7 +361,7 @@ final readonly class Profile
     public function requiresTaggedFormFields(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresTaggedImages(): bool
@@ -379,7 +379,7 @@ final readonly class Profile
     public function requiresTaggedPageAnnotations(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA1() && $this->conformance === 'A');
+            || ($this->isPdfA() && $this->conformance === 'A');
     }
 
     public function requiresTaggedPdf(): bool
@@ -466,6 +466,10 @@ final readonly class Profile
 
     public function supportsCurrentPushButtonImplementation(): bool
     {
+        if ($this->isPdfA() && $this->conformance === 'A') {
+            return false;
+        }
+
         return ($this->supportsAcroForms() && !($this->isPdfA1() && $this->conformance === 'A'))
             || $this->isPdfUa();
     }
@@ -483,6 +487,10 @@ final readonly class Profile
 
     public function supportsCurrentSignatureFieldImplementation(): bool
     {
+        if ($this->isPdfA() && $this->conformance === 'A') {
+            return false;
+        }
+
         if ($this->isPdfA()) {
             return $this->pdfaCapabilityAllowed(PdfACapability::ACRO_FORM_FIELDS)
                 || $this->requiresTaggedFormFields();

@@ -1957,6 +1957,69 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringNotContainsString('/Helv', $serialized);
     }
 
+    public function testItBuildsTaggedPdfA2aChoiceFields(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->listBox('skills', 40, 450, 120, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php', 'pdf'], 'Skills')
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertSame(2, substr_count($serialized, '/Type /StructElem /S /Form'));
+        self::assertStringContainsString('/Alt (Status)', $serialized);
+        self::assertStringContainsString('/Alt (Skills)', $serialized);
+        self::assertStringContainsString('/Type /StructTreeRoot', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
+    }
+
+    public function testItBuildsTaggedPdfA3aTextAndCheckboxFields(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')
+            ->checkbox('accept_terms', 40, 460, 14, true, 'Accept terms')
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertSame(2, substr_count($serialized, '/Type /StructElem /S /Form'));
+        self::assertStringContainsString('/Alt (Customer name)', $serialized);
+        self::assertStringContainsString('/Alt (Accept terms)', $serialized);
+        self::assertStringContainsString('/Subtype /Widget', $serialized);
+    }
+
+    public function testItRejectsPdfA2aSignatureFields(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->signatureField('approval_signature', 40, 420, 160, 24, 'Approval signature')
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2a only allows tagged text fields, checkboxes, radio buttons and choice fields in the current PDF/A-2A form policy.',
+        );
+
+        $builder->build($document);
+    }
+
     public function testItRejectsPdfA1aPushButtons(): void
     {
         $builder = new DocumentSerializationPlanBuilder();

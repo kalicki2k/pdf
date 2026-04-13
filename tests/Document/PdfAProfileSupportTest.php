@@ -20,8 +20,8 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertTrue($support->isSupported);
         self::assertTrue($support->capabilityRule(PdfACapability::TAGGED_PDF)->required);
         self::assertTrue($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
-        self::assertFalse($support->capabilityRule(PdfACapability::NON_LINK_PAGE_ANNOTATIONS)->allowed);
-        self::assertFalse($support->capabilityRule(PdfACapability::ACRO_FORM_FIELDS)->allowed);
+        self::assertTrue($support->capabilityRule(PdfACapability::NON_LINK_PAGE_ANNOTATIONS)->allowed);
+        self::assertTrue($support->capabilityRule(PdfACapability::ACRO_FORM_FIELDS)->allowed);
     }
 
     public function testPdfA3aCapabilityMatrixIncludesAssociatedFilesButNotGeneralPageAnnotations(): void
@@ -31,7 +31,8 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertNotNull($support);
         self::assertTrue($support->capabilityRule(PdfACapability::DOCUMENT_ASSOCIATED_FILES)->allowed);
         self::assertTrue($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
-        self::assertFalse($support->capabilityRule(PdfACapability::NON_LINK_PAGE_ANNOTATIONS)->allowed);
+        self::assertTrue($support->capabilityRule(PdfACapability::NON_LINK_PAGE_ANNOTATIONS)->allowed);
+        self::assertTrue($support->capabilityRule(PdfACapability::ACRO_FORM_FIELDS)->allowed);
     }
 
     public function testPdfA1bCapabilityMatrixShowsVisualReproductionScope(): void

@@ -65,20 +65,31 @@ final readonly class PdfAProfileSupport
             'PDF/A-2a' => new self(
                 'PDF/A-2a',
                 true,
-                'Supported for the current PDF/A-2a scope with tagged structure, embedded Unicode fonts, XMP metadata, OutputIntent and tagged link annotations; non-link page annotations and AcroForms remain blocked.',
-                self::baseCapabilityRules(
+                'Supported for the current PDF/A-2a scope with tagged structure, embedded Unicode fonts, XMP metadata, OutputIntent, tagged page annotations and the constrained tagged form subset; unsupported annotation types and interactive form variants remain blocked.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: true,
                     documentLanguage: true,
                     extractableUnicodeFonts: true,
                     outputIntent: true,
                     infoDictionary: true,
                     linkAnnotations: true,
-                    nonLinkPageAnnotations: false,
-                    acroFormFields: false,
+                    nonLinkPageAnnotations: true,
+                    acroFormFields: true,
                     documentAssociatedFiles: false,
                     documentEmbeddedAttachments: false,
                     transparency: true,
-                ),
+                ), [
+                    PdfACapability::NON_LINK_PAGE_ANNOTATIONS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Tagged Text, Highlight and FreeText annotations are allowed within the currently validated PDF/A-2a scope; other page annotations remain blocked.',
+                    ),
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Tagged text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-2a form scope; push buttons and signature fields remain blocked.',
+                    ),
+                ]),
             ),
             'PDF/A-2b' => new self(
                 'PDF/A-2b',
@@ -119,20 +130,31 @@ final readonly class PdfAProfileSupport
             'PDF/A-3a' => new self(
                 'PDF/A-3a',
                 true,
-                'Supported for the current PDF/A-3a scope with tagged structure, embedded Unicode fonts, XMP metadata, OutputIntent, tagged link annotations and document-level associated files; non-link page annotations and AcroForms remain blocked.',
-                self::baseCapabilityRules(
+                'Supported for the current PDF/A-3a scope with tagged structure, embedded Unicode fonts, XMP metadata, OutputIntent, tagged page annotations, the constrained tagged form subset and document-level associated files; unsupported annotation types and interactive form variants remain blocked.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: true,
                     documentLanguage: true,
                     extractableUnicodeFonts: true,
                     outputIntent: true,
                     infoDictionary: true,
                     linkAnnotations: true,
-                    nonLinkPageAnnotations: false,
-                    acroFormFields: false,
+                    nonLinkPageAnnotations: true,
+                    acroFormFields: true,
                     documentAssociatedFiles: true,
                     documentEmbeddedAttachments: true,
                     transparency: true,
-                ),
+                ), [
+                    PdfACapability::NON_LINK_PAGE_ANNOTATIONS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Tagged Text, Highlight and FreeText annotations are allowed within the currently validated PDF/A-3a scope; other page annotations remain blocked.',
+                    ),
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Tagged text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-3a form scope; push buttons and signature fields remain blocked.',
+                    ),
+                ]),
             ),
             'PDF/A-3b' => new self(
                 'PDF/A-3b',
@@ -366,5 +388,19 @@ final readonly class PdfAProfileSupport
                 'Optional content groups remain blocked for all PDF/A profiles in the current implementation.',
             ),
         ];
+    }
+
+    /**
+     * @param array<string, PdfACapabilityRule> $rules
+     * @param array<string, PdfACapabilityRule> $overrides
+     * @return array<string, PdfACapabilityRule>
+     */
+    private static function overrideCapabilityRules(array $rules, array $overrides): array
+    {
+        foreach ($overrides as $capability => $rule) {
+            $rules[$capability] = $rule;
+        }
+
+        return $rules;
     }
 }

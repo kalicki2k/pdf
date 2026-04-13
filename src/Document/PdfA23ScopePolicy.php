@@ -39,15 +39,6 @@ final class PdfA23ScopePolicy
             return;
         }
 
-        if ($document->profile->pdfaConformance() === 'A' && !$annotation instanceof LinkAnnotation) {
-            throw new DocumentValidationException(DocumentBuildError::TAGGED_PDF_REQUIRED, sprintf(
-                'Profile %s only allows tagged link annotations in the current PDF/A-%dA scope; other page annotations remain blocked on page %d.',
-                $document->profile->name(),
-                $document->profile->pdfaPart(),
-                $pageIndex + 1,
-            ));
-        }
-
         if ($annotation instanceof FileAttachmentAnnotation) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_EMBEDDED_ATTACHMENTS_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow page-level file attachment annotations in the current PDF/A-2/3 scope. Use document-level associated files instead.',
@@ -78,6 +69,10 @@ final class PdfA23ScopePolicy
     public function assertAcroFormAllowed(Document $document): void
     {
         if (!$this->appliesTo($document) || $document->acroForm === null) {
+            return;
+        }
+
+        if ($document->profile->pdfaConformance() === 'A') {
             return;
         }
 

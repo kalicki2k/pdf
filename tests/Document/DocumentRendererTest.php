@@ -2011,6 +2011,38 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/F 4', $pdf);
     }
 
+    public function testItRendersPdfA2aTaggedTextAnnotations(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2a())
+            ->title('PDF/A-2a Text Annotation Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2a text annotation regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->text('PDF/A-2a Kommentar Regression Привет', new TextOptions(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->textAnnotation(72, 680, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Text', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /Annot', $pdf);
+        self::assertStringContainsString('/Alt (Kommentar)', $pdf);
+    }
+
     public function testItRendersPdfA2uHighlightAnnotationsWithAppearanceStreams(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -2085,6 +2117,29 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Subtype /Form /FormType 1 /BBox [0 0 180 40]', $pdf);
         self::assertStringContainsString('/Resources << /Font << /', $pdf);
         self::assertStringContainsString('/F 4', $pdf);
+    }
+
+    public function testItRendersPdfA3aTaggedChoiceFields(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3a())
+            ->title('PDF/A-3a Tagged Form Regression')
+            ->language('de-DE')
+            ->comboBox('status', 72, 680, 140, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->listBox('skills', 72, 620, 140, 44, ['php' => 'PHP', 'pdf' => 'PDF'], ['php'], 'Skills')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertSame(2, substr_count($pdf, '/Type /StructElem /S /Form'));
+        self::assertStringContainsString('/Alt (Status)', $pdf);
+        self::assertStringContainsString('/Alt (Skills)', $pdf);
+        self::assertStringNotContainsString('/Helv', $pdf);
     }
 
     public function testItRendersPdfA2uInternalLinksAndNamedDestinations(): void

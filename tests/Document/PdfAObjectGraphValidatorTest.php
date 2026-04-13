@@ -251,6 +251,45 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
+    public function testItRejectsPdfA2aAcroFormCatalogsWithoutAcroFormReferences(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2a())
+            ->title('Archive Form')
+            ->language('de-DE')
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->build();
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+
+        self::assertNotNull($state->acroFormObjectId);
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($state): IndirectObject {
+                if ($object->objectId !== 1) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace(
+                    '/\s*\/AcroForm\s+' . $state->acroFormObjectId . '\s+0\s+R/',
+                    '',
+                    $object->contents,
+                    1,
+                );
+
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PDF/A catalog must reference the AcroForm object.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
     public function testItRejectsPdfA3bAttachmentObjectsWithoutAfRelationship(): void
     {
         $document = DefaultDocumentBuilder::make()

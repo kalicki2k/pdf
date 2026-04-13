@@ -32,6 +32,7 @@ final readonly class DocumentSerializationPlanValidator
         private PdfA1aSupportedStructureValidator $pdfA1aSupportedStructureValidator = new PdfA1aSupportedStructureValidator(),
         private PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
         private PdfA1aFormFieldPolicy $pdfA1aFormFieldPolicy = new PdfA1aFormFieldPolicy(),
+        private PdfA23aFormFieldPolicy $pdfA23aFormFieldPolicy = new PdfA23aFormFieldPolicy(),
         private PdfA1AnnotationPolicy $pdfA1AnnotationPolicy = new PdfA1AnnotationPolicy(),
         private PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
         private PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
@@ -475,6 +476,17 @@ final readonly class DocumentSerializationPlanValidator
                 );
             }
 
+            if (
+                ($document->profile->isPdfA2() || $document->profile->isPdfA3())
+                && $document->profile->pdfaConformance() === 'A'
+                && !$this->pdfA23aFormFieldPolicy->supports($field)
+            ) {
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_TAGGED_FORM_SUBSET_REQUIRED,
+                    $this->pdfA23aFormFieldPolicy->violationMessage($document->profile),
+                );
+            }
+
             if ($field instanceof TextField && !$document->profile->supportsCurrentTextFieldImplementation()) {
                 throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow text fields in the current implementation.',
@@ -522,13 +534,7 @@ final readonly class DocumentSerializationPlanValidator
                     ));
                 }
 
-                if (
-                    !$document->profile->supportsCurrentPushButtonImplementation()
-                    && !(
-                        $document->profile->requiresTaggedFormFields()
-                        && $field->url === null
-                    )
-                ) {
+                if (!$document->profile->supportsCurrentPushButtonImplementation()) {
                     throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                         'Profile %s does not allow push buttons in the current implementation.',
                         $document->profile->name(),

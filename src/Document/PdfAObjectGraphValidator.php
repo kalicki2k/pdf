@@ -228,7 +228,11 @@ final class PdfAObjectGraphValidator
         IndirectObject $catalogObject,
         array $objectsById,
     ): void {
-        if (($document->profile->isPdfA2() || $document->profile->isPdfA3()) && $state->acroFormObjectId !== null) {
+        if (
+            ($document->profile->isPdfA2() || $document->profile->isPdfA3())
+            && !$document->profile->requiresTaggedFormFields()
+            && $state->acroFormObjectId !== null
+        ) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                 'Profile %s must not serialize AcroForm objects in the final PDF/A-2/3 object graph.',
                 $document->profile->name(),

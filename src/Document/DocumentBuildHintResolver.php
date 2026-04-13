@@ -69,7 +69,7 @@ final class DocumentBuildHintResolver
                 ? 'Remove soft masks from image resources or flatten transparency before rendering in this profile.'
                 : null,
             DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED => !$document->profile->supportsAcroForms()
-                ? 'Remove AcroForm fields for this profile, or switch to a non-PDF/A profile. Only the constrained PDF/A-1a form scope is currently supported.'
+                ? 'Remove AcroForm fields for this profile, or switch to a non-PDF/A profile. Only the explicitly enabled PDF/A form subsets are currently supported.'
                 : null,
             DocumentBuildError::PDFA_TAGGED_FORM_SUBSET_REQUIRED => $document->profile->requiresTaggedFormFields()
                 ? 'Use only the currently supported tagged form subset for this profile and provide alternative descriptions for each field.'

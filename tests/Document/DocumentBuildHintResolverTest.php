@@ -244,7 +244,7 @@ final class DocumentBuildHintResolverTest extends TestCase
         );
 
         self::assertSame(
-            'Remove AcroForm fields for this profile, or switch to a non-PDF/A profile. Only the constrained PDF/A-1a form scope is currently supported.',
+            'Remove AcroForm fields for this profile, or switch to a non-PDF/A profile. Only the explicitly enabled PDF/A form subsets are currently supported.',
             $hint,
         );
     }

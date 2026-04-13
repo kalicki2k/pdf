@@ -23,7 +23,7 @@ final class PdfAFormContextFactory
 {
     public function buildDefaultFont(Document $document): ?PageFont
     {
-        if ($document->acroForm === null || !$document->profile->isPdfA1()) {
+        if ($document->acroForm === null || !$document->profile->isPdfA()) {
             return null;
         }
 
