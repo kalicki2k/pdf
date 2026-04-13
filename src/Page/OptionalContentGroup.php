@@ -10,6 +10,7 @@ final readonly class OptionalContentGroup
 {
     public function __construct(
         public string $name,
+        public bool $visible = true,
     ) {
         if ($this->name === '') {
             throw new InvalidArgumentException('Optional content group name must not be empty.');

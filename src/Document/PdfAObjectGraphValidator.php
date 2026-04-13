@@ -748,6 +748,48 @@ final class PdfAObjectGraphValidator
                     sprintf('Profile %s must reference optional content group object %d in /OCProperties.', $document->profile->name(), $objectId),
                 );
             }
+
+            foreach ($document->pages as $page) {
+                foreach ($page->optionalContentGroups as $optionalContentGroup) {
+                    $objectId = $state->optionalContentGroupObjectIds[$optionalContentGroup->key()] ?? null;
+
+                    if ($objectId === null) {
+                        continue;
+                    }
+
+                    $reference = $objectId . ' 0 R';
+
+                    if ($optionalContentGroup->visible && !str_contains($catalogObject->contents, '/ON [')) {
+                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                            'Profile %s must serialize /ON for visible optional content groups.',
+                            $document->profile->name(),
+                        ));
+                    }
+
+                    if (!$optionalContentGroup->visible && !str_contains($catalogObject->contents, '/OFF [')) {
+                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                            'Profile %s must serialize /OFF for initially hidden optional content groups.',
+                            $document->profile->name(),
+                        ));
+                    }
+
+                    if ($optionalContentGroup->visible && !str_contains($catalogObject->contents, '/ON [' . $reference)) {
+                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                            'Profile %s must list visible optional content group object %d in /ON.',
+                            $document->profile->name(),
+                            $objectId,
+                        ));
+                    }
+
+                    if (!$optionalContentGroup->visible && !str_contains($catalogObject->contents, '/OFF [' . $reference)) {
+                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                            'Profile %s must list hidden optional content group object %d in /OFF.',
+                            $document->profile->name(),
+                            $objectId,
+                        ));
+                    }
+                }
+            }
         }
 
         foreach ($objectsById as $object) {

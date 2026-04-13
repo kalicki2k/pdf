@@ -265,9 +265,39 @@ final readonly class DocumentSerializationPlanBuilder
             static fn (int $objectId): string => $objectId . ' 0 R',
             array_values($state->optionalContentGroupObjectIds),
         ));
+        $groupsByKey = $this->optionalContentGroupsByKey($document);
+        $onReferences = [];
+        $offReferences = [];
+
+        foreach ($state->optionalContentGroupObjectIds as $key => $objectId) {
+            $group = $groupsByKey[$key] ?? null;
+
+            if ($group === null) {
+                continue;
+            }
+
+            if ($group->visible) {
+                $onReferences[] = $objectId . ' 0 R';
+            } else {
+                $offReferences[] = $objectId . ' 0 R';
+            }
+        }
+
+        $defaultConfigEntries = [
+            '/Name (Layers)',
+            '/Order [' . $references . ']',
+        ];
+
+        if ($onReferences !== []) {
+            $defaultConfigEntries[] = '/ON [' . implode(' ', $onReferences) . ']';
+        }
+
+        if ($offReferences !== []) {
+            $defaultConfigEntries[] = '/OFF [' . implode(' ', $offReferences) . ']';
+        }
 
         return [
-            '/OCProperties << /OCGs [' . $references . '] /D << /Name (Layers) /Order [' . $references . '] /ON [' . $references . '] >> >>',
+            '/OCProperties << /OCGs [' . $references . '] /D << ' . implode(' ', $defaultConfigEntries) . ' >> >>',
         ];
     }
 
