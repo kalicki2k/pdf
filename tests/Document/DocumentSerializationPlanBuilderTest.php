@@ -3369,6 +3369,35 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testItAllowsCcittMonochromeImagesForPdfA1Profiles(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1b())
+            ->title('Archive Copy')
+            ->text('Bilevel image Привет', TextOptions::make(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->image(
+                ImageSource::monochromeCcitt([
+                    '11111111',
+                    '00000000',
+                ]),
+                ImagePlacement::at(10, 20),
+                ImageAccessibility::alternativeText('CCITT image'),
+            )
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Filter /CCITTFaxDecode', $serialized);
+        self::assertStringContainsString('/ColorSpace /DeviceGray', $serialized);
+        self::assertStringContainsString('/BitsPerComponent 1', $serialized);
+    }
+
     public function testItRejectsCmykTextForPdfA1bWithRgbOutputIntent(): void
     {
         $builder = new DocumentSerializationPlanBuilder();

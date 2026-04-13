@@ -2292,4 +2292,44 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Filter /DCTDecode', $pdf);
         self::assertStringNotContainsString('/SMask ', $pdf);
     }
+
+    public function testItRendersPdfA2uCcittImages(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA2u())
+            ->title('PDF/A-2u CCITT Regression')
+            ->author('kalle/pdf2')
+            ->subject('PDF/A-2u CCITT image regression fixture')
+            ->language('de-DE')
+            ->creator('Regression Fixture')
+            ->creatorTool('DocumentRendererTest')
+            ->text('PDF/A-2u CCITT Bild Regression Привет', TextOptions::make(
+                x: 72,
+                y: 760,
+                fontSize: 18,
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                color: Color::rgb(0.08, 0.16, 0.35),
+            ))
+            ->image(
+                ImageSource::monochromeCcitt([
+                    '11111111',
+                    '00000000',
+                ]),
+                ImagePlacement::at(72, 610, width: 160),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/Subtype /Image', $pdf);
+        self::assertStringContainsString('/ColorSpace /DeviceGray', $pdf);
+        self::assertStringContainsString('/BitsPerComponent 1', $pdf);
+        self::assertStringContainsString('/Filter /CCITTFaxDecode', $pdf);
+        self::assertStringContainsString('/DecodeParms << /K 0 /Columns 8 /Rows 2 /BlackIs1 true /EndOfLine true >>', $pdf);
+    }
 }
