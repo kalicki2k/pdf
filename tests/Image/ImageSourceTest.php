@@ -12,6 +12,7 @@ use function unlink;
 use InvalidArgumentException;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Image\WebpImageDecoder;
 use PHPUnit\Framework\TestCase;
 
 final class ImageSourceTest extends TestCase
@@ -620,6 +621,55 @@ final class ImageSourceTest extends TestCase
             ));
 
             ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItImportsLosslessWebpFilesWhenRuntimeSupportIsAvailable(): void
+    {
+        if (!\function_exists('gd_info') || ((\gd_info()['WebP Support'] ?? false) !== true) || !\defined('IMG_WEBP_LOSSLESS')) {
+            self::markTestSkipped('GD lossless WebP support is not available in this runtime.');
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, WebpFixture::tinyLosslessWebpBytes());
+
+        try {
+            $source = ImageSource::fromPath($path);
+
+            self::assertSame(1, $source->width);
+            self::assertSame(1, $source->height);
+            self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+            self::assertSame(8, $source->bitsPerComponent);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsAnimatedWebpFilesExplicitly(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, WebpFixture::tinyAnimatedWebpBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "WEBP image '%s' uses animation, which is not supported.",
+            $path,
+        ));
+
+        try {
+            (new WebpImageDecoder())->decode(WebpFixture::tinyAnimatedWebpBytes(), $path);
         } finally {
             unlink($path);
         }

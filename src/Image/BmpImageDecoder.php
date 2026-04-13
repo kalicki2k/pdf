@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Image;
 
-use function gzcompress;
 use function is_array;
 use function is_int;
-use function is_string;
 use function ord;
 use function pack;
 use function sprintf;
@@ -16,7 +14,6 @@ use function substr;
 use function unpack;
 
 use InvalidArgumentException;
-use RuntimeException;
 
 final readonly class BmpImageDecoder
 {
@@ -119,16 +116,13 @@ final readonly class BmpImageDecoder
             }
         }
 
-        $compressedRgb = gzcompress($rgb);
-
-        if (!is_string($compressedRgb)) {
-            throw new RuntimeException(sprintf(
-                "Unable to compress BMP image '%s'.",
-                $path,
-            ));
-        }
-
-        return ImageSource::flate($compressedRgb, $width, $height, ImageColorSpace::RGB);
+        return (new DecodedRasterImage(
+            width: $width,
+            height: $height,
+            colorSpace: ImageColorSpace::RGB,
+            bitsPerComponent: 8,
+            pixelData: $rgb,
+        ))->toImageSource($path);
     }
 
     private function decode32Bit(
@@ -208,31 +202,14 @@ final readonly class BmpImageDecoder
             }
         }
 
-        $compressedRgb = gzcompress($rgb);
-
-        if (!is_string($compressedRgb)) {
-            throw new RuntimeException(sprintf(
-                "Unable to compress BMP image '%s'.",
-                $path,
-            ));
-        }
-
-        $softMask = null;
-
-        if ($hasAlpha) {
-            $compressedAlpha = gzcompress($alpha);
-
-            if (!is_string($compressedAlpha)) {
-                throw new RuntimeException(sprintf(
-                    "Unable to compress BMP alpha channel for '%s'.",
-                    $path,
-                ));
-            }
-
-            $softMask = ImageSource::alphaMask($compressedAlpha, $width, $height);
-        }
-
-        return ImageSource::flate($compressedRgb, $width, $height, ImageColorSpace::RGB, 8, $softMask);
+        return (new DecodedRasterImage(
+            width: $width,
+            height: $height,
+            colorSpace: ImageColorSpace::RGB,
+            bitsPerComponent: 8,
+            pixelData: $rgb,
+            alphaData: $hasAlpha ? $alpha : null,
+        ))->toImageSource($path);
     }
 
     private function bmpRowStride(int $width, int $bitsPerPixel): int

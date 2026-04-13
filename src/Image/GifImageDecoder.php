@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Image;
 
-use function gzcompress;
-use function is_string;
 use function ord;
 use function sprintf;
 use function strlen;
 use function substr;
 
 use InvalidArgumentException;
-use RuntimeException;
 
 final readonly class GifImageDecoder
 {
@@ -115,42 +112,15 @@ final readonly class GifImageDecoder
             ));
         }
 
-        $compressedIndexBytes = gzcompress($imageDescriptor['indexBytes']);
-
-        if (!is_string($compressedIndexBytes)) {
-            throw new RuntimeException(sprintf(
-                "Unable to compress GIF image '%s'.",
-                $path,
-            ));
-        }
-
-        $softMask = null;
-
-        if ($imageDescriptor['alphaBytes'] !== null) {
-            $compressedAlphaBytes = gzcompress($imageDescriptor['alphaBytes']);
-
-            if (!is_string($compressedAlphaBytes)) {
-                throw new RuntimeException(sprintf(
-                    "Unable to compress GIF transparency mask for '%s'.",
-                    $path,
-                ));
-            }
-
-            $softMask = ImageSource::alphaMask(
-                data: $compressedAlphaBytes,
-                width: $screenWidth,
-                height: $screenHeight,
-            );
-        }
-
-        return ImageSource::indexed(
-            data: $compressedIndexBytes,
+        return (new DecodedRasterImage(
             width: $screenWidth,
             height: $screenHeight,
+            colorSpace: ImageColorSpace::RGB,
             bitsPerComponent: 8,
+            pixelData: $imageDescriptor['indexBytes'],
+            alphaData: $imageDescriptor['alphaBytes'],
             lookupTable: $imageDescriptor['palette'],
-            softMask: $softMask,
-        );
+        ))->toImageSource($path);
     }
 
     private function readExtension(string $data, int $offset, string $path, ?int &$transparencyIndex): int

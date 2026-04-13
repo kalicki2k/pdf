@@ -16,6 +16,8 @@ use function imagesavealpha;
 use function imagewebp;
 use function ob_get_clean;
 use function ob_start;
+use function pack;
+use function strlen;
 
 use GdImage;
 use RuntimeException;
@@ -72,10 +74,38 @@ final class WebpFixture
         return self::encodeGdImageAsWebp($image);
     }
 
-    private static function encodeGdImageAsWebp(GdImage $image): string
+    public static function tinyLosslessWebpBytes(): string
+    {
+        if (!function_exists('imagecreatetruecolor') || !function_exists('imagewebp') || !\defined('IMG_WEBP_LOSSLESS')) {
+            throw new RuntimeException('Unable to create lossless WebP fixture without GD lossless WebP support.');
+        }
+
+        $image = imagecreatetruecolor(1, 1);
+
+        if ($image === false) {
+            throw new RuntimeException('Unable to allocate lossless WebP fixture image.');
+        }
+
+        $green = imagecolorallocate($image, 0x11, 0xAA, 0x44);
+        imagefill($image, 0, 0, $green);
+
+        return self::encodeGdImageAsWebp($image, \IMG_WEBP_LOSSLESS);
+    }
+
+    public static function tinyAnimatedWebpBytes(): string
+    {
+        $vp8xPayload = "\x02\x00\x00\x00" . "\x00\x00\x00" . "\x00\x00\x00" . "\x00\x00\x00";
+        $animPayload = "\xFF\xFF\xFF\xFF\x00\x00";
+        $chunkBytes = 'VP8X' . pack('V', strlen($vp8xPayload)) . $vp8xPayload
+            . 'ANIM' . pack('V', strlen($animPayload)) . $animPayload;
+
+        return 'RIFF' . pack('V', 4 + strlen($chunkBytes)) . 'WEBP' . $chunkBytes;
+    }
+
+    private static function encodeGdImageAsWebp(GdImage $image, int $quality = -1): string
     {
         ob_start();
-        $written = imagewebp($image);
+        $written = imagewebp($image, null, $quality);
         $bytes = ob_get_clean();
         imagedestroy($image);
 

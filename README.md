@@ -145,7 +145,9 @@ Aktueller Bild-Scope von `ImageSource::fromPath(...)`:
 | GIF | statisch, ein Full-Canvas-Frame, Palette, transparenter Index | Animation, Interlacing, partielle Frames |
 | BMP | unkomprimiert 24-Bit RGB, 32-Bit RGBA, 32-Bit `BI_BITFIELDS` mit byte-ausgerichteten RGB(A)-Masken | Palette, RLE, weitere Bit-Tiefen/Maskenvarianten |
 | TIFF | Single-IFD bilevel uncompressed, bilevel CCITT, 8-Bit Gray uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit RGB uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit Palette uncompressed/PackBits/LZW/Deflate | Multi-Page, CMYK, PlanarConfiguration != 1, Palette-TIFFs mit Predictor und weitere exotische Varianten |
-| WebP | optional ueber vorhandene GD-WebP-Runtime, RGB mit optionaler Soft-Mask aus Alpha; im Docker-PHP-Container ist GD+WebP jetzt vorbereitet | ohne GD-WebP-Support bleibt der Importpfad explizit gesperrt |
+| WebP | optional ueber vorhandene GD-WebP-Runtime, Single-Frame, verlustbehaftet und je nach Runtime auch lossless, RGB mit optionaler Soft-Mask aus Alpha; im Docker-PHP-Container ist GD+WebP jetzt vorbereitet | ohne GD-WebP-Support bleibt der Importpfad explizit gesperrt; Animation bleibt bewusst ausgeschlossen |
+
+Die Import-Architektur ist in [docs/image-import.md](/home/skalicki/Projekte/kalle/pdf2/docs/image-import.md) kurz dokumentiert.
 
 ## Graphics
 

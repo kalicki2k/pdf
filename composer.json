@@ -44,7 +44,7 @@
     "rector/rector": "^2.1"
   },
   "require": {
-    "php": "^8.4",
+    "php": "^8.5",
     "ext-exif": "*",
     "ext-mbstring": "*",
     "ext-openssl": "*",

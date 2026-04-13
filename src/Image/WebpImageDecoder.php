@@ -5,25 +5,26 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Image;
 
 use function function_exists;
-use function gzcompress;
 use function imagecolorat;
 use function imagedestroy;
 use function imageistruecolor;
 use function imagepalettetotruecolor;
 use function imagesx;
 use function imagesy;
-use function is_string;
 use function round;
 use function sprintf;
+use function strpos;
+use function substr;
 
 use GdImage;
 use InvalidArgumentException;
-use RuntimeException;
 
 final readonly class WebpImageDecoder
 {
     public function decode(string $data, string $path = 'memory'): ImageSource
     {
+        $this->guardAgainstAnimatedWebp($data, $path);
+
         if (!function_exists('imagecreatefromstring')) {
             throw new InvalidArgumentException(sprintf(
                 "WEBP image '%s' requires GD WebP runtime support, which is not available.",
@@ -67,30 +68,27 @@ final readonly class WebpImageDecoder
 
         imagedestroy($image);
 
-        $compressedRgb = gzcompress($rgb);
+        return (new DecodedRasterImage(
+            width: $width,
+            height: $height,
+            colorSpace: ImageColorSpace::RGB,
+            bitsPerComponent: 8,
+            pixelData: $rgb,
+            alphaData: $hasAlpha ? $alpha : null,
+        ))->toImageSource($path);
+    }
 
-        if (!is_string($compressedRgb)) {
-            throw new RuntimeException(sprintf(
-                "Unable to compress WEBP image '%s'.",
+    private function guardAgainstAnimatedWebp(string $data, string $path): void
+    {
+        if (!str_starts_with($data, 'RIFF') || substr($data, 8, 4) !== 'WEBP') {
+            return;
+        }
+
+        if (strpos($data, 'ANIM', 12) !== false || strpos($data, 'ANMF', 12) !== false) {
+            throw new InvalidArgumentException(sprintf(
+                "WEBP image '%s' uses animation, which is not supported.",
                 $path,
             ));
         }
-
-        $softMask = null;
-
-        if ($hasAlpha) {
-            $compressedAlpha = gzcompress($alpha);
-
-            if (!is_string($compressedAlpha)) {
-                throw new RuntimeException(sprintf(
-                    "Unable to compress WEBP alpha channel for '%s'.",
-                    $path,
-                ));
-            }
-
-            $softMask = ImageSource::alphaMask($compressedAlpha, $width, $height);
-        }
-
-        return ImageSource::flate($compressedRgb, $width, $height, ImageColorSpace::RGB, 8, $softMask);
     }
 }

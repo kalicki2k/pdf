@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Image;
 
 use function array_key_exists;
-use function gzcompress;
 use function gzuncompress;
 use function ord;
 use function strlen;
@@ -120,35 +119,6 @@ final readonly class PngImageDecoder
             $colorBytes .= $row;
         }
 
-        $compressedColorBytes = gzcompress($colorBytes);
-
-        if (!is_string($compressedColorBytes)) {
-            throw new RuntimeException(sprintf(
-                "Unable to compress PNG image '%s'.",
-                $path,
-            ));
-        }
-
-        $softMask = null;
-
-        if ($alphaBytes !== '') {
-            $compressedAlphaBytes = gzcompress($alphaBytes);
-
-            if (!is_string($compressedAlphaBytes)) {
-                throw new RuntimeException(sprintf(
-                    "Unable to compress PNG alpha channel for '%s'.",
-                    $path,
-                ));
-            }
-
-            $softMask = ImageSource::alphaMask(
-                data: $compressedAlphaBytes,
-                width: $header['width'],
-                height: $header['height'],
-                bitsPerComponent: $header['bitsPerComponent'],
-            );
-        }
-
         if ($header['colorType'] === 3) {
             if (!is_string($indexedPalette) || $indexedPalette === '') {
                 throw new RuntimeException(sprintf(
@@ -157,24 +127,25 @@ final readonly class PngImageDecoder
                 ));
             }
 
-            return ImageSource::indexed(
-                data: $compressedColorBytes,
+            return (new DecodedRasterImage(
                 width: $header['width'],
                 height: $header['height'],
+                colorSpace: ImageColorSpace::RGB,
                 bitsPerComponent: $header['bitsPerComponent'],
+                pixelData: $colorBytes,
+                alphaData: $alphaBytes !== '' ? $alphaBytes : null,
                 lookupTable: $indexedPalette,
-                softMask: $softMask,
-            );
+            ))->toImageSource($path);
         }
 
-        return ImageSource::flate(
-            data: $compressedColorBytes,
+        return (new DecodedRasterImage(
             width: $header['width'],
             height: $header['height'],
             colorSpace: $header['colorSpace'],
             bitsPerComponent: $header['bitsPerComponent'],
-            softMask: $softMask,
-        );
+            pixelData: $colorBytes,
+            alphaData: $alphaBytes !== '' ? $alphaBytes : null,
+        ))->toImageSource($path);
     }
 
     /**
