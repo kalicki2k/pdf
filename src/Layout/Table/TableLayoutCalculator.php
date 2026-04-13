@@ -144,11 +144,15 @@ final class TableLayoutCalculator
                 $contentWidth = max($cellWidth - $cellPadding->horizontal(), 0.0);
                 $cellOptions = $this->cellTextOptions($baseOptions, $cell, $contentWidth);
                 $wrappedSegmentLines = $cell->content->isRichText()
-                    ? $textFlow->wrapSegmentLines($cell->content->segments, $cellOptions, $font, 0.0)
+                    ? ($cell->noWrap
+                        ? [$cell->content->segments]
+                        : $textFlow->wrapSegmentLines($cell->content->segments, $cellOptions, $font, 0.0))
                     : null;
                 $wrappedLines = $wrappedSegmentLines !== null
                     ? $this->wrappedLineTexts($wrappedSegmentLines)
-                    : $textFlow->wrapTextLines($cell->text, $cellOptions, $font, 0.0);
+                    : ($cell->noWrap
+                        ? [$cell->text]
+                        : $textFlow->wrapTextLines($cell->text, $cellOptions, $font, 0.0));
                 $lineCount = max($wrappedSegmentLines !== null ? count($wrappedSegmentLines) : count($wrappedLines), 1);
                 $cellHeight = ($lineCount * $textFlow->lineHeight($cellOptions)) + $cellPadding->vertical();
                 $cellLayouts[] = new TableCellLayout(
@@ -352,8 +356,12 @@ final class TableLayoutCalculator
     ): float {
         $padding = $cell->padding ?? $table->cellPadding;
         $contentWidth = $cell->content->isRichText()
-            ? $this->minimumRichTextWidth($cell->content->segments, $table->textOptions, $font)
-            : $this->minimumPlainTextWidth($cell->text, $table->textOptions, $font);
+            ? ($cell->noWrap
+                ? $this->fullRichTextWidth($cell->content->segments, $table->textOptions, $font)
+                : $this->minimumRichTextWidth($cell->content->segments, $table->textOptions, $font))
+            : ($cell->noWrap
+                ? $font->measureTextWidth($cell->text, $table->textOptions->fontSize)
+                : $this->minimumPlainTextWidth($cell->text, $table->textOptions, $font));
 
         return $contentWidth + $padding->horizontal();
     }
@@ -401,6 +409,23 @@ final class TableLayoutCalculator
         }
 
         return max($widestToken, $currentTokenWidth);
+    }
+
+    /**
+     * @param list<TextSegment> $segments
+     */
+    private function fullRichTextWidth(
+        array $segments,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+    ): float {
+        $width = 0.0;
+
+        foreach ($segments as $segment) {
+            $width += $font->measureTextWidth($segment->text, $options->fontSize);
+        }
+
+        return $width;
     }
 
     /**

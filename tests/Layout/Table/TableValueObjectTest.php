@@ -72,11 +72,13 @@ final class TableValueObjectTest extends TestCase
             ->withBackgroundColor(Color::hex('#ffeecc'))
             ->withVerticalAlign(VerticalAlign::MIDDLE)
             ->withHorizontalAlign(TextAlign::RIGHT)
+            ->withNoWrap()
             ->withPadding(CellPadding::symmetric(2.0, 6.0))
             ->withBorder(new Border(1.0, 0.0, 1.0, 0.0));
 
         self::assertSame(VerticalAlign::MIDDLE, $cell->verticalAlign);
         self::assertSame(TextAlign::RIGHT, $cell->horizontalAlign);
+        self::assertTrue($cell->noWrap);
         self::assertEquals(Color::hex('#ffeecc'), $cell->backgroundColor);
         self::assertEquals(CellPadding::symmetric(2.0, 6.0), $cell->padding);
         self::assertEquals(new Border(1.0, 0.0, 1.0, 0.0), $cell->border);
@@ -105,6 +107,7 @@ final class TableValueObjectTest extends TestCase
             ->withBackgroundColor(Color::hex('#ffeecc'))
             ->withVerticalAlign(VerticalAlign::MIDDLE)
             ->withHorizontalAlign(TextAlign::RIGHT)
+            ->withNoWrap()
             ->withPadding(CellPadding::symmetric(2.0, 6.0))
             ->withBorder(new Border(1.0, 0.0, 1.0, 0.0));
 
@@ -113,5 +116,6 @@ final class TableValueObjectTest extends TestCase
         self::assertCount(2, $cell->content->segments);
         self::assertSame(2, $cell->colspan);
         self::assertSame(3, $cell->rowspan);
+        self::assertTrue($cell->noWrap);
     }
 }

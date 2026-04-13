@@ -234,4 +234,57 @@ final class TableLayoutCalculatorTest extends TestCase
         self::assertGreaterThan(1, $layout->cells[0]->lineCount());
         self::assertSame($layout->cells[0]->lineCount(), count($layout->cells[0]->wrappedSegmentLines));
     }
+
+    public function testItDoesNotWrapCellsMarkedAsNoWrap(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(45.0),
+        )
+            ->withOptions(
+                (TableOptions::make())
+                    ->withCellPadding(CellPadding::all(5.0))
+                    ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
+            )
+            ->withRows(TableRow::fromCells(
+                TableCell::text('7.790,93 EUR')->withNoWrap(),
+            ));
+
+        $layout = new TableLayoutCalculator()->layoutTable(
+            $table,
+            [45.0],
+            new TextFlow(new Page(PageSize::A4())),
+            StandardFontDefinition::from('Helvetica'),
+        );
+
+        self::assertSame(1, $layout->cells[0]->lineCount());
+        self::assertSame(['7.790,93 EUR'], $layout->cells[0]->wrappedLines);
+    }
+
+    public function testItMeasuresAutoColumnsAgainstFullCellWidthWhenNoWrapIsEnabled(): void
+    {
+        $table = Table::define(
+            TableColumn::auto(),
+            TableColumn::proportional(1.0),
+        )
+            ->withOptions(
+                (TableOptions::make())
+                    ->withCellPadding(CellPadding::symmetric(4.0, 6.0))
+                    ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
+            )
+            ->withRows(
+                TableRow::fromCells(
+                    TableCell::text('7.790,93 EUR')->withNoWrap(),
+                    TableCell::text('Beschreibung'),
+                ),
+            );
+
+        $page = new Page(PageSize::A4());
+        $textFlow = new TextFlow($page);
+        $font = StandardFontDefinition::from('Helvetica');
+
+        $widths = new TableLayoutCalculator()->resolveColumnWidths($table, 180.0, $textFlow, $font);
+
+        self::assertGreaterThan(45.0, $widths[0]);
+        self::assertEqualsWithDelta(180.0, array_sum($widths), 0.001);
+    }
 }

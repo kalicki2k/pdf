@@ -27,6 +27,7 @@ final readonly class TableCell
         public VerticalAlign $verticalAlign = VerticalAlign::TOP,
         public ?TableHeaderScope $headerScope = null,
         public ?TextAlign $horizontalAlign = null,
+        public bool $noWrap = false,
         public ?CellPadding $padding = null,
         public ?Border $border = null,
     ) {
@@ -105,6 +106,13 @@ final readonly class TableCell
         );
     }
 
+    public function withNoWrap(bool $noWrap = true): self
+    {
+        return $this->copy(
+            noWrap: $noWrap,
+        );
+    }
+
     public function withBorder(Border $border): self
     {
         return $this->copy(
@@ -119,6 +127,7 @@ final readonly class TableCell
         ?VerticalAlign $verticalAlign = null,
         ?TableHeaderScope $headerScope = null,
         ?TextAlign $horizontalAlign = null,
+        ?bool $noWrap = null,
         ?CellPadding $padding = null,
         ?Border $border = null,
     ): self {
@@ -130,6 +139,7 @@ final readonly class TableCell
             $verticalAlign ?? $this->verticalAlign,
             $headerScope ?? $this->headerScope,
             $horizontalAlign ?? $this->horizontalAlign,
+            $noWrap ?? $this->noWrap,
             $padding ?? $this->padding,
             $border ?? $this->border,
         );
