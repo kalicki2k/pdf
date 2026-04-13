@@ -2518,4 +2518,63 @@ final class DocumentRendererTest extends TestCase
             unlink($path);
         }
     }
+
+    public function testItRendersImportedCompressedPaletteTiffImages(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-tiff-palette-compressed-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary compressed palette TIFF fixture path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyDeflatePaletteTiffBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $pdf);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRendersImportedBitfieldsBmpImages(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-bmp-bitfields-render-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary bitfields BMP fixture path.');
+        }
+
+        file_put_contents($path, BmpFixture::tiny32BitBitfieldsReversedBmpBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+            self::assertStringContainsString('/SMask ', $pdf);
+        } finally {
+            unlink($path);
+        }
+    }
 }

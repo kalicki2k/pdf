@@ -482,6 +482,46 @@ final class ImageSourceTest extends TestCase
         unlink($path);
     }
 
+    public function testItCreatesA32BitBitfieldsBmpImageSourceFromAFilePath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, BmpFixture::tiny32BitBitfieldsRgbaBmpBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertNotNull($source->softMask);
+
+        unlink($path);
+    }
+
+    public function testItCreatesA32BitBitfieldsBmpImageSourceWithAlternateMaskOrder(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, BmpFixture::tiny32BitBitfieldsReversedBmpBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertNotNull($source->softMask);
+
+        unlink($path);
+    }
+
     public function testItRejectsNonGraySoftMasks(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -528,6 +568,29 @@ final class ImageSourceTest extends TestCase
         }
     }
 
+    public function testItRejectsUnsupportedBitfieldsMasks(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, BmpFixture::unsupported32BitBitfieldsBmpBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "BMP image '%s' uses unsupported 32-bit channel masks.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
     public function testItRejectsWebpFilesExplicitly(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
@@ -540,7 +603,7 @@ final class ImageSourceTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(
-            "Image path '%s' uses the unsupported WEBP image format.",
+            "WEBP image '%s' requires GD WebP runtime support, which is not available.",
             $path,
         ));
 
@@ -620,7 +683,7 @@ final class ImageSourceTest extends TestCase
         }
     }
 
-    public function testItRejectsCompressedPaletteTiffFiles(): void
+    public function testItCreatesAnIndexedImageSourceFromACompressedPaletteTiffPath(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
 
@@ -630,9 +693,77 @@ final class ImageSourceTest extends TestCase
 
         file_put_contents($path, TiffFixture::tinyLzwPaletteTiffBytes());
 
+        $source = ImageSource::fromPath($path);
+
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $source->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItCreatesAnIndexedImageSourceFromAnLzwPaletteTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyLzwPaletteTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $source->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItCreatesAnIndexedImageSourceFromAPackBitsPaletteTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPackBitsPaletteTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $source->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItCreatesAnIndexedImageSourceFromADeflatePaletteTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyDeflatePaletteTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $source->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItRejectsPaletteTiffPredictorData(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorPaletteTiffBytes());
+
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(
-            "TIFF image '%s' uses unsupported compression for palette TIFF import.",
+            "TIFF image '%s' uses unsupported TIFF predictor 2 for palette TIFF import.",
             $path,
         ));
 

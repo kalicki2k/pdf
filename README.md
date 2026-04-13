@@ -143,9 +143,9 @@ Aktueller Bild-Scope von `ImageSource::fromPath(...)`:
 | JPEG | Gray, RGB, CMYK als Direct-Pass-Through | exotische JPEG-Varianten ausserhalb der erkannten Kanalzahlen |
 | PNG | 8-Bit Gray/RGB/Indexed, Gray+Alpha, RGBA, `tRNS`, nicht interlaced | andere Bit-Tiefen, Adam7-Interlacing |
 | GIF | statisch, ein Full-Canvas-Frame, Palette, transparenter Index | Animation, Interlacing, partielle Frames |
-| BMP | unkomprimiert 24-Bit RGB, 32-Bit RGBA | Palette, RLE, weitere Bit-Tiefen/Maskenvarianten |
-| TIFF | Single-IFD bilevel uncompressed, bilevel CCITT, 8-Bit Gray uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit RGB uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit Palette uncompressed | Multi-Page, CMYK, PlanarConfiguration != 1, komprimierte Palette-TIFFs und weitere exotische Varianten |
-| WebP | kein Importpfad | alle Varianten, aktuell bewusst abgelehnt |
+| BMP | unkomprimiert 24-Bit RGB, 32-Bit RGBA, 32-Bit `BI_BITFIELDS` mit byte-ausgerichteten RGB(A)-Masken | Palette, RLE, weitere Bit-Tiefen/Maskenvarianten |
+| TIFF | Single-IFD bilevel uncompressed, bilevel CCITT, 8-Bit Gray uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit RGB uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit Palette uncompressed/PackBits/LZW/Deflate | Multi-Page, CMYK, PlanarConfiguration != 1, Palette-TIFFs mit Predictor und weitere exotische Varianten |
+| WebP | optional ueber vorhandene GD-WebP-Runtime, RGB mit optionaler Soft-Mask aus Alpha | ohne GD-WebP-Support bleibt der Importpfad explizit gesperrt |
 
 ## Graphics
 

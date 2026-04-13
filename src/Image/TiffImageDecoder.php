@@ -242,10 +242,21 @@ final readonly class TiffImageDecoder
         }
 
         if ($samplesPerPixel === 1 && $bitsPerSample === [8] && $photometricInterpretation === 3) {
-            throw new InvalidArgumentException(sprintf(
-                "TIFF image '%s' uses unsupported compression for palette TIFF import.",
+            if ($predictor !== 1) {
+                throw new InvalidArgumentException(sprintf(
+                    "TIFF image '%s' uses unsupported TIFF predictor %d for palette TIFF import.",
+                    $path,
+                    $predictor,
+                ));
+            }
+
+            return $this->decodeRasterPalette(
                 $path,
-            ));
+                $width,
+                $height,
+                $decompressedStrips,
+                $colorMap,
+            );
         }
 
         if ($samplesPerPixel === 1 && $bitsPerSample === [8]) {

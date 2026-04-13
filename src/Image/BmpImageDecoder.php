@@ -163,7 +163,13 @@ final readonly class BmpImageDecoder
                 : 0;
         }
 
-        if ($redMask !== 0x00FF0000 || $greenMask !== 0x0000FF00 || $blueMask !== 0x000000FF) {
+        if (
+            !$this->isByteAlignedMask($redMask)
+            || !$this->isByteAlignedMask($greenMask)
+            || !$this->isByteAlignedMask($blueMask)
+            || ($alphaMask !== 0 && !$this->isByteAlignedMask($alphaMask))
+            || (($redMask | $greenMask | $blueMask | $alphaMask) !== ($redMask ^ $greenMask ^ $blueMask ^ $alphaMask))
+        ) {
             throw new InvalidArgumentException(sprintf(
                 "BMP image '%s' uses unsupported 32-bit channel masks.",
                 $path,
@@ -191,12 +197,13 @@ final readonly class BmpImageDecoder
 
             for ($column = 0; $column < $width; $column++) {
                 $pixelOffsetInRow = $column * 4;
-                $blue = ord($rowBytes[$pixelOffsetInRow]);
-                $green = ord($rowBytes[$pixelOffsetInRow + 1]);
-                $red = ord($rowBytes[$pixelOffsetInRow + 2]);
-                $alphaByte = $alphaMask !== 0 ? ord($rowBytes[$pixelOffsetInRow + 3]) : 0xFF;
+                $pixel = $this->readPixelUint32(substr($rowBytes, $pixelOffsetInRow, 4), $path);
+                $red = $this->extractByteComponent($pixel, $redMask);
+                $green = $this->extractByteComponent($pixel, $greenMask);
+                $blue = $this->extractByteComponent($pixel, $blueMask);
+                $alphaByte = $alphaMask !== 0 ? $this->extractByteComponent($pixel, $alphaMask) : 0xFF;
                 $rgb .= pack('C3', $red, $green, $blue);
-                $alpha .= chr($alphaByte);
+                $alpha .= chr($alphaByte & 0xFF);
                 $hasAlpha = $hasAlpha || $alphaByte !== 0xFF;
             }
         }
@@ -231,6 +238,46 @@ final readonly class BmpImageDecoder
     private function bmpRowStride(int $width, int $bitsPerPixel): int
     {
         return intdiv((($width * $bitsPerPixel) + 31), 32) * 4;
+    }
+
+    private function isByteAlignedMask(int $mask): bool
+    {
+        return $mask === 0
+            || $mask === 0x000000FF
+            || $mask === 0x0000FF00
+            || $mask === 0x00FF0000
+            || $mask === 0xFF000000;
+    }
+
+    private function extractByteComponent(int $pixel, int $mask): int
+    {
+        if ($mask === 0) {
+            return 0xFF;
+        }
+
+        $shift = match ($mask) {
+            0x000000FF => 0,
+            0x0000FF00 => 8,
+            0x00FF0000 => 16,
+            0xFF000000 => 24,
+            default => 0,
+        };
+
+        return ($pixel & $mask) >> $shift;
+    }
+
+    private function readPixelUint32(string $bytes, string $path): int
+    {
+        $value = unpack('Vvalue', $bytes);
+
+        if (!is_array($value) || !isset($value['value']) || !is_int($value['value'])) {
+            throw new InvalidArgumentException(sprintf(
+                "BMP image '%s' contains truncated pixel data.",
+                $path,
+            ));
+        }
+
+        return $value['value'];
     }
 
     private function readUint16(string $data, int $offset, string $path, string $field): int

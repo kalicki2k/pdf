@@ -272,6 +272,26 @@ final class ImageSourcePathTest extends TestCase
         unlink($path);
     }
 
+    public function testItBuildsPageImageResourcesFromACompressedPaletteTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyLzwPaletteTiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
     public function testItBuildsPageImageResourcesFromAnLzwRgbTiffPath(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
@@ -375,6 +395,27 @@ final class ImageSourcePathTest extends TestCase
         self::assertNotNull($document->pages[0]->imageResources['Im1']->softMask);
         self::assertStringContainsString('/ColorSpace /DeviceRGB', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
         self::assertStringContainsString("16 0 0 16 8 10 cm\n/Im1 Do", $document->pages[0]->contents);
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromABitfieldsBmpPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, BmpFixture::tiny32BitBitfieldsReversedBmpBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertNotNull($document->pages[0]->imageResources['Im1']->softMask);
+        self::assertStringContainsString('/ColorSpace /DeviceRGB', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
 
         unlink($path);
     }

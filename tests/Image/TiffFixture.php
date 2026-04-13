@@ -148,6 +148,70 @@ final class TiffFixture
         );
     }
 
+    public static function tinyPackBitsPaletteTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 32773,
+            photometricInterpretation: 3,
+            stripData: ["\x01\x00\x01"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            colorMap: [
+                0x0000, 0xFFFF,
+                0x0000, 0x0000,
+                0x0000, 0xFFFF,
+            ],
+        );
+    }
+
+    public static function tinyDeflatePaletteTiffBytes(): string
+    {
+        $compressed = gzcompress("\x00\x01");
+
+        if (!is_string($compressed)) {
+            throw new RuntimeException('Unable to compress TIFF palette fixture.');
+        }
+
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 8,
+            photometricInterpretation: 3,
+            stripData: [$compressed],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            colorMap: [
+                0x0000, 0xFFFF,
+                0x0000, 0x0000,
+                0x0000, 0xFFFF,
+            ],
+        );
+    }
+
+    public static function tinyPredictorPaletteTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 5,
+            photometricInterpretation: 3,
+            stripData: [(new LzwEncoder())->encode("\x00\x01")],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            predictor: 2,
+            colorMap: [
+                0x0000, 0xFFFF,
+                0x0000, 0x0000,
+                0x0000, 0xFFFF,
+            ],
+        );
+    }
+
     public static function tinyLzwRgbTiffBytes(): string
     {
         return self::imageTiffBytes(

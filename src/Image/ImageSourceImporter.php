@@ -21,6 +21,7 @@ final readonly class ImageSourceImporter
         private TiffImageDecoder $tiffDecoder = new TiffImageDecoder(),
         private GifImageDecoder $gifDecoder = new GifImageDecoder(),
         private BmpImageDecoder $bmpDecoder = new BmpImageDecoder(),
+        private WebpImageDecoder $webpDecoder = new WebpImageDecoder(),
     ) {
     }
 
@@ -50,7 +51,7 @@ final readonly class ImageSourceImporter
             ImageFormat::TIFF => $this->tiffDecoder->decode($data, $path),
             ImageFormat::GIF => $this->gifDecoder->decode($data, $path),
             ImageFormat::BMP => $this->bmpDecoder->decode($data, $path),
-            ImageFormat::WEBP => throw new InvalidArgumentException($format->unsupportedVariantMessage($path)),
+            ImageFormat::WEBP => $this->webpDecoder->decode($data, $path),
         };
     }
 }
