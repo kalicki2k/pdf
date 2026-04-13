@@ -61,6 +61,7 @@ use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
+use Kalle\Pdf\Tests\Image\TiffFixture;
 use Kalle\Pdf\Writer\Output;
 use Kalle\Pdf\Writer\StringOutput;
 use PHPUnit\Framework\TestCase;
@@ -2331,5 +2332,46 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/BitsPerComponent 1', $pdf);
         self::assertStringContainsString('/Filter /CCITTFaxDecode', $pdf);
         self::assertStringContainsString('/DecodeParms << /K 0 /Columns 8 /Rows 2 /BlackIs1 true /EndOfLine true >>', $pdf);
+    }
+
+    public function testItRendersMixedTiffFixturesEndToEnd(): void
+    {
+        $grayPath = tempnam(sys_get_temp_dir(), 'pdf2-tiff-gray-');
+        $rgbPath = tempnam(sys_get_temp_dir(), 'pdf2-tiff-rgb-');
+        $ccittPath = tempnam(sys_get_temp_dir(), 'pdf2-tiff-ccitt-');
+
+        if ($grayPath === false || $rgbPath === false || $ccittPath === false) {
+            self::fail('Unable to allocate temporary TIFF fixture paths.');
+        }
+
+        file_put_contents($grayPath, TiffFixture::tinyPredictorLzwGrayscaleTiffBytes());
+        file_put_contents($rgbPath, TiffFixture::tinyPredictorDeflateRgbTiffBytes());
+        file_put_contents($ccittPath, TiffFixture::tinyMultiStripCcittGroup3TiffBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->title('TIFF Interop Regression')
+                ->imageFile($grayPath, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($rgbPath, ImagePlacement::at(140, 650, width: 80))
+                ->imageFile($ccittPath, ImagePlacement::at(240, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+            self::assertStringContainsString('/Filter /CCITTFaxDecode', $pdf);
+            self::assertStringContainsString('/EndOfBlock false', $pdf);
+        } finally {
+            unlink($grayPath);
+            unlink($rgbPath);
+            unlink($ccittPath);
+        }
     }
 }

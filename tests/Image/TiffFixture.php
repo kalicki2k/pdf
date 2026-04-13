@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Image;
 
 use function count;
+use function gzcompress;
+use function is_string;
 use function strlen;
 
+use Kalle\Pdf\Image\CcittFaxEncoder;
 use Kalle\Pdf\Image\LzwEncoder;
 
 final class TiffFixture
@@ -75,6 +78,23 @@ final class TiffFixture
         );
     }
 
+    public static function tinyPredictorLzwGrayscaleTiffBytes(): string
+    {
+        $row = self::applyHorizontalPredictor("\x10\x30");
+
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 5,
+            photometricInterpretation: 1,
+            stripData: [(new LzwEncoder())->encode($row)],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            predictor: 2,
+        );
+    }
+
     public static function tinyUncompressedRgbTiffBytes(): string
     {
         return self::imageTiffBytes(
@@ -100,6 +120,45 @@ final class TiffFixture
             stripData: [(new LzwEncoder())->encode("\xFF\x00\x80")],
             rowsPerStrip: 1,
             samplesPerPixel: 3,
+        );
+    }
+
+    public static function tinyPredictorDeflateRgbTiffBytes(): string
+    {
+        $row = self::applyHorizontalPredictor("\x20\x40\x60\x50\x70\x90", 3);
+        $compressed = gzcompress($row);
+
+        if (!is_string($compressed)) {
+            throw new \RuntimeException('Unable to compress TIFF predictor fixture.');
+        }
+
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8, 8, 8],
+            compression: 8,
+            photometricInterpretation: 2,
+            stripData: [$compressed],
+            rowsPerStrip: 1,
+            samplesPerPixel: 3,
+            predictor: 2,
+        );
+    }
+
+    public static function tinyMultiStripCcittGroup3TiffBytes(): string
+    {
+        $encoder = new CcittFaxEncoder();
+
+        return self::bilevelTiffBytes(
+            width: 8,
+            height: 2,
+            compression: 3,
+            stripData: [
+                $encoder->encodeRows(['11111111']),
+                $encoder->encodeRows(['00000000']),
+            ],
+            rowsPerStrip: 1,
+            photometricInterpretation: 1,
         );
     }
 
@@ -179,9 +238,10 @@ final class TiffFixture
         int $rowsPerStrip,
         int $samplesPerPixel,
         int $planarConfiguration = 1,
+        int $predictor = 1,
     ): string {
         $ifdOffset = 8;
-        $entryCount = 10;
+        $entryCount = $predictor === 1 ? 10 : 11;
         $firstDataOffset = $ifdOffset + 2 + ($entryCount * 12) + 4;
         $dataArea = '';
         $nextOffset = $firstDataOffset;
@@ -209,6 +269,10 @@ final class TiffFixture
             self::entryLong(279, $stripByteCounts, $nextOffset, $extraValues),
             self::entryShort(284, [$planarConfiguration], $nextOffset, $extraValues),
         ];
+
+        if ($predictor !== 1) {
+            $entries[] = self::entryShort(317, [$predictor], $nextOffset, $extraValues);
+        }
 
         return 'II'
             . pack('v', 42)
@@ -262,5 +326,25 @@ final class TiffFixture
         $nextOffset += strlen($valueBytes);
 
         return pack('vvVV', $tag, $type, $count, $offset);
+    }
+
+    private static function applyHorizontalPredictor(string $bytes, int $samplesPerPixel = 1): string
+    {
+        $predicted = '';
+
+        for ($index = 0; $index < strlen($bytes); $index++) {
+            $current = ord($bytes[$index]);
+
+            if ($index < $samplesPerPixel) {
+                $predicted .= chr($current);
+
+                continue;
+            }
+
+            $previous = ord($bytes[$index - $samplesPerPixel]);
+            $predicted .= chr(($current - $previous + 256) & 0xFF);
+        }
+
+        return $predicted;
     }
 }

@@ -273,6 +273,26 @@ final class ImageSourceTest extends TestCase
         unlink($path);
     }
 
+    public function testItCreatesAGrayscaleImageSourceFromAPredictorLzwTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorLzwGrayscaleTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(2, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::GRAY, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+
+        unlink($path);
+    }
+
     public function testItCreatesAnRgbImageSourceFromAn8BitRgbTiffPath(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
@@ -311,6 +331,46 @@ final class ImageSourceTest extends TestCase
         self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
         self::assertSame(8, $source->bitsPerComponent);
         self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
+
+        unlink($path);
+    }
+
+    public function testItCreatesAnRgbImageSourceFromAPredictorDeflateTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorDeflateRgbTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(2, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+
+        unlink($path);
+    }
+
+    public function testItCreatesACcittFaxImageSourceFromAMultiStripGroup3TiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyMultiStripCcittGroup3TiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(8, $source->width);
+        self::assertSame(2, $source->height);
+        self::assertSame('/CCITTFaxDecode', $source->filter);
+        self::assertStringContainsString('/DecodeParms << /K 0 /Columns 8 /Rows 2 /BlackIs1 true /EndOfLine true /EndOfBlock false >>', $source->pdfObjectDictionaryContents());
 
         unlink($path);
     }

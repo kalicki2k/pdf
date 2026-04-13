@@ -34,6 +34,8 @@ final readonly class TiffImageDecoder
     private const int COMPRESSION_CCITT_GROUP_3 = 3;
     private const int COMPRESSION_CCITT_GROUP_4 = 4;
     private const int COMPRESSION_LZW = 5;
+    private const int COMPRESSION_ADOBE_DEFLATE = 8;
+    private const int COMPRESSION_DEFLATE = 32946;
     private const int COMPRESSION_PACKBITS = 32773;
 
     public function decode(string $data, string $path = 'memory'): ImageSource
@@ -127,7 +129,12 @@ final readonly class TiffImageDecoder
             );
         }
 
-        if ($compression === self::COMPRESSION_PACKBITS || $compression === self::COMPRESSION_LZW) {
+        if (
+            $compression === self::COMPRESSION_PACKBITS
+            || $compression === self::COMPRESSION_LZW
+            || $compression === self::COMPRESSION_ADOBE_DEFLATE
+            || $compression === self::COMPRESSION_DEFLATE
+        ) {
             return $this->decodeCompressedRaster(
                 $data,
                 $path,
@@ -141,9 +148,13 @@ final readonly class TiffImageDecoder
                 $samplesPerPixel,
                 $planarConfiguration,
                 $predictor,
-                $compression === self::COMPRESSION_PACKBITS
-                    ? static fn (string $strip): string => (new PackBitsDecoder())->decode($strip)
-                    : static fn (string $strip): string => (new LzwDecoder())->decode($strip),
+                match ($compression) {
+                    self::COMPRESSION_PACKBITS => static fn (string $strip): string => (new PackBitsDecoder())->decode($strip),
+                    self::COMPRESSION_LZW => static fn (string $strip): string => (new LzwDecoder())->decode($strip),
+                    self::COMPRESSION_ADOBE_DEFLATE,
+                    self::COMPRESSION_DEFLATE => static fn (string $strip): string => (new FlateDecoder())->decode($strip),
+                    default => static fn (string $strip): string => $strip,
+                },
             );
         }
 
@@ -183,7 +194,7 @@ final readonly class TiffImageDecoder
             ));
         }
 
-        if ($predictor !== 1) {
+        if ($predictor !== 1 && $predictor !== 2) {
             throw new InvalidArgumentException(sprintf(
                 "TIFF image '%s' uses unsupported TIFF predictor %d.",
                 $path,
@@ -200,6 +211,14 @@ final readonly class TiffImageDecoder
         );
 
         if ($samplesPerPixel === 1 && $bitsPerSample === [1]) {
+            if ($predictor !== 1) {
+                throw new InvalidArgumentException(sprintf(
+                    "TIFF image '%s' uses unsupported TIFF predictor %d for bilevel data.",
+                    $path,
+                    $predictor,
+                ));
+            }
+
             return $this->decodeRasterBilevel(
                 $path,
                 $width,
@@ -211,6 +230,10 @@ final readonly class TiffImageDecoder
         }
 
         if ($samplesPerPixel === 1 && $bitsPerSample === [8]) {
+            if ($predictor === 2) {
+                $decompressedStrips = $this->reverseHorizontalDifferencing($decompressedStrips, $width, $height, 1, $path);
+            }
+
             return $this->decodeRasterGrayscale(
                 $path,
                 $width,
@@ -222,6 +245,10 @@ final readonly class TiffImageDecoder
         }
 
         if ($samplesPerPixel === 3 && $bitsPerSample === [8, 8, 8]) {
+            if ($predictor === 2) {
+                $decompressedStrips = $this->reverseHorizontalDifferencing($decompressedStrips, $width, $height, 3, $path);
+            }
+
             return $this->decodeRasterRgb(
                 $path,
                 $width,
@@ -457,21 +484,14 @@ final readonly class TiffImageDecoder
             ));
         }
 
-        if (count($stripOffsets) !== 1) {
-            throw new InvalidArgumentException(sprintf(
-                "TIFF image '%s' uses multiple compressed strips, which are not yet supported for CCITT TIFF import.",
-                $path,
-            ));
-        }
-
         return ImageSource::ccittFax(
-            data: $this->readStripData($data, $path, $stripOffsets[0], $stripByteCounts[0]),
+            data: $this->concatenateStripData($data, $path, $stripOffsets, $stripByteCounts),
             width: $width,
             height: $height,
             k: $k,
             blackIs1: $photometricInterpretation === 1,
             endOfLine: $k === 0,
-            endOfBlock: $rowsPerStrip === $height,
+            endOfBlock: count($stripOffsets) === 1 && $rowsPerStrip === $height,
         );
     }
 
@@ -749,6 +769,58 @@ final readonly class TiffImageDecoder
         }
 
         return $bytes;
+    }
+
+    /**
+     * @param list<int> $stripOffsets
+     * @param list<int> $stripByteCounts
+     */
+    private function concatenateStripData(string $data, string $path, array $stripOffsets, array $stripByteCounts): string
+    {
+        $bytes = '';
+
+        foreach ($stripOffsets as $index => $offset) {
+            $bytes .= $this->readStripData($data, $path, $offset, $stripByteCounts[$index]);
+        }
+
+        return $bytes;
+    }
+
+    private function reverseHorizontalDifferencing(
+        string $bytes,
+        int $width,
+        int $height,
+        int $samplesPerPixel,
+        string $path,
+    ): string {
+        $rowByteLength = $width * $samplesPerPixel;
+
+        if (strlen($bytes) !== $rowByteLength * $height) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' uses unsupported predictor row layout.",
+                $path,
+            ));
+        }
+
+        $decoded = '';
+
+        for ($row = 0; $row < $height; $row++) {
+            $rowOffset = $row * $rowByteLength;
+            $rowBytes = substr($bytes, $rowOffset, $rowByteLength);
+            $outputRow = '';
+
+            for ($index = 0; $index < $rowByteLength; $index++) {
+                $current = ord($rowBytes[$index]);
+                $value = $index < $samplesPerPixel
+                    ? $current
+                    : (($current + ord($outputRow[$index - $samplesPerPixel])) & 0xFF);
+                $outputRow .= chr($value);
+            }
+
+            $decoded .= $outputRow;
+        }
+
+        return $decoded;
     }
 
     private function invert8BitSamples(string $samples): string

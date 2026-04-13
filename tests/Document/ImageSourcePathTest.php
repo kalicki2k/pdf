@@ -209,6 +209,27 @@ final class ImageSourcePathTest extends TestCase
         unlink($path);
     }
 
+    public function testItBuildsPageImageResourcesFromAPredictorLzwGrayscaleTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorLzwGrayscaleTiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/ColorSpace /DeviceGray', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/BitsPerComponent 8', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
     public function testItBuildsPageImageResourcesFromAn8BitRgbTiffPath(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
@@ -247,6 +268,48 @@ final class ImageSourcePathTest extends TestCase
         self::assertCount(1, $document->pages[0]->imageResources);
         self::assertStringContainsString('/ColorSpace /DeviceRGB', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
         self::assertStringContainsString('/BitsPerComponent 8', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromAPredictorDeflateRgbTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorDeflateRgbTiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/ColorSpace /DeviceRGB', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/BitsPerComponent 8', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromAMultiStripCcittTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyMultiStripCcittGroup3TiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/Filter /CCITTFaxDecode', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/EndOfBlock false', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
 
         unlink($path);
     }
