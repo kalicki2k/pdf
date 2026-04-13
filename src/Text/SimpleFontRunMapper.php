@@ -13,6 +13,21 @@ use Kalle\Pdf\Page\PageFont;
 
 final readonly class SimpleFontRunMapper implements FontRunMapper
 {
+    /**
+     * @var array{
+     *     embeddedGlyphs: list<EmbeddedGlyph>,
+     *     advanceWidths: list<int>,
+     *     designUnitAdjustments: list<int>,
+     *     widthInDesignUnits: int
+     * }
+     */
+    private const EMPTY_EMBEDDED_RUN_DATA = [
+        'embeddedGlyphs' => [],
+        'advanceWidths' => [],
+        'designUnitAdjustments' => [],
+        'widthInDesignUnits' => 0,
+    ];
+
     public function __construct(
         private ScriptGlyphMapper $scriptGlyphMapper = new SimpleScriptGlyphMapper(),
     ) {
@@ -28,31 +43,36 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
     ): MappedTextRun {
         $text = $run->text();
         $codePoints = $run->codePoints();
-        $embeddedGlyphs = $font instanceof EmbeddedFontDefinition
-            ? $this->embeddedGlyphsForRun($run, $font)
-            : [];
 
         if ($font instanceof EmbeddedFontDefinition) {
+            $embeddedRunData = $this->embeddedRunData($run, $font);
             $textAdjustments = $useHexString
-                ? $this->embeddedTextAdjustmentsForRun($run, $font)
+                ? $this->embeddedTextAdjustments($embeddedRunData['designUnitAdjustments'], $font)
                 : [];
             $positionedFragments = $useHexString && $embeddedPageFont !== null
-                ? $this->positionedFragmentsForRun($run, $embeddedGlyphs, $embeddedPageFont, $font, $options->fontSize)
+                ? $this->positionedFragmentsForRun(
+                    $run,
+                    $embeddedRunData['embeddedGlyphs'],
+                    $embeddedRunData['advanceWidths'],
+                    $embeddedPageFont,
+                    $font,
+                    $options->fontSize,
+                )
                 : [];
 
             return new MappedTextRun(
                 script: $run->script,
                 text: $text,
                 encodedText: $useHexString
-                    ? ($embeddedPageFont?->encodeEmbeddedGlyphs($embeddedGlyphs) ?? $font->encodeUnicodeCodePoints($codePoints))
+                    ? ($embeddedPageFont?->encodeEmbeddedGlyphs($embeddedRunData['embeddedGlyphs']) ?? $font->encodeUnicodeCodePoints($codePoints))
                     : $font->encodeText($text),
                 glyphNames: $this->scriptGlyphMapper->glyphNamesForRun($run, $font, $options, $pdfVersion),
                 codePoints: $codePoints,
-                embeddedGlyphs: $embeddedGlyphs,
+                embeddedGlyphs: $embeddedRunData['embeddedGlyphs'],
                 textAdjustments: $textAdjustments,
                 positionedFragments: $positionedFragments,
                 useHexString: $useHexString,
-                width: $this->measureEmbeddedRunWidth($embeddedGlyphs, $font, $options->fontSize, $run),
+                width: ($embeddedRunData['widthInDesignUnits'] / $font->metadata->unitsPerEm) * $options->fontSize,
             );
         }
 
@@ -71,70 +91,78 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
     }
 
     /**
-     * @return list<EmbeddedGlyph>
+     * @return array{
+     *     embeddedGlyphs: list<EmbeddedGlyph>,
+     *     advanceWidths: list<int>,
+     *     designUnitAdjustments: list<int>,
+     *     widthInDesignUnits: int
+     * }
      */
-    private function embeddedGlyphsForRun(ShapedTextRun $run, EmbeddedFontDefinition $font): array
+    private function embeddedRunData(ShapedTextRun $run, EmbeddedFontDefinition $font): array
     {
-        return array_map(
-            static fn (ShapedGlyph $glyph): EmbeddedGlyph => new EmbeddedGlyph(
-                glyphId: $glyph->glyphId ?? $font->parser->getGlyphIdForCodePoint($glyph->unicodeCodePoint ?? 0),
+        if ($run->glyphs === []) {
+            return self::EMPTY_EMBEDDED_RUN_DATA;
+        }
+
+        $embeddedGlyphs = [];
+        $advanceWidths = [];
+        $glyphIds = [];
+        $widthInDesignUnits = 0;
+
+        foreach ($run->glyphs as $glyph) {
+            $glyphId = $glyph->glyphId ?? $font->parser->getGlyphIdForCodePoint($glyph->unicodeCodePoint ?? 0);
+            $advanceWidth = $font->parser->getAdvanceWidthForGlyphId($glyphId);
+
+            $embeddedGlyphs[] = new EmbeddedGlyph(
+                glyphId: $glyphId,
                 unicodeCodePoint: $glyph->unicodeCodePoint ?? 0,
                 unicodeText: $glyph->unicodeText ?? $glyph->character,
-            ),
-            $run->glyphs,
-        );
+            );
+            $advanceWidths[] = $advanceWidth;
+            $glyphIds[] = $glyphId;
+            $widthInDesignUnits += $advanceWidth;
+        }
+
+        $designUnitAdjustments = $this->embeddedDesignUnitAdjustmentsForGlyphIds($glyphIds, $font);
+
+        foreach ($designUnitAdjustments as $adjustment) {
+            $widthInDesignUnits += $adjustment;
+        }
+
+        return [
+            'embeddedGlyphs' => $embeddedGlyphs,
+            'advanceWidths' => $advanceWidths,
+            'designUnitAdjustments' => $designUnitAdjustments,
+            'widthInDesignUnits' => $widthInDesignUnits,
+        ];
     }
 
     /**
-     * @param list<EmbeddedGlyph> $embeddedGlyphs
-     */
-    private function measureEmbeddedRunWidth(
-        array $embeddedGlyphs,
-        EmbeddedFontDefinition $font,
-        float $fontSize,
-        ShapedTextRun $run,
-    ): float {
-        if ($embeddedGlyphs === []) {
-            return 0.0;
-        }
-
-        $width = 0;
-
-        foreach ($embeddedGlyphs as $glyph) {
-            $width += $font->parser->getAdvanceWidthForGlyphId($glyph->glyphId);
-        }
-
-        foreach ($this->embeddedDesignUnitAdjustmentsForRun($run, $font) as $adjustment) {
-            $width += $adjustment;
-        }
-
-        return ($width / $font->metadata->unitsPerEm) * $fontSize;
-    }
-
-    /**
+     * @param list<int> $designUnitAdjustments
      * @return list<int>
      */
-    private function embeddedTextAdjustmentsForRun(ShapedTextRun $run, EmbeddedFontDefinition $font): array
+    private function embeddedTextAdjustments(array $designUnitAdjustments, EmbeddedFontDefinition $font): array
     {
         $scale = 1000 / $font->metadata->unitsPerEm;
 
         return array_map(
             static fn (int $adjustment): int => (int) round(-$adjustment * $scale),
-            $this->embeddedDesignUnitAdjustmentsForRun($run, $font),
+            $designUnitAdjustments,
         );
     }
 
     /**
+     * @param list<int> $glyphIds
      * @return list<int>
      */
-    private function embeddedDesignUnitAdjustmentsForRun(ShapedTextRun $run, EmbeddedFontDefinition $font): array
+    private function embeddedDesignUnitAdjustmentsForGlyphIds(array $glyphIds, EmbeddedFontDefinition $font): array
     {
         $adjustments = [];
-        $glyphCount = count($run->glyphs);
+        $glyphCount = count($glyphIds);
 
         for ($index = 0; $index < $glyphCount - 1; $index++) {
-            $leftGlyphId = $run->glyphs[$index]->glyphId;
-            $rightGlyphId = $run->glyphs[$index + 1]->glyphId;
+            $leftGlyphId = $glyphIds[$index] ?? null;
+            $rightGlyphId = $glyphIds[$index + 1] ?? null;
 
             if ($leftGlyphId === null) {
                 $adjustments[] = 0;
@@ -156,11 +184,13 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
 
     /**
      * @param list<EmbeddedGlyph> $embeddedGlyphs
+     * @param list<int> $advanceWidths
      * @return list<PositionedTextFragment>
      */
     private function positionedFragmentsForRun(
         ShapedTextRun $run,
         array $embeddedGlyphs,
+        array $advanceWidths,
         PageFont $embeddedPageFont,
         EmbeddedFontDefinition $font,
         float $fontSize,
@@ -186,7 +216,7 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
                 yOffset: $glyph->yOffset * $scale,
             );
 
-            $advanceWidth = $font->parser->getAdvanceWidthForGlyphId($embeddedGlyph->glyphId) * $scale;
+            $advanceWidth = ($advanceWidths[$index] ?? 0) * $scale;
             $cursorX += $advanceWidth + ($glyph->xAdvance * $scale);
         }
 

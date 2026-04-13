@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
-use function array_merge;
 use function count;
 
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
@@ -32,14 +31,15 @@ final readonly class BengaliScriptTextShaper implements ScriptTextShaper
 
         while ($clusterStart < $characterCount) {
             $clusterEnd = $this->clusterEnd($characters, $clusterStart);
-            $glyphs = array_merge(
-                $glyphs,
-                $this->shapeCluster(
-                    array_slice($characters, $clusterStart, $clusterEnd - $clusterStart),
-                    $clusterStart,
-                    $font,
-                ),
-            );
+
+            foreach ($this->shapeCluster(
+                array_slice($characters, $clusterStart, $clusterEnd - $clusterStart),
+                $clusterStart,
+                $font,
+            ) as $glyph) {
+                $glyphs[] = $glyph;
+            }
+
             $clusterStart = $clusterEnd;
         }
 
@@ -59,6 +59,7 @@ final readonly class BengaliScriptTextShaper implements ScriptTextShaper
         $rephIndex = $this->rephIndex($characters, $baseIndex);
         $prefIndex = $this->prefIndex($characters, $baseIndex, $rephIndex);
         $glyphs = [];
+        $preBaseGlyphs = [];
 
         foreach ($characters as $index => $character) {
             if ($this->isPreBaseMatra($character) || $this->isVirama($character)) {
@@ -95,16 +96,33 @@ final readonly class BengaliScriptTextShaper implements ScriptTextShaper
                 continue;
             }
 
+            $preBaseGlyphs[] = new ShapedGlyph(
+                character: $character,
+                cluster: $clusterOffset + $index,
+                glyphName: 'indic.prebase',
+                unicodeCodePoint: mb_ord($character, 'UTF-8'),
+                unicodeText: $character,
+            );
+        }
+
+        if ($preBaseGlyphs !== []) {
             $insertIndex = $this->preBaseInsertionIndex($characters, $baseIndex);
-            array_splice($glyphs, $insertIndex, 0, [
-                new ShapedGlyph(
-                    character: $character,
-                    cluster: $clusterOffset + $index,
-                    glyphName: 'indic.prebase',
-                    unicodeCodePoint: mb_ord($character, 'UTF-8'),
-                    unicodeText: $character,
-                ),
-            ]);
+            $orderedGlyphs = [];
+            $glyphCount = count($glyphs);
+
+            for ($index = 0; $index < $insertIndex && $index < $glyphCount; $index++) {
+                $orderedGlyphs[] = $glyphs[$index];
+            }
+
+            foreach ($preBaseGlyphs as $preBaseGlyph) {
+                $orderedGlyphs[] = $preBaseGlyph;
+            }
+
+            for ($index = $insertIndex; $index < $glyphCount; $index++) {
+                $orderedGlyphs[] = $glyphs[$index];
+            }
+
+            $glyphs = $orderedGlyphs;
         }
 
         if ($rephIndex !== null) {

@@ -116,26 +116,26 @@ final class DocumentSerializationPlanBuilder
         ];
 
         $pageObjects = $this->pageAndFormObjectBuilder->buildPageObjects($document, $state, $debugger);
-        $objects = [...$objects, ...$pageObjects];
+        $this->appendObjects($objects, $pageObjects);
 
         $fontAndImageObjects = $this->fontAndImageObjectBuilder->buildObjects($document, $state);
-        $objects = [...$objects, ...$fontAndImageObjects];
+        $this->appendObjects($objects, $fontAndImageObjects);
 
         $attachmentObjects = $this->attachmentObjectBuilder->buildObjects($document, $state);
-        $objects = [...$objects, ...$attachmentObjects];
+        $this->appendObjects($objects, $attachmentObjects);
 
         $outlineObjects = $this->outlineObjectBuilder->buildObjects($document, $state);
-        $objects = [...$objects, ...$outlineObjects];
+        $this->appendObjects($objects, $outlineObjects);
 
         $acroFormObjects = $this->pageAndFormObjectBuilder->buildAcroFormObjects($document, $state);
-        $objects = [...$objects, ...$acroFormObjects];
+        $this->appendObjects($objects, $acroFormObjects);
 
         $taggedPdfObjects = $this->taggedPdfObjectBuilder->buildObjects($document, $state);
-        $objects = [...$objects, ...$taggedPdfObjects];
+        $this->appendObjects($objects, $taggedPdfObjects);
         $this->pdfA1aTaggedStructureValidator->assertValid($document, $state, $objects);
 
         $metadataObjects = $this->metadataObjectBuilder->buildObjects($document, $state, $serializedAt, $encryptObjectContents);
-        $objects = [...$objects, ...$metadataObjects];
+        $this->appendObjects($objects, $metadataObjects);
         $this->pdfAObjectGraphValidator->assertValid($document, $state, $objects);
         $this->pdfA1ObjectGraphValidator->assertValid($document, $state, $objects);
         $this->logCreatedObjects($debugger, $objects);
@@ -265,6 +265,17 @@ final class DocumentSerializationPlanBuilder
             static fn (int $objectId): string => $objectId . ' 0 R',
             $pageObjectIds,
         ));
+    }
+
+    /**
+     * @param list<IndirectObject> $objects
+     * @param list<IndirectObject> $additionalObjects
+     */
+    private function appendObjects(array &$objects, array $additionalObjects): void
+    {
+        foreach ($additionalObjects as $object) {
+            $objects[] = $object;
+        }
     }
 
     private function formatNumber(float $value): string
