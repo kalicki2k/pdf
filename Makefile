@@ -12,7 +12,7 @@ composer-install:
 	$(DOCKER_COMPOSE) run --rm php composer install
 
 phpstan:
-	$(DOCKER_COMPOSE) run --rm php composer phpstan
+	$(DOCKER_COMPOSE) run --rm -T php composer phpstan
 
 cs:
 	$(DOCKER_COMPOSE) run --rm php composer cs

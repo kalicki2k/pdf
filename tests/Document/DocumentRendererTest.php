@@ -61,6 +61,7 @@ use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Tests\Image\BmpFixture;
 use Kalle\Pdf\Tests\Image\GifFixture;
 use Kalle\Pdf\Tests\Image\TiffFixture;
+use Kalle\Pdf\Tests\Image\WebpFixture;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
@@ -2573,6 +2574,77 @@ final class DocumentRendererTest extends TestCase
             self::assertStringContainsString('/Subtype /Image', $pdf);
             self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
             self::assertStringContainsString('/SMask ', $pdf);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRendersImportedOpaqueWebpImages(): void
+    {
+        if (!\function_exists('gd_info') || ((\gd_info()['WebP Support'] ?? false) !== true)) {
+            self::markTestSkipped('GD WebP support is not available in this runtime.');
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-webp-render-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary WebP fixture path.');
+        }
+
+        file_put_contents($path, WebpFixture::tinyOpaqueWebpBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+            self::assertStringContainsString('/BitsPerComponent 8', $pdf);
+            self::assertStringNotContainsString('/SMask ', $pdf);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRendersImportedTransparentWebpImagesWithSoftMasks(): void
+    {
+        if (!\function_exists('gd_info') || ((\gd_info()['WebP Support'] ?? false) !== true)) {
+            self::markTestSkipped('GD WebP support is not available in this runtime.');
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-webp-alpha-render-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary transparent WebP fixture path.');
+        }
+
+        file_put_contents($path, WebpFixture::tinyTransparentWebpBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+            self::assertStringContainsString('/BitsPerComponent 8', $pdf);
+            self::assertStringContainsString('/SMask ', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceGray', $pdf);
         } finally {
             unlink($path);
         }

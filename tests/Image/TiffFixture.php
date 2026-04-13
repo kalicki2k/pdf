@@ -277,6 +277,69 @@ final class TiffFixture
             . pack('V', 0);
     }
 
+    public static function invalidColorMapPaletteTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 1,
+            photometricInterpretation: 3,
+            stripData: ["\x00\x01"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            colorMap: [
+                0x0000, 0xFFFF,
+                0x0000, 0x0000,
+                0x0000,
+            ],
+        );
+    }
+
+    public static function mismatchedStripTablesTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 2,
+            bitsPerSample: [8],
+            compression: 1,
+            photometricInterpretation: 1,
+            stripData: ["\x11\x22", "\x33\x44"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            stripByteCountsOverride: [2],
+        );
+    }
+
+    public static function truncatedStripDataTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 1,
+            photometricInterpretation: 1,
+            stripData: ["\x11"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            stripByteCountsOverride: [2],
+        );
+    }
+
+    public static function incompleteStripCoverageTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 3,
+            bitsPerSample: [8],
+            compression: 1,
+            photometricInterpretation: 1,
+            stripData: ["\x11\x22", "\x33\x44"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+        );
+    }
+
     /**
      * @param list<string> $stripData
      */
@@ -344,6 +407,8 @@ final class TiffFixture
         int $planarConfiguration = 1,
         int $predictor = 1,
         ?array $colorMap = null,
+        ?array $stripOffsetsOverride = null,
+        ?array $stripByteCountsOverride = null,
     ): string {
         $ifdOffset = 8;
         $entryCount = 10 + ($predictor !== 1 ? 1 : 0) + ($colorMap !== null ? 1 : 0);
@@ -368,10 +433,10 @@ final class TiffFixture
             self::entryShort(258, $bitsPerSample, $nextOffset, $extraValues),
             self::entryShort(259, [$compression], $nextOffset, $extraValues),
             self::entryShort(262, [$photometricInterpretation], $nextOffset, $extraValues),
-            self::entryLong(273, $stripOffsets, $nextOffset, $extraValues),
+            self::entryLong(273, $stripOffsetsOverride ?? $stripOffsets, $nextOffset, $extraValues),
             self::entryShort(277, [$samplesPerPixel], $nextOffset, $extraValues),
             self::entryLong(278, [$rowsPerStrip], $nextOffset, $extraValues),
-            self::entryLong(279, $stripByteCounts, $nextOffset, $extraValues),
+            self::entryLong(279, $stripByteCountsOverride ?? $stripByteCounts, $nextOffset, $extraValues),
             self::entryShort(284, [$planarConfiguration], $nextOffset, $extraValues),
         ];
 

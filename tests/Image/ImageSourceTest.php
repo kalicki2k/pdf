@@ -785,6 +785,98 @@ final class ImageSourceTest extends TestCase
         }
     }
 
+    public function testItRejectsPaletteTiffFilesWithInvalidColorMapLength(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::invalidColorMapPaletteTiffBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "TIFF image '%s' uses an invalid ColorMap table length.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsTiffFilesWithMismatchedStripTables(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::mismatchedStripTablesTiffBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "TIFF image '%s' has mismatching strip offset and byte-count tables.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsTiffFilesWithTruncatedStripData(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::truncatedStripDataTiffBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "TIFF image '%s' strip data is truncated.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsTiffFilesWithIncompleteStripCoverage(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::incompleteStripCoverageTiffBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "TIFF image '%s' strip table does not cover the declared image height.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
     public function testItCreatesARgbPngImageSourceFromAFilePath(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
