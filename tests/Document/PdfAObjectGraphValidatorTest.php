@@ -6,6 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use function array_map;
 use function array_values;
+
+use DateTimeImmutable;
+
 use function dirname;
 
 use InvalidArgumentException;
@@ -15,6 +18,7 @@ use function iterator_to_array;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentMetadataObjectBuilder;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuildState;
 use Kalle\Pdf\Document\DocumentSerializationPlanObjectIdAllocator;
@@ -22,6 +26,8 @@ use Kalle\Pdf\Document\DocumentTaggedPdfObjectBuilder;
 use Kalle\Pdf\Document\PdfAObjectGraphValidator;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
+use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
@@ -379,6 +385,92 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
     }
 
+    public function testItRejectsPdfA4CatalogsWithOutputIntentArrays(): void
+    {
+        [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4());
+
+        $objects = array_map(
+            static function (IndirectObject $object): IndirectObject {
+                if ($object->objectId !== 1) {
+                    return $object;
+                }
+
+                return IndirectObject::plain(
+                    $object->objectId,
+                    str_replace(
+                        '>>',
+                        ' /OutputIntents [<< /Type /OutputIntent /S /GTS_PDFA1 /DestOutputProfile 99 0 R >>] >>',
+                        $object->contents,
+                    ),
+                );
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4 must not serialize OutputIntents in the final PDF/A-4 object graph.');
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4MetadataWithoutRevisionMarkers(): void
+    {
+        [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4());
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($state): IndirectObject {
+                if ($object->objectId !== $state->metadataObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = str_replace('<pdfaid:rev>2020</pdfaid:rev>', '', $object->streamContents ?? $object->contents);
+
+                return IndirectObject::stream(
+                    $object->objectId,
+                    $object->streamDictionaryContents ?? '<< /Type /Metadata /Subtype /XML /Length 0 >>',
+                    $tamperedContents,
+                );
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4 metadata stream must serialize <pdfaid:rev>2020</pdfaid:rev>.');
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsBasePdfA4MetadataWithConformanceMarkers(): void
+    {
+        [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4());
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($state): IndirectObject {
+                if ($object->objectId !== $state->metadataObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = str_replace(
+                    '</rdf:Description>',
+                    '    <pdfaid:conformance>F</pdfaid:conformance>' . "\n" . '  </rdf:Description>',
+                    $object->streamContents ?? $object->contents,
+                );
+
+                return IndirectObject::stream(
+                    $object->objectId,
+                    $object->streamDictionaryContents ?? '<< /Type /Metadata /Subtype /XML /Length 0 >>',
+                    $tamperedContents,
+                );
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4 metadata stream must not serialize a pdfaid:conformance marker.');
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
     private function pdfA2uDocument(): Document
     {
         return DefaultDocumentBuilder::make()
@@ -415,5 +507,34 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             ),
             static fn (): array => [],
         );
+    }
+
+    /**
+     * @return array{Document, DocumentSerializationPlanBuildState, list<IndirectObject>}
+     */
+    private function pdfA4ObjectGraph(Profile $profile): array
+    {
+        $document = new Document(
+            profile: $profile,
+            title: 'Archive Copy',
+            pages: [new Page(PageSize::A4())],
+        );
+        $state = $this->allocateState($document);
+        $metadataObjects = (new DocumentMetadataObjectBuilder())->buildObjects(
+            $document,
+            $state,
+            new DateTimeImmutable('2026-04-12T10:00:00+02:00'),
+            '',
+        );
+
+        $objects = [
+            IndirectObject::plain(1, '<< /Type /Catalog /Pages 2 0 R /Metadata ' . $state->metadataObjectId . ' 0 R >>'),
+            IndirectObject::plain(2, '<< /Type /Pages /Count 1 /Kids [3 0 R] >>'),
+            IndirectObject::plain(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << >> /Contents 4 0 R >>'),
+            IndirectObject::stream(4, '<< /Length 0 >>', ''),
+            ...$metadataObjects,
+        ];
+
+        return [$document, $state, $objects];
     }
 }

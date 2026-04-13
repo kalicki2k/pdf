@@ -22,6 +22,8 @@ use function str_replace;
 
 final class PdfAObjectGraphValidator
 {
+    private ?Profile $activeProfile = null;
+
     public function __construct(
         private readonly DocumentAttachmentRelationshipResolver $attachmentRelationshipResolver = new DocumentAttachmentRelationshipResolver(),
         private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
@@ -36,6 +38,8 @@ final class PdfAObjectGraphValidator
         if (!$document->profile->isPdfA()) {
             return;
         }
+
+        $this->activeProfile = $document->profile;
 
         $objectsById = $this->objectsById($objects);
         $catalogObject = $this->assertObjectExists($objectsById, 1, 'catalog');
@@ -119,6 +123,13 @@ final class PdfAObjectGraphValidator
         if ($document->language !== null && !str_contains($catalogObject->contents, '/Lang ')) {
             throw new InvalidArgumentException('PDF/A catalog must serialize the document language.');
         }
+
+        if ($document->profile->isPdfA4() && str_contains($catalogObject->contents, '/OutputIntents [')) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s must not serialize OutputIntents in the final PDF/A-4 object graph.',
+                $document->profile->name(),
+            ));
+        }
     }
 
     /**
@@ -132,6 +143,8 @@ final class PdfAObjectGraphValidator
             if ($metadataObject->streamDictionaryContents === null || !str_contains($metadataObject->contents, '/Subtype /XML')) {
                 throw new InvalidArgumentException('PDF/A metadata stream must be serialized as an XML metadata stream object.');
             }
+
+            $this->assertPdfA4MetadataObject($metadataObject);
         }
 
         if ($state->iccProfileObjectId !== null) {
@@ -143,7 +156,57 @@ final class PdfAObjectGraphValidator
         }
 
         if ($state->infoObjectId !== null) {
+            if ($this->activeProfile?->isPdfA4()) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s must not serialize an Info dictionary in the final PDF/A-4 object graph.',
+                    $this->activeProfile->name(),
+                ));
+            }
+
             $this->assertObjectExists($objectsById, $state->infoObjectId, 'info dictionary');
+        }
+    }
+
+    private function assertPdfA4MetadataObject(IndirectObject $metadataObject): void
+    {
+        if (!$this->activeProfile?->isPdfA4()) {
+            return;
+        }
+
+        $metadataContents = $metadataObject->streamContents ?? $metadataObject->contents;
+
+        if (!str_contains($metadataContents, '<pdfaid:part>4</pdfaid:part>')) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s metadata stream must serialize <pdfaid:part>4</pdfaid:part>.',
+                $this->activeProfile->name(),
+            ));
+        }
+
+        if (!str_contains($metadataContents, '<pdfaid:rev>2020</pdfaid:rev>')) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s metadata stream must serialize <pdfaid:rev>2020</pdfaid:rev>.',
+                $this->activeProfile->name(),
+            ));
+        }
+
+        $conformance = $this->activeProfile->pdfaConformance();
+
+        if ($conformance === null && str_contains($metadataContents, '<pdfaid:conformance>')) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s metadata stream must not serialize a pdfaid:conformance marker.',
+                $this->activeProfile->name(),
+            ));
+        }
+
+        if (
+            $conformance !== null
+            && !str_contains($metadataContents, '<pdfaid:conformance>' . $conformance . '</pdfaid:conformance>')
+        ) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s metadata stream must serialize <pdfaid:conformance>%s</pdfaid:conformance>.',
+                $this->activeProfile->name(),
+                $conformance,
+            ));
         }
     }
 
@@ -596,6 +659,6 @@ final class PdfAObjectGraphValidator
 
     private function profileLabel(): string
     {
-        return 'PDF/A';
+        return $this->activeProfile?->name() ?? 'PDF/A';
     }
 }
