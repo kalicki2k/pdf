@@ -10,15 +10,50 @@ use Kalle\Pdf\Text\TextOptions;
 
 final readonly class TableOptions
 {
-    public function __construct(
-        public Border $border = new Border(0.5, 0.5, 0.5, 0.5),
-        public TextOptions $textOptions = new TextOptions(fontSize: 12.0, lineHeight: 14.4),
-        public ?TableCaption $caption = null,
-        public ?TablePlacement $placement = null,
-        public CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
-        public bool $repeatHeaderOnPageBreak = false,
-        public bool $repeatFooterOnPageBreak = false,
+    public Border $border;
+    public TextOptions $textOptions;
+    public ?TableCaption $caption;
+    public ?TablePlacement $placement;
+    public CellPadding $cellPadding;
+    public bool $repeatHeaderOnPageBreak;
+    public bool $repeatFooterOnPageBreak;
+
+    public static function make(
+        Border $border = new Border(0.5, 0.5, 0.5, 0.5),
+        ?TextOptions $textOptions = null,
+        ?TableCaption $caption = null,
+        ?TablePlacement $placement = null,
+        CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
+        bool $repeatHeaderOnPageBreak = false,
+        bool $repeatFooterOnPageBreak = false,
+    ): self {
+        return new self(
+            border: $border,
+            textOptions: $textOptions ?? TextOptions::make(fontSize: 12.0, lineHeight: 14.4),
+            caption: $caption,
+            placement: $placement,
+            cellPadding: $cellPadding,
+            repeatHeaderOnPageBreak: $repeatHeaderOnPageBreak,
+            repeatFooterOnPageBreak: $repeatFooterOnPageBreak,
+        );
+    }
+
+    private function __construct(
+        Border $border = new Border(0.5, 0.5, 0.5, 0.5),
+        ?TextOptions $textOptions = null,
+        ?TableCaption $caption = null,
+        ?TablePlacement $placement = null,
+        CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
+        bool $repeatHeaderOnPageBreak = false,
+        bool $repeatFooterOnPageBreak = false,
     ) {
+        $this->border = $border;
+        $this->textOptions = $textOptions ?? TextOptions::make(fontSize: 12.0, lineHeight: 14.4);
+        $this->caption = $caption;
+        $this->placement = $placement;
+        $this->cellPadding = $cellPadding;
+        $this->repeatHeaderOnPageBreak = $repeatHeaderOnPageBreak;
+        $this->repeatFooterOnPageBreak = $repeatFooterOnPageBreak;
     }
 
     public function withCaption(?TableCaption $caption): self

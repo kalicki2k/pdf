@@ -51,7 +51,7 @@ function createPdfA3aPackageFixture(): Document
         ->language('de-DE')
         ->creator('Regression Fixture')
         ->creatorTool('bin/generate-pdfa3a-regression-fixtures.php')
-        ->text('PDF/A-3a Package Привет', new TextOptions(
+        ->text('PDF/A-3a Package Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
@@ -59,7 +59,7 @@ function createPdfA3aPackageFixture(): Document
             color: Color::rgb(0.08, 0.16, 0.35),
             tag: TaggedStructureTag::P,
         ))
-        ->text('Getaggter Absatz mit zugeordnetem Datenpaket. Привет.', new TextOptions(
+        ->text('Getaggter Absatz mit zugeordnetem Datenpaket. Привет.', TextOptions::make(
             x: 72,
             y: 724,
             width: 360,

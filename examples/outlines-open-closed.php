@@ -19,14 +19,14 @@ if (!is_dir($outputDirectory) && !mkdir($outputDirectory, 0777, true) && !is_dir
 }
 
 $margin = Margin::all(Units::mm(18));
-$headline = new TextOptions(
+$headline = TextOptions::make(
     fontSize: 24,
     lineHeight: 28,
     spacingAfter: 8,
     fontName: StandardFont::HELVETICA_BOLD->value,
     color: Color::hex('#0f172a'),
 );
-$section = new TextOptions(
+$section = TextOptions::make(
     fontSize: 16,
     lineHeight: 20,
     spacingBefore: 10,
@@ -34,7 +34,7 @@ $section = new TextOptions(
     fontName: StandardFont::HELVETICA_BOLD->value,
     color: Color::hex('#1d4ed8'),
 );
-$body = new TextOptions(
+$body = TextOptions::make(
     fontSize: 11,
     lineHeight: 15,
     spacingAfter: 8,
@@ -65,7 +65,7 @@ DefaultDocumentBuilder::make()
         'The bookmark branch for this chapter is open. Its child bookmarks should already be visible in the bookmarks panel of the PDF viewer.',
         $body,
     )
-    ->text('Open Section 1', new TextOptions(
+    ->text('Open Section 1', TextOptions::make(
         x: 72,
         y: 700,
         fontSize: 16,
@@ -75,7 +75,7 @@ DefaultDocumentBuilder::make()
     ))
     ->text(
         'This target belongs to an outline child under an open parent node.',
-        new TextOptions(
+        TextOptions::make(
             x: 72,
             y: 676,
             width: 360,
@@ -84,7 +84,7 @@ DefaultDocumentBuilder::make()
             color: Color::hex('#334155'),
         ),
     )
-    ->text('Open Section 2', new TextOptions(
+    ->text('Open Section 2', TextOptions::make(
         x: 72,
         y: 600,
         fontSize: 16,
@@ -94,7 +94,7 @@ DefaultDocumentBuilder::make()
     ))
     ->text(
         'This second child stays visible in the outline tree because its parent node is open.',
-        new TextOptions(
+        TextOptions::make(
             x: 72,
             y: 576,
             width: 360,
@@ -112,7 +112,7 @@ DefaultDocumentBuilder::make()
         'The bookmark branch for this chapter is closed. Its child outline items still exist, but the viewer should start with this subtree collapsed.',
         $body,
     )
-    ->text('Collapsed Section', new TextOptions(
+    ->text('Collapsed Section', TextOptions::make(
         x: 72,
         y: 690,
         fontSize: 16,
@@ -122,7 +122,7 @@ DefaultDocumentBuilder::make()
     ))
     ->text(
         'This section is itself closed and contains a nested child bookmark below.',
-        new TextOptions(
+        TextOptions::make(
             x: 72,
             y: 666,
             width: 360,
@@ -131,7 +131,7 @@ DefaultDocumentBuilder::make()
             color: Color::hex('#334155'),
         ),
     )
-    ->text('Nested Detail', new TextOptions(
+    ->text('Nested Detail', TextOptions::make(
         x: 72,
         y: 590,
         fontSize: 15,
@@ -141,7 +141,7 @@ DefaultDocumentBuilder::make()
     ))
     ->text(
         'This bookmark target exists, but the closed ancestor path means it should not be expanded automatically when the document opens.',
-        new TextOptions(
+        TextOptions::make(
             x: 72,
             y: 566,
             width: 360,

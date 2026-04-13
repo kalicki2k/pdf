@@ -461,7 +461,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $clone = clone $this;
         $list ??= new ListOptions();
-        $text ??= new TextOptions();
+        $text ??= TextOptions::make();
 
         if ($items === []) {
             return $clone;
@@ -559,7 +559,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function renderTextSegments(array $segments, ?TextOptions $options, ?string $markedContentTag): DocumentBuilder
     {
         $clone = clone $this;
-        $options ??= new TextOptions();
+        $options ??= TextOptions::make();
         $artifact = $options->semantic === TextSemantic::ARTIFACT;
 
         if ($segments === []) {
@@ -1543,14 +1543,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?FreeTextAnnotationOptions $options = null,
     ): DocumentBuilder {
         $clone = clone $this;
-        $textOptions ??= new TextOptions(fontSize: 12.0);
+        $textOptions ??= TextOptions::make(fontSize: 12.0);
         $options ??= new FreeTextAnnotationOptions();
         $metadata = $options->metadata();
         $resolvedTextColor = $options->textColor ?? $textOptions->color;
         $font = $textOptions->embeddedFont !== null
             ? EmbeddedFontDefinition::fromSource($textOptions->embeddedFont)
             : StandardFontDefinition::from($textOptions->fontName);
-        $appearanceOptions = new TextOptions(
+        $appearanceOptions = TextOptions::make(
             x: 2.0,
             y: $height - 2.0 - $font->ascent($textOptions->fontSize),
             width: max($width - 4.0, 0.0),
@@ -2520,7 +2520,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     public function glyphs(StandardFontGlyphRun $glyphRun, ?TextOptions $options = null): DocumentBuilder
     {
         $clone = clone $this;
-        $options ??= new TextOptions(fontName: $glyphRun->fontName);
+        $options ??= TextOptions::make(fontName: $glyphRun->fontName);
 
         if ($options->fontName !== $glyphRun->fontName) {
             throw new InvalidArgumentException(sprintf(
@@ -3517,7 +3517,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function textOptionsWithLink(TextOptions $options, LinkTarget | TextLink | null $link): TextOptions
     {
-        return new TextOptions(
+        return TextOptions::make(
             x: $options->x,
             y: $options->y,
             width: $options->width,
@@ -3549,7 +3549,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $this->assertInlineSegmentTextOptions($segment->options);
 
-        return new TextOptions(
+        return TextOptions::make(
             x: $options->x,
             y: $options->y,
             width: $options->width,
@@ -4431,7 +4431,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function renderTextBlock(string $text, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
     {
         $clone = clone $this;
-        $options ??= new TextOptions();
+        $options ??= TextOptions::make();
         $artifact = $options->semantic === TextSemantic::ARTIFACT;
         $font = $options->embeddedFont !== null
             ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
@@ -4492,7 +4492,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function renderTextLines(array $lines, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
     {
         $clone = clone $this;
-        $options ??= new TextOptions();
+        $options ??= TextOptions::make();
         $artifact = $options->semantic === TextSemantic::ARTIFACT;
         $debugger = $clone->debugger();
 
@@ -4709,7 +4709,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?float $spacingBefore = null,
         ?float $spacingAfter = null,
     ): TextOptions {
-        return new TextOptions(
+        return TextOptions::make(
             x: $x,
             y: $y,
             width: $width,
@@ -4780,7 +4780,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $captionOptions = $caption->textOptions ?? $baseOptions;
 
-        return new TextOptions(
+        return TextOptions::make(
             width: $contentWidth,
             fontSize: $captionOptions->fontSize,
             lineHeight: $captionOptions->lineHeight,

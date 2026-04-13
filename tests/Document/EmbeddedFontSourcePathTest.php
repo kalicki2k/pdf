@@ -28,7 +28,7 @@ final class EmbeddedFontSourcePathTest extends TestCase
         file_put_contents($path, TrueTypeFontFixture::minimalTrueTypeFontBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->text('A', new TextOptions(
+            ->text('A', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath($path),
             ))
             ->build();

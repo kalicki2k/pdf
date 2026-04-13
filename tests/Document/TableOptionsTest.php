@@ -16,13 +16,13 @@ final class TableOptionsTest extends TestCase
 {
     public function testItExposesCurrentTableDefaults(): void
     {
-        $options = new TableOptions();
+        $options = TableOptions::make();
 
         self::assertNull($options->caption);
         self::assertNull($options->placement);
         self::assertEquals(new CellPadding(4.0, 4.0, 4.0, 4.0), $options->cellPadding);
         self::assertEquals(new Border(0.5, 0.5, 0.5, 0.5), $options->border);
-        self::assertEquals(new TextOptions(fontSize: 12.0, lineHeight: 14.4), $options->textOptions);
+        self::assertEquals(TextOptions::make(fontSize: 12.0, lineHeight: 14.4), $options->textOptions);
         self::assertFalse($options->repeatHeaderOnPageBreak);
         self::assertFalse($options->repeatFooterOnPageBreak);
     }
@@ -33,9 +33,9 @@ final class TableOptionsTest extends TestCase
         $placement = TablePlacement::at(48.0, 460.0, 220.0);
         $padding = CellPadding::symmetric(2.0, 3.0);
         $border = Border::all(1.0);
-        $text = new TextOptions(fontSize: 9.0, lineHeight: 12.0);
+        $text = TextOptions::make(fontSize: 9.0, lineHeight: 12.0);
 
-        $options = (new TableOptions())
+        $options = (TableOptions::make())
             ->withCaption($caption)
             ->withPlacement($placement)
             ->withCellPadding($padding)
@@ -43,6 +43,33 @@ final class TableOptionsTest extends TestCase
             ->withTextOptions($text)
             ->withRepeatedHeaderOnPageBreak()
             ->withRepeatedFooterOnPageBreak();
+
+        self::assertSame($caption, $options->caption);
+        self::assertSame($placement, $options->placement);
+        self::assertSame($padding, $options->cellPadding);
+        self::assertSame($border, $options->border);
+        self::assertSame($text, $options->textOptions);
+        self::assertTrue($options->repeatHeaderOnPageBreak);
+        self::assertTrue($options->repeatFooterOnPageBreak);
+    }
+
+    public function testMakeFactoryBuildsTableOptions(): void
+    {
+        $caption = TableCaption::text('Quarterly overview');
+        $placement = TablePlacement::at(48.0, 460.0, 220.0);
+        $padding = CellPadding::symmetric(2.0, 3.0);
+        $border = Border::all(1.0);
+        $text = TextOptions::make(fontSize: 9.0, lineHeight: 12.0);
+
+        $options = TableOptions::make(
+            border: $border,
+            textOptions: $text,
+            caption: $caption,
+            placement: $placement,
+            cellPadding: $padding,
+            repeatHeaderOnPageBreak: true,
+            repeatFooterOnPageBreak: true,
+        );
 
         self::assertSame($caption, $options->caption);
         self::assertSame($placement, $options->placement);

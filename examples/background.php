@@ -24,7 +24,7 @@ Pdf::document()
     ->creator('examples/background.php')
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
-    ->text('Page 1: default white background', new TextOptions(
+    ->text('Page 1: default white background', TextOptions::make(
         x: Units::mm(20),
         y: Units::mm(270),
         fontSize: 18,
@@ -34,13 +34,13 @@ Pdf::document()
         pageSize: PageSize::A4(),
         backgroundColor: Color::hex('#f5f5f5'),
     ))
-    ->text('Page 2: light gray background', new TextOptions(
+    ->text('Page 2: light gray background', TextOptions::make(
         x: Units::mm(20),
         y: Units::mm(270),
         fontSize: 18,
         fontName: 'Helvetica',
     ))
-    ->text('Backgrounds are rendered as a full-page rectangle before text.', new TextOptions(
+    ->text('Backgrounds are rendered as a full-page rectangle before text.', TextOptions::make(
         x: Units::mm(20),
         y: Units::mm(255),
         fontSize: 12,

@@ -16,7 +16,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsTextWithAnEmbeddedTrueTypeFont(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('A', new TextOptions(
+            ->text('A', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalTrueTypeFontBytes()),
             ))
             ->build();
@@ -34,7 +34,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsTextWithAnEmbeddedCffFont(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('A', new TextOptions(
+            ->text('A', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalCffOpenTypeFontBytes()),
             ))
             ->build();
@@ -55,7 +55,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('ASCII only', new TextOptions(
+            ->text('ASCII only', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -74,7 +74,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('A', new TextOptions(
+            ->text('A', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalCffOpenTypeFontBytes()),
             ))
             ->build();
@@ -92,13 +92,13 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsUnicodeTextWithAnEmbeddedTrueTypeFont(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('Ж', new TextOptions(
+            ->text('Ж', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
-            ->text('中', new TextOptions(
+            ->text('中', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
-            ->text('😀', new TextOptions(
+            ->text('😀', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
             ->build();
@@ -121,7 +121,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('Ж中', new TextOptions(
+            ->text('Ж中', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
             ->build();
@@ -139,10 +139,10 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsUnicodeTextWithAnEmbeddedCffFont(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('Ж', new TextOptions(
+            ->text('Ж', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
             ))
-            ->text('中', new TextOptions(
+            ->text('中', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
             ))
             ->build();
@@ -162,7 +162,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsArabicUnicodeTextUsingShapedEmbeddedGlyphIds(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('ببب', new TextOptions(
+            ->text('ببب', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalArabicGsubTrueTypeFontBytes()),
             ))
             ->build();
@@ -182,7 +182,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsArabicUnicodeLigaturesUsingShapedEmbeddedGlyphIds(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('لا', new TextOptions(
+            ->text('لا', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalArabicGsubTrueTypeFontBytes()),
             ))
             ->build();
@@ -206,7 +206,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsGeneralLigaLigaturesUsingShapedEmbeddedGlyphIds(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('fi', new TextOptions(
+            ->text('fi', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalLatinLigaTrueTypeFontBytes()),
             ))
             ->build();
@@ -230,7 +230,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsGeneralCaltSubstitutionsUsingShapedEmbeddedGlyphIds(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('fi', new TextOptions(
+            ->text('fi', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalLatinContextualTrueTypeFontBytes()),
             ))
             ->build();
@@ -254,7 +254,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsGeneralCaltChainingSubstitutionsUsingShapedEmbeddedGlyphIds(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('fi', new TextOptions(
+            ->text('fi', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalLatinChainingContextualTrueTypeFontBytes()),
             ))
             ->build();
@@ -278,7 +278,7 @@ final class EmbeddedFontDocumentBuilderTest extends TestCase
     public function testItBuildsStackedArabicMarksUsingPositionedFragments(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('بَّ', new TextOptions(
+            ->text('بَّ', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalArabicGsubTrueTypeFontBytes()),
             ))
             ->build();

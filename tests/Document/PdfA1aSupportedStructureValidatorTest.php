@@ -249,7 +249,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text($text, new TextOptions(
+            ->text($text, TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();

@@ -14,7 +14,7 @@ final class TextSegmentTest extends TestCase
     public function testItProvidesExplicitPlainAndLinkFactories(): void
     {
         $plain = TextSegment::plain('Hello');
-        $options = new TextOptions(fontName: 'Helvetica-Bold');
+        $options = TextOptions::make(fontName: 'Helvetica-Bold');
         $link = TextSegment::link('Docs', TextLink::externalUrl('https://example.com/docs', 'Open Docs', 'Read docs'), $options);
 
         self::assertSame('Hello', $plain->text);

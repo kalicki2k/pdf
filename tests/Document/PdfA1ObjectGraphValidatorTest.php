@@ -33,7 +33,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Ж', new TextOptions(
+            ->text('Ж', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
                 tag: TaggedStructureTag::P,
             ))
@@ -121,7 +121,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Ж', new TextOptions(
+            ->text('Ж', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
                 tag: TaggedStructureTag::P,
             ))
@@ -206,7 +206,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Ж', new TextOptions(
+            ->text('Ж', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
                 tag: TaggedStructureTag::P,
             ))

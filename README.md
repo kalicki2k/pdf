@@ -188,14 +188,14 @@ use Kalle\Pdf\Text\TextOptions;
 
 $document = DefaultDocumentBuilder::make()
     ->header(static function (PageDecorationContext $page, int $pageNumber): void {
-        $page->text('Projektstatus', new TextOptions(
+        $page->text('Projektstatus', TextOptions::make(
             x: $page->page()->contentArea()->left,
             y: $page->page()->contentArea()->top,
             fontSize: 12,
         ));
     })
     ->footer(static function (PageDecorationContext $page, int $pageNumber): void {
-        $page->text('Seite ' . $pageNumber, new TextOptions(
+        $page->text('Seite ' . $pageNumber, TextOptions::make(
             x: $page->page()->contentArea()->left,
             y: $page->page()->contentArea()->bottom + 12,
             fontSize: 10,
@@ -208,13 +208,13 @@ $document = DefaultDocumentBuilder::make()
 ```php
 $document = DefaultDocumentBuilder::make()
     ->pageNumbers(
-        new TextOptions(x: 40, y: 20, fontSize: 10),
+        TextOptions::make(x: 40, y: 20, fontSize: 10),
         'Seite {{page}} von {{pages}}',
     )
     ->headerOn(
         static fn (PageDecorationContext $page): bool => !$page->isFirstPage(),
         static function (PageDecorationContext $page): void {
-            $page->text('Kapitelkopf', new TextOptions(
+            $page->text('Kapitelkopf', TextOptions::make(
                 x: $page->page()->contentArea()->left,
                 y: $page->page()->contentArea()->top,
                 fontSize: 12,
@@ -237,7 +237,7 @@ $document = DefaultDocumentBuilder::make()
         'DEIN FIRMENNAME',
         'Strasse Hausnummer',
         '12345 Musterstadt',
-    ], new TextOptions(fontSize: 12))
+    ], TextOptions::make(fontSize: 12))
     ->build();
 ```
 
@@ -248,7 +248,7 @@ $document = DefaultDocumentBuilder::make()
     ->profile(\Kalle\Pdf\Document\Profile::pdfA1a())
     ->title('Archive Copy')
     ->language('de-DE')
-    ->text('Zitat', new TextOptions(
+    ->text('Zitat', TextOptions::make(
         embeddedFont: \Kalle\Pdf\Font\EmbeddedFontSource::fromPath('/path/to/font.ttf'),
         tag: \Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag::BLOCK_QUOTE,
     ))
@@ -262,7 +262,7 @@ $document = DefaultDocumentBuilder::make()
     ->profile(\Kalle\Pdf\Document\Profile::pdfA1a())
     ->title('Archive Copy')
     ->language('de-DE')
-    ->textLines(['DEIN FIRMENNAME', 'Strasse Hausnummer'], new TextOptions(
+    ->textLines(['DEIN FIRMENNAME', 'Strasse Hausnummer'], TextOptions::make(
         semantic: \Kalle\Pdf\Text\TextSemantic::ARTIFACT,
     ))
     ->build();
@@ -483,12 +483,12 @@ $table = Table::define(
     TableColumn::proportional(1),
     TableColumn::auto(),
 )
-    ->withOptions(new TableOptions(
+    ->withOptions(TableOptions::make(
         caption: TableCaption::text('Produktuebersicht'),
         placement: TablePlacement::at(72, 520, 320),
         cellPadding: CellPadding::all(6),
         border: Border::all(0.5),
-        textOptions: new TextOptions(fontSize: 10, lineHeight: 12),
+        textOptions: TextOptions::make(fontSize: 10, lineHeight: 12),
         repeatHeaderOnPageBreak: true,
         repeatFooterOnPageBreak: true,
     ))
@@ -542,12 +542,12 @@ $document = DefaultDocumentBuilder::make()
     ->list(
         ['Erster Punkt', 'Zweiter Punkt'],
         new ListOptions(type: ListType::BULLET),
-        new TextOptions(x: 72, y: 720, width: 220, fontSize: 12),
+        TextOptions::make(x: 72, y: 720, width: 220, fontSize: 12),
     )
     ->list(
         ['Schritt eins', 'Schritt zwei'],
         new ListOptions(type: ListType::NUMBERED, start: 3, marker: '%d)'),
-        new TextOptions(width: 220, fontSize: 12, spacingAfter: 12),
+        TextOptions::make(width: 220, fontSize: 12, spacingAfter: 12),
     )
     ->build();
 ```

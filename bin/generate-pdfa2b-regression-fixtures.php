@@ -44,7 +44,7 @@ foreach ($fixtures as $path => $document) {
 function createPdfA2bMinimalFixture(): Document
 {
     return regressionBuilder('PDF/A-2b Minimal Regression', 'Minimal PDF/A-2b regression fixture')
-        ->text('PDF/A-2b Regression', new TextOptions(
+        ->text('PDF/A-2b Regression', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
@@ -57,7 +57,7 @@ function createPdfA2bMinimalFixture(): Document
 function createPdfA2bLinkAnnotationFixture(): Document
 {
     return regressionBuilder('PDF/A-2b Link Annotation Regression', 'PDF/A-2b link annotation regression fixture')
-        ->text('PDF/A-2b Link Regression', new TextOptions(
+        ->text('PDF/A-2b Link Regression', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
@@ -71,7 +71,7 @@ function createPdfA2bLinkAnnotationFixture(): Document
 function createPdfA2bTextAnnotationFixture(): Document
 {
     return regressionBuilder('PDF/A-2b Text Annotation Regression', 'PDF/A-2b text annotation regression fixture')
-        ->text('PDF/A-2b Comment Regression', new TextOptions(
+        ->text('PDF/A-2b Comment Regression', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,

@@ -16,19 +16,80 @@ use Kalle\Pdf\Page\LinkTarget;
  */
 final readonly class TextOptions
 {
+    /**
+     * Default font size for generic text blocks created via `make()`.
+     */
     public const float DEFAULT_FONT_SIZE = 18.0;
+
+    /**
+     * Default font size for regular body copy presets.
+     */
     public const float BODY_FONT_SIZE = 12.0;
+
+    /**
+     * Default font size for compact secondary text.
+     */
     public const float SMALL_FONT_SIZE = 9.0;
+
+    /**
+     * Default font size for captions and supporting labels.
+     */
     public const float CAPTION_FONT_SIZE = 10.0;
+
+    /**
+     * Default font size for headline-style text.
+     */
     public const float HEADING_FONT_SIZE = 22.0;
 
+    /**
+     * Default line height for body copy presets.
+     */
     public const float BODY_LINE_HEIGHT = 14.4;
+
+    /**
+     * Default line height for compact secondary text.
+     */
     public const float SMALL_LINE_HEIGHT = 12.0;
+
+    /**
+     * Default line height for caption-style text.
+     */
     public const float CAPTION_LINE_HEIGHT = 13.0;
+
+    /**
+     * Default line height for headline-style text.
+     */
     public const float HEADING_LINE_HEIGHT = 28.0;
 
+    /**
+     * Standard PDF font used when no embedded font is configured.
+     */
     public const string DEFAULT_FONT_NAME = StandardFont::HELVETICA->value;
 
+    /**
+     * Creates a generic text option object for block rendering.
+     *
+     * @param ?float $x Absolute left text position. When omitted, the current flow cursor or page margin is used.
+     * @param ?float $y Absolute top-baseline anchor for the first rendered line. When omitted, normal text flow placement is used.
+     * @param ?float $width Fixed layout width used for wrapping and alignment.
+     * @param ?float $maxWidth Optional maximum width when no fixed width is configured.
+     * @param float $fontSize Font size in PDF points.
+     * @param ?float $lineHeight Explicit line height in PDF points. Defaults to `fontSize * 1.2`.
+     * @param ?float $spacingBefore Additional vertical spacing applied before the block in flow layout.
+     * @param ?float $spacingAfter Additional vertical spacing applied after the block in flow layout.
+     * @param string $fontName Standard PDF font name used when no embedded font is configured.
+     * @param ?EmbeddedFontSource $embeddedFont Embedded font source used instead of a standard PDF font.
+     * @param ?StandardFontEncoding $fontEncoding Explicit encoding for standard PDF fonts.
+     * @param ?Color $color Fill color for the rendered text.
+     * @param bool $kerning Whether kerning adjustments should be applied when supported by the active font.
+     * @param TextDirection $baseDirection Base text direction for shaping and bidi resolution.
+     * @param TextAlign $align Horizontal block alignment inside the available width.
+     * @param float $firstLineIndent Additional indent applied only to the first line of a wrapped block.
+     * @param float $hangingIndent Additional indent applied to continuation lines after the first line.
+     * @param LinkTarget|TextLink|null $link Optional link metadata for the entire text block.
+     * @param ?TaggedStructureTag $tag Optional tagged-PDF leaf role for the rendered text block.
+     * @param TextSemantic $semantic Whether the text should be treated as logical content or as an artifact.
+     */
     public static function make(
         ?float $x = null,
         ?float $y = null,
@@ -75,6 +136,11 @@ final readonly class TextOptions
         );
     }
 
+    /**
+     * Creates body-copy defaults for regular running text.
+     *
+     * Accepts the same overrides as `make()`, but starts from the body preset size and line height.
+     */
     public static function body(
         ?float $x = null,
         ?float $y = null,
@@ -121,6 +187,11 @@ final readonly class TextOptions
         );
     }
 
+    /**
+     * Creates a compact text preset for secondary metadata, labels and dense tables.
+     *
+     * Accepts the same overrides as `make()`, but starts from the small preset size and line height.
+     */
     public static function small(
         ?float $x = null,
         ?float $y = null,
@@ -167,6 +238,11 @@ final readonly class TextOptions
         );
     }
 
+    /**
+     * Creates a caption preset for supporting text, notes and annotations.
+     *
+     * Accepts the same overrides as `make()`, but starts from the caption preset size and line height.
+     */
     public static function caption(
         ?float $x = null,
         ?float $y = null,
@@ -213,6 +289,11 @@ final readonly class TextOptions
         );
     }
 
+    /**
+     * Creates a headline preset for prominent titles and section headings.
+     *
+     * Accepts the same overrides as `make()`, but starts from the heading preset size and line height.
+     */
     public static function heading(
         ?float $x = null,
         ?float $y = null,
@@ -281,7 +362,7 @@ final readonly class TextOptions
      * @param ?TaggedStructureTag $tag Optional tagged-PDF leaf role for the rendered text block.
      * @param TextSemantic $semantic Whether the text should be treated as logical content or as an artifact.
      */
-    public function __construct(
+    private function __construct(
         public ?float $x = null,
         public ?float $y = null,
         public ?float $width = null,

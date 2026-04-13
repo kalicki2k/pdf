@@ -40,14 +40,14 @@ $baseDocument = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa3a-negative-regression-fixtures.php')
-    ->text('PDF/A-3a Negative Regression Привет', new TextOptions(
+    ->text('PDF/A-3a Negative Regression Привет', TextOptions::make(
         x: 72,
         y: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->text('Getaggter Absatz mit zugeordnetem Datenpaket. Привет.', new TextOptions(
+    ->text('Getaggter Absatz mit zugeordnetem Datenpaket. Привет.', TextOptions::make(
         x: 72,
         y: 724,
         width: 360,

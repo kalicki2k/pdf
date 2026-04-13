@@ -59,7 +59,7 @@ $builder = Document::make()
             ->toFile($logPath),
     )
     ->namedDestination('contents')
-    ->text('PDF Engine Observability Report', new TextOptions(
+    ->text('PDF Engine Observability Report', TextOptions::make(
         x: 72,
         y: 780,
         fontSize: 24,
@@ -67,7 +67,7 @@ $builder = Document::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $titleColor,
     ))
-    ->text('This example produces a ten-page report and writes structured debug output as newline-delimited JSON. The built-in JsonDebugSink receives lifecycle, PDF structure and performance events through the Debugger facade while the document itself stays a regular PDF build.', new TextOptions(
+    ->text('This example produces a ten-page report and writes structured debug output as newline-delimited JSON. The built-in JsonDebugSink receives lifecycle, PDF structure and performance events through the Debugger facade while the document itself stays a regular PDF build.', TextOptions::make(
         x: 72,
         y: 738,
         width: 450,
@@ -75,7 +75,7 @@ $builder = Document::make()
         lineHeight: 15,
         color: $bodyColor,
     ))
-    ->text('Contents', new TextOptions(
+    ->text('Contents', TextOptions::make(
         x: 72,
         y: 676,
         fontSize: 14,
@@ -83,7 +83,7 @@ $builder = Document::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->text('Rendered output', new TextOptions(
+    ->text('Rendered output', TextOptions::make(
         x: 72,
         y: 180,
         fontSize: 12,
@@ -91,7 +91,7 @@ $builder = Document::make()
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $accentColor,
     ))
-    ->text('PDF: ' . $pdfPath . "\nLog: " . $logPath . "\nEvents include document.created, page.added, object.created, object.serialized, xref.written, trailer.written, document.render, page.render and file.write.", new TextOptions(
+    ->text('PDF: ' . $pdfPath . "\nLog: " . $logPath . "\nEvents include document.created, page.added, object.created, object.serialized, xref.written, trailer.written, document.render, page.render and file.write.", TextOptions::make(
         x: 72,
         y: 150,
         width: 450,
@@ -108,7 +108,7 @@ foreach ($reportSections as $index => $section) {
     $label = $pageNumber . '. ' . $section['title'] . ' - ' . $section['region'];
 
     $builder = $builder
-        ->text($label, new TextOptions(
+        ->text($label, TextOptions::make(
             x: 88,
             y: $linkY,
             width: 350,
@@ -116,7 +116,7 @@ foreach ($reportSections as $index => $section) {
             lineHeight: 15,
             color: $bodyColor,
         ))
-        ->text('Focus: ' . $section['focus'], new TextOptions(
+        ->text('Focus: ' . $section['focus'], TextOptions::make(
             x: 88,
             y: $linkY - 18,
             width: 380,
@@ -141,7 +141,7 @@ foreach ($reportSections as $index => $section) {
     $builder = $builder
         ->newPage()
         ->namedDestination('section-' . $pageNumber)
-        ->text($pageNumber . '. ' . $section['title'], new TextOptions(
+        ->text($pageNumber . '. ' . $section['title'], TextOptions::make(
             tag: TaggedStructureTag::H1,
             fontSize: 21,
             lineHeight: 25,
@@ -151,14 +151,14 @@ foreach ($reportSections as $index => $section) {
         ))
         ->text(
             'Region: ' . $section['region'] . '. Focus: ' . $section['focus'] . '. This page is intentionally dense enough to exercise object creation, stream serialization and performance scopes while remaining readable as a realistic operations review.',
-            new TextOptions(
+            TextOptions::make(
                 fontSize: 11,
                 lineHeight: 15,
                 spacingAfter: 12,
                 color: $bodyColor,
             ),
         )
-        ->text('Snapshot', new TextOptions(
+        ->text('Snapshot', TextOptions::make(
             fontSize: 13,
             lineHeight: 17,
             spacingAfter: 4,
@@ -169,7 +169,7 @@ foreach ($reportSections as $index => $section) {
     for ($paragraphIndex = 1; $paragraphIndex <= 5; $paragraphIndex++) {
         $builder = $builder->text(
             'Window ' . $paragraphIndex . ': render throughput remained predictable across daily export batches. The team observed bounded memory growth, deterministic page construction and stable write offsets during repeated document generation. Each batch recorded enough variation to make the performance logs interesting without turning the example into random noise. Review focus stayed on ' . $section['focus'] . ' for ' . $section['region'] . '.',
-            new TextOptions(
+            TextOptions::make(
                 fontSize: 10.5,
                 lineHeight: 14.5,
                 spacingAfter: 8,
@@ -179,7 +179,7 @@ foreach ($reportSections as $index => $section) {
     }
 
     $builder = $builder
-        ->text('Operational Notes', new TextOptions(
+        ->text('Operational Notes', TextOptions::make(
             fontSize: 13,
             lineHeight: 17,
             spacingBefore: 6,
@@ -189,7 +189,7 @@ foreach ($reportSections as $index => $section) {
         ))
         ->text(
             'The JSON sink output for this example is easiest to inspect with jq or any structured log viewer. Lifecycle events show document creation and write boundaries. PDF events reveal indirect object creation and serialization. Performance events show document-level, page-level and file-write timings together with memory deltas.',
-            new TextOptions(
+            TextOptions::make(
                 fontSize: 10.5,
                 lineHeight: 14.5,
                 spacingAfter: 8,
@@ -198,7 +198,7 @@ foreach ($reportSections as $index => $section) {
         )
         ->text(
             'Use this file as a template when integrating your own debug sink setup. In production you would normally lower PDF structure logging from trace to debug or disable it outside focused investigations, while keeping lifecycle and performance channels enabled for operational visibility.',
-            new TextOptions(
+            TextOptions::make(
                 fontSize: 10.5,
                 lineHeight: 14.5,
                 spacingAfter: 0,
@@ -214,7 +214,7 @@ foreach ($reportSections as $index => $section) {
             'Back to contents',
             'Back to report contents',
         )
-        ->text('Back to contents', new TextOptions(
+        ->text('Back to contents', TextOptions::make(
             x: 72,
             y: 58,
             fontSize: 10,

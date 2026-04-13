@@ -49,9 +49,9 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::auto(),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withCellPadding(CellPadding::symmetric(4.0, 6.0))
-                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+                    ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
             )
             ->withRows(
                 TableRow::fromTexts('2026-03-31', 'Managed operations and release support', 'INC-4421'),
@@ -89,9 +89,9 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::fixed(50.0),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withCellPadding(CellPadding::all(5.0))
-                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+                    ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
             )
             ->withRows(TableRow::fromTexts('Alpha Beta Gamma', 'Short'));
         $calculator = new TableLayoutCalculator();
@@ -141,9 +141,9 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::fixed(55.0),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withCellPadding(CellPadding::all(5.0))
-                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+                    ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
             )
             ->withRows(
                 TableRow::fromCells(
@@ -175,11 +175,11 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::fixed(80.0),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withCellPadding(CellPadding::all(4.0))
                     ->withBorder(Border::all(0.5))
                     ->withPlacement(new TablePlacement(40.0, 160.0))
-                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+                    ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
             )
             ->withRows(TableRow::fromCells(
                 TableCell::text('Alpha')
@@ -210,9 +210,9 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::fixed(90.0),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withCellPadding(CellPadding::all(5.0))
-                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+                    ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
             )
             ->withRows(TableRow::fromCells(
                 TableCell::segments(

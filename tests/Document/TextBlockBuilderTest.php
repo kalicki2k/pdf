@@ -18,7 +18,7 @@ final class TextBlockBuilderTest extends TestCase
     {
         $block = new TextBlockBuilder()->build(
             encodedText: 'Hello',
-            options: new TextOptions(fontSize: 18),
+            options: TextOptions::make(fontSize: 18),
             x: 72.0,
             y: 720.0,
             fontAlias: 'F1',
@@ -32,7 +32,7 @@ final class TextBlockBuilderTest extends TestCase
     {
         $block = new TextBlockBuilder()->build(
             encodedText: 'AV',
-            options: new TextOptions(fontSize: 18),
+            options: TextOptions::make(fontSize: 18),
             x: 72.0,
             y: 720.0,
             fontAlias: 'F1',
@@ -48,7 +48,7 @@ final class TextBlockBuilderTest extends TestCase
     {
         $block = new TextBlockBuilder()->build(
             encodedText: 'Hello',
-            options: new TextOptions(
+            options: TextOptions::make(
                 fontSize: 18,
                 color: Color::gray(0.5),
             ),
@@ -65,7 +65,7 @@ final class TextBlockBuilderTest extends TestCase
     {
         $block = new TextBlockBuilder()->build(
             encodedText: "\x00\x01\x00\x02\x00\x03",
-            options: new TextOptions(fontSize: 18),
+            options: TextOptions::make(fontSize: 18),
             x: 72.0,
             y: 720.0,
             fontAlias: 'F1',
@@ -81,7 +81,7 @@ final class TextBlockBuilderTest extends TestCase
     {
         $block = new TextBlockBuilder()->build(
             encodedText: '',
-            options: new TextOptions(fontSize: 18),
+            options: TextOptions::make(fontSize: 18),
             x: 72.0,
             y: 720.0,
             fontAlias: 'F1',

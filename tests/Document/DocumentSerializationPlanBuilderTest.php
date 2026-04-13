@@ -173,7 +173,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->title('Projektübersicht')
             ->author('Jörg Example')
             ->subject('Überblick')
-            ->text('Unicode-Inhalt Привет', new TextOptions(
+            ->text('Unicode-Inhalt Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -552,7 +552,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->title('Archive Copy')
             ->text(
                 'Archive Copy',
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
                 ),
             )
@@ -575,7 +575,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->title('Archive Copy')
             ->text(
                 'Archive Copy',
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
                 ),
             )
@@ -1203,7 +1203,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
-            ->text('Hello', new TextOptions(fontName: StandardFont::HELVETICA->value))
+            ->text('Hello', TextOptions::make(fontName: StandardFont::HELVETICA->value))
             ->build();
 
         $plan = $builder->build($document);
@@ -1217,7 +1217,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdf10())
-            ->text('ÄÖÜäöüß', new TextOptions(fontName: StandardFont::HELVETICA->value))
+            ->text('ÄÖÜäöüß', TextOptions::make(fontName: StandardFont::HELVETICA->value))
             ->build();
 
         $plan = $builder->build($document);
@@ -1365,7 +1365,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 500,
                 120,
                 32,
-                new TextOptions(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
+                TextOptions::make(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
                 Color::rgb(0.2, 0.2, 0.2),
                 Color::rgb(1, 1, 0.8),
                 'QA',
@@ -1420,7 +1420,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
             ->namedDestination('intro')
-            ->text('Open intro', new TextOptions(
+            ->text('Open intro', TextOptions::make(
                 link: LinkTarget::namedDestination('intro'),
             ))
             ->build();
@@ -1719,7 +1719,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Lead in text Привет', new TextOptions(
+            ->text('Lead in text Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->linkToPage(1, 40, 500, 120, 16, 'Open Example')
@@ -1744,7 +1744,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Lead in text Привет', new TextOptions(
+            ->text('Lead in text Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->addOutline(
@@ -1766,7 +1766,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Lead in text Привет', new TextOptions(
+            ->text('Lead in text Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
@@ -1860,7 +1860,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Lead in text Привет', new TextOptions(
+            ->text('Lead in text Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->link('https://example.com', 40, 500, 120, 16)
@@ -1879,7 +1879,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Lead in text Привет', new TextOptions(
+            ->text('Lead in text Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->highlightAnnotation(40, 500, 120, 12, Color::rgb(1, 1, 0))
@@ -2147,7 +2147,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Quoted archive text Привет', new TextOptions(
+            ->text('Quoted archive text Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 tag: TaggedStructureTag::BLOCK_QUOTE,
             ))
@@ -2168,7 +2168,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('Ж', new TextOptions(
+            ->text('Ж', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
             ->linkToPage(1, 40, 500, 120, 16, 'Open Example')
@@ -2208,7 +2208,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             'Text' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
                 ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA'),
             'FreeText' => fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
-                ->freeTextAnnotation('Ж', 40, 470, 120, 28, new TextOptions(
+                ->freeTextAnnotation('Ж', 40, 470, 120, 28, TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
                 ), Color::gray(0.2), Color::gray(0.95), 'QA'),
             'Highlight' => static fn (DefaultDocumentBuilder $builder): DefaultDocumentBuilder => $builder
@@ -2243,7 +2243,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     ->profile(Profile::pdfA1a())
                     ->title('Archive Copy')
                     ->language('de-DE')
-                    ->text('Ж', new TextOptions(
+                    ->text('Ж', TextOptions::make(
                         embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
                         tag: TaggedStructureTag::P,
                     )),
@@ -2367,7 +2367,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA2u())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('PDF/A-2u Regression Привет', new TextOptions(
+            ->text('PDF/A-2u Regression Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->link('https://example.com/spec', 40, 500, 120, 16, 'Specification Link')
@@ -2389,7 +2389,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA2u())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('PDF/A-2u Regression Привет', new TextOptions(
+            ->text('PDF/A-2u Regression Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
@@ -2410,7 +2410,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('Привет', new TextOptions(
+            ->text('Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
@@ -2429,7 +2429,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA2u())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('PDF/A-2u Regression Привет', new TextOptions(
+            ->text('PDF/A-2u Regression Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->highlightAnnotation(40, 500, 80, 10, Color::rgb(1, 1, 0), 'Markiert', 'QA')
@@ -2451,7 +2451,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('Привет', new TextOptions(
+            ->text('Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->highlightAnnotation(40, 500, 80, 10, Color::rgb(1, 1, 0), 'Markiert', 'QA')
@@ -2476,7 +2476,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 500,
                 160,
                 36,
-                new TextOptions(
+                TextOptions::make(
                     fontSize: 12,
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     color: Color::rgb(0, 0, 0.4),
@@ -2509,7 +2509,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 500,
                 160,
                 36,
-                new TextOptions(
+                TextOptions::make(
                     fontSize: 12,
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     color: Color::rgb(0, 0, 0.4),
@@ -2532,7 +2532,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('ASCII only', new TextOptions(
+            ->text('ASCII only', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -2554,7 +2554,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('ASCII only', new TextOptions(
+            ->text('ASCII only', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -2591,7 +2591,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->text('Read more', new TextOptions(
+            ->text('Read more', TextOptions::make(
                 link: LinkTarget::externalUrl('https://example.com'),
             ))
             ->build();
@@ -2661,7 +2661,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->language('de-DE')
             ->text([
                 new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
-            ], new TextOptions(width: 45))
+            ], TextOptions::make(width: 45))
             ->build();
 
         $plan = $builder->build($document);
@@ -2857,11 +2857,11 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Einleitung Привет', new TextOptions(
+            ->text('Einleitung Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -2889,7 +2889,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: new TextOptions(
+                text: TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     width: 260,
                 ),
@@ -2921,7 +2921,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
                 new ListOptions(type: ListType::NUMBERED, start: 5),
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     width: 260,
                 ),
@@ -2958,10 +2958,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     TableColumn::fixed(120.0),
                 )
                     ->withOptions(
-                        (new TableOptions())
+                        (TableOptions::make())
                             ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
                             ->withCaption(TableCaption::text('Quarterly summary Привет'))
-                            ->withTextOptions(new TextOptions(
+                            ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
                                 lineHeight: 15,
                                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -3007,19 +3007,19 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Kapitel Eins Привет', new TextOptions(
+            ->text('Kapitel Eins Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Erste Seite Привет', new TextOptions(
+            ->text('Erste Seite Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->newPage()
-            ->text('Kapitel Zwei Привет', new TextOptions(
+            ->text('Kapitel Zwei Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Zweite Seite Привет', new TextOptions(
+            ->text('Zweite Seite Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -3044,7 +3044,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -3078,7 +3078,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -3166,7 +3166,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
-            ->text('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -3200,7 +3200,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA2u())
             ->title('Archive Copy')
-            ->text('ASCII only', new TextOptions(
+            ->text('ASCII only', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -3270,7 +3270,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
             ->pdfaOutputIntent(PdfAOutputIntent::defaultCmyk())
-            ->text('CMYK JPEG Привет', new TextOptions(
+            ->text('CMYK JPEG Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->image(
@@ -3335,7 +3335,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
-            ->text('CMYK text', new TextOptions(
+            ->text('CMYK text', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 color: Color::cmyk(0.1, 0.2, 0.3, 0.4),
             ))
@@ -3379,7 +3379,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1b())
             ->title('Archive Copy')
             ->pdfaOutputIntent(PdfAOutputIntent::defaultCmyk())
-            ->text('RGB text', new TextOptions(
+            ->text('RGB text', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 color: Color::rgb(0.1, 0.2, 0.3),
             ))
@@ -3593,7 +3593,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
-            ->text('A', new TextOptions(
+            ->text('A', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalTrueTypeFontBytes()),
             ))
             ->build();
@@ -3635,7 +3635,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
-            ->text('A', new TextOptions(
+            ->text('A', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalCffOpenTypeFontBytes()),
             ))
             ->build();
@@ -3656,11 +3656,11 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
-            ->text('Ж', new TextOptions(
+            ->text('Ж', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
             ->newPage()
-            ->text('中😀', new TextOptions(
+            ->text('中😀', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeTrueTypeFontBytes()),
             ))
             ->build();
@@ -3692,10 +3692,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
-            ->text('Ж', new TextOptions(
+            ->text('Ж', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
             ))
-            ->text('中😀', new TextOptions(
+            ->text('中😀', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalUnicodeCffOpenTypeFontBytes()),
             ))
             ->build();

@@ -19,14 +19,14 @@ if (!is_dir($outputDirectory) && !mkdir($outputDirectory, 0777, true) && !is_dir
 }
 
 $margin = Margin::all(Units::mm(18));
-$headline = new TextOptions(
+$headline = TextOptions::make(
     fontSize: 24,
     lineHeight: 28,
     spacingAfter: 8,
     fontName: StandardFont::HELVETICA_BOLD->value,
     color: Color::hex('#0f172a'),
 );
-$section = new TextOptions(
+$section = TextOptions::make(
     fontSize: 16,
     lineHeight: 20,
     spacingBefore: 10,
@@ -34,7 +34,7 @@ $section = new TextOptions(
     fontName: StandardFont::HELVETICA_BOLD->value,
     color: Color::hex('#1d4ed8'),
 );
-$body = new TextOptions(
+$body = TextOptions::make(
     fontSize: 11,
     lineHeight: 15,
     spacingAfter: 8,
@@ -83,7 +83,7 @@ DefaultDocumentBuilder::make()
         'This page contains more precise bookmark targets. One child outline points to the target section below instead of the page top, and a grandchild outline points even further down on the same page.',
         $body,
     )
-    ->text('Target Section', new TextOptions(
+    ->text('Target Section', TextOptions::make(
         x: 72,
         y: 620,
         fontSize: 18,
@@ -94,7 +94,7 @@ DefaultDocumentBuilder::make()
     ))
     ->text(
         'The child outline named "Target Section" uses explicit coordinates so the viewer opens this page close to the highlighted block.',
-        new TextOptions(
+        TextOptions::make(
             x: 72,
             y: 590,
             width: 360,
@@ -103,7 +103,7 @@ DefaultDocumentBuilder::make()
             color: Color::hex('#334155'),
         ),
     )
-    ->text('Implementation Notes', new TextOptions(
+    ->text('Implementation Notes', TextOptions::make(
         x: 72,
         y: 520,
         fontSize: 16,
@@ -114,7 +114,7 @@ DefaultDocumentBuilder::make()
     ))
     ->text(
         'This subsection bookmark demonstrates one additional nesting level. The current API keeps levels explicit, which makes the resulting hierarchy deterministic and easy to reason about.',
-        new TextOptions(
+        TextOptions::make(
             x: 72,
             y: 492,
             width: 360,

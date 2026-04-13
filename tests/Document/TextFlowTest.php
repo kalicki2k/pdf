@@ -25,7 +25,7 @@ final class TextFlowTest extends TestCase
             ),
         );
 
-        $placement = $flow->placement(new TextOptions(), StandardFontDefinition::from(StandardFont::HELVETICA));
+        $placement = $flow->placement(TextOptions::make(), StandardFontDefinition::from(StandardFont::HELVETICA));
 
         self::assertEqualsWithDelta(56.693, $placement['x'], 0.001);
         self::assertEqualsWithDelta(767.197, $placement['y'], 0.001);
@@ -39,7 +39,7 @@ final class TextFlowTest extends TestCase
             ),
         );
 
-        $placement = $flow->placement(new TextOptions(), StandardFontDefinition::from(StandardFont::HELVETICA));
+        $placement = $flow->placement(TextOptions::make(), StandardFontDefinition::from(StandardFont::HELVETICA));
 
         self::assertSame(0.0, $placement['x']);
         self::assertEqualsWithDelta(PageSize::A4()->height() - 18.0, $placement['y'], 0.001);
@@ -56,7 +56,7 @@ final class TextFlowTest extends TestCase
 
         $lines = $flow->wrapTextLines(
             'Hello world this wraps automatically across multiple lines.',
-            new TextOptions(fontName: StandardFont::HELVETICA->value),
+            TextOptions::make(fontName: StandardFont::HELVETICA->value),
             StandardFontDefinition::from(StandardFont::HELVETICA),
             Units::mm(20),
         );
@@ -77,7 +77,7 @@ final class TextFlowTest extends TestCase
 
         $lines = $flow->wrapTextLines(
             'Hello world this wraps automatically across multiple lines.',
-            new TextOptions(
+            TextOptions::make(
                 fontName: StandardFont::HELVETICA->value,
                 width: 120.0,
             ),
@@ -104,7 +104,7 @@ final class TextFlowTest extends TestCase
 
         $lines = $flow->wrapTextLines(
             'Hello world this wraps automatically across multiple lines.',
-            new TextOptions(
+            TextOptions::make(
                 fontName: StandardFont::HELVETICA->value,
                 maxWidth: 120.0,
             ),
@@ -131,7 +131,7 @@ final class TextFlowTest extends TestCase
 
         $lines = $flow->wrapTextLines(
             'Hello world this wraps automatically across multiple lines.',
-            new TextOptions(
+            TextOptions::make(
                 fontName: StandardFont::HELVETICA->value,
                 width: 160.0,
                 firstLineIndent: 40.0,
@@ -159,7 +159,7 @@ final class TextFlowTest extends TestCase
 
         $lines = $flow->wrapTextLines(
             'Hello world this wraps automatically across multiple lines.',
-            new TextOptions(
+            TextOptions::make(
                 fontName: StandardFont::HELVETICA->value,
                 width: 160.0,
                 hangingIndent: 40.0,
@@ -180,7 +180,7 @@ final class TextFlowTest extends TestCase
     {
         $flow = new TextFlow(new Page(PageSize::A4()));
 
-        $nextCursorY = $flow->nextCursorY(new TextOptions(
+        $nextCursorY = $flow->nextCursorY(TextOptions::make(
             fontSize: 24,
             lineHeight: 28,
             spacingAfter: 12,
@@ -198,10 +198,10 @@ final class TextFlowTest extends TestCase
             ),
         );
 
-        $implicitPlacement = $flow->placement(new TextOptions(
+        $implicitPlacement = $flow->placement(TextOptions::make(
             spacingBefore: 12.0,
         ), StandardFontDefinition::from(StandardFont::HELVETICA));
-        $explicitPlacement = $flow->placement(new TextOptions(
+        $explicitPlacement = $flow->placement(TextOptions::make(
             y: 700.0,
             spacingBefore: 12.0,
         ), StandardFontDefinition::from(StandardFont::HELVETICA));

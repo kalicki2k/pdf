@@ -42,14 +42,14 @@ Pdf::document()
     ->subject('Phase 3 embedded OpenType CFF font example')
     ->creator('examples/embedded-cff-font.php')
     ->creatorTool('pdf2')
-    ->text($headline, new TextOptions(
+    ->text($headline, TextOptions::make(
         x: Units::mm(20),
         y: Units::mm(270),
         fontSize: 24,
         embeddedFont: $fontSource,
         color: Color::hex('#0f172a'),
     ))
-    ->text($body, new TextOptions(
+    ->text($body, TextOptions::make(
         x: Units::mm(20),
         y: Units::mm(250),
         fontSize: 12,

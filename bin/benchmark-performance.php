@@ -159,14 +159,14 @@ final class PerformanceBenchmark
     {
         return DefaultDocumentBuilder::make()
             ->title('Small document')
-            ->text('Hello PDF', new TextOptions(
+            ->text('Hello PDF', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontName: StandardFont::HELVETICA_BOLD->value,
                 fontSize: 20,
                 lineHeight: 24,
             ))
-            ->text($this->lorem(2), new TextOptions(
+            ->text($this->lorem(2), TextOptions::make(
                 x: 72,
                 y: 720,
                 width: 460,
@@ -188,7 +188,7 @@ final class PerformanceBenchmark
                 $builder = $builder->newPage();
             }
 
-            $builder = $builder->text('Section ' . $page, new TextOptions(
+            $builder = $builder->text('Section ' . $page, TextOptions::make(
                 fontName: StandardFont::HELVETICA_BOLD->value,
                 fontSize: 18,
                 lineHeight: 22,
@@ -196,7 +196,7 @@ final class PerformanceBenchmark
             ));
 
             for ($paragraph = 0; $paragraph < 12; ++$paragraph) {
-                $builder = $builder->text($this->lorem(4), new TextOptions(
+                $builder = $builder->text($this->lorem(4), TextOptions::make(
                     width: 480,
                     fontSize: 10.5,
                     lineHeight: 14.5,
@@ -220,7 +220,7 @@ final class PerformanceBenchmark
                 $builder = $builder->newPage();
             }
 
-            $builder = $builder->text('Large page ' . $page, new TextOptions(
+            $builder = $builder->text('Large page ' . $page, TextOptions::make(
                 fontName: StandardFont::HELVETICA_BOLD->value,
                 fontSize: 16,
                 lineHeight: 20,
@@ -228,7 +228,7 @@ final class PerformanceBenchmark
             ));
 
             for ($paragraph = 0; $paragraph < 12; ++$paragraph) {
-                $builder = $builder->text($this->lorem(5), new TextOptions(
+                $builder = $builder->text($this->lorem(5), TextOptions::make(
                     width: 500,
                     fontSize: 10,
                     lineHeight: 14,
@@ -256,7 +256,7 @@ final class PerformanceBenchmark
             }
 
             for ($block = 0; $block < 16; ++$block) {
-                $builder = $builder->text($paragraph, new TextOptions(
+                $builder = $builder->text($paragraph, TextOptions::make(
                     width: 490,
                     embeddedFont: $font,
                     fontSize: 10.5,
@@ -283,7 +283,7 @@ final class PerformanceBenchmark
             }
 
             for ($paragraph = 0; $paragraph < 18; ++$paragraph) {
-                $builder = $builder->text($this->contentHeavySegments($paragraph), new TextOptions(
+                $builder = $builder->text($this->contentHeavySegments($paragraph), TextOptions::make(
                     width: 490,
                     embeddedFont: $font,
                     fontSize: 10.5,
@@ -309,7 +309,7 @@ final class PerformanceBenchmark
             }
 
             $builder = $builder->namedDestination('page-' . $page)
-                ->text('Object page ' . $page, new TextOptions(
+                ->text('Object page ' . $page, TextOptions::make(
                     x: 48,
                     y: 780,
                     fontName: StandardFont::HELVETICA_BOLD->value,
@@ -321,7 +321,7 @@ final class PerformanceBenchmark
                 $top = 740 - ($index * 36);
                 $builder = $builder
                     ->rectangle(48, $top, 220, 24, fillColor: Color::hex('#dbeafe'))
-                    ->text('Target ' . $page . '-' . $index, new TextOptions(
+                    ->text('Target ' . $page . '-' . $index, TextOptions::make(
                         x: 56,
                         y: $top + 16,
                         fontSize: 10,
@@ -382,7 +382,7 @@ final class PerformanceBenchmark
                 $builder = $builder->newPage();
             }
 
-            $builder = $builder->text('Form page ' . $page, new TextOptions(
+            $builder = $builder->text('Form page ' . $page, TextOptions::make(
                 fontSize: 16,
                 lineHeight: 20,
                 spacingAfter: 10,
@@ -391,7 +391,7 @@ final class PerformanceBenchmark
             for ($field = 0; $field < 6; ++$field) {
                 $y = 730 - ($field * 58);
                 $builder = $builder
-                    ->text('Field ' . $page . '-' . $field, new TextOptions(
+                    ->text('Field ' . $page . '-' . $field, TextOptions::make(
                         x: 48,
                         y: $y + 18,
                         fontSize: 10,
@@ -424,7 +424,7 @@ final class PerformanceBenchmark
                 $builder = $builder->newPage();
             }
 
-            $builder = $builder->text('Form page ' . $page, new TextOptions(
+            $builder = $builder->text('Form page ' . $page, TextOptions::make(
                 embeddedFont: $font,
                 fontSize: 16,
                 lineHeight: 20,
@@ -434,7 +434,7 @@ final class PerformanceBenchmark
             for ($paragraph = 0; $paragraph < 12; ++$paragraph) {
                 $builder = $builder->text(
                     'Archival output requires deterministic metadata, embedded fonts and valid color profiles. ' . $this->lorem(3),
-                    new TextOptions(
+                    TextOptions::make(
                         embeddedFont: $font,
                         width: 490,
                         fontSize: 10.5,

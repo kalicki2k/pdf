@@ -87,7 +87,7 @@ final class PerformanceProfiler
             }
 
             for ($block = 0; $block < 16; ++$block) {
-                $builder = $builder->text($paragraph, new TextOptions(
+                $builder = $builder->text($paragraph, TextOptions::make(
                     width: 490,
                     embeddedFont: $font,
                     fontSize: 10.5,
@@ -116,7 +116,7 @@ final class PerformanceProfiler
                 $builder = $builder->newPage();
             }
 
-            $builder = $builder->text('Form page ' . $page, new TextOptions(
+            $builder = $builder->text('Form page ' . $page, TextOptions::make(
                 embeddedFont: $font,
                 fontSize: 16,
                 lineHeight: 20,
@@ -126,7 +126,7 @@ final class PerformanceProfiler
             for ($paragraph = 0; $paragraph < 12; ++$paragraph) {
                 $builder = $builder->text(
                     'Archival output requires deterministic metadata, embedded fonts and valid color profiles. ' . $this->lorem(3),
-                    new TextOptions(
+                    TextOptions::make(
                         embeddedFont: $font,
                         width: 490,
                         fontSize: 10.5,
@@ -155,7 +155,7 @@ final class PerformanceProfiler
             }
 
             for ($paragraph = 0; $paragraph < 18; ++$paragraph) {
-                $builder = $builder->text($this->contentHeavySegments($paragraph), new TextOptions(
+                $builder = $builder->text($this->contentHeavySegments($paragraph), TextOptions::make(
                     width: 490,
                     embeddedFont: $font,
                     fontSize: 10.5,

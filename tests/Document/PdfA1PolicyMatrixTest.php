@@ -120,7 +120,7 @@ final class PdfA1PolicyMatrixTest extends TestCase
             ->profile($profile)
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Baseline Absatz Привет', new TextOptions(
+            ->text('Baseline Absatz Привет', TextOptions::make(
                 x: 72,
                 y: 720,
                 width: 320,

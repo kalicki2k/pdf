@@ -180,7 +180,7 @@ final class TableOfContentsBuilderTest extends TestCase
             ->newPage()
             ->text('Target')
             ->newPage()
-            ->text('Jump', new TextOptions(
+            ->text('Jump', TextOptions::make(
                 link: LinkTarget::page(2),
             ))
             ->tableOfContents(new TableOfContentsOptions(

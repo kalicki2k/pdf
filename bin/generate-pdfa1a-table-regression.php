@@ -56,7 +56,7 @@ $table = Table::define(
     ->withFooterRows(
         TableRow::fromTexts('Итого', '22', '25'),
     )
-    ->withTextOptions(new TextOptions(
+    ->withTextOptions(TextOptions::make(
         fontSize: 12,
         lineHeight: 15,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),

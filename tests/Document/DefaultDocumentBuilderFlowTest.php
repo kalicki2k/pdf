@@ -34,10 +34,10 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     public function testItWritesTextColorOperatorsIntoPageContents(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('Gray', new TextOptions(
+            ->text('Gray', TextOptions::make(
                 color: Color::gray(0.5),
             ))
-            ->text('CMYK', new TextOptions(
+            ->text('CMYK', TextOptions::make(
                 y: 680.0,
                 color: Color::cmyk(0.1, 0.2, 0.3, 0.4),
             ))
@@ -98,13 +98,13 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     public function testSingleNewlinesAdvanceOnlyOneLineInTextBlocks(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text("Line 1\nLine 2", new TextOptions(
+            ->text("Line 1\nLine 2", TextOptions::make(
                 x: 72.0,
                 y: 720.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
-            ->text('After', new TextOptions(
+            ->text('After', TextOptions::make(
                 x: 72.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
@@ -119,13 +119,13 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     public function testDoubleNewlinesStillProduceABlankLineInTextBlocks(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text("Line 1\n\nLine 2", new TextOptions(
+            ->text("Line 1\n\nLine 2", TextOptions::make(
                 x: 72.0,
                 y: 720.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
-            ->text('After', new TextOptions(
+            ->text('After', TextOptions::make(
                 x: 72.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
@@ -141,7 +141,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Headline', new TextOptions(
+            ->text('Headline', TextOptions::make(
                 fontSize: 24,
                 lineHeight: 28,
                 spacingAfter: 12,
@@ -158,7 +158,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->margin(Margin::all(Units::mm(20)))
             ->line(56.693, 680.0, 200.0, 680.0)
-            ->text('Body', new TextOptions(
+            ->text('Body', TextOptions::make(
                 fontSize: 18.0,
             ))
             ->build();
@@ -171,7 +171,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Body', new TextOptions(
+            ->text('Body', TextOptions::make(
                 spacingBefore: 12.0,
             ))
             ->build();
@@ -182,7 +182,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     public function testItDoesNotApplySpacingBeforeWhenYIsExplicit(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('Body', new TextOptions(
+            ->text('Body', TextOptions::make(
                 y: 680.0,
                 spacingBefore: 12.0,
             ))
@@ -196,7 +196,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Centered', new TextOptions(
+            ->text('Centered', TextOptions::make(
                 align: TextAlign::CENTER,
             ))
             ->build();
@@ -217,7 +217,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Centered', new TextOptions(
+            ->text('Centered', TextOptions::make(
                 width: 200.0,
                 align: TextAlign::CENTER,
             ))
@@ -238,7 +238,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Centered', new TextOptions(
+            ->text('Centered', TextOptions::make(
                 maxWidth: 200.0,
                 align: TextAlign::CENTER,
             ))
@@ -259,7 +259,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Right', new TextOptions(
+            ->text('Right', TextOptions::make(
                 align: TextAlign::RIGHT,
             ))
             ->build();
@@ -280,7 +280,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Right', new TextOptions(
+            ->text('Right', TextOptions::make(
                 width: 150.0,
                 align: TextAlign::RIGHT,
             ))
@@ -301,7 +301,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Right', new TextOptions(
+            ->text('Right', TextOptions::make(
                 maxWidth: 150.0,
                 align: TextAlign::RIGHT,
             ))
@@ -322,7 +322,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('one two three four five six seven eight', new TextOptions(
+            ->text('one two three four five six seven eight', TextOptions::make(
                 fontName: StandardFont::COURIER->value,
                 align: TextAlign::JUSTIFY,
             ))
@@ -340,7 +340,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('one two three four five six', new TextOptions(
+            ->text('one two three four five six', TextOptions::make(
                 fontName: StandardFont::COURIER->value,
                 width: 170.0,
                 align: TextAlign::JUSTIFY,
@@ -358,7 +358,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('one two three four five six', new TextOptions(
+            ->text('one two three four five six', TextOptions::make(
                 fontName: StandardFont::COURIER->value,
                 maxWidth: 170.0,
                 align: TextAlign::JUSTIFY,
@@ -376,7 +376,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Hello world this wraps automatically across multiple lines.', new TextOptions(
+            ->text('Hello world this wraps automatically across multiple lines.', TextOptions::make(
                 width: 160.0,
                 firstLineIndent: 40.0,
             ))
@@ -391,7 +391,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(Units::mm(20)))
-            ->text('Hello world this wraps automatically across multiple lines.', new TextOptions(
+            ->text('Hello world this wraps automatically across multiple lines.', TextOptions::make(
                 width: 160.0,
                 hangingIndent: 40.0,
             ))

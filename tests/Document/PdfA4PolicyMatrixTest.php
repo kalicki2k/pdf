@@ -47,7 +47,7 @@ final class PdfA4PolicyMatrixTest extends TestCase
                 500,
                 120,
                 28,
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 ),
             )

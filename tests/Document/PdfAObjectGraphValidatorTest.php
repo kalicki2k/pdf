@@ -535,7 +535,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             ->language('de-DE')
             ->creator('Regression Fixture')
             ->creatorTool('PdfAObjectGraphValidatorTest')
-            ->text('PDF/A-2u Regression Ж', new TextOptions(
+            ->text('PDF/A-2u Regression Ж', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,

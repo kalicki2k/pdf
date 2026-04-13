@@ -122,16 +122,16 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfA1a())
                 ->title('Archive Copy')
                 ->language('de-DE')
-                ->text('Heading Привет', new TextOptions(
+                ->text('Heading Привет', TextOptions::make(
                     tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
-                ->text('Paragraph Привет', new TextOptions(
+                ->text('Paragraph Привет', TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->list(
                     ['List item Привет'],
-                    text: new TextOptions(
+                    text: TextOptions::make(
                         embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                         width: 220,
                     ),
@@ -142,10 +142,10 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                         TableColumn::fixed(120.0),
                     )
                         ->withOptions(
-                            (new TableOptions())
+                            (TableOptions::make())
                                 ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
                                 ->withCaption(TableCaption::text('Table caption Привет'))
-                                ->withTextOptions(new TextOptions(
+                                ->withTextOptions(TextOptions::make(
                                     fontSize: 12,
                                     lineHeight: 15,
                                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
@@ -211,26 +211,26 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfA1a())
                 ->title('Archive Copy')
                 ->language('de-DE')
-                ->text('Page one heading Привет', new TextOptions(
+                ->text('Page one heading Привет', TextOptions::make(
                     tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
-                ->text('Page one paragraph Привет', new TextOptions(
+                ->text('Page one paragraph Привет', TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->newPage()
                 ->table(
                     Table::define(TableColumn::fixed(120.0))
                         ->withOptions(
-                            (new TableOptions())
+                            (TableOptions::make())
                                 ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
-                                ->withTextOptions(new TextOptions(
+                                ->withTextOptions(TextOptions::make(
                                     fontSize: 12,
                                     lineHeight: 15,
                                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                                 )),
                         )
-                        ->withRows(TableRow::fromCells(TableCell::text('Second page table Привет')))
+                        ->withRows(TableRow::fromCells(TableCell::text('Second page table Привет'))),
                 )
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
@@ -253,7 +253,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
                 ->language('de-DE')
-                ->text('Intro', new TextOptions(
+                ->text('Intro', TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->line(
@@ -280,32 +280,32 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
                 ->language('de-DE')
-                ->text('Heading', new TextOptions(
+                ->text('Heading', TextOptions::make(
                     tag: TaggedStructureTag::H1,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
-                ->text('Paragraph', new TextOptions(
+                ->text('Paragraph', TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
-                ->text('Read more', new TextOptions(
+                ->text('Read more', TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                     link: LinkTarget::externalUrl('https://example.com/docs'),
                 ))
-                ->list(['Item'], text: new TextOptions(
+                ->list(['Item'], text: TextOptions::make(
                     width: 220,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->table(
                     Table::define(TableColumn::fixed(120.0))
                         ->withOptions(
-                            (new TableOptions())
+                            (TableOptions::make())
                                 ->withPlacement(TablePlacement::at(72.0, 540.0, 120.0))
                                 ->withCaption(TableCaption::text('Table caption'))
-                                ->withTextOptions(new TextOptions(
+                                ->withTextOptions(TextOptions::make(
                                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                                 )),
                         )
-                        ->withRows(TableRow::fromCells(TableCell::text('Value')))
+                        ->withRows(TableRow::fromCells(TableCell::text('Value'))),
                 )
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
@@ -336,7 +336,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                             groupKey: 'docs-link',
                         ),
                     ),
-                ], new TextOptions(
+                ], TextOptions::make(
                     width: 45,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
@@ -349,7 +349,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                             groupKey: 'docs-link',
                         ),
                     ),
-                ], new TextOptions(
+                ], TextOptions::make(
                     width: 45,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
@@ -372,7 +372,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Form')
                 ->language('de-DE')
-                ->text('Intro text', new TextOptions(
+                ->text('Intro text', TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))
                 ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')

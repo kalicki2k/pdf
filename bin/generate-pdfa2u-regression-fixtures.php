@@ -53,14 +53,14 @@ function createPdfA2uMinimalFixture(): Document
     $fontPath = regressionFontPath();
 
     return regressionBuilder('PDF/A-2u Minimal Regression', 'Minimal PDF/A-2u regression fixture')
-        ->text('PDF/A-2u Regression Привет', new TextOptions(
+        ->text('PDF/A-2u Regression Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
             color: Color::rgb(0.08, 0.16, 0.35),
         ))
-        ->text('Dieses Dokument sichert den minimalen PDF/A-2u-Grundpfad mit Unicode-Font, XMP und OutputIntent ab. Подробнее.', new TextOptions(
+        ->text('Dieses Dokument sichert den minimalen PDF/A-2u-Grundpfad mit Unicode-Font, XMP und OutputIntent ab. Подробнее.', TextOptions::make(
             x: 72,
             y: 724,
             width: 420,
@@ -76,7 +76,7 @@ function createPdfA2uImageFixture(): Document
     $fontPath = regressionFontPath();
 
     return regressionBuilder('PDF/A-2u Image Regression', 'PDF/A-2u image regression fixture')
-        ->text('PDF/A-2u Bild Regression Привет', new TextOptions(
+        ->text('PDF/A-2u Bild Regression Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
@@ -87,7 +87,7 @@ function createPdfA2uImageFixture(): Document
             ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
             ImagePlacement::at(72, 610, width: 160),
         )
-        ->text('RGB-JPEG ohne Transparenz. Подробнее.', new TextOptions(
+        ->text('RGB-JPEG ohne Transparenz. Подробнее.', TextOptions::make(
             x: 72,
             y: 580,
             width: 360,
@@ -104,14 +104,14 @@ function createPdfA2uInternalLinksFixture(): Document
 
     return regressionBuilder('PDF/A-2u Internal Link Regression', 'PDF/A-2u internal link regression fixture')
         ->namedDestination('intro')
-        ->text('Einleitung Привет', new TextOptions(
+        ->text('Einleitung Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
             color: Color::rgb(0.08, 0.16, 0.35),
         ))
-        ->text('Zielseite fuer interne Links. Подробнее.', new TextOptions(
+        ->text('Zielseite fuer interne Links. Подробнее.', TextOptions::make(
             x: 72,
             y: 724,
             width: 360,
@@ -120,7 +120,7 @@ function createPdfA2uInternalLinksFixture(): Document
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         ))
         ->newPage()
-        ->text('Linkseite Привет', new TextOptions(
+        ->text('Linkseite Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
@@ -129,7 +129,7 @@ function createPdfA2uInternalLinksFixture(): Document
         ))
         ->linkToPage(1, 72, 680, 180, 16, 'Back To Page One')
         ->linkToPagePosition(1, 72, 760, 72, 650, 180, 16, 'Back To Heading')
-        ->text('Zur Einleitung Привет', new TextOptions(
+        ->text('Zur Einleitung Привет', TextOptions::make(
             x: 72,
             y: 620,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
@@ -143,14 +143,14 @@ function createPdfA2uLinkAnnotationFixture(): Document
     $fontPath = regressionFontPath();
 
     return regressionBuilder('PDF/A-2u Link Annotation Regression', 'PDF/A-2u link annotation regression fixture')
-        ->text('PDF/A-2u Link Regression Привет', new TextOptions(
+        ->text('PDF/A-2u Link Regression Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
             color: Color::rgb(0.08, 0.16, 0.35),
         ))
-        ->text('Weitere Infos im Archivprofil. Подробнее.', new TextOptions(
+        ->text('Weitere Infos im Archivprofil. Подробнее.', TextOptions::make(
             x: 72,
             y: 724,
             width: 420,
@@ -167,7 +167,7 @@ function createPdfA2uTextAnnotationFixture(): Document
     $fontPath = regressionFontPath();
 
     return regressionBuilder('PDF/A-2u Text Annotation Regression', 'PDF/A-2u text annotation regression fixture')
-        ->text('PDF/A-2u Kommentar Regression Привет', new TextOptions(
+        ->text('PDF/A-2u Kommentar Regression Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
@@ -183,7 +183,7 @@ function createPdfA2uHighlightAnnotationFixture(): Document
     $fontPath = regressionFontPath();
 
     return regressionBuilder('PDF/A-2u Highlight Annotation Regression', 'PDF/A-2u highlight annotation regression fixture')
-        ->text('PDF/A-2u Highlight Regression Привет', new TextOptions(
+        ->text('PDF/A-2u Highlight Regression Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,
@@ -205,7 +205,7 @@ function createPdfA2uFreeTextAnnotationFixture(): Document
             680,
             180,
             40,
-            new TextOptions(
+            TextOptions::make(
                 fontSize: 12,
                 embeddedFont: EmbeddedFontSource::fromPath($fontPath),
                 color: Color::rgb(0, 0, 0.4),

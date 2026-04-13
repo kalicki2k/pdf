@@ -32,7 +32,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             StandardFontDefinition::from(StandardFont::HELVETICA),
-            new TextOptions(fontName: StandardFont::HELVETICA->value),
+            TextOptions::make(fontName: StandardFont::HELVETICA->value),
             1.4,
         );
 
@@ -55,7 +55,7 @@ final class SimpleFontRunMapperTest extends TestCase
             EmbeddedFontSource::fromString(TrueTypeFontFixture::minimalTrueTypeFontBytes()),
         );
 
-        $mapped = $mapper->map($run, $font, new TextOptions(embeddedFont: $font->source), 1.4);
+        $mapped = $mapper->map($run, $font, TextOptions::make(embeddedFont: $font->source), 1.4);
 
         self::assertSame('A', $mapped->text);
         self::assertSame(TextScript::LATIN, $mapped->script);
@@ -77,7 +77,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             StandardFontDefinition::from(StandardFont::HELVETICA),
-            new TextOptions(fontName: StandardFont::HELVETICA->value),
+            TextOptions::make(fontName: StandardFont::HELVETICA->value),
             1.4,
         );
 
@@ -99,7 +99,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             $font,
-            new TextOptions(embeddedFont: $font->source),
+            TextOptions::make(embeddedFont: $font->source),
             1.4,
             useHexString: true,
         );
@@ -126,7 +126,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             $font,
-            new TextOptions(embeddedFont: $font->source, fontSize: 10),
+            TextOptions::make(embeddedFont: $font->source, fontSize: 10),
             1.4,
             $pageFont,
             true,
@@ -159,7 +159,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             $font,
-            new TextOptions(embeddedFont: $font->source, fontSize: 10),
+            TextOptions::make(embeddedFont: $font->source, fontSize: 10),
             1.4,
             $pageFont,
             true,
@@ -191,7 +191,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             $font,
-            new TextOptions(embeddedFont: $font->source, fontSize: 10),
+            TextOptions::make(embeddedFont: $font->source, fontSize: 10),
             1.4,
             $pageFont,
             true,
@@ -225,7 +225,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             $font,
-            new TextOptions(embeddedFont: $font->source, fontSize: 10),
+            TextOptions::make(embeddedFont: $font->source, fontSize: 10),
             1.4,
             $pageFont,
             true,
@@ -259,7 +259,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             $font,
-            new TextOptions(embeddedFont: $font->source, fontSize: 10),
+            TextOptions::make(embeddedFont: $font->source, fontSize: 10),
             1.4,
             $pageFont,
             true,
@@ -296,7 +296,7 @@ final class SimpleFontRunMapperTest extends TestCase
         $mapped = $mapper->map(
             $run,
             $font,
-            new TextOptions(embeddedFont: $font->source, fontSize: 10),
+            TextOptions::make(embeddedFont: $font->source, fontSize: 10),
             1.4,
             $pageFont,
             true,

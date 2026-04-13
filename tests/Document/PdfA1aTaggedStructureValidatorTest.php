@@ -73,7 +73,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Lead in text Привет', new TextOptions(
+            ->text('Lead in text Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
             ))
             ->link('https://example.com', 40, 500, 120, 16, 'Open Example')
@@ -229,16 +229,16 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
             ->profile($profile)
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Heading Привет', new TextOptions(
+            ->text('Heading Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
             ))
-            ->text('Paragraph Привет', new TextOptions(
+            ->text('Paragraph Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
             ))
             ->list(
                 ['List item Привет'],
-                text: new TextOptions(
+                text: TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                     width: 220,
                 ),
@@ -249,10 +249,10 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
                     TableColumn::fixed(120.0),
                 )
                     ->withOptions(
-                        (new TableOptions())
+                        (TableOptions::make())
                             ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
                             ->withCaption(TableCaption::text('Table caption Привет'))
-                            ->withTextOptions(new TextOptions(
+                            ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
                                 lineHeight: 15,
                                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
@@ -263,7 +263,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
                         TableCell::text('Right'),
                     )),
             )
-            ->text('Read more Привет', new TextOptions(
+            ->text('Read more Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 link: LinkTarget::externalUrl('https://example.com/docs'),
             ))

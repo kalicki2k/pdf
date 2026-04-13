@@ -26,7 +26,7 @@ $accentColor = Color::hex('#1d4ed8');
 $bodyColor = Color::hex('#334155');
 $mutedColor = Color::hex('#64748b');
 
-$headerOptions = new TextOptions(
+$headerOptions = TextOptions::make(
     x: $margin->left,
     y: PageSize::A4()->height() - $margin->top,
     fontSize: 11,
@@ -34,7 +34,7 @@ $headerOptions = new TextOptions(
     fontName: StandardFont::HELVETICA_BOLD->value,
     color: $accentColor,
 );
-$footerOptions = new TextOptions(
+$footerOptions = TextOptions::make(
     x: $margin->left,
     y: $margin->bottom - 2,
     width: PageSize::A4()->width() - $margin->left - $margin->right,
@@ -56,7 +56,7 @@ $builder = DefaultDocumentBuilder::make()
     ->margin($margin)
     ->header(static function (PageDecorationContext $page, int $pageNumber) use ($headerOptions): void {
         $page->text('Quarterly Operations Report', $headerOptions);
-        $page->text('Section ' . $pageNumber, new TextOptions(
+        $page->text('Section ' . $pageNumber, TextOptions::make(
             x: $page->page()->contentArea()->right - 90,
             y: $page->page()->contentArea()->top,
             width: 90,
@@ -69,7 +69,7 @@ $builder = DefaultDocumentBuilder::make()
     ->footer(static function (PageDecorationContext $page, int $pageNumber) use ($footerOptions): void {
         $page->text('Page ' . $pageNumber, $footerOptions);
     })
-    ->text('Header / Footer Callbacks', new TextOptions(
+    ->text('Header / Footer Callbacks', TextOptions::make(
         fontSize: 24,
         lineHeight: 28,
         spacingAfter: 8,
@@ -78,7 +78,7 @@ $builder = DefaultDocumentBuilder::make()
     ))
     ->text(
         'This example registers a document-wide header and footer callback. Both are applied to every generated page, including explicit new pages and pages created through overflow.',
-        new TextOptions(
+        TextOptions::make(
             fontSize: 11,
             lineHeight: 16,
             spacingAfter: 12,
@@ -103,7 +103,7 @@ foreach ($sections as $title => $body) {
     }
 
     $builder = $builder
-        ->text($title, new TextOptions(
+        ->text($title, TextOptions::make(
             fontSize: 16,
             lineHeight: 20,
             spacingBefore: 10,
@@ -111,7 +111,7 @@ foreach ($sections as $title => $body) {
             fontName: StandardFont::HELVETICA_BOLD->value,
             color: $accentColor,
         ))
-        ->text($body, new TextOptions(
+        ->text($body, TextOptions::make(
             fontSize: 11,
             lineHeight: 16,
             spacingAfter: 10,

@@ -326,7 +326,7 @@ final readonly class TextFlow
             return $baseOptions;
         }
 
-        return new TextOptions(
+        return TextOptions::make(
             x: $baseOptions->x,
             y: $baseOptions->y,
             width: $baseOptions->width,

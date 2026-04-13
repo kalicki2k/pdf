@@ -14,6 +14,7 @@ use Kalle\Pdf\Text\TextOptions;
 
 final readonly class Table
 {
+    public TableOptions $options;
     public ?TableCaption $caption;
     public ?TablePlacement $placement;
     public CellPadding $cellPadding;
@@ -30,14 +31,16 @@ final readonly class Table
      */
     public function __construct(
         public array $columns,
+        ?TableOptions $options = null,
         public array $rows = [],
         public array $headerRows = [],
         public array $footerRows = [],
-        public TableOptions $options = new TableOptions(),
     ) {
         if (count($this->columns) === 0) {
             throw new InvalidArgumentException('A table must contain at least one column.');
         }
+
+        $this->options = $options ?? TableOptions::make();
 
         $this->caption = $this->options->caption;
         $this->placement = $this->options->placement;
@@ -55,7 +58,7 @@ final readonly class Table
     public static function define(TableColumn ...$columns): self
     {
         /** @var list<TableColumn> $columns */
-        return new self($columns);
+        return new self(columns: $columns);
     }
 
     public function addRow(TableRow $row): self

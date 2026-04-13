@@ -33,14 +33,14 @@ $document = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-regression.php')
-    ->text('Einleitung Привет', new TextOptions(
+    ->text('Einleitung Привет', TextOptions::make(
         x: 72,
         y: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->text('Erster Absatz mit strukturiertem Inhalt. Привет.', new TextOptions(
+    ->text('Erster Absatz mit strukturiertem Inhalt. Привет.', TextOptions::make(
         x: 72,
         y: 720,
         width: 360,
@@ -48,7 +48,7 @@ $document = DefaultDocumentBuilder::make()
         lineHeight: 16,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
     ))
-    ->text('Zweiter Absatz fuer den Minimalpfad von PDF/A-1a. Привет.', new TextOptions(
+    ->text('Zweiter Absatz fuer den Minimalpfad von PDF/A-1a. Привет.', TextOptions::make(
         x: 72,
         y: 680,
         width: 360,

@@ -24,7 +24,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
     public function testItAppliesAfmKerningForWesternCoreText(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('AV', new TextOptions(fontName: StandardFont::HELVETICA->value))
+            ->text('AV', TextOptions::make(fontName: StandardFont::HELVETICA->value))
             ->build();
 
         self::assertSame(
@@ -39,14 +39,14 @@ final class DefaultDocumentBuilderFontTest extends TestCase
         $this->expectExceptionMessage("Font 'NotoSans-Regular' is not a valid PDF standard font.");
 
         DefaultDocumentBuilder::make()
-            ->text('Hello', new TextOptions(fontName: 'NotoSans-Regular'))
+            ->text('Hello', TextOptions::make(fontName: 'NotoSans-Regular'))
             ->build();
     }
 
     public function testItEncodesWinAnsiTextForStandardFonts(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('ÄÖÜäöüß€', new TextOptions(fontName: StandardFont::HELVETICA->value))
+            ->text('ÄÖÜäöüß€', TextOptions::make(fontName: StandardFont::HELVETICA->value))
             ->build();
 
         self::assertSame(
@@ -82,7 +82,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
     public function testItEncodesMappedSymbolText(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('αβγΩ', new TextOptions(fontName: StandardFont::SYMBOL->value))
+            ->text('αβγΩ', TextOptions::make(fontName: StandardFont::SYMBOL->value))
             ->build();
 
         self::assertSame(
@@ -94,7 +94,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
     public function testItEncodesMappedZapfDingbatsText(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->text('✓✔✕✖', new TextOptions(fontName: StandardFont::ZAPF_DINGBATS->value))
+            ->text('✓✔✕✖', TextOptions::make(fontName: StandardFont::ZAPF_DINGBATS->value))
             ->build();
 
         self::assertSame(
@@ -107,7 +107,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdf10())
-            ->text('ÄÖÜäöüß', new TextOptions(
+            ->text('ÄÖÜäöüß', TextOptions::make(
                 fontName: StandardFont::HELVETICA->value,
                 fontEncoding: StandardFontEncoding::ISO_LATIN_1,
             ))
@@ -144,7 +144,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->glyphs(
                 StandardFontGlyphRun::fromGlyphCodes(StandardFont::ZAPF_DINGBATS, [0x21, 0x22, 0x23]),
-                new TextOptions(fontName: StandardFont::ZAPF_DINGBATS->value),
+                TextOptions::make(fontName: StandardFont::ZAPF_DINGBATS->value),
             )
             ->build();
 
@@ -181,7 +181,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
             ->margin(Margin::all(Units::mm(20)))
             ->glyphs(
                 StandardFontGlyphRun::fromGlyphNames(StandardFont::HELVETICA, ['A', 'V']),
-                new TextOptions(
+                TextOptions::make(
                     fontName: StandardFont::HELVETICA->value,
                     align: TextAlign::RIGHT,
                 ),
@@ -205,7 +205,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
         $this->expectExceptionMessage("Text cannot be encoded with 'SymbolEncoding'.");
 
         DefaultDocumentBuilder::make()
-            ->text('Hello', new TextOptions(fontName: StandardFont::SYMBOL->value))
+            ->text('Hello', TextOptions::make(fontName: StandardFont::SYMBOL->value))
             ->build();
     }
 
@@ -215,7 +215,7 @@ final class DefaultDocumentBuilderFontTest extends TestCase
         $this->expectExceptionMessage("Text cannot be encoded with 'ZapfDingbatsEncoding'.");
 
         DefaultDocumentBuilder::make()
-            ->text('Hello', new TextOptions(fontName: StandardFont::ZAPF_DINGBATS->value))
+            ->text('Hello', TextOptions::make(fontName: StandardFont::ZAPF_DINGBATS->value))
             ->build();
     }
 

@@ -32,12 +32,12 @@ if (!is_dir($outputDirectory) && !mkdir($outputDirectory, 0777, true) && !is_dir
 }
 
 $margin = Margin::all(Units::mm(16));
-$tableText = new TextOptions(
+$tableText = TextOptions::make(
     fontSize: 9.5,
     lineHeight: 12.5,
     color: Color::hex('#1f2937'),
 );
-$captionText = new TextOptions(
+$captionText = TextOptions::make(
     fontSize: 12,
     lineHeight: 15,
     color: Color::hex('#0f172a'),
@@ -48,7 +48,7 @@ $table = Table::define(
     TableColumn::proportional(1.0),
 )
     ->withOptions(
-        (new TableOptions())
+        (TableOptions::make())
             ->withPlacement(TablePlacement::at(50.0, 430.0, 320.0))
             ->withCaption(
                 TableCaption::text('Tables in pdf2: caption, repeated headers, row headers, spans, backgrounds, vertical alignment, footer and tagged PDF scope')
@@ -144,13 +144,13 @@ DefaultDocumentBuilder::make()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A5())
     ->margin($margin)
-    ->text('Table Example', new TextOptions(
+    ->text('Table Example', TextOptions::make(
         fontSize: 18,
         lineHeight: 22,
         color: Color::hex('#0f172a'),
         spacingAfter: 8,
     ))
-    ->text('This example deliberately exercises the current table foundation, including caption, repeated headers, row headers with explicit scope, colspan, rowspan, cell backgrounds, vertical alignment, footer rows and page breaks.', new TextOptions(
+    ->text('This example deliberately exercises the current table foundation, including caption, repeated headers, row headers with explicit scope, colspan, rowspan, cell backgrounds, vertical alignment, footer rows and page breaks.', TextOptions::make(
         fontSize: 10,
         lineHeight: 14,
         color: Color::hex('#475569'),

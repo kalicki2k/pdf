@@ -22,7 +22,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
     public function testItAllowsPdfA2aTaggedParagraphsWithinTheCurrentScope(): void
     {
         $document = $this->pdfA2BaselineBuilder(Profile::pdfA2a())
-            ->text('Getaggter Absatz fuer PDF/A-2a. Привет.', new TextOptions(
+            ->text('Getaggter Absatz fuer PDF/A-2a. Привет.', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -143,7 +143,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ->profile(Profile::pdfA3u())
             ->title('Archive Package')
             ->language('de-DE')
-            ->text('PDF/A-3u Package Привет', new TextOptions(
+            ->text('PDF/A-3u Package Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->attachment('data.xml', '<root/>', 'Source data', 'application/xml')
@@ -199,7 +199,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ->profile(Profile::pdfA3a())
             ->title('Archive Package')
             ->language('de-DE')
-            ->text('PDF/A-3a Package Привет', new TextOptions(
+            ->text('PDF/A-3a Package Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->attachment('data.xml', '<root/>', 'Source data', 'application/xml')
@@ -238,7 +238,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ->profile(Profile::pdfA3a())
             ->title('Archive Package')
             ->language('de-DE')
-            ->text('PDF/A-3a Package Привет', new TextOptions(
+            ->text('PDF/A-3a Package Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
@@ -292,7 +292,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ->profile(Profile::pdfA3a())
             ->title('Archive Package')
             ->language('de-DE')
-            ->text('PDF/A-3a Package Привет', new TextOptions(
+            ->text('PDF/A-3a Package Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->squareAnnotation(40, 280, 80, 24, Color::rgb(1, 0, 0), Color::gray(0.9), 'Quadrat', 'QA')
@@ -312,7 +312,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ->profile($profile)
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('PDF/A Regression Привет', new TextOptions(
+            ->text('PDF/A Regression Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ));
     }

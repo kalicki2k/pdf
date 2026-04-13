@@ -58,28 +58,28 @@ $document = Pdf::document()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->margin($margin)
-    ->text('PDF Standard Font Specimen', new TextOptions(
+    ->text('PDF Standard Font Specimen', TextOptions::make(
         fontSize: 24,
         lineHeight: 28,
         spacingAfter: 8,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $headlineColor,
     ))
-    ->text('Referenzseite für Schriftschnitt, Zeichenumfang und Lesegrößen', new TextOptions(
+    ->text('Referenzseite für Schriftschnitt, Zeichenumfang und Lesegrößen', TextOptions::make(
         fontSize: 10,
         lineHeight: 14,
         spacingAfter: 18,
         fontName: StandardFont::HELVETICA->value,
         color: $mutedColor,
     ))
-    ->text('Familienübersicht', new TextOptions(
+    ->text('Familienübersicht', TextOptions::make(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 6,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->text('Diese Seiten zeigen alle Standard-PDF-Fonts mit einem konsistenten Mustertext innerhalb eines 20-mm-Satzspiegels.', new TextOptions(
+    ->text('Diese Seiten zeigen alle Standard-PDF-Fonts mit einem konsistenten Mustertext innerhalb eines 20-mm-Satzspiegels.', TextOptions::make(
         fontSize: 9,
         lineHeight: 13,
         spacingAfter: 12,
@@ -89,28 +89,28 @@ $document = Pdf::document()
 
 foreach ($firstPageFonts as $fontName) {
     $document = $document
-        ->text($fontName, new TextOptions(
+        ->text($fontName, TextOptions::make(
             fontSize: 11,
             lineHeight: 14,
             spacingAfter: 4,
             fontName: StandardFont::HELVETICA_BOLD->value,
             color: $accentColor,
         ))
-        ->text($sampleSentence, new TextOptions(
+        ->text($sampleSentence, TextOptions::make(
             fontSize: 13,
             lineHeight: 16,
             spacingAfter: 4,
             fontName: $fontName,
             color: $headlineColor,
         ))
-        ->text($latinUpper, new TextOptions(
+        ->text($latinUpper, TextOptions::make(
             fontSize: 9,
             lineHeight: 12,
             spacingAfter: 2,
             fontName: $fontName,
             color: $copyColor,
         ))
-        ->text($latinLower . '    ' . $numeralsAndPunctuation, new TextOptions(
+        ->text($latinLower . '    ' . $numeralsAndPunctuation, TextOptions::make(
             fontSize: 8.5,
             lineHeight: 11,
             spacingAfter: 10,
@@ -123,14 +123,14 @@ $document = $document
     ->newPage(new PageOptions(
         backgroundColor: $pageTwoBackground,
     ))
-    ->text('Weitere Standardschnitte', new TextOptions(
+    ->text('Weitere Standardschnitte', TextOptions::make(
         fontSize: 20,
         lineHeight: 24,
         spacingAfter: 8,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $headlineColor,
     ))
-    ->text('Die restlichen Kernfonts der Standard-14-Familie mit identischem Mustertext im selben Seitenrahmen.', new TextOptions(
+    ->text('Die restlichen Kernfonts der Standard-14-Familie mit identischem Mustertext im selben Seitenrahmen.', TextOptions::make(
         fontSize: 10,
         lineHeight: 14,
         spacingAfter: 14,
@@ -140,28 +140,28 @@ $document = $document
 
 foreach ($secondPageFonts as $fontName) {
     $document = $document
-        ->text($fontName, new TextOptions(
+        ->text($fontName, TextOptions::make(
             fontSize: 11,
             lineHeight: 14,
             spacingAfter: 4,
             fontName: StandardFont::HELVETICA_BOLD->value,
             color: $accentColor,
         ))
-        ->text($sampleSentence, new TextOptions(
+        ->text($sampleSentence, TextOptions::make(
             fontSize: 13,
             lineHeight: 16,
             spacingAfter: 4,
             fontName: $fontName,
             color: $headlineColor,
         ))
-        ->text($latinUpper, new TextOptions(
+        ->text($latinUpper, TextOptions::make(
             fontSize: 9,
             lineHeight: 12,
             spacingAfter: 2,
             fontName: $fontName,
             color: $copyColor,
         ))
-        ->text($latinLower . '    ' . $numeralsAndPunctuation, new TextOptions(
+        ->text($latinLower . '    ' . $numeralsAndPunctuation, TextOptions::make(
             fontSize: 8.5,
             lineHeight: 11,
             spacingAfter: 10,
@@ -172,14 +172,14 @@ foreach ($secondPageFonts as $fontName) {
 
 $document = $document
     ->newPage()
-    ->text('Größen, Laufweite und Sonderzeichen', new TextOptions(
+    ->text('Größen, Laufweite und Sonderzeichen', TextOptions::make(
         fontSize: 20,
         lineHeight: 24,
         spacingAfter: 8,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $headlineColor,
     ))
-    ->text('Punktgrößen', new TextOptions(
+    ->text('Punktgrößen', TextOptions::make(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 6,
@@ -188,7 +188,7 @@ $document = $document
     ));
 
 foreach ([6, 8, 10, 12, 18, 28] as $size) {
-    $document = $document->text('' . $size . ' pt  Hamburgefons 12345 ÄÖÜ / Sphinx of black quartz', new TextOptions(
+    $document = $document->text('' . $size . ' pt  Hamburgefons 12345 ÄÖÜ / Sphinx of black quartz', TextOptions::make(
         fontSize: (float) $size,
         lineHeight: max(($size * 1.35), $size + 6),
         spacingAfter: 4,
@@ -198,63 +198,63 @@ foreach ([6, 8, 10, 12, 18, 28] as $size) {
 }
 
 $document
-    ->text('Monospace-Vergleich', new TextOptions(
+    ->text('Monospace-Vergleich', TextOptions::make(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 6,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->text('Courier eignet sich für tabellarische Ausrichtung und technische Ausgaben.', new TextOptions(
+    ->text('Courier eignet sich für tabellarische Ausrichtung und technische Ausgaben.', TextOptions::make(
         fontSize: 9,
         lineHeight: 13,
         spacingAfter: 6,
         fontName: StandardFont::HELVETICA->value,
         color: $copyColor,
     ))
-    ->text('SKU-2048    17 pcs    EUR 129.90    OK', new TextOptions(
+    ->text('SKU-2048    17 pcs    EUR 129.90    OK', TextOptions::make(
         fontSize: 11,
         lineHeight: 14,
         spacingAfter: 2,
         fontName: StandardFont::COURIER->value,
         color: $headlineColor,
     ))
-    ->text('SKU-2048    17 pcs    EUR 129.90    OK', new TextOptions(
+    ->text('SKU-2048    17 pcs    EUR 129.90    OK', TextOptions::make(
         fontSize: 11,
         lineHeight: 14,
         spacingAfter: 10,
         fontName: StandardFont::COURIER_BOLD->value,
         color: $copyColor,
     ))
-    ->text('Symbol-Fonts', new TextOptions(
+    ->text('Symbol-Fonts', TextOptions::make(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 6,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
-    ->text('Symbol und ZapfDingbats werden separat gezeigt, da ihr Zeichenvorrat nicht dem lateinischen Alphabet entspricht.', new TextOptions(
+    ->text('Symbol und ZapfDingbats werden separat gezeigt, da ihr Zeichenvorrat nicht dem lateinischen Alphabet entspricht.', TextOptions::make(
         fontSize: 9,
         lineHeight: 13,
         spacingAfter: 6,
         fontName: StandardFont::HELVETICA->value,
         color: $copyColor,
     ))
-    ->text('ΑΒΓΔΕ ΦΓΩ αβγδε φγω ←↑→↓ ⇔ ⇒ ∞ ± ≤ ≥ × ∂ ≈ ∑ ∫', new TextOptions(
+    ->text('ΑΒΓΔΕ ΦΓΩ αβγδε φγω ←↑→↓ ⇔ ⇒ ∞ ± ≤ ≥ × ∂ ≈ ∑ ∫', TextOptions::make(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 6,
         fontName: StandardFont::SYMBOL->value,
         color: $headlineColor,
     ))
-    ->text('✁ ✂ ✃ ✄ ☎ ✈ ✉ ✓ ✔ ✕ ✖ ★ ✿ ❤ ❥ ① ② ③ ④ ⑤ ➛ ➜ ➝ ➞ ➟ ➠ ➡', new TextOptions(
+    ->text('✁ ✂ ✃ ✄ ☎ ✈ ✉ ✓ ✔ ✕ ✖ ★ ✿ ❤ ❥ ① ② ③ ④ ⑤ ➛ ➜ ➝ ➞ ➟ ➠ ➡', TextOptions::make(
         fontSize: 12,
         lineHeight: 16,
         spacingAfter: 12,
         fontName: StandardFont::ZAPF_DINGBATS->value,
         color: $headlineColor,
     ))
-    ->text('Hinweis: Die Musterseiten arbeiten ausschließlich mit PDF-Standardfonts und orientieren sich an einem 20-mm-Seitenrand.', new TextOptions(
+    ->text('Hinweis: Die Musterseiten arbeiten ausschließlich mit PDF-Standardfonts und orientieren sich an einem 20-mm-Seitenrand.', TextOptions::make(
         fontSize: 8.5,
         lineHeight: 12,
         fontName: StandardFont::HELVETICA->value,

@@ -37,7 +37,7 @@ $builder = DefaultDocumentBuilder::make()
     ->pageSize(PageSize::A4())
     ->margin($margin)
     ->pageNumbers(
-        new TextOptions(
+        TextOptions::make(
             x: $margin->left,
             y: $margin->bottom - 2,
             width: PageSize::A4()->width() - $margin->left - $margin->right,
@@ -52,7 +52,7 @@ $builder = DefaultDocumentBuilder::make()
     ->headerOn(
         static fn (PageDecorationContext $page): bool => !$page->isFirstPage(),
         static function (PageDecorationContext $page): void {
-            $page->text('Operations Manual', new TextOptions(
+            $page->text('Operations Manual', TextOptions::make(
                 x: $page->page()->contentArea()->left,
                 y: $page->page()->contentArea()->top,
                 fontSize: 11,
@@ -65,7 +65,7 @@ $builder = DefaultDocumentBuilder::make()
     ->footerOn(
         static fn (PageDecorationContext $page): bool => $page->pageNumber() % 2 === 0,
         static function (PageDecorationContext $page): void {
-            $page->text('Internal review copy', new TextOptions(
+            $page->text('Internal review copy', TextOptions::make(
                 x: $page->page()->contentArea()->left,
                 y: $page->page()->contentArea()->bottom + 10,
                 fontSize: 9,
@@ -75,7 +75,7 @@ $builder = DefaultDocumentBuilder::make()
             ));
         },
     )
-    ->text('Predicate-Based Page Decoration', new TextOptions(
+    ->text('Predicate-Based Page Decoration', TextOptions::make(
         fontSize: 24,
         lineHeight: 28,
         spacingAfter: 8,
@@ -84,14 +84,14 @@ $builder = DefaultDocumentBuilder::make()
     ))
     ->text(
         'This example combines the pageNumbers() convenience helper with predicate-based headerOn() and footerOn() callbacks. The header is skipped on the cover page, while a small footer notice is shown only on even pages.',
-        new TextOptions(
+        TextOptions::make(
             fontSize: 11,
             lineHeight: 16,
             spacingAfter: 12,
             color: $bodyColor,
         ),
     )
-    ->text('Cover Page', new TextOptions(
+    ->text('Cover Page', TextOptions::make(
         fontSize: 16,
         lineHeight: 20,
         spacingAfter: 6,
@@ -100,7 +100,7 @@ $builder = DefaultDocumentBuilder::make()
     ))
     ->text(
         'The first page keeps only the generated page number. The filtered header starts on the next page to leave the opening layout clean.',
-        new TextOptions(
+        TextOptions::make(
             fontSize: 11,
             lineHeight: 16,
             spacingAfter: 10,
@@ -120,7 +120,7 @@ $sections = [
 foreach ($sections as $title => $body) {
     $builder = $builder
         ->newPage()
-        ->text($title, new TextOptions(
+        ->text($title, TextOptions::make(
             fontSize: 16,
             lineHeight: 20,
             spacingBefore: 10,
@@ -128,7 +128,7 @@ foreach ($sections as $title => $body) {
             fontName: StandardFont::HELVETICA_BOLD->value,
             color: $accentColor,
         ))
-        ->text($body, new TextOptions(
+        ->text($body, TextOptions::make(
             fontSize: 11,
             lineHeight: 16,
             spacingAfter: 10,

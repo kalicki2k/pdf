@@ -74,7 +74,7 @@ final class DocumentRendererTest extends TestCase
             ->author('Sebastian Kalicki')
             ->keywords('archive, invoice')
             ->pageSize(PageSize::A5())
-            ->text('Example Title', new TextOptions(
+            ->text('Example Title', TextOptions::make(
                 x: 72,
                 y: 720,
                 fontSize: 18,
@@ -148,7 +148,7 @@ final class DocumentRendererTest extends TestCase
             ->title('Archive Copy')
             ->text(
                 'Archive Copy',
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
                 ),
             )
@@ -175,7 +175,7 @@ final class DocumentRendererTest extends TestCase
             ->title('Archive Package')
             ->text(
                 'Archive Package',
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
                 ),
             )
@@ -206,7 +206,7 @@ final class DocumentRendererTest extends TestCase
             ->title('Archive Copy')
             ->text(
                 'Archive Copy',
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
                 ),
             )
@@ -253,7 +253,7 @@ final class DocumentRendererTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->text(
                 "Kundenfirma Mueller GmbH\nz. Hd. Anna Mueller\nBeispielweg 8",
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
                     width: 220,
                     fontSize: 10,
@@ -316,7 +316,7 @@ final class DocumentRendererTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdf10())
-            ->text('ÄÖÜäöüß', new TextOptions(
+            ->text('ÄÖÜäöüß', TextOptions::make(
                 fontName: StandardFont::HELVETICA->value,
                 fontEncoding: StandardFontEncoding::ISO_LATIN_1,
             ))
@@ -337,13 +337,13 @@ final class DocumentRendererTest extends TestCase
     public function testItRendersExplicitTextLinesWithoutBlankLineSpacing(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->textLines(['Firma', 'Strasse 1'], new TextOptions(
+            ->textLines(['Firma', 'Strasse 1'], TextOptions::make(
                 x: 72.0,
                 y: 720.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
-            ->text('Ort', new TextOptions(
+            ->text('Ort', TextOptions::make(
                 x: 72.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
@@ -424,7 +424,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Einleitung Привет', new TextOptions(
+            ->text('Einleitung Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
@@ -432,7 +432,7 @@ final class DocumentRendererTest extends TestCase
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 color: Color::rgb(0.08, 0.16, 0.35),
             ))
-            ->text('Erster Absatz mit strukturiertem Inhalt. Привет.', new TextOptions(
+            ->text('Erster Absatz mit strukturiertem Inhalt. Привет.', TextOptions::make(
                 x: 72,
                 y: 720,
                 width: 320,
@@ -461,7 +461,7 @@ final class DocumentRendererTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
-            ->text('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', TextOptions::make(
                 x: 72,
                 y: 720,
                 width: 320,
@@ -488,7 +488,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: new TextOptions(
+                text: TextOptions::make(
                     x: 72,
                     y: 760,
                     width: 320,
@@ -523,7 +523,7 @@ final class DocumentRendererTest extends TestCase
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
                 new ListOptions(type: ListType::NUMBERED, start: 3, marker: '%d)'),
-                new TextOptions(
+                TextOptions::make(
                     x: 72,
                     y: 760,
                     width: 320,
@@ -564,10 +564,10 @@ final class DocumentRendererTest extends TestCase
                     TableColumn::fixed(120.0),
                 )
                     ->withOptions(
-                        (new TableOptions())
+                        (TableOptions::make())
                             ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
                             ->withCaption(TableCaption::text('Quarterly summary Привет'))
-                            ->withTextOptions(new TextOptions(
+                            ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
                                 lineHeight: 15,
                                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -613,14 +613,14 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Projektübersicht Привет', new TextOptions(
+            ->text('Projektübersicht Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', TextOptions::make(
                 x: 72,
                 y: 724,
                 width: 320,
@@ -630,7 +630,7 @@ final class DocumentRendererTest extends TestCase
             ))
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: new TextOptions(
+                text: TextOptions::make(
                     x: 72,
                     y: 676,
                     width: 220,
@@ -676,9 +676,9 @@ final class DocumentRendererTest extends TestCase
                     TableColumn::fixed(120.0),
                 )
                     ->withOptions(
-                        (new TableOptions())
+                        (TableOptions::make())
                             ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
-                            ->withTextOptions(new TextOptions(
+                            ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
                                 lineHeight: 15,
                                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -690,7 +690,7 @@ final class DocumentRendererTest extends TestCase
                         ),
                     ),
             )
-            ->text('Text content Привет', new TextOptions(
+            ->text('Text content Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->image(
@@ -735,9 +735,9 @@ final class DocumentRendererTest extends TestCase
                     TableColumn::fixed(120.0),
                 )
                     ->withOptions(
-                        (new TableOptions())
+                        (TableOptions::make())
                             ->withPlacement(TablePlacement::at(72.0, 700.0, 240.0))
-                            ->withTextOptions(new TextOptions(
+                            ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
                                 lineHeight: 15,
                                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -750,7 +750,7 @@ final class DocumentRendererTest extends TestCase
                         ),
                     ),
             )
-            ->text('Text content Привет', new TextOptions(
+            ->text('Text content Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -777,10 +777,10 @@ final class DocumentRendererTest extends TestCase
             TableColumn::fixed(120.0),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
                     ->withCaption(TableCaption::text('Kurzuebersicht Привет'))
-                    ->withTextOptions(new TextOptions(
+                    ->withTextOptions(TextOptions::make(
                         fontSize: 12,
                         lineHeight: 15,
                         embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -797,14 +797,14 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Ueberschrift Привет', new TextOptions(
+            ->text('Ueberschrift Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', TextOptions::make(
                 x: 72,
                 y: 724,
                 width: 320,
@@ -814,7 +814,7 @@ final class DocumentRendererTest extends TestCase
             ))
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: new TextOptions(
+                text: TextOptions::make(
                     x: 72,
                     y: 676,
                     width: 220,
@@ -861,14 +861,14 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Kapitel Eins Привет', new TextOptions(
+            ->text('Kapitel Eins Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Erste Seite Привет', new TextOptions(
+            ->text('Erste Seite Привет', TextOptions::make(
                 x: 72,
                 y: 724,
                 width: 320,
@@ -877,14 +877,14 @@ final class DocumentRendererTest extends TestCase
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->newPage()
-            ->text('Kapitel Zwei Привет', new TextOptions(
+            ->text('Kapitel Zwei Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 x: 72,
                 y: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Zweite Seite Привет', new TextOptions(
+            ->text('Zweite Seite Привет', TextOptions::make(
                 x: 72,
                 y: 724,
                 width: 320,
@@ -1361,7 +1361,7 @@ final class DocumentRendererTest extends TestCase
                 500,
                 120,
                 32,
-                new TextOptions(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
+                TextOptions::make(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
                 Color::rgb(0.2, 0.2, 0.2),
                 Color::rgb(1, 1, 0.8),
                 'QA',
@@ -1390,7 +1390,7 @@ final class DocumentRendererTest extends TestCase
                 500,
                 120,
                 32,
-                new TextOptions(fontSize: 12),
+                TextOptions::make(fontSize: 12),
                 new FreeTextAnnotationOptions(
                     textColor: Color::rgb(0, 0, 0.4),
                     borderColor: Color::rgb(0.2, 0.2, 0.2),
@@ -1545,7 +1545,7 @@ final class DocumentRendererTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->namedDestination('intro')
-            ->text('Open intro', new TextOptions(
+            ->text('Open intro', TextOptions::make(
                 link: LinkTarget::namedDestination('intro'),
             ))
             ->build();
@@ -1687,7 +1687,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->text('Read more', new TextOptions(
+            ->text('Read more', TextOptions::make(
                 link: LinkTarget::externalUrl('https://example.com'),
             ))
             ->build();
@@ -1761,7 +1761,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->text([
                 new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
-            ], new TextOptions(width: 45))
+            ], TextOptions::make(width: 45))
             ->build();
 
         $renderer = new DocumentRenderer();
@@ -1858,7 +1858,7 @@ final class DocumentRendererTest extends TestCase
             TableColumn::fixed(90.0),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withPlacement(new TablePlacement(24.0, 270.0))
                     ->withCaption(TableCaption::text('Quarterly summary')),
             )
@@ -1920,7 +1920,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->creator('Regression Fixture')
             ->creatorTool('DocumentRendererTest')
-            ->text('PDF/A-1b Regression Привет', new TextOptions(
+            ->text('PDF/A-1b Regression Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,
@@ -1957,7 +1957,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->creator('Regression Fixture')
             ->creatorTool('DocumentRendererTest')
-            ->text('PDF/A-2u Regression Привет', new TextOptions(
+            ->text('PDF/A-2u Regression Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,
@@ -1991,7 +1991,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->creator('Regression Fixture')
             ->creatorTool('DocumentRendererTest')
-            ->text('PDF/A-2u Link Regression Привет', new TextOptions(
+            ->text('PDF/A-2u Link Regression Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,
@@ -2025,7 +2025,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->creator('Regression Fixture')
             ->creatorTool('DocumentRendererTest')
-            ->text('PDF/A-2u Kommentar Regression Привет', new TextOptions(
+            ->text('PDF/A-2u Kommentar Regression Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,
@@ -2058,7 +2058,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->creator('Regression Fixture')
             ->creatorTool('DocumentRendererTest')
-            ->text('PDF/A-2a Kommentar Regression Привет', new TextOptions(
+            ->text('PDF/A-2a Kommentar Regression Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,
@@ -2090,7 +2090,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->creator('Regression Fixture')
             ->creatorTool('DocumentRendererTest')
-            ->text('PDF/A-2u Highlight Regression Привет', new TextOptions(
+            ->text('PDF/A-2u Highlight Regression Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,
@@ -2130,7 +2130,7 @@ final class DocumentRendererTest extends TestCase
                 680,
                 180,
                 40,
-                new TextOptions(
+                TextOptions::make(
                     fontSize: 12,
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     color: Color::rgb(0, 0, 0.4),
@@ -2190,7 +2190,7 @@ final class DocumentRendererTest extends TestCase
             ->creator('Regression Fixture')
             ->creatorTool('DocumentRendererTest')
             ->namedDestination('intro')
-            ->text('Einleitung Привет', new TextOptions(
+            ->text('Einleitung Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,
@@ -2198,7 +2198,7 @@ final class DocumentRendererTest extends TestCase
                 color: Color::rgb(0.08, 0.16, 0.35),
             ))
             ->newPage()
-            ->text('Linkseite Привет', new TextOptions(
+            ->text('Linkseite Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,
@@ -2207,7 +2207,7 @@ final class DocumentRendererTest extends TestCase
             ))
             ->linkToPage(1, 72, 680, 180, 16, 'Back To Page One')
             ->linkToPagePosition(1, 72, 760, 72, 650, 180, 16, 'Back To Heading')
-            ->text('Zur Einleitung Привет', new TextOptions(
+            ->text('Zur Einleitung Привет', TextOptions::make(
                 x: 72,
                 y: 620,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -2239,7 +2239,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->creator('Regression Fixture')
             ->creatorTool('DocumentRendererTest')
-            ->text('PDF/A-2u Bild Regression Привет', new TextOptions(
+            ->text('PDF/A-2u Bild Regression Привет', TextOptions::make(
                 x: 72,
                 y: 760,
                 fontSize: 18,

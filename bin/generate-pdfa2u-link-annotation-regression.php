@@ -36,14 +36,14 @@ $document = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa2u-link-annotation-regression.php')
-    ->text('PDF/A-2u Link Regression Привет', new TextOptions(
+    ->text('PDF/A-2u Link Regression Привет', TextOptions::make(
         x: 72,
         y: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->text('Weitere Infos im Archivprofil. Подробнее.', new TextOptions(
+    ->text('Weitere Infos im Archivprofil. Подробнее.', TextOptions::make(
         x: 72,
         y: 724,
         width: 420,

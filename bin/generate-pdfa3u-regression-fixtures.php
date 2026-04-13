@@ -50,7 +50,7 @@ function createPdfA3uPackageFixture(): Document
         ->language('de-DE')
         ->creator('Regression Fixture')
         ->creatorTool('bin/generate-pdfa3u-regression-fixtures.php')
-        ->text('PDF/A-3u Package Привет', new TextOptions(
+        ->text('PDF/A-3u Package Привет', TextOptions::make(
             x: 72,
             y: 760,
             fontSize: 18,

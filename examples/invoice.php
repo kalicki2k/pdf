@@ -54,9 +54,9 @@ $table = Table::define(
     TableColumn::fixed(Units::mm(30)),
     TableColumn::fixed(Units::mm(30)),
 )
-    ->withOptions(new TableOptions(
+    ->withOptions(TableOptions::make(
         border: Border::all(0.5),
-        textOptions: new TextOptions(
+        textOptions: TextOptions::make(
             fontSize: 9,
             lineHeight: 12,
             embeddedFont: $fontRegular,
@@ -132,7 +132,7 @@ $document = Pdf::document()
             'Steuernummer: 12/345/67890',
             'USt-IdNr.: DE123456789',
         ],
-        new TextOptions(
+        TextOptions::make(
             x: Units::mm(120),
             y: Units::mm(255),
             width: Units::mm(70),
@@ -146,7 +146,7 @@ $document = Pdf::document()
     )
     ->text(
         'DEIN FIRMENNAME - Strasse Hausnummer - PLZ Ort - Deutschland',
-        new TextOptions(
+        TextOptions::make(
             // x: $left,
             y: Units::mm(238),
             width: Units::mm(95),
@@ -166,7 +166,7 @@ $document = Pdf::document()
     )
     ->text(
         "Kundenfirma Mueller GmbH\nz. Hd. Anna Mueller\nBeispielweg 8\n80331 Muenchen\nDeutschland",
-        new TextOptions(
+        TextOptions::make(
             //            x: $left,
             // y: Units::mm(227),
             width: Units::mm(75),
@@ -178,7 +178,7 @@ $document = Pdf::document()
     )
     ->text(
         'Rechnung',
-        new TextOptions(
+        TextOptions::make(
             //            x: $left,
             y: Units::mm(188),
             fontSize: 22,
@@ -189,14 +189,14 @@ $document = Pdf::document()
     ->text(
         [
             TextSegment::plain('Rechnungsnummer: '),
-            TextSegment::plain('2026-0015', new TextOptions(
+            TextSegment::plain('2026-0015', TextOptions::make(
                 embeddedFont: $fontBold,
                 color: $headlineColor,
             )),
             TextSegment::plain(PHP_EOL . 'Rechnungsdatum: 05.04.2026'),
             TextSegment::plain(PHP_EOL . 'Leistungsdatum: 31.03.2026'),
         ],
-        new TextOptions(
+        TextOptions::make(
             y: Units::mm(181),
             width: Units::mm(80),
             fontSize: 9,
@@ -207,7 +207,7 @@ $document = Pdf::document()
     )
     ->text(
         "Sehr geehrte Frau Mueller,\nhiermit berechne ich Ihnen folgende Leistungen:",
-        new TextOptions(
+        TextOptions::make(
             //            x: $left,
             y: Units::mm(166),
             width: $contentWidth,
@@ -224,7 +224,7 @@ $document = Pdf::document()
             TextSegment::plain('USt. 19 %: 328,70 EUR'),
             TextSegment::plain('Gesamtbetrag: 2.058,70 EUR'),
         ],
-        new TextOptions(
+        TextOptions::make(
             x: Units::mm(120),
             y: Units::mm(72),
             width: Units::mm(70),
@@ -236,7 +236,7 @@ $document = Pdf::document()
     )
     ->text(
         "Bitte ueberweisen Sie den Gesamtbetrag innerhalb von 14 Tagen ohne Abzug.\nVielen Dank fuer Ihren Auftrag.",
-        new TextOptions(
+        TextOptions::make(
             x: Units::mm(120),
             y: Units::mm(52),
             width: Units::mm(70),

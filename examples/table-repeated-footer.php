@@ -83,21 +83,21 @@ $lineItems = [
 $netTotal = 0.0;
 
 $headerCell = static fn (string $label) => TableCell::segments(
-    TextSegment::plain($label, new TextOptions(
+    TextSegment::plain($label, TextOptions::make(
         embeddedFont: $fontBold,
         color: Color::white(),
     )),
 )->withBackgroundColor($headerFill);
 
 $footerLabelCell = static fn (string $label, int $colspan = 1) => TableCell::segments(
-    TextSegment::plain($label, new TextOptions(
+    TextSegment::plain($label, TextOptions::make(
         embeddedFont: $fontBold,
         color: $ink,
     )),
 )->withBackgroundColor($footerFill)->withColspan($colspan);
 
 $footerValueCell = static fn (string $value) => TableCell::segments(
-    TextSegment::plain($value, new TextOptions(
+    TextSegment::plain($value, TextOptions::make(
         embeddedFont: $fontBold,
         color: $accent,
     )),
@@ -118,16 +118,16 @@ $table = Table::define(
     TableColumn::auto(),
     TableColumn::auto(),
     TableColumn::auto(),
-)->withOptions(new TableOptions(
+)->withOptions(TableOptions::make(
     border: Border::all(0.4),
-    textOptions: new TextOptions(
+    textOptions: TextOptions::make(
         fontSize: 8.7,
         lineHeight: 11.6,
         embeddedFont: $fontRegular,
         color: $body,
     ),
     caption: TableCaption::text('Leistungsnachweis Maerz 2026')
-        ->withTextOptions(new TextOptions(
+        ->withTextOptions(TextOptions::make(
             fontSize: 10.0,
             lineHeight: 13.0,
             embeddedFont: $fontBold,
@@ -193,14 +193,14 @@ $document = DefaultDocumentBuilder::make()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->margin(Margin::all(Units::mm(18)))
-    ->text('Managed Services Statement', new TextOptions(
+    ->text('Managed Services Statement', TextOptions::make(
         embeddedFont: $fontBold,
         fontSize: 20,
         lineHeight: 24,
         color: $ink,
         spacingAfter: 4,
     ))
-    ->text('Brightlane Commerce GmbH · Monatliche Leistungsabrechnung fuer Plattformbetrieb, Sicherheit und Produktpflege', new TextOptions(
+    ->text('Brightlane Commerce GmbH · Monatliche Leistungsabrechnung fuer Plattformbetrieb, Sicherheit und Produktpflege', TextOptions::make(
         embeddedFont: $fontRegular,
         fontSize: 9.5,
         lineHeight: 13,
@@ -218,7 +218,7 @@ $document = DefaultDocumentBuilder::make()
         'Kunde: Brightlane Commerce GmbH',
         'Leistungszeitraum: 01.03.2026 bis 31.03.2026',
         'Service-Level: Managed Operations & Continuous Delivery',
-    ], new TextOptions(
+    ], TextOptions::make(
         y: Units::mm(252),
         width: Units::mm(88),
         embeddedFont: $fontRegular,
@@ -230,7 +230,7 @@ $document = DefaultDocumentBuilder::make()
         'Account Lead: Anna Mueller',
         'Reporting Cycle: monatlich',
         'Abrechnungsbasis: Time & Material',
-    ], new TextOptions(
+    ], TextOptions::make(
         x: Units::mm(122),
         y: Units::mm(252),
         width: Units::mm(70),
@@ -240,7 +240,7 @@ $document = DefaultDocumentBuilder::make()
         color: $body,
         align: TextAlign::RIGHT,
     ))
-    ->text('Der Leistungsnachweis unten ist bewusst ueber mehrere Seiten aufgebaut, damit wiederholte Tabellenkoepfe und wiederholte Footer-Zeilen in einem realistischen Abrechnungsdokument sichtbar werden.', new TextOptions(
+    ->text('Der Leistungsnachweis unten ist bewusst ueber mehrere Seiten aufgebaut, damit wiederholte Tabellenkoepfe und wiederholte Footer-Zeilen in einem realistischen Abrechnungsdokument sichtbar werden.', TextOptions::make(
         y: Units::mm(228),
         width: Units::mm(174),
         embeddedFont: $fontRegular,
@@ -250,7 +250,7 @@ $document = DefaultDocumentBuilder::make()
         spacingAfter: 8,
     ))
     ->table($table)
-    ->text('Hinweis: Die Footer-Zeilen mit Netto-, Steuer- und Gesamtbetrag werden auf jeder Folgeseite erneut ausgegeben. Das eignet sich fuer Berichte, Leistungsnachweise und Abrechnungsanlagen, bei denen Summen auf jeder Seite sichtbar bleiben sollen.', new TextOptions(
+    ->text('Hinweis: Die Footer-Zeilen mit Netto-, Steuer- und Gesamtbetrag werden auf jeder Folgeseite erneut ausgegeben. Das eignet sich fuer Berichte, Leistungsnachweise und Abrechnungsanlagen, bei denen Summen auf jeder Seite sichtbar bleiben sollen.', TextOptions::make(
         embeddedFont: $fontRegular,
         fontSize: 8.5,
         lineHeight: 12,

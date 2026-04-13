@@ -92,7 +92,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->creator('Kalle PDF')
             ->creatorTool('pdf2 test suite')
             ->pageSize(PageSize::A5())
-            ->text('Hello (PDF) \\ Test', new TextOptions(
+            ->text('Hello (PDF) \\ Test', TextOptions::make(
                 x: Units::mm(20),
                 y: Units::mm(250),
                 fontSize: 14,
@@ -198,7 +198,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Zitat', new TextOptions(
+            ->text('Zitat', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 tag: TaggedStructureTag::BLOCK_QUOTE,
             ))
@@ -213,7 +213,7 @@ final class DefaultDocumentBuilderTest extends TestCase
         $this->expectExceptionMessage('Tagged text tag "Sect" is not supported for text content.');
 
         DefaultDocumentBuilder::make()
-            ->text('Kapitel', new TextOptions(tag: TaggedStructureTag::SECT))
+            ->text('Kapitel', TextOptions::make(tag: TaggedStructureTag::SECT))
             ->build();
     }
 
@@ -223,7 +223,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->textLines(['DEIN FIRMENNAME', 'Strasse Hausnummer'], new TextOptions(
+            ->textLines(['DEIN FIRMENNAME', 'Strasse Hausnummer'], TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 semantic: TextSemantic::ARTIFACT,
             ))
@@ -240,7 +240,7 @@ final class DefaultDocumentBuilderTest extends TestCase
         $this->expectExceptionMessage('Text options cannot combine semantic artifact with a tagged text role.');
 
         DefaultDocumentBuilder::make()
-            ->text('Briefkopf', new TextOptions(
+            ->text('Briefkopf', TextOptions::make(
                 tag: TaggedStructureTag::SPAN,
                 semantic: TextSemantic::ARTIFACT,
             ))
@@ -250,13 +250,13 @@ final class DefaultDocumentBuilderTest extends TestCase
     public function testTextLinesAdvanceTheCursorByTheRenderedLineCount(): void
     {
         $document = DefaultDocumentBuilder::make()
-            ->textLines(['Firma', 'Strasse 1'], new TextOptions(
+            ->textLines(['Firma', 'Strasse 1'], TextOptions::make(
                 x: 72.0,
                 y: 720.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
-            ->text('Ort', new TextOptions(
+            ->text('Ort', TextOptions::make(
                 x: 72.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
@@ -289,7 +289,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->textLines(['Zeile 1', 'Zeile 2'], new TextOptions(
+            ->textLines(['Zeile 1', 'Zeile 2'], TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -305,11 +305,11 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->title('Archive Copy')
             ->language('de-DE')
             ->beginStructure(TaggedStructureTag::SECT)
-            ->text('Kapitel', new TextOptions(
+            ->text('Kapitel', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Betont', new TextOptions(
+            ->text('Betont', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                 tag: TaggedStructureTag::STRONG,
             ))
@@ -551,11 +551,11 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->text('Einleitung Привет', new TextOptions(
+            ->text('Einleitung Привет', TextOptions::make(
                 tag: TaggedStructureTag::H1,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
-            ->text('Absatztext Привет', new TextOptions(
+            ->text('Absatztext Привет', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))
             ->build();
@@ -575,7 +575,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: new TextOptions(
+                text: TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     width: 240,
                 ),
@@ -601,9 +601,9 @@ final class DefaultDocumentBuilderTest extends TestCase
                     TableColumn::fixed(120.0),
                 )
                     ->withOptions(
-                        (new TableOptions())
+                        (TableOptions::make())
                             ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
-                            ->withTextOptions(new TextOptions(
+                            ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
                                 lineHeight: 15,
                                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -631,7 +631,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
                 new ListOptions(type: ListType::NUMBERED, start: 7),
-                new TextOptions(
+                TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     width: 240,
                 ),
@@ -749,7 +749,7 @@ final class DefaultDocumentBuilderTest extends TestCase
                 500,
                 120,
                 32,
-                new TextOptions(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
+                TextOptions::make(fontSize: 12, color: Color::rgb(0, 0, 0.4)),
                 Color::rgb(0.2, 0.2, 0.2),
                 Color::rgb(1, 1, 0.8),
                 'QA',
@@ -775,7 +775,7 @@ final class DefaultDocumentBuilderTest extends TestCase
                 500,
                 120,
                 32,
-                new TextOptions(fontSize: 12),
+                TextOptions::make(fontSize: 12),
                 new FreeTextAnnotationOptions(
                     textColor: Color::rgb(0, 0, 0.4),
                     borderColor: Color::rgb(0.2, 0.2, 0.2),
@@ -982,7 +982,7 @@ final class DefaultDocumentBuilderTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->namedDestination('intro')
-            ->text('Open intro', new TextOptions(
+            ->text('Open intro', TextOptions::make(
                 link: LinkTarget::namedDestination('intro'),
             ))
             ->build();
@@ -1143,7 +1143,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->language('de-DE')
             ->text([
                 new TextSegment('Read docs', LinkTarget::externalUrl('https://example.com/docs')),
-            ], new TextOptions(width: 45))
+            ], TextOptions::make(width: 45))
             ->build();
 
         self::assertCount(2, $document->pages[0]->annotations);
@@ -1163,9 +1163,9 @@ final class DefaultDocumentBuilderTest extends TestCase
                 TextSegment::plain('Rechnungsnummer: '),
                 TextSegment::plain(
                     '2026-0015',
-                    new TextOptions(fontName: 'Helvetica-Bold'),
+                    TextOptions::make(fontName: 'Helvetica-Bold'),
                 ),
-            ], new TextOptions(
+            ], TextOptions::make(
                 x: Units::mm(20),
                 y: Units::mm(250),
                 fontSize: 9,
@@ -1189,7 +1189,7 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         DefaultDocumentBuilder::make()
             ->text([
-                TextSegment::plain('Hello', new TextOptions(x: 20)),
+                TextSegment::plain('Hello', TextOptions::make(x: 20)),
             ])
             ->build();
     }

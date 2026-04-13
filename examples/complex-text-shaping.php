@@ -41,115 +41,115 @@ Pdf::document()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->margin($margin)
-    ->text('Complex Text Shaping', new TextOptions(
+    ->text('Complex Text Shaping', TextOptions::make(
         fontName: StandardFont::HELVETICA_BOLD->value,
         fontSize: 24,
         lineHeight: 28,
         spacingAfter: 8,
         color: $headlineColor,
     ))
-    ->text('This example uses assets/fonts/poppins/static/Poppins-Regular.ttf as an embedded TrueType font and exercises the current text-shaping pipeline without any external shaping engine.', new TextOptions(
+    ->text('This example uses assets/fonts/poppins/static/Poppins-Regular.ttf as an embedded TrueType font and exercises the current text-shaping pipeline without any external shaping engine.', TextOptions::make(
         fontSize: 11,
         lineHeight: 15,
         spacingAfter: 8,
         color: $bodyColor,
     ))
-    ->text('What this page is useful for', new TextOptions(
+    ->text('What this page is useful for', TextOptions::make(
         fontName: StandardFont::HELVETICA_BOLD->value,
         fontSize: 13,
         lineHeight: 18,
         spacingAfter: 4,
         color: $sectionColor,
     ))
-    ->text('1. Verify that a real asset font is embedded. 2. Inspect shaping-sensitive Latin words. 3. Inspect Devanagari cluster ordering, reph-like behavior and stacked marks. 4. Use qpdf or visual review against later shaping changes.', new TextOptions(
+    ->text('1. Verify that a real asset font is embedded. 2. Inspect shaping-sensitive Latin words. 3. Inspect Devanagari cluster ordering, reph-like behavior and stacked marks. 4. Use qpdf or visual review against later shaping changes.', TextOptions::make(
         fontSize: 11,
         lineHeight: 15,
         spacingAfter: 12,
         color: $bodyColor,
     ))
-    ->text('Latin embedded-font samples', new TextOptions(
+    ->text('Latin embedded-font samples', TextOptions::make(
         fontName: StandardFont::HELVETICA_BOLD->value,
         fontSize: 13,
         lineHeight: 18,
         spacingAfter: 4,
         color: $sectionColor,
     ))
-    ->text('office official affinity efficient first-office raffle offline fi ffi ffl', new TextOptions(
+    ->text('office official affinity efficient first-office raffle offline fi ffi ffl', TextOptions::make(
         embeddedFont: $fontSource,
         fontSize: 18,
         lineHeight: 24,
         spacingAfter: 6,
         color: $sampleColor,
     ))
-    ->text('The exact ligature behavior depends on the font tables present in the embedded font. This line is useful as a broad regression sample for Latin GSUB and spacing changes.', new TextOptions(
+    ->text('The exact ligature behavior depends on the font tables present in the embedded font. This line is useful as a broad regression sample for Latin GSUB and spacing changes.', TextOptions::make(
         fontSize: 10,
         lineHeight: 14,
         spacingAfter: 12,
         color: $mutedColor,
     ))
-    ->text('Devanagari shaping samples', new TextOptions(
+    ->text('Devanagari shaping samples', TextOptions::make(
         fontName: StandardFont::HELVETICA_BOLD->value,
         fontSize: 13,
         lineHeight: 18,
         spacingAfter: 4,
         color: $sectionColor,
     ))
-    ->text('कि  किं  किं़  र्कि  स्त्कि', new TextOptions(
+    ->text('कि  किं  किं़  र्कि  स्त्कि', TextOptions::make(
         embeddedFont: $fontSource,
         fontSize: 24,
         lineHeight: 32,
         spacingAfter: 6,
         color: $sampleColor,
     ))
-    ->text('These clusters intentionally hit the current Indic path: pre-base matra, same-cluster mark, stacked mark, reph-style leading ra-virama, and a pref-like multi-half-form cluster.', new TextOptions(
+    ->text('These clusters intentionally hit the current Indic path: pre-base matra, same-cluster mark, stacked mark, reph-style leading ra-virama, and a pref-like multi-half-form cluster.', TextOptions::make(
         fontSize: 10,
         lineHeight: 14,
         spacingAfter: 12,
         color: $mutedColor,
     ))
-    ->text('One sample per line', new TextOptions(
+    ->text('One sample per line', TextOptions::make(
         fontName: StandardFont::HELVETICA_BOLD->value,
         fontSize: 13,
         lineHeight: 18,
         spacingAfter: 4,
         color: $sectionColor,
     ))
-    ->text('कि', new TextOptions(
+    ->text('कि', TextOptions::make(
         embeddedFont: $fontSource,
         fontSize: 28,
         lineHeight: 34,
         spacingAfter: 4,
         color: $sampleColor,
     ))
-    ->text('किं', new TextOptions(
+    ->text('किं', TextOptions::make(
         embeddedFont: $fontSource,
         fontSize: 28,
         lineHeight: 34,
         spacingAfter: 4,
         color: $sampleColor,
     ))
-    ->text('किं़', new TextOptions(
+    ->text('किं़', TextOptions::make(
         embeddedFont: $fontSource,
         fontSize: 28,
         lineHeight: 34,
         spacingAfter: 4,
         color: $sampleColor,
     ))
-    ->text('र्कि', new TextOptions(
+    ->text('र्कि', TextOptions::make(
         embeddedFont: $fontSource,
         fontSize: 28,
         lineHeight: 34,
         spacingAfter: 4,
         color: $sampleColor,
     ))
-    ->text('स्त्कि', new TextOptions(
+    ->text('स्त्कि', TextOptions::make(
         embeddedFont: $fontSource,
         fontSize: 28,
         lineHeight: 34,
         spacingAfter: 8,
         color: $sampleColor,
     ))
-    ->text('When the shaping implementation changes, this page should make regressions visible quickly: wrong cluster order, missing pre-base movement, lost marks, broken reph handling or changed vertical mark placement.', new TextOptions(
+    ->text('When the shaping implementation changes, this page should make regressions visible quickly: wrong cluster order, missing pre-base movement, lost marks, broken reph handling or changed vertical mark placement.', TextOptions::make(
         fontSize: 10,
         lineHeight: 14,
         color: $mutedColor,

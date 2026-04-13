@@ -31,18 +31,18 @@ Pdf::document()
     ->creator('examples/embedded-asset-font.php')
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4()->portrait())
-    ->text('Embedded asset font', new TextOptions(
+    ->text('Embedded asset font', TextOptions::make(
         fontSize: 24,
         embeddedFont: $fontSource,
         color: Color::hex('#111827'),
     ))
-    ->text('This example embeds Inter-Regular.ttf from assets/fonts and writes it into the PDF as an embedded TrueType font.', new TextOptions(
+    ->text('This example embeds Inter-Regular.ttf from assets/fonts and writes it into the PDF as an embedded TrueType font.', TextOptions::make(
         fontSize: 12,
         lineHeight: 16,
         embeddedFont: $fontSource,
         color: Color::hex('#334155'),
     ))
-    ->text('The goal is to keep the example small and explicit so the embedded-font API remains easy to inspect.', new TextOptions(
+    ->text('The goal is to keep the example small and explicit so the embedded-font API remains easy to inspect.', TextOptions::make(
         fontSize: 12,
         lineHeight: 16,
         embeddedFont: $fontSource,

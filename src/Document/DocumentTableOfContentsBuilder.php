@@ -280,7 +280,7 @@ final readonly class DocumentTableOfContentsBuilder
         TableOfContentsOptions $options,
     ): array {
         $builder = DefaultDocumentBuilder::make()->pageSize($pageSize);
-        $builder = $builder->text($options->title, new TextOptions(
+        $builder = $builder->text($options->title, TextOptions::make(
             x: $layout['left'],
             y: $layout['top'],
             fontSize: $options->titleSize,
@@ -311,7 +311,7 @@ final readonly class DocumentTableOfContentsBuilder
             );
             $leaderText = $this->buildLeaderText($leaderWidth, $options);
 
-            $builder = $builder->text($entryTitle, new TextOptions(
+            $builder = $builder->text($entryTitle, TextOptions::make(
                 x: $layout['left'] + $indent,
                 y: $currentY,
                 fontSize: $options->entrySize,
@@ -321,7 +321,7 @@ final readonly class DocumentTableOfContentsBuilder
             ));
 
             if ($leaderText !== '') {
-                $builder = $builder->text($leaderText, new TextOptions(
+                $builder = $builder->text($leaderText, TextOptions::make(
                     x: $layout['left'] + $indent + $entryTitleWidth + ($options->style->pageNumberGap / 2),
                     y: $currentY,
                     fontSize: $options->entrySize,
@@ -330,7 +330,7 @@ final readonly class DocumentTableOfContentsBuilder
                 ));
             }
 
-            $builder = $builder->text($pageNumberText, new TextOptions(
+            $builder = $builder->text($pageNumberText, TextOptions::make(
                 x: $layout['right'] - $pageNumberWidth,
                 y: $currentY,
                 fontSize: $options->entrySize,

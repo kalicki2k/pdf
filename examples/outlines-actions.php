@@ -21,14 +21,14 @@ if (!is_dir($outputDirectory) && !mkdir($outputDirectory, 0777, true) && !is_dir
 }
 
 $margin = Margin::all(Units::mm(18));
-$headline = new TextOptions(
+$headline = TextOptions::make(
     fontSize: 24,
     lineHeight: 28,
     spacingAfter: 8,
     fontName: StandardFont::HELVETICA_BOLD->value,
     color: Color::hex('#0f172a'),
 );
-$body = new TextOptions(
+$body = TextOptions::make(
     fontSize: 11,
     lineHeight: 15,
     spacingAfter: 8,

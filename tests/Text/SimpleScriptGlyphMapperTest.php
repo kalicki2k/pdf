@@ -27,7 +27,7 @@ final class SimpleScriptGlyphMapperTest extends TestCase
         $glyphNames = $mapper->glyphNamesForRun(
             $run,
             StandardFontDefinition::from(StandardFont::HELVETICA),
-            new TextOptions(fontName: StandardFont::HELVETICA->value),
+            TextOptions::make(fontName: StandardFont::HELVETICA->value),
             1.4,
         );
 
@@ -45,7 +45,7 @@ final class SimpleScriptGlyphMapperTest extends TestCase
         $glyphNames = $mapper->glyphNamesForRun(
             $run,
             StandardFontDefinition::from(StandardFont::HELVETICA),
-            new TextOptions(fontName: StandardFont::HELVETICA->value),
+            TextOptions::make(fontName: StandardFont::HELVETICA->value),
             1.4,
         );
 
@@ -63,7 +63,7 @@ final class SimpleScriptGlyphMapperTest extends TestCase
         $glyphNames = $mapper->glyphNamesForRun(
             $run,
             StandardFontDefinition::from(StandardFont::HELVETICA),
-            new TextOptions(fontName: StandardFont::HELVETICA->value),
+            TextOptions::make(fontName: StandardFont::HELVETICA->value),
             1.4,
         );
 

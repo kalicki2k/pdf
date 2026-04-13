@@ -36,14 +36,14 @@ $document = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1b-regression.php')
-    ->text('PDF/A-1b Regression Привет', new TextOptions(
+    ->text('PDF/A-1b Regression Привет', TextOptions::make(
         x: 72,
         y: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->text('Dieses Dokument sichert den minimalen PDF/A-1b-Grundpfad mit eingebettetem Repo-Font und OutputIntent ab. Привет.', new TextOptions(
+    ->text('Dieses Dokument sichert den minimalen PDF/A-1b-Grundpfad mit eingebettetem Repo-Font und OutputIntent ab. Привет.', TextOptions::make(
         x: 72,
         y: 724,
         width: 420,

@@ -39,14 +39,14 @@ $baseDocument = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa2a-negative-regression-fixtures.php')
-    ->text('PDF/A-2a Negative Regression Привет', new TextOptions(
+    ->text('PDF/A-2a Negative Regression Привет', TextOptions::make(
         x: 72,
         y: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
-    ->text('Getaggter Absatz fuer den PDF/A-2a-Negativpfad. Привет.', new TextOptions(
+    ->text('Getaggter Absatz fuer den PDF/A-2a-Negativpfad. Привет.', TextOptions::make(
         x: 72,
         y: 724,
         width: 360,

@@ -260,7 +260,7 @@ final class TableLayoutCalculator
 
     private function cellTextOptions(TextOptions $options, TableCell $cell, float $contentWidth): TextOptions
     {
-        return new TextOptions(
+        return TextOptions::make(
             width: $contentWidth,
             fontSize: $options->fontSize,
             lineHeight: $options->lineHeight,

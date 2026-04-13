@@ -39,7 +39,7 @@ $baseDocument = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa2u-negative-regression-fixtures.php')
-    ->text('PDF/A-2u Negative Regression Привет', new TextOptions(
+    ->text('PDF/A-2u Negative Regression Привет', TextOptions::make(
         x: 72,
         y: 760,
         fontSize: 18,

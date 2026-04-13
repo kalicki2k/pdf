@@ -30,7 +30,7 @@ final class TaggedTableStructureTest extends TestCase
             TableColumn::fixed(90.0),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withPlacement(TablePlacement::at(24.0, 520.0, 270.0))
                     ->withCaption(TableCaption::text('Quarterly summary')),
             )

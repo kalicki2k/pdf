@@ -98,7 +98,7 @@ final class DocumentRendererEncryptionTest extends TestCase
             TableColumn::proportional(1),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withCaption(TableCaption::text('Quarterly Secret Table'))
                     ->withCellPadding(CellPadding::all(6)),
             )
@@ -120,7 +120,7 @@ final class DocumentRendererEncryptionTest extends TestCase
             ->title('Complex Secret Title')
             ->author('Complex Secret Author')
             ->encryption(Encryption::aes256('user', 'owner'))
-            ->text('Visible Intro Secret', new TextOptions(
+            ->text('Visible Intro Secret', TextOptions::make(
                 embeddedFont: EmbeddedFontSource::fromPath($fontPath),
             ))
             ->image(

@@ -79,7 +79,7 @@ final class TableTest extends TestCase
             ->withHeaderRows(TableRow::fromTexts('H1', 'H2'))
             ->withRows(TableRow::fromTexts('A', 'B'))
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withRepeatedHeaderOnPageBreak()
                     ->withRepeatedFooterOnPageBreak(),
             );
@@ -98,7 +98,7 @@ final class TableTest extends TestCase
             TableColumn::fixed(80.0),
         )
             ->withOptions(
-                (new TableOptions())
+                (TableOptions::make())
                     ->withCaption($caption)
                     ->withPlacement($placement),
             )
@@ -127,7 +127,7 @@ final class TableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(80.0),
         )
-            ->withOptions((new TableOptions())->withPlacement($placement))
+            ->withOptions((TableOptions::make())->withPlacement($placement))
             ->withRows(TableRow::fromCells($cell));
 
         self::assertSame($placement, $table->placement);
@@ -145,12 +145,12 @@ final class TableTest extends TestCase
         $placement = TablePlacement::at(48.0, 460.0, 220.0);
         $padding = CellPadding::symmetric(2.0, 3.0);
         $border = Border::all(1.0);
-        $text = new TextOptions(fontSize: 9.0, lineHeight: 12.0);
+        $text = TextOptions::make(fontSize: 9.0, lineHeight: 12.0);
 
         $table = Table::define(
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
-        )->withOptions(new TableOptions(
+        )->withOptions(TableOptions::make(
             caption: $caption,
             placement: $placement,
             cellPadding: $padding,
@@ -160,7 +160,7 @@ final class TableTest extends TestCase
             repeatFooterOnPageBreak: true,
         ));
 
-        self::assertEquals($table->options, new TableOptions(
+        self::assertEquals($table->options, TableOptions::make(
             caption: $caption,
             placement: $placement,
             cellPadding: $padding,
