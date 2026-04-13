@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
+use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 
@@ -21,6 +22,7 @@ final readonly class SimpleTextShaper implements TextShaper
         ?BengaliScriptTextShaper $bengaliTextShaper = null,
         ?GujaratiScriptTextShaper $gujaratiTextShaper = null,
         ?DefaultScriptTextShaper $defaultScriptTextShaper = null,
+        private ?Debugger $debugger = null,
     ) {
         $this->scriptShapers = [
             $arabicTextShaper ?? new ArabicScriptTextShaper(),
@@ -39,10 +41,27 @@ final readonly class SimpleTextShaper implements TextShaper
         TextDirection $baseDirection = TextDirection::LTR,
         StandardFontDefinition | EmbeddedFontDefinition | null $font = null,
     ): array {
+        $debugger = $this->debugger ?? Debugger::disabled();
+        $resolveScope = $debugger->startPerformanceScope('text.shape.resolve', [
+            'text_length' => strlen($text),
+        ]);
+        $scriptRuns = $this->scriptResolver->resolve($text, $baseDirection);
+        $resolveScope->stop([
+            'text_length' => strlen($text),
+            'run_count' => count($scriptRuns),
+        ]);
         $runs = [];
 
-        foreach ($this->scriptResolver->resolve($text, $baseDirection) as $run) {
+        foreach ($scriptRuns as $run) {
+            $shapeScope = $debugger->startPerformanceScope('text.shape.run.' . $run->script->value, [
+                'direction' => $run->direction->value,
+                'text_length' => strlen($run->text),
+            ]);
             $runs[] = $this->scriptTextShaperFor($run->script)->shape($run, $font);
+            $shapeScope->stop([
+                'direction' => $run->direction->value,
+                'text_length' => strlen($run->text),
+            ]);
         }
 
         return $runs;

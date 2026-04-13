@@ -112,6 +112,7 @@ use Kalle\Pdf\Page\SupportsPopupAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Page\UnderlineAnnotation;
+use Kalle\Pdf\Text\DefaultScriptTextShaper;
 use Kalle\Pdf\Text\MappedTextRun;
 use Kalle\Pdf\Text\ShapedTextRun;
 use Kalle\Pdf\Text\SimpleFontRunMapper;
@@ -2649,6 +2650,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
     }
 
+    private function debugger(): Debugger
+    {
+        return $this->buildDebugger();
+    }
+
     private function buildCurrentPage(): Page
     {
         return new Page(
@@ -2743,6 +2749,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $availableWidth = $textFlow->availableTextWidthFrom($x, $options);
         $fontRunMapper = $this->fontRunMapper();
         $textBlockBuilder = $this->textBlockBuilder();
+        $scope = $this->debugger()->startPerformanceScope('text.content', [
+            'line_count' => count($shapedLines),
+            'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
+        ]);
 
         foreach ($shapedLines as $index => $lineRuns) {
             if ($lineRuns === []) {
@@ -2832,6 +2842,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
         } elseif ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
             $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
         }
+
+        $scope->stop([
+            'line_count' => count($shapedLines),
+            'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
+            'annotation_count' => count($annotations),
+            'content_length' => strlen($contentsString),
+        ]);
 
         return [
             'contents' => $contentsString,
@@ -4300,7 +4317,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
             : StandardFontDefinition::from($options->fontName);
         $textFlow = $clone->textFlow();
         $placement = $textFlow->placement($options, $font);
+        $debugger = $clone->debugger();
+        $wrapScope = $debugger->startPerformanceScope('text.wrap', [
+            'mode' => 'block',
+        ]);
         $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
+        $wrapScope->stop([
+            'mode' => 'block',
+            'line_count' => count($wrappedLines),
+            'text_length' => strlen($text),
+        ]);
         $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, $shapedLines);
         $markedContentTag = $taggedTextTag !== null && $clone->requiresTaggedStructure()
@@ -4347,6 +4373,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone = clone $this;
         $options ??= new TextOptions();
         $artifact = $options->semantic === TextSemantic::ARTIFACT;
+        $debugger = $clone->debugger();
 
         if ($lines === []) {
             return $clone;
@@ -4394,7 +4421,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
             );
             $lineCount = count($wrappedSegmentLines);
         } else {
+            $wrapScope = $debugger->startPerformanceScope('text.wrap', [
+                'mode' => 'lines',
+            ]);
             $wrappedLines = $clone->wrapExplicitTextLines($validatedLines, $options, $font, $textFlow, $placement['x']);
+            $wrapScope->stop([
+                'mode' => 'lines',
+                'line_count' => count($wrappedLines),
+                'text_length' => strlen(implode('', $validatedLines)),
+            ]);
             $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
             $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, $shapedLines);
             $textResult = $clone->buildWrappedTextContent(
@@ -4445,7 +4480,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?int $markedContentId,
     ): array {
         $artifact = $options->semantic === TextSemantic::ARTIFACT;
+        $debugger = $this->debugger();
+        $wrapScope = $debugger->startPerformanceScope('text.wrap', [
+            'mode' => 'block_at',
+        ]);
         $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $x);
+        $wrapScope->stop([
+            'mode' => 'block_at',
+            'line_count' => count($wrappedLines),
+            'text_length' => strlen($text),
+        ]);
         $shapedLines = $this->shapeWrappedTextLines($wrappedLines, $options, $font);
         $renderState = $this->prepareTextRenderState(
             $text,
@@ -4691,6 +4735,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         array $shapedLines,
         bool $forceUnicodeEmbeddedFont = false,
     ): array {
+        $scope = $this->debugger()->startPerformanceScope('text.render_state', [
+            'line_count' => count($shapedLines),
+            'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
+        ]);
         $usesUnicodeEmbeddedFont = $font instanceof EmbeddedFontDefinition
             && (
                 $forceUnicodeEmbeddedFont
@@ -4719,6 +4767,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $options->fontEncoding,
                 ),
             );
+
+        $scope->stop([
+            'line_count' => count($shapedLines),
+            'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
+            'text_length' => strlen($text),
+            'use_hex_string' => $usesUnicodeEmbeddedFont ? 1 : 0,
+        ]);
 
         return [
             'fontAlias' => $fontAlias,
@@ -5027,6 +5082,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function textShaper(): SimpleTextShaper
     {
+        if ($this->debugConfig !== null) {
+            return new SimpleTextShaper(
+                defaultScriptTextShaper: new DefaultScriptTextShaper(debugger: $this->debugger()),
+                debugger: $this->debugger(),
+            );
+        }
+
         /** @var SimpleTextShaper|null $shaper */
         static $shaper = null;
 
@@ -5052,12 +5114,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
     ): array {
         $shapedLines = [];
         $textShaper = $this->textShaper();
+        $scope = $this->debugger()->startPerformanceScope('text.shape', [
+            'line_count' => count($lines),
+            'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
+        ]);
 
         foreach ($lines as $line) {
             $shapedLines[] = $line === ''
                 ? []
                 : $textShaper->shape($line, $options->baseDirection, $font);
         }
+
+        $scope->stop([
+            'line_count' => count($lines),
+            'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
+        ]);
 
         return $shapedLines;
     }

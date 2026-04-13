@@ -58,6 +58,10 @@ final class DocumentDebugIntegrationTest extends TestCase
         self::assertContains('stream.serialized', $this->eventsForChannel($records, 'pdf'));
         self::assertContains('xref.written', $this->eventsForChannel($records, 'pdf'));
         self::assertContains('trailer.written', $this->eventsForChannel($records, 'pdf'));
+        self::assertContains('text.wrap', $this->eventsForChannel($records, 'performance'));
+        self::assertContains('text.shape', $this->eventsForChannel($records, 'performance'));
+        self::assertContains('text.render_state', $this->eventsForChannel($records, 'performance'));
+        self::assertContains('text.content', $this->eventsForChannel($records, 'performance'));
         self::assertContains('document.render', $this->eventsForChannel($records, 'performance'));
         self::assertContains('page.render', $this->eventsForChannel($records, 'performance'));
     }
