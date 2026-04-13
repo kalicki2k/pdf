@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\StrokeStyle;
@@ -53,14 +54,16 @@ $table = Table::define(
     TableColumn::fixed(Units::mm(30)),
     TableColumn::fixed(Units::mm(30)),
 )
-    ->withPlacement(TablePlacement::at($left, Units::mm(104), $contentWidth))
-    ->withCellPadding(CellPadding::symmetric(Units::mm(1.2), Units::mm(1.5)))
-    ->withBorder(Border::all(0.5))
-    ->withTextOptions(new TextOptions(
-        fontSize: 9,
-        lineHeight: 12,
-        embeddedFont: $fontRegular,
-        color: $textColor,
+    ->withOptions(new TableOptions(
+        border: Border::all(0.5),
+        textOptions: new TextOptions(
+            fontSize: 9,
+            lineHeight: 12,
+            embeddedFont: $fontRegular,
+            color: $textColor,
+        ),
+        placement: TablePlacement::at($left, Units::mm(104), $contentWidth),
+        cellPadding: CellPadding::symmetric(Units::mm(1.2), Units::mm(1.5)),
     ))
     ->withHeaderRows(
         TableRow::fromCells(

@@ -105,47 +105,7 @@ final readonly class Table
         );
     }
 
-    public function withCaption(TableCaption $caption): self
-    {
-        return $this->withTableOptions($this->options->withCaption($caption));
-    }
-
-    public function withPlacement(TablePlacement $placement): self
-    {
-        return $this->withTableOptions($this->options->withPlacement($placement));
-    }
-
-    public function withRepeatedHeaderOnPageBreak(bool $repeatHeaderOnPageBreak = true): self
-    {
-        return $this->withTableOptions($this->options->withRepeatedHeaderOnPageBreak($repeatHeaderOnPageBreak));
-    }
-
-    public function withRepeatedFooterOnPageBreak(bool $repeatFooterOnPageBreak = true): self
-    {
-        return $this->withTableOptions($this->options->withRepeatedFooterOnPageBreak($repeatFooterOnPageBreak));
-    }
-
-    public function withCellPadding(CellPadding $cellPadding): self
-    {
-        return $this->withTableOptions($this->options->withCellPadding($cellPadding));
-    }
-
-    public function withBorder(Border $border): self
-    {
-        return $this->withTableOptions($this->options->withBorder($border));
-    }
-
-    public function withTextOptions(TextOptions $textOptions): self
-    {
-        return $this->withTableOptions($this->options->withTextOptions($textOptions));
-    }
-
     public function withOptions(TableOptions $options): self
-    {
-        return $this->withTableOptions($options);
-    }
-
-    public function withTableOptions(TableOptions $options): self
     {
         return new self(
             columns: $this->columns,

@@ -78,8 +78,11 @@ final class TableTest extends TestCase
         )
             ->withHeaderRows(TableRow::fromTexts('H1', 'H2'))
             ->withRows(TableRow::fromTexts('A', 'B'))
-            ->withRepeatedHeaderOnPageBreak()
-            ->withRepeatedFooterOnPageBreak();
+            ->withOptions(
+                (new TableOptions())
+                    ->withRepeatedHeaderOnPageBreak()
+                    ->withRepeatedFooterOnPageBreak(),
+            );
 
         self::assertCount(1, $table->headerRows);
         self::assertTrue($table->repeatHeaderOnPageBreak);
@@ -94,8 +97,11 @@ final class TableTest extends TestCase
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
         )
-            ->withCaption($caption)
-            ->withPlacement($placement)
+            ->withOptions(
+                (new TableOptions())
+                    ->withCaption($caption)
+                    ->withPlacement($placement),
+            )
             ->withRows(TableRow::fromTexts('A', 'B'))
             ->withFooterRows(TableRow::fromTexts('Total', '2'));
 
@@ -121,7 +127,7 @@ final class TableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(80.0),
         )
-            ->withPlacement($placement)
+            ->withOptions((new TableOptions())->withPlacement($placement))
             ->withRows(TableRow::fromCells($cell));
 
         self::assertSame($placement, $table->placement);
@@ -144,7 +150,7 @@ final class TableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
-        )->withTableOptions(new TableOptions(
+        )->withOptions(new TableOptions(
             caption: $caption,
             placement: $placement,
             cellPadding: $padding,

@@ -483,7 +483,7 @@ $table = Table::define(
     TableColumn::proportional(1),
     TableColumn::auto(),
 )
-    ->withTableOptions(new TableOptions(
+    ->withOptions(new TableOptions(
         caption: TableCaption::text('Produktuebersicht'),
         placement: TablePlacement::at(72, 520, 320),
         cellPadding: CellPadding::all(6),

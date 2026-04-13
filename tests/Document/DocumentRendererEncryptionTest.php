@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Encryption\Permissions;
@@ -96,8 +97,11 @@ final class DocumentRendererEncryptionTest extends TestCase
             TableColumn::fixed(110),
             TableColumn::proportional(1),
         )
-            ->withCaption(TableCaption::text('Quarterly Secret Table'))
-            ->withCellPadding(CellPadding::all(6))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCaption(TableCaption::text('Quarterly Secret Table'))
+                    ->withCellPadding(CellPadding::all(6)),
+            )
             ->withHeaderRows(
                 TableRow::fromCells(
                     TableCell::text('Region')->withHeaderScope(TableHeaderScope::COLUMN),

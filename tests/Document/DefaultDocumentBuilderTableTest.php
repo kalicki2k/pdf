@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\Units;
@@ -39,9 +40,12 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(100.0),
             TableColumn::proportional(1.0),
         )
-            ->withCellPadding($padding)
-            ->withBorder(Border::all(0.5))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding($padding)
+                    ->withBorder(Border::all(0.5))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(
                 TableRow::fromTexts('Name', 'Value'),
                 TableRow::fromTexts('Alpha', 'Beta'),
@@ -78,8 +82,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(90.0),
             TableColumn::fixed(90.0),
         )
-            ->withPlacement(new TablePlacement(70.0, 180.0))
-            ->withCellPadding(CellPadding::all(4.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(new TablePlacement(70.0, 180.0))
+                    ->withCellPadding(CellPadding::all(4.0)),
+            )
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text('Left')->withPadding(CellPadding::symmetric(10.0, 12.0)),
@@ -115,7 +122,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(90.0),
             TableColumn::fixed(90.0),
         )
-            ->withPlacement(TablePlacement::at(70.0, 460.0, 180.0))
+            ->withOptions((new TableOptions())->withPlacement(TablePlacement::at(70.0, 460.0, 180.0)))
             ->withRows(
                 TableRow::fromTexts('Left', 'Right'),
             );
@@ -142,7 +149,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(90.0),
         )
-            ->withPlacement(TablePlacement::at(60.0, 550.0, 90.0))
+            ->withOptions((new TableOptions())->withPlacement(TablePlacement::at(60.0, 550.0, 90.0)))
             ->withRows(
                 TableRow::fromTexts('Value'),
             );
@@ -171,7 +178,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(90.0),
         )
-            ->withPlacement(new TablePlacement(10.0, 90.0))
+            ->withOptions((new TableOptions())->withPlacement(new TablePlacement(10.0, 90.0)))
             ->withRows(
                 TableRow::fromTexts('Value'),
             );
@@ -196,7 +203,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(360.0),
         )
-            ->withPlacement(new TablePlacement(70.0, 360.0))
+            ->withOptions((new TableOptions())->withPlacement(new TablePlacement(70.0, 360.0)))
             ->withRows(
                 TableRow::fromTexts('Value'),
             );
@@ -221,7 +228,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(90.0),
         )
-            ->withPlacement(TablePlacement::at(60.0, 20.0, 90.0))
+            ->withOptions((new TableOptions())->withPlacement(TablePlacement::at(60.0, 20.0, 90.0)))
             ->withRows(
                 TableRow::fromTexts('Value'),
             );
@@ -249,9 +256,12 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
         )
-            ->withPlacement(new TablePlacement(60.0, 160.0))
-            ->withBorder(Border::none())
-            ->withCellPadding(CellPadding::all(6.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(new TablePlacement(60.0, 160.0))
+                    ->withBorder(Border::none())
+                    ->withCellPadding(CellPadding::all(6.0)),
+            )
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text('7')->withHorizontalAlign(TextAlign::RIGHT),
@@ -286,7 +296,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(180.0),
         )
-            ->withPlacement(TablePlacement::at(60.0, 480.0, 180.0))
+            ->withOptions((new TableOptions())->withPlacement(TablePlacement::at(60.0, 480.0, 180.0)))
             ->withRows(
                 TableRow::fromCells(
                     TableCell::segments(
@@ -314,8 +324,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(34.0),
             TableColumn::fixed(42.0),
         )
-            ->withPlacement(TablePlacement::at(40.0, 360.0, 106.0))
-            ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(TablePlacement::at(40.0, 360.0, 106.0))
+                    ->withCellPadding(CellPadding::symmetric(4.0, 3.0)),
+            )
             ->withRows(
                 TableRow::fromTexts('Area', 'Queue', 'INC2026ALPHAOMEGA0004711'),
                 TableRow::fromTexts('South', '', 'REGIONALHANDOVERALPHA2026040801'),
@@ -345,7 +358,13 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(45.0),
             TableColumn::fixed(45.0),
         )
-            ->withPlacement(TablePlacement::at(20.0, 360.0, 220.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(TablePlacement::at(20.0, 360.0, 220.0))
+                    ->withRepeatedHeaderOnPageBreak()
+                    ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
+                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+            )
             ->withHeaderRows(
                 TableRow::fromCells(
                     TableCell::text('Region', rowspan: 2),
@@ -354,9 +373,6 @@ final class DefaultDocumentBuilderTableTest extends TestCase
                 ),
                 TableRow::fromTexts('Availability', 'Response time', 'Escalations', 'Resolved'),
             )
-            ->withRepeatedHeaderOnPageBreak()
-            ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
-            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
             ->withRows(...$rows);
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A6())
@@ -400,11 +416,14 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(34.0),
             TableColumn::fixed(34.0),
         )
-            ->withPlacement(TablePlacement::at(20.0, 360.0, 164.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(TablePlacement::at(20.0, 360.0, 164.0))
+                    ->withRepeatedHeaderOnPageBreak()
+                    ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
+                    ->withTextOptions(new TextOptions(fontSize: 9.0, lineHeight: 11.5)),
+            )
             ->withHeaderRows(TableRow::fromTexts('Region', 'Metric', 'Jan', 'Feb', 'Mar'))
-            ->withRepeatedHeaderOnPageBreak()
-            ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
-            ->withTextOptions(new TextOptions(fontSize: 9.0, lineHeight: 11.5))
             ->withRows(...$rows);
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A6())
@@ -424,7 +443,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(100.0),
             TableColumn::fixed(100.0),
         )
-            ->withCaption(TableCaption::text('Inventory summary')->withSpacingAfter(10.0))
+            ->withOptions((new TableOptions())->withCaption(TableCaption::text('Inventory summary')->withSpacingAfter(10.0)))
             ->withHeaderRows(TableRow::fromTexts('Name', 'Value'))
             ->withRows(TableRow::fromTexts('Alpha', 'Beta'));
         $document = DefaultDocumentBuilder::make()
@@ -478,8 +497,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::proportional(1.0),
             TableColumn::proportional(1.0),
         )
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(...$rows);
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A8())
@@ -514,8 +536,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::proportional(1.0),
         )
             ->withHeaderRows(TableRow::fromTexts('Head Left', 'Head Right'))
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(...$rows);
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A8())
@@ -550,9 +575,12 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::proportional(1.0),
         )
             ->withHeaderRows(TableRow::fromTexts('Head Left', 'Head Right'))
-            ->withRepeatedHeaderOnPageBreak()
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withRepeatedHeaderOnPageBreak()
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(...$rows);
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A8())
@@ -612,8 +640,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::proportional(1.0),
             TableColumn::proportional(1.0),
         )
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(...$rows)
             ->withFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'));
         $document = DefaultDocumentBuilder::make()
@@ -639,11 +670,14 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::proportional(1.0),
             TableColumn::proportional(1.0),
         )
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+                    ->withRepeatedFooterOnPageBreak(),
+            )
             ->withRows(...$rows)
-            ->withFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'))
-            ->withRepeatedFooterOnPageBreak();
+            ->withFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'));
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A8())
             ->margin(Margin::all(10.0))
@@ -663,7 +697,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(70.0),
             TableColumn::fixed(80.0),
         )
-            ->withCellPadding($padding)
+            ->withOptions((new TableOptions())->withCellPadding($padding))
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text('Wide', colspan: 2),
@@ -722,7 +756,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
         )
-            ->withCellPadding($padding)
+            ->withOptions((new TableOptions())->withCellPadding($padding))
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text('Merged', rowspan: 2),
@@ -762,8 +796,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::proportional(1.0),
             TableColumn::proportional(1.0),
         )
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text('Merged', rowspan: 2),
@@ -802,8 +839,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
         )
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text('Center')->withVerticalAlign(VerticalAlign::MIDDLE),
@@ -826,8 +866,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
         )
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text('Bottom')->withVerticalAlign(VerticalAlign::BOTTOM),
@@ -848,8 +891,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::proportional(1.0),
         )
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(
                 TableRow::fromTexts($this->multilineText(18)),
             );
@@ -877,8 +923,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::proportional(1.0),
             TableColumn::proportional(1.0),
         )
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text($this->multilineText(18), rowspan: 2),
@@ -912,9 +961,12 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             TableColumn::proportional(1.0),
         )
             ->withHeaderRows(TableRow::fromTexts('Header'))
-            ->withRepeatedHeaderOnPageBreak()
-            ->withCellPadding(CellPadding::all(6.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withRepeatedHeaderOnPageBreak()
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(
                 TableRow::fromTexts($this->multilineText(18)),
             );

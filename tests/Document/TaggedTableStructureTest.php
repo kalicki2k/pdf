@@ -12,6 +12,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Page\Margin;
@@ -28,8 +29,11 @@ final class TaggedTableStructureTest extends TestCase
             TableColumn::fixed(90.0),
             TableColumn::fixed(90.0),
         )
-            ->withPlacement(TablePlacement::at(24.0, 520.0, 270.0))
-            ->withCaption(TableCaption::text('Quarterly summary'))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(TablePlacement::at(24.0, 520.0, 270.0))
+                    ->withCaption(TableCaption::text('Quarterly summary')),
+            )
             ->withHeaderRows(
                 TableRow::fromCells(
                     TableCell::text('Label', rowspan: 2)->withHeaderScope(TableHeaderScope::BOTH),

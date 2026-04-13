@@ -39,6 +39,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
@@ -2956,8 +2957,16 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     TableColumn::fixed(120.0),
                     TableColumn::fixed(120.0),
                 )
-                    ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
-                    ->withCaption(TableCaption::text('Quarterly summary Привет'))
+                    ->withOptions(
+                        (new TableOptions())
+                            ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
+                            ->withCaption(TableCaption::text('Quarterly summary Привет'))
+                            ->withTextOptions(new TextOptions(
+                                fontSize: 12,
+                                lineHeight: 15,
+                                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                            )),
+                    )
                     ->withHeaderRows(
                         TableRow::fromCells(
                             TableCell::text('Регион', rowspan: 2)->withHeaderScope(TableHeaderScope::BOTH),
@@ -2975,12 +2984,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     )
                     ->withFooterRows(
                         TableRow::fromTexts('Итого', '22', '25'),
-                    )
-                    ->withTextOptions(new TextOptions(
-                        fontSize: 12,
-                        lineHeight: 15,
-                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
-                    )),
+                    ),
             )
             ->build();
 

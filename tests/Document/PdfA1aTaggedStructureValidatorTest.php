@@ -21,6 +21,7 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
@@ -247,16 +248,19 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
                     TableColumn::fixed(120.0),
                     TableColumn::fixed(120.0),
                 )
-                    ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
-                    ->withCaption(TableCaption::text('Table caption Привет'))
+                    ->withOptions(
+                        (new TableOptions())
+                            ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
+                            ->withCaption(TableCaption::text('Table caption Привет'))
+                            ->withTextOptions(new TextOptions(
+                                fontSize: 12,
+                                lineHeight: 15,
+                                embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                            )),
+                    )
                     ->withRows(TableRow::fromCells(
                         TableCell::text('Left'),
                         TableCell::text('Right'),
-                    ))
-                    ->withTextOptions(new TextOptions(
-                        fontSize: 12,
-                        lineHeight: 15,
-                        embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                     )),
             )
             ->text('Read more Привет', new TextOptions(

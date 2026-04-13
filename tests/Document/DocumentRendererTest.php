@@ -28,6 +28,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
@@ -562,8 +563,16 @@ final class DocumentRendererTest extends TestCase
                     TableColumn::fixed(120.0),
                     TableColumn::fixed(120.0),
                 )
-                    ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
-                    ->withCaption(TableCaption::text('Quarterly summary Привет'))
+                    ->withOptions(
+                        (new TableOptions())
+                            ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
+                            ->withCaption(TableCaption::text('Quarterly summary Привет'))
+                            ->withTextOptions(new TextOptions(
+                                fontSize: 12,
+                                lineHeight: 15,
+                                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                            )),
+                    )
                     ->withHeaderRows(
                         TableRow::fromCells(
                             TableCell::text('Регион', rowspan: 2)->withHeaderScope(TableHeaderScope::BOTH),
@@ -581,12 +590,7 @@ final class DocumentRendererTest extends TestCase
                     )
                     ->withFooterRows(
                         TableRow::fromTexts('Итого', '22', '25'),
-                    )
-                    ->withTextOptions(new TextOptions(
-                        fontSize: 12,
-                        lineHeight: 15,
-                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
-                    )),
+                    ),
             )
             ->build();
 
@@ -671,17 +675,20 @@ final class DocumentRendererTest extends TestCase
                 Table::define(
                     TableColumn::fixed(120.0),
                 )
-                    ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                    ->withOptions(
+                        (new TableOptions())
+                            ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                            ->withTextOptions(new TextOptions(
+                                fontSize: 12,
+                                lineHeight: 15,
+                                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                            )),
+                    )
                     ->withRows(
                         TableRow::fromCells(
                             TableCell::text('Cell')->withBackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
                         ),
-                    )
-                    ->withTextOptions(new TextOptions(
-                        fontSize: 12,
-                        lineHeight: 15,
-                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
-                    )),
+                    ),
             )
             ->text('Text content Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -727,18 +734,21 @@ final class DocumentRendererTest extends TestCase
                     TableColumn::fixed(120.0),
                     TableColumn::fixed(120.0),
                 )
-                    ->withPlacement(TablePlacement::at(72.0, 700.0, 240.0))
+                    ->withOptions(
+                        (new TableOptions())
+                            ->withPlacement(TablePlacement::at(72.0, 700.0, 240.0))
+                            ->withTextOptions(new TextOptions(
+                                fontSize: 12,
+                                lineHeight: 15,
+                                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                            )),
+                    )
                     ->withRows(
                         TableRow::fromCells(
                             TableCell::text('Left')->withBackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
                             TableCell::text('Right')->withBackgroundColor(Color::rgb(0.85, 0.85, 0.85)),
                         ),
-                    )
-                    ->withTextOptions(new TextOptions(
-                        fontSize: 12,
-                        lineHeight: 15,
-                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
-                    )),
+                    ),
             )
             ->text('Text content Привет', new TextOptions(
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
@@ -766,19 +776,22 @@ final class DocumentRendererTest extends TestCase
             TableColumn::fixed(120.0),
             TableColumn::fixed(120.0),
         )
-            ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
-            ->withCaption(TableCaption::text('Kurzuebersicht Привет'))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
+                    ->withCaption(TableCaption::text('Kurzuebersicht Привет'))
+                    ->withTextOptions(new TextOptions(
+                        fontSize: 12,
+                        lineHeight: 15,
+                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                    )),
+            )
             ->withHeaderRows(
                 TableRow::fromTexts('Spalte A', 'Spalte B'),
             )
             ->withRows(
                 TableRow::fromTexts('Wert 1', 'Wert 2'),
-            )
-            ->withTextOptions(new TextOptions(
-                fontSize: 12,
-                lineHeight: 15,
-                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
-            ));
+            );
 
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA1a())
@@ -1844,8 +1857,11 @@ final class DocumentRendererTest extends TestCase
             TableColumn::fixed(90.0),
             TableColumn::fixed(90.0),
         )
-            ->withPlacement(new TablePlacement(24.0, 270.0))
-            ->withCaption(TableCaption::text('Quarterly summary'))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(new TablePlacement(24.0, 270.0))
+                    ->withCaption(TableCaption::text('Quarterly summary')),
+            )
             ->withHeaderRows(
                 TableRow::fromCells(
                     TableCell::text('Label', rowspan: 2)->withHeaderScope(TableHeaderScope::BOTH),

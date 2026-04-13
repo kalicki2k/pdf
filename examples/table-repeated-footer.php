@@ -118,7 +118,7 @@ $table = Table::define(
     TableColumn::auto(),
     TableColumn::auto(),
     TableColumn::auto(),
-)->withTableOptions(new TableOptions(
+)->withOptions(new TableOptions(
     border: Border::all(0.4),
     textOptions: new TextOptions(
         fontSize: 8.7,

@@ -27,6 +27,7 @@ use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
@@ -599,17 +600,20 @@ final class DefaultDocumentBuilderTest extends TestCase
                 Table::define(
                     TableColumn::fixed(120.0),
                 )
-                    ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                    ->withOptions(
+                        (new TableOptions())
+                            ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                            ->withTextOptions(new TextOptions(
+                                fontSize: 12,
+                                lineHeight: 15,
+                                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                            )),
+                    )
                     ->withRows(
                         TableRow::fromCells(
                             TableCell::text('Cell')->withBackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
                         ),
-                    )
-                    ->withTextOptions(new TextOptions(
-                        fontSize: 12,
-                        lineHeight: 15,
-                        embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
-                    )),
+                    ),
             )
             ->build();
 

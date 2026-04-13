@@ -9,6 +9,7 @@ use Kalle\Pdf\Document\PageDecorationContext;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\Units;
@@ -79,9 +80,12 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             TableColumn::fixed(50.0),
             TableColumn::fixed(90.0),
         )
-            ->withPlacement(TablePlacement::at(32.0, 360.0, 140.0))
-            ->withCellPadding(CellPadding::all(4.0))
-            ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4))
+            ->withOptions(
+                (new TableOptions())
+                    ->withPlacement(TablePlacement::at(32.0, 360.0, 140.0))
+                    ->withCellPadding(CellPadding::all(4.0))
+                    ->withTextOptions(new TextOptions(fontSize: 12.0, lineHeight: 14.4)),
+            )
             ->withRows(...$rows);
 
         $document = DefaultDocumentBuilder::make()

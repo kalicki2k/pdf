@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TextFlow;
@@ -47,8 +48,11 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::proportional(1.0),
             TableColumn::auto(),
         )
-            ->withCellPadding(CellPadding::symmetric(4.0, 6.0))
-            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::symmetric(4.0, 6.0))
+                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+            )
             ->withRows(
                 TableRow::fromTexts('2026-03-31', 'Managed operations and release support', 'INC-4421'),
             );
@@ -84,8 +88,11 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::fixed(50.0),
             TableColumn::fixed(50.0),
         )
-            ->withCellPadding(CellPadding::all(5.0))
-            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(5.0))
+                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+            )
             ->withRows(TableRow::fromTexts('Alpha Beta Gamma', 'Short'));
         $calculator = new TableLayoutCalculator();
         $font = StandardFontDefinition::from('Helvetica');
@@ -133,8 +140,11 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::fixed(55.0),
             TableColumn::fixed(55.0),
         )
-            ->withCellPadding(CellPadding::all(5.0))
-            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(5.0))
+                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+            )
             ->withRows(
                 TableRow::fromCells(
                     TableCell::text('Alpha Beta Gamma Delta Epsilon', rowspan: 2),
@@ -164,10 +174,13 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
         )
-            ->withCellPadding(CellPadding::all(4.0))
-            ->withBorder(Border::all(0.5))
-            ->withPlacement(new TablePlacement(40.0, 160.0))
-            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(4.0))
+                    ->withBorder(Border::all(0.5))
+                    ->withPlacement(new TablePlacement(40.0, 160.0))
+                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+            )
             ->withRows(TableRow::fromCells(
                 TableCell::text('Alpha')
                     ->withPadding(CellPadding::symmetric(8.0, 10.0))
@@ -196,8 +209,11 @@ final class TableLayoutCalculatorTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(90.0),
         )
-            ->withCellPadding(CellPadding::all(5.0))
-            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withOptions(
+                (new TableOptions())
+                    ->withCellPadding(CellPadding::all(5.0))
+                    ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0)),
+            )
             ->withRows(TableRow::fromCells(
                 TableCell::segments(
                     TextSegment::plain('Read the '),

@@ -23,6 +23,7 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
@@ -140,16 +141,19 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                         TableColumn::fixed(120.0),
                         TableColumn::fixed(120.0),
                     )
-                        ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
-                        ->withCaption(TableCaption::text('Table caption Привет'))
+                        ->withOptions(
+                            (new TableOptions())
+                                ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
+                                ->withCaption(TableCaption::text('Table caption Привет'))
+                                ->withTextOptions(new TextOptions(
+                                    fontSize: 12,
+                                    lineHeight: 15,
+                                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                                )),
+                        )
                         ->withRows(TableRow::fromCells(
                             TableCell::text('Left'),
                             TableCell::text('Right'),
-                        ))
-                        ->withTextOptions(new TextOptions(
-                            fontSize: 12,
-                            lineHeight: 15,
-                            embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                         )),
                 )
                 ->image(
@@ -217,13 +221,16 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ->newPage()
                 ->table(
                     Table::define(TableColumn::fixed(120.0))
-                        ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                        ->withOptions(
+                            (new TableOptions())
+                                ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                                ->withTextOptions(new TextOptions(
+                                    fontSize: 12,
+                                    lineHeight: 15,
+                                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                                )),
+                        )
                         ->withRows(TableRow::fromCells(TableCell::text('Second page table Привет')))
-                        ->withTextOptions(new TextOptions(
-                            fontSize: 12,
-                            lineHeight: 15,
-                            embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
-                        )),
                 )
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
@@ -290,12 +297,15 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ))
                 ->table(
                     Table::define(TableColumn::fixed(120.0))
-                        ->withPlacement(TablePlacement::at(72.0, 540.0, 120.0))
-                        ->withCaption(TableCaption::text('Table caption'))
+                        ->withOptions(
+                            (new TableOptions())
+                                ->withPlacement(TablePlacement::at(72.0, 540.0, 120.0))
+                                ->withCaption(TableCaption::text('Table caption'))
+                                ->withTextOptions(new TextOptions(
+                                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                                )),
+                        )
                         ->withRows(TableRow::fromCells(TableCell::text('Value')))
-                        ->withTextOptions(new TextOptions(
-                            embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
-                        )),
                 )
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),

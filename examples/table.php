@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\Units;
@@ -46,15 +47,19 @@ $table = Table::define(
     TableColumn::fixed(58.0),
     TableColumn::proportional(1.0),
 )
-    ->withPlacement(TablePlacement::at(50.0, 430.0, 320.0))
-    ->withCaption(
-        TableCaption::text('Tables in pdf2: caption, repeated headers, row headers, spans, backgrounds, vertical alignment, footer and tagged PDF scope')
-            ->withTextOptions($captionText)
-            ->withSpacingAfter(10.0),
+    ->withOptions(
+        (new TableOptions())
+            ->withPlacement(TablePlacement::at(50.0, 430.0, 320.0))
+            ->withCaption(
+                TableCaption::text('Tables in pdf2: caption, repeated headers, row headers, spans, backgrounds, vertical alignment, footer and tagged PDF scope')
+                    ->withTextOptions($captionText)
+                    ->withSpacingAfter(10.0),
+            )
+            ->withCellPadding(CellPadding::symmetric(6.0, 7.0))
+            ->withBorder(Border::all(0.5))
+            ->withTextOptions($tableText)
+            ->withRepeatedHeaderOnPageBreak(),
     )
-    ->withCellPadding(CellPadding::symmetric(6.0, 7.0))
-    ->withBorder(Border::all(0.5))
-    ->withTextOptions($tableText)
     ->withHeaderRows(
         TableRow::fromCells(
             TableCell::text('Region / Item')
@@ -69,7 +74,6 @@ $table = Table::define(
                 ->withHorizontalAlign(TextAlign::CENTER),
         ),
     )
-    ->withRepeatedHeaderOnPageBreak()
     ->withRows(
         TableRow::fromCells(
             TableCell::text('North', rowspan: 2)
