@@ -31,6 +31,9 @@ final class DocumentPageAndFormObjectBuilder
     {
         $debugger ??= Debugger::disabled();
         $objects = [];
+        $pageObjectIdsByPageNumber = $this->pageObjectIdsByPageNumber($state->pageObjectIds);
+        $attachmentObjectIdsByFilename = $this->attachmentObjectIdsByFilename($document, $state->attachmentObjectIds);
+        $printableAnnotations = $document->profile->requiresPrintableAnnotations();
 
         foreach ($document->pages as $index => $page) {
             $scope = $debugger->startPerformanceScope('page.render', [
@@ -45,7 +48,6 @@ final class DocumentPageAndFormObjectBuilder
             $annotationAppearanceContext = new AnnotationAppearanceRenderContext(
                 $this->pageFontObjectIdsByAlias($page->fontResources, $state->fontObjectIds),
             );
-            $attachmentObjectIdsByFilename = $this->attachmentObjectIdsByFilename($document, $state->attachmentObjectIds);
             $pageContents = $this->buildPageContents($document, $page);
 
             $objects[] = IndirectObject::plain(
@@ -68,26 +70,22 @@ final class DocumentPageAndFormObjectBuilder
 
             foreach ($page->annotations as $annotationIndex => $annotation) {
                 $annotationKey = $index . ':' . $annotationIndex;
-                $objects[] = IndirectObject::plain(
+                $annotationContext = $this->pageAnnotationRenderContext(
+                    $state,
+                    $pageObjectId,
+                    $annotationKey,
                     $annotationObjectIds[$annotationIndex],
-                    $annotation->pdfObjectContents(
-                        new PageAnnotationRenderContext(
-                            pageObjectId: $pageObjectId,
-                            printable: $document->profile->requiresPrintableAnnotations(),
-                            pageObjectIdsByPageNumber: $this->pageObjectIdsByPageNumber($state->pageObjectIds),
-                            namedDestinations: $state->namedDestinations,
-                            structParentId: $state->taggedLinkStructure['structParentIds'][$annotationKey]
-                                ?? $state->taggedPageAnnotationStructure['structParentIds'][$annotationKey]
-                                ?? null,
-                            appearanceObjectId: $state->pageAnnotationAppearanceObjectIds[$index][$annotationIndex] ?? null,
-                            annotationObjectId: $annotationObjectIds[$annotationIndex],
-                            relatedObjectIds: $state->pageAnnotationRelatedObjectIds[$index][$annotationIndex] ?? [],
-                            attachmentObjectIdsByFilename: $attachmentObjectIdsByFilename,
-                        ),
-                    ),
+                    $appearanceObjectId = $state->pageAnnotationAppearanceObjectIds[$index][$annotationIndex] ?? null,
+                    $state->pageAnnotationRelatedObjectIds[$index][$annotationIndex] ?? [],
+                    $pageObjectIdsByPageNumber,
+                    $attachmentObjectIdsByFilename,
+                    $printableAnnotations,
                 );
 
-                $appearanceObjectId = $state->pageAnnotationAppearanceObjectIds[$index][$annotationIndex] ?? null;
+                $objects[] = IndirectObject::plain(
+                    $annotationObjectIds[$annotationIndex],
+                    $annotation->pdfObjectContents($annotationContext),
+                );
 
                 if ($appearanceObjectId !== null && $annotation instanceof AppearanceStreamAnnotation) {
                     $objects[] = IndirectObject::stream(
@@ -98,24 +96,10 @@ final class DocumentPageAndFormObjectBuilder
                 }
 
                 if ($annotation instanceof RelatedObjectsPageAnnotation) {
-                    $objects = [
-                        ...$objects,
-                        ...$annotation->relatedObjects(
-                            new PageAnnotationRenderContext(
-                                pageObjectId: $pageObjectId,
-                                printable: $document->profile->requiresPrintableAnnotations(),
-                                pageObjectIdsByPageNumber: $this->pageObjectIdsByPageNumber($state->pageObjectIds),
-                                namedDestinations: $state->namedDestinations,
-                                structParentId: $state->taggedLinkStructure['structParentIds'][$annotationKey]
-                                    ?? $state->taggedPageAnnotationStructure['structParentIds'][$annotationKey]
-                                    ?? null,
-                                appearanceObjectId: $appearanceObjectId,
-                                annotationObjectId: $annotationObjectIds[$annotationIndex],
-                                relatedObjectIds: $state->pageAnnotationRelatedObjectIds[$index][$annotationIndex] ?? [],
-                                attachmentObjectIdsByFilename: $attachmentObjectIdsByFilename,
-                            ),
-                        ),
-                    ];
+                    $this->appendObjects(
+                        $objects,
+                        $annotation->relatedObjects($annotationContext),
+                    );
                 }
             }
 
@@ -173,16 +157,17 @@ final class DocumentPageAndFormObjectBuilder
                 ),
             ),
         ];
+        $pageObjectIdsByPageNumber = $this->pageObjectIdsByPageNumber($state->pageObjectIds);
+        $defaultFontObjectId = $state->acroFormDefaultFontKey !== null ? ($state->fontObjectIds[$state->acroFormDefaultFontKey] ?? null) : null;
+        $context = new FormFieldRenderContext(
+            $pageObjectIdsByPageNumber,
+            $state->taggedFormStructure['structParentIds'],
+            $state->acroFormDefaultFont,
+            $state->acroFormDefaultFont !== null ? 'F0' : null,
+            $defaultFontObjectId,
+        );
 
         foreach ($document->acroForm->fields as $fieldIndex => $field) {
-            $context = new FormFieldRenderContext(
-                $this->pageObjectIdsByPageNumber($state->pageObjectIds),
-                $state->taggedFormStructure['structParentIds'],
-                $state->acroFormDefaultFont,
-                $state->acroFormDefaultFont !== null ? 'F0' : null,
-                $state->acroFormDefaultFontKey !== null ? ($state->fontObjectIds[$state->acroFormDefaultFontKey] ?? null) : null,
-            );
-
             $objects[] = IndirectObject::plain(
                 $state->acroFormFieldObjectIds[$fieldIndex],
                 $field->pdfObjectContents(
@@ -202,6 +187,37 @@ final class DocumentPageAndFormObjectBuilder
         }
 
         return $objects;
+    }
+
+    /**
+     * @param list<int> $relatedObjectIds
+     * @param array<int, int> $pageObjectIdsByPageNumber
+     * @param array<string, int> $attachmentObjectIdsByFilename
+     */
+    private function pageAnnotationRenderContext(
+        DocumentSerializationPlanBuildState $state,
+        int $pageObjectId,
+        string $annotationKey,
+        int $annotationObjectId,
+        ?int $appearanceObjectId,
+        array $relatedObjectIds,
+        array $pageObjectIdsByPageNumber,
+        array $attachmentObjectIdsByFilename,
+        bool $printableAnnotations,
+    ): PageAnnotationRenderContext {
+        return new PageAnnotationRenderContext(
+            pageObjectId: $pageObjectId,
+            printable: $printableAnnotations,
+            pageObjectIdsByPageNumber: $pageObjectIdsByPageNumber,
+            namedDestinations: $state->namedDestinations,
+            structParentId: $state->taggedLinkStructure['structParentIds'][$annotationKey]
+                ?? $state->taggedPageAnnotationStructure['structParentIds'][$annotationKey]
+                ?? null,
+            appearanceObjectId: $appearanceObjectId,
+            annotationObjectId: $annotationObjectId,
+            relatedObjectIds: $relatedObjectIds,
+            attachmentObjectIdsByFilename: $attachmentObjectIdsByFilename,
+        );
     }
 
     private function buildStructParentsEntry(?int $structParentId): string
@@ -396,6 +412,17 @@ final class DocumentPageAndFormObjectBuilder
         }
 
         return $mapping;
+    }
+
+    /**
+     * @param list<IndirectObject> $objects
+     * @param list<IndirectObject> $additionalObjects
+     */
+    private function appendObjects(array &$objects, array $additionalObjects): void
+    {
+        foreach ($additionalObjects as $additionalObject) {
+            $objects[] = $additionalObject;
+        }
     }
 
     private function formatNumber(float $value): string

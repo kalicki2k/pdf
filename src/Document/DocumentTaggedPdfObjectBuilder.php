@@ -339,10 +339,7 @@ final class DocumentTaggedPdfObjectBuilder
         }
 
         $objects = [];
-        $documentKidObjectIds = array_map(
-            fn (array $entry): int => $this->resolveDocumentKidObjectId($entry['key'], $state),
-            $this->documentChildEntriesInReadingOrder($state),
-        );
+        $documentKidObjectIds = $this->documentKidObjectIds($state);
         $roleMap = $state->taggedPageAnnotationStructure['entries'] !== []
             ? ['Annot' => 'Span']
             : [];
@@ -362,10 +359,7 @@ final class DocumentTaggedPdfObjectBuilder
                 (new StructElem(
                     $containerEntry['tag'],
                     $this->resolveParentObjectId($containerEntry['key'], $state),
-                    array_map(
-                        fn (string $childKey): int => $state->taggedStructureObjectIds->resolveStructElemObjectId($childKey),
-                        $containerEntry['childKeys'],
-                    ),
+                    $this->containerKidObjectIds($containerEntry['childKeys'], $state),
                 ))->objectContents(),
             );
         }
@@ -381,31 +375,19 @@ final class DocumentTaggedPdfObjectBuilder
                 }
 
                 ksort($pageKeys);
-                $parentTreeEntries[$structParentId] = array_map(
-                    fn (string $key): int => $state->taggedStructureObjectIds->resolvePageContentObjectId($key),
-                    array_values($pageKeys),
-                );
+                $parentTreeEntries[$structParentId] = $this->pageParentTreeEntry($pageKeys, $state);
             }
 
             foreach ($state->taggedLinkStructure['parentTreeEntries'] as $structParentId => $linkKeys) {
-                $parentTreeEntries[$structParentId] = array_map(
-                    fn (string $key): int => $state->taggedStructureObjectIds->linkStructElemObjectIds[$key],
-                    $linkKeys,
-                );
+                $parentTreeEntries[$structParentId] = $this->lookupObjectIds($linkKeys, $state->taggedStructureObjectIds->linkStructElemObjectIds);
             }
 
             foreach ($state->taggedPageAnnotationStructure['parentTreeEntries'] as $structParentId => $annotationKeys) {
-                $parentTreeEntries[$structParentId] = array_map(
-                    fn (string $key): int => $state->taggedStructureObjectIds->annotationStructElemObjectIds[$key],
-                    $annotationKeys,
-                );
+                $parentTreeEntries[$structParentId] = $this->lookupObjectIds($annotationKeys, $state->taggedStructureObjectIds->annotationStructElemObjectIds);
             }
 
             foreach ($state->taggedFormStructure['parentTreeEntries'] as $structParentId => $formKeys) {
-                $parentTreeEntries[$structParentId] = array_map(
-                    fn (string $key): int => $state->taggedFormStructElemObjectIds[$key],
-                    $formKeys,
-                );
+                $parentTreeEntries[$structParentId] = $this->lookupObjectIds($formKeys, $state->taggedFormStructElemObjectIds);
             }
 
             $objects[] = new IndirectObject($state->parentTreeObjectId, (new ParentTree($parentTreeEntries))->objectContents());
@@ -758,6 +740,66 @@ final class DocumentTaggedPdfObjectBuilder
         }
 
         return $state->taggedStructureObjectIds->resolveStructElemObjectId($key);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function documentKidObjectIds(DocumentSerializationPlanBuildState $state): array
+    {
+        $objectIds = [];
+
+        foreach ($this->documentChildEntriesInReadingOrder($state) as $entry) {
+            $objectIds[] = $this->resolveDocumentKidObjectId($entry['key'], $state);
+        }
+
+        return $objectIds;
+    }
+
+    /**
+     * @param list<string> $childKeys
+     * @return list<int>
+     */
+    private function containerKidObjectIds(array $childKeys, DocumentSerializationPlanBuildState $state): array
+    {
+        $objectIds = [];
+
+        foreach ($childKeys as $childKey) {
+            $objectIds[] = $state->taggedStructureObjectIds->resolveStructElemObjectId($childKey);
+        }
+
+        return $objectIds;
+    }
+
+    /**
+     * @param array<int, string> $pageKeys
+     * @return list<int>
+     */
+    private function pageParentTreeEntry(array $pageKeys, DocumentSerializationPlanBuildState $state): array
+    {
+        $objectIds = [];
+
+        foreach ($pageKeys as $key) {
+            $objectIds[] = $state->taggedStructureObjectIds->resolvePageContentObjectId($key);
+        }
+
+        return $objectIds;
+    }
+
+    /**
+     * @param list<string> $keys
+     * @param array<string, int> $objectIdsByKey
+     * @return list<int>
+     */
+    private function lookupObjectIds(array $keys, array $objectIdsByKey): array
+    {
+        $objectIds = [];
+
+        foreach ($keys as $key) {
+            $objectIds[] = $objectIdsByKey[$key];
+        }
+
+        return $objectIds;
     }
 
     private function resolveParentObjectId(string $key, DocumentSerializationPlanBuildState $state): int

@@ -22,9 +22,9 @@ final readonly class SimpleScriptGlyphMapper implements ScriptGlyphMapper
             return [];
         }
 
-        $shapedGlyphNames = $run->glyphNames();
+        $shapedGlyphNames = $this->knownGlyphNamesForRun($run);
 
-        if ($this->containsKnownGlyphName($shapedGlyphNames)) {
+        if ($shapedGlyphNames !== null) {
             return $shapedGlyphNames;
         }
 
@@ -41,16 +41,23 @@ final readonly class SimpleScriptGlyphMapper implements ScriptGlyphMapper
     }
 
     /**
-     * @param list<?string> $glyphNames
+     * @return list<?string>|null
      */
-    private function containsKnownGlyphName(array $glyphNames): bool
+    private function knownGlyphNamesForRun(ShapedTextRun $run): ?array
     {
-        foreach ($glyphNames as $glyphName) {
+        $glyphNames = [];
+        $containsKnownGlyphName = false;
+
+        foreach ($run->glyphs as $glyph) {
+            $glyphNames[] = $glyph->glyphName;
+
+            $glyphName = $glyph->glyphName;
+
             if ($glyphName !== null) {
-                return true;
+                $containsKnownGlyphName = true;
             }
         }
 
-        return false;
+        return $containsKnownGlyphName ? $glyphNames : null;
     }
 }
