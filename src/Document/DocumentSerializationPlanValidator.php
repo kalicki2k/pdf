@@ -61,14 +61,14 @@ final class DocumentSerializationPlanValidator
         $document->profile->pdfaSupport()?->assertSupported();
 
         if ($document->profile->requiresDocumentLanguage() && $document->language === null) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::DOCUMENT_LANGUAGE_REQUIRED, sprintf(
                 'Profile %s requires a document language.',
                 $document->profile->name(),
             ));
         }
 
         if ($document->profile->requiresDocumentTitle() && $document->title === null) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::DOCUMENT_TITLE_REQUIRED, sprintf(
                 'Profile %s requires a document title.',
                 $document->profile->name(),
             ));
@@ -98,7 +98,7 @@ final class DocumentSerializationPlanValidator
                     && $accessibility->requiresFigureTag()
                     && $accessibility->altText === null
                 ) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::IMAGE_ALT_TEXT_REQUIRED, sprintf(
                         'Tagged PDF profiles require alternative text for image %d on page %d.',
                         $imageIndex + 1,
                         $pageIndex + 1,
@@ -227,7 +227,7 @@ final class DocumentSerializationPlanValidator
         }
 
         if (!$document->profile->supportsDocumentEmbeddedFileAttachments()) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_EMBEDDED_ATTACHMENTS_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow embedded file attachments.',
                 $document->profile->name(),
             ));
@@ -235,7 +235,7 @@ final class DocumentSerializationPlanValidator
 
         foreach ($document->attachments as $attachmentIndex => $attachment) {
             if ($document->profile->isPdfA() && $attachment->embeddedFile->mimeType === null) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ATTACHMENT_MIME_TYPE_REQUIRED, sprintf(
                     'Profile %s requires an embedded file MIME type for attachment %d.',
                     $document->profile->name(),
                     $attachmentIndex + 1,
@@ -246,7 +246,7 @@ final class DocumentSerializationPlanValidator
                 $this->attachmentRelationshipResolver->resolve($document, $attachment) !== null
                 && !$document->profile->supportsDocumentAssociatedFiles()
             ) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ASSOCIATED_FILES_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow document-level associated files for attachment %d.',
                     $document->profile->name(),
                     $attachmentIndex + 1,
@@ -310,7 +310,7 @@ final class DocumentSerializationPlanValidator
         $taggedStructure = $this->taggedStructureCollector->collect($document);
 
         if (!$taggedStructure->hasStructuredContent() && !$this->documentHasTaggedPdfANonMarkedContent($document)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::TAGGED_PDF_REQUIRED, sprintf(
                 'Profile %s requires structured content in the current implementation.',
                 $document->profile->name(),
             ));
@@ -324,7 +324,7 @@ final class DocumentSerializationPlanValidator
                 continue;
             }
 
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::TAGGED_PDF_REQUIRED, sprintf(
                 'Profile %s requires structured marked content on page %d when text resources are present.',
                 $document->profile->name(),
                 $pageIndex + 1,
@@ -399,7 +399,7 @@ final class DocumentSerializationPlanValidator
         }
 
         if (!$document->profile->supportsAcroForms() && !$document->profile->requiresTaggedFormFields()) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow AcroForm fields in the current implementation.',
                 $document->profile->name(),
             ));
@@ -454,7 +454,7 @@ final class DocumentSerializationPlanValidator
                     continue;
                 }
 
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_FORM_SUBSET_REQUIRED, sprintf(
                     'Profile %s requires tagged form fields in the current implementation.',
                     $document->profile->name(),
                 ));
@@ -467,39 +467,42 @@ final class DocumentSerializationPlanValidator
                 && $document->profile->pdfaConformance() === 'A'
                 && !$this->pdfA1aFormFieldPolicy->supports($field)
             ) {
-                throw new InvalidArgumentException($this->pdfA1aFormFieldPolicy->violationMessage($document->profile));
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_TAGGED_FORM_SUBSET_REQUIRED,
+                    $this->pdfA1aFormFieldPolicy->violationMessage($document->profile),
+                );
             }
 
             if ($field instanceof TextField && !$document->profile->supportsCurrentTextFieldImplementation()) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow text fields in the current implementation.',
                     $document->profile->name(),
                 ));
             }
 
             if ($field instanceof CheckboxField && !$document->profile->supportsCurrentCheckboxImplementation()) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow checkboxes in the current implementation.',
                     $document->profile->name(),
                 ));
             }
 
             if ($field instanceof RadioButtonGroup && !$document->profile->supportsCurrentRadioButtonImplementation()) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow radio buttons in the current implementation.',
                     $document->profile->name(),
                 ));
             }
 
             if ($field instanceof ComboBoxField && !$document->profile->supportsCurrentComboBoxImplementation()) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow combo boxes in the current implementation.',
                     $document->profile->name(),
                 ));
             }
 
             if ($field instanceof ListBoxField && !$document->profile->supportsCurrentListBoxImplementation()) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow list boxes in the current implementation.',
                     $document->profile->name(),
                 ));
@@ -524,7 +527,7 @@ final class DocumentSerializationPlanValidator
                         && $field->url === null
                     )
                 ) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                         'Profile %s does not allow push buttons in the current implementation.',
                         $document->profile->name(),
                     ));
@@ -532,7 +535,7 @@ final class DocumentSerializationPlanValidator
             }
 
             if ($field instanceof SignatureField && !$document->profile->supportsCurrentSignatureFieldImplementation()) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow signature fields in the current implementation.',
                     $document->profile->name(),
                 ));
@@ -584,7 +587,7 @@ final class DocumentSerializationPlanValidator
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->fontResources as $pageFont) {
                 if (!$pageFont->isEmbedded()) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_EMBEDDED_FONTS_REQUIRED, sprintf(
                         'Profile %s requires embedded fonts. Found standard font "%s" on page %d.',
                         $document->profile->name(),
                         $pageFont->name,
@@ -596,7 +599,7 @@ final class DocumentSerializationPlanValidator
                     continue;
                 }
 
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_UNICODE_FONTS_REQUIRED, sprintf(
                     'Profile %s requires embedded Unicode fonts. Found simple embedded font "%s" on page %d.',
                     $document->profile->name(),
                     $pageFont->name,
@@ -622,7 +625,7 @@ final class DocumentSerializationPlanValidator
                     continue;
                 }
 
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TRANSPARENCY_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow soft-mask image transparency for image resource %d on page %d.',
                     $document->profile->name(),
                     $imageResourceIndex,

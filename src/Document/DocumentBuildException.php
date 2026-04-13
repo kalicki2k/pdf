@@ -25,7 +25,9 @@ final class DocumentBuildException extends RuntimeException
     {
         $profileName = $document->profile->name();
         $reason = $previous->getMessage();
-        $hint = self::hintFor($document, $reason);
+        $hint = $previous instanceof DocumentValidationException
+            ? self::hintForError($document, $previous->error)
+            : self::hintFor($document, $reason);
         $message = sprintf(
             "Document build failed for profile %s.\nReason: %s%s",
             $profileName,
@@ -34,6 +36,54 @@ final class DocumentBuildException extends RuntimeException
         );
 
         return new self($message, $profileName, $hint, $previous);
+    }
+
+    private static function hintForError(Document $document, DocumentBuildError $error): ?string
+    {
+        return match ($error) {
+            DocumentBuildError::PDFA_EMBEDDED_FONTS_REQUIRED => $document->profile->isPdfA()
+                ? 'Use embedded fonts via TextOptions(embeddedFont: ...), table text options, or switch to a non-PDF/A profile.'
+                : null,
+            DocumentBuildError::PDFA_UNICODE_FONTS_REQUIRED => $document->profile->requiresExtractableEmbeddedUnicodeFonts()
+                ? 'Use an embedded Unicode-capable font and render the affected text with embeddedFont instead of a standard PDF font.'
+                : null,
+            DocumentBuildError::DOCUMENT_LANGUAGE_REQUIRED => $document->profile->requiresDocumentLanguage()
+                ? "Set ->language('de-DE') or another valid BCP 47 language tag on the document builder."
+                : null,
+            DocumentBuildError::DOCUMENT_TITLE_REQUIRED => $document->profile->requiresDocumentTitle()
+                ? "Set ->title('...') on the document builder before rendering."
+                : null,
+            DocumentBuildError::IMAGE_ALT_TEXT_REQUIRED => $document->profile->requiresFigureAltText()
+                ? 'Provide ImageAccessibility with altText, or mark decorative images as decorative.'
+                : null,
+            DocumentBuildError::TAGGED_PDF_REQUIRED => $document->profile->requiresTaggedPdf()
+                ? 'Use beginStructure()/endStructure() for containers and TextOptions(tag: ...) for leaf roles.'
+                : null,
+            DocumentBuildError::PDFA_TRANSPARENCY_NOT_ALLOWED => !$document->profile->supportsCurrentTransparencyImplementation()
+                ? 'Remove soft masks from image resources or flatten transparency before rendering in this profile.'
+                : null,
+            DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED => !$document->profile->supportsAcroForms()
+                ? 'Remove AcroForm fields for this profile, or switch to a non-PDF/A profile. Only the constrained PDF/A-1a form scope is currently supported.'
+                : null,
+            DocumentBuildError::PDFA_TAGGED_FORM_SUBSET_REQUIRED => $document->profile->requiresTaggedFormFields()
+                ? 'Use only the currently supported tagged form subset for this profile and provide alternative descriptions for each field.'
+                : null,
+            DocumentBuildError::PDFA_EMBEDDED_ATTACHMENTS_NOT_ALLOWED => !$document->profile->supportsDocumentEmbeddedFileAttachments()
+                ? 'Remove embedded attachments for this profile, or switch to a profile that explicitly allows the current attachment path.'
+                : null,
+            DocumentBuildError::PDFA_ATTACHMENT_MIME_TYPE_REQUIRED => $document->profile->supportsDocumentEmbeddedFileAttachments()
+                ? 'Set a MIME type on each EmbeddedFile so the attachment can be serialized as a valid associated file.'
+                : null,
+            DocumentBuildError::PDFA_ASSOCIATED_FILES_NOT_ALLOWED => !$document->profile->supportsDocumentAssociatedFiles()
+                ? 'Use plain attachments only where the profile allows them, or switch to a profile with document-level associated file support.'
+                : null,
+            DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID => $document->profile->usesPdfAOutputIntent()
+                ? 'Use the default PDF/A output intent or pass ->pdfaOutputIntent(...) with a readable ICC profile that matches the document color usage.'
+                : null,
+            DocumentBuildError::PDFA4_METADATA_INVALID => $document->profile->isPdfA4()
+                ? 'Keep PDF/A-4 metadata on the dedicated PDF 2.0 path: write pdfaid:part=4 and pdfaid:rev=2020, omit Info/OutputIntents, and only write pdfaid:conformance for 4e/4f.'
+                : null,
+        };
     }
 
     private static function hintFor(Document $document, string $reason): ?string

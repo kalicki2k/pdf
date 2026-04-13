@@ -6,7 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildError;
 use Kalle\Pdf\Document\DocumentBuildException;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Profile;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +18,10 @@ final class DocumentBuildExceptionTest extends TestCase
     {
         $exception = DocumentBuildException::fromValidationFailure(
             new Document(profile: Profile::pdfA2u()),
-            new InvalidArgumentException('Profile PDF/A-2u requires embedded Unicode fonts. Found simple embedded font "Subset" on page 1.'),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_UNICODE_FONTS_REQUIRED,
+                'Profile PDF/A-2u requires embedded Unicode fonts. Found simple embedded font "Subset" on page 1.',
+            ),
         );
 
         self::assertSame(
@@ -39,7 +44,10 @@ final class DocumentBuildExceptionTest extends TestCase
     {
         $exception = DocumentBuildException::fromValidationFailure(
             new Document(profile: Profile::pdfA3a()),
-            new InvalidArgumentException('Profile PDF/A-3a requires structured content in the current implementation.'),
+            new DocumentValidationException(
+                DocumentBuildError::TAGGED_PDF_REQUIRED,
+                'Profile PDF/A-3a requires structured content in the current implementation.',
+            ),
         );
 
         self::assertSame(
@@ -62,7 +70,10 @@ final class DocumentBuildExceptionTest extends TestCase
     {
         $exception = DocumentBuildException::fromValidationFailure(
             new Document(profile: Profile::pdfA2u()),
-            new InvalidArgumentException('Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.'),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED,
+                'Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.',
+            ),
         );
 
         self::assertSame(
@@ -75,7 +86,10 @@ final class DocumentBuildExceptionTest extends TestCase
     {
         $exception = DocumentBuildException::fromValidationFailure(
             new Document(profile: Profile::pdfA3b()),
-            new InvalidArgumentException('Profile PDF/A-3b requires an embedded file MIME type for attachment 1.'),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_ATTACHMENT_MIME_TYPE_REQUIRED,
+                'Profile PDF/A-3b requires an embedded file MIME type for attachment 1.',
+            ),
         );
 
         self::assertSame(
@@ -88,7 +102,10 @@ final class DocumentBuildExceptionTest extends TestCase
     {
         $exception = DocumentBuildException::fromValidationFailure(
             new Document(profile: Profile::pdfA1b()),
-            new InvalidArgumentException('Profile PDF/A-1b does not allow soft-mask image transparency for image resource 1 on page 1.'),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_TRANSPARENCY_NOT_ALLOWED,
+                'Profile PDF/A-1b does not allow soft-mask image transparency for image resource 1 on page 1.',
+            ),
         );
 
         self::assertSame(
@@ -101,7 +118,10 @@ final class DocumentBuildExceptionTest extends TestCase
     {
         $exception = DocumentBuildException::fromValidationFailure(
             new Document(profile: Profile::pdfA4()),
-            new InvalidArgumentException('Profile PDF/A-4 metadata stream must serialize <pdfaid:rev>2020</pdfaid:rev>.'),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA4_METADATA_INVALID,
+                'Profile PDF/A-4 metadata stream must serialize <pdfaid:rev>2020</pdfaid:rev>.',
+            ),
         );
 
         self::assertSame(
@@ -114,11 +134,27 @@ final class DocumentBuildExceptionTest extends TestCase
     {
         $exception = DocumentBuildException::fromValidationFailure(
             new Document(profile: Profile::pdfA1b()),
-            new InvalidArgumentException('PDF/A output intent "Press Condition" is not plausible for an RGB ICC profile.'),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID,
+                'PDF/A output intent "Press Condition" is not plausible for an RGB ICC profile.',
+            ),
         );
 
         self::assertSame(
             'Use the default PDF/A output intent or pass ->pdfaOutputIntent(...) with a readable ICC profile that matches the document color usage.',
+            $exception->hint,
+        );
+    }
+
+    public function testItFallsBackToLegacyStringMatchingForUnconvertedValidationErrors(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA3b()),
+            new InvalidArgumentException('Profile PDF/A-3b requires embedded fonts. Found standard font "Helvetica" on page 1.'),
+        );
+
+        self::assertSame(
+            'Use embedded fonts via TextOptions(embeddedFont: ...), table text options, or switch to a non-PDF/A profile.',
             $exception->hint,
         );
     }

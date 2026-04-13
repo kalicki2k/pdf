@@ -110,7 +110,10 @@ final class PdfAObjectGraphValidator
 
         if ($state->iccProfileObjectId !== null) {
             if (!str_contains($catalogObject->contents, '/OutputIntents [')) {
-                throw new InvalidArgumentException('PDF/A catalog must serialize an OutputIntents array.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID,
+                    'PDF/A catalog must serialize an OutputIntents array.',
+                );
             }
 
             $this->assertReferencePresent(
@@ -125,7 +128,7 @@ final class PdfAObjectGraphValidator
         }
 
         if ($document->profile->isPdfA4() && str_contains($catalogObject->contents, '/OutputIntents [')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_METADATA_INVALID, sprintf(
                 'Profile %s must not serialize OutputIntents in the final PDF/A-4 object graph.',
                 $document->profile->name(),
             ));
@@ -157,7 +160,7 @@ final class PdfAObjectGraphValidator
 
         if ($state->infoObjectId !== null) {
             if ($this->activeProfile?->isPdfA4()) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA4_METADATA_INVALID, sprintf(
                     'Profile %s must not serialize an Info dictionary in the final PDF/A-4 object graph.',
                     $this->activeProfile->name(),
                 ));
@@ -176,14 +179,14 @@ final class PdfAObjectGraphValidator
         $metadataContents = $metadataObject->streamContents ?? $metadataObject->contents;
 
         if (!str_contains($metadataContents, '<pdfaid:part>4</pdfaid:part>')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_METADATA_INVALID, sprintf(
                 'Profile %s metadata stream must serialize <pdfaid:part>4</pdfaid:part>.',
                 $this->activeProfile->name(),
             ));
         }
 
         if (!str_contains($metadataContents, '<pdfaid:rev>2020</pdfaid:rev>')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_METADATA_INVALID, sprintf(
                 'Profile %s metadata stream must serialize <pdfaid:rev>2020</pdfaid:rev>.',
                 $this->activeProfile->name(),
             ));
@@ -192,7 +195,7 @@ final class PdfAObjectGraphValidator
         $conformance = $this->activeProfile->pdfaConformance();
 
         if ($conformance === null && str_contains($metadataContents, '<pdfaid:conformance>')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_METADATA_INVALID, sprintf(
                 'Profile %s metadata stream must not serialize a pdfaid:conformance marker.',
                 $this->activeProfile->name(),
             ));
@@ -202,7 +205,7 @@ final class PdfAObjectGraphValidator
             $conformance !== null
             && !str_contains($metadataContents, '<pdfaid:conformance>' . $conformance . '</pdfaid:conformance>')
         ) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_METADATA_INVALID, sprintf(
                 'Profile %s metadata stream must serialize <pdfaid:conformance>%s</pdfaid:conformance>.',
                 $this->activeProfile->name(),
                 $conformance,
@@ -220,7 +223,7 @@ final class PdfAObjectGraphValidator
         array $objectsById,
     ): void {
         if (($document->profile->isPdfA2() || $document->profile->isPdfA3()) && $state->acroFormObjectId !== null) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                 'Profile %s must not serialize AcroForm objects in the final PDF/A-2/3 object graph.',
                 $document->profile->name(),
             ));

@@ -41,7 +41,7 @@ final class PdfA23ScopePolicy
         }
 
         if ($document->profile->pdfaConformance() === 'A' && !$annotation instanceof LinkAnnotation) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::TAGGED_PDF_REQUIRED, sprintf(
                 'Profile %s only allows tagged link annotations in the current PDF/A-%dA scope; other page annotations remain blocked on page %d.',
                 $document->profile->name(),
                 $document->profile->pdfaPart(),
@@ -50,7 +50,7 @@ final class PdfA23ScopePolicy
         }
 
         if ($annotation instanceof FileAttachmentAnnotation) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_EMBEDDED_ATTACHMENTS_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow page-level file attachment annotations in the current PDF/A-2/3 scope. Use document-level associated files instead.',
                 $document->profile->name(),
             ));
@@ -82,7 +82,7 @@ final class PdfA23ScopePolicy
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
             'Profile %s does not allow AcroForm fields in the current PDF/A-2/3 scope.',
             $document->profile->name(),
         ));
@@ -95,14 +95,14 @@ final class PdfA23ScopePolicy
         }
 
         if ($document->profile->isPdfA2()) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_EMBEDDED_ATTACHMENTS_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow embedded file attachments in the current PDF/A-2 scope.',
                 $document->profile->name(),
             ));
         }
 
         if ($document->profile->isPdfA3() && !$hasAssociatedFileRelationship) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_ASSOCIATED_FILES_NOT_ALLOWED, sprintf(
                 'Profile %s only allows document-level associated files in the current PDF/A-3 scope for attachment %d.',
                 $document->profile->name(),
                 $attachmentIndex + 1,

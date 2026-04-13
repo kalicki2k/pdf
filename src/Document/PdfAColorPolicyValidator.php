@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
@@ -395,7 +394,7 @@ final class PdfAColorPolicyValidator
         }
 
         if ($forImage) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'Profile %s requires %s %s PDF/A output intent for %s.',
                 $document->profile->name(),
                 $this->indefiniteArticle($deviceColorSpace),
@@ -404,7 +403,7 @@ final class PdfAColorPolicyValidator
             ));
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
             'Profile %s does not allow %s color in %s when the active PDF/A output intent is %s.',
             $document->profile->name(),
             $this->colorSpaceLabel($deviceColorSpace),
@@ -419,7 +418,7 @@ final class PdfAColorPolicyValidator
             1 => ColorSpace::GRAY,
             3 => ColorSpace::RGB,
             4 => ColorSpace::CMYK,
-            default => throw new InvalidArgumentException(sprintf(
+            default => throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'PDF/A-1 output intent "%s" uses unsupported color component count %d in the current implementation.',
                 $outputIntent->outputConditionIdentifier,
                 $outputIntent->colorComponents,

@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Metadata;
 
 use function dirname;
-
 use function file_get_contents;
 
 use InvalidArgumentException;
 
 use function is_string;
+
+use Kalle\Pdf\Document\DocumentBuildError;
+
+use Kalle\Pdf\Document\DocumentValidationException;
+
 use function sprintf;
 use function str_contains;
 use function strlen;
@@ -42,7 +46,10 @@ final readonly class IccProfile
         $data = @file_get_contents($path);
 
         if (!is_string($data)) {
-            throw new InvalidArgumentException(sprintf("Unable to read ICC profile '%s'.", $path));
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID,
+                sprintf("Unable to read ICC profile '%s'.", $path),
+            );
         }
 
         return new self($data, $colorComponents);
@@ -68,7 +75,7 @@ final readonly class IccProfile
     public function assertPdfA1Compatible(PdfAOutputIntent $outputIntent): void
     {
         if (strlen($this->data) < 132) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'ICC profile "%s" is too short to be a valid PDF/A output intent profile.',
                 $outputIntent->iccProfilePath,
             ));
@@ -77,21 +84,21 @@ final readonly class IccProfile
         $declaredLength = unpack('N', substr($this->data, 0, 4))[1] ?? 0;
 
         if ($declaredLength < 132 || $declaredLength > strlen($this->data)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'ICC profile "%s" declares an invalid profile length.',
                 $outputIntent->iccProfilePath,
             ));
         }
 
         if (substr($this->data, 36, 4) !== 'acsp') {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'ICC profile "%s" is missing the ICC signature.',
                 $outputIntent->iccProfilePath,
             ));
         }
 
         if (!in_array($outputIntent->colorComponents, [1, 3, 4], true)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'ICC profile "%s" uses unsupported PDF/A component count %d.',
                 $outputIntent->iccProfilePath,
                 $outputIntent->colorComponents,
@@ -102,7 +109,7 @@ final readonly class IccProfile
         $colorSpace = substr($this->data, 16, 4);
 
         if (!in_array($deviceClass, ['mntr', 'prtr', 'spac'], true)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'ICC profile "%s" uses unsupported device class "%s" for PDF/A-1.',
                 $outputIntent->iccProfilePath,
                 $deviceClass,
@@ -116,7 +123,7 @@ final readonly class IccProfile
         };
 
         if ($colorSpace !== $expectedColorSpace) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'ICC profile "%s" color space "%s" does not match the PDF/A output intent component count %d.',
                 $outputIntent->iccProfilePath,
                 trim($colorSpace),
@@ -129,7 +136,7 @@ final readonly class IccProfile
             && !str_contains(strtolower($outputIntent->outputConditionIdentifier), 'rgb')
             && !str_contains(strtolower($outputIntent->outputConditionIdentifier), 'srgb')
         ) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'PDF/A output intent "%s" is not plausible for an RGB ICC profile.',
                 $outputIntent->outputConditionIdentifier,
             ));
@@ -139,7 +146,7 @@ final readonly class IccProfile
             $outputIntent->colorComponents === 4
             && !str_contains(strtolower($outputIntent->outputConditionIdentifier), 'cmyk')
         ) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID, sprintf(
                 'PDF/A output intent "%s" is not plausible for a CMYK ICC profile.',
                 $outputIntent->outputConditionIdentifier,
             ));
