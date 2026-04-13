@@ -167,7 +167,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4' => new self(
                 'PDF/A-4',
                 false,
-                'PDF/A-4 requires a dedicated PDF 2.0 validation and policy matrix that is not implemented yet.',
+                'PDF/A-4 is blocked behind a dedicated PDF/A-4 policy and PDF 2.0 validation path.',
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -184,7 +184,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
                 false,
-                'PDF/A-4e-specific engineering features and the surrounding PDF 2.0 conformance scope are not implemented yet.',
+                'PDF/A-4e is blocked behind dedicated engineering-specific policy checks and a PDF 2.0 validation path.',
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -201,7 +201,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4f' => new self(
                 'PDF/A-4f',
                 false,
-                'Some attachment plumbing exists, but the full PDF/A-4f conformance scope is not modeled or validated yet.',
+                'PDF/A-4f is blocked behind a dedicated attachment policy and PDF 2.0 validation path.',
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,

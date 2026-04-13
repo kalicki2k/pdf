@@ -68,7 +68,7 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdfA4f()->supportsCurrentPdfAImplementation());
 
         self::assertSame(
-            'PDF/A-4 requires a dedicated PDF 2.0 validation and policy matrix that is not implemented yet.',
+            'PDF/A-4 is blocked behind a dedicated PDF/A-4 policy and PDF 2.0 validation path.',
             Profile::pdfA4()->pdfaSupport()?->supportSummary,
         );
     }

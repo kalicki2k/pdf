@@ -533,7 +533,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-4f is not supported yet: Some attachment plumbing exists, but the full PDF/A-4f conformance scope is not modeled or validated yet.',
+            'Profile PDF/A-4f is blocked until the dedicated PDF/A-4f attachment and PDF 2.0 validation path are implemented.',
         );
 
         $builder->build($document);

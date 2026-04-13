@@ -37,6 +37,7 @@ final class DocumentSerializationPlanValidator
         private readonly PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
         private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
         private readonly PdfA23ScopePolicy $pdfA23ScopePolicy = new PdfA23ScopePolicy(),
+        private readonly PdfA4ScopePolicy $pdfA4ScopePolicy = new PdfA4ScopePolicy(),
     ) {
     }
 
@@ -56,6 +57,7 @@ final class DocumentSerializationPlanValidator
 
     private function assertProfileRequirements(Document $document): void
     {
+        $this->pdfA4ScopePolicy->assertProfileSelectionAllowed($document);
         $document->profile->pdfaSupport()?->assertSupported();
 
         if ($document->profile->requiresDocumentLanguage() && $document->language === null) {

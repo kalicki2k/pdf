@@ -12,9 +12,9 @@ Der aktuelle PDF/A-Scope ist bewusst konservativ und folgt eher dem Prinzip "har
 - `PDF/A-3b`: dokumentweite Embedded Files und Associated Files am Catalog sind im aktuellen Scope abgedeckt. Erlaubt sind dokumentweite Associated Files am Catalog, nicht aber seitennahe Dateianhang-Annotationen, Popup-Related-Objects oder AcroForm-Felder.
 - `PDF/A-3a`: freigegeben fuer den aktuellen Tagged-Pfad mit Strukturbaum, ParentTree, eingebetteten Unicode-Fonts, XMP/OutputIntent, getaggten Link-Annotationen und dokumentweiten Associated Files am Catalog. Andere Seitenannotationen als Links sowie AcroForm-Felder bleiben im aktuellen A-Scope gesperrt.
 - `PDF/A-3u`: erweitert den aktuellen `PDF/A-3b`-Scope um den extractable-Unicode-Font-Pfad. Dokumentweite Associated Files am Catalog bleiben freigegeben; seitennahe Dateianhang-Annotationen, Popup-Related-Objects und AcroForm-Felder bleiben gesperrt.
-- `PDF/A-4`: aktuell bewusst nicht freigegeben. Der PDF-2.0-basierte PDF/A-4-Scope ist noch nicht als belastbare Capability-Matrix modelliert und wird deshalb hart blockiert.
-- `PDF/A-4e`: aktuell bewusst nicht freigegeben. Die zusaetzlichen Engineering-Anforderungen von PDF/A-4e sind noch nicht implementiert und werden deshalb hart blockiert.
-- `PDF/A-4f`: aktuell bewusst nicht freigegeben. Teile des Attachment-Plumbings existieren bereits, aber der vollstaendige PDF/A-4f-Scope ist noch nicht sauber validiert und wird deshalb hart blockiert.
+- `PDF/A-4`: aktuell bewusst nicht freigegeben. Der PDF-2.0-basierte PDF/A-4-Scope laeuft ueber eine eigene Sperr-Policy und bleibt blockiert, bis eine belastbare PDF/A-4-Matrix samt PDF-2.0-Validierung existiert.
+- `PDF/A-4e`: aktuell bewusst nicht freigegeben. Die zusaetzlichen Engineering-Anforderungen von PDF/A-4e werden ueber eine eigene PDF/A-4e-Sperr-Policy blockiert, bis die PDF-2.0-Basis und die Zusatzfeatures sauber modelliert sind.
+- `PDF/A-4f`: aktuell bewusst nicht freigegeben. Teile des Attachment-Plumbings existieren bereits, aber eine eigene PDF/A-4f-Policy blockiert den Profilmodus, bis die Attachment- und PDF-2.0-Anforderungen vollstaendig validiert sind.
 
 Die Engine validiert PDF/A-1 inzwischen nicht nur auf vorbereiteten Zwischenstrukturen, sondern auch gegen den finalen Objektgraphen vor dem Schreiben. Fuer PDF/A-2/3 laeuft derselbe finale Objektgraph-Check inzwischen fuer den gemeinsamen Catalog-, Metadata-, OutputIntent-, Attachment- und Seitenpfad. Die PDF/A-Regressionsskripte pruefen die geschriebenen Dateien zusaetzlich mit `qpdf --check`, bevor veraPDF laeuft.
 
