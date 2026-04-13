@@ -27,7 +27,7 @@ final class PdfA4ScopePolicyTest extends TestCase
         } catch (DocumentValidationException $exception) {
             self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
             self::assertSame(
-                'Profile PDF/A-4e is blocked until PDF/A-4e-specific engineering features and the PDF 2.0 validation path are implemented.',
+                'Profile PDF/A-4e is blocked until optional content, RichMedia, 3D engineering annotations, PDF/A-4e-specific engineering features and the dedicated PDF 2.0 validation path are implemented.',
                 $exception->getMessage(),
             );
         }
@@ -56,10 +56,10 @@ final class PdfA4ScopePolicyTest extends TestCase
     {
         $policy = new PdfA4ScopePolicy();
 
-        self::assertTrue($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::ENGINEERING_FEATURES)->allowed);
-        self::assertTrue($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::OPTIONAL_CONTENT)->allowed);
-        self::assertTrue($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::RICH_MEDIA)->allowed);
-        self::assertTrue($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::THREE_D_ANNOTATIONS)->allowed);
+        self::assertFalse($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::ENGINEERING_FEATURES)->allowed);
+        self::assertFalse($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::OPTIONAL_CONTENT)->allowed);
+        self::assertFalse($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::RICH_MEDIA)->allowed);
+        self::assertFalse($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::THREE_D_ANNOTATIONS)->allowed);
         self::assertFalse($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::ASSOCIATED_FILES)->allowed);
     }
 

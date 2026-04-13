@@ -48,6 +48,7 @@ final class PdfAObjectGraphValidator
         $this->assertAcroFormObjects($document, $state, $catalogObject, $objectsById);
         $this->assertTaggedObjects($document, $state, $catalogObject, $objectsById);
         $this->assertAttachmentReferences($document, $state, $catalogObject, $objectsById);
+        $this->assertPdfA4EngineeringObjects($document, $catalogObject, $objectsById);
 
         foreach ($state->pageObjectIds as $pageIndex => $pageObjectId) {
             $pageObject = $this->assertObjectExists($objectsById, $pageObjectId, sprintf('page object %d', $pageIndex + 1));
@@ -130,6 +131,13 @@ final class PdfAObjectGraphValidator
         if ($document->profile->isPdfA4() && str_contains($catalogObject->contents, '/OutputIntents [')) {
             throw new DocumentValidationException(DocumentBuildError::PDFA4_METADATA_INVALID, sprintf(
                 'Profile %s must not serialize OutputIntents in the final PDF/A-4 object graph.',
+                $document->profile->name(),
+            ));
+        }
+
+        if (($document->profile->isPdfA4() || $document->profile->isPdfA4f()) && str_contains($catalogObject->contents, '/OCProperties')) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
+                'Profile %s must not serialize /OCProperties in the current PDF/A-4 object graph.',
                 $document->profile->name(),
             ));
         }
@@ -660,6 +668,39 @@ final class PdfAObjectGraphValidator
                 $annotationIndex + 1,
                 $pageIndex + 1,
             ));
+        }
+    }
+
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
+    private function assertPdfA4EngineeringObjects(Document $document, IndirectObject $catalogObject, array $objectsById): void
+    {
+        if (!$document->profile->isPdfA4()) {
+            return;
+        }
+
+        if (str_contains($catalogObject->contents, '/OCProperties')) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
+                'Profile %s must not serialize /OCProperties in the current PDF/A-4 object graph.',
+                $document->profile->name(),
+            ));
+        }
+
+        foreach ($objectsById as $object) {
+            if (str_contains($object->contents, '/Subtype /RichMedia')) {
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
+                    'Profile %s must not serialize RichMedia annotations or assets in the current PDF/A-4 object graph.',
+                    $document->profile->name(),
+                ));
+            }
+
+            if (str_contains($object->contents, '/Subtype /3D')) {
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
+                    'Profile %s must not serialize 3D annotations in the current PDF/A-4 object graph.',
+                    $document->profile->name(),
+                ));
+            }
         }
     }
 

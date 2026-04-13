@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function implode;
 use function sprintf;
 
 use InvalidArgumentException;
@@ -33,27 +34,60 @@ final class PdfA4ScopePolicy
             return;
         }
 
-        if ($document->profile->pdfaConformance() === null) {
-            return;
-        }
+        $blockedReason = $this->blockedSelectionReason($document->profile);
 
-        if ($document->profile->pdfaConformance() === 'E') {
-            throw new DocumentValidationException(
-                DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED,
-                'Profile PDF/A-4e is blocked until PDF/A-4e-specific engineering features and the PDF 2.0 validation path are implemented.',
-            );
-        }
-
-        if ($document->profile->pdfaConformance() === 'F') {
+        if ($blockedReason === null) {
             return;
         }
 
         throw new DocumentValidationException(
             DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED,
             sprintf(
-                'Profile %s is not modeled in the current PDF/A-4 scope policy.',
+                'Profile %s is blocked until %s',
                 $document->profile->name(),
+                $blockedReason,
             ),
+        );
+    }
+
+    public function blockedSelectionReason(Profile $profile): ?string
+    {
+        if (!$profile->isPdfA4()) {
+            throw new InvalidArgumentException(sprintf(
+                'PDF/A-4 scope policy only applies to PDF/A-4 profiles. Got %s.',
+                $profile->name(),
+            ));
+        }
+
+        if ($profile->pdfaConformance() === null || $profile->pdfaConformance() === 'F') {
+            return null;
+        }
+
+        if ($profile->pdfaConformance() !== 'E') {
+            return 'this PDF/A-4 conformance variant is modeled.';
+        }
+
+        $blockedFeatureLabels = [];
+
+        if (!$this->featureRule($profile, PdfA4Feature::OPTIONAL_CONTENT)->allowed) {
+            $blockedFeatureLabels[] = 'optional content';
+        }
+
+        if (!$this->featureRule($profile, PdfA4Feature::RICH_MEDIA)->allowed) {
+            $blockedFeatureLabels[] = 'RichMedia';
+        }
+
+        if (!$this->featureRule($profile, PdfA4Feature::THREE_D_ANNOTATIONS)->allowed) {
+            $blockedFeatureLabels[] = '3D engineering annotations';
+        }
+
+        if (!$this->featureRule($profile, PdfA4Feature::ENGINEERING_FEATURES)->allowed) {
+            $blockedFeatureLabels[] = 'PDF/A-4e-specific engineering features';
+        }
+
+        return sprintf(
+            '%s and the dedicated PDF 2.0 validation path are implemented.',
+            implode(', ', $blockedFeatureLabels),
         );
     }
 
@@ -82,10 +116,10 @@ final class PdfA4ScopePolicy
             PdfA4Feature::INFO_DICTIONARY => new PdfA4FeatureRule(false, false, 'The current PDF/A-4e path does not claim an Info dictionary.'),
             PdfA4Feature::EMBEDDED_ATTACHMENTS => new PdfA4FeatureRule(false, false, 'The current PDF/A-4e path does not allow embedded attachments.'),
             PdfA4Feature::ASSOCIATED_FILES => new PdfA4FeatureRule(false, false, 'The current PDF/A-4e path does not allow associated files.'),
-            PdfA4Feature::OPTIONAL_CONTENT => new PdfA4FeatureRule(true, false, 'Optional-content and engineering-view constructs need dedicated PDF/A-4e validation before support can be claimed.'),
-            PdfA4Feature::RICH_MEDIA => new PdfA4FeatureRule(true, false, 'RichMedia-style engineering assets need dedicated PDF/A-4e validation before support can be claimed.'),
-            PdfA4Feature::THREE_D_ANNOTATIONS => new PdfA4FeatureRule(true, false, '3D engineering annotations need dedicated PDF/A-4e validation before support can be claimed.'),
-            PdfA4Feature::ENGINEERING_FEATURES => new PdfA4FeatureRule(true, false, 'PDF/A-4e-specific engineering features need dedicated validation before support can be claimed.'),
+            PdfA4Feature::OPTIONAL_CONTENT => new PdfA4FeatureRule(false, false, 'Optional-content and engineering-view constructs remain blocked until dedicated PDF/A-4e validation exists.'),
+            PdfA4Feature::RICH_MEDIA => new PdfA4FeatureRule(false, false, 'RichMedia-style engineering assets remain blocked until dedicated PDF/A-4e validation exists.'),
+            PdfA4Feature::THREE_D_ANNOTATIONS => new PdfA4FeatureRule(false, false, '3D engineering annotations remain blocked until dedicated PDF/A-4e validation exists.'),
+            PdfA4Feature::ENGINEERING_FEATURES => new PdfA4FeatureRule(false, false, 'PDF/A-4e-specific engineering features remain blocked until dedicated validation exists.'),
         };
     }
 

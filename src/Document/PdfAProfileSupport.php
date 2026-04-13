@@ -248,7 +248,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
                 false,
-                'PDF/A-4e is blocked until optional content, RichMedia, 3D engineering annotations and the dedicated PDF 2.0 validation path are implemented.',
+                'PDF/A-4e is blocked until ' . self::pdfA4ScopePolicy()->blockedSelectionReason(Profile::pdfA4e()),
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -299,6 +299,14 @@ final readonly class PdfAProfileSupport
                 [],
             ),
         };
+    }
+
+    private static function pdfA4ScopePolicy(): PdfA4ScopePolicy
+    {
+        /** @var PdfA4ScopePolicy|null $policy */
+        static $policy;
+
+        return $policy ??= new PdfA4ScopePolicy();
     }
 
     /**
