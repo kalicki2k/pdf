@@ -21,6 +21,16 @@ final class OpenTypeFontParser
     private ?array $gsubFeatureLookups = null;
     /** @var array<string, list<int>>|null */
     private ?array $gposFeatureLookups = null;
+    /** @var array{format: int, offset: int}|null */
+    private ?array $preferredCmapSubtable = null;
+    /** @var array<int, int> */
+    private array $glyphIdByCodePoint = [];
+    /** @var array<int, array{advanceWidth: int, leftSideBearing: int}> */
+    private array $horizontalMetricsByGlyphId = [];
+    /** @var array<int, list<int>> */
+    private array $coverageGlyphIdsCache = [];
+    /** @var array<string, array{lookupListOffset: int, lookupCount: int}|null> */
+    private array $layoutLookupListCache = [];
 
     private readonly string $data;
 
@@ -74,9 +84,13 @@ final class OpenTypeFontParser
 
     public function getGlyphIdForCodePoint(int $codePoint): int
     {
+        if (isset($this->glyphIdByCodePoint[$codePoint])) {
+            return $this->glyphIdByCodePoint[$codePoint];
+        }
+
         $subtable = $this->findPreferredCmapSubtable();
 
-        return match ($subtable['format']) {
+        return $this->glyphIdByCodePoint[$codePoint] = match ($subtable['format']) {
             12 => $this->glyphIdFromFormat12($subtable['offset'], $codePoint),
             4 => $this->glyphIdFromFormat4($subtable['offset'], $codePoint),
             default => throw new InvalidArgumentException("Unsupported cmap format {$subtable['format']}."),
@@ -208,19 +222,23 @@ final class OpenTypeFontParser
      */
     public function getHorizontalMetricsForGlyphId(int $glyphId): array
     {
+        if (isset($this->horizontalMetricsByGlyphId[$glyphId])) {
+            return $this->horizontalMetricsByGlyphId[$glyphId];
+        }
+
         $hheaOffset = $this->requiredTableOffset('hhea');
         $hmtxOffset = $this->requiredTableOffset('hmtx');
 
         $numberOfHMetrics = $this->readUInt16($hheaOffset + 34);
 
         if ($glyphId < $numberOfHMetrics) {
-            return [
+            return $this->horizontalMetricsByGlyphId[$glyphId] = [
                 'advanceWidth' => $this->readUInt16($hmtxOffset + ($glyphId * 4)),
                 'leftSideBearing' => $this->readInt16($hmtxOffset + ($glyphId * 4) + 2),
             ];
         }
 
-        return [
+        return $this->horizontalMetricsByGlyphId[$glyphId] = [
             'advanceWidth' => $this->readUInt16($hmtxOffset + (($numberOfHMetrics - 1) * 4)),
             'leftSideBearing' => $this->readInt16(
                 $hmtxOffset + ($numberOfHMetrics * 4) + (($glyphId - $numberOfHMetrics) * 2),
@@ -469,18 +487,17 @@ final class OpenTypeFontParser
 
     private function applyGposPairAdjustmentLookup(int $lookupIndex, int $leftGlyphId, int $rightGlyphId): ?int
     {
-        if (!$this->hasTable('GPOS')) {
+        $lookupList = $this->layoutLookupList('GPOS');
+
+        if ($lookupList === null) {
             return null;
         }
 
-        $gposOffset = $this->requiredTableOffset('GPOS');
-        $lookupListOffset = $gposOffset + $this->readUInt16($gposOffset + 8);
-        $lookupCount = $this->readUInt16($lookupListOffset);
-
-        if ($lookupIndex >= $lookupCount) {
+        if ($lookupIndex >= $lookupList['lookupCount']) {
             return null;
         }
 
+        $lookupListOffset = $lookupList['lookupListOffset'];
         $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
         $lookupType = $this->readUInt16($lookupOffset);
         $subtableCount = $this->readUInt16($lookupOffset + 4);
@@ -503,18 +520,17 @@ final class OpenTypeFontParser
 
     private function applyGposSingleAdjustmentLookup(int $lookupIndex, int $glyphId): ?int
     {
-        if (!$this->hasTable('GPOS')) {
+        $lookupList = $this->layoutLookupList('GPOS');
+
+        if ($lookupList === null) {
             return null;
         }
 
-        $gposOffset = $this->requiredTableOffset('GPOS');
-        $lookupListOffset = $gposOffset + $this->readUInt16($gposOffset + 8);
-        $lookupCount = $this->readUInt16($lookupListOffset);
-
-        if ($lookupIndex >= $lookupCount) {
+        if ($lookupIndex >= $lookupList['lookupCount']) {
             return null;
         }
 
+        $lookupListOffset = $lookupList['lookupListOffset'];
         $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
         $lookupType = $this->readUInt16($lookupOffset);
         $subtableCount = $this->readUInt16($lookupOffset + 4);
@@ -613,18 +629,17 @@ final class OpenTypeFontParser
      */
     private function applyGposMarkToBaseLookup(int $lookupIndex, int $baseGlyphId, int $markGlyphId): ?array
     {
-        if (!$this->hasTable('GPOS')) {
+        $lookupList = $this->layoutLookupList('GPOS');
+
+        if ($lookupList === null) {
             return null;
         }
 
-        $gposOffset = $this->requiredTableOffset('GPOS');
-        $lookupListOffset = $gposOffset + $this->readUInt16($gposOffset + 8);
-        $lookupCount = $this->readUInt16($lookupListOffset);
-
-        if ($lookupIndex >= $lookupCount) {
+        if ($lookupIndex >= $lookupList['lookupCount']) {
             return null;
         }
 
+        $lookupListOffset = $lookupList['lookupListOffset'];
         $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
         $lookupType = $this->readUInt16($lookupOffset);
         $subtableCount = $this->readUInt16($lookupOffset + 4);
@@ -650,18 +665,17 @@ final class OpenTypeFontParser
      */
     private function applyGposMarkToMarkLookup(int $lookupIndex, int $baseMarkGlyphId, int $markGlyphId): ?array
     {
-        if (!$this->hasTable('GPOS')) {
+        $lookupList = $this->layoutLookupList('GPOS');
+
+        if ($lookupList === null) {
             return null;
         }
 
-        $gposOffset = $this->requiredTableOffset('GPOS');
-        $lookupListOffset = $gposOffset + $this->readUInt16($gposOffset + 8);
-        $lookupCount = $this->readUInt16($lookupListOffset);
-
-        if ($lookupIndex >= $lookupCount) {
+        if ($lookupIndex >= $lookupList['lookupCount']) {
             return null;
         }
 
+        $lookupListOffset = $lookupList['lookupListOffset'];
         $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
         $lookupType = $this->readUInt16($lookupOffset);
         $subtableCount = $this->readUInt16($lookupOffset + 4);
@@ -784,18 +798,17 @@ final class OpenTypeFontParser
 
     private function applyGsubLookup(int $lookupIndex, int $glyphId): ?int
     {
-        if (!$this->hasTable('GSUB')) {
+        $lookupList = $this->layoutLookupList('GSUB');
+
+        if ($lookupList === null) {
             return null;
         }
 
-        $gsubOffset = $this->requiredTableOffset('GSUB');
-        $lookupListOffset = $gsubOffset + $this->readUInt16($gsubOffset + 8);
-        $lookupCount = $this->readUInt16($lookupListOffset);
-
-        if ($lookupIndex >= $lookupCount) {
+        if ($lookupIndex >= $lookupList['lookupCount']) {
             return null;
         }
 
+        $lookupListOffset = $lookupList['lookupListOffset'];
         $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
         $lookupType = $this->readUInt16($lookupOffset);
         $subtableCount = $this->readUInt16($lookupOffset + 4);
@@ -822,18 +835,17 @@ final class OpenTypeFontParser
      */
     private function applyGsubSequenceLookup(int $lookupIndex, array $glyphIds): ?array
     {
-        if (!$this->hasTable('GSUB')) {
+        $lookupList = $this->layoutLookupList('GSUB');
+
+        if ($lookupList === null) {
             return null;
         }
 
-        $gsubOffset = $this->requiredTableOffset('GSUB');
-        $lookupListOffset = $gsubOffset + $this->readUInt16($gsubOffset + 8);
-        $lookupCount = $this->readUInt16($lookupListOffset);
-
-        if ($lookupIndex >= $lookupCount) {
+        if ($lookupIndex >= $lookupList['lookupCount']) {
             return null;
         }
 
+        $lookupListOffset = $lookupList['lookupListOffset'];
         $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
         $lookupType = $this->readUInt16($lookupOffset);
         $subtableCount = $this->readUInt16($lookupOffset + 4);
@@ -860,18 +872,17 @@ final class OpenTypeFontParser
      */
     private function applyGsubContextLookup(int $lookupIndex, array $glyphIds): ?array
     {
-        if (!$this->hasTable('GSUB')) {
+        $lookupList = $this->layoutLookupList('GSUB');
+
+        if ($lookupList === null) {
             return null;
         }
 
-        $gsubOffset = $this->requiredTableOffset('GSUB');
-        $lookupListOffset = $gsubOffset + $this->readUInt16($gsubOffset + 8);
-        $lookupCount = $this->readUInt16($lookupListOffset);
-
-        if ($lookupIndex >= $lookupCount) {
+        if ($lookupIndex >= $lookupList['lookupCount']) {
             return null;
         }
 
+        $lookupListOffset = $lookupList['lookupListOffset'];
         $lookupOffset = $lookupListOffset + $this->readUInt16($lookupListOffset + 2 + ($lookupIndex * 2));
         $lookupType = $this->readUInt16($lookupOffset);
         $subtableCount = $this->readUInt16($lookupOffset + 4);
@@ -1127,6 +1138,10 @@ final class OpenTypeFontParser
      */
     private function coverageGlyphIds(int $coverageOffset): array
     {
+        if (isset($this->coverageGlyphIdsCache[$coverageOffset])) {
+            return $this->coverageGlyphIdsCache[$coverageOffset];
+        }
+
         $format = $this->readUInt16($coverageOffset);
 
         if ($format === 1) {
@@ -1137,7 +1152,7 @@ final class OpenTypeFontParser
                 $glyphIds[] = $this->readUInt16($coverageOffset + 4 + ($index * 2));
             }
 
-            return $glyphIds;
+            return $this->coverageGlyphIdsCache[$coverageOffset] = $glyphIds;
         }
 
         if ($format === 2) {
@@ -1154,7 +1169,7 @@ final class OpenTypeFontParser
                 }
             }
 
-            return $glyphIds;
+            return $this->coverageGlyphIdsCache[$coverageOffset] = $glyphIds;
         }
 
         throw new InvalidArgumentException(sprintf(
@@ -1188,6 +1203,10 @@ final class OpenTypeFontParser
      */
     private function findPreferredCmapSubtable(): array
     {
+        if ($this->preferredCmapSubtable !== null) {
+            return $this->preferredCmapSubtable;
+        }
+
         $cmapOffset = $this->requiredTableOffset('cmap');
         $numTables = $this->readUInt16($cmapOffset + 2);
         $candidates = [];
@@ -1221,7 +1240,7 @@ final class OpenTypeFontParser
                     && $candidate['encodingId'] === $encodingId
                     && $candidate['format'] === $format
                 ) {
-                    return [
+                    return $this->preferredCmapSubtable = [
                         'format' => $candidate['format'],
                         'offset' => $candidate['offset'],
                     ];
@@ -1317,6 +1336,28 @@ final class OpenTypeFontParser
         }
 
         return $this->tables[$tag]['offset'];
+    }
+
+    /**
+     * @return array{lookupListOffset: int, lookupCount: int}|null
+     */
+    private function layoutLookupList(string $tableTag): ?array
+    {
+        if (array_key_exists($tableTag, $this->layoutLookupListCache)) {
+            return $this->layoutLookupListCache[$tableTag];
+        }
+
+        if (!$this->hasTable($tableTag)) {
+            return $this->layoutLookupListCache[$tableTag] = null;
+        }
+
+        $layoutOffset = $this->requiredTableOffset($tableTag);
+        $lookupListOffset = $layoutOffset + $this->readUInt16($layoutOffset + 8);
+
+        return $this->layoutLookupListCache[$tableTag] = [
+            'lookupListOffset' => $lookupListOffset,
+            'lookupCount' => $this->readUInt16($lookupListOffset),
+        ];
     }
 
     private function readUInt16(int $offset): int
