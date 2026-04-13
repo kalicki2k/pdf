@@ -25,6 +25,7 @@ use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\OptionalContentGroup;
 use Kalle\Pdf\Page\OptionalContentMembership;
+use Kalle\Pdf\Page\OptionalContentVisibilityExpression;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
@@ -643,6 +644,62 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4e must serialize optional content membership object ' . $membershipObjectId . ' as an /OCMD dictionary with /OCGs.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4eOptionalContentMembershipObjectsWithoutConfiguredVeExpression(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Membership Expressions',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Exploded BDC\nq\n0 0 20 20 re\nf\nQ\nEMC",
+                    optionalContentGroups: [
+                        'LayerA' => new OptionalContentGroup('Base Geometry'),
+                        'LayerB' => new OptionalContentGroup('Dimensions'),
+                    ],
+                    optionalContentMemberships: [
+                        'Exploded' => new OptionalContentMembership(
+                            'Exploded View',
+                            ['LayerA', 'LayerB'],
+                            visibilityExpression: OptionalContentVisibilityExpression::and(
+                                OptionalContentVisibilityExpression::alias('LayerA'),
+                                OptionalContentVisibilityExpression::not(
+                                    OptionalContentVisibilityExpression::alias('LayerB'),
+                                ),
+                            ),
+                        ),
+                    ],
+                ),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+        $membershipObjectId = array_values($state->pageOptionalContentMembershipObjectIds[0])[0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($membershipObjectId): IndirectObject {
+                if ($object->objectId !== $membershipObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace('/\/VE\s+\[[^\]]+\]\s*/', '/P /AllOn ', $object->contents, 1);
+
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain(
+                    $object->objectId,
+                    $tamperedContents,
+                );
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e must serialize optional content membership object ' . $membershipObjectId . ' with the configured /VE expression.');
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }

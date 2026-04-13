@@ -248,7 +248,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
                 true,
-                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and the simple optional-content group and membership subset; RichMedia, 3D and other engineering features remain blocked.',
+                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and the simple optional-content group, membership and visibility-expression subset; RichMedia, 3D and other engineering features remain blocked.',
                 self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -275,7 +275,7 @@ final readonly class PdfAProfileSupport
                     PdfACapability::OPTIONAL_CONTENT_GROUPS->value => new PdfACapabilityRule(
                         true,
                         false,
-                        'Simple optional content groups, OCMD membership dictionaries and layer visibility via /OCProperties and page resource /Properties are allowed in the current constrained PDF/A-4e scope; RichMedia, 3D and broader engineering features remain blocked.',
+                        'Simple optional content groups, OCMD membership dictionaries, basic /VE expressions and layer visibility via /OCProperties and page resource /Properties are allowed in the current constrained PDF/A-4e scope; RichMedia, 3D and broader engineering features remain blocked.',
                     ),
                 ]),
             ),

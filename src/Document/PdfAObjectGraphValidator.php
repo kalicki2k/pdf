@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function array_key_exists;
+use function array_map;
 use function preg_match;
 use function preg_quote;
 use function sprintf;
@@ -14,6 +15,8 @@ use function str_replace;
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
+use Kalle\Pdf\Page\OptionalContentGroup;
+use Kalle\Pdf\Page\OptionalContentVisibilityExpression;
 use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
@@ -840,14 +843,6 @@ final class PdfAObjectGraphValidator
                         ));
                     }
 
-                    if (!str_contains($object->contents, '/P /AnyOn') && !str_contains($object->contents, '/P /AllOn')) {
-                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
-                            'Profile %s must serialize optional content membership object %d with /P /AnyOn or /P /AllOn.',
-                            $document->profile->name(),
-                            $objectId,
-                        ));
-                    }
-
                     foreach ($membership->groupAliases as $groupAlias) {
                         $group = $page->optionalContentGroups[$groupAlias] ?? null;
 
@@ -872,6 +867,28 @@ final class PdfAObjectGraphValidator
                                 $pageIndex + 1,
                             ),
                         );
+                    }
+
+                    if ($membership->visibilityExpression !== null) {
+                        $expectedExpression = $this->serializeOptionalContentVisibilityExpression(
+                            $membership->visibilityExpression,
+                            $page->optionalContentGroups,
+                            $state,
+                        );
+
+                        if (!str_contains($object->contents, '/VE ' . $expectedExpression)) {
+                            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                                'Profile %s must serialize optional content membership object %d with the configured /VE expression.',
+                                $document->profile->name(),
+                                $objectId,
+                            ));
+                        }
+                    } elseif (!str_contains($object->contents, '/P /AnyOn') && !str_contains($object->contents, '/P /AllOn')) {
+                        throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                            'Profile %s must serialize optional content membership object %d with /P /AnyOn or /P /AllOn.',
+                            $document->profile->name(),
+                            $objectId,
+                        ));
                     }
                 }
             }
@@ -927,6 +944,27 @@ final class PdfAObjectGraphValidator
             '/\/Properties\s*<<[^>]*\/' . preg_quote($alias, '/') . '\s+' . preg_quote((string) $objectId, '/') . '\s+0\s+R\b[^>]*>>/',
             $contents,
         ) === 1;
+    }
+
+    /**
+     * @param array<string, OptionalContentGroup> $pageOptionalContentGroups
+     */
+    private function serializeOptionalContentVisibilityExpression(
+        OptionalContentVisibilityExpression $expression,
+        array $pageOptionalContentGroups,
+        DocumentSerializationPlanBuildState $state,
+    ): string {
+        if ($expression->isAlias()) {
+            $group = $pageOptionalContentGroups[$expression->groupAlias() ?? ''] ?? null;
+            $objectId = $group === null ? null : ($state->optionalContentGroupObjectIds[$group->key()] ?? null);
+
+            return $objectId === null ? 'null' : $objectId . ' 0 R';
+        }
+
+        return '[' . $expression->operatorToken() . ' ' . implode(' ', array_map(
+            fn (OptionalContentVisibilityExpression $operand): string => $this->serializeOptionalContentVisibilityExpression($operand, $pageOptionalContentGroups, $state),
+            $expression->operands(),
+        )) . ']';
     }
 
     private function profileLabel(): string

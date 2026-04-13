@@ -14,6 +14,8 @@ use Kalle\Pdf\Encryption\EncryptionProfileResolver;
 use Kalle\Pdf\Encryption\ObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandler;
 use Kalle\Pdf\Page\OptionalContentGroup;
+use Kalle\Pdf\Page\OptionalContentMembership;
+use Kalle\Pdf\Page\OptionalContentVisibilityExpression;
 use Kalle\Pdf\Writer\DocumentSerializationPlan;
 use Kalle\Pdf\Writer\FileStructure;
 use Kalle\Pdf\Writer\IndirectObject;
@@ -279,7 +281,9 @@ final readonly class DocumentSerializationPlanBuilder
                     $objectId,
                     '<< /Type /OCMD /Name '
                     . $this->pdfString($membership->name)
-                    . ' /OCGs [' . implode(' ', $groupReferences) . '] /P /' . $membership->visibilityPolicy . ' >>',
+                    . ' /OCGs [' . implode(' ', $groupReferences) . '] '
+                    . $this->buildOptionalContentMembershipVisibilityEntry($page->optionalContentGroups, $state, $membership)
+                    . ' >>',
                 );
             }
         }
@@ -350,6 +354,53 @@ final readonly class DocumentSerializationPlanBuilder
         }
 
         return $groups;
+    }
+
+    /**
+     * @param array<string, OptionalContentGroup> $pageOptionalContentGroups
+     */
+    private function buildOptionalContentMembershipVisibilityEntry(
+        array $pageOptionalContentGroups,
+        DocumentSerializationPlanBuildState $state,
+        OptionalContentMembership $membership,
+    ): string {
+        if ($membership->visibilityExpression !== null) {
+            return '/VE ' . $this->buildOptionalContentVisibilityExpression(
+                $membership->visibilityExpression,
+                $pageOptionalContentGroups,
+                $state,
+            );
+        }
+
+        return '/P /' . $membership->visibilityPolicy;
+    }
+
+    /**
+     * @param array<string, OptionalContentGroup> $pageOptionalContentGroups
+     */
+    private function buildOptionalContentVisibilityExpression(
+        OptionalContentVisibilityExpression $expression,
+        array $pageOptionalContentGroups,
+        DocumentSerializationPlanBuildState $state,
+    ): string {
+        if ($expression->isAlias()) {
+            $group = $pageOptionalContentGroups[$expression->groupAlias() ?? ''] ?? null;
+
+            if ($group === null) {
+                return 'null';
+            }
+
+            $objectId = $state->optionalContentGroupObjectIds[$group->key()] ?? null;
+
+            return $objectId === null ? 'null' : $objectId . ' 0 R';
+        }
+
+        $operands = array_map(
+            fn (OptionalContentVisibilityExpression $operand): string => $this->buildOptionalContentVisibilityExpression($operand, $pageOptionalContentGroups, $state),
+            $expression->operands(),
+        );
+
+        return '[' . $expression->operatorToken() . ' ' . implode(' ', $operands) . ']';
     }
 
     /**
