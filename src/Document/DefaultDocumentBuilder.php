@@ -677,7 +677,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $clone->renderTableCaption($captionLayout, $table->caption, $font, $cursorY, $tableLeftX, $taggedTableId);
             $cursorY -= $captionLayout['height'];
             $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-            $clone->currentPageCursorYIsTopBoundary = false;
+            $clone->currentPageCursorYIsTopBoundary = true;
         }
 
         if ($headerLayout !== null) {
@@ -699,7 +699,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
             $cursorY -= $headerLayout->totalHeight();
             $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-            $clone->currentPageCursorYIsTopBoundary = false;
+            $clone->currentPageCursorYIsTopBoundary = true;
             $headerRenderedOnCurrentPage = true;
         }
 
@@ -728,7 +728,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
                         $cursorY -= $footerLayout->totalHeight();
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-                        $clone->currentPageCursorYIsTopBoundary = false;
+                        $clone->currentPageCursorYIsTopBoundary = true;
                     }
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
@@ -751,7 +751,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
                     $cursorY -= $headerLayout->totalHeight();
                     $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-                    $clone->currentPageCursorYIsTopBoundary = false;
+                    $clone->currentPageCursorYIsTopBoundary = true;
                     $headerRenderedOnCurrentPage = true;
                     $availableHeight = $cursorY - $contentArea->bottom - $repeatedFooterHeight;
                 }
@@ -761,7 +761,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
                         $cursorY -= $footerLayout->totalHeight();
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-                        $clone->currentPageCursorYIsTopBoundary = false;
+                        $clone->currentPageCursorYIsTopBoundary = true;
                     }
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
@@ -790,14 +790,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $cursorY -= $segmentHeight;
                 $bodyRenderedOnCurrentPage = true;
                 $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-                $clone->currentPageCursorYIsTopBoundary = false;
+                $clone->currentPageCursorYIsTopBoundary = true;
 
                 if ($segmentOffset < $rowGroup->height) {
                     if ($footerLayout !== null && $table->repeatFooterOnPageBreak) {
                         $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
                         $cursorY -= $footerLayout->totalHeight();
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-                        $clone->currentPageCursorYIsTopBoundary = false;
+                        $clone->currentPageCursorYIsTopBoundary = true;
                     }
                     $clone->startOverflowPage();
                     $page = $clone->buildCurrentPage();
@@ -836,14 +836,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
                 $cursorY -= $headerLayout->totalHeight();
                 $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-                $clone->currentPageCursorYIsTopBoundary = false;
+                $clone->currentPageCursorYIsTopBoundary = true;
                 $headerRenderedOnCurrentPage = true;
             }
 
             $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
             $cursorY -= $footerLayout->totalHeight();
             $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
-            $clone->currentPageCursorYIsTopBoundary = false;
+            $clone->currentPageCursorYIsTopBoundary = true;
         }
 
         return $clone;

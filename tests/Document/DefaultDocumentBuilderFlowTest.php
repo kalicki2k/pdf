@@ -6,6 +6,9 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Table;
+use Kalle\Pdf\Document\TableColumn;
+use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
@@ -165,6 +168,25 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
 
         self::assertStringContainsString("56.693 680 m\n200 680 l", $document->pages[0]->contents);
         self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 662 Td\n[", $document->pages[0]->contents);
+    }
+
+    public function testItPlacesImplicitTextBelowThePreviousTable(): void
+    {
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+        )->withRows(
+            TableRow::fromTexts('Cell'),
+        );
+
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->table($table)
+            ->text('Body')
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 498.183 Td\n[", $document->pages[0]->contents);
+        self::assertStringNotContainsString("BT\n/F1 18 Tf\n56.693 516.183 Td\n[", $document->pages[0]->contents);
     }
 
     public function testItAppliesSpacingBeforeToImplicitTextPlacement(): void

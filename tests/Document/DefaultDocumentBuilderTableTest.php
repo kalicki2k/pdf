@@ -477,10 +477,11 @@ final class DefaultDocumentBuilderTableTest extends TestCase
             ->build();
         $page = $document->pages[0];
         $tableBottomY = $page->contentArea()->top - (14.4 + 8.0);
+        $expectedTextY = $tableBottomY - 18.0;
 
         self::assertStringContainsString("BT\n/F1 12 Tf\n", $document->pages[0]->contents);
         self::assertStringContainsString(
-            "BT\n/F1 18 Tf\n56.693 " . $this->formatNumber($tableBottomY) . " Td\n[",
+            "BT\n/F1 18 Tf\n56.693 " . $this->formatNumber($expectedTextY) . " Td\n[",
             $document->pages[0]->contents,
         );
     }

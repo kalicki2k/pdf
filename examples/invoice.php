@@ -12,7 +12,6 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableOptions;
-use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Drawing\Units;
@@ -44,25 +43,71 @@ $textColor = Color::material(MaterialColor::BLUE_GREY, 800);
 $mutedColor = Color::material(MaterialColor::BLUE_GREY, 500);
 $tableHeaderColor = Color::material(MaterialColor::BLUE_GREY, 50);
 $tableBorderColor = Color::material(MaterialColor::GREY, 400);
+$tableFooterColor = Color::material(MaterialColor::BLUE_GREY, 100);
 $fontRegular = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/inter/static/Inter-Regular.ttf');
 $fontBold = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/inter/static/Inter-Bold.ttf');
 
+$invoiceNumber = 'RE-2026-0415';
+$invoiceDate = '13.04.2026';
+$servicePeriod = '01.03.2026 - 31.03.2026';
+$customerNumber = 'KD-10482';
+$projectCode = 'PLT-OPS-2026-Q2';
+$purchaseOrder = 'PO-7781-BCG';
+$paymentTerms = 'zahlbar innerhalb von 14 Tagen ohne Abzug';
+
+$lineItems = [
+    ['period' => '01.03.-07.03.', 'description' => 'Betrieb und Monitoring der Produktionsplattform inkl. Incident Review und Bereitschaftsauswertung', 'quantity' => 1.0, 'unit' => 'Pauschale', 'unitPrice' => 1850.00],
+    ['period' => '03.03.2026', 'description' => 'Sicherheitsupdate des Shop-Frameworks inkl. Staging-Test und Deploy-Freigabe', 'quantity' => 3.5, 'unit' => 'Std.', 'unitPrice' => 128.00],
+    ['period' => '05.03.2026', 'description' => 'Optimierung der Checkout-Validierung zur Reduktion von Zahlungsabbruechen', 'quantity' => 5.0, 'unit' => 'Std.', 'unitPrice' => 122.00],
+    ['period' => '08.03.2026', 'description' => 'Einrichtung eines Performance-Dashboards fuer Conversion, Warenkorb und API-Latenzen', 'quantity' => 4.0, 'unit' => 'Std.', 'unitPrice' => 118.00],
+    ['period' => '10.03.2026', 'description' => 'Content-Pflege Fruehjahrskampagne inkl. Landingpage, Hero-Banner und Produktteaser', 'quantity' => 6.0, 'unit' => 'Std.', 'unitPrice' => 95.00],
+    ['period' => '12.03.2026', 'description' => 'UX-Review des Kundenkontos mit priorisierter Massnahmenliste fuer das interne Produktteam', 'quantity' => 2.5, 'unit' => 'Std.', 'unitPrice' => 132.00],
+    ['period' => '17.03.2026', 'description' => 'Schnittstellenanalyse ERP zu Shop inkl. Fehlerprotokoll fuer den Exportprozess', 'quantity' => 4.5, 'unit' => 'Std.', 'unitPrice' => 128.00],
+    ['period' => '21.03.2026', 'description' => 'Implementierung einer Staffelpreislogik fuer B2B-Kunden im Produktdetail', 'quantity' => 7.0, 'unit' => 'Std.', 'unitPrice' => 124.00],
+    ['period' => '24.03.2026', 'description' => 'QA und Abnahmebegleitung fuer das Release 2026.03 inkl. Smoke Tests', 'quantity' => 3.0, 'unit' => 'Std.', 'unitPrice' => 119.00],
+    ['period' => '27.03.2026', 'description' => 'Datenbereinigung und Redirect-Plan fuer auslaufende Sortimente', 'quantity' => 2.0, 'unit' => 'Std.', 'unitPrice' => 98.00],
+    ['period' => '31.03.2026', 'description' => 'Monatliches Reporting, Handlungsempfehlungen und Abstimmung mit Vertrieb und E-Commerce-Leitung', 'quantity' => 2.0, 'unit' => 'Std.', 'unitPrice' => 135.00],
+];
+
+$formatAmount = static fn (float $amount): string => number_format($amount, 2, ',', '.') . ' €';
+$formatQuantity = static fn (float $quantity): string => rtrim(rtrim(number_format($quantity, 2, ',', '.'), '0'), ',');
+
+$subtotal = 0.0;
+$tableRows = [];
+
+foreach ($lineItems as $index => $item) {
+    $lineTotal = $item['quantity'] * $item['unitPrice'];
+    $subtotal += $lineTotal;
+
+    $tableRows[] = TableRow::fromCells(
+        TableCell::text((string) ($index + 1))->withHorizontalAlign(TextAlign::CENTER),
+        TableCell::text($item['period']),
+        TableCell::text($item['description']),
+        TableCell::text($formatQuantity($item['quantity']) . ' ' . $item['unit'])->withHorizontalAlign(TextAlign::CENTER),
+        TableCell::text($formatAmount($item['unitPrice']))->withHorizontalAlign(TextAlign::RIGHT),
+        TableCell::text($formatAmount($lineTotal))->withHorizontalAlign(TextAlign::RIGHT),
+    );
+}
+
+$taxAmount = round($subtotal * 0.19, 2);
+$totalAmount = $subtotal + $taxAmount;
+
 $table = Table::define(
-    TableColumn::fixed(Units::mm(15)),
-    TableColumn::fixed(Units::mm(75)),
-    TableColumn::fixed(Units::mm(20)),
-    TableColumn::fixed(Units::mm(30)),
-    TableColumn::fixed(Units::mm(30)),
+    TableColumn::auto(),
+    TableColumn::auto(),
+    TableColumn::proportional(1),
+    TableColumn::auto(),
+    TableColumn::auto(),
+    TableColumn::auto(),
 )
     ->withOptions(TableOptions::make(
         border: Border::all(0.5),
         textOptions: TextOptions::make(
-            fontSize: 9,
-            lineHeight: 12,
+            fontSize: 8.5,
+            lineHeight: 11.5,
             embeddedFont: $fontRegular,
             color: $textColor,
         ),
-        placement: TablePlacement::at($left, Units::mm(104), $contentWidth),
         cellPadding: CellPadding::symmetric(Units::mm(1.2), Units::mm(1.5)),
     ))
     ->withHeaderRows(
@@ -70,49 +115,73 @@ $table = Table::define(
             TableCell::text('Pos.')
                 ->withBackgroundColor($tableHeaderColor)
                 ->withHorizontalAlign(TextAlign::CENTER),
+            TableCell::text('Zeitraum')
+                ->withBackgroundColor($tableHeaderColor),
             TableCell::text('Beschreibung')
                 ->withBackgroundColor($tableHeaderColor),
             TableCell::text('Menge')
                 ->withBackgroundColor($tableHeaderColor)
                 ->withHorizontalAlign(TextAlign::CENTER),
-            TableCell::text('Einzelpreis netto')
+            TableCell::text('Satz netto')
                 ->withBackgroundColor($tableHeaderColor)
                 ->withHorizontalAlign(TextAlign::RIGHT),
-            TableCell::text('Gesamt netto')
+            TableCell::text('Betrag netto')
                 ->withBackgroundColor($tableHeaderColor)
                 ->withHorizontalAlign(TextAlign::RIGHT),
         ),
     )
-    ->withRows(
+    ->withRows(...$tableRows)
+    ->withFooterRows(
         TableRow::fromCells(
-            TableCell::text('1')->withHorizontalAlign(TextAlign::CENTER),
-            TableCell::text('Erstellung einer Unternehmenswebseite'),
-            TableCell::text('1')->withHorizontalAlign(TextAlign::CENTER),
-            TableCell::text('1.200,00 EUR')->withHorizontalAlign(TextAlign::RIGHT),
-            TableCell::text('1.200,00 EUR')->withHorizontalAlign(TextAlign::RIGHT),
+            TableCell::segments(
+                TextSegment::plain('Zwischensumme netto:', TextOptions::make(
+                    embeddedFont: $fontBold,
+                    color: $textColor,
+                )),
+            )->withColspan(5)->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
+            TableCell::segments(
+                TextSegment::plain($formatAmount($subtotal), TextOptions::make(
+                    embeddedFont: $fontBold,
+                    color: $textColor,
+                )),
+            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
         ),
         TableRow::fromCells(
-            TableCell::text('2')->withHorizontalAlign(TextAlign::CENTER),
-            TableCell::text('Pflege und Aktualisierung bestehender Inhalte'),
-            TableCell::text('5 Std.')->withHorizontalAlign(TextAlign::CENTER),
-            TableCell::text('80,00 EUR')->withHorizontalAlign(TextAlign::RIGHT),
-            TableCell::text('400,00 EUR')->withHorizontalAlign(TextAlign::RIGHT),
+            TableCell::segments(
+                TextSegment::plain('Umsatzsteuer 19 %:', TextOptions::make(
+                    embeddedFont: $fontBold,
+                    color: $textColor,
+                )),
+            )->withColspan(5)->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
+            TableCell::segments(
+                TextSegment::plain($formatAmount($taxAmount), TextOptions::make(
+                    embeddedFont: $fontBold,
+                    color: $textColor,
+                )),
+            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
         ),
         TableRow::fromCells(
-            TableCell::text('3')->withHorizontalAlign(TextAlign::CENTER),
-            TableCell::text('Bildbearbeitung und Optimierung fuer Web'),
-            TableCell::text('2 Std.')->withHorizontalAlign(TextAlign::CENTER),
-            TableCell::text('65,00 EUR')->withHorizontalAlign(TextAlign::RIGHT),
-            TableCell::text('130,00 EUR')->withHorizontalAlign(TextAlign::RIGHT),
+            TableCell::segments(
+                TextSegment::plain('Gesamtbetrag brutto:', TextOptions::make(
+                    embeddedFont: $fontBold,
+                    color: $headlineColor,
+                )),
+            )->withColspan(5)->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
+            TableCell::segments(
+                TextSegment::plain($formatAmount($totalAmount), TextOptions::make(
+                    embeddedFont: $fontBold,
+                    color: $headlineColor,
+                )),
+            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
         ),
     );
 
 $document = Pdf::document()
     ->profile(Profile::pdfA3b())
-    ->title('Rechnung 2026-0015')
+    ->title('Rechnung ' . $invoiceNumber)
     ->author('DEIN FIRMENNAME')
     ->subject('Ausgangsrechnung')
-    ->keywords('Rechnung, Buchhaltung')
+    ->keywords('Rechnung, Buchhaltung, Leistungsabrechnung')
     ->language('de-DE')
     ->creator('examples/invoice.php')
     ->creatorTool('pdf2')
@@ -134,7 +203,6 @@ $document = Pdf::document()
         ],
         TextOptions::make(
             x: Units::mm(120),
-            y: Units::mm(255),
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 11,
@@ -147,8 +215,7 @@ $document = Pdf::document()
     ->text(
         'DEIN FIRMENNAME - Strasse Hausnummer - PLZ Ort - Deutschland',
         TextOptions::make(
-            // x: $left,
-            y: Units::mm(238),
+            y: Units::mm(252),
             width: Units::mm(95),
             fontSize: 6,
             lineHeight: 8,
@@ -159,17 +226,16 @@ $document = Pdf::document()
     )
     ->line(
         $left,
-        Units::mm(236),
+        Units::mm(250),
         Units::mm(95),
-        Units::mm(236),
+        Units::mm(250),
         new StrokeStyle(width: 0.5, color: $tableBorderColor),
     )
     ->text(
         "Kundenfirma Mueller GmbH\nz. Hd. Anna Mueller\nBeispielweg 8\n80331 Muenchen\nDeutschland",
         TextOptions::make(
-            //            x: $left,
-            // y: Units::mm(227),
-            width: Units::mm(75),
+            y: Units::mm(246.2),
+            width: Units::mm(85),
             fontSize: 9,
             lineHeight: 12,
             embeddedFont: $fontRegular,
@@ -179,7 +245,6 @@ $document = Pdf::document()
     ->text(
         'Rechnung',
         TextOptions::make(
-            //            x: $left,
             y: Units::mm(188),
             fontSize: 22,
             embeddedFont: $fontBold,
@@ -189,27 +254,30 @@ $document = Pdf::document()
     ->text(
         [
             TextSegment::plain('Rechnungsnummer: '),
-            TextSegment::plain('2026-0015', TextOptions::make(
+            TextSegment::plain($invoiceNumber, TextOptions::make(
                 embeddedFont: $fontBold,
                 color: $headlineColor,
             )),
-            TextSegment::plain(PHP_EOL . 'Rechnungsdatum: 05.04.2026'),
-            TextSegment::plain(PHP_EOL . 'Leistungsdatum: 31.03.2026'),
+            TextSegment::plain(PHP_EOL . 'Rechnungsdatum: ' . $invoiceDate),
+            TextSegment::plain(PHP_EOL . 'Leistungszeitraum: ' . $servicePeriod),
+            TextSegment::plain(PHP_EOL . 'Kundennummer: ' . $customerNumber),
+            TextSegment::plain(PHP_EOL . 'Projektcode: ' . $projectCode),
+            TextSegment::plain(PHP_EOL . 'Bestellreferenz: ' . $purchaseOrder),
         ],
         TextOptions::make(
-            y: Units::mm(181),
-            width: Units::mm(80),
+            // y: Units::mm(181),
+            // width: Units::mm(80),
             fontSize: 9,
             lineHeight: 12,
+            spacingAfter: Units::mm(10),
             embeddedFont: $fontRegular,
             color: $textColor,
         ),
     )
     ->text(
-        "Sehr geehrte Frau Mueller,\nhiermit berechne ich Ihnen folgende Leistungen:",
+        "Sehr geehrte Frau Mueller,\n\nvielen Dank fuer die weitere Zusammenarbeit im Maerz 2026. Nachfolgend berechne ich die im Leistungsmonat erbrachten Betriebs-, Optimierungs- und Projektleistungen fuer Ihre E-Commerce-Plattform.",
         TextOptions::make(
-            //            x: $left,
-            y: Units::mm(166),
+            //y: Units::mm(155),
             width: $contentWidth,
             fontSize: 9,
             lineHeight: 13,
@@ -218,27 +286,10 @@ $document = Pdf::document()
         ),
     )
     ->table($table)
-    ->textLines(
-        [
-            TextSegment::plain('Zwischensumme: 1.730,00 EUR'),
-            TextSegment::plain('USt. 19 %: 328,70 EUR'),
-            TextSegment::plain('Gesamtbetrag: 2.058,70 EUR'),
-        ],
-        TextOptions::make(
-            x: Units::mm(120),
-            y: Units::mm(72),
-            width: Units::mm(70),
-            fontSize: 10,
-            lineHeight: 14,
-            embeddedFont: $fontBold,
-            color: $textColor,
-        ),
-    )
     ->text(
-        "Bitte ueberweisen Sie den Gesamtbetrag innerhalb von 14 Tagen ohne Abzug.\nVielen Dank fuer Ihren Auftrag.",
+        "Bitte ueberweisen Sie den Gesamtbetrag {$paymentTerms} auf das unten genannte Geschaeftskonto.\n\nBank: Musterbank AG\nIBAN: DE12 3456 7890 1234 5678 90\nBIC: MUSTDEFFXXX\n\nBei Rueckfragen antworte ich gerne unter projekte@deinefirma.de.",
         TextOptions::make(
             x: Units::mm(120),
-            y: Units::mm(52),
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 13,
