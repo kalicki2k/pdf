@@ -13,6 +13,7 @@ use Kalle\Pdf\Encryption\EncryptDictionaryBuilder;
 use Kalle\Pdf\Encryption\EncryptionProfileResolver;
 use Kalle\Pdf\Encryption\ObjectEncryptor;
 use Kalle\Pdf\Encryption\StandardSecurityHandler;
+use Kalle\Pdf\Page\OptionalContentGroup;
 use Kalle\Pdf\Writer\DocumentSerializationPlan;
 use Kalle\Pdf\Writer\FileStructure;
 use Kalle\Pdf\Writer\IndirectObject;
@@ -105,6 +106,7 @@ final readonly class DocumentSerializationPlanBuilder
                     $state->outlineRootObjectId,
                     $state->attachmentObjectIds,
                     $state->acroFormObjectId,
+                    $state,
                 ),
             ),
             IndirectObject::plain(
@@ -115,6 +117,9 @@ final readonly class DocumentSerializationPlanBuilder
 
         $pageObjects = $this->pageAndFormObjectBuilder->buildPageObjects($document, $state, $debugger);
         $this->appendObjects($objects, $pageObjects);
+
+        $optionalContentObjects = $this->buildOptionalContentObjects($document, $state);
+        $this->appendObjects($objects, $optionalContentObjects);
 
         $fontAndImageObjects = $this->fontAndImageObjectBuilder->buildObjects($document, $state);
         $this->appendObjects($objects, $fontAndImageObjects);
@@ -167,6 +172,7 @@ final readonly class DocumentSerializationPlanBuilder
         ?int $outlineRootObjectId,
         array $attachmentObjectIds,
         ?int $acroFormObjectId,
+        DocumentSerializationPlanBuildState $state,
     ): string {
         $entries = [
             '/Type /Catalog',
@@ -214,7 +220,71 @@ final readonly class DocumentSerializationPlanBuilder
             $entries[] = '/AcroForm ' . $acroFormObjectId . ' 0 R';
         }
 
+        $entries = [
+            ...$entries,
+            ...$this->buildOptionalContentCatalogEntries($document, $state),
+        ];
+
         return '<< ' . implode(' ', $entries) . ' >>';
+    }
+
+    /**
+     * @return list<IndirectObject>
+     */
+    private function buildOptionalContentObjects(Document $document, DocumentSerializationPlanBuildState $state): array
+    {
+        $groupsByKey = $this->optionalContentGroupsByKey($document);
+        $objects = [];
+
+        foreach ($state->optionalContentGroupObjectIds as $key => $objectId) {
+            $group = $groupsByKey[$key] ?? null;
+
+            if ($group === null) {
+                continue;
+            }
+
+            $objects[] = IndirectObject::plain(
+                $objectId,
+                '<< /Type /OCG /Name ' . $this->pdfString($group->name) . ' >>',
+            );
+        }
+
+        return $objects;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildOptionalContentCatalogEntries(Document $document, DocumentSerializationPlanBuildState $state): array
+    {
+        if ($state->optionalContentGroupObjectIds === [] || !$document->profile->supportsOptionalContentGroups()) {
+            return [];
+        }
+
+        $references = implode(' ', array_map(
+            static fn (int $objectId): string => $objectId . ' 0 R',
+            array_values($state->optionalContentGroupObjectIds),
+        ));
+
+        return [
+            '/OCProperties << /OCGs [' . $references . '] /D << /Name (Layers) /Order [' . $references . '] /ON [' . $references . '] >> >>',
+        ];
+    }
+
+    /**
+     * @return array<string, OptionalContentGroup>
+     */
+    private function optionalContentGroupsByKey(Document $document): array
+    {
+        $groups = [];
+
+        foreach ($document->pages as $page) {
+            foreach ($page->optionalContentGroups as $optionalContentGroup) {
+                $groups[$optionalContentGroup->key()] = $optionalContentGroup;
+            }
+        }
+
+        return $groups;
     }
 
     /**

@@ -50,6 +50,8 @@ final readonly class DocumentSerializationPlanObjectIdAllocator
         $cidSetObjectIds = [];
         /** @var array<string, int> $imageObjectIds */
         $imageObjectIds = [];
+        /** @var array<string, int> $optionalContentGroupObjectIds */
+        $optionalContentGroupObjectIds = [];
         /** @var array<int, list<int>> $pageAnnotationObjectIds */
         $pageAnnotationObjectIds = [];
         /** @var array<int, list<?int>> $pageAnnotationAppearanceObjectIds */
@@ -96,6 +98,14 @@ final readonly class DocumentSerializationPlanObjectIdAllocator
 
             foreach ($page->imageResources as $imageSource) {
                 $nextObjectId = $this->reserveImageObjectIds($imageSource, $imageObjectIds, $nextObjectId);
+            }
+
+            foreach ($page->optionalContentGroups as $optionalContentGroup) {
+                $key = $optionalContentGroup->key();
+
+                if (!isset($optionalContentGroupObjectIds[$key])) {
+                    $optionalContentGroupObjectIds[$key] = $nextObjectId++;
+                }
             }
 
             $pageAnnotationObjectIds[$pageIndex] = [];
@@ -286,6 +296,7 @@ final readonly class DocumentSerializationPlanObjectIdAllocator
             $iccProfileObjectId,
             $infoObjectId,
             $encryptObjectId,
+            $optionalContentGroupObjectIds,
             $acroFormDefaultFont,
             $acroFormDefaultFontKey,
         );

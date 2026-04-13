@@ -15,6 +15,7 @@ final readonly class Page
     /**
      * @param array<string, PageFont> $fontResources
      * @param array<string, ImageSource> $imageResources
+     * @param array<string, OptionalContentGroup> $optionalContentGroups
      * @param list<PageImage> $images
      * @param list<PageAnnotation> $annotations
      * @param list<NamedDestination> $namedDestinations
@@ -24,6 +25,7 @@ final readonly class Page
         public string $contents = '',
         public array $fontResources = [],
         public array $imageResources = [],
+        public array $optionalContentGroups = [],
         public array $images = [],
         public array $annotations = [],
         public array $namedDestinations = [],

@@ -15,6 +15,7 @@ use Kalle\Pdf\Document\Form\FormFieldRenderContext;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AnnotationAppearanceRenderContext;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
+use Kalle\Pdf\Page\OptionalContentGroup;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
@@ -54,7 +55,14 @@ final class DocumentPageAndFormObjectBuilder
                 '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '
                 . $this->formatNumber($page->size->width()) . ' '
                 . $this->formatNumber($page->size->height()) . '] /Resources '
-                . $this->buildPageResources($page->fontResources, $page->imageResources, $state->fontObjectIds, $state->imageObjectIds) . ' /Contents '
+                . $this->buildPageResources(
+                    $page->fontResources,
+                    $page->imageResources,
+                    $page->optionalContentGroups,
+                    $state->fontObjectIds,
+                    $state->imageObjectIds,
+                    $state->optionalContentGroupObjectIds,
+                ) . ' /Contents '
                 . $contentObjectId . ' 0 R'
                 . $this->buildPageAnnotationsEntry($allAnnotationObjectIds)
                 . $this->buildAnnotationTabOrderEntry($document, $allAnnotationObjectIds)
@@ -345,12 +353,20 @@ final class DocumentPageAndFormObjectBuilder
     /**
      * @param array<string, PageFont> $fontResources
      * @param array<string, ImageSource> $imageResources
+     * @param array<string, OptionalContentGroup> $optionalContentGroups
      * @param array<string, int> $fontObjectIds
      * @param array<string, int> $imageObjectIds
+     * @param array<string, int> $optionalContentGroupObjectIds
      */
-    private function buildPageResources(array $fontResources, array $imageResources, array $fontObjectIds, array $imageObjectIds): string
-    {
-        if ($fontResources === [] && $imageResources === []) {
+    private function buildPageResources(
+        array $fontResources,
+        array $imageResources,
+        array $optionalContentGroups,
+        array $fontObjectIds,
+        array $imageObjectIds,
+        array $optionalContentGroupObjectIds,
+    ): string {
+        if ($fontResources === [] && $imageResources === [] && $optionalContentGroups === []) {
             return '<< >>';
         }
 
@@ -374,6 +390,22 @@ final class DocumentPageAndFormObjectBuilder
 
         if ($imageEntries !== []) {
             $resourceEntries[] = '/XObject << ' . implode(' ', $imageEntries) . ' >>';
+        }
+
+        $optionalContentEntries = [];
+
+        foreach ($optionalContentGroups as $alias => $optionalContentGroup) {
+            $objectId = $optionalContentGroupObjectIds[$optionalContentGroup->key()] ?? null;
+
+            if ($objectId === null) {
+                continue;
+            }
+
+            $optionalContentEntries[] = '/' . $alias . ' ' . $objectId . ' 0 R';
+        }
+
+        if ($optionalContentEntries !== []) {
+            $resourceEntries[] = '/Properties << ' . implode(' ', $optionalContentEntries) . ' >>';
         }
 
         return '<< ' . implode(' ', $resourceEntries) . ' >>';

@@ -105,6 +105,8 @@ final readonly class DocumentSerializationPlanBuildState
         public ?int $iccProfileObjectId,
         public ?int $infoObjectId,
         public ?int $encryptObjectId,
+        /** @var array<string, int> */
+        public array $optionalContentGroupObjectIds = [],
         public ?PageFont $acroFormDefaultFont = null,
         public ?string $acroFormDefaultFontKey = null,
     ) {

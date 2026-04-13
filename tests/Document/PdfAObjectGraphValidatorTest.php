@@ -23,6 +23,7 @@ use Kalle\Pdf\Document\DocumentTaggedPdfObjectBuilder;
 use Kalle\Pdf\Document\PdfAObjectGraphValidator;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
+use Kalle\Pdf\Page\OptionalContentGroup;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
@@ -565,30 +566,40 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
-    public function testItRejectsPdfA4eCatalogsWithOptionalContentProperties(): void
+    public function testItRejectsPdfA4eOptionalContentGroupsWithoutOcProperties(): void
     {
-        [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4e());
-
-        $objects = array_map(
-            static function (IndirectObject $object): IndirectObject {
-                if ($object->objectId !== 1) {
-                    return $object;
-                }
-
-                return IndirectObject::plain(
-                    $object->objectId,
-                    str_replace(
-                        '>>',
-                        ' /OCProperties << /OCGs [] /D << /Name (Engineering View) >> >> >>',
-                        $object->contents,
-                    ),
-                );
-            },
-            $objects,
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering View',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Layer1 BDC\nEMC",
+                    optionalContentGroups: [
+                        'Layer1' => new OptionalContentGroup('Engineering View'),
+                    ],
+                ),
+            ],
         );
+        $state = $this->allocateState($document);
+        $metadataObjects = new DocumentMetadataObjectBuilder()->buildObjects(
+            $document,
+            $state,
+            new DateTimeImmutable('2026-04-12T10:00:00+02:00'),
+            '',
+        );
+        $ocgObjectId = array_values($state->optionalContentGroupObjectIds)[0];
+        $objects = [
+            IndirectObject::plain(1, '<< /Type /Catalog /Pages 2 0 R /Metadata ' . $state->metadataObjectId . ' 0 R >>'),
+            IndirectObject::plain(2, '<< /Type /Pages /Count 1 /Kids [3 0 R] >>'),
+            IndirectObject::plain(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << /Properties << /Layer1 ' . $ocgObjectId . ' 0 R >> >> /Contents 4 0 R >>'),
+            IndirectObject::stream(4, '<< /Length 0 >>', ''),
+            IndirectObject::plain($ocgObjectId, '<< /Type /OCG /Name (Engineering View) >>'),
+            ...$metadataObjects,
+        ];
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-4e must not serialize /OCProperties in the current PDF/A-4 object graph.');
+        $this->expectExceptionMessage('Profile PDF/A-4e must serialize /OCProperties when optional content groups are used.');
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }

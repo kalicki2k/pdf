@@ -248,7 +248,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
                 true,
-                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and the constrained AcroForm subset; optional content, RichMedia, 3D and other engineering features remain blocked.',
+                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and the simple optional-content group subset; RichMedia, 3D and other engineering features remain blocked.',
                 self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -273,9 +273,9 @@ final readonly class PdfAProfileSupport
                         'Text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-4e form scope; push buttons, signature fields and engineering-specific interactive features remain blocked.',
                     ),
                     PdfACapability::OPTIONAL_CONTENT_GROUPS->value => new PdfACapabilityRule(
+                        true,
                         false,
-                        false,
-                        'Optional content groups, layers and engineering views remain blocked in the current constrained PDF/A-4e scope until dedicated validation exists.',
+                        'Simple optional content groups and layer visibility via /OCProperties and page resource /Properties are allowed in the current constrained PDF/A-4e scope; OCMD, RichMedia, 3D and broader engineering features remain blocked.',
                     ),
                 ]),
             ),

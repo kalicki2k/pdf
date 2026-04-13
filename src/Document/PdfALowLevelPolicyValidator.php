@@ -633,13 +633,9 @@ final readonly class PdfALowLevelPolicyValidator
                 ),
                 'Do' => $this->assertDoOperandResolvable($document, $page, $pageIndex, $context, $operands),
                 'BMC' => $this->assertBmcOperandsAllowed($document, $context, $operands),
-                'BDC' => $this->assertBdcOperandsAllowed($document, $context, $operands),
+                'BDC' => $this->assertBdcOperandsAllowed($document, $page, $context, $operands),
                 default => null,
             };
-
-            if ($document->profile->isPdfA4()) {
-                $this->assertPdfA4ContentOperandsAllowed($document, $context, $token, $operands);
-            }
 
             $operands = [];
         }
@@ -647,24 +643,6 @@ final readonly class PdfALowLevelPolicyValidator
         if ($inTextObject) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow unterminated text objects in %s.',
-                $document->profile->name(),
-                $context,
-            ));
-        }
-    }
-
-    /**
-     * @param list<string> $operands
-     */
-    private function assertPdfA4ContentOperandsAllowed(
-        Document $document,
-        string $context,
-        string $operator,
-        array $operands,
-    ): void {
-        if (($operator === 'BDC' || $operator === 'BMC') && ($operands[0] ?? null) === '/OC') {
-            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
-                'Profile %s does not allow optional-content marked-content operators in %s.',
                 $document->profile->name(),
                 $context,
             ));
@@ -989,9 +967,17 @@ final readonly class PdfALowLevelPolicyValidator
     /**
      * @param list<string> $operands
      */
-    private function assertBdcOperandsAllowed(Document $document, string $context, array $operands): void
+    private function assertBdcOperandsAllowed(Document $document, Page $page, string $context, array $operands): void
     {
-        if ($document->profile->isPdfA4() && ($operands[0] ?? null) === '/OC') {
+        if (($operands[0] ?? null) === '/OC') {
+            if (
+                $document->profile->pdfaConformance() === 'E'
+                && count($operands) === 2
+                && isset($page->optionalContentGroups[ltrim($operands[1], '/')])
+            ) {
+                return;
+            }
+
             throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow optional-content marked-content operators in %s.',
                 $document->profile->name(),

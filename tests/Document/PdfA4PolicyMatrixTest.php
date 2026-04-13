@@ -11,9 +11,13 @@ use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
+use Kalle\Pdf\Page\OptionalContentGroup;
+use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -135,6 +139,32 @@ final class PdfA4PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/AcroForm ', $serialized);
         self::assertStringContainsString('/FT /Ch', $serialized);
         self::assertStringNotContainsString('/Helv', $serialized);
+    }
+
+    public function testItAllowsPdfA4eOptionalContentGroupsWithinTheCurrentConstrainedScope(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Layers',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Layer1 BDC\nq\n0 0 20 20 re\nf\nQ\nEMC",
+                    optionalContentGroups: [
+                        'Layer1' => new OptionalContentGroup('Engineering View'),
+                    ],
+                ),
+            ],
+        );
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/OCProperties << /OCGs [', $serialized);
+        self::assertStringContainsString('/Type /OCG /Name (Engineering View)', $serialized);
+        self::assertStringContainsString('/Properties << /Layer1 ', $serialized);
     }
 
     public function testItRejectsPdfA4PopupRelatedObjects(): void

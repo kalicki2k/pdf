@@ -48,7 +48,7 @@ final class PdfAObjectGraphValidator
         $this->assertAcroFormObjects($document, $state, $catalogObject, $objectsById);
         $this->assertTaggedObjects($document, $state, $catalogObject, $objectsById);
         $this->assertAttachmentReferences($document, $state, $catalogObject, $objectsById);
-        $this->assertPdfA4EngineeringObjects($document, $catalogObject, $objectsById);
+        $this->assertPdfA4EngineeringObjects($document, $state, $catalogObject, $objectsById);
 
         foreach ($state->pageObjectIds as $pageIndex => $pageObjectId) {
             $pageObject = $this->assertObjectExists($objectsById, $pageObjectId, sprintf('page object %d', $pageIndex + 1));
@@ -131,6 +131,17 @@ final class PdfAObjectGraphValidator
         if ($document->profile->isPdfA4() && str_contains($catalogObject->contents, '/OutputIntents [')) {
             throw new DocumentValidationException(DocumentBuildError::PDFA4_METADATA_INVALID, sprintf(
                 'Profile %s must not serialize OutputIntents in the final PDF/A-4 object graph.',
+                $document->profile->name(),
+            ));
+        }
+
+        if (
+            $document->profile->pdfaConformance() === 'E'
+            && $state->optionalContentGroupObjectIds !== []
+            && !str_contains($catalogObject->contents, '/OCProperties <<')
+        ) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s must serialize /OCProperties when optional content groups are used.',
                 $document->profile->name(),
             ));
         }
@@ -514,6 +525,41 @@ final class PdfAObjectGraphValidator
                 $pageIndex + 1,
             ));
         }
+
+        if ($document->profile->pdfaConformance() !== 'E' || $document->pages[$pageIndex]->optionalContentGroups === []) {
+            return;
+        }
+
+        if (!str_contains($pageObject->contents, '/Properties <<')) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s must serialize page resource /Properties for optional content groups on page %d.',
+                $document->profile->name(),
+                $pageIndex + 1,
+            ));
+        }
+
+        foreach ($document->pages[$pageIndex]->optionalContentGroups as $alias => $optionalContentGroup) {
+            $objectId = $state->optionalContentGroupObjectIds[$optionalContentGroup->key()] ?? null;
+
+            if ($objectId === null) {
+                throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                    'Profile %s is missing an allocated optional content group object for alias /%s on page %d.',
+                    $document->profile->name(),
+                    $alias,
+                    $pageIndex + 1,
+                ));
+            }
+
+            if (!str_contains($pageObject->contents, '/Properties << /' . $alias . ' ' . $objectId . ' 0 R')) {
+                throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                    'Profile %s must serialize page resource alias /%s to optional content group object %d on page %d.',
+                    $document->profile->name(),
+                    $alias,
+                    $objectId,
+                    $pageIndex + 1,
+                ));
+            }
+        }
     }
 
     /**
@@ -667,17 +713,41 @@ final class PdfAObjectGraphValidator
     /**
      * @param array<int, IndirectObject> $objectsById
      */
-    private function assertPdfA4EngineeringObjects(Document $document, IndirectObject $catalogObject, array $objectsById): void
-    {
+    private function assertPdfA4EngineeringObjects(
+        Document $document,
+        DocumentSerializationPlanBuildState $state,
+        IndirectObject $catalogObject,
+        array $objectsById,
+    ): void {
         if (!$document->profile->isPdfA4()) {
             return;
         }
 
-        if (str_contains($catalogObject->contents, '/OCProperties')) {
+        if ($document->profile->pdfaConformance() !== 'E' && str_contains($catalogObject->contents, '/OCProperties')) {
             throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                 'Profile %s must not serialize /OCProperties in the current PDF/A-4 object graph.',
                 $document->profile->name(),
             ));
+        }
+
+        if ($document->profile->pdfaConformance() === 'E') {
+            foreach ($state->optionalContentGroupObjectIds as $objectId) {
+                $object = $this->assertObjectExists($objectsById, $objectId, 'optional content group');
+
+                if (!str_contains($object->contents, '/Type /OCG') || !str_contains($object->contents, '/Name ')) {
+                    throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                        'Profile %s must serialize optional content group object %d as an /OCG dictionary with /Name.',
+                        $document->profile->name(),
+                        $objectId,
+                    ));
+                }
+
+                $this->assertReferencePresent(
+                    $catalogObject->contents,
+                    $objectId,
+                    sprintf('Profile %s must reference optional content group object %d in /OCProperties.', $document->profile->name(), $objectId),
+                );
+            }
         }
 
         foreach ($objectsById as $object) {
