@@ -7,7 +7,8 @@ namespace Kalle\Pdf\Document\Form;
 use function count;
 use function implode;
 
-use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Writer\IndirectObject;
 use Override;
 
@@ -37,7 +38,10 @@ final readonly class CheckboxField extends WidgetFormField
         array $relatedObjectIds = [],
     ): string {
         if (count($relatedObjectIds) !== 2) {
-            throw new InvalidArgumentException('Checkbox fields require two appearance object IDs.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Checkbox fields require two appearance object IDs.',
+            );
         }
 
         $state = $this->checked ? 'Yes' : 'Off';
@@ -59,7 +63,10 @@ final readonly class CheckboxField extends WidgetFormField
         array $relatedObjectIds = [],
     ): array {
         if (count($relatedObjectIds) !== 2) {
-            throw new InvalidArgumentException('Checkbox fields require two appearance object IDs.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Checkbox fields require two appearance object IDs.',
+            );
         }
 
         [$offAppearanceObjectId, $onAppearanceObjectId] = $relatedObjectIds;

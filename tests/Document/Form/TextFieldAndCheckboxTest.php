@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document\Form;
 
-use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
@@ -99,10 +100,10 @@ final class TextFieldAndCheckboxTest extends TestCase
             size: 12.0,
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Checkbox fields require two appearance object IDs.');
-
-        $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, []);
+        $this->assertBuildStateError(
+            static fn (): string => $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, []),
+            'Checkbox fields require two appearance object IDs.',
+        );
     }
 
     public function testItRendersARadioButtonGroupAndWidgetObjects(): void
@@ -236,9 +237,95 @@ final class TextFieldAndCheckboxTest extends TestCase
             30.0,
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Signature fields require one appearance object ID.');
+        $this->assertBuildStateError(
+            static fn (): string => $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, []),
+            'Signature fields require one appearance object ID.',
+        );
+    }
 
-        $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, []);
+    public function testItRejectsTextFieldsWithoutAppearanceObjectIds(): void
+    {
+        $field = new TextField('customer_name', 1, 10.0, 20.0, 120.0, 18.0);
+
+        $this->assertBuildStateError(
+            static fn (): string => $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, []),
+            'Text fields require one appearance object ID.',
+        );
+    }
+
+    public function testItRejectsRadioButtonGroupsWithoutAllRequiredRelatedObjectIds(): void
+    {
+        $field = new RadioButtonGroup('delivery', alternativeName: 'Delivery method')
+            ->withChoice(new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'standard'));
+
+        $this->assertBuildStateError(
+            static fn (): string => $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, [8, 9]),
+            'Radio button groups require widget and appearance object IDs for every choice.',
+        );
+    }
+
+    public function testItRejectsComboBoxesWithoutAppearanceObjectIds(): void
+    {
+        $field = new ComboBoxField(
+            'status',
+            1,
+            10.0,
+            20.0,
+            80.0,
+            12.0,
+            ['new' => 'New'],
+        );
+
+        $this->assertBuildStateError(
+            static fn (): string => $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, []),
+            'Combo boxes require one appearance object ID.',
+        );
+    }
+
+    public function testItRejectsListBoxesWithoutAppearanceObjectIds(): void
+    {
+        $field = new ListBoxField(
+            'skills',
+            1,
+            10.0,
+            20.0,
+            80.0,
+            40.0,
+            ['php' => 'PHP'],
+        );
+
+        $this->assertBuildStateError(
+            static fn (): string => $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, []),
+            'List boxes require one appearance object ID.',
+        );
+    }
+
+    public function testItRejectsPushButtonsWithoutAppearanceObjectIds(): void
+    {
+        $field = new PushButtonField(
+            'open_docs',
+            1,
+            10.0,
+            20.0,
+            90.0,
+            18.0,
+            'Open docs',
+        );
+
+        $this->assertBuildStateError(
+            static fn (): string => $field->pdfObjectContents(new FormFieldRenderContext([1 => 3]), 7, []),
+            'Push buttons require one appearance object ID.',
+        );
+    }
+
+    private function assertBuildStateError(callable $operation, string $message): void
+    {
+        try {
+            $operation();
+            self::fail('Expected coded build-state validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::BUILD_STATE_INVALID, $exception->error);
+            self::assertSame($message, $exception->getMessage());
+        }
     }
 }

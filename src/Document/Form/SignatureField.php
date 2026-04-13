@@ -8,7 +8,8 @@ use function count;
 use function implode;
 use function max;
 
-use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Writer\IndirectObject;
 use Override;
 
@@ -29,7 +30,10 @@ final readonly class SignatureField extends WidgetFormField
         array $relatedObjectIds = [],
     ): string {
         if (count($relatedObjectIds) !== 1) {
-            throw new InvalidArgumentException('Signature fields require one appearance object ID.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Signature fields require one appearance object ID.',
+            );
         }
 
         return '<< ' . implode(' ', [
@@ -47,7 +51,10 @@ final readonly class SignatureField extends WidgetFormField
         array $relatedObjectIds = [],
     ): array {
         if (count($relatedObjectIds) !== 1) {
-            throw new InvalidArgumentException('Signature fields require one appearance object ID.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Signature fields require one appearance object ID.',
+            );
         }
 
         return [

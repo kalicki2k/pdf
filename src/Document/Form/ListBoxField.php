@@ -12,6 +12,8 @@ use function in_array;
 use function is_string;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Writer\IndirectObject;
 use Override;
 
@@ -55,7 +57,10 @@ final readonly class ListBoxField extends WidgetFormField
         array $relatedObjectIds = [],
     ): string {
         if (count($relatedObjectIds) !== 1) {
-            throw new InvalidArgumentException('List boxes require one appearance object ID.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'List boxes require one appearance object ID.',
+            );
         }
 
         $entries = [
@@ -102,7 +107,10 @@ final readonly class ListBoxField extends WidgetFormField
         array $relatedObjectIds = [],
     ): array {
         if (count($relatedObjectIds) !== 1) {
-            throw new InvalidArgumentException('List boxes require one appearance object ID.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'List boxes require one appearance object ID.',
+            );
         }
 
         return [

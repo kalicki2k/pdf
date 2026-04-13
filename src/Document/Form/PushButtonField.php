@@ -9,6 +9,8 @@ use function implode;
 use function max;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Writer\IndirectObject;
 use Override;
 
@@ -47,7 +49,10 @@ final readonly class PushButtonField extends WidgetFormField
         array $relatedObjectIds = [],
     ): string {
         if (count($relatedObjectIds) !== 1) {
-            throw new InvalidArgumentException('Push buttons require one appearance object ID.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Push buttons require one appearance object ID.',
+            );
         }
 
         $entries = [
@@ -83,7 +88,10 @@ final readonly class PushButtonField extends WidgetFormField
         array $relatedObjectIds = [],
     ): array {
         if (count($relatedObjectIds) !== 1) {
-            throw new InvalidArgumentException('Push buttons require one appearance object ID.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Push buttons require one appearance object ID.',
+            );
         }
 
         return [

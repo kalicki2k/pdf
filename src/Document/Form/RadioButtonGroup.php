@@ -8,6 +8,8 @@ use function count;
 use function implode;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Writer\IndirectObject;
 use Override;
 
@@ -69,7 +71,10 @@ final readonly class RadioButtonGroup extends FormField
         array $relatedObjectIds = [],
     ): string {
         if (count($relatedObjectIds) !== $this->relatedObjectCount()) {
-            throw new InvalidArgumentException('Radio button groups require widget and appearance object IDs for every choice.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Radio button groups require widget and appearance object IDs for every choice.',
+            );
         }
 
         $widgetObjectIds = [];
@@ -108,7 +113,10 @@ final readonly class RadioButtonGroup extends FormField
         array $relatedObjectIds = [],
     ): array {
         if (count($relatedObjectIds) !== $this->relatedObjectCount()) {
-            throw new InvalidArgumentException('Radio button groups require widget and appearance object IDs for every choice.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Radio button groups require widget and appearance object IDs for every choice.',
+            );
         }
 
         $objects = [];
@@ -172,7 +180,10 @@ final readonly class RadioButtonGroup extends FormField
     public function pageAnnotationObjectIds(int $fieldObjectId, array $relatedObjectIds = []): array
     {
         if (count($relatedObjectIds) !== $this->relatedObjectCount()) {
-            throw new InvalidArgumentException('Radio button groups require widget and appearance object IDs for every choice.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'Radio button groups require widget and appearance object IDs for every choice.',
+            );
         }
 
         $pageAnnotationObjectIds = [];
