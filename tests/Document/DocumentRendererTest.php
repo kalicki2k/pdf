@@ -2428,6 +2428,43 @@ final class DocumentRendererTest extends TestCase
         }
     }
 
+    public function testItRendersStableImageObjectDictionariesForMixedTiffImports(): void
+    {
+        $grayPath = tempnam(sys_get_temp_dir(), 'pdf2-tiff-gray-');
+        $rgbPath = tempnam(sys_get_temp_dir(), 'pdf2-tiff-rgb-');
+        $ccittPath = tempnam(sys_get_temp_dir(), 'pdf2-tiff-ccitt-');
+
+        if ($grayPath === false || $rgbPath === false || $ccittPath === false) {
+            self::fail('Unable to allocate temporary TIFF fixture paths.');
+        }
+
+        file_put_contents($grayPath, TiffFixture::tinyPredictorLzwGrayscaleTiffBytes());
+        file_put_contents($rgbPath, TiffFixture::tinyPredictorDeflateRgbTiffBytes());
+        file_put_contents($ccittPath, TiffFixture::tinyMultiStripCcittGroup3TiffBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->title('TIFF Golden Regression')
+                ->imageFile($grayPath, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($rgbPath, ImagePlacement::at(140, 650, width: 80))
+                ->imageFile($ccittPath, ImagePlacement::at(240, 650, width: 80))
+                ->build();
+
+            $output = new StringOutput();
+            (new DocumentRenderer())->write($document, $output);
+
+            self::assertSame([
+                '<< /Type /XObject /Subtype /Image /Width 2 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /RunLengthDecode /Length 4 >>',
+                '<< /Type /XObject /Subtype /Image /Width 2 /Height 1 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /RunLengthDecode /Length 8 >>',
+                '<< /Type /XObject /Subtype /Image /Width 8 /Height 2 /ColorSpace /DeviceGray /BitsPerComponent 1 /Filter /CCITTFaxDecode /DecodeParms << /K 0 /Columns 8 /Rows 2 /BlackIs1 true /EndOfLine true /EndOfBlock false >> /Length 25 >>',
+            ], $this->renderedImageDictionaries($output->contents()));
+        } finally {
+            unlink($grayPath);
+            unlink($rgbPath);
+            unlink($ccittPath);
+        }
+    }
+
     public function testItRendersImportedGifImagesWithSoftMasks(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-gif-render-');
@@ -2487,6 +2524,40 @@ final class DocumentRendererTest extends TestCase
             self::assertStringContainsString('/SMask ', $pdf);
         } finally {
             unlink($path);
+        }
+    }
+
+    public function testItRendersStableImageObjectDictionariesForTransparentImports(): void
+    {
+        $gifPath = tempnam(sys_get_temp_dir(), 'pdf2-gif-render-');
+        $bmpPath = tempnam(sys_get_temp_dir(), 'pdf2-bmp-render-');
+
+        if ($gifPath === false || $bmpPath === false) {
+            self::fail('Unable to allocate a temporary transparent image fixture path.');
+        }
+
+        file_put_contents($gifPath, GifFixture::tinyTransparentGifBytes());
+        file_put_contents($bmpPath, BmpFixture::tiny32BitRgbaBmpBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->title('Transparent Golden Regression')
+                ->imageFile($gifPath, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($bmpPath, ImagePlacement::at(140, 650, width: 80))
+                ->build();
+
+            $output = new StringOutput();
+            (new DocumentRenderer())->write($document, $output);
+
+            self::assertSame([
+                '<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace [/Indexed /DeviceRGB 1 <000000000000>] /BitsPerComponent 8 /Filter /FlateDecode /SMask 6 0 R /Length 9 >>',
+                '<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length 9 >>',
+                '<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /RunLengthDecode /SMask 8 0 R /Length 5 >>',
+                '<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length 9 >>',
+            ], $this->renderedImageDictionaries($output->contents()));
+        } finally {
+            unlink($gifPath);
+            unlink($bmpPath);
         }
     }
 
@@ -2648,5 +2719,22 @@ final class DocumentRendererTest extends TestCase
         } finally {
             unlink($path);
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function renderedImageDictionaries(string $pdf): array
+    {
+        preg_match_all(
+            '~\n\d+ 0 obj\n(<< /Type /XObject /Subtype /Image .* >>)\nstream\n~sU',
+            $pdf,
+            $matches,
+        );
+
+        /** @var list<string> $dictionaries */
+        $dictionaries = $matches[1];
+
+        return $dictionaries;
     }
 }
