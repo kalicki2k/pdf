@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use InvalidArgumentException;
-
 use function sprintf;
 
 final readonly class PdfAProfileSupport
@@ -255,7 +253,7 @@ final readonly class PdfAProfileSupport
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, sprintf(
             'Profile %s is not supported yet: %s',
             $this->profileName,
             $this->supportSummary,

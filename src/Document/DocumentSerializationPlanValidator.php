@@ -86,7 +86,7 @@ final readonly class DocumentSerializationPlanValidator
                 $accessibility = $pageImage->accessibility;
 
                 if ($accessibility === null) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_IMAGE_ACCESSIBILITY_REQUIRED, sprintf(
                         'Tagged PDF profiles require accessibility metadata for image %d on page %d.',
                         $imageIndex + 1,
                         $pageIndex + 1,
@@ -129,7 +129,7 @@ final readonly class DocumentSerializationPlanValidator
                     !$supportsCurrentAnnotation
                     || ($document->profile->isPdfA1() && !$this->pdfA1AnnotationPolicy->supports($document, $annotation))
                 ) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_ANNOTATION_NOT_ALLOWED, sprintf(
                         'Profile %s does not support the current page annotation implementation on page %d.',
                         $document->profile->name(),
                         $pageIndex + 1,
@@ -142,7 +142,7 @@ final readonly class DocumentSerializationPlanValidator
                     $document->profile->requiresAnnotationAppearanceStreams()
                     && !$this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)
                 ) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_ANNOTATION_APPEARANCE_REQUIRED, sprintf(
                         'Profile %s does not allow the current page annotation implementation because annotation appearance streams are required on page %d.',
                         $document->profile->name(),
                         $pageIndex + 1,
@@ -157,7 +157,7 @@ final readonly class DocumentSerializationPlanValidator
                     )
                     && (($annotation->accessibleLabelOrContents() ?? '') === '')
                 ) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_ANNOTATION_ALT_TEXT_REQUIRED, sprintf(
                         'Profile %s requires alternative text for link annotation %d on page %d.',
                         $document->profile->name(),
                         $annotationIndex + 1,
@@ -170,7 +170,7 @@ final readonly class DocumentSerializationPlanValidator
                     && $document->profile->requiresPageAnnotationAlternativeDescriptions()
                     && (($this->pageAnnotationAltText($document, $annotation) ?? '') === '')
                 ) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_ANNOTATION_ALT_TEXT_REQUIRED, sprintf(
                         'Profile %s requires alternative text for page annotation %d on page %d.',
                         $document->profile->name(),
                         $annotationIndex + 1,

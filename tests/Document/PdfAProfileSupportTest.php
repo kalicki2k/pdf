@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\PdfACapability;
 use Kalle\Pdf\Document\Profile;
 use PHPUnit\Framework\TestCase;
@@ -52,5 +54,23 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertTrue($support->capabilityRule(PdfACapability::DOCUMENT_ASSOCIATED_FILES)->allowed);
         self::assertTrue($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
         self::assertFalse($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
+    }
+
+    public function testUnsupportedPdfAProfilesRaiseACodedValidationError(): void
+    {
+        $support = Profile::pdfA4()->pdfaSupport();
+
+        self::assertNotNull($support);
+
+        try {
+            $support->assertSupported();
+            self::fail('Expected DocumentValidationException for unsupported PDF/A profile.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
+            self::assertSame(
+                'Profile PDF/A-4 is not supported yet: PDF/A-4 is blocked behind a dedicated PDF/A-4 policy and PDF 2.0 validation path.',
+                $exception->getMessage(),
+            );
+        }
     }
 }

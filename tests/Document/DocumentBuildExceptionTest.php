@@ -56,6 +56,22 @@ final class DocumentBuildExceptionTest extends TestCase
         );
     }
 
+    public function testItAddsAnImageAccessibilityHintForTaggedImageProfiles(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1a()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_IMAGE_ACCESSIBILITY_REQUIRED,
+                'Tagged PDF profiles require accessibility metadata for image 1 on page 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Provide ImageAccessibility for each image and either set altText or mark decorative images as decorative.',
+            $exception->hint,
+        );
+    }
+
     public function testItDoesNotAddATaggedPdfHintForNonTaggedProfiles(): void
     {
         $exception = DocumentBuildException::fromValidationFailure(
@@ -78,6 +94,54 @@ final class DocumentBuildExceptionTest extends TestCase
 
         self::assertSame(
             'Remove AcroForm fields for this profile, or switch to a non-PDF/A profile. Only the constrained PDF/A-1a form scope is currently supported.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAnAnnotationSubsetHintForBlockedPdfAAnnotations(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA2a()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_ANNOTATION_NOT_ALLOWED,
+                'Profile PDF/A-2a does not support the current page annotation implementation on page 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Use only the currently validated page-annotation subset for this profile; unsupported annotation types and tagging combinations remain blocked.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAnAnnotationAppearanceHintWhenAppearanceStreamsAreRequired(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1b()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_ANNOTATION_APPEARANCE_REQUIRED,
+                'Profile PDF/A-1b does not allow the current page annotation implementation because annotation appearance streams are required on page 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Provide appearance streams for printable annotations in this profile, or remove the affected annotation.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAnAnnotationAltTextHintForTaggedProfiles(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1a()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_ANNOTATION_ALT_TEXT_REQUIRED,
+                'Profile PDF/A-1a requires alternative text for link annotation 1 on page 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Set an accessible label or alternative text on the affected annotation so the tagged PDF path can serialize it accessibly.',
             $exception->hint,
         );
     }
@@ -222,6 +286,22 @@ final class DocumentBuildExceptionTest extends TestCase
 
         self::assertSame(
             'Use only PDF/A-safe navigation: internal destinations instead of remote or URI actions, and avoid action dictionaries that the active profile forbids.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAProfileSelectionHintForBlockedPdfAProfiles(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA4f()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED,
+                'Profile PDF/A-4f is blocked until the dedicated PDF/A-4f attachment and PDF 2.0 validation path are implemented.',
+            ),
+        );
+
+        self::assertSame(
+            'Use only PDF/A profiles that are explicitly enabled in the current implementation scope, or switch to a non-PDF/A profile until the blocked profile family is implemented.',
             $exception->hint,
         );
     }

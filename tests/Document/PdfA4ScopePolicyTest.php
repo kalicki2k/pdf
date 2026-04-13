@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\PdfA4Feature;
 use Kalle\Pdf\Document\PdfA4ScopePolicy;
 use Kalle\Pdf\Document\Profile;
@@ -15,32 +16,44 @@ final class PdfA4ScopePolicyTest extends TestCase
 {
     public function testItRejectsPdfA4(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Profile PDF/A-4 is blocked until the dedicated PDF/A-4 policy matrix and PDF 2.0 validation path are implemented.',
-        );
-
-        new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4()));
+        try {
+            new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4()));
+            self::fail('Expected DocumentValidationException for blocked PDF/A-4 profile.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
+            self::assertSame(
+                'Profile PDF/A-4 is blocked until the dedicated PDF/A-4 policy matrix and PDF 2.0 validation path are implemented.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItRejectsPdfA4e(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Profile PDF/A-4e is blocked until PDF/A-4e-specific engineering features and the PDF 2.0 validation path are implemented.',
-        );
-
-        new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4e()));
+        try {
+            new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4e()));
+            self::fail('Expected DocumentValidationException for blocked PDF/A-4e profile.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
+            self::assertSame(
+                'Profile PDF/A-4e is blocked until PDF/A-4e-specific engineering features and the PDF 2.0 validation path are implemented.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItRejectsPdfA4f(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Profile PDF/A-4f is blocked until the dedicated PDF/A-4f attachment and PDF 2.0 validation path are implemented.',
-        );
-
-        new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4f()));
+        try {
+            new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4f()));
+            self::fail('Expected DocumentValidationException for blocked PDF/A-4f profile.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
+            self::assertSame(
+                'Profile PDF/A-4f is blocked until the dedicated PDF/A-4f attachment and PDF 2.0 validation path are implemented.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItExposesBasePdfA4FeatureRules(): void

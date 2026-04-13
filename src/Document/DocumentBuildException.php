@@ -56,8 +56,23 @@ final class DocumentBuildException extends RuntimeException
             DocumentBuildError::IMAGE_ALT_TEXT_REQUIRED => $document->profile->requiresFigureAltText()
                 ? 'Provide ImageAccessibility with altText, or mark decorative images as decorative.'
                 : null,
+            DocumentBuildError::PDFA_IMAGE_ACCESSIBILITY_REQUIRED => $document->profile->requiresTaggedImages()
+                ? 'Provide ImageAccessibility for each image and either set altText or mark decorative images as decorative.'
+                : null,
             DocumentBuildError::TAGGED_PDF_REQUIRED => $document->profile->requiresTaggedPdf()
                 ? 'Use beginStructure()/endStructure() for containers and TextOptions(tag: ...) for leaf roles.'
+                : null,
+            DocumentBuildError::PDFA_ANNOTATION_NOT_ALLOWED => $document->profile->isPdfA()
+                ? 'Use only the currently validated page-annotation subset for this profile; unsupported annotation types and tagging combinations remain blocked.'
+                : null,
+            DocumentBuildError::PDFA_ANNOTATION_APPEARANCE_REQUIRED => $document->profile->requiresAnnotationAppearanceStreams()
+                ? 'Provide appearance streams for printable annotations in this profile, or remove the affected annotation.'
+                : null,
+            DocumentBuildError::PDFA_ANNOTATION_ALT_TEXT_REQUIRED => (
+                $document->profile->requiresLinkAnnotationAlternativeDescriptions()
+                || $document->profile->requiresPageAnnotationAlternativeDescriptions()
+            )
+                ? 'Set an accessible label or alternative text on the affected annotation so the tagged PDF path can serialize it accessibly.'
                 : null,
             DocumentBuildError::PDFA_TRANSPARENCY_NOT_ALLOWED => !$document->profile->supportsCurrentTransparencyImplementation()
                 ? 'Remove soft masks from image resources or flatten transparency before rendering in this profile.'
@@ -97,6 +112,9 @@ final class DocumentBuildException extends RuntimeException
                 : null,
             DocumentBuildError::PDFA_ACTION_NOT_ALLOWED => $document->profile->isPdfA()
                 ? 'Use only PDF/A-safe navigation: internal destinations instead of remote or URI actions, and avoid action dictionaries that the active profile forbids.'
+                : null,
+            DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED => $document->profile->isPdfA()
+                ? 'Use only PDF/A profiles that are explicitly enabled in the current implementation scope, or switch to a non-PDF/A profile until the blocked profile family is implemented.'
                 : null,
         };
     }
