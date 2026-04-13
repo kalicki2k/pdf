@@ -63,6 +63,20 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
         $supportsLigatures = $embeddedFont !== null && $embeddedFont->parser->hasGsubFeature('liga');
         $glyphs = [];
         $count = count($characters);
+        $contextualScope = $debugger->startPerformanceScope('text.shape.default.gsub.calt', [
+            'character_count' => $count,
+            'enabled' => $supportsContextualSubstitution ? 1 : 0,
+        ]);
+        $ligatureScope = $debugger->startPerformanceScope('text.shape.default.gsub.liga', [
+            'character_count' => $count,
+            'enabled' => $supportsLigatures ? 1 : 0,
+        ]);
+        $fallbackScope = $debugger->startPerformanceScope('text.shape.default.fallback', [
+            'character_count' => $count,
+        ]);
+        $contextualGlyphCount = 0;
+        $ligatureGlyphCount = 0;
+        $fallbackGlyphCount = 0;
 
         for ($index = 0; $index < $count; $index++) {
             $contextualGlyph = null;
@@ -73,6 +87,7 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
 
             if ($contextualGlyph !== null) {
                 $glyphs[] = $contextualGlyph;
+                $contextualGlyphCount++;
 
                 continue;
             }
@@ -85,6 +100,7 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
 
             if ($ligatureGlyph !== null) {
                 $glyphs[] = $ligatureGlyph['glyph'];
+                $ligatureGlyphCount++;
                 $index += $ligatureGlyph['consumedGlyphCount'] - 1;
 
                 continue;
@@ -97,7 +113,18 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
                 unicodeCodePoint: $codePoints[$index] ?? null,
                 unicodeText: $character,
             );
+            $fallbackGlyphCount++;
         }
+
+        $contextualScope->stop([
+            'glyph_count' => $contextualGlyphCount,
+        ]);
+        $ligatureScope->stop([
+            'glyph_count' => $ligatureGlyphCount,
+        ]);
+        $fallbackScope->stop([
+            'glyph_count' => $fallbackGlyphCount,
+        ]);
 
         $glyphScope->stop([
             'character_count' => $count,

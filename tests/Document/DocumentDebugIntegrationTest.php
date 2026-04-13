@@ -64,6 +64,8 @@ final class DocumentDebugIntegrationTest extends TestCase
         self::assertContains('text.shape', $this->eventsForChannel($records, 'performance'));
         self::assertContains('text.render_state', $this->eventsForChannel($records, 'performance'));
         self::assertContains('text.content', $this->eventsForChannel($records, 'performance'));
+        self::assertContains('text.shape.default.glyphs', $this->eventsForChannel($records, 'performance'));
+        self::assertContains('text.shape.default.fallback', $this->eventsForChannel($records, 'performance'));
         self::assertContains('document.render', $this->eventsForChannel($records, 'performance'));
         self::assertContains('page.render', $this->eventsForChannel($records, 'performance'));
     }
