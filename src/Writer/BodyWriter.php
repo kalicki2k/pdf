@@ -68,7 +68,7 @@ final class BodyWriter
             $output->write("endstream\n");
             $output->write("endobj\n");
 
-            $compressed = str_contains($dictionaryContents, '/FlateDecode');
+            $compressed = str_contains($dictionaryContents, '/Filter ');
 
             $debugger->pdf('stream.serialized', [
                 'object_id' => $object->objectId,

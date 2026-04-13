@@ -134,6 +134,8 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+Fuer vorbereitete Rasterdaten stehen neben `ImageSource::jpeg(...)` jetzt auch explizite PDF-Filterfabriken wie `ImageSource::flate(...)`, `ImageSource::lzw(...)`, `ImageSource::runLength(...)` und `ImageSource::ccittFax(...)` bereit. Fuer rohe Rasterdaten kann `ImageSource::compressed(...)` eine kompakte PDF-Kompression automatisch auswaehlen.
+
 ## Graphics
 
 `pdf2` stellt jetzt eine kleine explizite Public API fuer grafische Primitive bereit. Die erste Iteration deckt Linie, Rechteck, Rounded Rectangle und freie Pfade ab und bleibt bewusst konservativ: keine Raw-Content-Injection, keine Opacity-API und keine breite Formensammlung aus dem Altprojekt `pdf(1)`.
@@ -528,7 +530,7 @@ $document = DefaultDocumentBuilder::make()
 
 `withFooterRows(...)` bleibt als Alias für `withFinalFooterRows(...)` erhalten. Für Mehrseiten-Layouts mit Übertrag und Schlussbetrag stehen zusätzlich `withRepeatedFooterRows(...)` und `withFinalFooterRows(...)` zur Verfügung.
 
-Für laufende Seitensummen oder andere seitenabhängige Werte kann der Footer auch dynamisch über `withRepeatedFooter(...)` oder `withFinalFooter(...)` aufgebaut werden. Der Callback erhält einen `TableFooterContext` mit `pageNumber`, `completedBodyRowCount`, `totalBodyRowCount` und `isLastPage`.
+Für laufende Seitensummen oder andere seitenabhängige Werte können `withRepeatedFooterRows(...)` und `withFinalFooterRows(...)` alternativ auch einen einzelnen Callback statt fester `TableRow`-Objekte annehmen. Der Callback erhält einen `TableFooterContext` mit `pageNumber`, `completedBodyRowCount`, `totalBodyRowCount` und `isLastPage`.
 
 Ein umfangreicheres Beispiel liegt in `examples/table.php`; ein professionelles Mehrseiten-Beispiel mit wiederholtem Header, wiederholtem Zwischenfooter und finalem Schlussfooter in `examples/table-repeated-footer.php`. Die aktuelle Tabellen-API deckt damit auch absolutes Start-`y`, Rich-Text-Zellen sowie Tagged-Table-Abschnitte `THead`, `TBody` und `TFoot` ab.
 

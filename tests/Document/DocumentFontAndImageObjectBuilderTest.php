@@ -105,6 +105,49 @@ final class DocumentFontAndImageObjectBuilderTest extends TestCase
         self::assertTrue($this->containsObjectId($objects, $state->imageObjectIds[$mask->key()]));
     }
 
+    public function testItPreservesDecodeParametersForImageFilters(): void
+    {
+        $image = ImageSource::ccittFax('fax-data', 1728, 1143, blackIs1: true);
+        $document = new Document(pages: [
+            new Page(
+                PageSize::A4(),
+                imageResources: ['Im1' => $image],
+            ),
+        ]);
+
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
+            $document,
+            static fn (int $nextStructParentId): array => [
+                'linkEntries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
+            static fn (int $nextStructParentId): array => [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
+            static fn (array $fieldObjectIds, array $relatedObjectIds, int $nextStructParentId): array => [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+            ],
+            static fn (): array => [],
+        );
+
+        $objects = new DocumentFontAndImageObjectBuilder()->buildObjects($document, $state);
+        $imageObject = array_values(array_filter(
+            $objects,
+            static fn (object $object): bool => $object->streamDictionaryContents !== null && str_contains($object->streamDictionaryContents, '/Subtype /Image'),
+        ))[0] ?? null;
+
+        self::assertNotNull($imageObject);
+        self::assertStringContainsString('/Filter /CCITTFaxDecode', (string) $imageObject->streamDictionaryContents);
+        self::assertStringContainsString('/DecodeParms << /K 0 /Columns 1728 /Rows 1143 /BlackIs1 true >>', (string) $imageObject->streamDictionaryContents);
+    }
+
     /**
      * @param list<object> $objects
      */

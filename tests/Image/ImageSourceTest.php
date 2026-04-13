@@ -25,6 +25,41 @@ final class ImageSourceTest extends TestCase
         self::assertSame(8, $source->bitsPerComponent);
     }
 
+    public function testItBuildsARunLengthEncodedImageSource(): void
+    {
+        $source = ImageSource::runLengthCompressed(str_repeat('A', 32), 8, 4, ImageColorSpace::GRAY, 8);
+
+        self::assertSame('/RunLengthDecode', $source->filter);
+        self::assertStringContainsString('/Filter /RunLengthDecode', $source->pdfObjectDictionaryContents());
+    }
+
+    public function testItBuildsAnLzwEncodedImageSource(): void
+    {
+        $source = ImageSource::lzwCompressed(str_repeat('ABCD', 16), 8, 8, ImageColorSpace::RGB, 8);
+
+        self::assertSame('/LZWDecode', $source->filter);
+        self::assertStringContainsString('/Filter /LZWDecode', $source->pdfObjectDictionaryContents());
+        self::assertStringContainsString('/DecodeParms << /EarlyChange 1 >>', $source->pdfObjectDictionaryContents());
+    }
+
+    public function testItBuildsACcittFaxImageSource(): void
+    {
+        $source = ImageSource::ccittFax('fax-bytes', 1728, 200, k: 0, blackIs1: true);
+
+        self::assertSame('/CCITTFaxDecode', $source->filter);
+        self::assertSame(ImageColorSpace::GRAY, $source->colorSpace);
+        self::assertSame(1, $source->bitsPerComponent);
+        self::assertStringContainsString('/Filter /CCITTFaxDecode', $source->pdfObjectDictionaryContents());
+        self::assertStringContainsString('/DecodeParms << /K 0 /Columns 1728 /Rows 200 /BlackIs1 true >>', $source->pdfObjectDictionaryContents());
+    }
+
+    public function testItChoosesRunLengthForHighlyRepetitiveRawImageData(): void
+    {
+        $source = ImageSource::compressed(str_repeat("\x00", 512), 64, 8, ImageColorSpace::GRAY, 1);
+
+        self::assertSame('/RunLengthDecode', $source->filter);
+    }
+
     public function testItExposesImageDictionaryAndStreamContentsSeparately(): void
     {
         $source = new ImageSource(

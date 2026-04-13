@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Image;
 
+use function array_map;
+use function count;
 use function file_get_contents;
 use function get_debug_type;
 use function hash;
 use function implode;
 use function is_file;
 use function is_scalar;
+use function json_encode;
 use function strlen;
 
 use InvalidArgumentException;
@@ -17,20 +20,58 @@ use RuntimeException;
 
 final readonly class ImageSource
 {
+    public int $width;
+    public int $height;
+    public ImageColorSpace $colorSpace;
+    public int $bitsPerComponent;
+    public string $data;
+    public ?string $colorSpaceDefinition;
+    public ?string $filter;
+    public ?self $softMask;
+    /**
+     * @var list<string>
+     */
+    public array $additionalDictionaryEntries;
+    /**
+     * @var list<PdfFilter>
+     */
+    public array $filters;
+
     /**
      * @param list<string> $additionalDictionaryEntries
+     * @param list<PdfFilter> $filters
      */
     public function __construct(
-        public int $width,
-        public int $height,
-        public ImageColorSpace $colorSpace,
-        public int $bitsPerComponent,
-        public string $data,
-        public ?string $colorSpaceDefinition = null,
-        public ?string $filter = null,
-        public ?self $softMask = null,
-        public array $additionalDictionaryEntries = [],
+        int $width,
+        int $height,
+        ImageColorSpace $colorSpace,
+        int $bitsPerComponent,
+        string $data,
+        ?string $colorSpaceDefinition = null,
+        ?string $filter = null,
+        ?self $softMask = null,
+        array $additionalDictionaryEntries = [],
+        array $filters = [],
     ) {
+        if ($filters !== [] && $filter !== null) {
+            throw new InvalidArgumentException('Image sources must define either a legacy filter or filter objects, not both.');
+        }
+
+        if ($filters === [] && $filter !== null) {
+            $filters = [PdfFilter::named($filter)];
+        }
+
+        $this->width = $width;
+        $this->height = $height;
+        $this->colorSpace = $colorSpace;
+        $this->bitsPerComponent = $bitsPerComponent;
+        $this->data = $data;
+        $this->colorSpaceDefinition = $colorSpaceDefinition;
+        $this->softMask = $softMask;
+        $this->additionalDictionaryEntries = $additionalDictionaryEntries;
+        $this->filters = array_values($filters);
+        $this->filter = count($this->filters) === 1 ? $this->filters[0]->name : null;
+
         if ($this->width <= 0) {
             throw new InvalidArgumentException('Image width must be greater than 0.');
         }
@@ -61,7 +102,7 @@ final readonly class ImageSource
             colorSpaceDefinition: null,
             bitsPerComponent: 8,
             data: $data,
-            filter: '/DCTDecode',
+            filters: [PdfFilter::dct()],
         );
     }
 
@@ -122,8 +163,8 @@ final readonly class ImageSource
             colorSpaceDefinition: null,
             bitsPerComponent: $bitsPerComponent,
             data: $data,
-            filter: '/FlateDecode',
             softMask: $softMask,
+            filters: [PdfFilter::flate()],
         );
     }
 
@@ -136,7 +177,7 @@ final readonly class ImageSource
             colorSpaceDefinition: null,
             bitsPerComponent: $bitsPerComponent,
             data: $data,
-            filter: '/FlateDecode',
+            filters: [PdfFilter::flate()],
         );
     }
 
@@ -162,7 +203,133 @@ final readonly class ImageSource
             bitsPerComponent: $bitsPerComponent,
             data: $data,
             softMask: $softMask,
-            filter: '/FlateDecode',
+            filters: [PdfFilter::flate()],
+        );
+    }
+
+    public static function lzw(
+        string $data,
+        int $width,
+        int $height,
+        ImageColorSpace $colorSpace,
+        int $bitsPerComponent = 8,
+        array $decodeParameters = ['EarlyChange' => 1],
+        ?self $softMask = null,
+    ): self {
+        return new self(
+            width: $width,
+            height: $height,
+            colorSpace: $colorSpace,
+            colorSpaceDefinition: null,
+            bitsPerComponent: $bitsPerComponent,
+            data: $data,
+            softMask: $softMask,
+            filters: [PdfFilter::lzw($decodeParameters)],
+        );
+    }
+
+    public static function lzwCompressed(
+        string $data,
+        int $width,
+        int $height,
+        ImageColorSpace $colorSpace,
+        int $bitsPerComponent = 8,
+        ?self $softMask = null,
+    ): self {
+        return self::lzw(
+            data: (new LzwEncoder())->encode($data),
+            width: $width,
+            height: $height,
+            colorSpace: $colorSpace,
+            bitsPerComponent: $bitsPerComponent,
+            softMask: $softMask,
+        );
+    }
+
+    public static function runLength(
+        string $data,
+        int $width,
+        int $height,
+        ImageColorSpace $colorSpace,
+        int $bitsPerComponent = 8,
+        ?self $softMask = null,
+    ): self {
+        return new self(
+            width: $width,
+            height: $height,
+            colorSpace: $colorSpace,
+            colorSpaceDefinition: null,
+            bitsPerComponent: $bitsPerComponent,
+            data: $data,
+            softMask: $softMask,
+            filters: [PdfFilter::runLength()],
+        );
+    }
+
+    public static function runLengthCompressed(
+        string $data,
+        int $width,
+        int $height,
+        ImageColorSpace $colorSpace,
+        int $bitsPerComponent = 8,
+        ?self $softMask = null,
+    ): self {
+        return self::runLength(
+            data: (new RunLengthEncoder())->encode($data),
+            width: $width,
+            height: $height,
+            colorSpace: $colorSpace,
+            bitsPerComponent: $bitsPerComponent,
+            softMask: $softMask,
+        );
+    }
+
+    public static function ccittFax(
+        string $data,
+        int $width,
+        int $height,
+        int $k = 0,
+        bool $blackIs1 = false,
+        bool $encodedByteAlign = false,
+        bool $endOfLine = false,
+        bool $endOfBlock = true,
+    ): self {
+        return new self(
+            width: $width,
+            height: $height,
+            colorSpace: ImageColorSpace::GRAY,
+            colorSpaceDefinition: null,
+            bitsPerComponent: 1,
+            data: $data,
+            filters: [
+                PdfFilter::ccittFax(
+                    columns: $width,
+                    rows: $height,
+                    k: $k,
+                    blackIs1: $blackIs1,
+                    encodedByteAlign: $encodedByteAlign,
+                    endOfLine: $endOfLine,
+                    endOfBlock: $endOfBlock,
+                ),
+            ],
+        );
+    }
+
+    public static function compressed(
+        string $data,
+        int $width,
+        int $height,
+        ImageColorSpace $colorSpace,
+        int $bitsPerComponent = 8,
+        ?self $softMask = null,
+    ): self {
+        return (new ImageCompressionSelector())->select(
+            data: $data,
+            width: $width,
+            height: $height,
+            colorSpace: $colorSpace,
+            bitsPerComponent: $bitsPerComponent,
+            softMask: $softMask,
         );
     }
 
@@ -174,7 +341,13 @@ final readonly class ImageSource
             $this->colorSpace->value,
             $this->colorSpaceDefinition ?? '',
             (string) $this->bitsPerComponent,
-            $this->filter ?? '',
+            json_encode(array_map(
+                static fn (PdfFilter $filter): array => [
+                    'name' => $filter->name,
+                    'decodeParameters' => $filter->decodeParameters,
+                ],
+                $this->filters,
+            )) ?: '',
             $this->data,
             $this->softMask?->key() ?? '',
             implode("\0", $this->additionalDictionaryEntries),
@@ -192,8 +365,16 @@ final readonly class ImageSource
             '/BitsPerComponent ' . $this->bitsPerComponent,
         ];
 
-        if ($this->filter !== null) {
-            $entries[] = '/Filter ' . $this->filter;
+        $filterEntry = PdfFilter::pdfFilterEntry($this->filters);
+
+        if ($filterEntry !== null) {
+            $entries[] = '/Filter ' . $filterEntry;
+        }
+
+        $decodeParmsEntry = PdfFilter::pdfDecodeParmsEntry($this->filters);
+
+        if ($decodeParmsEntry !== null) {
+            $entries[] = '/DecodeParms ' . $decodeParmsEntry;
         }
 
         if ($softMaskObjectId !== null) {
