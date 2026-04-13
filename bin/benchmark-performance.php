@@ -482,15 +482,22 @@ final class PerformanceBenchmark
 $options = getopt('', ['scenario::', 'format::', 'iterations::', 'warmup::']);
 $benchmark = new PerformanceBenchmark();
 $availableScenarios = $benchmark->scenarios();
-$scenarioName = $options['scenario'] ?? 'all';
+$scenarioOptions = $options['scenario'] ?? 'all';
+$scenarioNames = is_array($scenarioOptions) ? $scenarioOptions : [$scenarioOptions];
 
-if ($scenarioName !== 'all') {
-    if (!isset($availableScenarios[$scenarioName])) {
-        fwrite(STDERR, "Unknown scenario: {$scenarioName}\n");
-        exit(1);
+if ($scenarioNames !== ['all']) {
+    $selectedScenarios = [];
+
+    foreach ($scenarioNames as $scenarioName) {
+        if (!isset($availableScenarios[$scenarioName])) {
+            fwrite(STDERR, "Unknown scenario: {$scenarioName}\n");
+            exit(1);
+        }
+
+        $selectedScenarios[$scenarioName] = $availableScenarios[$scenarioName];
     }
 
-    $availableScenarios = [$scenarioName => $availableScenarios[$scenarioName]];
+    $availableScenarios = $selectedScenarios;
 }
 
 $iterations = max(1, (int) ($options['iterations'] ?? PerformanceBenchmark::DEFAULT_ITERATIONS));

@@ -32,7 +32,7 @@ $document = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-list-regression.php')
-    ->heading('Liste Привет', 1, new TextOptions(
+    ->text('Liste Привет', new TextOptions(
         x: 72,
         y: 760,
         fontSize: 18,

@@ -37,7 +37,7 @@ $document = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-mixed-regression.php')
-    ->heading('Projektübersicht Привет', 1, new TextOptions(
+    ->text('Projektübersicht Привет', new TextOptions(
         x: 72,
         y: 760,
         fontSize: 18,

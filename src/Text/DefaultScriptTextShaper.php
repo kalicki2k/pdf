@@ -24,16 +24,28 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
         StandardFontDefinition | EmbeddedFontDefinition | null $font = null,
     ): ShapedTextRun {
         $characters = preg_split('//u', $run->text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $codePoints = [];
+        $glyphIds = [];
+
+        foreach ($characters as $character) {
+            $codePoint = mb_ord($character, 'UTF-8');
+            $codePoints[] = $codePoint;
+            $glyphIds[] = $font instanceof EmbeddedFontDefinition
+                ? $font->parser->getGlyphIdForCodePoint($codePoint)
+                : 0;
+        }
 
         if ($run->direction === TextDirection::RTL) {
             $characters = array_reverse($characters);
+            $codePoints = array_reverse($codePoints);
+            $glyphIds = array_reverse($glyphIds);
         }
 
         $glyphs = [];
         $count = count($characters);
 
         for ($index = 0; $index < $count; $index++) {
-            $contextualGlyph = $this->gsubContextualGlyph($font, $characters, $index);
+            $contextualGlyph = $this->gsubContextualGlyph($font, $characters, $codePoints, $glyphIds, $index);
 
             if ($contextualGlyph !== null) {
                 $glyphs[] = $contextualGlyph;
@@ -41,7 +53,7 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
                 continue;
             }
 
-            $ligatureGlyph = $this->gsubLigature($font, $characters, $index);
+            $ligatureGlyph = $this->gsubLigature($font, $characters, $codePoints, $glyphIds, $index);
 
             if ($ligatureGlyph !== null) {
                 $glyphs[] = $ligatureGlyph['glyph'];
@@ -54,7 +66,7 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
             $glyphs[] = new ShapedGlyph(
                 character: $character,
                 cluster: $index,
-                unicodeCodePoint: mb_ord($character, 'UTF-8'),
+                unicodeCodePoint: $codePoints[$index] ?? null,
                 unicodeText: $character,
             );
         }
@@ -64,28 +76,32 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
 
     /**
      * @param list<string> $characters
+     * @param list<int> $codePoints
+     * @param list<int> $glyphIds
      */
     private function gsubContextualGlyph(
         StandardFontDefinition | EmbeddedFontDefinition | null $font,
         array $characters,
+        array $codePoints,
+        array $glyphIds,
         int $index,
     ): ?ShapedGlyph {
         if (!$font instanceof EmbeddedFontDefinition || !$font->parser->hasGsubFeature('calt')) {
             return null;
         }
 
-        $glyphIds = [];
+        $glyphSequence = [];
         $count = count($characters);
 
         for ($cursor = $index; $cursor < $count; $cursor++) {
-            $glyphId = $font->parser->getGlyphIdForCharacter($characters[$cursor]);
+            $glyphId = $glyphIds[$cursor] ?? 0;
 
             if ($glyphId === 0) {
                 break;
             }
 
-            $glyphIds[] = $glyphId;
-            $substitution = $font->parser->substituteContextualGlyphSequenceWithFeature('calt', $glyphIds);
+            $glyphSequence[] = $glyphId;
+            $substitution = $font->parser->substituteContextualGlyphSequenceWithFeature('calt', $glyphSequence);
 
             if ($substitution === null) {
                 continue;
@@ -98,7 +114,7 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
                 cluster: $index,
                 glyphName: 'gsub.calt',
                 glyphId: $substitution['substitutedGlyphId'],
-                unicodeCodePoint: mb_ord($character, 'UTF-8'),
+                unicodeCodePoint: $codePoints[$index] ?? null,
                 unicodeText: $character,
             );
         }
@@ -108,33 +124,37 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
 
     /**
      * @param list<string> $characters
+     * @param list<int> $codePoints
+     * @param list<int> $glyphIds
      * @return array{glyph: ShapedGlyph, consumedGlyphCount: int}|null
      */
     private function gsubLigature(
         StandardFontDefinition | EmbeddedFontDefinition | null $font,
         array $characters,
+        array $codePoints,
+        array $glyphIds,
         int $index,
     ): ?array {
         if (!$font instanceof EmbeddedFontDefinition || !$font->parser->hasGsubFeature('liga')) {
             return null;
         }
 
-        $glyphIds = [];
+        $glyphSequence = [];
         $unicodeText = '';
         $count = count($characters);
 
         for ($cursor = $index; $cursor < $count; $cursor++) {
             $character = $characters[$cursor];
-            $glyphId = $font->parser->getGlyphIdForCharacter($character);
+            $glyphId = $glyphIds[$cursor] ?? 0;
 
             if ($glyphId === 0) {
                 break;
             }
 
-            $glyphIds[] = $glyphId;
+            $glyphSequence[] = $glyphId;
             $unicodeText .= $character;
 
-            $substitution = $font->parser->substituteGlyphSequenceWithFeature('liga', $glyphIds);
+            $substitution = $font->parser->substituteGlyphSequenceWithFeature('liga', $glyphSequence);
 
             if ($substitution === null) {
                 continue;
@@ -146,7 +166,7 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
                     cluster: $index,
                     glyphName: 'gsub.liga',
                     glyphId: $substitution['substitutedGlyphId'],
-                    unicodeCodePoint: mb_ord($characters[$index], 'UTF-8'),
+                    unicodeCodePoint: $codePoints[$index] ?? null,
                     unicodeText: $unicodeText,
                 ),
                 'consumedGlyphCount' => $substitution['consumedGlyphCount'],

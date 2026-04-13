@@ -37,7 +37,7 @@ $document = DefaultDocumentBuilder::make()
     ->language('de-DE')
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-multipage-regression.php')
-    ->heading('Kapitel Eins Привет', 1, new TextOptions(
+    ->text('Kapitel Eins Привет', new TextOptions(
         x: 72,
         y: 760,
         fontSize: 18,
@@ -64,7 +64,7 @@ $document = DefaultDocumentBuilder::make()
         ),
     )
     ->newPage()
-    ->heading('Kapitel Zwei Привет', 1, new TextOptions(
+    ->text('Kapitel Zwei Привет', new TextOptions(
         x: 72,
         y: 760,
         fontSize: 18,
