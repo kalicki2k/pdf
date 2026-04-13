@@ -135,6 +135,16 @@ final readonly class TiffImageDecoder
             || $compression === self::COMPRESSION_ADOBE_DEFLATE
             || $compression === self::COMPRESSION_DEFLATE
         ) {
+            $stripDecoder = static fn (string $strip): string => $strip;
+
+            if ($compression === self::COMPRESSION_PACKBITS) {
+                $stripDecoder = static fn (string $strip): string => (new PackBitsDecoder())->decode($strip);
+            } elseif ($compression === self::COMPRESSION_LZW) {
+                $stripDecoder = static fn (string $strip): string => (new LzwDecoder())->decode($strip);
+            } else {
+                $stripDecoder = static fn (string $strip): string => (new FlateDecoder())->decode($strip);
+            }
+
             return $this->decodeCompressedRaster(
                 $data,
                 $path,
@@ -148,13 +158,7 @@ final readonly class TiffImageDecoder
                 $samplesPerPixel,
                 $planarConfiguration,
                 $predictor,
-                match ($compression) {
-                    self::COMPRESSION_PACKBITS => static fn (string $strip): string => (new PackBitsDecoder())->decode($strip),
-                    self::COMPRESSION_LZW => static fn (string $strip): string => (new LzwDecoder())->decode($strip),
-                    self::COMPRESSION_ADOBE_DEFLATE,
-                    self::COMPRESSION_DEFLATE => static fn (string $strip): string => (new FlateDecoder())->decode($strip),
-                    default => static fn (string $strip): string => $strip,
-                },
+                $stripDecoder,
             );
         }
 

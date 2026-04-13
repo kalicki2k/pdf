@@ -11,6 +11,7 @@ use function strlen;
 
 use Kalle\Pdf\Image\CcittFaxEncoder;
 use Kalle\Pdf\Image\LzwEncoder;
+use RuntimeException;
 
 final class TiffFixture
 {
@@ -129,7 +130,7 @@ final class TiffFixture
         $compressed = gzcompress($row);
 
         if (!is_string($compressed)) {
-            throw new \RuntimeException('Unable to compress TIFF predictor fixture.');
+            throw new RuntimeException('Unable to compress TIFF predictor fixture.');
         }
 
         return self::imageTiffBytes(

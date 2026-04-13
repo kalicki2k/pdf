@@ -507,6 +507,29 @@ final class ImageSourceTest extends TestCase
         }
     }
 
+    public function testItRejectsWebpFilesExplicitly(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, WebpFixture::tinyWebpBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "Image path '%s' uses the unsupported WEBP image format.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
     public function testItRejectsAnimatedGifFiles(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
