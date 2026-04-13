@@ -11,6 +11,7 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
+use Kalle\Pdf\Document\DocumentBuildException;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentRenderer;
@@ -116,6 +117,26 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('<rdf:li xml:lang="x-default">Example Title</rdf:li>', $pdf);
         self::assertStringContainsString('<pdf:Keywords>archive, invoice</pdf:Keywords>', $pdf);
         self::assertStringEndsWith('%%EOF', $pdf);
+    }
+
+    public function testItWrapsPdfAValidationFailuresInABuildException(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3b())
+            ->title('Invoice')
+            ->language('de-DE')
+            ->text('Hello world')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $this->expectException(DocumentBuildException::class);
+        $this->expectExceptionMessage('Document build failed for profile pdfa-3b.');
+        $this->expectExceptionMessage('non-embedded font resource');
+        $this->expectExceptionMessage('Use embedded fonts via TextOptions(embeddedFont: ...)');
+
+        $renderer->write($document, $output);
     }
 
     public function testItRendersPdf10WesternStandardEncodingWithDifferences(): void
@@ -298,7 +319,8 @@ final class DocumentRendererTest extends TestCase
         $renderer = new DocumentRenderer();
         $output = new StringOutput();
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(DocumentBuildException::class);
+        $this->expectExceptionMessage('Document build failed for profile PDF/A-1a.');
         $this->expectExceptionMessage('Profile PDF/A-1a requires a document language.');
 
         $renderer->write($document, $output);
@@ -849,7 +871,8 @@ final class DocumentRendererTest extends TestCase
             ->signatureField('approval_signature', 40, 420, 140, 28, 'Approval signature')
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(DocumentBuildException::class);
+        $this->expectExceptionMessage('Document build failed for profile PDF/A-1a.');
         $this->expectExceptionMessage('Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.');
 
         (new DocumentRenderer())->write($document, new StringOutput());
@@ -865,7 +888,8 @@ final class DocumentRendererTest extends TestCase
             ->radioButton('delivery', 'express', 80, 500, 14, true, 'Express delivery')
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(DocumentBuildException::class);
+        $this->expectExceptionMessage('Document build failed for profile PDF/A-1a.');
         $this->expectExceptionMessage('Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.');
 
         (new DocumentRenderer())->write($document, new StringOutput());
@@ -1025,7 +1049,8 @@ final class DocumentRendererTest extends TestCase
             ->pushButton('ack', 'Acknowledge', 40, 380, 120, 18, 'Acknowledge')
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(DocumentBuildException::class);
+        $this->expectExceptionMessage('Document build failed for profile PDF/A-1a.');
         $this->expectExceptionMessage(
             'Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.',
         );

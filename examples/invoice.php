@@ -6,6 +6,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\MaterialColor;
+use Kalle\Pdf\Document\DocumentBuildException;
+use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
@@ -100,6 +102,7 @@ $table = Table::define(
     );
 
 $document = Pdf::document()
+    ->profile(Profile::pdfA3b())
     ->title('Rechnung 2026-0015')
     ->author('DEIN FIRMENNAME')
     ->subject('Ausgangsrechnung')
@@ -233,7 +236,14 @@ $document = Pdf::document()
     );
 
 $targetPath = $outputDirectory . '/invoice.pdf';
-$document->writeToFile($targetPath);
+
+try {
+    $document->writeToFile($targetPath);
+} catch (DocumentBuildException $exception) {
+    fwrite(STDERR, $exception->getMessage() . PHP_EOL);
+
+    exit(1);
+}
 
 printf(
     "Erstellt in %.3f Sekunden: %s\n",

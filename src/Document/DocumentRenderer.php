@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Writer\Output;
 use Kalle\Pdf\Writer\Renderer;
 
@@ -34,7 +35,11 @@ final readonly class DocumentRenderer
             'output' => $output::class,
         ]);
 
-        $this->renderer->write($this->planBuilder->build($document), $output, $debugger);
+        try {
+            $this->renderer->write($this->planBuilder->build($document), $output, $debugger);
+        } catch (InvalidArgumentException $exception) {
+            throw DocumentBuildException::fromValidationFailure($document, $exception);
+        }
 
         $scope->stop([
             'bytes' => $output->offset(),
