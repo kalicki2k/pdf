@@ -69,14 +69,14 @@ final class ProfileTest extends TestCase
     {
         self::assertTrue(Profile::pdfA4()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4e()->supportsCurrentPdfAImplementation());
-        self::assertFalse(Profile::pdfA4f()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA4f()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4()->usesPdfAOutputIntent());
         self::assertFalse(Profile::pdfA4()->writesInfoDictionary());
         self::assertTrue(Profile::pdfA4()->writesPdfARevisionMetadata());
         self::assertTrue(Profile::pdfA4f()->writesPdfARevisionMetadata());
         self::assertFalse(Profile::pdfA3b()->writesPdfARevisionMetadata());
         self::assertTrue(Profile::pdfA4()->supportsTransparency());
-        self::assertFalse(Profile::pdfA4f()->supportsTransparency());
+        self::assertTrue(Profile::pdfA4f()->supportsTransparency());
         self::assertFalse(Profile::pdfA4()->supportsCurrentPageAnnotationsImplementation());
         self::assertFalse(Profile::pdfA4()->supportsCurrentTextFieldImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentAssociatedFiles());
@@ -85,6 +85,10 @@ final class ProfileTest extends TestCase
         self::assertSame(
             'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and the currently blocked annotation/form/attachment features.',
             Profile::pdfA4()->pdfaSupport()?->supportSummary,
+        );
+        self::assertSame(
+            'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and document-level associated-file attachments.',
+            Profile::pdfA4f()->pdfaSupport()?->supportSummary,
         );
     }
 

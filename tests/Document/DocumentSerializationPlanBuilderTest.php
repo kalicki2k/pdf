@@ -520,7 +520,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/AFRelationship /Data', $objects[5]->contents);
     }
 
-    public function testItRejectsPdfA4fUntilThePdfA4ScopeIsImplemented(): void
+    public function testItBuildsPdfA4fDocumentsWithDocumentLevelAssociatedFiles(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
@@ -534,12 +534,13 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ],
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Profile PDF/A-4f is blocked until the dedicated PDF/A-4f attachment and PDF 2.0 validation path are implemented.',
-        );
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
 
-        $builder->build($document);
+        self::assertStringContainsString('/AF [6 0 R]', $objects[0]->contents);
+        self::assertStringContainsString('/AFRelationship /Data', $objects[5]->contents);
+        self::assertNull($plan->fileStructure->trailer->infoObjectId);
+        self::assertSame(2.0, $plan->fileStructure->version);
     }
 
     public function testItBuildsBasePdfA4DocumentsWithinTheCurrentSupportedScope(): void

@@ -45,10 +45,7 @@ final class PdfA4ScopePolicy
         }
 
         if ($document->profile->pdfaConformance() === 'F') {
-            throw new DocumentValidationException(
-                DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED,
-                'Profile PDF/A-4f is blocked until the dedicated PDF/A-4f attachment and PDF 2.0 validation path are implemented.',
-            );
+            return;
         }
 
         throw new DocumentValidationException(

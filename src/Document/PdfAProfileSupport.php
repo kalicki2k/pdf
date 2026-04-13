@@ -208,8 +208,8 @@ final readonly class PdfAProfileSupport
             ),
             'PDF/A-4f' => new self(
                 'PDF/A-4f',
-                false,
-                'PDF/A-4f is blocked behind a dedicated attachment policy and PDF 2.0 validation path.',
+                true,
+                'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and document-level associated-file attachments.',
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -221,7 +221,7 @@ final readonly class PdfAProfileSupport
                     acroFormFields: false,
                     documentAssociatedFiles: true,
                     documentEmbeddedAttachments: true,
-                    transparency: false,
+                    transparency: true,
                 ),
             ),
             default => new self(

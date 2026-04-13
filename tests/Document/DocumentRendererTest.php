@@ -167,6 +167,37 @@ final class DocumentRendererTest extends TestCase
         self::assertStringNotContainsString("\n/Info ", $pdf);
     }
 
+    public function testItRendersPdfA4fDocumentsWithDocumentLevelAssociatedFiles(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4f())
+            ->title('Archive Package')
+            ->text(
+                'Archive Package',
+                new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+                ),
+            )
+            ->attachment('data.xml', '<root/>', 'Source data', 'application/xml')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringStartsWith('%PDF-2.0', $pdf);
+        self::assertStringContainsString('<pdfaid:part>4</pdfaid:part>', $pdf);
+        self::assertStringContainsString('<pdfaid:rev>2020</pdfaid:rev>', $pdf);
+        self::assertStringContainsString('<pdfaid:conformance>F</pdfaid:conformance>', $pdf);
+        self::assertStringContainsString('/AFRelationship /Data', $pdf);
+        self::assertStringContainsString('/AF [', $pdf);
+        self::assertStringNotContainsString('/OutputIntents', $pdf);
+        self::assertStringNotContainsString("\n/Info ", $pdf);
+    }
+
     public function testItRendersEmbeddedFontTextWithNewlines(): void
     {
         $document = DefaultDocumentBuilder::make()

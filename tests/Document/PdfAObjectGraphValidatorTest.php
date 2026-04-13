@@ -380,6 +380,26 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
+    public function testItAcceptsPdfA4fAttachmentObjectsWithinTheCurrentScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4f())
+            ->title('Archive Package')
+            ->attachment(
+                'data.xml',
+                '<root/>',
+                'Source data',
+                'application/xml',
+            )
+            ->build();
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+
+        self::assertNotEmpty($state->attachmentObjectIds);
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
     public function testItRejectsPdfA4CatalogsWithOutputIntentArrays(): void
     {
         [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4());

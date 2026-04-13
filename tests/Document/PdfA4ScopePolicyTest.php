@@ -33,18 +33,9 @@ final class PdfA4ScopePolicyTest extends TestCase
         }
     }
 
-    public function testItRejectsPdfA4f(): void
+    public function testItAllowsPdfA4f(): void
     {
-        try {
-            new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4f()));
-            self::fail('Expected DocumentValidationException for blocked PDF/A-4f profile.');
-        } catch (DocumentValidationException $exception) {
-            self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
-            self::assertSame(
-                'Profile PDF/A-4f is blocked until the dedicated PDF/A-4f attachment and PDF 2.0 validation path are implemented.',
-                $exception->getMessage(),
-            );
-        }
+        self::assertNull((new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4f())));
     }
 
     public function testItExposesBasePdfA4FeatureRules(): void

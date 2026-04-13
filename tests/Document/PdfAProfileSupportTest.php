@@ -50,7 +50,7 @@ final class PdfAProfileSupportTest extends TestCase
         $support = Profile::pdfA4f()->pdfaSupport();
 
         self::assertNotNull($support);
-        self::assertFalse($support->isSupported);
+        self::assertTrue($support->isSupported);
         self::assertTrue($support->capabilityRule(PdfACapability::DOCUMENT_ASSOCIATED_FILES)->allowed);
         self::assertTrue($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
         self::assertFalse($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
@@ -71,7 +71,7 @@ final class PdfAProfileSupportTest extends TestCase
 
     public function testUnsupportedPdfAProfilesRaiseACodedValidationError(): void
     {
-        $support = Profile::pdfA4f()->pdfaSupport();
+        $support = Profile::pdfA4e()->pdfaSupport();
 
         self::assertNotNull($support);
 
@@ -81,7 +81,7 @@ final class PdfAProfileSupportTest extends TestCase
         } catch (DocumentValidationException $exception) {
             self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
             self::assertSame(
-                'Profile PDF/A-4f is not supported yet: PDF/A-4f is blocked behind a dedicated attachment policy and PDF 2.0 validation path.',
+                'Profile PDF/A-4e is not supported yet: PDF/A-4e is blocked behind dedicated engineering-specific policy checks and a PDF 2.0 validation path.',
                 $exception->getMessage(),
             );
         }
