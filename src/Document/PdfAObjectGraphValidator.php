@@ -1168,6 +1168,17 @@ final class PdfAObjectGraphValidator
                 $pageIndex + 1,
             ));
         }
+
+        foreach (['RichMediaInstance', 'RichMediaConfiguration', 'RichMediaActivation', 'RichMediaDeactivation'] as $unsupportedKey) {
+            if (str_contains($annotationObject->contents, '/' . $unsupportedKey)) {
+                throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                    'Profile %s only allows the current constrained RichMedia annotation subset on page %d; additional /%s wiring remains blocked.',
+                    $document->profile->name(),
+                    $pageIndex + 1,
+                    $unsupportedKey,
+                ));
+            }
+        }
     }
 
     private function assertPdfA4ThreeDAnnotationObject(
@@ -1183,6 +1194,19 @@ final class PdfAObjectGraphValidator
                 $document->profile->name(),
                 $annotationIndex + 1,
                 $pageIndex + 1,
+            ));
+        }
+
+        foreach (['/3DA', '/3DI', '/VA', '/Measure', '/View'] as $unsupportedKey) {
+            if (!str_contains($annotationObject->contents, $unsupportedKey)) {
+                continue;
+            }
+
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s only allows the current constrained 3D annotation subset on page %d; key %s remains blocked.',
+                $document->profile->name(),
+                $pageIndex + 1,
+                $unsupportedKey,
             ));
         }
     }
