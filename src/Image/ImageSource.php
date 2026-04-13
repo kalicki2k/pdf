@@ -141,6 +141,7 @@ final readonly class ImageSource
                 colorSpace: self::jpegColorSpaceFromImageInfo($path, $imageInfo),
             ),
             IMAGETYPE_PNG => new PngImageDecoder()->decode($data, $path),
+            IMAGETYPE_TIFF_II, IMAGETYPE_TIFF_MM => new TiffImageDecoder()->decode($data, $path),
             default => throw new InvalidArgumentException(sprintf(
                 "Image path '%s' uses an unsupported image format.",
                 $path,

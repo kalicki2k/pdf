@@ -13,6 +13,7 @@ use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Tests\Image\JpegFixture;
 use Kalle\Pdf\Tests\Image\PngFixture;
+use Kalle\Pdf\Tests\Image\TiffFixture;
 use PHPUnit\Framework\TestCase;
 
 final class ImageSourcePathTest extends TestCase
@@ -118,6 +119,27 @@ final class ImageSourcePathTest extends TestCase
         self::assertNotNull($document->pages[0]->imageResources['Im1']->softMask);
         self::assertStringContainsString('[/Indexed /DeviceRGB 0 <000000>]', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
         self::assertStringContainsString("16 0 0 16 8 10 cm\n/Im1 Do", $document->pages[0]->contents);
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromACcittTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyCcittGroup4TiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/Filter /CCITTFaxDecode', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/DecodeParms << /K -1 /Columns 1 /Rows 1 /BlackIs1 true >>', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
 
         unlink($path);
     }

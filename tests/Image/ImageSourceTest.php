@@ -143,6 +143,27 @@ final class ImageSourceTest extends TestCase
         unlink($path);
     }
 
+    public function testItCreatesACcittFaxImageSourceFromATiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyCcittGroup4TiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::GRAY, $source->colorSpace);
+        self::assertSame('/CCITTFaxDecode', $source->filter);
+        self::assertStringContainsString('/DecodeParms << /K -1 /Columns 1 /Rows 1 /BlackIs1 true >>', $source->pdfObjectDictionaryContents());
+
+        unlink($path);
+    }
+
     public function testItRejectsNonGraySoftMasks(): void
     {
         $this->expectException(InvalidArgumentException::class);
