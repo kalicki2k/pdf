@@ -131,6 +131,24 @@ test-pdfa3a-regressions:
 test-pdfa3a-negative-regressions:
 	sh bin/test-pdfa3a-negative-regressions.sh
 
+test-pdfa4-regressions:
+	sh bin/test-pdfa4-regressions.sh
+
+test-pdfa4-negative-regressions:
+	sh bin/test-pdfa4-negative-regressions.sh
+
+test-pdfa4e-regressions:
+	sh bin/test-pdfa4e-regressions.sh
+
+test-pdfa4e-negative-regressions:
+	sh bin/test-pdfa4e-negative-regressions.sh
+
+test-pdfa4f-regressions:
+	sh bin/test-pdfa4f-regressions.sh
+
+test-pdfa4f-negative-regressions:
+	sh bin/test-pdfa4f-negative-regressions.sh
+
 check-pdf:
 	@if [ -z "$(PDF)" ]; then echo "Usage: make check-pdf PDF=path/to/file.pdf"; exit 1; fi
 	$(MAKE) check-qpdf PDF="$(PDF)"
