@@ -53,10 +53,10 @@ final class ProfileTest extends TestCase
 
     public function testPdfA2AndPdfA3CurrentSupportMatrixIsExplicit(): void
     {
-        self::assertFalse(Profile::pdfA2a()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA2a()->supportsCurrentPdfAImplementation());
         self::assertTrue(Profile::pdfA2b()->supportsCurrentPdfAImplementation());
         self::assertTrue(Profile::pdfA2u()->supportsCurrentPdfAImplementation());
-        self::assertFalse(Profile::pdfA3a()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA3a()->supportsCurrentPdfAImplementation());
         self::assertTrue(Profile::pdfA3b()->supportsCurrentPdfAImplementation());
         self::assertTrue(Profile::pdfA3u()->supportsCurrentPdfAImplementation());
     }

@@ -36,8 +36,8 @@ final readonly class PdfAProfileSupport
             ),
             'PDF/A-2a' => new self(
                 'PDF/A-2a',
-                false,
-                'The general tagged PDF/A "a" scope outside PDF/A-1a is not fully validated yet, so this profile is blocked instead of claimed.',
+                true,
+                'Supported for the current PDF/A-2a scope with tagged structure, embedded Unicode fonts, XMP metadata, OutputIntent and tagged link annotations; non-link page annotations and AcroForms remain blocked.',
             ),
             'PDF/A-2b' => new self(
                 'PDF/A-2b',
@@ -51,8 +51,8 @@ final readonly class PdfAProfileSupport
             ),
             'PDF/A-3a' => new self(
                 'PDF/A-3a',
-                false,
-                'The general tagged PDF/A "a" scope outside PDF/A-1a is not fully validated yet, so this profile is blocked instead of claimed.',
+                true,
+                'Supported for the current PDF/A-3a scope with tagged structure, embedded Unicode fonts, XMP metadata, OutputIntent, tagged link annotations and document-level associated files; non-link page annotations and AcroForms remain blocked.',
             ),
             'PDF/A-3b' => new self(
                 'PDF/A-3b',

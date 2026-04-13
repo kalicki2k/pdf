@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 
 final class PdfA23PolicyMatrixTest extends TestCase
 {
-    public function testItRejectsPdfA2aUntilTheGeneralTaggedAScopeIsValidated(): void
+    public function testItAllowsPdfA2aTaggedParagraphsWithinTheCurrentScope(): void
     {
         $document = $this->pdfA2BaselineBuilder(Profile::pdfA2a())
             ->text('Getaggter Absatz fuer PDF/A-2a. Привет.', new TextOptions(
@@ -29,12 +29,15 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ))
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Profile PDF/A-2a is not supported yet: The general tagged PDF/A "a" scope outside PDF/A-1a is not fully validated yet, so this profile is blocked instead of claimed.',
-        );
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+        ));
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        self::assertStringContainsString('/MarkInfo << /Marked true >>', $serialized);
+        self::assertStringContainsString('/Type /StructTreeRoot', $serialized);
+        self::assertStringContainsString('/S /Document', $serialized);
+        self::assertStringContainsString('/S /P', $serialized);
     }
 
     public function testItAllowsPdfA2bUriLinkAnnotationsWithinTheCurrentScope(): void
@@ -157,7 +160,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/Encoding /Identity-H', $serialized);
     }
 
-    public function testItRejectsPdfA3aUntilTheGeneralTaggedAScopeIsValidated(): void
+    public function testItAllowsPdfA3aTaggedDocumentsWithDocumentAssociatedFiles(): void
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA3a())
@@ -169,9 +172,46 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ->attachment('data.xml', '<root/>', 'Source data', 'application/xml')
             ->build();
 
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/AFRelationship /Data', $serialized);
+        self::assertStringContainsString('<pdfaid:part>3</pdfaid:part>', $serialized);
+        self::assertStringContainsString('<pdfaid:conformance>A</pdfaid:conformance>', $serialized);
+        self::assertStringContainsString('/Type /StructTreeRoot', $serialized);
+    }
+
+    public function testItRejectsPdfA2aNonLinkPageAnnotationsUntilTaggedAnnotationSupportExists(): void
+    {
+        $document = $this->pdfA2BaselineBuilder(Profile::pdfA2a())
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-3a is not supported yet: The general tagged PDF/A "a" scope outside PDF/A-1a is not fully validated yet, so this profile is blocked instead of claimed.',
+            'Profile PDF/A-2a only allows tagged link annotations in the current PDF/A-2A scope; other page annotations remain blocked on page 1.',
+        );
+
+        (new DocumentSerializationPlanBuilder())->build($document);
+    }
+
+    public function testItRejectsPdfA3aNonLinkPageAnnotationsUntilTaggedAnnotationSupportExists(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3a())
+            ->title('Archive Package')
+            ->language('de-DE')
+            ->text('PDF/A-3a Package Привет', new TextOptions(
+                embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+            ))
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-3a only allows tagged link annotations in the current PDF/A-3A scope; other page annotations remain blocked on page 1.',
         );
 
         (new DocumentSerializationPlanBuilder())->build($document);
