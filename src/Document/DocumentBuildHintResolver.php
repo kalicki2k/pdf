@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use function str_contains;
-
 use InvalidArgumentException;
 
 final class DocumentBuildHintResolver
 {
     public function resolve(Document $document, InvalidArgumentException $exception): ?string
     {
-        return $exception instanceof DocumentValidationException
-            ? $this->hintForError($document, $exception->error)
-            : $this->legacyHintFor($document, $exception->getMessage());
+        if (!$exception instanceof DocumentValidationException) {
+            return null;
+        }
+
+        return $this->hintForError($document, $exception->error);
     }
 
     private function hintForError(Document $document, DocumentBuildError $error): ?string
@@ -110,66 +110,4 @@ final class DocumentBuildHintResolver
         };
     }
 
-    private function legacyHintFor(Document $document, string $reason): ?string
-    {
-        if ($document->profile->isPdfA() && $this->containsAny($reason, [
-            'non-embedded font resource',
-            'requires embedded fonts.',
-        ])) {
-            return 'Use embedded fonts via TextOptions(embeddedFont: ...), table text options, or switch to a non-PDF/A profile.';
-        }
-
-        if (
-            $document->profile->requiresExtractableEmbeddedUnicodeFonts()
-            && $this->containsAny($reason, [
-                'extractable Unicode fonts',
-                'requires embedded Unicode fonts.',
-            ])
-        ) {
-            return 'Use an embedded Unicode-capable font and render the affected text with embeddedFont instead of a standard PDF font.';
-        }
-
-        if (
-            $document->profile->requiresDocumentLanguage()
-            && str_contains($reason, 'requires a document language')
-        ) {
-            return "Set ->language('de-DE') or another valid BCP 47 language tag on the document builder.";
-        }
-
-        if (
-            $document->profile->requiresDocumentTitle()
-            && str_contains($reason, 'requires a document title')
-        ) {
-            return "Set ->title('...') on the document builder before rendering.";
-        }
-
-        if (
-            $document->profile->requiresFigureAltText()
-            && str_contains($reason, 'alternative text for image')
-        ) {
-            return 'Provide ImageAccessibility with altText, or mark decorative images as decorative.';
-        }
-
-        if (
-            $document->profile->requiresTaggedPdf()
-            && $this->containsAny($reason, [
-                'StructTreeRoot',
-                'tagged',
-                'requires structured content',
-                'requires structured marked content',
-            ])
-        ) {
-            return 'Use beginStructure()/endStructure() for containers and TextOptions(tag: ...) for leaf roles.';
-        }
-
-        return null;
-    }
-
-    /**
-     * @param list<string> $needles
-     */
-    private function containsAny(string $haystack, array $needles): bool
-    {
-        return array_any($needles, fn ($needle) => str_contains($haystack, (string) $needle));
-    }
 }

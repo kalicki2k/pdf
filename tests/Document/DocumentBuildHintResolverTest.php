@@ -393,34 +393,11 @@ final class DocumentBuildHintResolverTest extends TestCase
         );
     }
 
-    public function testItFallsBackToLegacyStringMatchingForUnconvertedValidationErrors(): void
-    {
-        $hint = $this->resolver->resolve(
-            new Document(profile: Profile::pdfA3b()),
-            new InvalidArgumentException('Profile PDF/A-3b requires embedded fonts. Found standard font "Helvetica" on page 1.'),
-        );
-
-        self::assertSame(
-            'Use embedded fonts via TextOptions(embeddedFont: ...), table text options, or switch to a non-PDF/A profile.',
-            $hint,
-        );
-    }
-
-    public function testItDoesNotUseLegacyStringFallbackForTransparencyAnyMore(): void
+    public function testItReturnsNullForLegacyInvalidArgumentExceptions(): void
     {
         $hint = $this->resolver->resolve(
             new Document(profile: Profile::pdfA1b()),
-            new InvalidArgumentException('Profile PDF/A-1b does not allow soft-mask image transparency for image resource 1 on page 1.'),
-        );
-
-        self::assertNull($hint);
-    }
-
-    public function testItDoesNotUseLegacyStringFallbackForAttachmentMimeTypeAnyMore(): void
-    {
-        $hint = $this->resolver->resolve(
-            new Document(profile: Profile::pdfA3b()),
-            new InvalidArgumentException('Profile PDF/A-3b requires an embedded file MIME type for attachment 1.'),
+            new InvalidArgumentException('Profile PDF/A-1b requires embedded fonts. Found standard font "Helvetica" on page 1.'),
         );
 
         self::assertNull($hint);
