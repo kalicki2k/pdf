@@ -172,12 +172,30 @@ final class DocumentPageAndFormObjectBuilder
         ];
         $pageObjectIdsByPageNumber = $this->pageObjectIdsByPageNumber($state->pageObjectIds);
         $defaultFontObjectId = $state->acroFormDefaultFontKey !== null ? ($state->fontObjectIds[$state->acroFormDefaultFontKey] ?? null) : null;
+        $optionalContentGroupObjectIdsByPageNumber = [];
+
+        foreach ($document->pages as $pageIndex => $page) {
+            $pageNumber = $pageIndex + 1;
+            $optionalContentGroupObjectIdsByPageNumber[$pageNumber] = [];
+
+            foreach ($page->optionalContentGroups as $alias => $optionalContentGroup) {
+                $objectId = $state->optionalContentGroupObjectIds[$optionalContentGroup->key()] ?? null;
+
+                if ($objectId === null) {
+                    continue;
+                }
+
+                $optionalContentGroupObjectIdsByPageNumber[$pageNumber][$alias] = $objectId;
+            }
+        }
+
         $context = new FormFieldRenderContext(
             $pageObjectIdsByPageNumber,
             $state->taggedFormStructure['structParentIds'],
             $state->acroFormDefaultFont,
             $state->acroFormDefaultFont !== null ? 'F0' : null,
             $defaultFontObjectId,
+            $optionalContentGroupObjectIdsByPageNumber,
         );
 
         foreach ($document->acroForm->fields as $fieldIndex => $field) {

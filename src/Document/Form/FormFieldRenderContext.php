@@ -13,6 +13,7 @@ final readonly class FormFieldRenderContext
     /**
      * @param array<int, int> $pageObjectIdsByPageNumber
      * @param array<int, int> $structParentIdsByAnnotationObjectId
+     * @param array<int, array<string, int>> $optionalContentGroupObjectIdsByPageNumber
      */
     public function __construct(
         public array $pageObjectIdsByPageNumber,
@@ -20,6 +21,7 @@ final readonly class FormFieldRenderContext
         public ?PageFont $defaultTextFont = null,
         public ?string $defaultTextFontAlias = null,
         public ?int $defaultTextFontObjectId = null,
+        public array $optionalContentGroupObjectIdsByPageNumber = [],
     ) {
     }
 
@@ -43,6 +45,24 @@ final readonly class FormFieldRenderContext
     public function structParentId(int $annotationObjectId): ?int
     {
         return $this->structParentIdsByAnnotationObjectId[$annotationObjectId] ?? null;
+    }
+
+    public function optionalContentGroupObjectId(int $pageNumber, string $alias): int
+    {
+        $objectId = $this->optionalContentGroupObjectIdsByPageNumber[$pageNumber][$alias] ?? null;
+
+        if ($objectId === null) {
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                sprintf(
+                    'Optional content group alias "%s" is not configured on page %d.',
+                    $alias,
+                    $pageNumber,
+                ),
+            );
+        }
+
+        return $objectId;
     }
 
     public function requiresDefaultTextFont(): PageFont

@@ -13,6 +13,9 @@ use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
+use Kalle\Pdf\Document\Form\AcroForm;
+use Kalle\Pdf\Document\Form\OptionalContentStateAction;
+use Kalle\Pdf\Document\Form\PushButtonField;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\OptionalContentGroup;
@@ -399,7 +402,47 @@ final class PdfA4PolicyMatrixTest extends TestCase
         new DocumentSerializationPlanBuilder()->build($document);
     }
 
-    public function testItRejectsPdfA4ePushButtonsOutsideTheCurrentFormSubset(): void
+    public function testItAllowsPdfA4eOptionalContentStatePushButtonsWithinTheCurrentFormSubset(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Archive Copy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    optionalContentGroups: [
+                        'LayerA' => new OptionalContentGroup('Base Geometry'),
+                        'LayerB' => new OptionalContentGroup('Dimensions'),
+                    ],
+                ),
+            ],
+            acroForm: new AcroForm()->withField(
+                new PushButtonField(
+                    'assembly_view',
+                    1,
+                    40,
+                    500,
+                    120,
+                    18,
+                    'Assembly view',
+                    'Assembly view',
+                    optionalContentStateAction: new OptionalContentStateAction(turnOn: ['LayerA'], turnOff: ['LayerB']),
+                ),
+            ),
+        );
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/FT /Btn', $serialized);
+        self::assertStringContainsString('/A << /S /SetOCGState /State [', $serialized);
+        self::assertStringContainsString('/ON ', $serialized);
+        self::assertStringContainsString('/OFF ', $serialized);
+    }
+
+    public function testItRejectsPdfA4ePlainPushButtonsOutsideTheCurrentFormSubset(): void
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA4e())
@@ -409,7 +452,7 @@ final class PdfA4PolicyMatrixTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-4e only allows text fields, checkboxes, radio buttons and choice fields in the current constrained PDF/A-4e form policy.',
+            'Profile PDF/A-4e only allows text fields, checkboxes, radio buttons, choice fields and optional-content state push buttons in the current constrained PDF/A-4e form policy.',
         );
 
         new DocumentSerializationPlanBuilder()->build($document);

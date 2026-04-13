@@ -26,6 +26,7 @@ final readonly class PushButtonField extends WidgetFormField
         public string $label,
         ?string $alternativeName = null,
         public ?string $url = null,
+        public ?OptionalContentStateAction $optionalContentStateAction = null,
         public float $fontSize = 12.0,
     ) {
         parent::__construct($name, $pageNumber, $x, $y, $width, $height, $alternativeName);
@@ -40,6 +41,10 @@ final readonly class PushButtonField extends WidgetFormField
 
         if ($this->url === '') {
             throw new InvalidArgumentException('Push button URL must not be empty.');
+        }
+
+        if ($this->url !== null && $this->optionalContentStateAction !== null) {
+            throw new InvalidArgumentException('Push button cannot combine a URI action with an optional content state action.');
         }
     }
 
@@ -70,6 +75,9 @@ final readonly class PushButtonField extends WidgetFormField
 
         if ($this->url !== null) {
             $entries[] = '/A << /S /URI /URI ' . $this->pdfString($this->url) . ' >>';
+        } elseif ($this->optionalContentStateAction !== null) {
+            $entries[] = '/A << /S /SetOCGState /State [' . $this->serializeStateEntries($context) . '] /PreserveRB '
+                . ($this->optionalContentStateAction->preserveRadioButtons ? 'true' : 'false') . ' >>';
         }
 
         return '<< ' . implode(' ', $entries) . ' >>';
@@ -147,5 +155,28 @@ final readonly class PushButtonField extends WidgetFormField
             '0 0 ' . $this->formatNumber($this->width) . ' ' . $this->formatNumber($this->height) . ' re',
             'B',
         ]);
+    }
+
+    private function serializeStateEntries(FormFieldRenderContext $context): string
+    {
+        $stateAction = $this->optionalContentStateAction;
+        if ($stateAction === null) {
+            return '';
+        }
+
+        $entries = [];
+
+        foreach ([
+            'ON' => $stateAction->turnOn,
+            'OFF' => $stateAction->turnOff,
+            'Toggle' => $stateAction->toggle,
+        ] as $state => $aliases) {
+            foreach ($aliases as $alias) {
+                $entries[] = '/' . $state;
+                $entries[] = $context->optionalContentGroupObjectId($this->pageNumber, $alias) . ' 0 R';
+            }
+        }
+
+        return implode(' ', $entries);
     }
 }

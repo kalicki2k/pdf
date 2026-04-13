@@ -548,6 +548,14 @@ final readonly class DocumentSerializationPlanValidator
                     ));
                 }
 
+                if (
+                    $document->profile->isPdfA4()
+                    && $document->profile->pdfaConformance() === 'E'
+                    && $field->optionalContentStateAction !== null
+                ) {
+                    continue;
+                }
+
                 if (!$document->profile->supportsCurrentPushButtonImplementation()) {
                     throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(
                         'Profile %s does not allow push buttons in the current implementation.',

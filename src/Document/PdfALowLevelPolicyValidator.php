@@ -12,6 +12,7 @@ use function strlen;
 use function substr;
 
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
+use Kalle\Pdf\Document\Form\PushButtonField;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AnnotationAppearanceRenderContext;
 use Kalle\Pdf\Page\AppearanceStreamAnnotation;
@@ -411,11 +412,24 @@ final readonly class PdfALowLevelPolicyValidator
                 $fieldIndex + 1,
                 array_fill(0, $field->relatedObjectCount(), 1),
             );
+            $forbiddenFormKeys = self::FORBIDDEN_FORM_KEYS;
+
+            if (
+                $document->profile->isPdfA4()
+                && $document->profile->pdfaConformance() === 'E'
+                && $field instanceof PushButtonField
+                && $field->optionalContentStateAction !== null
+            ) {
+                $forbiddenFormKeys = array_values(array_filter(
+                    $forbiddenFormKeys,
+                    static fn (string $key): bool => $key !== 'SetOCGState' && $key !== 'A',
+                ));
+            }
 
             $this->assertForbiddenDictionaryKeysAbsent(
                 $document,
                 $fieldDictionaryContents,
-                self::FORBIDDEN_FORM_KEYS,
+                $forbiddenFormKeys,
                 sprintf('form field %d', $fieldIndex + 1),
             );
 

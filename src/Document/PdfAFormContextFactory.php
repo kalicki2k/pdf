@@ -80,11 +80,23 @@ final class PdfAFormContextFactory
         ?int $defaultTextFontObjectId = null,
     ): FormFieldRenderContext {
         $defaultFont = $this->buildDefaultFont($document);
+        $optionalContentGroupObjectIdsByPageNumber = [];
+
+        foreach ($document->pages as $pageIndex => $page) {
+            $pageNumber = $pageIndex + 1;
+            $optionalContentGroupObjectIdsByPageNumber[$pageNumber] = [];
+            $nextSyntheticObjectId = 1000 + ($pageIndex * 100);
+
+            foreach ($page->optionalContentGroups as $alias => $_optionalContentGroup) {
+                $optionalContentGroupObjectIdsByPageNumber[$pageNumber][$alias] = $nextSyntheticObjectId++;
+            }
+        }
 
         if ($defaultFont === null) {
             return new FormFieldRenderContext(
                 $pageObjectIdsByPageNumber,
                 $structParentIdsByAnnotationObjectId,
+                optionalContentGroupObjectIdsByPageNumber: $optionalContentGroupObjectIdsByPageNumber,
             );
         }
 
@@ -94,6 +106,7 @@ final class PdfAFormContextFactory
             $defaultFont,
             'F0',
             $defaultTextFontObjectId,
+            $optionalContentGroupObjectIdsByPageNumber,
         );
     }
 

@@ -9,6 +9,7 @@ use Kalle\Pdf\Debug\DebugConfig;
 use Kalle\Pdf\Debug\DebugSink;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
+use Kalle\Pdf\Document\Form\OptionalContentStateAction;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
@@ -616,6 +617,18 @@ interface DocumentBuilder
     public function linkToPage(int $pageNumber, float $x, float $y, float $width, float $height, ?string $contents = null, ?string $accessibleLabel = null): self;
 
     public function linkToPageWithOptions(int $pageNumber, float $x, float $y, float $width, float $height, LinkAnnotationOptions $options): self;
+
+    public function pushButtonOptionalContentState(
+        string $name,
+        string $label,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        OptionalContentStateAction $action,
+        ?string $alternativeName = null,
+        float $fontSize = 12.0,
+    ): self;
 
     public function linkToPagePosition(
         int $pageNumber,

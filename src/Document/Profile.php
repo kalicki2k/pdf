@@ -470,6 +470,10 @@ final readonly class Profile
 
     public function supportsCurrentPushButtonImplementation(): bool
     {
+        if ($this->isPdfA4() && $this->pdfaConformance() === 'E') {
+            return true;
+        }
+
         if ($this->isPdfA2() || $this->isPdfA3() || $this->isPdfA4() || ($this->isPdfA() && $this->conformance === 'A')) {
             return false;
         }

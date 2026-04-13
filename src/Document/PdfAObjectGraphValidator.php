@@ -12,6 +12,7 @@ use function sprintf;
 use function str_contains;
 use function str_replace;
 
+use Kalle\Pdf\Document\Form\PushButtonField;
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
@@ -266,13 +267,29 @@ final class PdfAObjectGraphValidator
 
         $acroFormObject = $this->assertObjectExists($objectsById, $state->acroFormObjectId, 'AcroForm');
 
-        foreach ($state->acroFormFieldObjectIds as $fieldObjectId) {
+        $acroForm = $document->acroForm;
+
+        if ($acroForm === null) {
+            return;
+        }
+
+        foreach ($state->acroFormFieldObjectIds as $fieldIndex => $fieldObjectId) {
             $this->assertReferencePresent(
                 $acroFormObject->contents,
                 $fieldObjectId,
                 sprintf('PDF/A AcroForm must reference field object %d.', $fieldObjectId),
             );
-            $this->assertObjectExists($objectsById, $fieldObjectId, sprintf('AcroForm field %d', $fieldObjectId));
+            $fieldObject = $this->assertObjectExists($objectsById, $fieldObjectId, sprintf('AcroForm field %d', $fieldObjectId));
+            $field = $acroForm->fields[$fieldIndex] ?? null;
+
+            if (
+                $field instanceof PushButtonField
+                && $document->profile->isPdfA4()
+                && $document->profile->pdfaConformance() === 'E'
+                && $field->optionalContentStateAction !== null
+            ) {
+                $this->assertPdfA4OptionalContentPushButtonAction($document, $state, $field, $fieldObject);
+            }
         }
     }
 
@@ -970,5 +987,56 @@ final class PdfAObjectGraphValidator
     private function profileLabel(): string
     {
         return $this->activeProfile?->name() ?? 'PDF/A';
+    }
+
+    private function assertPdfA4OptionalContentPushButtonAction(
+        Document $document,
+        DocumentSerializationPlanBuildState $state,
+        PushButtonField $field,
+        IndirectObject $fieldObject,
+    ): void {
+        $stateAction = $field->optionalContentStateAction;
+
+        if ($stateAction === null) {
+            return;
+        }
+
+        if (!str_contains($fieldObject->contents, '/A << /S /SetOCGState ')) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s requires push button field "%s" to serialize a /SetOCGState action.',
+                $document->profile->name(),
+                $field->name,
+            ));
+        }
+
+        if (!str_contains($fieldObject->contents, '/State [')) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s requires push button field "%s" to serialize a /State array in /SetOCGState.',
+                $document->profile->name(),
+                $field->name,
+            ));
+        }
+
+        foreach ([
+            'ON' => $stateAction->turnOn,
+            'OFF' => $stateAction->turnOff,
+            'Toggle' => $stateAction->toggle,
+        ] as $stateToken => $aliases) {
+            foreach ($aliases as $alias) {
+                $page = $document->pages[$field->pageNumber - 1] ?? null;
+                $group = $page?->optionalContentGroups[$alias] ?? null;
+                $groupObjectId = $group === null ? null : ($state->optionalContentGroupObjectIds[$group->key()] ?? null);
+
+                if ($groupObjectId === null || !preg_match('/\/' . preg_quote($stateToken, '/') . '\s+' . preg_quote((string) $groupObjectId, '/') . '\s+0\s+R\b/', $fieldObject->contents)) {
+                    throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                        'Profile %s requires push button field "%s" to serialize /%s %d 0 R in /SetOCGState.',
+                        $document->profile->name(),
+                        $field->name,
+                        $stateToken,
+                        $groupObjectId ?? 0,
+                    ));
+                }
+            }
+        }
     }
 }

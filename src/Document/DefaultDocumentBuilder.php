@@ -27,6 +27,7 @@ use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
 use Kalle\Pdf\Document\Form\ListBoxField;
+use Kalle\Pdf\Document\Form\OptionalContentStateAction;
 use Kalle\Pdf\Document\Form\PushButtonField;
 use Kalle\Pdf\Document\Form\RadioButtonChoice;
 use Kalle\Pdf\Document\Form\RadioButtonGroup;
@@ -1251,6 +1252,36 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 label: $label,
                 alternativeName: $alternativeName,
                 url: $url,
+                fontSize: $fontSize,
+            ),
+        );
+
+        return $clone;
+    }
+
+    public function pushButtonOptionalContentState(
+        string $name,
+        string $label,
+        float $x,
+        float $y,
+        float $width,
+        float $height,
+        OptionalContentStateAction $action,
+        ?string $alternativeName = null,
+        float $fontSize = 12.0,
+    ): DocumentBuilder {
+        $clone = clone $this;
+        $clone->acroForm = ($clone->acroForm ?? new AcroForm())->withField(
+            new PushButtonField(
+                name: $name,
+                pageNumber: count($clone->pages) + 1,
+                x: $x,
+                y: $y,
+                width: $width,
+                height: $height,
+                label: $label,
+                alternativeName: $alternativeName,
+                optionalContentStateAction: $action,
                 fontSize: $fontSize,
             ),
         );

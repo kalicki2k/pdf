@@ -100,7 +100,7 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA4e()->supportsCurrentTextFieldImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsCurrentTextFieldImplementation());
         self::assertFalse(Profile::pdfA4()->supportsCurrentPushButtonImplementation());
-        self::assertFalse(Profile::pdfA4e()->supportsCurrentPushButtonImplementation());
+        self::assertTrue(Profile::pdfA4e()->supportsCurrentPushButtonImplementation());
         self::assertFalse(Profile::pdfA4f()->supportsCurrentSignatureFieldImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentAssociatedFiles());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentEmbeddedFileAttachments());
@@ -110,7 +110,7 @@ final class ProfileTest extends TestCase
             Profile::pdfA4()->pdfaSupport()?->supportSummary,
         );
         self::assertSame(
-            'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and the simple optional-content group, membership and visibility-expression subset; RichMedia, 3D and other engineering features remain blocked.',
+            'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset including optional-content state push buttons, and the simple optional-content group, membership and visibility-expression subset; RichMedia, 3D and other engineering features remain blocked.',
             Profile::pdfA4e()->pdfaSupport()?->supportSummary,
         );
         self::assertSame(
