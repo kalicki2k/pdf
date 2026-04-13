@@ -10,9 +10,14 @@ use function preg_match_all;
 
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildError;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
 use Kalle\Pdf\Document\DocumentSerializationPlanObjectIdAllocator;
 use Kalle\Pdf\Document\DocumentTaggedPdfObjectBuilder;
+use Kalle\Pdf\Document\DocumentValidationException;
+use Kalle\Pdf\Document\Form\AcroForm;
+use Kalle\Pdf\Document\Form\RadioButtonChoice;
+use Kalle\Pdf\Document\Form\RadioButtonGroup;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
@@ -159,6 +164,40 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
             ['H1', 'P', 'L', 'Table', 'Figure'],
             $this->documentChildTags(iterator_to_array($plan->objects)),
         );
+    }
+
+    public function testItRaisesACodedTaggedStructureErrorWhenRadioChoiceWidgetObjectIsMissing(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA1a(),
+            title: 'Archive Copy',
+            language: 'de-DE',
+            acroForm: new AcroForm()->withField(
+                new RadioButtonGroup(
+                    'contact_method',
+                    [
+                        new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'email', false, 'Email'),
+                    ],
+                    'Preferred contact method',
+                ),
+            ),
+        );
+
+        try {
+            new DocumentTaggedPdfObjectBuilder()->collectTaggedFormStructure(
+                $document,
+                [10],
+                [0 => []],
+                1,
+            );
+            self::fail('Expected coded tagged-structure build error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID, $exception->error);
+            self::assertSame(
+                'Tagged form structure requires a widget annotation object for radio button group "contact_method" choice 1.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItBuildsDocumentChildrenInReadingOrderAcrossPages(): void
