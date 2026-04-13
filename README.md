@@ -460,7 +460,7 @@ Ein ausfuehrbares Beispiel liegt in `examples/table-of-contents.php`.
 
 ## Tabellen
 
-Die erste Tabelleniteration unterstützt Textzellen mit festen oder proportionalen Spaltenbreiten, Padding, einfachen Borders, `colspan`/`rowspan`, optionale Caption- und Footer-Zeilen, optionale Header-Zeilen mit Wiederholung auf Folgeseiten und deterministische Seitenumbrüche zwischen ganzen Zeilen bzw. zusammenhängenden `rowspan`-Gruppen. Für Tagged-PDF-Profile wird zusätzlich eine minimale Tabellenstruktur mit `Table`, `Caption`, `TR`, `TH` und `TD` geschrieben.
+Die aktuelle Tabellen-API unterstützt Textzellen mit festen, automatischen oder proportionalen Spaltenbreiten, Padding, Borders, `colspan`/`rowspan`, optionale Caption-, Header- und Footer-Zeilen sowie deterministische Seitenumbrüche zwischen ganzen Zeilen bzw. zusammenhängenden `rowspan`-Gruppen. Header- und Footer-Zeilen können auf Folgeseiten wiederholt werden. Für Tagged-PDF-Profile wird zusätzlich eine minimale Tabellenstruktur mit `Table`, `Caption`, `TR`, `TH` und `TD` geschrieben.
 
 ```php
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -468,25 +468,33 @@ use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 
 $table = Table::define(
-    TableColumn::fixed(120),
+    TableColumn::auto(),
     TableColumn::proportional(1),
+    TableColumn::auto(),
 )
-    ->withCaption(TableCaption::text('Produktuebersicht'))
-    ->withPlacement(TablePlacement::at(72, 520, 320))
-    ->withCellPadding(CellPadding::all(6))
+    ->withTableOptions(new TableOptions(
+        caption: TableCaption::text('Produktuebersicht'),
+        placement: TablePlacement::at(72, 520, 320),
+        cellPadding: CellPadding::all(6),
+        border: Border::all(0.5),
+        textOptions: new TextOptions(fontSize: 10, lineHeight: 12),
+        repeatHeaderOnPageBreak: true,
+        repeatFooterOnPageBreak: true,
+    ))
     ->withHeaderRows(
-        TableRow::fromTexts('Artikel', 'Beschreibung'),
+        TableRow::fromTexts('Artikel', 'Beschreibung', 'Betrag'),
     )
-    ->withRepeatedHeaderOnPageBreak()
     ->withRows(
         TableRow::fromCells(
             \Kalle\Pdf\Document\TableCell::text('A-100', rowspan: 2)
@@ -498,13 +506,17 @@ $table = Table::define(
             )
                 ->withHorizontalAlign(TextAlign::RIGHT)
                 ->withBorder(Border::all(1)),
+            \Kalle\Pdf\Document\TableCell::text('490,00 EUR')
+                ->withHorizontalAlign(TextAlign::RIGHT),
         ),
         TableRow::fromCells(
             \Kalle\Pdf\Document\TableCell::text('Mit zusammenhängender Zeilengruppe über zwei Tabellenzeilen.'),
+            \Kalle\Pdf\Document\TableCell::text('90,00 EUR')
+                ->withHorizontalAlign(TextAlign::RIGHT),
         ),
     )
     ->withFooterRows(
-        TableRow::fromTexts('Summe', '2 Positionen'),
+        TableRow::fromTexts('Summe', '2 Positionen', '580,00 EUR'),
     );
 
 $document = DefaultDocumentBuilder::make()
@@ -512,7 +524,9 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-Ein umfangreicheres Beispiel liegt in `examples/table.php`. Die aktuelle Tabellen-API deckt damit auch absolutes Start-`y`, Rich-Text-Zellen sowie Tagged-Table-Abschnitte `THead`, `TBody` und `TFoot` ab.
+`TableColumn::auto()` misst die Mindestbreite einer Spalte aus dem längsten untrennbaren Zellinhalt plus Padding. Das ist nützlich für Datums-, Ticket-, Mengen- oder Betragsspalten. `TableColumn::proportional(...)` verteilt den nach `fixed(...)`- und `auto()`-Spalten verbleibenden Platz.
+
+Ein umfangreicheres Beispiel liegt in `examples/table.php`; ein professionelles Mehrseiten-Beispiel mit wiederholtem Header und Footer in `examples/table-repeated-footer.php`. Die aktuelle Tabellen-API deckt damit auch absolutes Start-`y`, Rich-Text-Zellen sowie Tagged-Table-Abschnitte `THead`, `TBody` und `TFoot` ab.
 
 ## Listen
 
