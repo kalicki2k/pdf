@@ -30,7 +30,9 @@ use function unlink;
 use DateTimeInterface;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildError;
 use Kalle\Pdf\Document\DocumentRenderer;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Form\SignatureField;
 use Kalle\Pdf\Writer\Output;
 use Kalle\Pdf\Writer\StringOutput;
@@ -81,13 +83,7 @@ final readonly class DocumentSigner
         $trailer = $this->parseTrailer($unsignedPdf);
         $fieldObject = $this->locateSignatureFieldObject($unsignedPdf, $options->fieldName);
         $signatureObjectId = $trailer['size'];
-
-        if (str_contains($fieldObject['contents'], '/V ')) {
-            throw new InvalidArgumentException(sprintf(
-                'Signature field "%s" already contains a value dictionary.',
-                $options->fieldName,
-            ));
-        }
+        $this->assertUnsignedSignatureFieldContents($fieldObject['contents'], $options->fieldName);
 
         $updatedFieldContents = $this->injectSignatureValueReference(
             $fieldObject['contents'],
@@ -181,10 +177,28 @@ final readonly class DocumentSigner
             ];
         }
 
-        throw new InvalidArgumentException(sprintf(
-            'Unable to locate the signature field "%s" in the rendered PDF.',
-            $fieldName,
-        ));
+        throw new DocumentValidationException(
+            DocumentBuildError::BUILD_STATE_INVALID,
+            sprintf(
+                'Unable to locate the signature field "%s" in the rendered PDF.',
+                $fieldName,
+            ),
+        );
+    }
+
+    private function assertUnsignedSignatureFieldContents(string $fieldContents, string $fieldName): void
+    {
+        if (!str_contains($fieldContents, '/V ')) {
+            return;
+        }
+
+        throw new DocumentValidationException(
+            DocumentBuildError::BUILD_STATE_INVALID,
+            sprintf(
+                'Signature field "%s" already contains a value dictionary.',
+                $fieldName,
+            ),
+        );
     }
 
     private function injectSignatureValueReference(string $fieldContents, int $signatureObjectId): string

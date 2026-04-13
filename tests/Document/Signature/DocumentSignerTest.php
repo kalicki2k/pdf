@@ -26,6 +26,8 @@ use function unlink;
 use InvalidArgumentException;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Signature\DocumentSigner;
 use Kalle\Pdf\Document\Signature\OpenSslPemSigningCredentials;
 use Kalle\Pdf\Document\Signature\PdfSignatureOptions;
@@ -34,6 +36,7 @@ use OpenSSLAsymmetricKey;
 use OpenSSLCertificate;
 use OpenSSLCertificateSigningRequest;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 final class DocumentSignerTest extends TestCase
 {
@@ -112,6 +115,44 @@ final class DocumentSignerTest extends TestCase
             $this->testCredentials(),
             new PdfSignatureOptions(fieldName: 'approval_signature'),
         );
+    }
+
+    public function testItRaisesACodedBuildStateErrorWhenTheRenderedSignatureFieldCannotBeLocated(): void
+    {
+        try {
+            $this->invokePrivateMethod(
+                new DocumentSigner(),
+                'locateSignatureFieldObject',
+                "%PDF-1.7\n1 0 obj\n<< /Type /Catalog >>\nendobj\n",
+                'approval_signature',
+            );
+            self::fail('Expected coded build-state validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::BUILD_STATE_INVALID, $exception->error);
+            self::assertSame(
+                'Unable to locate the signature field "approval_signature" in the rendered PDF.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    public function testItRaisesACodedBuildStateErrorWhenTheRenderedSignatureFieldAlreadyHasAValueDictionary(): void
+    {
+        try {
+            $this->invokePrivateMethod(
+                new DocumentSigner(),
+                'assertUnsignedSignatureFieldContents',
+                '<< /FT /Sig /T (approval_signature) /V 12 0 R >>',
+                'approval_signature',
+            );
+            self::fail('Expected coded build-state validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::BUILD_STATE_INVALID, $exception->error);
+            self::assertSame(
+                'Signature field "approval_signature" already contains a value dictionary.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     private function testCredentials(): OpenSslPemSigningCredentials
@@ -220,6 +261,13 @@ final class DocumentSignerTest extends TestCase
         self::assertNotFalse($path);
 
         return $path;
+    }
+
+    private function invokePrivateMethod(object $object, string $methodName, mixed ...$arguments): mixed
+    {
+        $method = new ReflectionMethod($object, $methodName);
+
+        return $method->invoke($object, ...$arguments);
     }
 
     private function extractDerSignature(string $paddedHex): string
