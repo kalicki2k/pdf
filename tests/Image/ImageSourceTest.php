@@ -591,7 +591,7 @@ final class ImageSourceTest extends TestCase
         }
     }
 
-    public function testItRejectsWebpFilesExplicitly(): void
+    public function testItHandlesWebpFilesDependingOnRuntimeSupport(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
 
@@ -601,13 +601,24 @@ final class ImageSourceTest extends TestCase
 
         file_put_contents($path, WebpFixture::tinyWebpBytes());
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf(
-            "WEBP image '%s' requires GD WebP runtime support, which is not available.",
-            $path,
-        ));
-
         try {
+            if (\function_exists('gd_info') && ((\gd_info()['WebP Support'] ?? false) === true)) {
+                $source = ImageSource::fromPath($path);
+
+                self::assertSame(1, $source->width);
+                self::assertSame(1, $source->height);
+                self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+                self::assertSame(8, $source->bitsPerComponent);
+
+                return;
+            }
+
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage(sprintf(
+                "WEBP image '%s' requires GD WebP runtime support, which is not available.",
+                $path,
+            ));
+
             ImageSource::fromPath($path);
         } finally {
             unlink($path);

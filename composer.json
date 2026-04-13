@@ -14,6 +14,9 @@
     "issues": "https://github.com/kalicki2k/pdf/issues",
     "source": "https://github.com/kalicki2k/pdf"
   },
+  "suggest": {
+    "ext-gd": "Enables optional WebP image import support."
+  },
   "autoload": {
     "psr-4": {
       "Kalle\\Pdf\\": "src/"
