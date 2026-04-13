@@ -14,6 +14,8 @@ enum DocumentBuildError: string
     case TABLE_OF_CONTENTS_ENTRIES_REQUIRED = 'table_of_contents_entries_required';
     case TABLE_OF_CONTENTS_LAYOUT_INVALID = 'table_of_contents_layout_invalid';
     case TABLE_OF_CONTENTS_PAGE_COUNT_UNRESOLVED = 'table_of_contents_page_count_unresolved';
+    case TAGGED_STRUCTURE_UNCLOSED = 'tagged_structure_unclosed';
+    case TABLE_LAYOUT_INVALID = 'table_layout_invalid';
     case BUILD_STATE_INVALID = 'build_state_invalid';
     case TAGGED_STRUCTURE_BUILD_INVALID = 'tagged_structure_build_invalid';
     case DOCUMENT_LANGUAGE_REQUIRED = 'document_language_required';

@@ -7,9 +7,10 @@ namespace Kalle\Pdf\Tests\Document;
 use function implode;
 use function number_format;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
@@ -138,9 +139,6 @@ final class DefaultDocumentBuilderTableTest extends TestCase
 
     public function testItRejectsExplicitTablePlacementYAboveTheCurrentFlowCursor(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Explicit table placement y must not be above the current flow cursor on the page.');
-
         $table = Table::define(
             TableColumn::fixed(90.0),
         )
@@ -149,14 +147,23 @@ final class DefaultDocumentBuilderTableTest extends TestCase
                 TableRow::fromTexts('Value'),
             );
 
-        DefaultDocumentBuilder::make()
-            ->pageSize(PageSize::A5())
-            ->margin(Margin::all(24.0))
-            ->text('Intro text', new TextOptions(
-                fontSize: 18.0,
-                lineHeight: 22.0,
-            ))
-            ->table($table);
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A5())
+                ->margin(Margin::all(24.0))
+                ->text('Intro text', new TextOptions(
+                    fontSize: 18.0,
+                    lineHeight: 22.0,
+                ))
+                ->table($table);
+            self::fail('Expected coded table layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TABLE_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Explicit table placement y must not be above the current flow cursor on the page.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItAppliesHorizontalAlignmentAndCellSpecificBorders(): void

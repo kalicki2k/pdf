@@ -10,6 +10,8 @@ use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
 use Kalle\Pdf\Document\Form\ListBoxField;
@@ -329,13 +331,16 @@ final class DefaultDocumentBuilderTest extends TestCase
 
     public function testItRejectsBuildingWithUnclosedTaggedStructures(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Cannot build document with unclosed tagged structures.');
-
-        DefaultDocumentBuilder::make()
-            ->beginStructure(TaggedStructureTag::SECT)
-            ->text('Kapitel')
-            ->build();
+        try {
+            DefaultDocumentBuilder::make()
+                ->beginStructure(TaggedStructureTag::SECT)
+                ->text('Kapitel')
+                ->build();
+            self::fail('Expected coded tagged-structure build error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TAGGED_STRUCTURE_UNCLOSED, $exception->error);
+            self::assertSame('Cannot build document with unclosed tagged structures.', $exception->getMessage());
+        }
     }
 
     public function testItBuildsADocumentWithACustomPdfAOutputIntent(): void

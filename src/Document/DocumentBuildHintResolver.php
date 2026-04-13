@@ -28,6 +28,8 @@ final class DocumentBuildHintResolver
             DocumentBuildError::TABLE_OF_CONTENTS_ENTRIES_REQUIRED => 'Add at least one outline or explicit table-of-contents entry before building the table of contents.',
             DocumentBuildError::TABLE_OF_CONTENTS_LAYOUT_INVALID => 'Use page margins and page size that leave positive content width and height for the table of contents.',
             DocumentBuildError::TABLE_OF_CONTENTS_PAGE_COUNT_UNRESOLVED => 'Keep the table-of-contents layout deterministic; avoid configuration that changes page count between estimation and rendering.',
+            DocumentBuildError::TAGGED_STRUCTURE_UNCLOSED => 'Close every beginStructure() call with a matching endStructure() before building the document.',
+            DocumentBuildError::TABLE_LAYOUT_INVALID => 'Adjust table placement, margins, caption/header/footer size or row content so the table can fit within the available page content area.',
             DocumentBuildError::BUILD_STATE_INVALID => 'This indicates an internal document build-state mismatch; rebuild the serialization plan from the validated builder path instead of reusing partial state.',
             DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID => 'Keep tagged content, form widgets and structure parents on the validated tagged-PDF builder path so structure objects can be allocated consistently.',
             DocumentBuildError::PDFA_EMBEDDED_FONTS_REQUIRED => $document->profile->isPdfA()

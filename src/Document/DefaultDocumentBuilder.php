@@ -635,7 +635,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $explicitStartY = $table->placement?->y;
 
         if ($explicitStartY !== null && $clone->currentPageCursorY !== null && $explicitStartY > $clone->currentPageCursorY) {
-            throw new InvalidArgumentException(
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_LAYOUT_INVALID,
                 'Explicit table placement y must not be above the current flow cursor on the page.',
             );
         }
@@ -647,11 +648,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         if ($captionLayout !== null) {
             if (($captionLayout['height'] + $minimumTableStartHeight) > $contentArea->height()) {
-                throw new InvalidArgumentException('Table caption leaves no space for table content on a fresh page.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::TABLE_LAYOUT_INVALID,
+                    'Table caption leaves no space for table content on a fresh page.',
+                );
             }
 
             if (($captionLayout['height'] + $minimumTableStartHeight) > ($cursorY - $contentArea->bottom) && $explicitStartY !== null) {
-                throw new InvalidArgumentException('Explicit table placement y leaves no space for caption and table start.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::TABLE_LAYOUT_INVALID,
+                    'Explicit table placement y leaves no space for caption and table start.',
+                );
             }
 
             if (($captionLayout['height'] + $minimumTableStartHeight) > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
@@ -670,7 +677,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         if ($headerLayout !== null) {
             if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $explicitStartY !== null) {
-                throw new InvalidArgumentException('Explicit table placement y leaves no space for the configured header rows.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::TABLE_LAYOUT_INVALID,
+                    'Explicit table placement y leaves no space for the configured header rows.',
+                );
             }
 
             if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
@@ -702,7 +712,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $groupFitsOnFreshPage = $remainingGroupHeight <= ($contentArea->height() - $headerHeight);
 
                 if (($contentArea->height() - $headerHeight) < $minimumTableSegmentHeight) {
-                    throw new InvalidArgumentException('Page content area is too small to render table rows.');
+                    throw new DocumentValidationException(
+                        DocumentBuildError::TABLE_LAYOUT_INVALID,
+                        'Page content area is too small to render table rows.',
+                    );
                 }
 
                 if (!$groupFitsAfterHeader && $clone->currentPageCursorY !== null && $groupFitsOnFreshPage) {
@@ -717,7 +730,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
                 if (!$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak) {
                     if ($availableHeightAfterHeader < $minimumTableSegmentHeight) {
-                        throw new InvalidArgumentException('Repeated table headers leave no space for table content on the page.');
+                        throw new DocumentValidationException(
+                            DocumentBuildError::TABLE_LAYOUT_INVALID,
+                            'Repeated table headers leave no space for table content on the page.',
+                        );
                     }
 
                     $clone->renderTableLayout($table, $headerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'header');
@@ -774,7 +790,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $requiredHeight = $footerLayout->totalHeight() + $headerHeight;
 
             if ($requiredHeight > $contentArea->height()) {
-                throw new InvalidArgumentException('Table footer rows must fit on a fresh page.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::TABLE_LAYOUT_INVALID,
+                    'Table footer rows must fit on a fresh page.',
+                );
             }
 
             if ($requiredHeight > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
@@ -2535,7 +2554,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
     public function build(): Document
     {
         if ($this->taggedStructureStack !== []) {
-            throw new InvalidArgumentException('Cannot build document with unclosed tagged structures.');
+            throw new DocumentValidationException(
+                DocumentBuildError::TAGGED_STRUCTURE_UNCLOSED,
+                'Cannot build document with unclosed tagged structures.',
+            );
         }
 
         $pages = $this->applyPageDecorators([...$this->pages, $this->buildCurrentPage()]);
