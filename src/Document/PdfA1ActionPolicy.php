@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\FormField;
 use Kalle\Pdf\Document\Form\PushButtonField;
 use Kalle\Pdf\Page\LinkAnnotation;
@@ -21,7 +20,7 @@ final class PdfA1ActionPolicy
         }
 
         if ($outline->destination->isRemote()) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_ACTION_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow remote outline actions such as GoToR in outline %d.',
                 $document->profile->name(),
                 $outlineIndex + 1,
@@ -36,7 +35,7 @@ final class PdfA1ActionPolicy
         }
 
         if ($annotation instanceof LinkAnnotation && $annotation->target->isExternalUrl()) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_ACTION_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow URI annotation actions in link annotation %d on page %d. Use an internal /Dest target instead.',
                 $document->profile->name(),
                 $annotationIndex + 1,
@@ -52,7 +51,7 @@ final class PdfA1ActionPolicy
         }
 
         if ($field instanceof PushButtonField && $field->url !== null) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_ACTION_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow URI actions in push button field "%s".',
                 $document->profile->name(),
                 $field->name,

@@ -8,7 +8,6 @@ use function array_key_exists;
 use function array_map;
 use function implode;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
@@ -35,7 +34,10 @@ final class PdfA1aTaggedStructureValidator
         }
 
         if ($state->structTreeRootObjectId === null || $state->documentStructElemObjectId === null) {
-            throw new InvalidArgumentException('Profile PDF/A tagged structure requires StructTreeRoot and Document structure objects.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'Profile PDF/A tagged structure requires StructTreeRoot and Document structure objects.',
+            );
         }
 
         $objectsById = $this->indexObjectsById($objects);
@@ -43,7 +45,10 @@ final class PdfA1aTaggedStructureValidator
         $parentTreeRequired = $expectedParentTreeEntries !== [];
 
         if ($parentTreeRequired && $state->parentTreeObjectId === null) {
-            throw new InvalidArgumentException('Profile PDF/A tagged structure requires a ParentTree for structured marked content.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'Profile PDF/A tagged structure requires a ParentTree for structured marked content.',
+            );
         }
 
         $this->assertStructTreeRoot($state, $objectsById, $parentTreeRequired);
@@ -85,13 +90,16 @@ final class PdfA1aTaggedStructureValidator
         $contents = $this->requireObjectContents($objectsById, $state->structTreeRootObjectId, 'StructTreeRoot');
 
         if (!str_contains($contents, '/Type /StructTreeRoot')) {
-            throw new InvalidArgumentException('PDF/A tagged StructTreeRoot object is missing /Type /StructTreeRoot.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'PDF/A tagged StructTreeRoot object is missing /Type /StructTreeRoot.',
+            );
         }
 
         $kidObjectIds = $this->extractReferenceArray($contents, '/K', 'StructTreeRoot');
 
         if ($kidObjectIds !== [$state->documentStructElemObjectId]) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged StructTreeRoot must reference exactly the document structure element %d 0 R.',
                 $state->documentStructElemObjectId,
             ));
@@ -100,14 +108,17 @@ final class PdfA1aTaggedStructureValidator
         $parentTreeObjectId = $this->extractSingleReference($contents, '/ParentTree');
 
         if ($parentTreeRequired && $parentTreeObjectId !== $state->parentTreeObjectId) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged StructTreeRoot must reference ParentTree %d 0 R.',
                 $state->parentTreeObjectId,
             ));
         }
 
         if (!$parentTreeRequired && $parentTreeObjectId !== null) {
-            throw new InvalidArgumentException('PDF/A tagged StructTreeRoot must not reference an unused ParentTree.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'PDF/A tagged StructTreeRoot must not reference an unused ParentTree.',
+            );
         }
     }
 
@@ -119,13 +130,16 @@ final class PdfA1aTaggedStructureValidator
         $contents = $this->requireObjectContents($objectsById, $state->documentStructElemObjectId, 'document StructElem');
 
         if (!str_contains($contents, '/Type /StructElem') || !str_contains($contents, '/S /Document')) {
-            throw new InvalidArgumentException('PDF/A tagged document structure element must use /Type /StructElem and /S /Document.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'PDF/A tagged document structure element must use /Type /StructElem and /S /Document.',
+            );
         }
 
         $parentObjectId = $this->extractSingleReference($contents, '/P');
 
         if ($parentObjectId !== $state->structTreeRootObjectId) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged document structure element must reference StructTreeRoot %d 0 R as /P.',
                 $state->structTreeRootObjectId,
             ));
@@ -135,7 +149,7 @@ final class PdfA1aTaggedStructureValidator
         $expectedKidObjectIds = $this->expectedDocumentChildObjectIds($state);
 
         if ($kidObjectIds !== $expectedKidObjectIds) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged document structure element must list child structure elements in reading order. Expected [%s], got [%s].',
                 implode(', ', $expectedKidObjectIds),
                 implode(', ', $kidObjectIds),
@@ -153,7 +167,7 @@ final class PdfA1aTaggedStructureValidator
             $contents = $this->requireObjectContents($objectsById, $pageObjectId, sprintf('page %d object', $pageIndex + 1));
 
             if (!str_contains($contents, '/StructParents ' . $structParentId)) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged page %d must expose /StructParents %d for its marked content.',
                     $pageIndex + 1,
                     $structParentId,
@@ -179,7 +193,7 @@ final class PdfA1aTaggedStructureValidator
         $entries = $this->extractParentTreeEntries($contents);
 
         if ($entries !== $expectedEntries) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged ParentTree entries must match the tagged content mapping. Expected [%s], got [%s].',
                 $this->formatParentTreeEntries($expectedEntries),
                 $this->formatParentTreeEntries($entries),
@@ -234,7 +248,7 @@ final class PdfA1aTaggedStructureValidator
             );
 
             if ($figureEntry['altText'] !== null && !str_contains($contents, '/Alt ')) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged figure StructElem "%s" must expose /Alt text.',
                     $figureEntry['key'],
                 ));
@@ -443,7 +457,7 @@ final class PdfA1aTaggedStructureValidator
             $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
 
             if ($actualPageObjectId !== $pageObjectId) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged link StructElem "%s" must reference page object %d 0 R.',
                     $linkEntry['key'],
                     $pageObjectId,
@@ -451,7 +465,7 @@ final class PdfA1aTaggedStructureValidator
             }
 
             if (!str_contains($contents, '/Alt ')) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged link StructElem "%s" must expose /Alt text.',
                     $linkEntry['key'],
                 ));
@@ -461,7 +475,7 @@ final class PdfA1aTaggedStructureValidator
             $actualMarkedContentIds = $this->extractLinkMarkedContentIds($kidSection);
 
             if ($actualMarkedContentIds !== $linkEntry['markedContentIds']) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged link StructElem "%s" must list the expected MCID kids. Expected [%s], got [%s].',
                     $linkEntry['key'],
                     implode(', ', $linkEntry['markedContentIds']),
@@ -478,7 +492,7 @@ final class PdfA1aTaggedStructureValidator
             $actualObjrObjectIds = $this->extractObjrObjectIds($kidSection);
 
             if ($actualObjrObjectIds !== $expectedAnnotationObjectIds) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged link StructElem "%s" must reference the expected annotation objects. Expected [%s], got [%s].',
                     $linkEntry['key'],
                     implode(', ', $expectedAnnotationObjectIds),
@@ -502,7 +516,7 @@ final class PdfA1aTaggedStructureValidator
             $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
 
             if ($actualPageObjectId !== $pageObjectId) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged page annotation StructElem "%s" must reference page object %d 0 R.',
                     $annotationEntry['key'],
                     $pageObjectId,
@@ -510,7 +524,7 @@ final class PdfA1aTaggedStructureValidator
             }
 
             if (!str_contains($contents, '/Alt ')) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged page annotation StructElem "%s" must expose /Alt text.',
                     $annotationEntry['key'],
                 ));
@@ -521,7 +535,7 @@ final class PdfA1aTaggedStructureValidator
             $expectedObjectId = $state->pageAnnotationObjectIds[$annotationEntry['pageIndex']][$annotationEntry['annotationIndex']];
 
             if ($actualObjrObjectIds !== [$expectedObjectId]) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged page annotation StructElem "%s" must reference annotation object %d 0 R.',
                     $annotationEntry['key'],
                     $expectedObjectId,
@@ -544,7 +558,7 @@ final class PdfA1aTaggedStructureValidator
             $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
 
             if ($actualPageObjectId !== $pageObjectId) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged form StructElem "%s" must reference page object %d 0 R.',
                     $formEntry['key'],
                     $pageObjectId,
@@ -552,7 +566,7 @@ final class PdfA1aTaggedStructureValidator
             }
 
             if (!str_contains($contents, '/Alt ')) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged form StructElem "%s" must expose /Alt text.',
                     $formEntry['key'],
                 ));
@@ -562,7 +576,7 @@ final class PdfA1aTaggedStructureValidator
             $actualObjrObjectIds = $this->extractObjrObjectIds($kidSection);
 
             if ($actualObjrObjectIds !== [$formEntry['annotationObjectId']]) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'PDF/A tagged form StructElem "%s" must reference widget annotation object %d 0 R.',
                     $formEntry['key'],
                     $formEntry['annotationObjectId'],
@@ -739,11 +753,17 @@ final class PdfA1aTaggedStructureValidator
 
         if ($parentKey === null) {
             return $state->documentStructElemObjectId
-                ?? throw new InvalidArgumentException('PDF/A tagged document structure root object is missing.');
+                ?? throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                    'PDF/A tagged document structure root object is missing.',
+                );
         }
 
         return $state->taggedStructureObjectIds->genericStructElemObjectIds[$parentKey]
-            ?? throw new InvalidArgumentException(sprintf('Unknown PDF/A tagged parent structure key "%s".', $parentKey));
+            ?? throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                sprintf('Unknown PDF/A tagged parent structure key "%s".', $parentKey),
+            );
     }
 
     private function documentChildKey(string $key): string
@@ -769,7 +789,10 @@ final class PdfA1aTaggedStructureValidator
     private function requireObjectContents(array $objectsById, ?int $objectId, string $label): string
     {
         if ($objectId === null || !array_key_exists($objectId, $objectsById)) {
-            throw new InvalidArgumentException(sprintf('PDF/A tagged %s object is missing.', $label));
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                sprintf('PDF/A tagged %s object is missing.', $label),
+            );
         }
 
         return $objectsById[$objectId]->contents;
@@ -778,14 +801,14 @@ final class PdfA1aTaggedStructureValidator
     private function assertStructElemTagAndParent(string $contents, string $tag, ?int $parentObjectId): void
     {
         if ($parentObjectId === null) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged structure element /S /%s requires a parent object id.',
                 $tag,
             ));
         }
 
         if (!str_contains($contents, '/Type /StructElem') || !str_contains($contents, '/S /' . $tag)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged structure element must use /Type /StructElem and /S /%s.',
                 $tag,
             ));
@@ -794,7 +817,7 @@ final class PdfA1aTaggedStructureValidator
         $actualParentObjectId = $this->extractSingleReference($contents, '/P');
 
         if ($actualParentObjectId !== $parentObjectId) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged structure element /S /%s must reference parent object %d 0 R.',
                 $tag,
                 $parentObjectId,
@@ -807,14 +830,14 @@ final class PdfA1aTaggedStructureValidator
         $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
 
         if ($actualPageObjectId !== $pageObjectId) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged structure element must reference page object %d 0 R.',
                 $pageObjectId,
             ));
         }
 
         if (!preg_match('/\/K\s+' . $markedContentId . '(?=\D|$)/', $contents)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged structure element must reference MCID %d as /K.',
                 $markedContentId,
             ));
@@ -829,7 +852,7 @@ final class PdfA1aTaggedStructureValidator
         $actualObjectIds = $this->extractReferenceArray($contents, '/K', $label);
 
         if ($actualObjectIds !== $expectedObjectIds) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged %s must list the expected child structure elements. Expected [%s], got [%s].',
                 $label,
                 implode(', ', $expectedObjectIds),
@@ -853,7 +876,7 @@ final class PdfA1aTaggedStructureValidator
         }
 
         if ($actualEntries !== $expectedEntries) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged %s must expose the expected MCR kids.',
                 $label,
             ));
@@ -866,7 +889,10 @@ final class PdfA1aTaggedStructureValidator
     private function extractReferenceArray(string $contents, string $entry, string $label): array
     {
         if (!preg_match('/' . preg_quote($entry, '/') . '\s*\[([^\]]*)\]/', $contents, $matches)) {
-            throw new InvalidArgumentException(sprintf('PDF/A tagged %s is missing %s array.', $label, $entry));
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                sprintf('PDF/A tagged %s is missing %s array.', $label, $entry),
+            );
         }
 
         $references = [];
@@ -882,7 +908,10 @@ final class PdfA1aTaggedStructureValidator
     private function extractKidSection(string $contents, string $label): string
     {
         if (!preg_match('/\/K\s*\[(.*)\](?!.*\/K\s*\[)/', $contents, $matches)) {
-            throw new InvalidArgumentException(sprintf('PDF/A tagged %s is missing /K kids.', $label));
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                sprintf('PDF/A tagged %s is missing /K kids.', $label),
+            );
         }
 
         return $matches[1];
@@ -903,7 +932,10 @@ final class PdfA1aTaggedStructureValidator
     private function extractParentTreeEntries(string $contents): array
     {
         if (!preg_match('/\/Nums\s*\[(.*)\]/', $contents, $matches)) {
-            throw new InvalidArgumentException('PDF/A tagged ParentTree is missing a /Nums array.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'PDF/A tagged ParentTree is missing a /Nums array.',
+            );
         }
 
         $entries = [];

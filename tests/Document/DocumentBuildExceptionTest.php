@@ -178,6 +178,54 @@ final class DocumentBuildExceptionTest extends TestCase
         );
     }
 
+    public function testItAddsATaggedStructureHintForCodedTaggedStructureErrors(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1a()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'PDF/A tagged StructTreeRoot must reference ParentTree 9 0 R.',
+            ),
+        );
+
+        self::assertSame(
+            'Use beginStructure()/endStructure() consistently and keep the tagged reading order, ParentTree, MCIDs and StructElem hierarchy on the validated tagged PDF path.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAMetadataConsistencyHintForCodedMetadataErrors(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1b(), title: 'Archive Copy'),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_METADATA_INCONSISTENT,
+                'Profile PDF/A-1b requires consistent Info/XMP metadata for Title.',
+            ),
+        );
+
+        self::assertSame(
+            'Keep Info and XMP metadata synchronized for this profile; update title, author, subject, language and timestamps through the document builder instead of low-level metadata overrides.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAnActionHintForCodedPdfAActionErrors(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1b()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_ACTION_NOT_ALLOWED,
+                'Profile PDF/A-1b does not allow remote outline actions such as GoToR in outline 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Use only PDF/A-safe navigation: internal destinations instead of remote or URI actions, and avoid action dictionaries that the active profile forbids.',
+            $exception->hint,
+        );
+    }
+
     public function testItFallsBackToLegacyStringMatchingForUnconvertedValidationErrors(): void
     {
         $exception = DocumentBuildException::fromValidationFailure(

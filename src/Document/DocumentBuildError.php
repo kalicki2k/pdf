@@ -22,4 +22,7 @@ enum DocumentBuildError: string
     case PDFA4_METADATA_INVALID = 'pdfa4_metadata_invalid';
     case PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED = 'pdfa_low_level_content_not_allowed';
     case PDFA_OBJECT_GRAPH_INVALID = 'pdfa_object_graph_invalid';
+    case PDFA_TAGGED_STRUCTURE_INVALID = 'pdfa_tagged_structure_invalid';
+    case PDFA_METADATA_INCONSISTENT = 'pdfa_metadata_inconsistent';
+    case PDFA_ACTION_NOT_ALLOWED = 'pdfa_action_not_allowed';
 }

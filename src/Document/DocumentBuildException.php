@@ -89,6 +89,15 @@ final class DocumentBuildException extends RuntimeException
             DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID => $document->profile->isPdfA()
                 ? 'Keep the generated PDF/A object graph on the validated serializer path; avoid custom low-level object wiring that bypasses the builder and validator invariants.'
                 : null,
+            DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID => $document->profile->requiresTaggedPdf()
+                ? 'Use beginStructure()/endStructure() consistently and keep the tagged reading order, ParentTree, MCIDs and StructElem hierarchy on the validated tagged PDF path.'
+                : null,
+            DocumentBuildError::PDFA_METADATA_INCONSISTENT => $document->profile->isPdfA()
+                ? 'Keep Info and XMP metadata synchronized for this profile; update title, author, subject, language and timestamps through the document builder instead of low-level metadata overrides.'
+                : null,
+            DocumentBuildError::PDFA_ACTION_NOT_ALLOWED => $document->profile->isPdfA()
+                ? 'Use only PDF/A-safe navigation: internal destinations instead of remote or URI actions, and avoid action dictionaries that the active profile forbids.'
+                : null,
         };
     }
 

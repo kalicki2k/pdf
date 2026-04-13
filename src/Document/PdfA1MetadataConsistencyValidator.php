@@ -13,8 +13,6 @@ use const ENT_XML1;
 
 use function html_entity_decode;
 
-use InvalidArgumentException;
-
 use Kalle\Pdf\Document\Metadata\XmpMetadata;
 
 use function mb_convert_encoding;
@@ -116,7 +114,7 @@ final readonly class PdfA1MetadataConsistencyValidator
         }
 
         if (!$hasValue || $values[$label] !== $expected) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_METADATA_INCONSISTENT, sprintf(
                 'Profile %s requires consistent Info/XMP metadata for %s.',
                 $document->profile->name(),
                 $label,
@@ -135,7 +133,7 @@ final readonly class PdfA1MetadataConsistencyValidator
         }
 
         if ($actual !== $expected) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_METADATA_INCONSISTENT, sprintf(
                 'Profile %s requires consistent Info/XMP metadata for %s.',
                 $document->profile->name(),
                 $label,
