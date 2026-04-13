@@ -742,12 +742,12 @@ final class DefaultDocumentBuilderTableTest extends TestCase
                     ->withRepeatedFooterOnPageBreak(),
             )
             ->withRows(...$rows)
-            ->withRepeatedFooter(static function (TableFooterContext $context) use (&$repeatedContexts): array {
+            ->withRepeatedFooterRows(static function (TableFooterContext $context) use (&$repeatedContexts): array {
                 $repeatedContexts[] = $context;
 
                 return [TableRow::fromTexts('Running', (string) $context->completedBodyRowCount)];
             })
-            ->withFinalFooter(static function (TableFooterContext $context) use (&$finalContexts): array {
+            ->withFinalFooterRows(static function (TableFooterContext $context) use (&$finalContexts): array {
                 $finalContexts[] = $context;
 
                 return [TableRow::fromTexts('Final', (string) $context->totalBodyRowCount)];

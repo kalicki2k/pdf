@@ -136,10 +136,10 @@ final class TableTest extends TestCase
             TableColumn::fixed(80.0),
         )
             ->withRows(TableRow::fromTexts('A', 'B'))
-            ->withRepeatedFooter(static fn (TableFooterContext $context): array => [
+            ->withRepeatedFooterRows(static fn (TableFooterContext $context): array => [
                 TableRow::fromTexts('Running total', (string) $context->completedBodyRowCount),
             ])
-            ->withFinalFooter(static fn (TableFooterContext $context): array => [
+            ->withFinalFooterRows(static fn (TableFooterContext $context): array => [
                 TableRow::fromTexts('Final total', (string) $context->totalBodyRowCount),
             ]);
 

@@ -19,6 +19,7 @@ use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
+use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Pdf;
@@ -47,6 +48,7 @@ $tableBorderColor = Color::material(MaterialColor::GREY, 400);
 $tableFooterColor = Color::material(MaterialColor::BLUE_GREY, 100);
 $fontRegular = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/inter/static/Inter-Regular.ttf');
 $fontBold = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/inter/static/Inter-Bold.ttf');
+$logoPath = __DIR__ . '/../assets/images/MusterfirmaGmbHLogoDesign.png';
 
 $invoiceNumber = 'RE-2026-0415';
 $invoiceDate = '13.04.2026';
@@ -147,7 +149,7 @@ $table = Table::define(
         ),
     )
     ->withRows(...$tableRows)
-    ->withRepeatedFooter(static function (TableFooterContext $context) use ($runningNetTotals, $fontBold, $textColor, $tableFooterColor, $formatAmount): array {
+    ->withRepeatedFooterRows(static function (TableFooterContext $context) use ($runningNetTotals, $fontBold, $textColor, $tableFooterColor, $formatAmount): array {
         $runningTotal = $runningNetTotals[$context->completedBodyRowCount] ?? 0.0;
 
         return [
@@ -223,6 +225,14 @@ $document = Pdf::document()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->margin(Margin::all(Units::mm(20)))
+    ->imageFile(
+        $logoPath,
+        ImagePlacement::at(
+            Units::mm(136),
+            Units::mm(262),
+            Units::mm(48),
+        ),
+    )
     ->textLines(
         [
             'DEIN FIRMENNAME',
@@ -239,6 +249,7 @@ $document = Pdf::document()
         ],
         TextOptions::make(
             x: Units::mm(120),
+            y: Units::mm(242),
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 11,

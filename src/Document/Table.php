@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Document;
 use function array_fill;
 use function count;
 use function is_array;
+use function is_callable;
 
 use Closure;
 use InvalidArgumentException;
@@ -88,13 +89,13 @@ final readonly class Table
     {
         return new self(
             columns: $this->columns,
+            options: $this->options,
             rows: [...$this->rows, $row],
             headerRows: $this->headerRows,
             repeatedFooterRows: $this->repeatedFooterRows,
             finalFooterRows: $this->finalFooterRows,
             repeatedFooterRenderer: $this->repeatedFooterRenderer,
             finalFooterRenderer: $this->finalFooterRenderer,
-            options: $this->options,
         );
     }
 
@@ -103,13 +104,13 @@ final readonly class Table
         /** @var list<TableRow> $rows */
         return new self(
             columns: $this->columns,
+            options: $this->options,
             rows: $rows,
             headerRows: $this->headerRows,
             repeatedFooterRows: $this->repeatedFooterRows,
             finalFooterRows: $this->finalFooterRows,
             repeatedFooterRenderer: $this->repeatedFooterRenderer,
             finalFooterRenderer: $this->finalFooterRenderer,
-            options: $this->options,
         );
     }
 
@@ -128,72 +129,41 @@ final readonly class Table
         );
     }
 
-    public function withFooterRows(TableRow ...$footerRows): self
+    public function withFooterRows(callable | TableRow ...$footerRows): self
     {
         return $this->withFinalFooterRows(...$footerRows);
     }
 
-    public function withRepeatedFooterRows(TableRow ...$footerRows): self
+    public function withRepeatedFooterRows(callable | TableRow ...$footerRows): self
     {
-        /** @var list<TableRow> $footerRows */
+        ['rows' => $rows, 'renderer' => $renderer] = $this->normalizeFooterDefinition(array_values($footerRows));
+
         return new self(
             columns: $this->columns,
             rows: $this->rows,
             headerRows: $this->headerRows,
-            repeatedFooterRows: $footerRows,
+            repeatedFooterRows: $rows,
             finalFooterRows: $this->finalFooterRows,
-            repeatedFooterRenderer: null,
+            repeatedFooterRenderer: $renderer,
             finalFooterRenderer: $this->finalFooterRenderer,
             options: $this->options,
         );
     }
 
-    public function withFinalFooterRows(TableRow ...$footerRows): self
+    public function withFinalFooterRows(callable | TableRow ...$footerRows): self
     {
-        /** @var list<TableRow> $footerRows */
+        ['rows' => $rows, 'renderer' => $renderer] = $this->normalizeFooterDefinition(array_values($footerRows));
+
         return new self(
             columns: $this->columns,
             rows: $this->rows,
             headerRows: $this->headerRows,
             repeatedFooterRows: $this->repeatedFooterRows,
-            finalFooterRows: $footerRows,
+            finalFooterRows: $rows,
             repeatedFooterRenderer: $this->repeatedFooterRenderer,
-            finalFooterRenderer: null,
+            finalFooterRenderer: $renderer,
             options: $this->options,
         );
-    }
-
-    public function withRepeatedFooter(callable $renderer): self
-    {
-        return new self(
-            columns: $this->columns,
-            rows: $this->rows,
-            headerRows: $this->headerRows,
-            repeatedFooterRows: [],
-            finalFooterRows: $this->finalFooterRows,
-            repeatedFooterRenderer: $renderer(...),
-            finalFooterRenderer: $this->finalFooterRenderer,
-            options: $this->options,
-        );
-    }
-
-    public function withFinalFooter(callable $renderer): self
-    {
-        return new self(
-            columns: $this->columns,
-            rows: $this->rows,
-            headerRows: $this->headerRows,
-            repeatedFooterRows: $this->repeatedFooterRows,
-            finalFooterRows: [],
-            repeatedFooterRenderer: $this->repeatedFooterRenderer,
-            finalFooterRenderer: $renderer(...),
-            options: $this->options,
-        );
-    }
-
-    public function withFooter(callable $renderer): self
-    {
-        return $this->withFinalFooter($renderer);
     }
 
     /**
@@ -296,5 +266,38 @@ final readonly class Table
 
         /** @var list<TableRow> $rows */
         return $rows;
+    }
+
+    /**
+     * @param array<int, callable|TableRow> $footerDefinition
+     * @return array{rows: list<TableRow>, renderer: ?Closure}
+     */
+    private function normalizeFooterDefinition(array $footerDefinition): array
+    {
+        if ($footerDefinition === []) {
+            return [
+                'rows' => [],
+                'renderer' => null,
+            ];
+        }
+
+        if (count($footerDefinition) === 1 && is_callable($footerDefinition[0])) {
+            return [
+                'rows' => [],
+                'renderer' => Closure::fromCallable($footerDefinition[0]),
+            ];
+        }
+
+        foreach ($footerDefinition as $entry) {
+            if (!$entry instanceof TableRow) {
+                throw new InvalidArgumentException('Static table footers must be defined as TableRow objects. Dynamic footers must be passed as a single callable.');
+            }
+        }
+
+        /** @var list<TableRow> $footerDefinition */
+        return [
+            'rows' => $footerDefinition,
+            'renderer' => null,
+        ];
     }
 }
