@@ -48,7 +48,7 @@ final class PdfA4ScopePolicyTest extends TestCase
         self::assertFalse($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::ENGINEERING_FEATURES)->allowed);
         self::assertTrue($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::OPTIONAL_CONTENT)->allowed);
         self::assertTrue($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::RICH_MEDIA)->allowed);
-        self::assertFalse($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::THREE_D_ANNOTATIONS)->allowed);
+        self::assertTrue($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::THREE_D_ANNOTATIONS)->allowed);
         self::assertFalse($policy->featureRule(Profile::pdfA4e(), PdfA4Feature::ASSOCIATED_FILES)->allowed);
     }
 

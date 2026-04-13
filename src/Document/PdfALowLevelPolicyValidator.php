@@ -22,6 +22,7 @@ use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 use Kalle\Pdf\Page\RichMediaAnnotation;
+use Kalle\Pdf\Page\ThreeDAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 /**
@@ -343,8 +344,11 @@ final readonly class PdfALowLevelPolicyValidator
         $isPdfA4RichMediaAnnotation = $document->profile->isPdfA4()
             && $document->profile->pdfaConformance() === 'E'
             && $annotation instanceof RichMediaAnnotation;
+        $isPdfA43dAnnotation = $document->profile->isPdfA4()
+            && $document->profile->pdfaConformance() === 'E'
+            && $annotation instanceof ThreeDAnnotation;
 
-        if (!$isPdfA4RichMediaAnnotation) {
+        if (!$isPdfA4RichMediaAnnotation && !$isPdfA43dAnnotation) {
             $this->assertPdfA4EngineeringKeysAbsent(
                 $document,
                 $dictionaryContents,
@@ -460,7 +464,15 @@ final readonly class PdfALowLevelPolicyValidator
             return;
         }
 
+        $skipEngineeringRelatedObjectChecks = $document->profile->isPdfA4()
+            && $document->profile->pdfaConformance() === 'E'
+            && ($annotation instanceof RichMediaAnnotation || $annotation instanceof ThreeDAnnotation);
+
         foreach ($annotation->relatedObjects($annotationRenderContext) as $relatedObject) {
+            if ($skipEngineeringRelatedObjectChecks) {
+                continue;
+            }
+
             $this->assertIndirectObjectLowLevelSafety(
                 $document,
                 $relatedObject,

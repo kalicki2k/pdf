@@ -26,6 +26,8 @@ use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\RichMediaAnnotation;
 use Kalle\Pdf\Page\RichMediaAssetType;
+use Kalle\Pdf\Page\ThreeDAnnotation;
+use Kalle\Pdf\Page\ThreeDAssetType;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
 
@@ -269,6 +271,39 @@ final class PdfA4PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/RichMediaContent ', $serialized);
         self::assertStringContainsString('/RichMediaSettings ', $serialized);
         self::assertStringContainsString('/Type /RichMediaConfiguration /Subtype /Video', $serialized);
+    }
+
+    public function testItAllowsPdfA4eThreeDAnnotationsWithinTheCurrentConstrainedScope(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering 3D',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    annotations: [
+                        new ThreeDAnnotation(
+                            40,
+                            500,
+                            160,
+                            90,
+                            'u3d-data',
+                            ThreeDAssetType::U3D,
+                            '3D model',
+                        ),
+                    ],
+                ),
+            ],
+        );
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Subtype /3D', $serialized);
+        self::assertStringContainsString('/3DD ', $serialized);
+        self::assertStringContainsString('/Type /3D /Subtype /U3D', $serialized);
     }
 
     public function testItAllowsPdfA4eOptionalContentMembershipDictionariesWithinTheCurrentConstrainedScope(): void

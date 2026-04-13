@@ -20,6 +20,7 @@ use Kalle\Pdf\Page\OptionalContentGroup;
 use Kalle\Pdf\Page\OptionalContentVisibilityExpression;
 use Kalle\Pdf\Page\RichMediaAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
+use Kalle\Pdf\Page\ThreeDAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 final class PdfAObjectGraphValidator
@@ -709,6 +710,7 @@ final class PdfAObjectGraphValidator
             $annotation instanceof HighlightAnnotation => 'Highlight',
             $annotation instanceof FreeTextAnnotation => 'FreeText',
             $document->profile->pdfaConformance() === 'E' && $annotation instanceof RichMediaAnnotation => 'RichMedia',
+            $document->profile->pdfaConformance() === 'E' && $annotation instanceof ThreeDAnnotation => '3D',
             default => null,
         };
 
@@ -734,6 +736,18 @@ final class PdfAObjectGraphValidator
         if (!$annotation instanceof LinkAnnotation) {
             if ($annotation instanceof RichMediaAnnotation) {
                 $this->assertPdfA4RichMediaAnnotationObject(
+                    $document,
+                    $annotation,
+                    $annotationObject,
+                    $pageIndex,
+                    $annotationIndex,
+                );
+
+                return;
+            }
+
+            if ($annotation instanceof ThreeDAnnotation) {
+                $this->assertPdfA4ThreeDAnnotationObject(
                     $document,
                     $annotation,
                     $annotationObject,
@@ -792,17 +806,18 @@ final class PdfAObjectGraphValidator
 
         if ($document->profile->pdfaConformance() === 'E') {
             $allowedRichMediaAnnotationObjectIds = [];
+            $allowedThreeDAnnotationObjectIds = [];
 
             foreach ($document->pages as $pageIndex => $page) {
                 foreach ($page->annotations as $annotationIndex => $annotation) {
-                    if (!$annotation instanceof RichMediaAnnotation) {
-                        continue;
-                    }
-
                     $annotationObjectId = $state->pageAnnotationObjectIds[$pageIndex][$annotationIndex] ?? null;
 
-                    if ($annotationObjectId !== null) {
+                    if ($annotation instanceof RichMediaAnnotation && $annotationObjectId !== null) {
                         $allowedRichMediaAnnotationObjectIds[$annotationObjectId] = true;
+                    }
+
+                    if ($annotation instanceof ThreeDAnnotation && $annotationObjectId !== null) {
+                        $allowedThreeDAnnotationObjectIds[$annotationObjectId] = true;
                     }
                 }
             }
@@ -985,7 +1000,12 @@ final class PdfAObjectGraphValidator
                 ));
             }
 
-            if (str_contains($object->contents, '/Subtype /3D')) {
+            if (
+                ($document->profile->pdfaConformance() !== 'E' && str_contains($object->contents, '/Subtype /3D'))
+                || ($document->profile->pdfaConformance() === 'E'
+                    && str_contains($object->contents, '/Subtype /3D')
+                    && !isset($allowedThreeDAnnotationObjectIds[$object->objectId]))
+            ) {
                 throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                     'Profile %s must not serialize 3D annotations in the current PDF/A-4 object graph.',
                     $document->profile->name(),
@@ -1143,6 +1163,23 @@ final class PdfAObjectGraphValidator
         if (!str_contains($annotationObject->contents, '/AP << /N ')) {
             throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                 'Profile %s requires RichMedia annotation %d on page %d to serialize a poster appearance stream.',
+                $document->profile->name(),
+                $annotationIndex + 1,
+                $pageIndex + 1,
+            ));
+        }
+    }
+
+    private function assertPdfA4ThreeDAnnotationObject(
+        Document $document,
+        ThreeDAnnotation $annotation,
+        IndirectObject $annotationObject,
+        int $pageIndex,
+        int $annotationIndex,
+    ): void {
+        if (!str_contains($annotationObject->contents, '/3DD ') || !str_contains($annotationObject->contents, '/AP << /N ')) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s requires 3D annotation %d on page %d to serialize /3DD and a poster appearance stream.',
                 $document->profile->name(),
                 $annotationIndex + 1,
                 $pageIndex + 1,

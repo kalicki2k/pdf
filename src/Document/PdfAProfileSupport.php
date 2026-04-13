@@ -248,7 +248,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
                 true,
-                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText/RichMedia annotation subset, the constrained AcroForm subset including optional-content state push buttons, and the simple optional-content group, configuration, membership and visibility-expression subset; 3D and other engineering features remain blocked.',
+                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText/RichMedia/3D annotation subset, the constrained AcroForm subset including optional-content state push buttons, and the simple optional-content group, configuration, membership and visibility-expression subset; other engineering features remain blocked.',
                 self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -265,7 +265,7 @@ final readonly class PdfAProfileSupport
                     PdfACapability::NON_LINK_PAGE_ANNOTATIONS->value => new PdfACapabilityRule(
                         true,
                         false,
-                        'Text, Highlight, FreeText and constrained RichMedia annotations are allowed within the currently validated PDF/A-4e scope; popup-related objects, file-attachment annotations, 3D and broader engineering-specific page annotations remain blocked.',
+                        'Text, Highlight, FreeText, constrained RichMedia and constrained 3D annotations are allowed within the currently validated PDF/A-4e scope; popup-related objects, file-attachment annotations and broader engineering-specific page annotations remain blocked.',
                     ),
                     PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
                         true,
@@ -275,7 +275,7 @@ final readonly class PdfAProfileSupport
                     PdfACapability::OPTIONAL_CONTENT_GROUPS->value => new PdfACapabilityRule(
                         true,
                         false,
-                        'Simple optional content groups, named /Configs entries, OCMD membership dictionaries, basic /VE expressions and layer visibility via /OCProperties and page resource /Properties are allowed in the current constrained PDF/A-4e scope; RichMedia, 3D and broader engineering features remain blocked.',
+                        'Simple optional content groups, named /Configs entries, OCMD membership dictionaries, basic /VE expressions and layer visibility via /OCProperties and page resource /Properties are allowed in the current constrained PDF/A-4e scope; broader engineering features beyond the validated RichMedia/3D subsets remain blocked.',
                     ),
                 ]),
             ),

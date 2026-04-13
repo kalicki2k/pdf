@@ -92,7 +92,7 @@ final class PdfA4ScopePolicy
             PdfA4Feature::ASSOCIATED_FILES => new PdfA4FeatureRule(false, false, 'The current PDF/A-4e path does not allow associated files.'),
             PdfA4Feature::OPTIONAL_CONTENT => new PdfA4FeatureRule(true, false, 'The current PDF/A-4e scope allows a constrained optional-content subset with simple OCGs, OCMD dictionaries, basic /VE expressions and default visibility states.'),
             PdfA4Feature::RICH_MEDIA => new PdfA4FeatureRule(true, false, 'The current PDF/A-4e scope allows a constrained RichMedia annotation subset with a single embedded asset and poster appearance.'),
-            PdfA4Feature::THREE_D_ANNOTATIONS => new PdfA4FeatureRule(false, false, '3D engineering annotations remain blocked until dedicated PDF/A-4e validation exists.'),
+            PdfA4Feature::THREE_D_ANNOTATIONS => new PdfA4FeatureRule(true, false, 'The current PDF/A-4e scope allows a constrained 3D annotation subset with a single embedded 3D stream and poster appearance.'),
             PdfA4Feature::ENGINEERING_FEATURES => new PdfA4FeatureRule(false, false, 'PDF/A-4e-specific engineering features remain blocked until dedicated validation exists.'),
         };
     }

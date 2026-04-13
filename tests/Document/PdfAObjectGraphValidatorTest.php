@@ -32,6 +32,8 @@ use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\RichMediaAnnotation;
 use Kalle\Pdf\Page\RichMediaAssetType;
+use Kalle\Pdf\Page\ThreeDAnnotation;
+use Kalle\Pdf\Page\ThreeDAssetType;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
@@ -691,6 +693,52 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4e requires RichMedia annotation 1 on page 1 to serialize /RichMediaContent and /RichMediaSettings.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4eThreeDAnnotationsWithoutThreeDStreamReference(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering 3D',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    annotations: [
+                        new ThreeDAnnotation(
+                            40,
+                            500,
+                            160,
+                            90,
+                            'u3d-data',
+                            ThreeDAssetType::U3D,
+                            '3D model',
+                        ),
+                    ],
+                ),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+        $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($annotationObjectId): IndirectObject {
+                if ($object->objectId !== $annotationObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace('/\s*\/3DD\s+\d+\s+0\s+R/', '', $object->contents, 1);
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e requires 3D annotation 1 on page 1 to serialize /3DD and a poster appearance stream.');
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }

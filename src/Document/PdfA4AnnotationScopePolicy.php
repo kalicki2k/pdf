@@ -15,6 +15,7 @@ use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 use Kalle\Pdf\Page\RichMediaAnnotation;
 use Kalle\Pdf\Page\SupportsPopupAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
+use Kalle\Pdf\Page\ThreeDAnnotation;
 
 final class PdfA4AnnotationScopePolicy
 {
@@ -32,7 +33,7 @@ final class PdfA4AnnotationScopePolicy
             || $annotation instanceof TextAnnotation
             || $annotation instanceof HighlightAnnotation
             || $annotation instanceof FreeTextAnnotation
-            || ($document->profile->pdfaConformance() === 'E' && $annotation instanceof RichMediaAnnotation);
+            || ($document->profile->pdfaConformance() === 'E' && ($annotation instanceof RichMediaAnnotation || $annotation instanceof ThreeDAnnotation));
     }
 
     public function assertPageAnnotationAllowed(Document $document, PageAnnotation $annotation, int $pageIndex, int $annotationIndex): void
@@ -68,7 +69,7 @@ final class PdfA4AnnotationScopePolicy
         throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
             'Profile %s only allows Link, Text, Highlight%s FreeText annotations in the %s on page %d.',
             $document->profile->name(),
-            $document->profile->pdfaConformance() === 'E' ? ', RichMedia and' : ' and',
+            $document->profile->pdfaConformance() === 'E' ? ', RichMedia, 3D and' : ' and',
             $scopeLabel,
             $pageIndex + 1,
         ));
