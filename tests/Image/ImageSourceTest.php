@@ -60,6 +60,20 @@ final class ImageSourceTest extends TestCase
         self::assertSame('/RunLengthDecode', $source->filter);
     }
 
+    public function testItBuildsACompressedMonochromeImageSourceFromBitRows(): void
+    {
+        $source = ImageSource::monochrome([
+            '11111111',
+            '11111111',
+        ]);
+
+        self::assertSame(ImageColorSpace::GRAY, $source->colorSpace);
+        self::assertSame(1, $source->bitsPerComponent);
+        self::assertSame(8, $source->width);
+        self::assertSame(2, $source->height);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
+    }
+
     public function testItExposesImageDictionaryAndStreamContentsSeparately(): void
     {
         $source = new ImageSource(

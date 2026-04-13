@@ -334,6 +334,22 @@ final readonly class ImageSource
         );
     }
 
+    /**
+     * @param list<string> $rows
+     */
+    public static function monochrome(array $rows): self
+    {
+        $bitmap = (new MonochromeBitmapEncoder())->encodeRows($rows);
+
+        return self::compressed(
+            data: $bitmap->data,
+            width: $bitmap->width,
+            height: $bitmap->height,
+            colorSpace: ImageColorSpace::GRAY,
+            bitsPerComponent: 1,
+        );
+    }
+
     public function key(): string
     {
         return hash('sha256', implode("\0", [

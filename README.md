@@ -134,7 +134,7 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-Fuer vorbereitete Rasterdaten stehen neben `ImageSource::jpeg(...)` jetzt auch explizite PDF-Filterfabriken wie `ImageSource::flate(...)`, `ImageSource::lzw(...)`, `ImageSource::runLength(...)` und `ImageSource::ccittFax(...)` bereit. Fuer rohe Rasterdaten kann `ImageSource::compressed(...)` eine kompakte PDF-Kompression automatisch auswaehlen. `ImageSource::fromPath(...)` unterstuetzt aktuell JPEG, PNG und monochrome TIFF-Dateien mit CCITT Group 4.
+Fuer vorbereitete Rasterdaten stehen neben `ImageSource::jpeg(...)` jetzt auch explizite PDF-Filterfabriken wie `ImageSource::flate(...)`, `ImageSource::lzw(...)`, `ImageSource::runLength(...)` und `ImageSource::ccittFax(...)` bereit. Fuer rohe Rasterdaten kann `ImageSource::compressed(...)` eine kompakte PDF-Kompression automatisch auswaehlen. `ImageSource::monochrome(...)` packt rohe 1-Bit-Zeilen in ein bilevel PDF-Bild. `ImageSource::fromPath(...)` unterstuetzt aktuell JPEG, PNG und monochrome TIFF-Dateien mit CCITT Group 4.
 
 ## Graphics
 
