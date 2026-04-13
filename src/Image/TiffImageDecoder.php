@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Image;
 
 use function count;
+use function gzcompress;
 use function strlen;
 use function substr;
 use function unpack;
 
 use InvalidArgumentException;
+use RuntimeException;
 
 final readonly class TiffImageDecoder
 {
@@ -24,6 +26,7 @@ final readonly class TiffImageDecoder
     private const int TAG_BITS_PER_SAMPLE = 258;
     private const int TAG_COMPRESSION = 259;
     private const int TAG_PHOTOMETRIC_INTERPRETATION = 262;
+    private const int TAG_COLOR_MAP = 320;
     private const int TAG_PLANAR_CONFIGURATION = 284;
     private const int TAG_PREDICTOR = 317;
     private const int TAG_STRIP_OFFSETS = 273;
@@ -81,6 +84,7 @@ final readonly class TiffImageDecoder
         $samplesPerPixel = $this->optionalSingleInt($entries, self::TAG_SAMPLES_PER_PIXEL) ?? 1;
         $planarConfiguration = $this->optionalSingleInt($entries, self::TAG_PLANAR_CONFIGURATION) ?? 1;
         $predictor = $this->optionalSingleInt($entries, self::TAG_PREDICTOR) ?? 1;
+        $colorMap = $entries[self::TAG_COLOR_MAP] ?? null;
         $nextIfdOffset = $this->readUint32(substr($data, $entriesOffset + ($entryCount * 12), 4), $byteOrder);
 
         if ($nextIfdOffset !== 0) {
@@ -126,6 +130,7 @@ final readonly class TiffImageDecoder
                 $bitsPerSample,
                 $samplesPerPixel,
                 $planarConfiguration,
+                $colorMap,
             );
         }
 
@@ -158,6 +163,7 @@ final readonly class TiffImageDecoder
                 $samplesPerPixel,
                 $planarConfiguration,
                 $predictor,
+                $colorMap,
                 $stripDecoder,
             );
         }
@@ -173,6 +179,7 @@ final readonly class TiffImageDecoder
      * @param list<int> $stripOffsets
      * @param list<int> $stripByteCounts
      * @param list<int> $bitsPerSample
+     * @param list<int>|null $colorMap
      * @param callable(string): string $decodeStrip
      */
     private function decodeCompressedRaster(
@@ -188,6 +195,7 @@ final readonly class TiffImageDecoder
         int $samplesPerPixel,
         int $planarConfiguration,
         int $predictor,
+        ?array $colorMap,
         callable $decodeStrip,
     ): ImageSource {
         if ($planarConfiguration !== 1) {
@@ -233,6 +241,13 @@ final readonly class TiffImageDecoder
             );
         }
 
+        if ($samplesPerPixel === 1 && $bitsPerSample === [8] && $photometricInterpretation === 3) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' uses unsupported compression for palette TIFF import.",
+                $path,
+            ));
+        }
+
         if ($samplesPerPixel === 1 && $bitsPerSample === [8]) {
             if ($predictor === 2) {
                 $decompressedStrips = $this->reverseHorizontalDifferencing($decompressedStrips, $width, $height, 1, $path);
@@ -273,6 +288,7 @@ final readonly class TiffImageDecoder
      * @param list<int> $stripOffsets
      * @param list<int> $stripByteCounts
      * @param list<int> $bitsPerSample
+     * @param list<int>|null $colorMap
      */
     private function decodeUncompressed(
         string $data,
@@ -286,6 +302,7 @@ final readonly class TiffImageDecoder
         array $bitsPerSample,
         int $samplesPerPixel,
         int $planarConfiguration,
+        ?array $colorMap,
     ): ImageSource {
         if ($planarConfiguration !== 1) {
             throw new InvalidArgumentException(sprintf(
@@ -309,6 +326,19 @@ final readonly class TiffImageDecoder
         }
 
         if ($samplesPerPixel === 1 && $bitsPerSample === [8]) {
+            if ($photometricInterpretation === 3) {
+                return $this->decodeUncompressedPalette(
+                    $data,
+                    $path,
+                    $width,
+                    $height,
+                    $stripOffsets,
+                    $stripByteCounts,
+                    $rowsPerStrip,
+                    $colorMap,
+                );
+            }
+
             return $this->decodeUncompressedGrayscale(
                 $data,
                 $path,
@@ -338,6 +368,41 @@ final readonly class TiffImageDecoder
             "TIFF image '%s' uses unsupported BitsPerSample/SamplesPerPixel combination.",
             $path,
         ));
+    }
+
+    /**
+     * @param list<int> $stripOffsets
+     * @param list<int> $stripByteCounts
+     * @param list<int>|null $colorMap
+     */
+    private function decodeUncompressedPalette(
+        string $data,
+        string $path,
+        int $width,
+        int $height,
+        array $stripOffsets,
+        array $stripByteCounts,
+        int $rowsPerStrip,
+        ?array $colorMap,
+    ): ImageSource {
+        $indices = $this->collectUncompressedStripData(
+            $data,
+            $path,
+            $width,
+            $height,
+            $stripOffsets,
+            $stripByteCounts,
+            $rowsPerStrip,
+            $width,
+        );
+
+        return $this->decodeRasterPalette(
+            $path,
+            $width,
+            $height,
+            $indices,
+            $colorMap,
+        );
     }
 
     /**
@@ -702,6 +767,49 @@ final readonly class TiffImageDecoder
     }
 
     /**
+     * @param list<int>|null $colorMap
+     */
+    private function decodeRasterPalette(
+        string $path,
+        int $width,
+        int $height,
+        string $indices,
+        ?array $colorMap,
+    ): ImageSource {
+        if ($colorMap === null || $colorMap === []) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' is missing the required ColorMap tag for palette TIFF import.",
+                $path,
+            ));
+        }
+
+        if (strlen($indices) !== $width * $height) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' uses unsupported uncompressed strip layout.",
+                $path,
+            ));
+        }
+
+        $palette = $this->colorMapToLookupTable($colorMap, $path);
+        $compressedIndices = gzcompress($indices);
+
+        if (!is_string($compressedIndices)) {
+            throw new RuntimeException(sprintf(
+                "Unable to compress TIFF image '%s'.",
+                $path,
+            ));
+        }
+
+        return ImageSource::indexed(
+            data: $compressedIndices,
+            width: $width,
+            height: $height,
+            bitsPerComponent: 8,
+            lookupTable: $palette,
+        );
+    }
+
+    /**
      * @param list<int> $stripOffsets
      * @param list<int> $stripByteCounts
      */
@@ -847,6 +955,30 @@ final readonly class TiffImageDecoder
         }
 
         return $inverted;
+    }
+
+    /**
+     * @param list<int> $colorMap
+     */
+    private function colorMapToLookupTable(array $colorMap, string $path): string
+    {
+        if (count($colorMap) % 3 !== 0) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' uses an invalid ColorMap table length.",
+                $path,
+            ));
+        }
+
+        $entryCount = intdiv(count($colorMap), 3);
+        $lookupTable = '';
+
+        for ($index = 0; $index < $entryCount; $index++) {
+            $lookupTable .= chr(($colorMap[$index] >> 8) & 0xFF);
+            $lookupTable .= chr(($colorMap[$index + $entryCount] >> 8) & 0xFF);
+            $lookupTable .= chr(($colorMap[$index + ($entryCount * 2)] >> 8) & 0xFF);
+        }
+
+        return $lookupTable;
     }
 
     private function readUint16(string $bytes, string $byteOrder): int

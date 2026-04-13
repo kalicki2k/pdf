@@ -2488,4 +2488,34 @@ final class DocumentRendererTest extends TestCase
             unlink($path);
         }
     }
+
+    public function testItRendersImportedPaletteTiffImages(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-tiff-palette-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary palette TIFF fixture path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedPaletteTiffBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $pdf);
+            self::assertStringNotContainsString('/SMask ', $pdf);
+        } finally {
+            unlink($path);
+        }
+    }
 }

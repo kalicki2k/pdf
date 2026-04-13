@@ -134,7 +134,18 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
-Fuer vorbereitete Rasterdaten stehen neben `ImageSource::jpeg(...)` jetzt auch explizite PDF-Filterfabriken wie `ImageSource::flate(...)`, `ImageSource::lzw(...)`, `ImageSource::runLength(...)` und `ImageSource::ccittFax(...)` bereit. Fuer rohe Rasterdaten kann `ImageSource::compressed(...)` eine kompakte PDF-Kompression automatisch auswaehlen. `ImageSource::monochrome(...)` packt rohe 1-Bit-Zeilen in ein bilevel PDF-Bild und beruecksichtigt dabei jetzt auch CCITT-Fax-Kompression; `ImageSource::monochromeCcitt(...)` erzwingt diesen Pfad explizit. `ImageSource::fromPath(...)` unterstuetzt aktuell JPEG, PNG, statische GIFs mit Einzelbild und optional transparentem Index, unkomprimierte BMP-Dateien in 24-Bit-RGB sowie 32-Bit-RGBA und TIFF-Dateien in konservativen Teilmengen fuer bilevel, 8-Bit-Graustufen und 8-Bit-RGB mit einem einzelnen IFD und `PlanarConfiguration=1`, jeweils unkomprimiert sowie fuer Gray/RGB zusaetzlich mit PackBits, LZW und Deflate samt TIFF-Predictor 2; bilevel TIFFs decken ausserdem einfache CCITT-Importe inklusive Multi-Strip-Varianten ab. Mehrseitige TIFFs, interlaced/animierte GIFs, palettierte oder komprimierte BMPs und WebP-Dateien werden weiterhin mit expliziten Exceptions abgelehnt.
+Fuer vorbereitete Rasterdaten stehen neben `ImageSource::jpeg(...)` jetzt auch explizite PDF-Filterfabriken wie `ImageSource::flate(...)`, `ImageSource::lzw(...)`, `ImageSource::runLength(...)` und `ImageSource::ccittFax(...)` bereit. Fuer rohe Rasterdaten kann `ImageSource::compressed(...)` eine kompakte PDF-Kompression automatisch auswaehlen. `ImageSource::monochrome(...)` packt rohe 1-Bit-Zeilen in ein bilevel PDF-Bild und beruecksichtigt dabei jetzt auch CCITT-Fax-Kompression; `ImageSource::monochromeCcitt(...)` erzwingt diesen Pfad explizit.
+
+Aktueller Bild-Scope von `ImageSource::fromPath(...)`:
+
+| Format | Unterstuetzt | Bewusst nicht unterstuetzt |
+| --- | --- | --- |
+| JPEG | Gray, RGB, CMYK als Direct-Pass-Through | exotische JPEG-Varianten ausserhalb der erkannten Kanalzahlen |
+| PNG | 8-Bit Gray/RGB/Indexed, Gray+Alpha, RGBA, `tRNS`, nicht interlaced | andere Bit-Tiefen, Adam7-Interlacing |
+| GIF | statisch, ein Full-Canvas-Frame, Palette, transparenter Index | Animation, Interlacing, partielle Frames |
+| BMP | unkomprimiert 24-Bit RGB, 32-Bit RGBA | Palette, RLE, weitere Bit-Tiefen/Maskenvarianten |
+| TIFF | Single-IFD bilevel uncompressed, bilevel CCITT, 8-Bit Gray uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit RGB uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit Palette uncompressed | Multi-Page, CMYK, PlanarConfiguration != 1, komprimierte Palette-TIFFs und weitere exotische Varianten |
+| WebP | kein Importpfad | alle Varianten, aktuell bewusst abgelehnt |
 
 ## Graphics
 

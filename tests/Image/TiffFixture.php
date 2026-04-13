@@ -110,6 +110,44 @@ final class TiffFixture
         );
     }
 
+    public static function tinyUncompressedPaletteTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 1,
+            photometricInterpretation: 3,
+            stripData: ["\x00\x01"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            colorMap: [
+                0x0000, 0xFFFF,
+                0x0000, 0x0000,
+                0x0000, 0xFFFF,
+            ],
+        );
+    }
+
+    public static function tinyLzwPaletteTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 5,
+            photometricInterpretation: 3,
+            stripData: [(new LzwEncoder())->encode("\x00\x01")],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+            colorMap: [
+                0x0000, 0xFFFF,
+                0x0000, 0x0000,
+                0x0000, 0xFFFF,
+            ],
+        );
+    }
+
     public static function tinyLzwRgbTiffBytes(): string
     {
         return self::imageTiffBytes(
@@ -228,6 +266,7 @@ final class TiffFixture
     /**
      * @param list<int> $bitsPerSample
      * @param list<string> $stripData
+     * @param list<int>|null $colorMap
      */
     private static function imageTiffBytes(
         int $width,
@@ -240,9 +279,10 @@ final class TiffFixture
         int $samplesPerPixel,
         int $planarConfiguration = 1,
         int $predictor = 1,
+        ?array $colorMap = null,
     ): string {
         $ifdOffset = 8;
-        $entryCount = $predictor === 1 ? 10 : 11;
+        $entryCount = 10 + ($predictor !== 1 ? 1 : 0) + ($colorMap !== null ? 1 : 0);
         $firstDataOffset = $ifdOffset + 2 + ($entryCount * 12) + 4;
         $dataArea = '';
         $nextOffset = $firstDataOffset;
@@ -270,6 +310,10 @@ final class TiffFixture
             self::entryLong(279, $stripByteCounts, $nextOffset, $extraValues),
             self::entryShort(284, [$planarConfiguration], $nextOffset, $extraValues),
         ];
+
+        if ($colorMap !== null) {
+            $entries[] = self::entryShort(320, $colorMap, $nextOffset, $extraValues);
+        }
 
         if ($predictor !== 1) {
             $entries[] = self::entryShort(317, [$predictor], $nextOffset, $extraValues);

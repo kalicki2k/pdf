@@ -314,6 +314,27 @@ final class ImageSourceTest extends TestCase
         unlink($path);
     }
 
+    public function testItCreatesAnIndexedImageSourceFromAPaletteTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedPaletteTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(2, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertSame('/FlateDecode', $source->filter);
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000FF00FF>]', $source->pdfObjectContents());
+
+        unlink($path);
+    }
+
     public function testItCreatesAnRgbImageSourceFromAnLzwTiffPath(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
@@ -589,6 +610,29 @@ final class ImageSourceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(
             "TIFF image '%s' uses multiple image directories, which are not supported.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsCompressedPaletteTiffFiles(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyLzwPaletteTiffBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "TIFF image '%s' uses unsupported compression for palette TIFF import.",
             $path,
         ));
 
