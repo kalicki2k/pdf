@@ -74,6 +74,18 @@ final class ImageSourceTest extends TestCase
         self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
     }
 
+    public function testItBuildsACcittMonochromeImageSourceFromBitRows(): void
+    {
+        $source = ImageSource::monochromeCcitt([
+            '11111111',
+            '00000000',
+        ]);
+
+        self::assertSame('/CCITTFaxDecode', $source->filter);
+        self::assertSame(1, $source->bitsPerComponent);
+        self::assertStringContainsString('/DecodeParms << /K 0 /Columns 8 /Rows 2 /BlackIs1 true /EndOfLine true >>', $source->pdfObjectDictionaryContents());
+    }
+
     public function testItExposesImageDictionaryAndStreamContentsSeparately(): void
     {
         $source = new ImageSource(

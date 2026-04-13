@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Image;
 
 use function gzcompress;
+use function intdiv;
 use function is_string;
 use function strlen;
 
@@ -15,6 +16,7 @@ final readonly class ImageCompressionSelector
     public function __construct(
         private RunLengthEncoder $runLengthEncoder = new RunLengthEncoder(),
         private LzwEncoder $lzwEncoder = new LzwEncoder(),
+        private CcittFaxEncoder $ccittFaxEncoder = new CcittFaxEncoder(),
     ) {
     }
 
@@ -51,6 +53,21 @@ final readonly class ImageCompressionSelector
                 softMask: $softMask,
             ),
         ];
+
+        if (
+            $colorSpace === ImageColorSpace::GRAY
+            && $bitsPerComponent === 1
+            && strlen($data) === intdiv($width + 7, 8) * $height
+        ) {
+            $candidates[] = ImageSource::ccittFax(
+                data: $this->ccittFaxEncoder->encodeBitmap($data, $width, $height),
+                width: $width,
+                height: $height,
+                k: 0,
+                blackIs1: true,
+                endOfLine: true,
+            );
+        }
 
         $selected = $candidates[0];
 

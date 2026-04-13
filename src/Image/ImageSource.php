@@ -350,6 +350,23 @@ final readonly class ImageSource
         );
     }
 
+    /**
+     * @param list<string> $rows
+     */
+    public static function monochromeCcitt(array $rows): self
+    {
+        $bitmap = (new MonochromeBitmapEncoder())->encodeRows($rows);
+
+        return self::ccittFax(
+            data: (new CcittFaxEncoder())->encodeBitmap($bitmap->data, $bitmap->width, $bitmap->height),
+            width: $bitmap->width,
+            height: $bitmap->height,
+            k: 0,
+            blackIs1: true,
+            endOfLine: true,
+        );
+    }
+
     public function key(): string
     {
         return hash('sha256', implode("\0", [
