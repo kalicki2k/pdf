@@ -25,6 +25,11 @@ final class DocumentBuildHintResolver
             DocumentBuildError::OUTLINE_REFERENCE_INVALID => 'Point each outline to an existing page or named destination, and keep remote destinations separate from local page references.',
             DocumentBuildError::OUTLINE_HIERARCHY_INVALID => 'Start outlines at level 1 and only increase nesting one level at a time.',
             DocumentBuildError::FORM_FIELD_PAGE_INVALID => 'Attach each form field or radio choice to an existing page in the document.',
+            DocumentBuildError::TABLE_OF_CONTENTS_ENTRIES_REQUIRED => 'Add at least one outline or explicit table-of-contents entry before building the table of contents.',
+            DocumentBuildError::TABLE_OF_CONTENTS_LAYOUT_INVALID => 'Use page margins and page size that leave positive content width and height for the table of contents.',
+            DocumentBuildError::TABLE_OF_CONTENTS_PAGE_COUNT_UNRESOLVED => 'Keep the table-of-contents layout deterministic; avoid configuration that changes page count between estimation and rendering.',
+            DocumentBuildError::BUILD_STATE_INVALID => 'This indicates an internal document build-state mismatch; rebuild the serialization plan from the validated builder path instead of reusing partial state.',
+            DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID => 'Keep tagged content, form widgets and structure parents on the validated tagged-PDF builder path so structure objects can be allocated consistently.',
             DocumentBuildError::PDFA_EMBEDDED_FONTS_REQUIRED => $document->profile->isPdfA()
                 ? 'Use embedded fonts via TextOptions(embeddedFont: ...), table text options, or switch to a non-PDF/A profile.'
                 : null,

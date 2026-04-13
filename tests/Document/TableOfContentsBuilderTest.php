@@ -9,27 +9,25 @@ use function bin2hex;
 use function count;
 use function hex2bin;
 use function implode;
+use function iterator_to_array;
+use function preg_match_all;
+use function str_replace;
 
 use InvalidArgumentException;
-
-use function iterator_to_array;
-
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\DocumentBuildError;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsLeaderStyle;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsPlacement;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsStyle;
-
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
 use PHPUnit\Framework\TestCase;
-
-use function preg_match_all;
-use function str_replace;
 
 final class TableOfContentsBuilderTest extends TestCase
 {
@@ -230,6 +228,47 @@ final class TableOfContentsBuilderTest extends TestCase
 
         self::assertStringContainsString('/__pdf2_toc_entry_1 [', $serialized);
         self::assertStringContainsString('/Dest /__pdf2_toc_entry_1', $serialized);
+    }
+
+    public function testItRejectsTableOfContentsWithoutEntriesViaCodedBuildError(): void
+    {
+        try {
+            DefaultDocumentBuilder::make()
+                ->text('One')
+                ->tableOfContents(new TableOfContentsOptions(
+                    placement: TableOfContentsPlacement::start(),
+                ))
+                ->build();
+            self::fail('Expected coded table-of-contents entry validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TABLE_OF_CONTENTS_ENTRIES_REQUIRED, $exception->error);
+            self::assertSame(
+                'Table of contents requires at least one outline or explicit table of contents entry.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    public function testItRejectsTableOfContentsWithNoUsableContentAreaViaCodedBuildError(): void
+    {
+        try {
+            DefaultDocumentBuilder::make()
+                ->text('One')
+                ->outline('One')
+                ->tableOfContents(new TableOfContentsOptions(
+                    placement: TableOfContentsPlacement::start(),
+                    pageSize: PageSize::A7(),
+                    margin: Margin::all(Units::mm(60)),
+                ))
+                ->build();
+            self::fail('Expected coded table-of-contents layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TABLE_OF_CONTENTS_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Table of contents content width must be greater than zero.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     private static function assertPageContainsText(string $contents, string $text): void

@@ -8,7 +8,6 @@ use function array_map;
 use function count;
 use function implode;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Debug\Debugger;
@@ -140,7 +139,10 @@ final class DocumentPageAndFormObjectBuilder
         $acroFormObjectId = $state->acroFormObjectId;
 
         if ($acroFormObjectId === null) {
-            throw new InvalidArgumentException('AcroForm object ID allocation is missing.');
+            throw new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'AcroForm object ID allocation is missing.',
+            );
         }
 
         $acroForm = $document->profile->isPdfA()

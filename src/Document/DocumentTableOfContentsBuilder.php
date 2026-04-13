@@ -8,8 +8,11 @@ use function array_merge;
 use function array_slice;
 use function count;
 use function floor;
+use function max;
+use function preg_split;
+use function rtrim;
+use function str_repeat;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
@@ -38,16 +41,10 @@ use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\NamedDestination;
 use Kalle\Pdf\Page\Page;
-
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
-
-use function max;
-use function preg_split;
-use function rtrim;
-use function str_repeat;
 
 /**
  * @internal Builds TOC pages and injects them into the prepared document.
@@ -68,7 +65,8 @@ final readonly class DocumentTableOfContentsBuilder
         $entries = $this->resolveEntries($document, $explicitEntries);
 
         if ($entries === []) {
-            throw new InvalidArgumentException(
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_OF_CONTENTS_ENTRIES_REQUIRED,
                 'Table of contents requires at least one outline or explicit table of contents entry.',
             );
         }
@@ -199,11 +197,17 @@ final readonly class DocumentTableOfContentsBuilder
         $newPageEntryY = $top;
 
         if ($contentWidth <= 0.0) {
-            throw new InvalidArgumentException('Table of contents content width must be greater than zero.');
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_OF_CONTENTS_LAYOUT_INVALID,
+                'Table of contents content width must be greater than zero.',
+            );
         }
 
         if (($top - $bottom) <= max($titleLineHeight + $options->style->titleSpacingAfter, $entryLineHeight)) {
-            throw new InvalidArgumentException('Table of contents content height must be greater than zero.');
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_OF_CONTENTS_LAYOUT_INVALID,
+                'Table of contents content height must be greater than zero.',
+            );
         }
 
         return [
@@ -341,7 +345,10 @@ final readonly class DocumentTableOfContentsBuilder
         $pages = $builder->build()->pages;
 
         if (count($pages) !== $pageNumber) {
-            throw new InvalidArgumentException('Table of contents page count could not be resolved deterministically.');
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_OF_CONTENTS_PAGE_COUNT_UNRESOLVED,
+                'Table of contents page count could not be resolved deterministically.',
+            );
         }
 
         return $pages;

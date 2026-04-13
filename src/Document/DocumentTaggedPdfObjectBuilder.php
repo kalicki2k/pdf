@@ -7,8 +7,10 @@ namespace Kalle\Pdf\Document;
 use function array_map;
 use function array_values;
 use function count;
+use function preg_match;
+use function sprintf;
+use function usort;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\RadioButtonGroup;
 use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\TaggedPdf\ParentTree;
@@ -21,10 +23,6 @@ use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
-
-use function preg_match;
-use function sprintf;
-use function usort;
 
 final readonly class DocumentTaggedPdfObjectBuilder
 {
@@ -266,7 +264,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
                     $annotationObjectId = $acroFormFieldRelatedObjectIds[$fieldIndex][$choiceIndex * 3] ?? null;
 
                     if ($annotationObjectId === null) {
-                        throw new InvalidArgumentException(sprintf(
+                        throw new DocumentValidationException(DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID, sprintf(
                             'Tagged form structure requires a widget annotation object for radio button group "%s" choice %d.',
                             $field->name,
                             $choiceIndex + 1,
@@ -303,7 +301,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
             }
 
             if (count($annotationObjectIds) !== 1) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID, sprintf(
                     'Tagged PDF/UA form support currently requires exactly one widget annotation for field "%s".',
                     $field->name,
                 ));
@@ -804,11 +802,17 @@ final readonly class DocumentTaggedPdfObjectBuilder
 
         if ($parentKey === null) {
             return $state->documentStructElemObjectId
-                ?? throw new InvalidArgumentException('Tagged document root object id is missing.');
+                ?? throw new DocumentValidationException(
+                    DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                    'Tagged document root object id is missing.',
+                );
         }
 
         return $state->taggedStructureObjectIds->genericStructElemObjectIds[$parentKey]
-            ?? throw new InvalidArgumentException(sprintf('Unknown tagged structure parent key "%s".', $parentKey));
+            ?? throw new DocumentValidationException(
+                DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                sprintf('Unknown tagged structure parent key "%s".', $parentKey),
+            );
     }
 
     private function documentChildKey(string $key): string

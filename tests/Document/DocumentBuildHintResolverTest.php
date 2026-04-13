@@ -101,6 +101,70 @@ final class DocumentBuildHintResolverTest extends TestCase
         );
     }
 
+    public function testItAddsAHintForMissingTableOfContentsEntries(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::standard()),
+            new DocumentValidationException(
+                DocumentBuildError::TABLE_OF_CONTENTS_ENTRIES_REQUIRED,
+                'Table of contents requires at least one outline or explicit table of contents entry.',
+            ),
+        );
+
+        self::assertSame(
+            'Add at least one outline or explicit table-of-contents entry before building the table of contents.',
+            $hint,
+        );
+    }
+
+    public function testItAddsAHintForInvalidTableOfContentsLayout(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::standard()),
+            new DocumentValidationException(
+                DocumentBuildError::TABLE_OF_CONTENTS_LAYOUT_INVALID,
+                'Table of contents content width must be greater than zero.',
+            ),
+        );
+
+        self::assertSame(
+            'Use page margins and page size that leave positive content width and height for the table of contents.',
+            $hint,
+        );
+    }
+
+    public function testItAddsAHintForInternalBuildStateErrors(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::standard()),
+            new DocumentValidationException(
+                DocumentBuildError::BUILD_STATE_INVALID,
+                'AcroForm object ID allocation is missing.',
+            ),
+        );
+
+        self::assertSame(
+            'This indicates an internal document build-state mismatch; rebuild the serialization plan from the validated builder path instead of reusing partial state.',
+            $hint,
+        );
+    }
+
+    public function testItAddsAHintForTaggedStructureBuildErrors(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::pdfUa1()),
+            new DocumentValidationException(
+                DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                'Tagged document root object id is missing.',
+            ),
+        );
+
+        self::assertSame(
+            'Keep tagged content, form widgets and structure parents on the validated tagged-PDF builder path so structure objects can be allocated consistently.',
+            $hint,
+        );
+    }
+
     public function testItAddsAUnicodeFontHintOnlyForProfilesThatRequireUnicodeFonts(): void
     {
         $hint = $this->resolver->resolve(
