@@ -146,6 +146,38 @@ final class DocumentBuildExceptionTest extends TestCase
         );
     }
 
+    public function testItAddsALowLevelPdfAHintForCodedLowLevelValidationErrors(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1b()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED,
+                'Profile PDF/A-1b does not allow low-level PDF operator "gs" in page content stream on page 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Use the high-level document APIs instead of raw PDF dictionary or content stream injections for this profile.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAnObjectGraphHintForCodedPdfAObjectGraphErrors(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1a()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                'PDF/A-1 tagged catalog requires a StructTreeRoot object ID.',
+            ),
+        );
+
+        self::assertSame(
+            'Keep the generated PDF/A object graph on the validated serializer path; avoid custom low-level object wiring that bypasses the builder and validator invariants.',
+            $exception->hint,
+        );
+    }
+
     public function testItFallsBackToLegacyStringMatchingForUnconvertedValidationErrors(): void
     {
         $exception = DocumentBuildException::fromValidationFailure(

@@ -6,8 +6,6 @@ namespace Kalle\Pdf\Document;
 
 use function array_key_exists;
 
-use InvalidArgumentException;
-
 use Kalle\Pdf\Writer\IndirectObject;
 
 use function preg_match;
@@ -43,7 +41,10 @@ final class PdfA1ObjectGraphValidator
             $metadataObject = $this->assertObjectExists($objectsById, $state->metadataObjectId, 'metadata stream');
 
             if ($metadataObject->streamDictionaryContents === null || !str_contains($metadataObject->contents, '/Subtype /XML')) {
-                throw new InvalidArgumentException('PDF/A-1 metadata stream must be serialized as an XML metadata stream object.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                    'PDF/A-1 metadata stream must be serialized as an XML metadata stream object.',
+                );
             }
         }
 
@@ -51,7 +52,10 @@ final class PdfA1ObjectGraphValidator
             $iccProfileObject = $this->assertObjectExists($objectsById, $state->iccProfileObjectId, 'ICC profile stream');
 
             if ($iccProfileObject->streamDictionaryContents === null) {
-                throw new InvalidArgumentException('PDF/A-1 ICC profile must be serialized as a stream object.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                    'PDF/A-1 ICC profile must be serialized as a stream object.',
+                );
             }
         }
 
@@ -63,7 +67,10 @@ final class PdfA1ObjectGraphValidator
             $acroFormObject = $this->assertObjectExists($objectsById, $state->acroFormObjectId, 'AcroForm');
 
             if (str_contains($acroFormObject->contents, '/Helv')) {
-                throw new InvalidArgumentException('Profile PDF/A-1 must not serialize AcroForm default resources with the built-in /Helv fallback.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                    'Profile PDF/A-1 must not serialize AcroForm default resources with the built-in /Helv fallback.',
+                );
             }
 
             foreach ($state->acroFormFieldObjectIds as $fieldObjectId) {
@@ -110,7 +117,7 @@ final class PdfA1ObjectGraphValidator
                 $annotationObjectId = $state->pageAnnotationObjectIds[$pageIndex][$annotationIndex] ?? null;
 
                 if ($annotationObjectId === null) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                         'Missing serialized page annotation object allocation for annotation %d on page %d.',
                         $annotationIndex + 1,
                         $pageIndex + 1,
@@ -124,7 +131,7 @@ final class PdfA1ObjectGraphValidator
                 );
 
                 if (str_contains($annotationObject->contents, '/Popup ')) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                         'Profile %s does not allow popup related objects for page annotation %d on page %d.',
                         $document->profile->name(),
                         $annotationIndex + 1,
@@ -146,7 +153,7 @@ final class PdfA1ObjectGraphValidator
 
                 if ($this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)) {
                     if ($appearanceObjectId === null) {
-                        throw new InvalidArgumentException(sprintf(
+                        throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                             'Profile %s requires a serialized annotation appearance stream object for page annotation %d on page %d.',
                             $document->profile->name(),
                             $annotationIndex + 1,
@@ -155,7 +162,7 @@ final class PdfA1ObjectGraphValidator
                     }
 
                     if (!$this->containsAppearanceReference($annotationObject->contents, $appearanceObjectId)) {
-                        throw new InvalidArgumentException(sprintf(
+                        throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                             'Profile %s requires page annotation %d on page %d to serialize /AP << /N %d 0 R >>.',
                             $document->profile->name(),
                             $annotationIndex + 1,
@@ -175,7 +182,7 @@ final class PdfA1ObjectGraphValidator
                         || !str_contains($appearanceObject->streamDictionaryContents, '/Type /XObject')
                         || !str_contains($appearanceObject->streamDictionaryContents, '/Subtype /Form')
                     ) {
-                        throw new InvalidArgumentException(sprintf(
+                        throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                             'Profile %s requires annotation appearance stream %d for page annotation %d on page %d to serialize as a form XObject stream.',
                             $document->profile->name(),
                             $appearanceObjectId,
@@ -193,7 +200,7 @@ final class PdfA1ObjectGraphValidator
                     );
 
                     if (str_contains($relatedObject->contents, '/Subtype /Popup')) {
-                        throw new InvalidArgumentException(sprintf(
+                        throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                             'Profile %s does not allow popup related objects for page annotation %d on page %d.',
                             $document->profile->name(),
                             $annotationIndex + 1,
@@ -203,7 +210,7 @@ final class PdfA1ObjectGraphValidator
                 }
 
                 if ($this->pdfA1PopupPolicy->usesPopup($annotation)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                         'Profile %s does not allow popup related objects for page annotation %d on page %d.',
                         $document->profile->name(),
                         $annotationIndex + 1,
@@ -235,7 +242,7 @@ final class PdfA1ObjectGraphValidator
     private function assertObjectExists(array $objectsById, int $objectId, string $label): IndirectObject
     {
         if (!isset($objectsById[$objectId])) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                 'Missing serialized PDF object %d for %s in the final PDF/A-1 object graph.',
                 $objectId,
                 $label,
@@ -269,12 +276,18 @@ final class PdfA1ObjectGraphValidator
             );
 
             if (!str_contains($catalogObject->contents, '/OutputIntents [')) {
-                throw new InvalidArgumentException('PDF/A-1 catalog must serialize an OutputIntents array.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID,
+                    'PDF/A-1 catalog must serialize an OutputIntents array.',
+                );
             }
         }
 
         if ($document->language !== null && !str_contains($catalogObject->contents, '/Lang ')) {
-            throw new InvalidArgumentException('PDF/A-1 catalog must serialize the document language.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                'PDF/A-1 catalog must serialize the document language.',
+            );
         }
 
         if ($state->acroFormObjectId !== null) {
@@ -287,11 +300,17 @@ final class PdfA1ObjectGraphValidator
 
         if ($document->profile->requiresTaggedPdf()) {
             if (!str_contains($catalogObject->contents, '/MarkInfo << /Marked true >>')) {
-                throw new InvalidArgumentException('PDF/A-1 tagged catalog must serialize /MarkInfo << /Marked true >>.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                    'PDF/A-1 tagged catalog must serialize /MarkInfo << /Marked true >>.',
+                );
             }
 
             if ($state->structTreeRootObjectId === null) {
-                throw new InvalidArgumentException('PDF/A-1 tagged catalog requires a StructTreeRoot object ID.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                    'PDF/A-1 tagged catalog requires a StructTreeRoot object ID.',
+                );
             }
 
             $this->assertReferencePresent(
@@ -344,14 +363,14 @@ final class PdfA1ObjectGraphValidator
             && array_key_exists($pageIndex, $state->pageStructParentIds)
             && !str_contains($pageObject->contents, '/StructParents ')
         ) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                 'PDF/A-1 tagged page object %d must serialize /StructParents.',
                 $pageIndex + 1,
             ));
         }
 
         if ($document->profile->requiresPageAnnotationTabOrder() && ($state->pageAnnotationObjectIds[$pageIndex] ?? []) !== [] && !str_contains($pageObject->contents, '/Tabs /S')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                 'PDF/A-1 page object %d must serialize /Tabs /S when annotations are present.',
                 $pageIndex + 1,
             ));
@@ -361,11 +380,11 @@ final class PdfA1ObjectGraphValidator
     private function assertReferencePresent(string $contents, ?int $objectId, string $message): void
     {
         if ($objectId === null) {
-            throw new InvalidArgumentException($message);
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, $message);
         }
 
         if (preg_match('/\b' . preg_quote((string) $objectId, '/') . '\s+0\s+R\b/', $contents) !== 1) {
-            throw new InvalidArgumentException($message);
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, $message);
         }
     }
 

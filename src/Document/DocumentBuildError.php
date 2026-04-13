@@ -20,4 +20,6 @@ enum DocumentBuildError: string
     case PDFA_ASSOCIATED_FILES_NOT_ALLOWED = 'pdfa_associated_files_not_allowed';
     case PDFA_OUTPUT_INTENT_INVALID = 'pdfa_output_intent_invalid';
     case PDFA4_METADATA_INVALID = 'pdfa4_metadata_invalid';
+    case PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED = 'pdfa_low_level_content_not_allowed';
+    case PDFA_OBJECT_GRAPH_INVALID = 'pdfa_object_graph_invalid';
 }

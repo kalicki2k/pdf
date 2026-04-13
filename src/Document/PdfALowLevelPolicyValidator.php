@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Document;
 use function count;
 use function in_array;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\AnnotationAppearanceRenderContext;
@@ -304,7 +303,7 @@ final class PdfALowLevelPolicyValidator
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
             'Profile %s does not allow additional low-level image dictionary entries for image resource %d on page %d because they cannot be validated safely for PDF/A.',
             $document->profile->name(),
             $imageResourceIndex,
@@ -460,7 +459,7 @@ final class PdfALowLevelPolicyValidator
                 continue;
             }
 
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow low-level key /%s in %s.',
                 $document->profile->name(),
                 $forbiddenKey,
@@ -498,7 +497,7 @@ final class PdfALowLevelPolicyValidator
             }
 
             if (in_array($token, self::FORBIDDEN_CONTENT_TOKENS, true)) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow low-level PDF operator "%s" in %s.',
                     $document->profile->name(),
                     $token,
@@ -510,7 +509,7 @@ final class PdfALowLevelPolicyValidator
                 $document->profile->isPdfA1()
                 && !in_array($token, self::ALLOWED_PDF_A1_CONTENT_OPERATORS, true)
             ) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                     'Profile %s does not allow unvalidated low-level PDF operator "%s" in %s.',
                     $document->profile->name(),
                     $token,
@@ -583,7 +582,7 @@ final class PdfALowLevelPolicyValidator
         }
 
         if ($inTextObject) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow unterminated text objects in %s.',
                 $document->profile->name(),
                 $context,
@@ -748,7 +747,7 @@ final class PdfALowLevelPolicyValidator
         ?string &$currentTextFontAlias,
     ): void {
         if ($inTextObject) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow nested text objects in %s.',
                 $document->profile->name(),
                 $context,
@@ -769,7 +768,7 @@ final class PdfALowLevelPolicyValidator
         ?string &$currentTextFontAlias,
     ): void {
         if (!$inTextObject) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow ET outside a text object in %s.',
                 $document->profile->name(),
                 $context,
@@ -792,7 +791,7 @@ final class PdfALowLevelPolicyValidator
         array $operands,
     ): string {
         if (!$inTextObject) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow Tf outside a text object in %s.',
                 $document->profile->name(),
                 $context,
@@ -802,7 +801,7 @@ final class PdfALowLevelPolicyValidator
         $fontOperand = count($operands) >= 2 ? $operands[count($operands) - 2] : null;
 
         if ($fontOperand === null || !str_starts_with($fontOperand, '/')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s requires a resolvable font resource before Tf in %s.',
                 $document->profile->name(),
                 $context,
@@ -813,7 +812,7 @@ final class PdfALowLevelPolicyValidator
         $pageFont = $page->fontResources[$fontAlias] ?? null;
 
         if (!$pageFont instanceof PageFont) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow text operators in %s to reference missing font resource "%s" on page %d.',
                 $document->profile->name(),
                 $context,
@@ -835,7 +834,7 @@ final class PdfALowLevelPolicyValidator
         ?string $currentTextFontAlias,
     ): void {
         if (!$inTextObject) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow text-showing operator "%s" outside a text object in %s.',
                 $document->profile->name(),
                 $operator,
@@ -847,7 +846,7 @@ final class PdfALowLevelPolicyValidator
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
             'Profile %s requires a valid Tf font selection before text-showing operator "%s" in %s.',
             $document->profile->name(),
             $operator,
@@ -868,7 +867,7 @@ final class PdfALowLevelPolicyValidator
         $xObjectOperand = $operands !== [] ? $operands[count($operands) - 1] : null;
 
         if ($xObjectOperand === null || !str_starts_with($xObjectOperand, '/')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s requires a resolvable XObject resource before Do in %s.',
                 $document->profile->name(),
                 $context,
@@ -881,7 +880,7 @@ final class PdfALowLevelPolicyValidator
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
             'Profile %s does not allow Do in %s to reference missing XObject resource "%s" on page %d.',
             $document->profile->name(),
             $context,
@@ -899,7 +898,7 @@ final class PdfALowLevelPolicyValidator
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
             'Profile %s does not allow unvalidated marked-content operator BMC in %s.',
             $document->profile->name(),
             $context,
@@ -922,7 +921,7 @@ final class PdfALowLevelPolicyValidator
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
             'Profile %s does not allow unvalidated marked-content property usage in %s.',
             $document->profile->name(),
             $context,
@@ -937,7 +936,7 @@ final class PdfALowLevelPolicyValidator
         string $context,
     ): void {
         if (!$pageFont->isEmbedded()) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_EMBEDDED_FONTS_REQUIRED, sprintf(
                 'Profile %s does not allow text operators in %s to reference non-embedded font resource "%s" on page %d.',
                 $document->profile->name(),
                 $context,
@@ -950,7 +949,7 @@ final class PdfALowLevelPolicyValidator
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_UNICODE_FONTS_REQUIRED, sprintf(
             'Profile %s does not allow text operators in %s to reference simple embedded font resource "%s" on page %d because the active profile requires extractable Unicode fonts.',
             $document->profile->name(),
             $context,

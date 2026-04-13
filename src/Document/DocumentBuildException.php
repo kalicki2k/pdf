@@ -83,6 +83,12 @@ final class DocumentBuildException extends RuntimeException
             DocumentBuildError::PDFA4_METADATA_INVALID => $document->profile->isPdfA4()
                 ? 'Keep PDF/A-4 metadata on the dedicated PDF 2.0 path: write pdfaid:part=4 and pdfaid:rev=2020, omit Info/OutputIntents, and only write pdfaid:conformance for 4e/4f.'
                 : null,
+            DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED => $document->profile->isPdfA()
+                ? 'Use the high-level document APIs instead of raw PDF dictionary or content stream injections for this profile.'
+                : null,
+            DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID => $document->profile->isPdfA()
+                ? 'Keep the generated PDF/A object graph on the validated serializer path; avoid custom low-level object wiring that bypasses the builder and validator invariants.'
+                : null,
         };
     }
 
