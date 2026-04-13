@@ -618,7 +618,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $page = $clone->buildCurrentPage();
         $contentArea = $page->contentArea();
         ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
-        $columnWidths = $calculator->resolveColumnWidths($table, $tableWidth);
+        $columnWidths = $calculator->resolveColumnWidths($table, $tableWidth, new TextFlow($page), $font);
         $captionLayout = $table->caption === null
             ? null
             : $clone->layoutTableCaption($table, new TextFlow($page), $font, $tableWidth);

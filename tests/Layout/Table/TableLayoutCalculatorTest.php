@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Layout\Table;
 
+use function array_sum;
+
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
@@ -35,6 +37,44 @@ final class TableLayoutCalculatorTest extends TestCase
         $widths = new TableLayoutCalculator()->resolveColumnWidths($table, 200.0);
 
         self::assertEquals([60.0, 35.0, 105.0], $widths);
+    }
+
+    public function testItResolvesAutoColumnWidthsFromCellContent(): void
+    {
+        $table = Table::define(
+            TableColumn::auto(),
+            TableColumn::proportional(1.0),
+            TableColumn::auto(),
+        )
+            ->withCellPadding(CellPadding::symmetric(4.0, 6.0))
+            ->withTextOptions(new TextOptions(fontSize: 10.0, lineHeight: 12.0))
+            ->withRows(
+                TableRow::fromTexts('2026-03-31', 'Managed operations and release support', 'INC-4421'),
+            );
+        $page = new Page(PageSize::A4());
+        $textFlow = new TextFlow($page);
+        $font = StandardFontDefinition::from('Helvetica');
+
+        $widths = new TableLayoutCalculator()->resolveColumnWidths($table, 220.0, $textFlow, $font);
+
+        self::assertGreaterThan(45.0, $widths[0]);
+        self::assertGreaterThan(40.0, $widths[2]);
+        self::assertEqualsWithDelta(220.0, array_sum($widths), 0.001);
+        self::assertGreaterThan($widths[0], $widths[1]);
+    }
+
+    public function testItRejectsAutoColumnsWithoutMeasurementContext(): void
+    {
+        $table = Table::define(
+            TableColumn::auto(),
+            TableColumn::proportional(1.0),
+        );
+
+        $this->expectExceptionObject(new \InvalidArgumentException(
+            'Auto table columns require a text flow and font for width resolution.',
+        ));
+
+        new TableLayoutCalculator()->resolveColumnWidths($table, 120.0);
     }
 
     public function testItUsesTheTallestCellForRowHeight(): void

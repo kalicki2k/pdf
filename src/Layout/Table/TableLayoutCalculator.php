@@ -8,6 +8,8 @@ use function array_map;
 use function array_sum;
 use function count;
 use function max;
+use function preg_split;
+use function trim;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Table;
@@ -24,18 +26,39 @@ final class TableLayoutCalculator
     /**
      * @return list<float>
      */
-    public function resolveColumnWidths(Table $table, float $availableWidth): array
+    public function resolveColumnWidths(
+        Table $table,
+        float $availableWidth,
+        ?TextFlow $textFlow = null,
+        StandardFontDefinition | EmbeddedFontDefinition | null $font = null,
+    ): array
     {
         if ($availableWidth <= 0.0) {
             throw new InvalidArgumentException('Available table width must be greater than zero.');
         }
 
         $fixedWidth = 0.0;
+        $autoWidth = 0.0;
         $totalWeight = 0.0;
+        $autoColumnWidths = [];
 
-        foreach ($table->columns as $column) {
+        if ($this->tableContainsAutoColumns($table)) {
+            if ($textFlow === null || $font === null) {
+                throw new InvalidArgumentException('Auto table columns require a text flow and font for width resolution.');
+            }
+
+            $autoColumnWidths = $this->resolveAutoColumnWidths($table, $font);
+        }
+
+        foreach ($table->columns as $index => $column) {
             if ($column->width->isFixed()) {
                 $fixedWidth += $column->width->value;
+
+                continue;
+            }
+
+            if ($column->width->isAuto()) {
+                $autoWidth += $autoColumnWidths[$index] ?? 0.0;
 
                 continue;
             }
@@ -43,25 +66,30 @@ final class TableLayoutCalculator
             $totalWeight += $column->width->value;
         }
 
-        if ($fixedWidth > $availableWidth) {
-            throw new InvalidArgumentException('Fixed table columns exceed the available table width.');
+        if (($fixedWidth + $autoWidth) > $availableWidth) {
+            throw new InvalidArgumentException('Fixed and auto table columns exceed the available table width.');
         }
 
-        $remainingWidth = $availableWidth - $fixedWidth;
+        $remainingWidth = $availableWidth - $fixedWidth - $autoWidth;
 
         if ($remainingWidth <= 0.0 && $totalWeight > 0.0) {
             throw new InvalidArgumentException('Proportional table columns require remaining width.');
         }
 
         return array_map(
-            static function ($column) use ($remainingWidth, $totalWeight): float {
+            static function ($column, int $index) use ($autoColumnWidths, $remainingWidth, $totalWeight): float {
                 if ($column->width->isFixed()) {
                     return $column->width->value;
+                }
+
+                if ($column->width->isAuto()) {
+                    return $autoColumnWidths[$index] ?? 0.0;
                 }
 
                 return $remainingWidth * ($column->width->value / $totalWeight);
             },
             $table->columns,
+            array_keys($table->columns),
         );
     }
 
@@ -260,5 +288,127 @@ final class TableLayoutCalculator
             )),
             $wrappedSegmentLines,
         );
+    }
+
+    private function tableContainsAutoColumns(Table $table): bool
+    {
+        foreach ($table->columns as $column) {
+            if ($column->width->isAuto()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<float>
+     */
+    private function resolveAutoColumnWidths(
+        Table $table,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+    ): array {
+        $autoWidths = array_fill(0, count($table->columns), 0.0);
+        $rows = [...$table->headerRows, ...$table->rows, ...$table->footerRows];
+
+        foreach ($rows as $row) {
+            $columnIndex = 0;
+
+            foreach ($row->cells as $cell) {
+                $autoColumns = [];
+                $fixedWidthInSpan = 0.0;
+
+                for ($index = $columnIndex; $index < ($columnIndex + $cell->colspan); $index++) {
+                    $column = $table->columns[$index];
+
+                    if ($column->width->isFixed()) {
+                        $fixedWidthInSpan += $column->width->value;
+                    }
+
+                    if ($column->width->isAuto()) {
+                        $autoColumns[] = $index;
+                    }
+                }
+
+                if ($autoColumns !== []) {
+                    $requiredWidth = $this->minimumCellWidth($table, $cell, $font);
+                    $share = max($requiredWidth - $fixedWidthInSpan, 0.0) / count($autoColumns);
+
+                    foreach ($autoColumns as $autoColumnIndex) {
+                        $autoWidths[$autoColumnIndex] = max($autoWidths[$autoColumnIndex], $share);
+                    }
+                }
+
+                $columnIndex += $cell->colspan;
+            }
+        }
+
+        return array_values($autoWidths);
+    }
+
+    private function minimumCellWidth(
+        Table $table,
+        TableCell $cell,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+    ): float {
+        $padding = $cell->padding ?? $table->cellPadding;
+        $contentWidth = $cell->content->isRichText()
+            ? $this->minimumRichTextWidth($cell->content->segments, $table->textOptions, $font)
+            : $this->minimumPlainTextWidth($cell->text, $table->textOptions, $font);
+
+        return $contentWidth + $padding->horizontal();
+    }
+
+    private function minimumPlainTextWidth(
+        string $text,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+    ): float {
+        $widestToken = 0.0;
+
+        foreach ($this->tokenizeForMinimumWidth($text) as $token) {
+            if (trim($token) === '') {
+                continue;
+            }
+
+            $widestToken = max($widestToken, $font->measureTextWidth($token, $options->fontSize));
+        }
+
+        return $widestToken;
+    }
+
+    /**
+     * @param list<TextSegment> $segments
+     */
+    private function minimumRichTextWidth(
+        array $segments,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+    ): float {
+        $widestToken = 0.0;
+        $currentTokenWidth = 0.0;
+
+        foreach ($segments as $segment) {
+            foreach ($this->tokenizeForMinimumWidth($segment->text) as $token) {
+                if (trim($token) === '') {
+                    $widestToken = max($widestToken, $currentTokenWidth);
+                    $currentTokenWidth = 0.0;
+
+                    continue;
+                }
+
+                $currentTokenWidth += $font->measureTextWidth($token, $options->fontSize);
+            }
+        }
+
+        return max($widestToken, $currentTokenWidth);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function tokenizeForMinimumWidth(string $text): array
+    {
+        return preg_split('/(\s+)/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [$text];
     }
 }

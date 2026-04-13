@@ -22,4 +22,9 @@ final readonly class TableColumn
     {
         return new self(ColumnWidth::proportional($weight));
     }
+
+    public static function auto(): self
+    {
+        return new self(ColumnWidth::auto());
+    }
 }

@@ -27,6 +27,15 @@ final class TableValueObjectTest extends TestCase
         ColumnWidth::fixed(0.0);
     }
 
+    public function testColumnWidthCanRepresentAutomaticWidths(): void
+    {
+        $width = ColumnWidth::auto();
+
+        self::assertTrue($width->isAuto());
+        self::assertFalse($width->isFixed());
+        self::assertFalse($width->isProportional());
+    }
+
     public function testCellPaddingReportsCombinedInsets(): void
     {
         $padding = CellPadding::symmetric(3.0, 5.0);
