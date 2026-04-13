@@ -6,6 +6,11 @@ namespace Kalle\Pdf\Document;
 
 enum DocumentBuildError: string
 {
+    case DUPLICATE_NAMED_DESTINATION = 'duplicate_named_destination';
+    case DUPLICATE_ATTACHMENT_FILENAME = 'duplicate_attachment_filename';
+    case OUTLINE_REFERENCE_INVALID = 'outline_reference_invalid';
+    case OUTLINE_HIERARCHY_INVALID = 'outline_hierarchy_invalid';
+    case FORM_FIELD_PAGE_INVALID = 'form_field_page_invalid';
     case DOCUMENT_LANGUAGE_REQUIRED = 'document_language_required';
     case DOCUMENT_TITLE_REQUIRED = 'document_title_required';
     case IMAGE_ALT_TEXT_REQUIRED = 'image_alt_text_required';

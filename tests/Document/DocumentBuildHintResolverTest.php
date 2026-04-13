@@ -21,6 +21,86 @@ final class DocumentBuildHintResolverTest extends TestCase
         $this->resolver = new DocumentBuildHintResolver();
     }
 
+    public function testItAddsAHintForDuplicateNamedDestinations(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::standard()),
+            new DocumentValidationException(
+                DocumentBuildError::DUPLICATE_NAMED_DESTINATION,
+                'Named destination "intro" is defined more than once. Duplicate found on page 2.',
+            ),
+        );
+
+        self::assertSame(
+            'Use unique names for each named destination so outlines and links resolve unambiguously.',
+            $hint,
+        );
+    }
+
+    public function testItAddsAHintForDuplicateAttachmentFilenames(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::standard()),
+            new DocumentValidationException(
+                DocumentBuildError::DUPLICATE_ATTACHMENT_FILENAME,
+                'Attachment filename "demo.txt" is used more than once. Duplicate found at attachment 2.',
+            ),
+        );
+
+        self::assertSame(
+            'Give each attachment a unique filename before building the document.',
+            $hint,
+        );
+    }
+
+    public function testItAddsAHintForInvalidOutlineReferences(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::standard()),
+            new DocumentValidationException(
+                DocumentBuildError::OUTLINE_REFERENCE_INVALID,
+                'Outline 1 references page 2, but the document only has 1 page(s).',
+            ),
+        );
+
+        self::assertSame(
+            'Point each outline to an existing page or named destination, and keep remote destinations separate from local page references.',
+            $hint,
+        );
+    }
+
+    public function testItAddsAHintForInvalidOutlineHierarchy(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::standard()),
+            new DocumentValidationException(
+                DocumentBuildError::OUTLINE_HIERARCHY_INVALID,
+                'The first outline must use level 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Start outlines at level 1 and only increase nesting one level at a time.',
+            $hint,
+        );
+    }
+
+    public function testItAddsAHintForInvalidFormFieldPages(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::standard()),
+            new DocumentValidationException(
+                DocumentBuildError::FORM_FIELD_PAGE_INVALID,
+                'Form field "customer_name" targets page 2 which does not exist.',
+            ),
+        );
+
+        self::assertSame(
+            'Attach each form field or radio choice to an existing page in the document.',
+            $hint,
+        );
+    }
+
     public function testItAddsAUnicodeFontHintOnlyForProfilesThatRequireUnicodeFonts(): void
     {
         $hint = $this->resolver->resolve(

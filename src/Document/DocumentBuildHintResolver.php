@@ -20,6 +20,11 @@ final class DocumentBuildHintResolver
     private function hintForError(Document $document, DocumentBuildError $error): ?string
     {
         return match ($error) {
+            DocumentBuildError::DUPLICATE_NAMED_DESTINATION => 'Use unique names for each named destination so outlines and links resolve unambiguously.',
+            DocumentBuildError::DUPLICATE_ATTACHMENT_FILENAME => 'Give each attachment a unique filename before building the document.',
+            DocumentBuildError::OUTLINE_REFERENCE_INVALID => 'Point each outline to an existing page or named destination, and keep remote destinations separate from local page references.',
+            DocumentBuildError::OUTLINE_HIERARCHY_INVALID => 'Start outlines at level 1 and only increase nesting one level at a time.',
+            DocumentBuildError::FORM_FIELD_PAGE_INVALID => 'Attach each form field or radio choice to an existing page in the document.',
             DocumentBuildError::PDFA_EMBEDDED_FONTS_REQUIRED => $document->profile->isPdfA()
                 ? 'Use embedded fonts via TextOptions(embeddedFont: ...), table text options, or switch to a non-PDF/A profile.'
                 : null,

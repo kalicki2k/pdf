@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function preg_match;
+use function sprintf;
+
 use DateTimeImmutable;
-use InvalidArgumentException;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
 use Kalle\Pdf\Document\Form\ListBoxField;
@@ -19,9 +21,6 @@ use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
-
-use function preg_match;
-use function sprintf;
 
 final readonly class DocumentSerializationPlanValidator
 {
@@ -188,7 +187,7 @@ final readonly class DocumentSerializationPlanValidator
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->namedDestinations as $destination) {
                 if (isset($destinations[$destination->name])) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::DUPLICATE_NAMED_DESTINATION, sprintf(
                         'Named destination "%s" is defined more than once. Duplicate found on page %d.',
                         $destination->name,
                         $pageIndex + 1,
@@ -210,7 +209,7 @@ final readonly class DocumentSerializationPlanValidator
 
         foreach ($document->attachments as $attachmentIndex => $attachment) {
             if (isset($filenames[$attachment->filename])) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::DUPLICATE_ATTACHMENT_FILENAME, sprintf(
                     'Attachment filename "%s" is used more than once. Duplicate found at attachment %d.',
                     $attachment->filename,
                     $attachmentIndex + 1,
@@ -270,14 +269,14 @@ final readonly class DocumentSerializationPlanValidator
         foreach ($document->outlines as $outlineIndex => $outline) {
             if ($outline->destination->isNamed() && !$outline->destination->isRemote()) {
                 if (!isset($namedDestinations[$outline->destination->namedDestination ?? ''])) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::OUTLINE_REFERENCE_INVALID, sprintf(
                         'Outline %d references unknown named destination "%s".',
                         $outlineIndex + 1,
                         $outline->destination->namedDestination ?? '',
                     ));
                 }
             } elseif (!$outline->destination->isRemote() && $outline->pageNumber > $pageCount) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::OUTLINE_REFERENCE_INVALID, sprintf(
                     'Outline %d references page %d, but the document only has %d page(s).',
                     $outlineIndex + 1,
                     $outline->pageNumber,
@@ -286,11 +285,14 @@ final readonly class DocumentSerializationPlanValidator
             }
 
             if ($outlineIndex === 0 && $outline->level !== 1) {
-                throw new InvalidArgumentException('The first outline must use level 1.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::OUTLINE_HIERARCHY_INVALID,
+                    'The first outline must use level 1.',
+                );
             }
 
             if ($previousLevel !== null && $outline->level > ($previousLevel + 1)) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::OUTLINE_HIERARCHY_INVALID, sprintf(
                     'Outline %d uses level %d, but outline nesting may only increase by one level at a time.',
                     $outlineIndex + 1,
                     $outline->level,
@@ -545,7 +547,7 @@ final readonly class DocumentSerializationPlanValidator
                 if ($field instanceof RadioButtonGroup) {
                     foreach ($field->choices as $choice) {
                         if (!isset($document->pages[$choice->pageNumber - 1])) {
-                            throw new InvalidArgumentException(sprintf(
+                            throw new DocumentValidationException(DocumentBuildError::FORM_FIELD_PAGE_INVALID, sprintf(
                                 'Form field "%s" targets page %d which does not exist.',
                                 $field->name,
                                 $choice->pageNumber,
@@ -558,7 +560,7 @@ final readonly class DocumentSerializationPlanValidator
             }
 
             if (!isset($document->pages[$field->pageNumber - 1])) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::FORM_FIELD_PAGE_INVALID, sprintf(
                     'Form field "%s" targets page %d which does not exist.',
                     $field->name,
                     $field->pageNumber,
