@@ -116,7 +116,7 @@ final readonly class XmpMetadata
             '    <pdfaid:part>' . $part . '</pdfaid:part>',
         ];
 
-        if ($part === 4) {
+        if ($document->profile->writesPdfARevisionMetadata()) {
             $lines[] = '    <pdfaid:rev>2020</pdfaid:rev>';
         }
 

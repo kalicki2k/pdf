@@ -68,6 +68,9 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdfA4f()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4()->usesPdfAOutputIntent());
         self::assertFalse(Profile::pdfA4()->writesInfoDictionary());
+        self::assertTrue(Profile::pdfA4()->writesPdfARevisionMetadata());
+        self::assertTrue(Profile::pdfA4f()->writesPdfARevisionMetadata());
+        self::assertFalse(Profile::pdfA3b()->writesPdfARevisionMetadata());
         self::assertFalse(Profile::pdfA4f()->supportsTransparency());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentAssociatedFiles());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentEmbeddedFileAttachments());

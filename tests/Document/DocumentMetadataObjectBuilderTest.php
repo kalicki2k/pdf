@@ -42,6 +42,46 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
         }
     }
 
+    public function testPdfA4MetadataAllocationSkipsOutputIntentAndInfoDictionary(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4(),
+            title: 'Archive Copy',
+            author: 'Kalle',
+        );
+        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+            $document,
+            static fn (int $nextStructParentId): array => [
+                'linkEntries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
+            static fn (int $nextStructParentId): array => [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+                'nextStructParentId' => $nextStructParentId,
+            ],
+            static fn (array $fieldObjectIds, array $relatedObjectIds, int $nextStructParentId): array => [
+                'entries' => [],
+                'parentTreeEntries' => [],
+                'structParentIds' => [],
+            ],
+            static fn (): array => [],
+        );
+
+        self::assertNotNull($state->metadataObjectId);
+        self::assertNull($state->iccProfileObjectId);
+        self::assertNull($state->infoObjectId);
+
+        $entries = (new DocumentMetadataObjectBuilder())->buildCatalogEntries($document, $state->metadataObjectId, $state->iccProfileObjectId);
+
+        self::assertSame([
+            '/Metadata ' . $state->metadataObjectId . ' 0 R',
+        ], $entries);
+    }
+
     public function testItBuildsMetadataInfoAndEncryptObjects(): void
     {
         $document = new Document(

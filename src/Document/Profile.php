@@ -547,6 +547,11 @@ final readonly class Profile
         return $this->isPdfA();
     }
 
+    public function writesPdfARevisionMetadata(): bool
+    {
+        return $this->pdfaPart() === 4;
+    }
+
     public function writesPdfUaIdentificationMetadata(): bool
     {
         return $this->isPdfUa();

@@ -57,6 +57,30 @@ final class XmpMetadataTest extends TestCase
         self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $contents);
     }
 
+    public function testItAddsPdfA4IdentificationMetadataWithRevisionAndWithoutConformanceForBasePdfA4(): void
+    {
+        $contents = (new XmpMetadata())->objectContents(new Document(
+            profile: Profile::pdfA4(),
+            title: 'Archive Copy',
+        ));
+
+        self::assertStringContainsString('<pdfaid:part>4</pdfaid:part>', $contents);
+        self::assertStringContainsString('<pdfaid:rev>2020</pdfaid:rev>', $contents);
+        self::assertStringNotContainsString('<pdfaid:conformance>', $contents);
+    }
+
+    public function testItAddsPdfA4fIdentificationMetadataWithRevisionAndConformance(): void
+    {
+        $contents = (new XmpMetadata())->objectContents(new Document(
+            profile: Profile::pdfA4f(),
+            title: 'Archive Copy',
+        ));
+
+        self::assertStringContainsString('<pdfaid:part>4</pdfaid:part>', $contents);
+        self::assertStringContainsString('<pdfaid:rev>2020</pdfaid:rev>', $contents);
+        self::assertStringContainsString('<pdfaid:conformance>F</pdfaid:conformance>', $contents);
+    }
+
     public function testItAddsPdfUaIdentificationMetadata(): void
     {
         $contents = (new XmpMetadata())->objectContents(new Document(
