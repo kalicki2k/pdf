@@ -81,7 +81,7 @@ final class PdfAProfileSupportTest extends TestCase
         } catch (DocumentValidationException $exception) {
             self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
             self::assertSame(
-                'Profile PDF/A-4e is not supported yet: PDF/A-4e is blocked behind dedicated engineering-specific policy checks and a PDF 2.0 validation path.',
+                'Profile PDF/A-4e is not supported yet: PDF/A-4e is blocked until optional content, RichMedia, 3D engineering annotations and the dedicated PDF 2.0 validation path are implemented.',
                 $exception->getMessage(),
             );
         }

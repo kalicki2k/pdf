@@ -191,7 +191,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
                 false,
-                'PDF/A-4e is blocked behind dedicated engineering-specific policy checks and a PDF 2.0 validation path.',
+                'PDF/A-4e is blocked until optional content, RichMedia, 3D engineering annotations and the dedicated PDF 2.0 validation path are implemented.',
                 self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
