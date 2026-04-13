@@ -441,6 +441,22 @@ final class DocumentBuildHintResolverTest extends TestCase
         );
     }
 
+    public function testItAddsAPdfA4EngineeringHintForBlockedEngineeringFeatures(): void
+    {
+        $hint = $this->resolver->resolve(
+            new Document(profile: Profile::pdfA4e()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED,
+                'Profile PDF/A-4e does not allow optional-content or engineering dictionary key /OC in annotation 1 on page 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Stay within the currently validated PDF/A-4 family scope; optional content, RichMedia, 3D and other engineering-only PDF/A-4e features remain blocked until dedicated validation exists.',
+            $hint,
+        );
+    }
+
     public function testItAddsAnObjectGraphHintForCodedPdfAObjectGraphErrors(): void
     {
         $hint = $this->resolver->resolve(

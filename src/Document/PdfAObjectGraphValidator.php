@@ -134,13 +134,6 @@ final class PdfAObjectGraphValidator
                 $document->profile->name(),
             ));
         }
-
-        if (($document->profile->isPdfA4() || $document->profile->isPdfA4f()) && str_contains($catalogObject->contents, '/OCProperties')) {
-            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
-                'Profile %s must not serialize /OCProperties in the current PDF/A-4 object graph.',
-                $document->profile->name(),
-            ));
-        }
     }
 
     /**
@@ -681,7 +674,7 @@ final class PdfAObjectGraphValidator
         }
 
         if (str_contains($catalogObject->contents, '/OCProperties')) {
-            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                 'Profile %s must not serialize /OCProperties in the current PDF/A-4 object graph.',
                 $document->profile->name(),
             ));
@@ -689,14 +682,14 @@ final class PdfAObjectGraphValidator
 
         foreach ($objectsById as $object) {
             if (str_contains($object->contents, '/Subtype /RichMedia')) {
-                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                     'Profile %s must not serialize RichMedia annotations or assets in the current PDF/A-4 object graph.',
                     $document->profile->name(),
                 ));
             }
 
             if (str_contains($object->contents, '/Subtype /3D')) {
-                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
                     'Profile %s must not serialize 3D annotations in the current PDF/A-4 object graph.',
                     $document->profile->name(),
                 ));

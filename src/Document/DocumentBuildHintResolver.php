@@ -101,6 +101,9 @@ final class DocumentBuildHintResolver
             DocumentBuildError::PDFA4_METADATA_INVALID => $document->profile->isPdfA4()
                 ? 'Keep PDF/A-4 metadata on the dedicated PDF 2.0 path: write pdfaid:part=4 and pdfaid:rev=2020, omit Info/OutputIntents, and only write pdfaid:conformance for 4e/4f.'
                 : null,
+            DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED => $document->profile->isPdfA4()
+                ? 'Stay within the currently validated PDF/A-4 family scope; optional content, RichMedia, 3D and other engineering-only PDF/A-4e features remain blocked until dedicated validation exists.'
+                : null,
             DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED => $document->profile->isPdfA()
                 ? 'Use the high-level document APIs instead of raw PDF dictionary or content stream injections for this profile.'
                 : null,

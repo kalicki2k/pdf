@@ -91,6 +91,25 @@ final readonly class PdfALowLevelPolicyValidator
     /**
      * @var list<string>
      */
+    private const array FORBIDDEN_PDF_A4_ENGINEERING_KEYS = [
+        'OC',
+        'OCG',
+        'OCMD',
+        '3D',
+        '3DA',
+        '3DB',
+        '3DD',
+        '3DI',
+        '3DV',
+        'RichMedia',
+        'Measure',
+        'VA',
+        'View',
+    ];
+
+    /**
+     * @var list<string>
+     */
     private const array FORBIDDEN_APPEARANCE_DICTIONARY_KEYS = [
         'Group',
         'SMask',
@@ -320,6 +339,12 @@ final readonly class PdfALowLevelPolicyValidator
     ): void {
         $dictionaryContents = $annotation->pdfObjectContents($annotationRenderContext);
 
+        $this->assertPdfA4EngineeringKeysAbsent(
+            $document,
+            $dictionaryContents,
+            sprintf('annotation %d on page %d', $annotationIndex, $pageIndex + 1),
+        );
+
         $this->assertForbiddenDictionaryKeysAbsent(
             $document,
             $dictionaryContents,
@@ -340,6 +365,12 @@ final readonly class PdfALowLevelPolicyValidator
         }
 
         $appearanceDictionaryContents = $annotation->appearanceStreamDictionaryContents($appearanceRenderContext);
+
+        $this->assertPdfA4EngineeringKeysAbsent(
+            $document,
+            $appearanceDictionaryContents,
+            sprintf('annotation appearance dictionary %d on page %d', $annotationIndex, $pageIndex + 1),
+        );
 
         $this->assertForbiddenDictionaryKeysAbsent(
             $document,
@@ -427,6 +458,12 @@ final readonly class PdfALowLevelPolicyValidator
             $context,
         );
 
+        $this->assertPdfA4EngineeringKeysAbsent(
+            $document,
+            $object->streamDictionaryContents ?? $object->contents,
+            $context,
+        );
+
         if ($object->streamContents !== null) {
             $this->assertPdfAContentStreamSafe($document, $object->streamContents, $context);
         }
@@ -460,6 +497,29 @@ final readonly class PdfALowLevelPolicyValidator
 
             throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow low-level key /%s in %s.',
+                $document->profile->name(),
+                $forbiddenKey,
+                $context,
+            ));
+        }
+    }
+
+    private function assertPdfA4EngineeringKeysAbsent(
+        Document $document,
+        string $dictionaryContents,
+        string $context,
+    ): void {
+        if (!$document->profile->isPdfA4()) {
+            return;
+        }
+
+        foreach (self::FORBIDDEN_PDF_A4_ENGINEERING_KEYS as $forbiddenKey) {
+            if (preg_match('/\/' . preg_quote($forbiddenKey, '/') . '(?:\b|(?=\s|\/|<|\[|\())/', $dictionaryContents) !== 1) {
+                continue;
+            }
+
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s does not allow optional-content or engineering dictionary key /%s in %s.',
                 $document->profile->name(),
                 $forbiddenKey,
                 $context,
@@ -577,12 +637,34 @@ final readonly class PdfALowLevelPolicyValidator
                 default => null,
             };
 
+            if ($document->profile->isPdfA4()) {
+                $this->assertPdfA4ContentOperandsAllowed($document, $context, $token, $operands);
+            }
+
             $operands = [];
         }
 
         if ($inTextObject) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow unterminated text objects in %s.',
+                $document->profile->name(),
+                $context,
+            ));
+        }
+    }
+
+    /**
+     * @param list<string> $operands
+     */
+    private function assertPdfA4ContentOperandsAllowed(
+        Document $document,
+        string $context,
+        string $operator,
+        array $operands,
+    ): void {
+        if (($operator === 'BDC' || $operator === 'BMC') && ($operands[0] ?? null) === '/OC') {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s does not allow optional-content marked-content operators in %s.',
                 $document->profile->name(),
                 $context,
             ));
@@ -909,6 +991,14 @@ final readonly class PdfALowLevelPolicyValidator
      */
     private function assertBdcOperandsAllowed(Document $document, string $context, array $operands): void
     {
+        if ($document->profile->isPdfA4() && ($operands[0] ?? null) === '/OC') {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s does not allow optional-content marked-content operators in %s.',
+                $document->profile->name(),
+                $context,
+            ));
+        }
+
         if (
             count($operands) === 5
             && in_array($operands[0], self::ALLOWED_MARKED_CONTENT_TAGS, true)

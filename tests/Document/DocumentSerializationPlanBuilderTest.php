@@ -1964,6 +1964,21 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testItRejectsPdfA4eLowLevelOptionalContentMarkedContentOperators(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Archive Copy',
+            pages: [new Page(PageSize::A4(), contents: "/OC /Layer1 BDC\nEMC")],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e does not allow optional-content marked-content operators in page content stream on page 1.');
+
+        $builder->build($document);
+    }
+
     public function testItBuildsTaggedPdfA1aSingleWidgetFormFields(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
