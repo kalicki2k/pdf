@@ -452,7 +452,7 @@ final class DocumentBuildHintResolverTest extends TestCase
         );
 
         self::assertSame(
-            'Stay within the currently validated PDF/A-4 family scope; optional content, RichMedia, 3D and other engineering-only PDF/A-4e features remain blocked until dedicated validation exists.',
+            'Stay within the currently validated PDF/A-4 family scope; PDF/A-4e currently allows only the constrained optional-content, RichMedia and 3D subsets, while broader engineering-specific wiring and presentation variants remain blocked.',
             $hint,
         );
     }
