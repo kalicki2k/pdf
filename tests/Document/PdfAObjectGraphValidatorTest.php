@@ -40,7 +40,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
     {
         $document = $this->pdfA2uDocument();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
 
         self::assertNotNull($state->metadataObjectId);
 
@@ -67,14 +67,14 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF/A catalog must reference the metadata stream.');
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA2uCatalogsWithoutOutputIntentArrays(): void
     {
         $document = $this->pdfA2uDocument();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
 
         $objects = array_map(
             static function (IndirectObject $object): IndirectObject {
@@ -93,7 +93,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF/A catalog must serialize an OutputIntents array.');
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA3bCatalogsWithoutAssociatedFileReferences(): void
@@ -110,7 +110,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             )
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
 
         $objects = array_map(
             static function (IndirectObject $object): IndirectObject {
@@ -129,7 +129,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF/A catalog must serialize an /AF array for associated files.');
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA2uAnnotationObjectsWithoutAppearanceReferences(): void
@@ -145,7 +145,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             ->textAnnotation(72, 680, 18, 18, 'Kommentar', 'QA', 'Comment', true)
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
         $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
         $appearanceObjectId = $state->pageAnnotationAppearanceObjectIds[0][0];
 
@@ -177,7 +177,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             $appearanceObjectId,
         ));
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA2uLinkAnnotationsWithoutUriActions(): void
@@ -193,7 +193,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             ->link('https://example.com/spec', 72, 670, 180, 16, 'Specification Link')
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
         $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
 
         $objects = array_map(
@@ -215,7 +215,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             'Profile PDF/A-2u requires external link annotation 1 on page 1 to serialize a URI action in the final PDF/A-2/3 object graph.',
         );
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA2uAnnotationObjectsWithUnsupportedSerializedSubtypes(): void
@@ -231,7 +231,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             ->textAnnotation(72, 680, 18, 18, 'Kommentar', 'QA', 'Comment', true)
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
         $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
 
         $objects = array_map(
@@ -253,7 +253,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             'Profile PDF/A-2u requires page annotation 1 on page 1 to serialize /Subtype /Text in the final PDF/A-2/3 object graph.',
         );
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA3bAttachmentObjectsWithoutAfRelationship(): void
@@ -270,7 +270,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             )
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
         $attachmentObjectId = $state->attachmentObjectIds[0];
 
         $objects = array_map(
@@ -290,7 +290,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF/A attachment object 1 must serialize /AFRelationship /Source.');
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA3bAttachmentObjectsWithoutEfReferences(): void
@@ -307,7 +307,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             )
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
         $attachmentObjectId = $state->attachmentObjectIds[0];
         $embeddedFileObjectId = $state->embeddedFileObjectIds[0];
 
@@ -336,7 +336,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             $embeddedFileObjectId,
         ));
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA3bAttachmentObjectsWithoutEfUfReferences(): void
@@ -353,7 +353,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             )
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
         $attachmentObjectId = $state->attachmentObjectIds[0];
         $embeddedFileObjectId = $state->embeddedFileObjectIds[0];
 
@@ -382,7 +382,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             $embeddedFileObjectId,
         ));
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA4CatalogsWithOutputIntentArrays(): void
@@ -410,7 +410,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4 must not serialize OutputIntents in the final PDF/A-4 object graph.');
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA4MetadataWithoutRevisionMarkers(): void
@@ -437,7 +437,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4 metadata stream must serialize <pdfaid:rev>2020</pdfaid:rev>.');
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsBasePdfA4MetadataWithConformanceMarkers(): void
@@ -468,7 +468,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4 metadata stream must not serialize a pdfaid:conformance marker.');
 
-        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     private function pdfA2uDocument(): Document
@@ -520,7 +520,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             pages: [new Page(PageSize::A4())],
         );
         $state = $this->allocateState($document);
-        $metadataObjects = (new DocumentMetadataObjectBuilder())->buildObjects(
+        $metadataObjects = new DocumentMetadataObjectBuilder()->buildObjects(
             $document,
             $state,
             new DateTimeImmutable('2026-04-12T10:00:00+02:00'),

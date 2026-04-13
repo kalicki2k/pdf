@@ -11,7 +11,7 @@ final class StandardFontCoreKerning
      *
      * @var array<string, array<string, array<string, int>>>
      */
-    public const PAIRS = [
+    public const array PAIRS = [
         'Helvetica' => [
             'A' => [
                 'A' => 20,

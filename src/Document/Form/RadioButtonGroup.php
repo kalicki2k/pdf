@@ -9,6 +9,7 @@ use function implode;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Writer\IndirectObject;
+use Override;
 
 final readonly class RadioButtonGroup extends FormField
 {
@@ -56,6 +57,7 @@ final readonly class RadioButtonGroup extends FormField
         );
     }
 
+    #[Override]
     public function relatedObjectCount(): int
     {
         return count($this->choices) * 3;
@@ -99,6 +101,7 @@ final readonly class RadioButtonGroup extends FormField
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
+    #[Override]
     public function relatedObjects(
         FormFieldRenderContext $context,
         int $fieldObjectId,
@@ -165,6 +168,7 @@ final readonly class RadioButtonGroup extends FormField
         return $objects;
     }
 
+    #[Override]
     public function pageAnnotationObjectIds(int $fieldObjectId, array $relatedObjectIds = []): array
     {
         if (count($relatedObjectIds) !== $this->relatedObjectCount()) {

@@ -213,7 +213,7 @@ final class TableOfContentsBuilderTest extends TestCase
 
     public function testItAddsNamedDestinationsAndLinksForTocEntriesToTheSerializationPlan(): void
     {
-        $plan = (new DocumentSerializationPlanBuilder())->build(
+        $plan = new DocumentSerializationPlanBuilder()->build(
             DefaultDocumentBuilder::make()
                 ->text('Chapter 1')
                 ->outline('Chapter 1')

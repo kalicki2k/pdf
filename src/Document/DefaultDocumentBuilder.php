@@ -2573,7 +2573,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         );
 
         if ($this->tableOfContentsOptions !== null) {
-            $document = (new DocumentTableOfContentsBuilder())->build(
+            $document = new DocumentTableOfContentsBuilder()->build(
                 $document,
                 $this->tableOfContentsOptions,
                 $this->tableOfContentsEntries,
@@ -4998,7 +4998,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         foreach ($path->commands() as $command) {
-            $values = array_map(fn (float $value): string => $this->formatNumber($value), $command['values']);
+            $values = array_map($this->formatNumber(...), $command['values']);
             $lines[] = $values === []
                 ? $command['operator']
                 : implode(' ', $values) . ' ' . $command['operator'];
@@ -5026,7 +5026,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function buildFillColorOperator(Color $color): string
     {
         $components = array_map(
-            fn (float $value): string => $this->formatNumber($value),
+            $this->formatNumber(...),
             $color->components(),
         );
 
@@ -5340,7 +5340,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function colorFillOperator(Color $color): string
     {
         $components = implode(' ', array_map(
-            fn (float $value): string => $this->formatNumber($value),
+            $this->formatNumber(...),
             $color->components(),
         ));
 
@@ -5354,7 +5354,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function colorStrokeOperator(Color $color): string
     {
         $components = implode(' ', array_map(
-            fn (float $value): string => $this->formatNumber($value),
+            $this->formatNumber(...),
             $color->components(),
         ));
 

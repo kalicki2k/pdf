@@ -20,7 +20,7 @@ final class OpenTypeTrueTypeSubsetterTest extends TestCase
         $subsetBytes = $subsetter->subset([0, 2]);
 
         self::assertLessThan(strlen($fontBytes), strlen($subsetBytes));
-        self::assertSame('TestFont-Regular', (new OpenTypeFontParser($subsetBytes))->postScriptName());
+        self::assertSame('TestFont-Regular', new OpenTypeFontParser($subsetBytes)->postScriptName());
     }
 
     public function testItIncludesCompositeComponentGlyphsInTheSubset(): void

@@ -11,6 +11,7 @@ use function implode;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Writer\IndirectObject;
+use Override;
 
 final readonly class ComboBoxField extends WidgetFormField
 {
@@ -92,11 +93,13 @@ final readonly class ComboBoxField extends WidgetFormField
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
+    #[Override]
     public function relatedObjectCount(): int
     {
         return 1;
     }
 
+    #[Override]
     public function relatedObjects(
         FormFieldRenderContext $context,
         int $fieldObjectId,
@@ -115,6 +118,7 @@ final readonly class ComboBoxField extends WidgetFormField
         ];
     }
 
+    #[Override]
     public function needsDefaultTextResources(): bool
     {
         return true;

@@ -20,7 +20,7 @@ final class AnnotationStyleTest extends TestCase
         );
         self::assertSame(
             '<< /W 1 /S /D >>',
-            (new AnnotationBorderStyle(1.0, AnnotationBorderStyleType::DASHED))->pdfDictionaryContents(),
+            new AnnotationBorderStyle(1.0, AnnotationBorderStyleType::DASHED)->pdfDictionaryContents(),
         );
     }
 

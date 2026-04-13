@@ -15,6 +15,7 @@ use InvalidArgumentException;
 use function is_string;
 
 use Kalle\Pdf\Writer\IndirectObject;
+use Override;
 
 final readonly class ListBoxField extends WidgetFormField
 {
@@ -90,11 +91,13 @@ final readonly class ListBoxField extends WidgetFormField
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
+    #[Override]
     public function relatedObjectCount(): int
     {
         return 1;
     }
 
+    #[Override]
     public function relatedObjects(
         FormFieldRenderContext $context,
         int $fieldObjectId,
@@ -113,6 +116,7 @@ final readonly class ListBoxField extends WidgetFormField
         ];
     }
 
+    #[Override]
     public function needsDefaultTextResources(): bool
     {
         return true;
@@ -220,7 +224,7 @@ final readonly class ListBoxField extends WidgetFormField
         }
 
         return '[' . implode(' ', array_map(
-            fn (string $selectedValue): string => $this->pdfString($selectedValue),
+            $this->pdfString(...),
             $value,
         )) . ']';
     }

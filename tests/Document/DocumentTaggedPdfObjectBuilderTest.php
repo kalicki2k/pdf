@@ -74,7 +74,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
             ],
         );
 
-        $structure = (new DocumentTaggedPdfObjectBuilder())->collectTaggedLinkStructure($document, 0);
+        $structure = new DocumentTaggedPdfObjectBuilder()->collectTaggedLinkStructure($document, 0);
 
         self::assertCount(1, $structure['linkEntries']);
         self::assertSame('Read Docs', $structure['linkEntries'][0]['altText']);
@@ -84,7 +84,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
     public function testItBuildsNoTaggedObjectsForPlainDocuments(): void
     {
         $document = new Document();
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
@@ -106,14 +106,14 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
             static fn (): array => [],
         );
 
-        $objects = (new DocumentTaggedPdfObjectBuilder())->buildObjects($document, $state);
+        $objects = new DocumentTaggedPdfObjectBuilder()->buildObjects($document, $state);
 
         self::assertSame([], $objects);
     }
 
     public function testItBuildsDocumentChildrenInReadingOrderForMixedTaggedPdfA1aDocuments(): void
     {
-        $plan = (new DocumentSerializationPlanBuilder())->build(
+        $plan = new DocumentSerializationPlanBuilder()->build(
             DefaultDocumentBuilder::make()
                 ->profile(Profile::pdfA1a())
                 ->title('Archive Copy')
@@ -165,7 +165,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
 
     public function testItBuildsDocumentChildrenInReadingOrderAcrossPages(): void
     {
-        $plan = (new DocumentSerializationPlanBuilder())->build(
+        $plan = new DocumentSerializationPlanBuilder()->build(
             DefaultDocumentBuilder::make()
                 ->profile(Profile::pdfA1a())
                 ->title('Archive Copy')
@@ -204,7 +204,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
 
     public function testItBuildsDocumentChildrenInReadingOrderWithSemanticGraphics(): void
     {
-        $plan = (new DocumentSerializationPlanBuilder())->build(
+        $plan = new DocumentSerializationPlanBuilder()->build(
             DefaultDocumentBuilder::make()
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
@@ -231,7 +231,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
 
     public function testItBuildsDocumentChildrenInReadingOrderWithLinksBetweenContentBlocks(): void
     {
-        $plan = (new DocumentSerializationPlanBuilder())->build(
+        $plan = new DocumentSerializationPlanBuilder()->build(
             DefaultDocumentBuilder::make()
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
@@ -276,7 +276,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
 
     public function testItDoesNotMergeTaggedLinkStructureAcrossPages(): void
     {
-        $plan = (new DocumentSerializationPlanBuilder())->build(
+        $plan = new DocumentSerializationPlanBuilder()->build(
             DefaultDocumentBuilder::make()
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Copy')
@@ -320,7 +320,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
 
     public function testItPlacesTaggedFormStructureAfterMarkedPageContentOnTheSamePage(): void
     {
-        $plan = (new DocumentSerializationPlanBuilder())->build(
+        $plan = new DocumentSerializationPlanBuilder()->build(
             DefaultDocumentBuilder::make()
                 ->profile(Profile::pdfUa1())
                 ->title('Accessible Form')
@@ -349,15 +349,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
         foreach ($objects as $object) {
             $contentsByObjectId[$object->objectId] = $object->contents;
         }
-
-        $documentContents = null;
-
-        foreach ($contentsByObjectId as $contents) {
-            if (str_contains($contents, '/Type /StructElem /S /Document ')) {
-                $documentContents = $contents;
-                break;
-            }
-        }
+        $documentContents = array_find($contentsByObjectId, fn ($contents) => str_contains($contents, '/Type /StructElem /S /Document '));
 
         self::assertIsString($documentContents);
         self::assertSame(1, preg_match('/\/K \[(.*)\]/', $documentContents, $kidMatch));
@@ -366,7 +358,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
         return array_map(
             function (string $objectId) use ($contentsByObjectId): string {
                 self::assertArrayHasKey((int) $objectId, $contentsByObjectId);
-                self::assertSame(1, preg_match('/\/S \/([A-Za-z0-9]+)/', $contentsByObjectId[(int) $objectId], $tagMatch));
+                self::assertSame(1, preg_match('/\/S \/([A-Za-z0-9]+)/', (string) $contentsByObjectId[(int) $objectId], $tagMatch));
 
                 return $tagMatch[1];
             },

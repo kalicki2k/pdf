@@ -24,23 +24,23 @@ use function str_replace;
 /**
  * Builds a minimal serialization plan from a prepared document.
  */
-final class DocumentSerializationPlanBuilder
+final readonly class DocumentSerializationPlanBuilder
 {
     public function __construct(
-        private readonly EncryptionProfileResolver $encryptionProfileResolver = new EncryptionProfileResolver(),
-        private readonly StandardSecurityHandler $standardSecurityHandler = new StandardSecurityHandler(),
-        private readonly EncryptDictionaryBuilder $encryptDictionaryBuilder = new EncryptDictionaryBuilder(),
-        private readonly DocumentSerializationPlanValidator $validator = new DocumentSerializationPlanValidator(),
-        private readonly PdfA1aTaggedStructureValidator $pdfA1aTaggedStructureValidator = new PdfA1aTaggedStructureValidator(),
-        private readonly DocumentSerializationPlanObjectIdAllocator $objectIdAllocator = new DocumentSerializationPlanObjectIdAllocator(),
-        private readonly DocumentPageAndFormObjectBuilder $pageAndFormObjectBuilder = new DocumentPageAndFormObjectBuilder(),
-        private readonly DocumentFontAndImageObjectBuilder $fontAndImageObjectBuilder = new DocumentFontAndImageObjectBuilder(),
-        private readonly DocumentAttachmentObjectBuilder $attachmentObjectBuilder = new DocumentAttachmentObjectBuilder(),
-        private readonly DocumentMetadataObjectBuilder $metadataObjectBuilder = new DocumentMetadataObjectBuilder(),
-        private readonly DocumentOutlineObjectBuilder $outlineObjectBuilder = new DocumentOutlineObjectBuilder(),
-        private readonly DocumentTaggedPdfObjectBuilder $taggedPdfObjectBuilder = new DocumentTaggedPdfObjectBuilder(),
-        private readonly PdfAObjectGraphValidator $pdfAObjectGraphValidator = new PdfAObjectGraphValidator(),
-        private readonly PdfA1ObjectGraphValidator $pdfA1ObjectGraphValidator = new PdfA1ObjectGraphValidator(),
+        private EncryptionProfileResolver $encryptionProfileResolver = new EncryptionProfileResolver(),
+        private StandardSecurityHandler $standardSecurityHandler = new StandardSecurityHandler(),
+        private EncryptDictionaryBuilder $encryptDictionaryBuilder = new EncryptDictionaryBuilder(),
+        private DocumentSerializationPlanValidator $validator = new DocumentSerializationPlanValidator(),
+        private PdfA1aTaggedStructureValidator $pdfA1aTaggedStructureValidator = new PdfA1aTaggedStructureValidator(),
+        private DocumentSerializationPlanObjectIdAllocator $objectIdAllocator = new DocumentSerializationPlanObjectIdAllocator(),
+        private DocumentPageAndFormObjectBuilder $pageAndFormObjectBuilder = new DocumentPageAndFormObjectBuilder(),
+        private DocumentFontAndImageObjectBuilder $fontAndImageObjectBuilder = new DocumentFontAndImageObjectBuilder(),
+        private DocumentAttachmentObjectBuilder $attachmentObjectBuilder = new DocumentAttachmentObjectBuilder(),
+        private DocumentMetadataObjectBuilder $metadataObjectBuilder = new DocumentMetadataObjectBuilder(),
+        private DocumentOutlineObjectBuilder $outlineObjectBuilder = new DocumentOutlineObjectBuilder(),
+        private DocumentTaggedPdfObjectBuilder $taggedPdfObjectBuilder = new DocumentTaggedPdfObjectBuilder(),
+        private PdfAObjectGraphValidator $pdfAObjectGraphValidator = new PdfAObjectGraphValidator(),
+        private PdfA1ObjectGraphValidator $pdfA1ObjectGraphValidator = new PdfA1ObjectGraphValidator(),
     ) {
     }
 

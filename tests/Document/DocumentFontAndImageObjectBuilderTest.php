@@ -35,7 +35,7 @@ final class DocumentFontAndImageObjectBuilderTest extends TestCase
             ),
         ]);
 
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
@@ -57,7 +57,7 @@ final class DocumentFontAndImageObjectBuilderTest extends TestCase
             static fn (): array => [],
         );
 
-        $objects = (new DocumentFontAndImageObjectBuilder())->buildObjects($document, $state);
+        $objects = new DocumentFontAndImageObjectBuilder()->buildObjects($document, $state);
         $fontObjectId = current($state->fontObjectIds);
 
         self::assertNotFalse($fontObjectId);
@@ -76,7 +76,7 @@ final class DocumentFontAndImageObjectBuilderTest extends TestCase
             ),
         ]);
 
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
@@ -98,7 +98,7 @@ final class DocumentFontAndImageObjectBuilderTest extends TestCase
             static fn (): array => [],
         );
 
-        $objects = (new DocumentFontAndImageObjectBuilder())->buildObjects($document, $state);
+        $objects = new DocumentFontAndImageObjectBuilder()->buildObjects($document, $state);
 
         self::assertCount(2, $objects);
         self::assertTrue($this->containsObjectId($objects, $state->imageObjectIds[$image->key()]));
@@ -110,12 +110,6 @@ final class DocumentFontAndImageObjectBuilderTest extends TestCase
      */
     private function containsObjectId(array $objects, int $objectId): bool
     {
-        foreach ($objects as $object) {
-            if ($object->objectId === $objectId) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($objects, fn ($object) => $object->objectId === $objectId);
     }
 }

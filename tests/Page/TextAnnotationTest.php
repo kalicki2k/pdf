@@ -34,7 +34,7 @@ final class TextAnnotationTest extends TestCase
 
     public function testItCanReferenceAPopupAnnotation(): void
     {
-        $annotation = (new TextAnnotation(10, 20, 18, 18, 'Kommentar'))
+        $annotation = new TextAnnotation(10, 20, 18, 18, 'Kommentar')
             ->withPopup(new PopupAnnotationDefinition(20, 30, 60, 40, true));
         $context = new PageAnnotationRenderContext(3, false, [1 => 3], [], null, null, 5, [6]);
 

@@ -7,9 +7,9 @@ namespace Kalle\Pdf\Encryption;
 use Closure;
 use RuntimeException;
 
-final class AesCbcCipher
+final readonly class AesCbcCipher
 {
-    private const IV_LENGTH = 16;
+    private const int IV_LENGTH = 16;
 
     private Closure $ivGenerator;
 

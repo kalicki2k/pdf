@@ -31,7 +31,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
 
         $serialized = implode("\n", array_map(
             static fn ($object): string => $object->contents,
-            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
         ));
 
         self::assertStringContainsString('/MarkInfo << /Marked true >>', $serialized);
@@ -48,7 +48,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
 
         $serialized = implode("\n", array_map(
             static fn ($object): string => $object->contents,
-            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
         ));
 
         self::assertStringContainsString('/A << /S /URI /URI (https://example.com/spec) >>', $serialized);
@@ -62,7 +62,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
 
         $serialized = implode("\n", array_map(
             static fn ($object): string => $object->contents,
-            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
         ));
 
         self::assertStringContainsString('/A << /S /URI /URI (https://example.com/spec) >>', $serialized);
@@ -80,7 +80,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             'Profile PDF/A-2u does not allow popup related objects in the current PDF/A-2/3 scope for page annotation 1 on page 1.',
         );
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA2uAnnotationsOutsideTheExplicitScope(): void
@@ -94,7 +94,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             'Profile PDF/A-2u only allows Link, Text, Highlight and FreeText annotations in the current PDF/A-2/3 scope on page 1.',
         );
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA2uAcroFormsInTheCurrentScope(): void
@@ -108,7 +108,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             'Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.',
         );
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA3bPageLevelFileAttachmentAnnotations(): void
@@ -134,7 +134,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             'Profile PDF/A-3b does not allow page-level file attachment annotations in the current PDF/A-2/3 scope. Use document-level associated files instead.',
         );
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItAllowsPdfA3uDocumentAssociatedFilesWithinTheCurrentScope(): void
@@ -151,7 +151,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
 
         $serialized = implode("\n", array_map(
             static fn ($object): string => $object->contents,
-            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
         ));
 
         self::assertStringContainsString('/AFRelationship /Data', $serialized);
@@ -174,7 +174,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
 
         $serialized = implode("\n", array_map(
             static fn ($object): string => $object->contents,
-            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
         ));
 
         self::assertStringContainsString('/AFRelationship /Data', $serialized);
@@ -194,7 +194,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             'Profile PDF/A-2a only allows tagged link annotations in the current PDF/A-2A scope; other page annotations remain blocked on page 1.',
         );
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA3aNonLinkPageAnnotationsUntilTaggedAnnotationSupportExists(): void
@@ -214,7 +214,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
             'Profile PDF/A-3a only allows tagged link annotations in the current PDF/A-3A scope; other page annotations remain blocked on page 1.',
         );
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     private function pdfA2BaselineBuilder(Profile $profile): DefaultDocumentBuilder

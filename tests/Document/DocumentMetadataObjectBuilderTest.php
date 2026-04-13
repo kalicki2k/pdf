@@ -31,7 +31,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
                 pdfaOutputIntent: new PdfAOutputIntent($path, 'Custom RGB', 'Custom profile', 4),
             );
 
-            $entries = (new DocumentMetadataObjectBuilder())->buildCatalogEntries($document, 5, 6);
+            $entries = new DocumentMetadataObjectBuilder()->buildCatalogEntries($document, 5, 6);
 
             self::assertSame([
                 '/Metadata 5 0 R',
@@ -49,7 +49,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             title: 'Archive Copy',
             author: 'Kalle',
         );
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
@@ -75,7 +75,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
         self::assertNull($state->iccProfileObjectId);
         self::assertNull($state->infoObjectId);
 
-        $entries = (new DocumentMetadataObjectBuilder())->buildCatalogEntries($document, $state->metadataObjectId, $state->iccProfileObjectId);
+        $entries = new DocumentMetadataObjectBuilder()->buildCatalogEntries($document, $state->metadataObjectId, $state->iccProfileObjectId);
 
         self::assertSame([
             '/Metadata ' . $state->metadataObjectId . ' 0 R',
@@ -89,7 +89,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             title: 'Example Title',
             encryption: Encryption::rc4_128('user', 'owner'),
         );
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
@@ -111,7 +111,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             static fn (): array => [],
         );
 
-        $objects = (new DocumentMetadataObjectBuilder())->buildObjects(
+        $objects = new DocumentMetadataObjectBuilder()->buildObjects(
             $document,
             $state,
             new DateTimeImmutable('2026-04-12T10:00:00+02:00'),
@@ -136,7 +136,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             creator: 'Rocket 🚀',
             creatorTool: 'pdf2 Prüfsuite',
         );
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
@@ -158,7 +158,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             static fn (): array => [],
         );
 
-        $objects = (new DocumentMetadataObjectBuilder())->buildObjects(
+        $objects = new DocumentMetadataObjectBuilder()->buildObjects(
             $document,
             $state,
             new DateTimeImmutable('2026-04-12T10:00:00+02:00'),
@@ -191,7 +191,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             creator: 'Rocket 🚀 \\ QA',
             creatorTool: 'pdf2 € suite',
         );
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
@@ -213,7 +213,7 @@ final class DocumentMetadataObjectBuilderTest extends TestCase
             static fn (): array => [],
         );
 
-        $objects = (new DocumentMetadataObjectBuilder())->buildObjects(
+        $objects = new DocumentMetadataObjectBuilder()->buildObjects(
             $document,
             $state,
             new DateTimeImmutable('2026-04-12T10:00:00+02:00'),

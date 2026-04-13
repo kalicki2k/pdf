@@ -103,7 +103,7 @@ final readonly class ImageSource
                 height: $imageInfo[1],
                 colorSpace: self::jpegColorSpaceFromImageInfo($path, $imageInfo),
             ),
-            IMAGETYPE_PNG => (new PngImageDecoder())->decode($data, $path),
+            IMAGETYPE_PNG => new PngImageDecoder()->decode($data, $path),
             default => throw new InvalidArgumentException(sprintf(
                 "Image path '%s' uses an unsupported image format.",
                 $path,

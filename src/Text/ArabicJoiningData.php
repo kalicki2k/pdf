@@ -9,7 +9,7 @@ final readonly class ArabicJoiningData
     /**
      * @var array<string, ArabicJoiningType>
      */
-    private const MAP = [
+    private const array MAP = [
         'ا' => ArabicJoiningType::RIGHT,
         'أ' => ArabicJoiningType::RIGHT,
         'إ' => ArabicJoiningType::RIGHT,

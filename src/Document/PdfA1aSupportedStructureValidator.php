@@ -21,10 +21,10 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 
 use function sprintf;
 
-final class PdfA1aSupportedStructureValidator
+final readonly class PdfA1aSupportedStructureValidator
 {
     public function __construct(
-        private readonly TaggedStructureRoleRegistry $roleRegistry = new TaggedStructureRoleRegistry(),
+        private TaggedStructureRoleRegistry $roleRegistry = new TaggedStructureRoleRegistry(),
     ) {
     }
 

@@ -6,13 +6,13 @@ namespace Kalle\Pdf\Font;
 
 final class StandardFontMetrics
 {
-    private const FALLBACK_GLYPH_WIDTH = 600;
-    private const ASCENT_SCALE = 1.0;
+    private const int FALLBACK_GLYPH_WIDTH = 600;
+    private const float ASCENT_SCALE = 1.0;
 
     /**
      * Widths are stored in 1000-unit text space for printable ASCII characters.
      */
-    private const WIDTHS = [
+    private const array WIDTHS = [
         'Helvetica' => [
             ' ' => 278, '!' => 278, '"' => 355, '#' => 556, '$' => 556, '%' => 889, '&' => 667, '\'' => 222,
             '(' => 333, ')' => 333, '*' => 389, '+' => 584, ',' => 278, '-' => 333, '.' => 278, '/' => 278,
@@ -132,7 +132,7 @@ final class StandardFontMetrics
      *
      * @var array<int, int>
      */
-    private const SYMBOL_WIDTHS = [
+    private const array SYMBOL_WIDTHS = [
         32 => 250,
         33 => 333,
         34 => 713,
@@ -329,7 +329,7 @@ final class StandardFontMetrics
      *
      * @var array<int, int>
      */
-    private const ZAPF_DINGBATS_WIDTHS = [
+    private const array ZAPF_DINGBATS_WIDTHS = [
         32 => 278,
         33 => 974,
         34 => 961,

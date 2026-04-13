@@ -13,7 +13,7 @@ final class StandardFontZapfDingbatsMap
      *
      * @var array<string, string>
      */
-    public const MAP = [
+    public const array MAP = [
         '→' => "\xD5",
         '↔' => "\xD6",
         '↕' => "\xD7",

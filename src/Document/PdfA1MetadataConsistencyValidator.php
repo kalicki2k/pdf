@@ -25,11 +25,11 @@ use function sprintf;
 use function strip_tags;
 use function trim;
 
-final class PdfA1MetadataConsistencyValidator
+final readonly class PdfA1MetadataConsistencyValidator
 {
     public function __construct(
-        private readonly DocumentInfoDictionaryBuilder $infoDictionaryBuilder = new DocumentInfoDictionaryBuilder(),
-        private readonly XmpMetadata $xmpMetadata = new XmpMetadata(),
+        private DocumentInfoDictionaryBuilder $infoDictionaryBuilder = new DocumentInfoDictionaryBuilder(),
+        private XmpMetadata $xmpMetadata = new XmpMetadata(),
     ) {
     }
 

@@ -8,12 +8,12 @@ use DateTimeImmutable;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Metadata\IccProfile;
 
-final class PdfA1PolicyEnforcer
+final readonly class PdfA1PolicyEnforcer
 {
     public function __construct(
-        private readonly PdfA1ActionPolicy $actionPolicy = new PdfA1ActionPolicy(),
-        private readonly PdfA1MetadataConsistencyValidator $metadataConsistencyValidator = new PdfA1MetadataConsistencyValidator(),
-        private readonly DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
+        private PdfA1ActionPolicy $actionPolicy = new PdfA1ActionPolicy(),
+        private PdfA1MetadataConsistencyValidator $metadataConsistencyValidator = new PdfA1MetadataConsistencyValidator(),
+        private DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
     ) {
     }
 

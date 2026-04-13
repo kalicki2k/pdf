@@ -45,7 +45,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->build();
 
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
         $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
         $appearanceObjectId = $state->pageAnnotationAppearanceObjectIds[0][0];
 
@@ -78,7 +78,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             . ' 0 R >>.',
         );
 
-        (new PdfA1ObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfA1ObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsMissingCatalogMetadataReferences(): void
@@ -89,7 +89,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             keywords: 'archive, pdfa',
         );
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
 
         self::assertNotNull($state->metadataObjectId);
 
@@ -116,7 +116,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF/A-1 catalog must reference the metadata stream.');
 
-        (new PdfA1ObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfA1ObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsMissingTaggedCatalogStructureReferences(): void
@@ -131,7 +131,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ))
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
 
         self::assertNotNull($state->structTreeRootObjectId);
 
@@ -158,7 +158,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF/A-1 tagged catalog must reference the StructTreeRoot object.');
 
-        (new PdfA1ObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfA1ObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsMissingAcroFormFieldReferencesInTheFinalObjectGraph(): void
@@ -170,7 +170,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
 
         self::assertNotNull($state->acroFormObjectId);
 
@@ -201,7 +201,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             $state->acroFormFieldObjectIds[0],
         ));
 
-        (new PdfA1ObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfA1ObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsAnnotationObjectsWithoutParentPageReferences(): void
@@ -217,7 +217,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
             ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA')
             ->build();
         $state = $this->allocateState($document);
-        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
         $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
         $pageObjectId = $state->pageObjectIds[0];
 
@@ -244,7 +244,7 @@ final class PdfA1ObjectGraphValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PDF/A-1 page annotation 1 on page 1 must reference its parent page object.');
 
-        (new PdfA1ObjectGraphValidator())->assertValid($document, $state, $objects);
+        new PdfA1ObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
     private function allocateState(Document $document): DocumentSerializationPlanBuildState

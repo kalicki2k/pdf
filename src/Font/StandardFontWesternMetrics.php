@@ -11,7 +11,7 @@ final class StandardFontWesternMetrics
      *
      * @var array<string, array<string, int>>
      */
-    public const WIDTHS = [
+    public const array WIDTHS = [
         'Helvetica' => [
             '¡' => 333,
             '¢' => 556,

@@ -49,7 +49,7 @@ final class DocumentDebugIntegrationTest extends TestCase
 
         $output = new StringOutput();
 
-        (new DocumentRenderer())->write($document, $output);
+        new DocumentRenderer()->write($document, $output);
         $records = $sink->records();
 
         self::assertSame('%PDF-', substr($output->contents(), 0, 5));
@@ -84,7 +84,7 @@ final class DocumentDebugIntegrationTest extends TestCase
             ])
             ->build();
 
-        (new DocumentRenderer())->write($document, new StringOutput());
+        new DocumentRenderer()->write($document, new StringOutput());
         $events = $this->eventsForChannel($sink->records(), 'performance');
 
         self::assertContains('text.content.segments', $events);

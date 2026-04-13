@@ -7,16 +7,16 @@ namespace Kalle\Pdf\Encryption;
 use Closure;
 use InvalidArgumentException;
 
-final class StandardSecurityHandler
+final readonly class StandardSecurityHandler
 {
-    private const PASSWORD_PADDING = "\x28\xBF\x4E\x5E\x4E\x75\x8A\x41\x64\x00\x4E\x56\xFF\xFA\x01\x08"
+    private const string PASSWORD_PADDING = "\x28\xBF\x4E\x5E\x4E\x75\x8A\x41\x64\x00\x4E\x56\xFF\xFA\x01\x08"
         . "\x2E\x2E\x00\xB6\xD0\x68\x3E\x80\x2F\x0C\xA9\xFE\x64\x53\x69\x7A";
 
     public function __construct(
-        private readonly Rc4Cipher $rc4Cipher = new Rc4Cipher(),
-        private readonly PermissionBitsResolver $permissionBitsResolver = new PermissionBitsResolver(),
-        private readonly Aes256CbcNoPaddingCipher $aes256CbcNoPaddingCipher = new Aes256CbcNoPaddingCipher(),
-        private readonly Aes256EcbNoPaddingCipher $aes256EcbNoPaddingCipher = new Aes256EcbNoPaddingCipher(),
+        private Rc4Cipher $rc4Cipher = new Rc4Cipher(),
+        private PermissionBitsResolver $permissionBitsResolver = new PermissionBitsResolver(),
+        private Aes256CbcNoPaddingCipher $aes256CbcNoPaddingCipher = new Aes256CbcNoPaddingCipher(),
+        private Aes256EcbNoPaddingCipher $aes256EcbNoPaddingCipher = new Aes256EcbNoPaddingCipher(),
         ?callable $randomBytesGenerator = null,
     ) {
         $this->randomBytesGenerator = $randomBytesGenerator instanceof Closure

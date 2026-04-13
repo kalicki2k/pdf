@@ -14,13 +14,13 @@ use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 
-final class DocumentSerializationPlanObjectIdAllocator
+final readonly class DocumentSerializationPlanObjectIdAllocator
 {
     public function __construct(
-        private readonly DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
-        private readonly TaggedStructureCollector $taggedStructureCollector = new TaggedStructureCollector(),
-        private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
-        private readonly PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
+        private DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
+        private TaggedStructureCollector $taggedStructureCollector = new TaggedStructureCollector(),
+        private PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
+        private PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
     ) {
     }
 

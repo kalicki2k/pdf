@@ -11,11 +11,11 @@ use Kalle\Pdf\Writer\IndirectObject;
 
 use function str_replace;
 
-final class DocumentMetadataObjectBuilder
+final readonly class DocumentMetadataObjectBuilder
 {
     public function __construct(
-        private readonly DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
-        private readonly DocumentInfoDictionaryBuilder $infoDictionaryBuilder = new DocumentInfoDictionaryBuilder(),
+        private DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
+        private DocumentInfoDictionaryBuilder $infoDictionaryBuilder = new DocumentInfoDictionaryBuilder(),
     ) {
     }
 

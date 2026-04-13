@@ -237,12 +237,6 @@ final class DocumentBuildException extends RuntimeException
      */
     private static function containsAny(string $haystack, array $needles): bool
     {
-        foreach ($needles as $needle) {
-            if (str_contains($haystack, $needle)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($needles, fn ($needle) => str_contains($haystack, (string) $needle));
     }
 }

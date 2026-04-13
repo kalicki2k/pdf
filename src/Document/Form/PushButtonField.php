@@ -13,6 +13,8 @@ use Kalle\Pdf\Writer\IndirectObject;
 
 use function max;
 
+use Override;
+
 final readonly class PushButtonField extends WidgetFormField
 {
     public function __construct(
@@ -71,11 +73,13 @@ final readonly class PushButtonField extends WidgetFormField
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
+    #[Override]
     public function relatedObjectCount(): int
     {
         return 1;
     }
 
+    #[Override]
     public function relatedObjects(
         FormFieldRenderContext $context,
         int $fieldObjectId,
@@ -94,6 +98,7 @@ final readonly class PushButtonField extends WidgetFormField
         ];
     }
 
+    #[Override]
     public function needsDefaultTextResources(): bool
     {
         return true;

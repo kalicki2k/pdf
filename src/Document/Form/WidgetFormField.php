@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Form;
 
 use InvalidArgumentException;
+use Override;
 
 abstract readonly class WidgetFormField extends FormField
 {
@@ -72,6 +73,7 @@ abstract readonly class WidgetFormField extends FormField
         return $entries;
     }
 
+    #[Override]
     public function pageAnnotationObjectIds(int $fieldObjectId, array $relatedObjectIds = []): array
     {
         return [

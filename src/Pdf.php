@@ -90,7 +90,7 @@ final readonly class Pdf
         OpenSslPemSigningCredentials $credentials,
         PdfSignatureOptions $options,
     ): string {
-        return (new DocumentSigner())->contents($document, $credentials, $options);
+        return new DocumentSigner()->contents($document, $credentials, $options);
     }
 
     public static function measureTextWidth(string $text, float $fontSize, string | StandardFont $font = StandardFont::HELVETICA): float

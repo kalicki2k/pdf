@@ -12,29 +12,23 @@ use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextSegment;
 
-final class TableCell
+final readonly class TableCell
 {
-    public readonly TableCellContent $content;
-    public readonly string $text;
-    public readonly int $colspan;
-    public readonly int $rowspan;
-    public readonly ?Color $backgroundColor;
-    public readonly VerticalAlign $verticalAlign;
-    public readonly ?TableHeaderScope $headerScope;
-    public readonly ?TextAlign $horizontalAlign;
-    public readonly ?CellPadding $padding;
-    public readonly ?Border $border;
+    public TableCellContent $content;
+    public string $text;
+    public int $colspan;
+    public int $rowspan;
 
     public function __construct(
         string | TableCellContent $content,
         int $colspan = 1,
         int $rowspan = 1,
-        ?Color $backgroundColor = null,
-        VerticalAlign $verticalAlign = VerticalAlign::TOP,
-        ?TableHeaderScope $headerScope = null,
-        ?TextAlign $horizontalAlign = null,
-        ?CellPadding $padding = null,
-        ?Border $border = null,
+        public ?Color $backgroundColor = null,
+        public VerticalAlign $verticalAlign = VerticalAlign::TOP,
+        public ?TableHeaderScope $headerScope = null,
+        public ?TextAlign $horizontalAlign = null,
+        public ?CellPadding $padding = null,
+        public ?Border $border = null,
     ) {
         if ($colspan < 1) {
             throw new InvalidArgumentException('Table cell colspan must be at least 1.');
@@ -50,12 +44,6 @@ final class TableCell
         $this->text = $this->content->plainText;
         $this->colspan = $colspan;
         $this->rowspan = $rowspan;
-        $this->backgroundColor = $backgroundColor;
-        $this->verticalAlign = $verticalAlign;
-        $this->headerScope = $headerScope;
-        $this->horizontalAlign = $horizontalAlign;
-        $this->padding = $padding;
-        $this->border = $border;
     }
 
     public static function text(string $text, int $colspan = 1, int $rowspan = 1): self

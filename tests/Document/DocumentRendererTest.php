@@ -843,7 +843,7 @@ final class DocumentRendererTest extends TestCase
     public function testItRendersAnAcroFormAndWidgetField(): void
     {
         $document = new Document(
-            acroForm: (new AcroForm())->withField($this->testWidgetField()),
+            acroForm: new AcroForm()->withField($this->testWidgetField()),
         );
 
         $renderer = new DocumentRenderer();
@@ -901,7 +901,7 @@ final class DocumentRendererTest extends TestCase
         $this->expectExceptionMessage('Document build failed for profile PDF/A-1a.');
         $this->expectExceptionMessage('Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.');
 
-        (new DocumentRenderer())->write($document, new StringOutput());
+        new DocumentRenderer()->write($document, new StringOutput());
     }
 
     public function testItRendersTaggedPdfA1aRadioButtonGroups(): void
@@ -918,7 +918,7 @@ final class DocumentRendererTest extends TestCase
         $this->expectExceptionMessage('Document build failed for profile PDF/A-1a.');
         $this->expectExceptionMessage('Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.');
 
-        (new DocumentRenderer())->write($document, new StringOutput());
+        new DocumentRenderer()->write($document, new StringOutput());
     }
 
     public function testItRendersATextField(): void
@@ -1081,7 +1081,7 @@ final class DocumentRendererTest extends TestCase
             'Profile PDF/A-1a only allows text and choice fields in the PDF/A-1a form policy.',
         );
 
-        (new DocumentRenderer())->write($document, new StringOutput());
+        new DocumentRenderer()->write($document, new StringOutput());
     }
 
     public function testItRendersASignatureField(): void
@@ -1475,7 +1475,7 @@ final class DocumentRendererTest extends TestCase
             ->newPage()
             ->addOutline(
                 Outline::fit('Whole Page', 1)
-                    ->withStyle((new OutlineStyle())->withColor(Color::rgb(0.2, 0.4, 0.6))->withBold()->withItalic()->withAdditionalFlags(4)),
+                    ->withStyle(new OutlineStyle()->withColor(Color::rgb(0.2, 0.4, 0.6))->withBold()->withItalic()->withAdditionalFlags(4)),
             )
             ->addOutline(Outline::fitHorizontal('Fit Horizontally', 2, 700)->asGoToAction())
             ->addOutline(Outline::fitRectangle('Fit Rectangle', 3, 40, 100, 220, 620))

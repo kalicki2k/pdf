@@ -203,7 +203,7 @@ final readonly class PolygonAnnotation implements AppearanceStreamAnnotation, Pa
         return [
             IndirectObject::plain(
                 $context->relatedObjectId(0),
-                (new PopupAnnotation($this->popup))->pdfObjectContents($context),
+                new PopupAnnotation($this->popup)->pdfObjectContents($context),
             ),
         ];
     }

@@ -37,7 +37,7 @@ final class OutlineTest extends TestCase
     public function testItCreatesStyledAlternativeDestinations(): void
     {
         $outline = Outline::fitRectangle('Window', 4, 10, 20, 210, 320)
-            ->withStyle((new OutlineStyle())->withColor(Color::hex('#336699'))->withBold()->withItalic()->withAdditionalFlags(4))
+            ->withStyle(new OutlineStyle()->withColor(Color::hex('#336699'))->withBold()->withItalic()->withAdditionalFlags(4))
             ->asGoToAction();
 
         self::assertTrue($outline->destination->isFitRectangle());

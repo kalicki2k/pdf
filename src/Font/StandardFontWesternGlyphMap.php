@@ -9,7 +9,7 @@ final class StandardFontWesternGlyphMap
     /**
      * @var array<string, string>
      */
-    public const MAP = [
+    public const array MAP = [
         '¡' => 'exclamdown',
         '¢' => 'cent',
         '£' => 'sterling',

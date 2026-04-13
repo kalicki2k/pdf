@@ -15,7 +15,7 @@ final class EncryptionProfileResolverTest extends TestCase
 {
     public function testItResolvesRc4128ForSupportedProfiles(): void
     {
-        $profile = (new EncryptionProfileResolver())->resolve(
+        $profile = new EncryptionProfileResolver()->resolve(
             Profile::pdf14(),
             Encryption::rc4_128('user', 'owner'),
         );
@@ -38,7 +38,7 @@ final class EncryptionProfileResolverTest extends TestCase
 
     public function testItResolvesAes128ForSupportedProfiles(): void
     {
-        $profile = (new EncryptionProfileResolver())->resolve(
+        $profile = new EncryptionProfileResolver()->resolve(
             Profile::pdf16(),
             Encryption::aes128('user', 'owner'),
         );
@@ -71,7 +71,7 @@ final class EncryptionProfileResolverTest extends TestCase
 
     public function testItResolvesAes256ForSupportedProfiles(): void
     {
-        $profile = (new EncryptionProfileResolver())->resolve(
+        $profile = new EncryptionProfileResolver()->resolve(
             Profile::pdf17(),
             Encryption::aes256('user', 'owner'),
         );

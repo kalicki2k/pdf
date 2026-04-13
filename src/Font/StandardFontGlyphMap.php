@@ -11,7 +11,7 @@ final class StandardFontGlyphMap
     /**
      * @var array<string, string>
      */
-    private const SYMBOL_NAME_TO_BYTE = [
+    private const array SYMBOL_NAME_TO_BYTE = [
         'space' => "\x20",
         'exclam' => "\x21",
         'universal' => "\x22",
@@ -206,7 +206,7 @@ final class StandardFontGlyphMap
     /**
      * @var array<string, string>
      */
-    private const ZAPF_DINGBATS_NAME_TO_BYTE = [
+    private const array ZAPF_DINGBATS_NAME_TO_BYTE = [
         'space' => "\x20",
         'a1' => "\x21",
         'a2' => "\x22",
@@ -507,7 +507,7 @@ final class StandardFontGlyphMap
         }
 
         $map = self::nameToByteMap($font);
-        $supportedCodes = array_flip(array_map('ord', array_values($map)));
+        $supportedCodes = array_flip(array_map(ord(...), array_values($map)));
         $encoded = '';
 
         foreach ($glyphCodes as $glyphCode) {

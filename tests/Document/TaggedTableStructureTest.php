@@ -58,7 +58,7 @@ final class TaggedTableStructureTest extends TestCase
             ->build();
 
         $output = new StringOutput();
-        (new DocumentRenderer())->write($document, $output);
+        new DocumentRenderer()->write($document, $output);
         $pdf = $output->contents();
 
         self::assertStringContainsString('/Type /StructElem /S /Table', $pdf);

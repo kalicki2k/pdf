@@ -28,7 +28,7 @@ final class DocumentAttachmentObjectBuilderTest extends TestCase
             ],
         );
 
-        $catalogEntries = (new DocumentAttachmentObjectBuilder())->buildCatalogEntries($document, [6]);
+        $catalogEntries = new DocumentAttachmentObjectBuilder()->buildCatalogEntries($document, [6]);
 
         self::assertSame([
             '/Names << /EmbeddedFiles << /Names [(data.xml) 6 0 R] >> >>',
@@ -48,7 +48,7 @@ final class DocumentAttachmentObjectBuilderTest extends TestCase
                 ),
             ],
         );
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             static fn (int $nextStructParentId): array => [
                 'linkEntries' => [],
@@ -70,7 +70,7 @@ final class DocumentAttachmentObjectBuilderTest extends TestCase
             static fn (): array => [],
         );
 
-        $objects = (new DocumentAttachmentObjectBuilder())->buildObjects($document, $state);
+        $objects = new DocumentAttachmentObjectBuilder()->buildObjects($document, $state);
 
         self::assertCount(2, $objects);
         self::assertStringContainsString('/Type /EmbeddedFile', $objects[0]->contents);

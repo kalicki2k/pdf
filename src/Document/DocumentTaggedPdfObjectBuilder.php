@@ -26,10 +26,10 @@ use function preg_match;
 use function sprintf;
 use function usort;
 
-final class DocumentTaggedPdfObjectBuilder
+final readonly class DocumentTaggedPdfObjectBuilder
 {
     public function __construct(
-        private readonly PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
+        private PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
     ) {
     }
 
@@ -346,21 +346,21 @@ final class DocumentTaggedPdfObjectBuilder
 
         $objects[] = new IndirectObject(
             $state->structTreeRootObjectId,
-            (new StructTreeRoot([$state->documentStructElemObjectId], $state->parentTreeObjectId, $roleMap))->objectContents(),
+            new StructTreeRoot([$state->documentStructElemObjectId], $state->parentTreeObjectId, $roleMap)->objectContents(),
         );
         $objects[] = new IndirectObject(
             $state->documentStructElemObjectId,
-            (new StructElem('Document', $state->structTreeRootObjectId, $documentKidObjectIds))->objectContents(),
+            new StructElem('Document', $state->structTreeRootObjectId, $documentKidObjectIds)->objectContents(),
         );
 
         foreach ($state->taggedStructure->containerEntries as $containerEntry) {
             $objects[] = new IndirectObject(
                 $state->taggedStructureObjectIds->genericStructElemObjectIds[$containerEntry['key']],
-                (new StructElem(
+                new StructElem(
                     $containerEntry['tag'],
                     $this->resolveParentObjectId($containerEntry['key'], $state),
                     $this->containerKidObjectIds($containerEntry['childKeys'], $state),
-                ))->objectContents(),
+                )->objectContents(),
             );
         }
 
@@ -390,31 +390,31 @@ final class DocumentTaggedPdfObjectBuilder
                 $parentTreeEntries[$structParentId] = $this->lookupObjectIds($formKeys, $state->taggedFormStructElemObjectIds);
             }
 
-            $objects[] = new IndirectObject($state->parentTreeObjectId, (new ParentTree($parentTreeEntries))->objectContents());
+            $objects[] = new IndirectObject($state->parentTreeObjectId, new ParentTree($parentTreeEntries)->objectContents());
         }
 
         foreach ($state->taggedStructure->figureEntries as $figureEntry) {
             $objects[] = new IndirectObject(
                 $state->taggedStructureObjectIds->figureStructElemObjectIds[$figureEntry['key']],
-                (new StructElem(
+                new StructElem(
                     'Figure',
                     $this->resolveParentObjectId($figureEntry['key'], $state),
                     pageObjectId: $state->pageObjectIds[$figureEntry['pageIndex']],
                     altText: $figureEntry['altText'],
                     markedContentId: $figureEntry['markedContentId'],
-                ))->objectContents(),
+                )->objectContents(),
             );
         }
 
         foreach ($state->taggedStructure->textEntries as $textEntry) {
             $objects[] = new IndirectObject(
                 $state->taggedStructureObjectIds->textStructElemObjectIds[$textEntry['key']],
-                (new StructElem(
+                new StructElem(
                     $textEntry['tag'],
                     $this->resolveParentObjectId($textEntry['key'], $state),
                     pageObjectId: $state->pageObjectIds[$textEntry['pageIndex']],
                     markedContentId: $textEntry['markedContentId'],
-                ))->objectContents(),
+                )->objectContents(),
             );
         }
 
@@ -427,36 +427,36 @@ final class DocumentTaggedPdfObjectBuilder
 
             $objects[] = new IndirectObject(
                 $state->taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']],
-                (new StructElem('L', $this->resolveParentObjectId($listEntry['key'], $state), $listKidObjectIds))->objectContents(),
+                new StructElem('L', $this->resolveParentObjectId($listEntry['key'], $state), $listKidObjectIds)->objectContents(),
             );
 
             foreach ($listEntry['itemEntries'] as $itemEntry) {
                 $objects[] = new IndirectObject(
                     $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
-                    (new StructElem(
+                    new StructElem(
                         'LI',
                         $state->taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']],
                         [
                             $state->taggedStructureObjectIds->listLabelStructElemObjectIds[$itemEntry['labelKey']],
                             $state->taggedStructureObjectIds->listBodyStructElemObjectIds[$itemEntry['bodyKey']],
                         ],
-                    ))->objectContents(),
+                    )->objectContents(),
                 );
                 $objects[] = new IndirectObject(
                     $state->taggedStructureObjectIds->listLabelStructElemObjectIds[$itemEntry['labelKey']],
-                    (new StructElem(
+                    new StructElem(
                         'Lbl',
                         $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
                         kidEntries: $this->taggedMarkedContentKidEntries([$itemEntry['labelReference']], $state->pageObjectIds),
-                    ))->objectContents(),
+                    )->objectContents(),
                 );
                 $objects[] = new IndirectObject(
                     $state->taggedStructureObjectIds->listBodyStructElemObjectIds[$itemEntry['bodyKey']],
-                    (new StructElem(
+                    new StructElem(
                         'LBody',
                         $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
                         kidEntries: $this->taggedMarkedContentKidEntries([$itemEntry['bodyReference']], $state->pageObjectIds),
-                    ))->objectContents(),
+                    )->objectContents(),
                 );
             }
         }
@@ -481,18 +481,18 @@ final class DocumentTaggedPdfObjectBuilder
 
             $objects[] = new IndirectObject(
                 $state->taggedStructureObjectIds->tableStructElemObjectIds[$tableStructKey],
-                (new StructElem('Table', $this->resolveParentObjectId($tableStructKey, $state), $tableKidObjectIds))->objectContents(),
+                new StructElem('Table', $this->resolveParentObjectId($tableStructKey, $state), $tableKidObjectIds)->objectContents(),
             );
 
             if ($taggedTable->hasCaption()) {
                 $captionKey = TaggedStructureObjectIds::tableCaptionKey($taggedTable->tableId);
                 $objects[] = new IndirectObject(
                     $state->taggedStructureObjectIds->captionStructElemObjectIds[$captionKey],
-                    (new StructElem(
+                    new StructElem(
                         'Caption',
                         $state->taggedStructureObjectIds->tableStructElemObjectIds[$tableStructKey],
                         kidEntries: $this->taggedMarkedContentKidEntries($taggedTable->captionReferences, $state->pageObjectIds),
-                    ))->objectContents(),
+                    )->objectContents(),
                 );
             }
 
@@ -514,11 +514,11 @@ final class DocumentTaggedPdfObjectBuilder
 
                 $objects[] = new IndirectObject(
                     $state->taggedStructureObjectIds->tableSectionStructElemObjectIds[$sectionKey],
-                    (new StructElem(
+                    new StructElem(
                         $this->taggedTableSectionTag($document, $section),
                         $state->taggedStructureObjectIds->tableStructElemObjectIds[$tableStructKey],
                         $sectionKidObjectIds,
-                    ))->objectContents(),
+                    )->objectContents(),
                 );
 
                 foreach ($rows as $row) {
@@ -536,21 +536,21 @@ final class DocumentTaggedPdfObjectBuilder
 
                     $objects[] = new IndirectObject(
                         $state->taggedStructureObjectIds->rowStructElemObjectIds[$rowKey],
-                        (new StructElem('TR', $state->taggedStructureObjectIds->tableSectionStructElemObjectIds[$sectionKey], $rowKidObjectIds))->objectContents(),
+                        new StructElem('TR', $state->taggedStructureObjectIds->tableSectionStructElemObjectIds[$sectionKey], $rowKidObjectIds)->objectContents(),
                     );
 
                     foreach ($row->cells as $cell) {
                         $cellKey = TaggedStructureObjectIds::tableCellKey($taggedTable->tableId, $section, $row->rowIndex, $cell->columnIndex);
                         $objects[] = new IndirectObject(
                             $state->taggedStructureObjectIds->cellStructElemObjectIds[$cellKey],
-                            (new StructElem(
+                            new StructElem(
                                 $cell->header ? 'TH' : 'TD',
                                 $state->taggedStructureObjectIds->rowStructElemObjectIds[$rowKey],
                                 kidEntries: $this->taggedMarkedContentKidEntries($cell->contentReferences, $state->pageObjectIds),
                                 scope: $cell->headerScope?->value,
                                 rowSpan: $cell->rowspan > 1 ? $cell->rowspan : null,
                                 colSpan: $cell->colspan > 1 ? $cell->colspan : null,
-                            ))->objectContents(),
+                            )->objectContents(),
                         );
                     }
                 }
@@ -572,13 +572,13 @@ final class DocumentTaggedPdfObjectBuilder
 
             $objects[] = IndirectObject::plain(
                 $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']],
-                (new StructElem(
+                new StructElem(
                     'Link',
                     $state->documentStructElemObjectId,
                     pageObjectId: $pageObjectId,
                     altText: $linkEntry['altText'],
                     kidEntries: $kidEntries,
-                ))->objectContents(),
+                )->objectContents(),
             );
         }
 
@@ -588,7 +588,7 @@ final class DocumentTaggedPdfObjectBuilder
 
             $objects[] = IndirectObject::plain(
                 $state->taggedStructureObjectIds->annotationStructElemObjectIds[$annotationEntry['key']],
-                (new StructElem(
+                new StructElem(
                     $annotationEntry['tag'],
                     $state->documentStructElemObjectId,
                     pageObjectId: $pageObjectId,
@@ -600,7 +600,7 @@ final class DocumentTaggedPdfObjectBuilder
                         . $pageObjectId
                         . ' 0 R >>',
                     ],
-                ))->objectContents(),
+                )->objectContents(),
             );
         }
 
@@ -609,7 +609,7 @@ final class DocumentTaggedPdfObjectBuilder
 
             $objects[] = IndirectObject::plain(
                 $state->taggedFormStructElemObjectIds[$formEntry['key']],
-                (new StructElem(
+                new StructElem(
                     'Form',
                     $state->documentStructElemObjectId,
                     pageObjectId: $pageObjectId,
@@ -621,7 +621,7 @@ final class DocumentTaggedPdfObjectBuilder
                         . $pageObjectId
                         . ' 0 R >>',
                     ],
-                ))->objectContents(),
+                )->objectContents(),
             );
         }
 
@@ -735,11 +735,7 @@ final class DocumentTaggedPdfObjectBuilder
 
     private function resolveDocumentKidObjectId(string $key, DocumentSerializationPlanBuildState $state): int
     {
-        if (isset($state->taggedFormStructElemObjectIds[$key])) {
-            return $state->taggedFormStructElemObjectIds[$key];
-        }
-
-        return $state->taggedStructureObjectIds->resolveStructElemObjectId($key);
+        return $state->taggedFormStructElemObjectIds[$key] ?? $state->taggedStructureObjectIds->resolveStructElemObjectId($key);
     }
 
     /**

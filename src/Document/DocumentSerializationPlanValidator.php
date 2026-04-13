@@ -23,21 +23,21 @@ use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 use function preg_match;
 use function sprintf;
 
-final class DocumentSerializationPlanValidator
+final readonly class DocumentSerializationPlanValidator
 {
     public function __construct(
-        private readonly TaggedStructureCollector $taggedStructureCollector = new TaggedStructureCollector(),
-        private readonly DocumentAttachmentRelationshipResolver $attachmentRelationshipResolver = new DocumentAttachmentRelationshipResolver(),
-        private readonly PdfAColorPolicyValidator $pdfAColorPolicyValidator = new PdfAColorPolicyValidator(),
-        private readonly PdfALowLevelPolicyValidator $pdfALowLevelPolicyValidator = new PdfALowLevelPolicyValidator(),
-        private readonly PdfA1aSupportedStructureValidator $pdfA1aSupportedStructureValidator = new PdfA1aSupportedStructureValidator(),
-        private readonly PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
-        private readonly PdfA1aFormFieldPolicy $pdfA1aFormFieldPolicy = new PdfA1aFormFieldPolicy(),
-        private readonly PdfA1AnnotationPolicy $pdfA1AnnotationPolicy = new PdfA1AnnotationPolicy(),
-        private readonly PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
-        private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
-        private readonly PdfA23ScopePolicy $pdfA23ScopePolicy = new PdfA23ScopePolicy(),
-        private readonly PdfA4ScopePolicy $pdfA4ScopePolicy = new PdfA4ScopePolicy(),
+        private TaggedStructureCollector $taggedStructureCollector = new TaggedStructureCollector(),
+        private DocumentAttachmentRelationshipResolver $attachmentRelationshipResolver = new DocumentAttachmentRelationshipResolver(),
+        private PdfAColorPolicyValidator $pdfAColorPolicyValidator = new PdfAColorPolicyValidator(),
+        private PdfALowLevelPolicyValidator $pdfALowLevelPolicyValidator = new PdfALowLevelPolicyValidator(),
+        private PdfA1aSupportedStructureValidator $pdfA1aSupportedStructureValidator = new PdfA1aSupportedStructureValidator(),
+        private PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
+        private PdfA1aFormFieldPolicy $pdfA1aFormFieldPolicy = new PdfA1aFormFieldPolicy(),
+        private PdfA1AnnotationPolicy $pdfA1AnnotationPolicy = new PdfA1AnnotationPolicy(),
+        private PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
+        private PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
+        private PdfA23ScopePolicy $pdfA23ScopePolicy = new PdfA23ScopePolicy(),
+        private PdfA4ScopePolicy $pdfA4ScopePolicy = new PdfA4ScopePolicy(),
     ) {
     }
 

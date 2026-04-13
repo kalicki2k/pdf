@@ -13,6 +13,8 @@ use Kalle\Pdf\Writer\IndirectObject;
 
 use function max;
 
+use Override;
+
 final readonly class TextField extends WidgetFormField
 {
     public function __construct(
@@ -35,6 +37,7 @@ final readonly class TextField extends WidgetFormField
         }
     }
 
+    #[Override]
     public function relatedObjectCount(): int
     {
         return 1;
@@ -75,6 +78,7 @@ final readonly class TextField extends WidgetFormField
         return '<< ' . implode(' ', $entries) . ' >>';
     }
 
+    #[Override]
     public function relatedObjects(
         FormFieldRenderContext $context,
         int $fieldObjectId,
@@ -93,6 +97,7 @@ final readonly class TextField extends WidgetFormField
         ];
     }
 
+    #[Override]
     public function needsDefaultTextResources(): bool
     {
         return true;

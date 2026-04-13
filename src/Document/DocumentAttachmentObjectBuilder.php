@@ -12,10 +12,10 @@ use Kalle\Pdf\Writer\IndirectObject;
 
 use function str_replace;
 
-final class DocumentAttachmentObjectBuilder
+final readonly class DocumentAttachmentObjectBuilder
 {
     public function __construct(
-        private readonly DocumentAttachmentRelationshipResolver $attachmentRelationshipResolver = new DocumentAttachmentRelationshipResolver(),
+        private DocumentAttachmentRelationshipResolver $attachmentRelationshipResolver = new DocumentAttachmentRelationshipResolver(),
     ) {
     }
 

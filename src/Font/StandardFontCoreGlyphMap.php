@@ -11,7 +11,7 @@ final class StandardFontCoreGlyphMap
      *
      * @var array<string, array<string, int>>
      */
-    public const NAME_TO_CODE = [
+    public const array NAME_TO_CODE = [
         'Helvetica' => [
             'space' => 32,
             'exclam' => 33,
@@ -10301,7 +10301,7 @@ final class StandardFontCoreGlyphMap
     /**
      * @var array<string, array<int, string>>
      */
-    public const CODE_TO_NAME = [
+    public const array CODE_TO_NAME = [
         'Helvetica' => [
             32 => 'space',
             33 => 'exclam',

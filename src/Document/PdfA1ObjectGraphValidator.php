@@ -13,11 +13,11 @@ use function preg_quote;
 use function sprintf;
 use function str_contains;
 
-final class PdfA1ObjectGraphValidator
+final readonly class PdfA1ObjectGraphValidator
 {
     public function __construct(
-        private readonly PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
-        private readonly PdfA1PopupPolicy $pdfA1PopupPolicy = new PdfA1PopupPolicy(),
+        private PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
+        private PdfA1PopupPolicy $pdfA1PopupPolicy = new PdfA1PopupPolicy(),
     ) {
     }
 

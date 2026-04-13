@@ -9,7 +9,7 @@ final readonly class ArabicPresentationForms
     /**
      * @var array<string, array<string, string>>
      */
-    private const MAP = [
+    private const array MAP = [
         'ا' => [
             'isolated' => 'ﺍ',
             'final' => 'ﺎ',

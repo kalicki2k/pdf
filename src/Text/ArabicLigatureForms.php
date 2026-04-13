@@ -9,7 +9,7 @@ final readonly class ArabicLigatureForms
     /**
      * @var array<string, array<string, string>>
      */
-    private const LAM_ALEF_MAP = [
+    private const array LAM_ALEF_MAP = [
         'لا' => [
             'isolated' => 'ﻻ',
             'final' => 'ﻼ',

@@ -43,7 +43,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $document = $this->pdfA1aDocument();
         [$state, $objects] = $this->buildTaggedObjects($document);
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
 
         self::assertTrue(true);
     }
@@ -53,7 +53,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $document = $this->pdfATaggedDocument(Profile::pdfA2a());
         [$state, $objects] = $this->buildTaggedObjects($document);
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
 
         self::assertTrue(true);
     }
@@ -63,7 +63,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $document = $this->pdfATaggedDocument(Profile::pdfA3a(), true);
         [$state, $objects] = $this->buildTaggedObjects($document);
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
 
         self::assertTrue(true);
     }
@@ -81,7 +81,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
             ->build();
         [$state, $objects] = $this->buildTaggedObjects($document);
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
 
         self::assertTrue(true);
     }
@@ -99,7 +99,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('StructTreeRoot must reference exactly the document structure element');
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA2aLinkStructElementWithoutAltText(): void
@@ -120,7 +120,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $this->expectExceptionMessage('link StructElem');
         $this->expectExceptionMessage('must expose /Alt text');
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPdfA3aStructTreeRootWithoutParentTree(): void
@@ -137,7 +137,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('StructTreeRoot must reference ParentTree');
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsPageWithoutStructParentsEntry(): void
@@ -155,7 +155,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('page 1 must expose /StructParents 0');
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsParentTreeWithWrongMarkedContentMapping(): void
@@ -172,7 +172,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('ParentTree entries must match the tagged content mapping');
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
     }
 
     public function testItRejectsFigureWithWrongPageReference(): void
@@ -191,7 +191,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('structure element must reference page object');
 
-        (new PdfA1aTaggedStructureValidator())->assertValid($document, $state, $objects);
+        new PdfA1aTaggedStructureValidator()->assertValid($document, $state, $objects);
     }
 
     /**
@@ -200,22 +200,20 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
     private function buildTaggedObjects(Document $document): array
     {
         $taggedPdfObjectBuilder = new DocumentTaggedPdfObjectBuilder();
-        $state = (new DocumentSerializationPlanObjectIdAllocator())->allocate(
+        $state = new DocumentSerializationPlanObjectIdAllocator()->allocate(
             $document,
             fn (int $nextStructParentId): array => $taggedPdfObjectBuilder->collectTaggedLinkStructure($document, $nextStructParentId),
             fn (int $nextStructParentId): array => $taggedPdfObjectBuilder->collectTaggedPageAnnotationStructure($document, $nextStructParentId),
-            function (array $fieldObjectIds, array $relatedObjectIds, int $nextStructParentId) use ($document, $taggedPdfObjectBuilder): array {
-                return $taggedPdfObjectBuilder->collectTaggedFormStructure(
-                    $document,
-                    $fieldObjectIds,
-                    $relatedObjectIds,
-                    $nextStructParentId,
-                );
-            },
+            fn (array $fieldObjectIds, array $relatedObjectIds, int $nextStructParentId): array => $taggedPdfObjectBuilder->collectTaggedFormStructure(
+                $document,
+                $fieldObjectIds,
+                $relatedObjectIds,
+                $nextStructParentId,
+            ),
             static fn (): array => [],
         );
 
-        $pageObjects = (new DocumentPageAndFormObjectBuilder())->buildPageObjects($document, $state);
+        $pageObjects = new DocumentPageAndFormObjectBuilder()->buildPageObjects($document, $state);
         $taggedObjects = $taggedPdfObjectBuilder->buildObjects($document, $state);
 
         return [$state, [...$pageObjects, ...$taggedObjects]];

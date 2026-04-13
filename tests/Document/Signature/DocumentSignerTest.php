@@ -52,7 +52,7 @@ final class DocumentSignerTest extends TestCase
             ->signatureField('approval_signature', 40, 500, 140, 28, 'Approval signature')
             ->build();
 
-        $signedPdf = (new DocumentSigner())->contents(
+        $signedPdf = new DocumentSigner()->contents(
             $document,
             $credentials,
             new PdfSignatureOptions(
@@ -80,7 +80,7 @@ final class DocumentSignerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Document does not contain an unsigned signature field named "approval_signature".');
 
-        (new DocumentSigner())->contents(
+        new DocumentSigner()->contents(
             DefaultDocumentBuilder::make()->text('Unsigned')->build(),
             $this->testCredentials(),
             new PdfSignatureOptions(fieldName: 'approval_signature'),
@@ -114,7 +114,7 @@ final class DocumentSignerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Cryptographic signing of encrypted documents is not supported.');
 
-        (new DocumentSigner())->contents(
+        new DocumentSigner()->contents(
             $document,
             $this->testCredentials(),
             new PdfSignatureOptions(fieldName: 'approval_signature'),

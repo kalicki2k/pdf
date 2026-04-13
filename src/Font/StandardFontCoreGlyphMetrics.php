@@ -11,7 +11,7 @@ final class StandardFontCoreGlyphMetrics
      *
      * @var array<string, array<string, int>>
      */
-    public const WIDTHS = [
+    public const array WIDTHS = [
         'Helvetica' => [
             'space' => 278,
             'exclam' => 278,

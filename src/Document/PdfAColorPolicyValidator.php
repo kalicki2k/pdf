@@ -32,11 +32,11 @@ use function strlen;
  * unless the document uses device-independent/default-mapped color spaces,
  * which this generator currently does not emit for these paths.
  */
-final class PdfAColorPolicyValidator
+final readonly class PdfAColorPolicyValidator
 {
     public function __construct(
-        private readonly DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
-        private readonly PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
+        private DocumentMetadataInspector $metadataInspector = new DocumentMetadataInspector(),
+        private PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
     ) {
     }
 

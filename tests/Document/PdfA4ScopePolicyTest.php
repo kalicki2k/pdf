@@ -20,7 +20,7 @@ final class PdfA4ScopePolicyTest extends TestCase
             'Profile PDF/A-4 is blocked until the dedicated PDF/A-4 policy matrix and PDF 2.0 validation path are implemented.',
         );
 
-        (new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4()));
+        new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4()));
     }
 
     public function testItRejectsPdfA4e(): void
@@ -30,7 +30,7 @@ final class PdfA4ScopePolicyTest extends TestCase
             'Profile PDF/A-4e is blocked until PDF/A-4e-specific engineering features and the PDF 2.0 validation path are implemented.',
         );
 
-        (new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4e()));
+        new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4e()));
     }
 
     public function testItRejectsPdfA4f(): void
@@ -40,7 +40,7 @@ final class PdfA4ScopePolicyTest extends TestCase
             'Profile PDF/A-4f is blocked until the dedicated PDF/A-4f attachment and PDF 2.0 validation path are implemented.',
         );
 
-        (new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4f()));
+        new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4f()));
     }
 
     public function testItExposesBasePdfA4FeatureRules(): void

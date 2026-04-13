@@ -6,13 +6,13 @@ namespace Kalle\Pdf\Encryption;
 
 use RuntimeException;
 
-final class ObjectEncryptor
+final readonly class ObjectEncryptor
 {
     public function __construct(
-        private readonly EncryptionProfile $profile,
-        private readonly StandardSecurityHandlerData $securityHandlerData,
-        private readonly Rc4Cipher $cipher = new Rc4Cipher(),
-        private readonly AesCbcCipher $aesCbcCipher = new AesCbcCipher(),
+        private EncryptionProfile $profile,
+        private StandardSecurityHandlerData $securityHandlerData,
+        private Rc4Cipher $cipher = new Rc4Cipher(),
+        private AesCbcCipher $aesCbcCipher = new AesCbcCipher(),
     ) {
     }
 

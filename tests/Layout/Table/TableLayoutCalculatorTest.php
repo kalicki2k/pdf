@@ -32,7 +32,7 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::proportional(3.0),
         );
 
-        $widths = (new TableLayoutCalculator())->resolveColumnWidths($table, 200.0);
+        $widths = new TableLayoutCalculator()->resolveColumnWidths($table, 200.0);
 
         self::assertEquals([60.0, 35.0, 105.0], $widths);
     }
@@ -73,7 +73,7 @@ final class TableLayoutCalculatorTest extends TestCase
             ),
         );
 
-        $layout = (new TableLayoutCalculator())->layoutTable(
+        $layout = new TableLayoutCalculator()->layoutTable(
             $table,
             [40.0, 60.0, 50.0],
             new TextFlow(new Page(PageSize::A4())),
@@ -104,7 +104,7 @@ final class TableLayoutCalculatorTest extends TestCase
                 ),
             );
 
-        $layout = (new TableLayoutCalculator())->layoutTable(
+        $layout = new TableLayoutCalculator()->layoutTable(
             $table,
             [55.0, 55.0],
             new TextFlow(new Page(PageSize::A4())),
@@ -135,7 +135,7 @@ final class TableLayoutCalculatorTest extends TestCase
                 TableCell::text('Beta'),
             ));
 
-        $layout = (new TableLayoutCalculator())->layoutTable(
+        $layout = new TableLayoutCalculator()->layoutTable(
             $table,
             [80.0, 80.0],
             new TextFlow(new Page(PageSize::A4())),
@@ -165,7 +165,7 @@ final class TableLayoutCalculatorTest extends TestCase
                 ),
             ));
 
-        $layout = (new TableLayoutCalculator())->layoutTable(
+        $layout = new TableLayoutCalculator()->layoutTable(
             $table,
             [90.0],
             new TextFlow(new Page(PageSize::A4())),

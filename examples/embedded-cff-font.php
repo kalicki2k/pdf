@@ -21,16 +21,7 @@ $fontCandidates = [
     '/usr/share/fonts/opentype/urw-base35/URWBookman-Light.otf',
     '/usr/share/fonts/opentype/freefont/FreeSerif.otf',
 ];
-
-$fontPath = null;
-
-foreach ($fontCandidates as $candidate) {
-    if (is_file($candidate)) {
-        $fontPath = $candidate;
-
-        break;
-    }
-}
+$fontPath = array_find($fontCandidates, fn ($candidate) => is_file($candidate));
 
 if ($fontPath === null) {
     $fontSource = EmbeddedFontSource::fromString(base64_decode(

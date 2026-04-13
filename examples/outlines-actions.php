@@ -47,7 +47,7 @@ DefaultDocumentBuilder::make()
     ->namedDestinationPosition('intro', 0, 760)
     ->addOutline(
         Outline::named('Introduction', 'intro', 1)->withStyle(
-            (new OutlineStyle())
+            new OutlineStyle()
                 ->withColor(Color::hex('#0369a1'))
                 ->withBold()
                 ->withAdditionalFlags(4),

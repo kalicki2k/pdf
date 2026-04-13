@@ -19,7 +19,7 @@ final class DocumentMetadataInspectorTest extends TestCase
             keywords: 'archive, pdfa',
         );
 
-        self::assertTrue((new DocumentMetadataInspector())->hasInfoMetadata($document));
+        self::assertTrue(new DocumentMetadataInspector()->hasInfoMetadata($document));
     }
 
     public function testItSkipsMetadataStreamsForProfilesWithoutXmpSupport(): void
@@ -29,14 +29,14 @@ final class DocumentMetadataInspectorTest extends TestCase
             title: 'Example Title',
         );
 
-        self::assertFalse((new DocumentMetadataInspector())->usesMetadataStream($document));
+        self::assertFalse(new DocumentMetadataInspector()->usesMetadataStream($document));
     }
 
     public function testItUsesDefaultSrgbOutputIntentWhenNoneIsConfigured(): void
     {
         $document = new Document(profile: Profile::pdfA3b());
 
-        $outputIntent = (new DocumentMetadataInspector())->resolvePdfAOutputIntent($document);
+        $outputIntent = new DocumentMetadataInspector()->resolvePdfAOutputIntent($document);
 
         self::assertInstanceOf(PdfAOutputIntent::class, $outputIntent);
         self::assertSame('sRGB IEC61966-2.1', $outputIntent->outputConditionIdentifier);

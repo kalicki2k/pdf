@@ -22,15 +22,6 @@ final readonly class Document
     public Profile $profile;
     /** @var list<Page> */
     public array $pages;
-    public ?string $title;
-    public ?string $author;
-    public ?string $subject;
-    public ?string $keywords;
-    public ?string $language;
-    public ?string $creator;
-    public ?string $creatorTool;
-    public ?PdfAOutputIntent $pdfaOutputIntent;
-    public ?Encryption $encryption;
     /** @var list<TaggedFigure> */
     public array $taggedFigures;
     /** @var list<TaggedTable> */
@@ -41,7 +32,6 @@ final readonly class Document
     public array $attachments;
     /** @var list<Outline> */
     public array $outlines;
-    public ?AcroForm $acroForm;
     /** @var list<TaggedList> */
     public array $taggedLists;
     /** @var list<TaggedStructureElement> */
@@ -70,21 +60,21 @@ final readonly class Document
     public function __construct(
         ?Profile $profile = null,
         ?array $pages = null,
-        ?string $title = null,
-        ?string $author = null,
-        ?string $subject = null,
-        ?string $keywords = null,
-        ?string $language = null,
-        ?string $creator = null,
-        ?string $creatorTool = null,
-        ?PdfAOutputIntent $pdfaOutputIntent = null,
-        ?Encryption $encryption = null,
+        public ?string $title = null,
+        public ?string $author = null,
+        public ?string $subject = null,
+        public ?string $keywords = null,
+        public ?string $language = null,
+        public ?string $creator = null,
+        public ?string $creatorTool = null,
+        public ?PdfAOutputIntent $pdfaOutputIntent = null,
+        public ?Encryption $encryption = null,
         ?array $taggedFigures = null,
         ?array $taggedTables = null,
         ?array $taggedTextBlocks = null,
         ?array $attachments = null,
         ?array $outlines = null,
-        ?AcroForm $acroForm = null,
+        public ?AcroForm $acroForm = null,
         ?array $taggedLists = null,
         ?array $taggedStructureElements = null,
         ?array $taggedDocumentChildKeys = null,
@@ -92,21 +82,11 @@ final readonly class Document
     ) {
         $this->profile = $profile ?? Profile::standard();
         $this->pages = $pages ?? [new Page(PageSize::A4())];
-        $this->title = $title;
-        $this->author = $author;
-        $this->subject = $subject;
-        $this->keywords = $keywords;
-        $this->language = $language;
-        $this->creator = $creator;
-        $this->creatorTool = $creatorTool;
-        $this->pdfaOutputIntent = $pdfaOutputIntent;
-        $this->encryption = $encryption;
         $this->taggedFigures = $taggedFigures ?? [];
         $this->taggedTables = $taggedTables ?? [];
         $this->taggedTextBlocks = $taggedTextBlocks ?? [];
         $this->attachments = $attachments ?? [];
         $this->outlines = $outlines ?? [];
-        $this->acroForm = $acroForm;
         $this->taggedLists = $taggedLists ?? [];
         $this->taggedStructureElements = $taggedStructureElements ?? [];
         $this->taggedDocumentChildKeys = $taggedDocumentChildKeys ?? [];

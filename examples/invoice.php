@@ -15,7 +15,7 @@ use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Drawing\Units;
-use Kalle\Pdf\Font\StandardFont;
+use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Page\Margin;
@@ -43,6 +43,7 @@ $textColor = Color::material(MaterialColor::BLUE_GREY, 800);
 $mutedColor = Color::material(MaterialColor::BLUE_GREY, 500);
 $tableHeaderColor = Color::material(MaterialColor::BLUE_GREY, 50);
 $tableBorderColor = Color::material(MaterialColor::GREY, 400);
+$fontSource = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/ibm-plex-sans/variable/IBMPlexSans[wdth,wght].ttf');
 
 $table = Table::define(
     TableColumn::fixed(Units::mm(15)),
@@ -57,6 +58,7 @@ $table = Table::define(
     ->withTextOptions(new TextOptions(
         fontSize: 9,
         lineHeight: 12,
+        embeddedFont: $fontSource,
         color: $textColor,
     ))
     ->withHeaderRows(
@@ -132,6 +134,7 @@ $document = Pdf::document()
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 11,
+            embeddedFont: $fontSource,
             color: $textColor,
             align: TextAlign::RIGHT,
             semantic: TextSemantic::ARTIFACT,
@@ -145,6 +148,7 @@ $document = Pdf::document()
             width: Units::mm(95),
             fontSize: 6,
             lineHeight: 8,
+            embeddedFont: $fontSource,
             color: $mutedColor,
             semantic: TextSemantic::ARTIFACT,
         ),
@@ -164,6 +168,7 @@ $document = Pdf::document()
             width: Units::mm(75),
             fontSize: 9,
             lineHeight: 12,
+            embeddedFont: $fontSource,
             color: $textColor,
         ),
     )
@@ -173,7 +178,7 @@ $document = Pdf::document()
             //            x: $left,
             y: Units::mm(188),
             fontSize: 22,
-            fontName: StandardFont::HELVETICA_BOLD->value,
+            embeddedFont: $fontSource,
             color: $headlineColor,
         ),
     )
@@ -181,7 +186,8 @@ $document = Pdf::document()
         [
             TextSegment::plain('Rechnungsnummer: '),
             TextSegment::plain('2026-0015', new TextOptions(
-                fontName: StandardFont::HELVETICA_BOLD->value,
+                embeddedFont: $fontSource,
+                color: $headlineColor,
             )),
             TextSegment::plain(PHP_EOL . 'Rechnungsdatum: 05.04.2026'),
             TextSegment::plain(PHP_EOL . 'Leistungsdatum: 31.03.2026'),
@@ -191,7 +197,7 @@ $document = Pdf::document()
             width: Units::mm(80),
             fontSize: 9,
             lineHeight: 12,
-            fontName: StandardFont::HELVETICA->value,
+            embeddedFont: $fontSource,
             color: $textColor,
         ),
     )
@@ -203,6 +209,7 @@ $document = Pdf::document()
             width: $contentWidth,
             fontSize: 9,
             lineHeight: 13,
+            embeddedFont: $fontSource,
             color: $textColor,
         ),
     )
@@ -219,7 +226,7 @@ $document = Pdf::document()
             width: Units::mm(70),
             fontSize: 10,
             lineHeight: 14,
-            fontName: StandardFont::HELVETICA_BOLD->value,
+            embeddedFont: $fontSource,
             color: $textColor,
         ),
     )
@@ -231,6 +238,7 @@ $document = Pdf::document()
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 13,
+            embeddedFont: $fontSource,
             color: $textColor,
         ),
     );

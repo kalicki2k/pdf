@@ -8,8 +8,8 @@ use InvalidArgumentException;
 
 final readonly class ColumnWidth
 {
-    private const TYPE_FIXED = 'fixed';
-    private const TYPE_PROPORTIONAL = 'proportional';
+    private const string TYPE_FIXED = 'fixed';
+    private const string TYPE_PROPORTIONAL = 'proportional';
 
     private function __construct(
         private string $type,

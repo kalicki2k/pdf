@@ -19,7 +19,7 @@ use WeakMap;
 
 final readonly class SimpleFontRunMapper implements FontRunMapper
 {
-    private const MAP_CACHE_LIMIT = 64;
+    private const int MAP_CACHE_LIMIT = 64;
 
     /**
      * @var array{
@@ -29,7 +29,7 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
      *     widthInDesignUnits: int
      * }
      */
-    private const EMPTY_EMBEDDED_RUN_DATA = [
+    private const array EMPTY_EMBEDDED_RUN_DATA = [
         'embeddedGlyphs' => [],
         'advanceWidths' => [],
         'designUnitAdjustments' => [],
@@ -310,12 +310,6 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
 
     private function containsPositionedGlyphs(ShapedTextRun $run): bool
     {
-        foreach ($run->glyphs as $glyph) {
-            if ($glyph->xOffset !== 0.0 || $glyph->yOffset !== 0.0 || $glyph->xAdvance !== 0.0) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($run->glyphs, fn ($glyph) => $glyph->xOffset !== 0.0 || $glyph->yOffset !== 0.0 || $glyph->xAdvance !== 0.0);
     }
 }

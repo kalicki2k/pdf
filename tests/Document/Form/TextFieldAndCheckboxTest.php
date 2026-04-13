@@ -107,7 +107,7 @@ final class TextFieldAndCheckboxTest extends TestCase
 
     public function testItRendersARadioButtonGroupAndWidgetObjects(): void
     {
-        $field = (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))
+        $field = new RadioButtonGroup('delivery', alternativeName: 'Delivery method')
             ->withChoice(new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'standard'))
             ->withChoice(new RadioButtonChoice(1, 30.0, 20.0, 12.0, 'express', true, 'Express delivery'));
 

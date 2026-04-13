@@ -21,7 +21,7 @@ final class TaggedStructureRoleRegistry
     /**
      * @var array<string, list<string>>
      */
-    private const ALLOWED_CHILDREN = [
+    private const array ALLOWED_CHILDREN = [
         'Document' => [
             'Annot',
             'Art',
@@ -74,7 +74,7 @@ final class TaggedStructureRoleRegistry
     /**
      * @var list<string>
      */
-    private const LEAF_TAGS = [
+    private const array LEAF_TAGS = [
         'Annot',
         'BibEntry',
         'Caption',

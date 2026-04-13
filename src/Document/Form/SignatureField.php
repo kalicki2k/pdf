@@ -12,11 +12,14 @@ use Kalle\Pdf\Writer\IndirectObject;
 
 use function max;
 
+use Override;
+
 /**
  * Visible signature widget without a cryptographic signature value dictionary.
  */
 final readonly class SignatureField extends WidgetFormField
 {
+    #[Override]
     public function relatedObjectCount(): int
     {
         return 1;
@@ -39,6 +42,7 @@ final readonly class SignatureField extends WidgetFormField
         ]) . ' >>';
     }
 
+    #[Override]
     public function relatedObjects(
         FormFieldRenderContext $context,
         int $fieldObjectId,

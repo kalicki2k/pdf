@@ -47,7 +47,7 @@ final class XmpMetadataTest extends TestCase
 
     public function testItAddsPdfAIdentificationMetadata(): void
     {
-        $contents = (new XmpMetadata())->objectContents(new Document(
+        $contents = new XmpMetadata()->objectContents(new Document(
             profile: Profile::pdfA2u(),
             title: 'Archive Copy',
         ));
@@ -59,7 +59,7 @@ final class XmpMetadataTest extends TestCase
 
     public function testItAddsPdfA4IdentificationMetadataWithRevisionAndWithoutConformanceForBasePdfA4(): void
     {
-        $contents = (new XmpMetadata())->objectContents(new Document(
+        $contents = new XmpMetadata()->objectContents(new Document(
             profile: Profile::pdfA4(),
             title: 'Archive Copy',
         ));
@@ -71,7 +71,7 @@ final class XmpMetadataTest extends TestCase
 
     public function testItAddsPdfA4fIdentificationMetadataWithRevisionAndConformance(): void
     {
-        $contents = (new XmpMetadata())->objectContents(new Document(
+        $contents = new XmpMetadata()->objectContents(new Document(
             profile: Profile::pdfA4f(),
             title: 'Archive Copy',
         ));
@@ -83,7 +83,7 @@ final class XmpMetadataTest extends TestCase
 
     public function testItAddsPdfUaIdentificationMetadata(): void
     {
-        $contents = (new XmpMetadata())->objectContents(new Document(
+        $contents = new XmpMetadata()->objectContents(new Document(
             profile: Profile::pdfUa1(),
             title: 'Accessible Copy',
             language: 'de-DE',

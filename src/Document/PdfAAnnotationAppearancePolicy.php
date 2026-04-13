@@ -9,10 +9,10 @@ use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 
-final class PdfAAnnotationAppearancePolicy
+final readonly class PdfAAnnotationAppearancePolicy
 {
     public function __construct(
-        private readonly PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
+        private PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
     ) {
     }
 

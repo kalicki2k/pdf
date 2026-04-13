@@ -50,7 +50,7 @@ use function unlink;
 
 final readonly class DocumentSigner
 {
-    private const BYTE_RANGE_WIDTH = 20;
+    private const int BYTE_RANGE_WIDTH = 20;
 
     public function __construct(
         private DocumentRenderer $renderer = new DocumentRenderer(),

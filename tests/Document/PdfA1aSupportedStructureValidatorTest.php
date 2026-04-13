@@ -43,7 +43,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('supports only tagged text blocks with tags [BibEntry, BlockQuote, Code, Em, H1, H2, H3, H4, H5, H6, Note, P, Quote, Reference, Span, Strong, Title]');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsEmptyPdfA1aTaggedStructureContainers(): void
@@ -62,7 +62,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('does not allow empty tagged structure container "struct:0"');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsInvalidPdfA1aTaggedStructureChildRelationships(): void
@@ -84,7 +84,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Tagged PDF structure type "TOC" does not allow child "H1"');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsEmptyPdfA1aTaggedLists(): void
@@ -105,7 +105,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('does not allow empty tagged lists');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsEmptyPdfA1aTaggedTables(): void
@@ -126,7 +126,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('does not allow empty tagged tables');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA1aTaggedTableCellsWithoutContentReferences(): void
@@ -154,7 +154,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('requires tagged table cells to reference marked content');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA1aTaggedTableScopesOnNonHeaderCells(): void
@@ -187,7 +187,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('only allows header scope on header cells');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA1aTaggedReferencesToMissingPages(): void
@@ -205,7 +205,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('points to missing page index 1');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA1aNegativeMarkedContentIds(): void
@@ -223,7 +223,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('requires non-negative marked-content ids');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA1aTaggedFigureReferencesToMissingPages(): void
@@ -241,7 +241,7 @@ final class PdfA1aSupportedStructureValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Tagged figure 1 points to missing page index 1');
 
-        (new DocumentSerializationPlanBuilder())->build($document);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     private function textPage(string $text): Page

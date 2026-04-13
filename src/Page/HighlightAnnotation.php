@@ -161,7 +161,7 @@ final readonly class HighlightAnnotation implements AppearanceStreamAnnotation, 
         return [
             IndirectObject::plain(
                 $context->relatedObjectId(0),
-                (new PopupAnnotation($this->popup))->pdfObjectContents($context),
+                new PopupAnnotation($this->popup)->pdfObjectContents($context),
             ),
         ];
     }

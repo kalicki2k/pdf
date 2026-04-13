@@ -329,7 +329,7 @@ final class DocumentPageAndFormObjectBuilder
     private function buildFillColorOperator(Color $color): string
     {
         $components = array_map(
-            fn (float $value): string => $this->formatNumber($value),
+            $this->formatNumber(...),
             $color->components(),
         );
 

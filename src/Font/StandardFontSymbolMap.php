@@ -13,7 +13,7 @@ final class StandardFontSymbolMap
      *
      * @var array<string|int, string>
      */
-    public const MAP = [
+    public const array MAP = [
         '!' => "\x21",
         '#' => "\x23",
         '%' => "\x25",

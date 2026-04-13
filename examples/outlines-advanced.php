@@ -46,7 +46,7 @@ DefaultDocumentBuilder::make()
     ->margin($margin)
     ->addOutline(
         Outline::fit('Overview', 1)
-            ->withStyle((new OutlineStyle())->withColor(Color::hex('#1d4ed8'))->withBold()),
+            ->withStyle(new OutlineStyle()->withColor(Color::hex('#1d4ed8'))->withBold()),
     )
     ->text('Advanced Outlines', $headline)
     ->text(

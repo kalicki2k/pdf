@@ -17,7 +17,7 @@ use function strlen;
 
 final readonly class SimpleTextShaper implements TextShaper
 {
-    private const SHAPE_CACHE_LIMIT = 16;
+    private const int SHAPE_CACHE_LIMIT = 16;
 
     /**
      * @var list<ScriptTextShaper>

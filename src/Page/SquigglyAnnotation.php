@@ -163,7 +163,7 @@ final readonly class SquigglyAnnotation implements AppearanceStreamAnnotation, P
         return [
             IndirectObject::plain(
                 $context->relatedObjectId(0),
-                (new PopupAnnotation($this->popup))->pdfObjectContents($context),
+                new PopupAnnotation($this->popup)->pdfObjectContents($context),
             ),
         ];
     }

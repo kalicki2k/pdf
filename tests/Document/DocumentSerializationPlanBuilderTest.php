@@ -674,7 +674,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
-            acroForm: (new AcroForm())->withField($this->testWidgetField()),
+            acroForm: new AcroForm()->withField($this->testWidgetField()),
         );
 
         $plan = $builder->build($document);
@@ -698,7 +698,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
             profile: Profile::pdfA2u(),
-            acroForm: (new AcroForm())->withField($this->testWidgetField()),
+            acroForm: new AcroForm()->withField($this->testWidgetField()),
         );
 
         $this->expectException(InvalidArgumentException::class);
@@ -713,7 +713,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = new Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
-            acroForm: (new AcroForm())->withField($this->testWidgetField()),
+            acroForm: new AcroForm()->withField($this->testWidgetField()),
         );
 
         $this->expectException(InvalidArgumentException::class);
@@ -726,7 +726,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
-            acroForm: (new AcroForm())->withField($this->testWidgetField(pageNumber: 2)),
+            acroForm: new AcroForm()->withField($this->testWidgetField(pageNumber: 2)),
         );
 
         $this->expectException(InvalidArgumentException::class);
@@ -739,7 +739,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new TextField('customer_name', 1, 10.0, 20.0, 80.0, 12.0, 'Ada', 'Customer name'),
             ),
         );
@@ -759,7 +759,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new CheckboxField('accept_terms', 1, 10.0, 20.0, 12.0, true, 'Accept terms'),
             ),
         );
@@ -784,7 +784,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             profile: Profile::pdfUa1(),
             title: 'Accessible Form',
             language: 'de-DE',
-            acroForm: (new AcroForm())
+            acroForm: new AcroForm()
                 ->withField(new TextField('customer_name', 1, 10.0, 20.0, 80.0, 12.0, 'Ada', 'Customer name'))
                 ->withField(new CheckboxField('accept_terms', 1, 10.0, 40.0, 12.0, true, 'Accept terms')),
         );
@@ -810,8 +810,8 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             profile: Profile::pdfUa1(),
             title: 'Accessible Form',
             language: 'de-DE',
-            acroForm: (new AcroForm())->withField(
-                (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))
+            acroForm: new AcroForm()->withField(
+                new RadioButtonGroup('delivery', alternativeName: 'Delivery method')
                     ->withChoice(new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'standard', true, 'Standard delivery'))
                     ->withChoice(new RadioButtonChoice(1, 30.0, 20.0, 12.0, 'express', false, 'Express delivery')),
             ),
@@ -833,10 +833,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     public function testItBuildsARadioButtonGroupWithWidgetKids(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
-        $group = (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))
+        $group = new RadioButtonGroup('delivery', alternativeName: 'Delivery method')
             ->withChoice(new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'standard'))
             ->withChoice(new RadioButtonChoice(1, 30.0, 20.0, 12.0, 'express', true, 'Express delivery'));
-        $document = new Document(acroForm: (new AcroForm())->withField($group));
+        $document = new Document(acroForm: new AcroForm()->withField($group));
 
         $objects = iterator_to_array($builder->build($document)->objects);
 
@@ -852,7 +852,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new ComboBoxField('status', 1, 10.0, 20.0, 80.0, 12.0, ['new' => 'New', 'done' => 'Done'], 'done', 'Status'),
             ),
         );
@@ -869,7 +869,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new ListBoxField('skills', 1, 10.0, 20.0, 80.0, 40.0, ['php' => 'PHP', 'pdf' => 'PDF'], ['php', 'pdf'], 'Skills'),
             ),
         );
@@ -886,7 +886,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new PushButtonField('open_docs', 1, 10.0, 20.0, 90.0, 18.0, 'Open docs', 'Open documentation', 'https://example.com/docs'),
             ),
         );
@@ -904,7 +904,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new SignatureField('approval_signature', 1, 10.0, 20.0, 100.0, 30.0, 'Approval signature'),
             ),
         );
@@ -923,7 +923,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
             profile: Profile::pdfA2u(),
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new SignatureField('approval_signature', 1, 10.0, 20.0, 100.0, 30.0, 'Approval signature'),
             ),
         );
@@ -940,7 +940,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = new Document(
             profile: Profile::pdfA1b(),
             title: 'Archive Copy',
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new SignatureField('approval_signature', 1, 10.0, 20.0, 100.0, 30.0, 'Approval signature'),
             ),
         );
@@ -1457,7 +1457,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->newPage()
             ->addOutline(
                 Outline::fit('Whole Page', 1)
-                    ->withStyle((new OutlineStyle())->withColor(Color::rgb(0.2, 0.4, 0.6))->withBold()->withItalic()->withAdditionalFlags(4)),
+                    ->withStyle(new OutlineStyle()->withColor(Color::rgb(0.2, 0.4, 0.6))->withBold()->withItalic()->withAdditionalFlags(4)),
             )
             ->addOutline(
                 Outline::fitHorizontal('Fit Horizontally', 2, 700)
@@ -1916,7 +1916,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             profile: Profile::pdfA1a(),
             title: 'Archive Form',
             language: 'de-DE',
-            acroForm: (new AcroForm())->withField(
+            acroForm: new AcroForm()->withField(
                 new TextField('customer_name', 1, 10.0, 20.0, 80.0, 12.0, 'Ada'),
             ),
         );
@@ -1934,8 +1934,8 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             profile: Profile::pdfA1a(),
             title: 'Archive Form',
             language: 'de-DE',
-            acroForm: (new AcroForm())->withField(
-                (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))
+            acroForm: new AcroForm()->withField(
+                new RadioButtonGroup('delivery', alternativeName: 'Delivery method')
                     ->withChoice(new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'standard', true, 'Standard delivery'))
                     ->withChoice(new RadioButtonChoice(1, 30.0, 20.0, 12.0, 'express', false, 'Express delivery')),
             ),
@@ -1954,8 +1954,8 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             profile: Profile::pdfA1a(),
             title: 'Archive Form',
             language: 'de-DE',
-            acroForm: (new AcroForm())->withField(
-                (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))
+            acroForm: new AcroForm()->withField(
+                new RadioButtonGroup('delivery', alternativeName: 'Delivery method')
                     ->withChoice(new RadioButtonChoice(1, 10.0, 20.0, 12.0, 'standard', true))
                     ->withChoice(new RadioButtonChoice(1, 30.0, 20.0, 12.0, 'express', false, 'Express delivery')),
             ),
@@ -2078,7 +2078,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
             $serialized = implode("\n", array_map(
                 static fn ($object): string => $object->contents,
-                iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
+                iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
             ));
 
             self::assertStringContainsString('/Subtype /' . $subtype, $serialized, $subtype);

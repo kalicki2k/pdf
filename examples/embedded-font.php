@@ -21,16 +21,7 @@ $fontCandidates = [
     '/usr/share/fonts/google-carlito-fonts/Carlito-Regular.ttf',
     '/usr/share/fonts/google-droid-sans-fonts/DroidSans.ttf',
 ];
-
-$fontPath = null;
-
-foreach ($fontCandidates as $candidate) {
-    if (is_file($candidate)) {
-        $fontPath = $candidate;
-
-        break;
-    }
-}
+$fontPath = array_find($fontCandidates, fn ($candidate) => is_file($candidate));
 
 if ($fontPath === null) {
     $fontSource = EmbeddedFontSource::fromString(base64_decode(

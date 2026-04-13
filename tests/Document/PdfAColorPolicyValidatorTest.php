@@ -37,7 +37,7 @@ final class PdfAColorPolicyValidatorTest extends TestCase
             ],
         );
 
-        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
+        new PdfAColorPolicyValidator()->assertDocumentColors($document);
         self::assertTrue(true);
     }
 
@@ -59,7 +59,7 @@ final class PdfAColorPolicyValidatorTest extends TestCase
             'Profile PDF/A-1b does not allow CMYK color in graphics operations in page content stream on page 1 when the active PDF/A output intent is RGB.',
         );
 
-        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
+        new PdfAColorPolicyValidator()->assertDocumentColors($document);
     }
 
     public function testItAllowsGrayTextOperatorsForCmykOutputIntent(): void
@@ -76,7 +76,7 @@ final class PdfAColorPolicyValidatorTest extends TestCase
             ],
         );
 
-        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
+        new PdfAColorPolicyValidator()->assertDocumentColors($document);
         self::assertTrue(true);
     }
 
@@ -93,7 +93,7 @@ final class PdfAColorPolicyValidatorTest extends TestCase
             ],
         );
 
-        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
+        new PdfAColorPolicyValidator()->assertDocumentColors($document);
         self::assertTrue(true);
     }
 
@@ -125,7 +125,7 @@ final class PdfAColorPolicyValidatorTest extends TestCase
             'Profile PDF/A-1b does not allow CMYK color in text operations in page content stream on page 1 when the active PDF/A output intent is RGB.',
         );
 
-        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
+        new PdfAColorPolicyValidator()->assertDocumentColors($document);
     }
 
     public function testItRejectsCmykPageBackgroundForRgbOutputIntent(): void
@@ -146,6 +146,6 @@ final class PdfAColorPolicyValidatorTest extends TestCase
             'Profile PDF/A-1b does not allow CMYK color in page background graphics on page 1 when the active PDF/A output intent is RGB.',
         );
 
-        (new PdfAColorPolicyValidator())->assertDocumentColors($document);
+        new PdfAColorPolicyValidator()->assertDocumentColors($document);
     }
 }

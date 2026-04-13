@@ -54,8 +54,8 @@ use function str_repeat;
  */
 final readonly class DocumentTableOfContentsBuilder
 {
-    private const TOC_DESTINATION_PREFIX = '__pdf2_toc_entry_';
-    private const ENTRY_INDENT = 14.0;
+    private const string TOC_DESTINATION_PREFIX = '__pdf2_toc_entry_';
+    private const float ENTRY_INDENT = 14.0;
 
     /**
      * @param list<TableOfContentsEntry> $explicitEntries

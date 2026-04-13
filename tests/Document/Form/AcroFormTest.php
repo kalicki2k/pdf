@@ -19,7 +19,7 @@ final class AcroFormTest extends TestCase
 {
     public function testItBuildsAnAcroFormDictionaryForRegisteredFields(): void
     {
-        $acroForm = (new AcroForm())->withField($this->testField('customer_name'));
+        $acroForm = new AcroForm()->withField($this->testField('customer_name'));
 
         self::assertCount(1, $acroForm->fields);
         self::assertSame('<< /Fields [7 0 R] /NeedAppearances true >>', $acroForm->pdfObjectContents([7]));
@@ -27,7 +27,7 @@ final class AcroFormTest extends TestCase
 
     public function testItRejectsDuplicateFieldNames(): void
     {
-        $acroForm = (new AcroForm())->withField($this->testField('customer_name'));
+        $acroForm = new AcroForm()->withField($this->testField('customer_name'));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('AcroForm field "customer_name" is already registered.');
@@ -37,7 +37,7 @@ final class AcroFormTest extends TestCase
 
     public function testItCanReplaceExistingFieldsByName(): void
     {
-        $acroForm = (new AcroForm())
+        $acroForm = new AcroForm()
             ->withField($this->testField('customer_name'))
             ->replacingField(new ComboBoxField('customer_name', 1, 10, 20, 80, 12, ['a' => 'A']));
 
@@ -47,7 +47,7 @@ final class AcroFormTest extends TestCase
 
     public function testItBuildsDefaultResourcesWhenChoiceOrTextFieldsNeedThem(): void
     {
-        $acroForm = (new AcroForm())->withField(
+        $acroForm = new AcroForm()->withField(
             new ComboBoxField('status', 1, 10, 20, 80, 12, ['new' => 'New'], 'new'),
         );
 
@@ -56,7 +56,7 @@ final class AcroFormTest extends TestCase
 
     public function testItBuildsEmbeddedDefaultResourcesWhenAnEmbeddedFormFontIsProvided(): void
     {
-        $acroForm = (new AcroForm())->withField(
+        $acroForm = new AcroForm()->withField(
             new ComboBoxField('status', 1, 10, 20, 80, 12, ['new' => 'New'], 'new'),
         );
 
@@ -66,7 +66,7 @@ final class AcroFormTest extends TestCase
 
     public function testItRejectsTheBuiltinHelvFallbackWhenDisabled(): void
     {
-        $acroForm = (new AcroForm())->withField(
+        $acroForm = new AcroForm()->withField(
             new ComboBoxField('status', 1, 10, 20, 80, 12, ['new' => 'New'], 'new'),
         );
 
@@ -80,11 +80,11 @@ final class AcroFormTest extends TestCase
 
     public function testItStoresRadioButtonGroupsAsSingleFields(): void
     {
-        $group = (new RadioButtonGroup('delivery', alternativeName: 'Delivery method'))
+        $group = new RadioButtonGroup('delivery', alternativeName: 'Delivery method')
             ->withChoice(new RadioButtonChoice(1, 10, 20, 12, 'standard'))
             ->withChoice(new RadioButtonChoice(1, 30, 20, 12, 'express', true));
 
-        $acroForm = (new AcroForm())->withField($group);
+        $acroForm = new AcroForm()->withField($group);
 
         self::assertCount(1, $acroForm->fields);
         self::assertSame($group, $acroForm->field('delivery'));
@@ -92,7 +92,7 @@ final class AcroFormTest extends TestCase
 
     public function testItSetsSignatureFlagsWhenSignatureFieldsArePresent(): void
     {
-        $acroForm = (new AcroForm())->withField(
+        $acroForm = new AcroForm()->withField(
             new SignatureField('approval_signature', 1, 10, 20, 100, 30, 'Approval signature'),
         );
 

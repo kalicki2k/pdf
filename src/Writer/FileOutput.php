@@ -15,7 +15,7 @@ final class FileOutput implements Output
     /** @var resource|null */
     private $stream;
 
-    private StreamOutput $streamOutput;
+    private readonly StreamOutput $streamOutput;
 
     public function __construct(private readonly string $path)
     {

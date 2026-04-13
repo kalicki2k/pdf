@@ -22,7 +22,7 @@ use function unpack;
 
 final readonly class PngImageDecoder
 {
-    private const SIGNATURE = "\x89PNG\r\n\x1a\n";
+    private const string SIGNATURE = "\x89PNG\r\n\x1a\n";
 
     public function decode(string $data, string $path = 'memory'): ImageSource
     {

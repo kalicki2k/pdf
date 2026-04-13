@@ -9,10 +9,10 @@ use DateTimeImmutable;
 use function implode;
 use function substr;
 
-final class DocumentInfoDictionaryBuilder
+final readonly class DocumentInfoDictionaryBuilder
 {
     public function __construct(
-        private readonly PdfTextStringEncoder $textStringEncoder = new PdfTextStringEncoder(),
+        private PdfTextStringEncoder $textStringEncoder = new PdfTextStringEncoder(),
     ) {
     }
 

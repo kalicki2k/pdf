@@ -730,11 +730,7 @@ final class PdfA1aTaggedStructureValidator
 
     private function resolveDocumentChildObjectId(string $key, DocumentSerializationPlanBuildState $state): int
     {
-        if (isset($state->taggedFormStructElemObjectIds[$key])) {
-            return $state->taggedFormStructElemObjectIds[$key];
-        }
-
-        return $state->taggedStructureObjectIds->resolveStructElemObjectId($key);
+        return $state->taggedFormStructElemObjectIds[$key] ?? $state->taggedStructureObjectIds->resolveStructElemObjectId($key);
     }
 
     private function expectedParentObjectId(string $key, DocumentSerializationPlanBuildState $state): int

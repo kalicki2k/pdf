@@ -31,12 +31,12 @@ use function substr;
  * can otherwise bypass those checks. For PDF/A we therefore allow only what is
  * safely understood and reject opaque low-level extensions.
  */
-final class PdfALowLevelPolicyValidator
+final readonly class PdfALowLevelPolicyValidator
 {
     /**
      * @var list<string>
      */
-    private const ALLOWED_MARKED_CONTENT_TAGS = [
+    private const array ALLOWED_MARKED_CONTENT_TAGS = [
         '/Artifact',
         '/BlockQuote',
         '/Caption',
@@ -66,7 +66,7 @@ final class PdfALowLevelPolicyValidator
     /**
      * @var list<string>
      */
-    private const FORBIDDEN_ANNOTATION_KEYS = [
+    private const array FORBIDDEN_ANNOTATION_KEYS = [
         'AA',
         'JS',
         'JavaScript',
@@ -92,7 +92,7 @@ final class PdfALowLevelPolicyValidator
     /**
      * @var list<string>
      */
-    private const FORBIDDEN_APPEARANCE_DICTIONARY_KEYS = [
+    private const array FORBIDDEN_APPEARANCE_DICTIONARY_KEYS = [
         'Group',
         'SMask',
         'OC',
@@ -106,7 +106,7 @@ final class PdfALowLevelPolicyValidator
         'ca',
     ];
 
-    private const FORBIDDEN_FORM_KEYS = [
+    private const array FORBIDDEN_FORM_KEYS = [
         'AA',
         'A',
         'JS',
@@ -129,7 +129,7 @@ final class PdfALowLevelPolicyValidator
     /**
      * @var list<string>
      */
-    private const FORBIDDEN_CONTENT_TOKENS = [
+    private const array FORBIDDEN_CONTENT_TOKENS = [
         'BI',
         'ID',
         'EI',
@@ -153,7 +153,7 @@ final class PdfALowLevelPolicyValidator
     /**
      * @var list<string>
      */
-    private const ALLOWED_PDF_A1_CONTENT_OPERATORS = [
+    private const array ALLOWED_PDF_A1_CONTENT_OPERATORS = [
         'q',
         'Q',
         'cm',
@@ -214,7 +214,7 @@ final class PdfALowLevelPolicyValidator
     ];
 
     public function __construct(
-        private readonly PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
+        private PdfAFormContextFactory $pdfAFormContextFactory = new PdfAFormContextFactory(),
     ) {
     }
 

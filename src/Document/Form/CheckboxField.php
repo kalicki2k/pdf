@@ -9,6 +9,7 @@ use function implode;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Writer\IndirectObject;
+use Override;
 
 final readonly class CheckboxField extends WidgetFormField
 {
@@ -24,6 +25,7 @@ final readonly class CheckboxField extends WidgetFormField
         parent::__construct($name, $pageNumber, $x, $y, $size, $size, $alternativeName);
     }
 
+    #[Override]
     public function relatedObjectCount(): int
     {
         return 2;
@@ -50,6 +52,7 @@ final readonly class CheckboxField extends WidgetFormField
         ]) . ' >>';
     }
 
+    #[Override]
     public function relatedObjects(
         FormFieldRenderContext $context,
         int $fieldObjectId,

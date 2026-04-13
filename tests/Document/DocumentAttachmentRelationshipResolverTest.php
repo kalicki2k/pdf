@@ -23,7 +23,7 @@ final class DocumentAttachmentRelationshipResolverTest extends TestCase
             associatedFileRelationship: AssociatedFileRelationship::SOURCE,
         );
 
-        $relationship = (new DocumentAttachmentRelationshipResolver())->resolve($document, $attachment);
+        $relationship = new DocumentAttachmentRelationshipResolver()->resolve($document, $attachment);
 
         self::assertSame(AssociatedFileRelationship::SOURCE, $relationship);
     }
@@ -36,7 +36,7 @@ final class DocumentAttachmentRelationshipResolverTest extends TestCase
             new EmbeddedFile('<root/>', 'application/xml'),
         );
 
-        $relationship = (new DocumentAttachmentRelationshipResolver())->resolve($document, $attachment);
+        $relationship = new DocumentAttachmentRelationshipResolver()->resolve($document, $attachment);
 
         self::assertSame(AssociatedFileRelationship::DATA, $relationship);
     }
@@ -49,7 +49,7 @@ final class DocumentAttachmentRelationshipResolverTest extends TestCase
             new EmbeddedFile('<root/>', 'application/xml'),
         );
 
-        $relationship = (new DocumentAttachmentRelationshipResolver())->resolve($document, $attachment);
+        $relationship = new DocumentAttachmentRelationshipResolver()->resolve($document, $attachment);
 
         self::assertSame(AssociatedFileRelationship::DATA, $relationship);
     }
@@ -62,7 +62,7 @@ final class DocumentAttachmentRelationshipResolverTest extends TestCase
             new EmbeddedFile('hello', 'text/plain'),
         );
 
-        $relationship = (new DocumentAttachmentRelationshipResolver())->resolve($document, $attachment);
+        $relationship = new DocumentAttachmentRelationshipResolver()->resolve($document, $attachment);
 
         self::assertNull($relationship);
     }

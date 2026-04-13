@@ -15,7 +15,7 @@ final class StandardSecurityHandlerTest extends TestCase
 {
     public function testItBuildsRevision3SecurityHandlerDataMatchingReferenceValues(): void
     {
-        $data = (new StandardSecurityHandler())->build(
+        $data = new StandardSecurityHandler()->build(
             Encryption::rc4_128('user', 'owner'),
             new EncryptionProfile(Algorithm::RC4_128, 128, 2, 3),
             '10f7050476a6456a2e4f2b5b47297adf',
@@ -32,7 +32,7 @@ final class StandardSecurityHandlerTest extends TestCase
 
     public function testItBuildsRevision4SecurityHandlerDataForAes128(): void
     {
-        $data = (new StandardSecurityHandler())->build(
+        $data = new StandardSecurityHandler()->build(
             Encryption::aes128('user', 'owner')->withPermissions(
                 new Permissions(print: false, modify: true, copy: false, annotate: true),
             ),
@@ -51,9 +51,9 @@ final class StandardSecurityHandlerTest extends TestCase
 
     public function testItBuildsRevision5SecurityHandlerDataForAes256(): void
     {
-        $data = (new StandardSecurityHandler(
+        $data = new StandardSecurityHandler(
             randomBytesGenerator: static fn (int $length): string => str_repeat(chr($length & 0xFF), $length),
-        ))->build(
+        )->build(
             Encryption::aes256('user', 'owner')->withPermissions(Permissions::all()),
             new EncryptionProfile(Algorithm::AES_256, 256, 5, 5),
             '10f7050476a6456a2e4f2b5b47297adf',

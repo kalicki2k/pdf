@@ -128,23 +128,11 @@ final readonly class AcroForm
 
     private function needsDefaultTextResources(): bool
     {
-        foreach ($this->fields as $field) {
-            if ($field->needsDefaultTextResources()) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->fields, fn ($field) => $field->needsDefaultTextResources());
     }
 
     private function hasSignatureFields(): bool
     {
-        foreach ($this->fields as $field) {
-            if ($field instanceof SignatureField) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->fields, fn ($field) => $field instanceof SignatureField);
     }
 }

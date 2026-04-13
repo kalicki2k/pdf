@@ -19,15 +19,8 @@ use LogicException;
 
 final class PageDecorationContext
 {
-    private DocumentBuilder $builder;
-
-    public function __construct(
-        DefaultDocumentBuilder $builder,
-        private readonly Page $page,
-        private readonly int $pageNumber,
-        private readonly int $totalPages,
-    ) {
-        $this->builder = $builder;
+    public function __construct(private DocumentBuilder $builder, private readonly Page $page, private readonly int $pageNumber, private readonly int $totalPages)
+    {
     }
 
     public function page(): Page
