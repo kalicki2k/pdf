@@ -576,7 +576,7 @@ Ein kleines ausfuehrbares Beispiel liegt in `examples/encryption.php`. Die exter
 
 ## Attachments
 
-Dokumentweite eingebettete Dateien koennen direkt ueber den Builder registriert werden. Der aktuelle Stand unterstuetzt nur dokumentweite Associated Files am Catalog (`/AF`), keine objekt- oder seitennahe Zuordnung. Fuer PDF/A-3 werden solche Dokument-Attachments standardmaessig als Associated Files mit `AFRelationship /Data` serialisiert, solange keine explizite Beziehung gesetzt wird. Das gleiche Defaulting existiert im Attachment-Plumbing auch fuer den aktuell noch gesperrten PDF/A-4f-Pfad, ohne dass damit bereits PDF/A-4f-Claiming freigegeben waere. Standard-PDF 2.0 kann dokumentweite Associated Files mit explizitem `AFRelationship` ebenfalls serialisieren.
+Dokumentweite eingebettete Dateien koennen direkt ueber den Builder registriert werden. Der aktuelle Stand unterstuetzt nur dokumentweite Associated Files am Catalog (`/AF`), keine objekt- oder seitennahe Zuordnung. Fuer PDF/A-3 werden solche Dokument-Attachments standardmaessig als Associated Files mit `AFRelationship /Data` serialisiert, solange keine explizite Beziehung gesetzt wird. Im PDF/A-Pfad sind Attachment-Dateinamen eindeutig zu halten und ein MIME-Typ ist fuer den Embedded-File-Stream Pflicht. Das gleiche Defaulting existiert im Attachment-Plumbing auch fuer den aktuell noch gesperrten PDF/A-4f-Pfad, ohne dass damit bereits PDF/A-4f-Claiming freigegeben waere. Standard-PDF 2.0 kann dokumentweite Associated Files mit explizitem `AFRelationship` ebenfalls serialisieren.
 
 ```php
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;

@@ -333,6 +333,52 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
     }
 
+    public function testItRejectsPdfA3bAttachmentObjectsWithoutEfUfReferences(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3b())
+            ->title('Archive Package')
+            ->attachment(
+                'data.xml',
+                '<root/>',
+                'Source data',
+                'application/xml',
+                AssociatedFileRelationship::SOURCE,
+            )
+            ->build();
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects);
+        $attachmentObjectId = $state->attachmentObjectIds[0];
+        $embeddedFileObjectId = $state->embeddedFileObjectIds[0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($attachmentObjectId, $embeddedFileObjectId): IndirectObject {
+                if ($object->objectId !== $attachmentObjectId) {
+                    return $object;
+                }
+
+                $tamperedContents = preg_replace(
+                    '/\s*\/UF\s+' . $embeddedFileObjectId . '\s+0\s+R/',
+                    '',
+                    $object->contents,
+                    1,
+                );
+                self::assertNotNull($tamperedContents);
+
+                return IndirectObject::plain($object->objectId, $tamperedContents);
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            'PDF/A attachment object 1 must serialize an /EF dictionary that references embedded file stream %d via /UF.',
+            $embeddedFileObjectId,
+        ));
+
+        (new PdfAObjectGraphValidator())->assertValid($document, $state, $objects);
+    }
+
     private function pdfA2uDocument(): Document
     {
         return DefaultDocumentBuilder::make()

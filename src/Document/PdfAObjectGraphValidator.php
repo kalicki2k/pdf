@@ -18,6 +18,7 @@ use function preg_match;
 use function preg_quote;
 use function sprintf;
 use function str_contains;
+use function str_replace;
 
 final class PdfAObjectGraphValidator
 {
@@ -266,6 +267,22 @@ final class PdfAObjectGraphValidator
                 ));
             }
 
+            if (!str_contains($attachmentObject->contents, '/F ' . $this->pdfString($attachment->filename))) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A attachment object %d must serialize /F for filename "%s".',
+                    $attachmentIndex + 1,
+                    $attachment->filename,
+                ));
+            }
+
+            if (!str_contains($attachmentObject->contents, '/UF ' . $this->pdfString($attachment->filename))) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A attachment object %d must serialize /UF for filename "%s".',
+                    $attachmentIndex + 1,
+                    $attachment->filename,
+                ));
+            }
+
             if (
                 preg_match('/\/EF\s*<<[^>]*\/F\s+' . preg_quote((string) $embeddedFileObjectId, '/') . '\s+0\s+R[^>]*>>/', $attachmentObject->contents) !== 1
             ) {
@@ -276,9 +293,26 @@ final class PdfAObjectGraphValidator
                 ));
             }
 
+            if (
+                preg_match('/\/EF\s*<<[^>]*\/UF\s+' . preg_quote((string) $embeddedFileObjectId, '/') . '\s+0\s+R[^>]*>>/', $attachmentObject->contents) !== 1
+            ) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A attachment object %d must serialize an /EF dictionary that references embedded file stream %d via /UF.',
+                    $attachmentIndex + 1,
+                    $embeddedFileObjectId,
+                ));
+            }
+
             if ($embeddedFileObject->streamDictionaryContents === null || !str_contains($embeddedFileObject->streamDictionaryContents, '/Type /EmbeddedFile')) {
                 throw new InvalidArgumentException(sprintf(
                     'PDF/A embedded file stream %d must serialize as an /EmbeddedFile stream object.',
+                    $attachmentIndex + 1,
+                ));
+            }
+
+            if ($attachment->embeddedFile->mimeType !== null && !str_contains($embeddedFileObject->streamDictionaryContents, '/Subtype /')) {
+                throw new InvalidArgumentException(sprintf(
+                    'PDF/A embedded file stream %d must serialize /Subtype for MIME-typed attachments.',
                     $attachmentIndex + 1,
                 ));
             }
@@ -327,6 +361,15 @@ final class PdfAObjectGraphValidator
                 sprintf('PDF/A catalog must reference associated file object %d in /AF.', $attachmentObjectId),
             );
         }
+    }
+
+    private function pdfString(string $value): string
+    {
+        return '(' . str_replace(
+            ['\\', '(', ')'],
+            ['\\\\', '\(', '\)'],
+            $value,
+        ) . ')';
     }
 
     private function assertPageTreeObject(DocumentSerializationPlanBuildState $state, IndirectObject $pageTreeObject): void

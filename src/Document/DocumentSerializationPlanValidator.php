@@ -204,7 +204,19 @@ final class DocumentSerializationPlanValidator
             return;
         }
 
+        $filenames = [];
+
         foreach ($document->attachments as $attachmentIndex => $attachment) {
+            if (isset($filenames[$attachment->filename])) {
+                throw new InvalidArgumentException(sprintf(
+                    'Attachment filename "%s" is used more than once. Duplicate found at attachment %d.',
+                    $attachment->filename,
+                    $attachmentIndex + 1,
+                ));
+            }
+
+            $filenames[$attachment->filename] = true;
+
             $this->pdfA23ScopePolicy->assertDocumentAttachmentAllowed(
                 $document,
                 $attachmentIndex,
@@ -220,6 +232,14 @@ final class DocumentSerializationPlanValidator
         }
 
         foreach ($document->attachments as $attachmentIndex => $attachment) {
+            if ($document->profile->isPdfA() && $attachment->embeddedFile->mimeType === null) {
+                throw new InvalidArgumentException(sprintf(
+                    'Profile %s requires an embedded file MIME type for attachment %d.',
+                    $document->profile->name(),
+                    $attachmentIndex + 1,
+                ));
+            }
+
             if (
                 $this->attachmentRelationshipResolver->resolve($document, $attachment) !== null
                 && !$document->profile->supportsDocumentAssociatedFiles()

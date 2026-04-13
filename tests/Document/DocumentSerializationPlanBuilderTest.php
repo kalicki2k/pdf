@@ -634,6 +634,42 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder->build($document);
     }
 
+    public function testItRejectsPdfA3AttachmentsWithoutMimeType(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            profile: Profile::pdfA3b(),
+            attachments: [
+                new FileAttachment(
+                    'data.xml',
+                    new EmbeddedFile('<root/>'),
+                    'Machine-readable source',
+                ),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-3b requires an embedded file MIME type for attachment 1.');
+
+        $builder->build($document);
+    }
+
+    public function testItRejectsDuplicateAttachmentFilenames(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            attachments: [
+                new FileAttachment('demo.txt', new EmbeddedFile('hello', 'text/plain')),
+                new FileAttachment('demo.txt', new EmbeddedFile('world', 'text/plain')),
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Attachment filename "demo.txt" is used more than once. Duplicate found at attachment 2.');
+
+        $builder->build($document);
+    }
+
     public function testItAddsAnAcroFormAndWidgetFieldObjects(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
