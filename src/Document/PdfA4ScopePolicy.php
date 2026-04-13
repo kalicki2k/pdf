@@ -66,6 +66,9 @@ final class PdfA4ScopePolicy
             PdfA4Feature::INFO_DICTIONARY => new PdfA4FeatureRule(false, false, 'The current PDF/A-4 path does not claim an Info dictionary.'),
             PdfA4Feature::EMBEDDED_ATTACHMENTS => new PdfA4FeatureRule(false, false, 'Base PDF/A-4 does not allow the current embedded attachment path.'),
             PdfA4Feature::ASSOCIATED_FILES => new PdfA4FeatureRule(false, false, 'Base PDF/A-4 does not allow the current associated file path.'),
+            PdfA4Feature::OPTIONAL_CONTENT => new PdfA4FeatureRule(false, false, 'The current PDF/A-4 base scope does not allow optional content groups or layers.'),
+            PdfA4Feature::RICH_MEDIA => new PdfA4FeatureRule(false, false, 'The current PDF/A-4 base scope does not allow RichMedia annotations or assets.'),
+            PdfA4Feature::THREE_D_ANNOTATIONS => new PdfA4FeatureRule(false, false, 'The current PDF/A-4 base scope does not allow 3D annotations.'),
             PdfA4Feature::ENGINEERING_FEATURES => new PdfA4FeatureRule(false, false, 'Base PDF/A-4 does not include PDF/A-4e engineering features.'),
         };
     }
@@ -79,6 +82,9 @@ final class PdfA4ScopePolicy
             PdfA4Feature::INFO_DICTIONARY => new PdfA4FeatureRule(false, false, 'The current PDF/A-4e path does not claim an Info dictionary.'),
             PdfA4Feature::EMBEDDED_ATTACHMENTS => new PdfA4FeatureRule(false, false, 'The current PDF/A-4e path does not allow embedded attachments.'),
             PdfA4Feature::ASSOCIATED_FILES => new PdfA4FeatureRule(false, false, 'The current PDF/A-4e path does not allow associated files.'),
+            PdfA4Feature::OPTIONAL_CONTENT => new PdfA4FeatureRule(true, false, 'Optional-content and engineering-view constructs need dedicated PDF/A-4e validation before support can be claimed.'),
+            PdfA4Feature::RICH_MEDIA => new PdfA4FeatureRule(true, false, 'RichMedia-style engineering assets need dedicated PDF/A-4e validation before support can be claimed.'),
+            PdfA4Feature::THREE_D_ANNOTATIONS => new PdfA4FeatureRule(true, false, '3D engineering annotations need dedicated PDF/A-4e validation before support can be claimed.'),
             PdfA4Feature::ENGINEERING_FEATURES => new PdfA4FeatureRule(true, false, 'PDF/A-4e-specific engineering features need dedicated validation before support can be claimed.'),
         };
     }
@@ -92,6 +98,9 @@ final class PdfA4ScopePolicy
             PdfA4Feature::INFO_DICTIONARY => new PdfA4FeatureRule(false, false, 'The current PDF/A-4f path does not claim an Info dictionary.'),
             PdfA4Feature::EMBEDDED_ATTACHMENTS => new PdfA4FeatureRule(true, false, 'Attachment plumbing exists for PDF/A-4f, but the full conformance path is still blocked.'),
             PdfA4Feature::ASSOCIATED_FILES => new PdfA4FeatureRule(true, false, 'Associated-file plumbing exists for PDF/A-4f, but the full conformance path is still blocked.'),
+            PdfA4Feature::OPTIONAL_CONTENT => new PdfA4FeatureRule(false, false, 'PDF/A-4f does not include the current optional-content or layer path.'),
+            PdfA4Feature::RICH_MEDIA => new PdfA4FeatureRule(false, false, 'PDF/A-4f does not include RichMedia engineering assets.'),
+            PdfA4Feature::THREE_D_ANNOTATIONS => new PdfA4FeatureRule(false, false, 'PDF/A-4f does not include 3D engineering annotations.'),
             PdfA4Feature::ENGINEERING_FEATURES => new PdfA4FeatureRule(false, false, 'PDF/A-4f does not include PDF/A-4e engineering features.'),
         };
     }
