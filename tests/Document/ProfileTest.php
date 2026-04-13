@@ -42,11 +42,35 @@ final class ProfileTest extends TestCase
     public function testPdfA1aExposesTheExpectedPolicyMatrix(): void
     {
         $this->assertPdfA1PolicyMatrix(Profile::pdfA1a(), true, true);
+        self::assertTrue(Profile::pdfA1a()->supportsCurrentPdfAImplementation());
     }
 
     public function testPdfA1bExposesTheExpectedPolicyMatrix(): void
     {
         $this->assertPdfA1PolicyMatrix(Profile::pdfA1b(), false, false);
+        self::assertTrue(Profile::pdfA1b()->supportsCurrentPdfAImplementation());
+    }
+
+    public function testPdfA2AndPdfA3CurrentSupportMatrixIsExplicit(): void
+    {
+        self::assertFalse(Profile::pdfA2a()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA2b()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA2u()->supportsCurrentPdfAImplementation());
+        self::assertFalse(Profile::pdfA3a()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA3b()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA3u()->supportsCurrentPdfAImplementation());
+    }
+
+    public function testPdfA4FamilyIsExplicitlyBlockedUntilImplemented(): void
+    {
+        self::assertFalse(Profile::pdfA4()->supportsCurrentPdfAImplementation());
+        self::assertFalse(Profile::pdfA4e()->supportsCurrentPdfAImplementation());
+        self::assertFalse(Profile::pdfA4f()->supportsCurrentPdfAImplementation());
+
+        self::assertSame(
+            'PDF/A-4 requires a dedicated PDF 2.0 validation and policy matrix that is not implemented yet.',
+            Profile::pdfA4()->pdfaSupport()?->supportSummary,
+        );
     }
 
     private function assertPdfA1PolicyMatrix(

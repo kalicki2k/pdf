@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 
 final class PdfA23PolicyMatrixTest extends TestCase
 {
-    public function testItAllowsPdfA2aTaggedParagraphsWithinTheCurrentScope(): void
+    public function testItRejectsPdfA2aUntilTheGeneralTaggedAScopeIsValidated(): void
     {
         $document = $this->pdfA2BaselineBuilder(Profile::pdfA2a())
             ->text('Getaggter Absatz fuer PDF/A-2a. Привет.', new TextOptions(
@@ -29,15 +29,12 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ))
             ->build();
 
-        $serialized = implode("\n", array_map(
-            static fn ($object): string => $object->contents,
-            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
-        ));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2a is not supported yet: The general tagged PDF/A "a" scope outside PDF/A-1a is not fully validated yet, so this profile is blocked instead of claimed.',
+        );
 
-        self::assertStringContainsString('/MarkInfo << /Marked true >>', $serialized);
-        self::assertStringContainsString('/Type /StructTreeRoot', $serialized);
-        self::assertStringContainsString('/S /Document', $serialized);
-        self::assertStringContainsString('/S /P', $serialized);
+        (new DocumentSerializationPlanBuilder())->build($document);
     }
 
     public function testItAllowsPdfA2bUriLinkAnnotationsWithinTheCurrentScope(): void
@@ -160,7 +157,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/Encoding /Identity-H', $serialized);
     }
 
-    public function testItAllowsPdfA3aTaggedDocumentsWithDocumentAssociatedFiles(): void
+    public function testItRejectsPdfA3aUntilTheGeneralTaggedAScopeIsValidated(): void
     {
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA3a())
@@ -172,15 +169,12 @@ final class PdfA23PolicyMatrixTest extends TestCase
             ->attachment('data.xml', '<root/>', 'Source data', 'application/xml')
             ->build();
 
-        $serialized = implode("\n", array_map(
-            static fn ($object): string => $object->contents,
-            iterator_to_array((new DocumentSerializationPlanBuilder())->build($document)->objects),
-        ));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-3a is not supported yet: The general tagged PDF/A "a" scope outside PDF/A-1a is not fully validated yet, so this profile is blocked instead of claimed.',
+        );
 
-        self::assertStringContainsString('/AFRelationship /Data', $serialized);
-        self::assertStringContainsString('<pdfaid:part>3</pdfaid:part>', $serialized);
-        self::assertStringContainsString('<pdfaid:conformance>A</pdfaid:conformance>', $serialized);
-        self::assertStringContainsString('/Type /StructTreeRoot', $serialized);
+        (new DocumentSerializationPlanBuilder())->build($document);
     }
 
     private function pdfA2BaselineBuilder(Profile $profile): DefaultDocumentBuilder

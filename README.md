@@ -12,6 +12,9 @@ Der aktuelle PDF/A-Scope ist bewusst konservativ und folgt eher dem Prinzip "har
 - `PDF/A-3b`: dokumentweite Embedded Files und Associated Files am Catalog sind im aktuellen Scope abgedeckt. Erlaubt sind dokumentweite Associated Files am Catalog, nicht aber seitennahe Dateianhang-Annotationen, Popup-Related-Objects oder AcroForm-Felder.
 - `PDF/A-3a`: aktuell bewusst nicht freigegeben. Der allgemeine Tagged-/A-Scope ausserhalb von `PDF/A-1a` wird noch nicht als belastbar genug eingestuft und wird deshalb hart blockiert.
 - `PDF/A-3u`: erweitert den aktuellen `PDF/A-3b`-Scope um den extractable-Unicode-Font-Pfad. Dokumentweite Associated Files am Catalog bleiben freigegeben; seitennahe Dateianhang-Annotationen, Popup-Related-Objects und AcroForm-Felder bleiben gesperrt.
+- `PDF/A-4`: aktuell bewusst nicht freigegeben. Der PDF-2.0-basierte PDF/A-4-Scope ist noch nicht als belastbare Capability-Matrix modelliert und wird deshalb hart blockiert.
+- `PDF/A-4e`: aktuell bewusst nicht freigegeben. Die zusaetzlichen Engineering-Anforderungen von PDF/A-4e sind noch nicht implementiert und werden deshalb hart blockiert.
+- `PDF/A-4f`: aktuell bewusst nicht freigegeben. Teile des Attachment-Plumbings existieren bereits, aber der vollstaendige PDF/A-4f-Scope ist noch nicht sauber validiert und wird deshalb hart blockiert.
 
 Die Engine validiert PDF/A-1 inzwischen nicht nur auf vorbereiteten Zwischenstrukturen, sondern auch gegen den finalen Objektgraphen vor dem Schreiben. Fuer PDF/A-2/3 laeuft derselbe finale Objektgraph-Check inzwischen fuer den gemeinsamen Catalog-, Metadata-, OutputIntent-, Attachment- und Seitenpfad. Die PDF/A-Regressionsskripte pruefen die geschriebenen Dateien zusaetzlich mit `qpdf --check`, bevor veraPDF laeuft.
 
@@ -573,7 +576,7 @@ Ein kleines ausfuehrbares Beispiel liegt in `examples/encryption.php`. Die exter
 
 ## Attachments
 
-Dokumentweite eingebettete Dateien koennen direkt ueber den Builder registriert werden. Der aktuelle Stand unterstuetzt nur dokumentweite Associated Files am Catalog (`/AF`), keine objekt- oder seitennahe Zuordnung. Fuer PDF/A-3 und PDF/A-4f werden solche Dokument-Attachments standardmaessig als Associated Files mit `AFRelationship /Data` serialisiert, solange keine explizite Beziehung gesetzt wird. Standard-PDF 2.0 kann dokumentweite Associated Files mit explizitem `AFRelationship` ebenfalls serialisieren.
+Dokumentweite eingebettete Dateien koennen direkt ueber den Builder registriert werden. Der aktuelle Stand unterstuetzt nur dokumentweite Associated Files am Catalog (`/AF`), keine objekt- oder seitennahe Zuordnung. Fuer PDF/A-3 werden solche Dokument-Attachments standardmaessig als Associated Files mit `AFRelationship /Data` serialisiert, solange keine explizite Beziehung gesetzt wird. Das gleiche Defaulting existiert im Attachment-Plumbing auch fuer den aktuell noch gesperrten PDF/A-4f-Pfad, ohne dass damit bereits PDF/A-4f-Claiming freigegeben waere. Standard-PDF 2.0 kann dokumentweite Associated Files mit explizitem `AFRelationship` ebenfalls serialisieren.
 
 ```php
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;

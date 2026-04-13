@@ -41,6 +41,19 @@ final class DocumentAttachmentRelationshipResolverTest extends TestCase
         self::assertSame(AssociatedFileRelationship::DATA, $relationship);
     }
 
+    public function testItDefaultsPdfA4fAttachmentsToDataAssociatedFilesForTheExistingAttachmentPlumbing(): void
+    {
+        $document = new Document(profile: Profile::pdfA4f());
+        $attachment = new FileAttachment(
+            'data.xml',
+            new EmbeddedFile('<root/>', 'application/xml'),
+        );
+
+        $relationship = (new DocumentAttachmentRelationshipResolver())->resolve($document, $attachment);
+
+        self::assertSame(AssociatedFileRelationship::DATA, $relationship);
+    }
+
     public function testItKeepsPlainPdf20AttachmentsWithoutAssociatedRelationship(): void
     {
         $document = new Document(profile: Profile::pdf20());

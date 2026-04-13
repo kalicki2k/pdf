@@ -246,6 +246,22 @@ final readonly class Profile
         return $this->conformance;
     }
 
+    public function pdfaSupport(): ?PdfAProfileSupport
+    {
+        return PdfAProfileSupport::for($this);
+    }
+
+    public function supportsCurrentPdfAImplementation(): bool
+    {
+        $support = $this->pdfaSupport();
+
+        if ($support === null) {
+            return true;
+        }
+
+        return $support->isSupported;
+    }
+
     public function pdfuaPart(): ?int
     {
         if (!$this->isPdfUa()) {

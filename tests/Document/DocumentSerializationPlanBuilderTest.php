@@ -517,7 +517,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/AFRelationship /Data', $objects[5]->contents);
     }
 
-    public function testItDefaultsPdfA4fAttachmentsToAssociatedFiles(): void
+    public function testItRejectsPdfA4fUntilThePdfA4ScopeIsImplemented(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
@@ -531,11 +531,12 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ],
         );
 
-        $plan = $builder->build($document);
-        $objects = iterator_to_array($plan->objects);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-4f is not supported yet: Some attachment plumbing exists, but the full PDF/A-4f conformance scope is not modeled or validated yet.',
+        );
 
-        self::assertStringContainsString('/AF [6 0 R]', $objects[0]->contents);
-        self::assertStringContainsString('/AFRelationship /Data', $objects[5]->contents);
+        $builder->build($document);
     }
 
     public function testItAllowsExplicitDocumentLevelAssociatedFilesForPdf20(): void

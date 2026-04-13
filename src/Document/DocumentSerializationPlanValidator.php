@@ -56,6 +56,8 @@ final class DocumentSerializationPlanValidator
 
     private function assertProfileRequirements(Document $document): void
     {
+        $document->profile->pdfaSupport()?->assertSupported();
+
         if ($document->profile->requiresDocumentLanguage() && $document->language === null) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s requires a document language.',
