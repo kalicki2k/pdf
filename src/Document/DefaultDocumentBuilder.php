@@ -3001,6 +3001,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $renderScope = $this->debugger()->startPerformanceScope('text.content.segments.line_render', [
                 'entry_count' => count($lineEntries),
             ]);
+            $renderBlockScope = $this->debugger()->startPerformanceScope('text.content.segments.line_render.block', [
+                'entry_count' => count($lineEntries),
+            ]);
 
             foreach ($lineEntries as $lineEntry) {
                 /** @var array{mappedRun: MappedTextRun, link: LinkTarget|TextLink|null, options: TextOptions, font: StandardFontDefinition|EmbeddedFontDefinition, fontAlias: string} $lineEntry */
@@ -3036,6 +3039,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $runX += $mappedRun->width;
             }
 
+            $renderBlockScope->stop([
+                'rendered_entry_count' => count($renderedEntries),
+            ]);
+
             $renderScope->stop([
                 'rendered_entry_count' => count($renderedEntries),
             ]);
@@ -3048,6 +3055,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 'merged_entry_count' => count($mergedRenderedEntries),
             ]);
             $lastLinkedGroupOnLine = null;
+            $linkWrapScope = $this->debugger()->startPerformanceScope('text.content.segments.line_render.link_wrap', [
+                'entry_count' => count($mergedRenderedEntries),
+            ]);
 
             foreach ($mergedRenderedEntries as $renderedEntryIndex => $renderedEntry) {
                 /** @var LinkTarget|TextLink|null $link */
@@ -3084,6 +3094,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
                 $contents[] = $textBlockContent;
             }
+
+            $linkWrapScope->stop([
+                'annotation_count' => count($annotations),
+            ]);
 
             $continuingLinkGroup = $lastLinkedGroupOnLine;
         }

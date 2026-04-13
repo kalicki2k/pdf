@@ -71,6 +71,9 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
             'character_count' => $count,
             'enabled' => $supportsLigatures ? 1 : 0,
         ]);
+        $emitScope = $debugger->startPerformanceScope('text.shape.default.emit', [
+            'character_count' => $count,
+        ]);
         $fallbackScope = $debugger->startPerformanceScope('text.shape.default.fallback', [
             'character_count' => $count,
         ]);
@@ -124,6 +127,9 @@ final readonly class DefaultScriptTextShaper implements ScriptTextShaper
         ]);
         $fallbackScope->stop([
             'glyph_count' => $fallbackGlyphCount,
+        ]);
+        $emitScope->stop([
+            'glyph_count' => count($glyphs),
         ]);
 
         $glyphScope->stop([

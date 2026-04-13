@@ -15,6 +15,8 @@ use Kalle\Pdf\Page\PageFont;
 
 use function spl_object_id;
 
+use WeakMap;
+
 final readonly class SimpleFontRunMapper implements FontRunMapper
 {
     private const MAP_CACHE_LIMIT = 64;
@@ -47,15 +49,16 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
         ?PageFont $embeddedPageFont = null,
         bool $useHexString = false,
     ): MappedTextRun {
-        /** @var array<string, MappedTextRun> $mapCache */
-        static $mapCache = [];
+        $mapCache = self::mapCache();
+        $cacheKey = $this->variantCacheKey($font, $options, $pdfVersion, $embeddedPageFont, $useHexString);
+        /** @var array<string, MappedTextRun> $runCache */
+        $runCache = $mapCache->offsetExists($run) ? $mapCache[$run] : [];
 
-        $cacheKey = $this->mapCacheKey($run, $font, $options, $pdfVersion, $embeddedPageFont, $useHexString);
-
-        if (isset($mapCache[$cacheKey])) {
-            $mappedRun = $mapCache[$cacheKey];
-            unset($mapCache[$cacheKey]);
-            $mapCache[$cacheKey] = $mappedRun;
+        if (isset($runCache[$cacheKey])) {
+            $mappedRun = $runCache[$cacheKey];
+            unset($runCache[$cacheKey]);
+            $runCache[$cacheKey] = $mappedRun;
+            $mapCache[$run] = $runCache;
 
             return $mappedRun;
         }
@@ -94,7 +97,7 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
                 width: ($embeddedRunData['widthInDesignUnits'] / $font->metadata->unitsPerEm) * $options->fontSize,
             );
 
-            return $this->rememberMappedRun($mapCache, $cacheKey, $mappedRun);
+            return $this->rememberMappedRun($mapCache, $run, $cacheKey, $mappedRun);
         }
 
         $mappedRun = new MappedTextRun(
@@ -110,25 +113,48 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
             width: $font->measureTextWidth($text, $options->fontSize),
         );
 
-        return $this->rememberMappedRun($mapCache, $cacheKey, $mappedRun);
+        return $this->rememberMappedRun($mapCache, $run, $cacheKey, $mappedRun);
     }
 
     /**
-     * @param array<string, MappedTextRun> $mapCache
+     * @param WeakMap<ShapedTextRun, array<string, MappedTextRun>> $mapCache
      */
-    private function rememberMappedRun(array &$mapCache, string $cacheKey, MappedTextRun $mappedRun): MappedTextRun
-    {
-        $mapCache[$cacheKey] = $mappedRun;
+    private function rememberMappedRun(
+        WeakMap $mapCache,
+        ShapedTextRun $run,
+        string $cacheKey,
+        MappedTextRun $mappedRun,
+    ): MappedTextRun {
+        $runCache = $mapCache[$run] ?? [];
+        $runCache[$cacheKey] = $mappedRun;
 
-        if (count($mapCache) > self::MAP_CACHE_LIMIT) {
-            unset($mapCache[array_key_first($mapCache)]);
+        if (count($runCache) > self::MAP_CACHE_LIMIT) {
+            unset($runCache[array_key_first($runCache)]);
         }
+
+        $mapCache[$run] = $runCache;
 
         return $mappedRun;
     }
 
-    private function mapCacheKey(
-        ShapedTextRun $run,
+    /**
+     * @return WeakMap<ShapedTextRun, array<string, MappedTextRun>>
+     */
+    private static function mapCache(): WeakMap
+    {
+        /** @var WeakMap<ShapedTextRun, array<string, MappedTextRun>>|null $mapCache */
+        static $mapCache = null;
+
+        if (!$mapCache instanceof WeakMap) {
+            $mapCache = new WeakMap();
+        }
+
+        /** @var WeakMap<ShapedTextRun, array<string, MappedTextRun>> $mapCache */
+
+        return $mapCache;
+    }
+
+    private function variantCacheKey(
         StandardFontDefinition | EmbeddedFontDefinition $font,
         TextOptions $options,
         float $pdfVersion,
@@ -141,8 +167,7 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
         $pageFontKey = $embeddedPageFont !== null ? (string) spl_object_id($embeddedPageFont) : 'none';
         $fontEncodingKey = $options->fontEncoding !== null ? $options->fontEncoding->value : 'none';
 
-        return spl_object_id($run)
-            . "\0" . $fontKey
+        return $fontKey
             . "\0" . $options->fontSize
             . "\0" . $pdfVersion
             . "\0" . $fontEncodingKey

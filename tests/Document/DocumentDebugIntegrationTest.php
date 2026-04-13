@@ -66,6 +66,7 @@ final class DocumentDebugIntegrationTest extends TestCase
         self::assertContains('text.content', $this->eventsForChannel($records, 'performance'));
         self::assertContains('text.shape.default.glyphs', $this->eventsForChannel($records, 'performance'));
         self::assertContains('text.shape.default.fallback', $this->eventsForChannel($records, 'performance'));
+        self::assertContains('text.shape.default.emit', $this->eventsForChannel($records, 'performance'));
         self::assertContains('document.render', $this->eventsForChannel($records, 'performance'));
         self::assertContains('page.render', $this->eventsForChannel($records, 'performance'));
     }
@@ -89,6 +90,8 @@ final class DocumentDebugIntegrationTest extends TestCase
         self::assertContains('text.content.segments', $events);
         self::assertContains('text.content.block', $events);
         self::assertContains('text.content.link', $events);
+        self::assertContains('text.content.segments.line_render.block', $events);
+        self::assertContains('text.content.segments.line_render.link_wrap', $events);
     }
 
     /**
