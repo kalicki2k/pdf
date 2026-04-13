@@ -56,6 +56,7 @@ final class ImageSourcePathTest extends TestCase
 
         self::assertCount(1, $document->pages[0]->imageResources);
         self::assertStringContainsString('/ColorSpace /DeviceCMYK', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/Decode [1 0 1 0 1 0 1 0]', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
         self::assertStringContainsString("72 0 0 72 24 48 cm\n/Im1 Do", $document->pages[0]->contents);
 
         unlink($path);
@@ -329,6 +330,48 @@ final class ImageSourcePathTest extends TestCase
 
         self::assertCount(1, $document->pages[0]->imageResources);
         self::assertStringContainsString('/ColorSpace /DeviceRGB', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/BitsPerComponent 8', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromAnUncompressedCmykTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedCmykTiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/ColorSpace /DeviceCMYK', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/BitsPerComponent 8', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromAPredictorDeflateCmykTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorDeflateCmykTiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/ColorSpace /DeviceCMYK', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
         self::assertStringContainsString('/BitsPerComponent 8', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
 
         unlink($path);

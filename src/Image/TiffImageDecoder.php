@@ -289,6 +289,21 @@ final readonly class TiffImageDecoder
             );
         }
 
+        if ($samplesPerPixel === 4 && $bitsPerSample === [8, 8, 8, 8]) {
+            if ($predictor === 2) {
+                $decompressedStrips = $this->reverseHorizontalDifferencing($decompressedStrips, $width, $height, 4, $path);
+            }
+
+            return $this->decodeRasterCmyk(
+                $path,
+                $width,
+                $height,
+                $photometricInterpretation,
+                $decompressedStrips,
+                $rowsPerStrip,
+            );
+        }
+
         throw new InvalidArgumentException(sprintf(
             "TIFF image '%s' uses unsupported BitsPerSample/SamplesPerPixel combination.",
             $path,
@@ -364,6 +379,19 @@ final readonly class TiffImageDecoder
 
         if ($samplesPerPixel === 3 && $bitsPerSample === [8, 8, 8]) {
             return $this->decodeUncompressedRgb(
+                $data,
+                $path,
+                $width,
+                $height,
+                $photometricInterpretation,
+                $stripOffsets,
+                $stripByteCounts,
+                $rowsPerStrip,
+            );
+        }
+
+        if ($samplesPerPixel === 4 && $bitsPerSample === [8, 8, 8, 8]) {
+            return $this->decodeUncompressedCmyk(
                 $data,
                 $path,
                 $width,
@@ -526,6 +554,47 @@ final readonly class TiffImageDecoder
                 $stripByteCounts,
                 $rowsPerStrip,
                 $width * 3,
+            ),
+            $rowsPerStrip,
+        );
+    }
+
+    /**
+     * @param list<int> $stripOffsets
+     * @param list<int> $stripByteCounts
+     */
+    private function decodeUncompressedCmyk(
+        string $data,
+        string $path,
+        int $width,
+        int $height,
+        int $photometricInterpretation,
+        array $stripOffsets,
+        array $stripByteCounts,
+        int $rowsPerStrip,
+    ): ImageSource {
+        if ($photometricInterpretation !== 5) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' uses unsupported CMYK PhotometricInterpretation %d.",
+                $path,
+                $photometricInterpretation,
+            ));
+        }
+
+        return $this->decodeRasterCmyk(
+            $path,
+            $width,
+            $height,
+            $photometricInterpretation,
+            $this->collectUncompressedStripData(
+                $data,
+                $path,
+                $width,
+                $height,
+                $stripOffsets,
+                $stripByteCounts,
+                $rowsPerStrip,
+                $width * 4,
             ),
             $rowsPerStrip,
         );
@@ -775,6 +844,32 @@ final readonly class TiffImageDecoder
         }
 
         return ImageSource::compressed($rgb, $width, $height, ImageColorSpace::RGB, 8);
+    }
+
+    private function decodeRasterCmyk(
+        string $path,
+        int $width,
+        int $height,
+        int $photometricInterpretation,
+        string $cmyk,
+        int $rowsPerStrip,
+    ): ImageSource {
+        if ($photometricInterpretation !== 5) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' uses unsupported CMYK PhotometricInterpretation %d.",
+                $path,
+                $photometricInterpretation,
+            ));
+        }
+
+        if (strlen($cmyk) !== $width * $height * 4) {
+            throw new InvalidArgumentException(sprintf(
+                "TIFF image '%s' uses unsupported uncompressed strip layout.",
+                $path,
+            ));
+        }
+
+        return ImageSource::compressed($cmyk, $width, $height, ImageColorSpace::CMYK, 8);
     }
 
     /**

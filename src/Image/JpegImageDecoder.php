@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Image;
 
+use function ord;
 use function get_debug_type;
 use function is_scalar;
 use function sprintf;
+use function strlen;
+use function substr;
 
 use InvalidArgumentException;
 use RuntimeException;
@@ -33,6 +36,7 @@ final readonly class JpegImageDecoder
             width: $width,
             height: $height,
             colorSpace: $this->colorSpaceFromImageInfo($path, $imageInfo),
+            decode: $this->decodeArrayFromMetadata($data, $imageInfo),
         );
     }
 
@@ -53,5 +57,71 @@ final readonly class JpegImageDecoder
                 is_scalar($channels) ? (string) $channels : get_debug_type($channels),
             )),
         };
+    }
+
+    /**
+     * @param array<string|int, mixed> $imageInfo
+     * @return list<float|int>|null
+     */
+    private function decodeArrayFromMetadata(string $data, array $imageInfo): ?array
+    {
+        if (($imageInfo['channels'] ?? null) !== 4) {
+            return null;
+        }
+
+        return $this->isAdobeCmykJpeg($data)
+            ? [1, 0, 1, 0, 1, 0, 1, 0]
+            : null;
+    }
+
+    private function isAdobeCmykJpeg(string $data): bool
+    {
+        $offset = 2;
+        $length = strlen($data);
+
+        while ($offset + 4 <= $length) {
+            if (ord($data[$offset]) !== 0xFF) {
+                break;
+            }
+
+            while ($offset < $length && ord($data[$offset]) === 0xFF) {
+                $offset++;
+            }
+
+            if ($offset >= $length) {
+                break;
+            }
+
+            $marker = ord($data[$offset]);
+            $offset++;
+
+            if ($marker === 0xD8 || $marker === 0xD9 || ($marker >= 0xD0 && $marker <= 0xD7) || $marker === 0x01) {
+                continue;
+            }
+
+            if ($offset + 2 > $length) {
+                break;
+            }
+
+            $segmentLength = (ord($data[$offset]) << 8) | ord($data[$offset + 1]);
+
+            if ($segmentLength < 2 || $offset + $segmentLength > $length) {
+                break;
+            }
+
+            if ($marker === 0xEE) {
+                $payload = substr($data, $offset + 2, $segmentLength - 2);
+
+                if (strlen($payload) >= 12 && substr($payload, 0, 5) === 'Adobe') {
+                    $colorTransform = ord($payload[11]);
+
+                    return $colorTransform === 0 || $colorTransform === 2;
+                }
+            }
+
+            $offset += $segmentLength;
+        }
+
+        return false;
     }
 }

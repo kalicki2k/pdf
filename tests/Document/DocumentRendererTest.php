@@ -60,6 +60,7 @@ use Kalle\Pdf\Page\ShapeAnnotationOptions;
 use Kalle\Pdf\Page\TextAnnotationOptions;
 use Kalle\Pdf\Tests\Image\BmpFixture;
 use Kalle\Pdf\Tests\Image\GifFixture;
+use Kalle\Pdf\Tests\Image\JpegFixture;
 use Kalle\Pdf\Tests\Image\TiffFixture;
 use Kalle\Pdf\Tests\Image\WebpFixture;
 use Kalle\Pdf\Text\TextLink;
@@ -2337,6 +2338,37 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/DecodeParms << /K 0 /Columns 8 /Rows 2 /BlackIs1 true /EndOfLine true >>', $pdf);
     }
 
+    public function testItRendersCmykJpegImagesWithAdobeDecodeArray(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-cmyk-jpeg-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary CMYK JPEG fixture path.');
+        }
+
+        file_put_contents($path, JpegFixture::tinyCmykJpegBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(72, 610, width: 160))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceCMYK', $pdf);
+            self::assertStringContainsString('/Filter /DCTDecode', $pdf);
+            self::assertStringContainsString('/Decode [1 0 1 0 1 0 1 0]', $pdf);
+        } finally {
+            unlink($path);
+        }
+    }
+
     public function testItRendersPdfA2uTiffPredictorAndMultiStripCcittImages(): void
     {
         $rgbPath = tempnam(sys_get_temp_dir(), 'pdf2-pdfa2u-rgb-tiff-');
@@ -2462,6 +2494,36 @@ final class DocumentRendererTest extends TestCase
             unlink($grayPath);
             unlink($rgbPath);
             unlink($ccittPath);
+        }
+    }
+
+    public function testItRendersImportedCmykTiffImages(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-tiff-cmyk-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary CMYK TIFF fixture path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorDeflateCmykTiffBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->build();
+
+            $renderer = new DocumentRenderer();
+            $output = new StringOutput();
+
+            $renderer->write($document, $output);
+
+            $pdf = $output->contents();
+
+            self::assertStringContainsString('/Subtype /Image', $pdf);
+            self::assertStringContainsString('/ColorSpace /DeviceCMYK', $pdf);
+            self::assertStringContainsString('/BitsPerComponent 8', $pdf);
+        } finally {
+            unlink($path);
         }
     }
 
@@ -2652,34 +2714,49 @@ final class DocumentRendererTest extends TestCase
 
     public function testItRendersImportedOpaqueWebpImages(): void
     {
-        if (!\function_exists('gd_info') || ((\gd_info()['WebP Support'] ?? false) !== true)) {
-            self::markTestSkipped('GD WebP support is not available in this runtime.');
-        }
-
         $path = tempnam(sys_get_temp_dir(), 'pdf2-webp-render-');
 
         if ($path === false) {
             self::fail('Unable to allocate a temporary WebP fixture path.');
         }
 
-        file_put_contents($path, WebpFixture::tinyOpaqueWebpBytes());
+        file_put_contents(
+            $path,
+            (\function_exists('gd_info') && ((\gd_info()['WebP Support'] ?? false) === true))
+                ? WebpFixture::tinyOpaqueWebpBytes()
+                : WebpFixture::tinyWebpBytes(),
+        );
 
         try {
-            $document = DefaultDocumentBuilder::make()
+            if (\function_exists('gd_info') && ((\gd_info()['WebP Support'] ?? false) === true)) {
+                $document = DefaultDocumentBuilder::make()
+                    ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                    ->build();
+
+                $renderer = new DocumentRenderer();
+                $output = new StringOutput();
+
+                $renderer->write($document, $output);
+
+                $pdf = $output->contents();
+
+                self::assertStringContainsString('/Subtype /Image', $pdf);
+                self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+                self::assertStringContainsString('/BitsPerComponent 8', $pdf);
+                self::assertStringNotContainsString('/SMask ', $pdf);
+
+                return;
+            }
+
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage(sprintf(
+                "WEBP image '%s' requires GD WebP runtime support, which is not available.",
+                $path,
+            ));
+
+            DefaultDocumentBuilder::make()
                 ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
                 ->build();
-
-            $renderer = new DocumentRenderer();
-            $output = new StringOutput();
-
-            $renderer->write($document, $output);
-
-            $pdf = $output->contents();
-
-            self::assertStringContainsString('/Subtype /Image', $pdf);
-            self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
-            self::assertStringContainsString('/BitsPerComponent 8', $pdf);
-            self::assertStringNotContainsString('/SMask ', $pdf);
         } finally {
             unlink($path);
         }
@@ -2687,35 +2764,50 @@ final class DocumentRendererTest extends TestCase
 
     public function testItRendersImportedTransparentWebpImagesWithSoftMasks(): void
     {
-        if (!\function_exists('gd_info') || ((\gd_info()['WebP Support'] ?? false) !== true)) {
-            self::markTestSkipped('GD WebP support is not available in this runtime.');
-        }
-
         $path = tempnam(sys_get_temp_dir(), 'pdf2-webp-alpha-render-');
 
         if ($path === false) {
             self::fail('Unable to allocate a temporary transparent WebP fixture path.');
         }
 
-        file_put_contents($path, WebpFixture::tinyTransparentWebpBytes());
+        file_put_contents(
+            $path,
+            (\function_exists('gd_info') && ((\gd_info()['WebP Support'] ?? false) === true))
+                ? WebpFixture::tinyTransparentWebpBytes()
+                : WebpFixture::tinyWebpBytes(),
+        );
 
         try {
-            $document = DefaultDocumentBuilder::make()
+            if (\function_exists('gd_info') && ((\gd_info()['WebP Support'] ?? false) === true)) {
+                $document = DefaultDocumentBuilder::make()
+                    ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                    ->build();
+
+                $renderer = new DocumentRenderer();
+                $output = new StringOutput();
+
+                $renderer->write($document, $output);
+
+                $pdf = $output->contents();
+
+                self::assertStringContainsString('/Subtype /Image', $pdf);
+                self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
+                self::assertStringContainsString('/BitsPerComponent 8', $pdf);
+                self::assertStringContainsString('/SMask ', $pdf);
+                self::assertStringContainsString('/ColorSpace /DeviceGray', $pdf);
+
+                return;
+            }
+
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage(sprintf(
+                "WEBP image '%s' requires GD WebP runtime support, which is not available.",
+                $path,
+            ));
+
+            DefaultDocumentBuilder::make()
                 ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
                 ->build();
-
-            $renderer = new DocumentRenderer();
-            $output = new StringOutput();
-
-            $renderer->write($document, $output);
-
-            $pdf = $output->contents();
-
-            self::assertStringContainsString('/Subtype /Image', $pdf);
-            self::assertStringContainsString('/ColorSpace /DeviceRGB', $pdf);
-            self::assertStringContainsString('/BitsPerComponent 8', $pdf);
-            self::assertStringContainsString('/SMask ', $pdf);
-            self::assertStringContainsString('/ColorSpace /DeviceGray', $pdf);
         } finally {
             unlink($path);
         }

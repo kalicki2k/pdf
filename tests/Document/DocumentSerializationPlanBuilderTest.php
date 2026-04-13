@@ -3329,6 +3329,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/OutputConditionIdentifier (Artifex CMYK SWOP Profile)', $serialized);
         self::assertStringContainsString('/N 4 /Length ', $serialized);
         self::assertStringContainsString('/ColorSpace /DeviceCMYK', $serialized);
+        self::assertStringContainsString('/Decode [1 0 1 0 1 0 1 0]', $serialized);
     }
 
     public function testItRejectsCmykImagesForPdfA1ProfilesWithRgbOutputIntent(): void
@@ -3432,6 +3433,45 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             self::assertStringContainsString('/ColorSpace /DeviceGray', $serialized);
             self::assertStringContainsString('/BitsPerComponent 8', $serialized);
             self::assertStringNotContainsString('/SMask ', $serialized);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItAllowsCmykTiffImagesForPdfA1ProfilesWithCmykOutputIntent(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-pdfa1-cmyk-tiff-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary CMYK TIFF path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorDeflateCmykTiffBytes());
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfA1b())
+                ->title('Archive Copy')
+                ->pdfaOutputIntent(PdfAOutputIntent::defaultCmyk())
+                ->text('CMYK TIFF Привет', TextOptions::make(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
+                ))
+                ->imageFile(
+                    $path,
+                    ImagePlacement::at(10, 20),
+                    ImageAccessibility::alternativeText('CMYK TIFF'),
+                )
+                ->build();
+
+            $serialized = implode("\n", array_map(
+                static fn ($object): string => $object->contents,
+                iterator_to_array($builder->build($document)->objects),
+            ));
+
+            self::assertStringContainsString('/OutputConditionIdentifier (Artifex CMYK SWOP Profile)', $serialized);
+            self::assertStringContainsString('/ColorSpace /DeviceCMYK', $serialized);
+            self::assertStringContainsString('/BitsPerComponent 8', $serialized);
         } finally {
             unlink($path);
         }

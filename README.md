@@ -1,5 +1,77 @@
 # PDF
 
+## Projektueberblick
+
+`pdf2` ist ein nativer PDF-Generator in PHP. Das Projekt erzeugt PDF-Dateien programmgesteuert ueber ein eigenes Dokumentmodell, einen eigenen Objektgraph-Build und einen eigenen Writer. Externe Werkzeuge wie `qpdf` und `veraPDF` werden fuer Pruefung und Regressionen verwendet, nicht als Kern des Renderpfads.
+
+Der aktuelle Codebestand geht deutlich ueber "Text in PDF schreiben" hinaus. Im Repository sind unter anderem umgesetzt:
+
+- fluente Document-Builder-API ueber `Pdf::document()` und `Document::make()`
+- Textlayout inklusive Bidi- und Script-Shaping-Pfaden
+- Embedded Fonts und Font-Subsetting
+- Bildimporte fuer mehrere Formate
+- Tabellen, Listen, Header/Footer und Seitendekorationen
+- Links, Named Destinations, Outlines und Inhaltsverzeichnis
+- AcroForm-Felder und mehrere allgemeine Annotationstypen
+- Tagged PDF / PDF/UA-Pfade
+- PDF/A-Profile mit explizitem Support-Matrix-Ansatz
+- Verschluesselung, Signaturpfad und strukturierte Debug-/Performance-Events
+
+## Dokumentationsstruktur
+
+Die Projekt-Doku ist jetzt auf mehrere Dateien verteilt, damit Maintainer und Nutzer nicht alles aus einer einzigen README herauslesen muessen:
+
+- [docs/architecture.md](/home/skalicki/Projekte/kalle/pdf2/docs/architecture.md)
+  Architektur, Schichten, Render-Pipeline, interne Builder und Writer
+- [docs/public-api.md](/home/skalicki/Projekte/kalle/pdf2/docs/public-api.md)
+  Einstiegspunkte, Public API, Feature-Ueberblick und typische Nutzung
+- [docs/image-import.md](/home/skalicki/Projekte/kalle/pdf2/docs/image-import.md)
+  Bildimport-Pipeline, Formatgrenzen und Decoder-Aufbau
+- [docs/profiles-and-compliance.md](/home/skalicki/Projekte/kalle/pdf2/docs/profiles-and-compliance.md)
+  Standardprofile, PDF/A-, PDF/UA-Scope, Signatur- und Verschluesselungsgrenzen
+- [docs/development.md](/home/skalicki/Projekte/kalle/pdf2/docs/development.md)
+  Setup, Docker, Tests, Regressionen, Diagnose und interne Werkzeuge
+
+## Schnellstart
+
+```php
+use Kalle\Pdf\Pdf;
+
+$document = Pdf::document()
+    ->title('Hello PDF')
+    ->author('Example')
+    ->text('Hallo Welt')
+    ->build();
+
+Pdf::writeToFile($document, __DIR__ . '/hello.pdf');
+```
+
+Die zwei wichtigsten API-Pfade sind:
+
+- `Pdf` als kleine Fassade fuer Builder, Rendern, Signieren und Textmessung
+- `Document::make()` bzw. `DefaultDocumentBuilder::make()` fuer direkte Arbeit mit der Builder-API
+
+## Architektur in Kurzform
+
+Der aktuelle Renderpfad besteht aus drei getrennten Stufen:
+
+1. `DefaultDocumentBuilder` sammelt Dokumentzustand, Seiteninhalte und semantische Zusatzstrukturen.
+2. `DocumentSerializationPlanBuilder` validiert das Dokument und baut einen PDF-Objektgraphen.
+3. `Writer\Renderer` serialisiert den fertigen Plan in Datei, Stream oder String.
+
+Diese Trennung ist fuer das Projekt zentral, weil Features wie PDF/A, Tagged PDF, Attachments, Formulare oder Verschluesselung nicht nur reine Surface-API sind, sondern den finalen Objektgraphen beeinflussen.
+
+## Aktueller Stand
+
+Der aktuelle Stand ist funktional breit, aber bewusst nicht "alles aus der PDF-Spezifikation". Wiederkehrendes Muster im Code und in den Tests:
+
+- lieber enger, explizit validierter Positivpfad
+- klare Fehler bei nicht freigegebenen Kombinationen
+- profilabhaengige Regeln fuer PDF/A und PDF/UA
+- Regressionen fuer Low-level-PDF-Struktur und Standardscope
+
+Die nachfolgenden README-Abschnitte beschreiben weiterhin konkrete Teilbereiche und Beispielpfade des aktuellen Funktionsumfangs.
+
 ## PDF/A Scope
 
 Der aktuelle PDF/A-Scope ist bewusst konservativ und folgt eher dem Prinzip "hart blocken statt halb erlauben":
@@ -144,7 +216,7 @@ Aktueller Bild-Scope von `ImageSource::fromPath(...)`:
 | PNG | 8-Bit Gray/RGB/Indexed, Gray+Alpha, RGBA, `tRNS`, nicht interlaced | andere Bit-Tiefen, Adam7-Interlacing |
 | GIF | statisch, ein Full-Canvas-Frame, Palette, transparenter Index | Animation, Interlacing, partielle Frames |
 | BMP | unkomprimiert 24-Bit RGB, 32-Bit RGBA, 32-Bit `BI_BITFIELDS` mit byte-ausgerichteten RGB(A)-Masken | Palette, RLE, weitere Bit-Tiefen/Maskenvarianten |
-| TIFF | Single-IFD bilevel uncompressed, bilevel CCITT, 8-Bit Gray uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit RGB uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit Palette uncompressed/PackBits/LZW/Deflate | Multi-Page, CMYK, PlanarConfiguration != 1, Palette-TIFFs mit Predictor und weitere exotische Varianten |
+| TIFF | Single-IFD bilevel uncompressed, bilevel CCITT, 8-Bit Gray uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit RGB uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit CMYK uncompressed/PackBits/LZW/Deflate mit Predictor 2, 8-Bit Palette uncompressed/PackBits/LZW/Deflate | Multi-Page, PlanarConfiguration != 1, Palette-TIFFs mit Predictor und weitere exotische Varianten |
 | WebP | optional ueber vorhandene GD-WebP-Runtime, Single-Frame, verlustbehaftet und je nach Runtime auch lossless, RGB mit optionaler Soft-Mask aus Alpha; im Docker-PHP-Container ist GD+WebP jetzt vorbereitet | ohne GD-WebP-Support bleibt der Importpfad explizit gesperrt; Animation bleibt bewusst ausgeschlossen |
 
 Die Import-Architektur ist in [docs/image-import.md](/home/skalicki/Projekte/kalle/pdf2/docs/image-import.md) kurz dokumentiert.

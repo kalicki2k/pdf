@@ -146,6 +146,8 @@ final class ImageSourceTest extends TestCase
         self::assertSame(1, $source->height);
         self::assertSame(ImageColorSpace::CMYK, $source->colorSpace);
         self::assertSame('/DCTDecode', $source->filter);
+        self::assertSame([1, 0, 1, 0, 1, 0, 1, 0], $source->decode);
+        self::assertStringContainsString('/Decode [1 0 1 0 1 0 1 0]', $source->pdfObjectDictionaryContents());
 
         unlink($path);
     }
@@ -373,6 +375,48 @@ final class ImageSourceTest extends TestCase
         self::assertSame(1, $source->height);
         self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
         self::assertSame(8, $source->bitsPerComponent);
+
+        unlink($path);
+    }
+
+    public function testItCreatesACmykImageSourceFromAnUncompressedCmykTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedCmykTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::CMYK, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
+
+        unlink($path);
+    }
+
+    public function testItCreatesACmykImageSourceFromAPredictorDeflateCmykTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPredictorDeflateCmykTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(2, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::CMYK, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
 
         unlink($path);
     }
@@ -628,28 +672,33 @@ final class ImageSourceTest extends TestCase
 
     public function testItImportsLosslessWebpFilesWhenRuntimeSupportIsAvailable(): void
     {
-        if (!\function_exists('gd_info') || ((\gd_info()['WebP Support'] ?? false) !== true) || !\defined('IMG_WEBP_LOSSLESS')) {
-            self::markTestSkipped('GD lossless WebP support is not available in this runtime.');
+        if (\function_exists('gd_info') && ((\gd_info()['WebP Support'] ?? false) === true) && \defined('IMG_WEBP_LOSSLESS')) {
+            $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+            if ($path === false) {
+                self::fail('Unable to create a temporary image source path.');
+            }
+
+            file_put_contents($path, WebpFixture::tinyLosslessWebpBytes());
+
+            try {
+                $source = ImageSource::fromPath($path);
+
+                self::assertSame(1, $source->width);
+                self::assertSame(1, $source->height);
+                self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+                self::assertSame(8, $source->bitsPerComponent);
+            } finally {
+                unlink($path);
+            }
+
+            return;
         }
 
-        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Unable to create lossless WebP fixture without GD lossless WebP support.');
 
-        if ($path === false) {
-            self::fail('Unable to create a temporary image source path.');
-        }
-
-        file_put_contents($path, WebpFixture::tinyLosslessWebpBytes());
-
-        try {
-            $source = ImageSource::fromPath($path);
-
-            self::assertSame(1, $source->width);
-            self::assertSame(1, $source->height);
-            self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
-            self::assertSame(8, $source->bitsPerComponent);
-        } finally {
-            unlink($path);
-        }
+        WebpFixture::tinyLosslessWebpBytes();
     }
 
     public function testItRejectsAnimatedWebpFilesExplicitly(): void

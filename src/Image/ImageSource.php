@@ -28,12 +28,17 @@ final readonly class ImageSource
      */
     public array $additionalDictionaryEntries;
     /**
+     * @var list<float|int>|null
+     */
+    public ?array $decode;
+    /**
      * @var list<PdfFilter>
      */
     public array $filters;
 
     /**
      * @param list<string> $additionalDictionaryEntries
+     * @param list<float|int>|null $decode
      * @param list<PdfFilter> $filters
      */
     public function __construct(
@@ -46,6 +51,7 @@ final readonly class ImageSource
         ?string $filter = null,
         ?self $softMask = null,
         array $additionalDictionaryEntries = [],
+        ?array $decode = null,
         array $filters = [],
     ) {
         if ($filters !== [] && $filter !== null) {
@@ -64,6 +70,7 @@ final readonly class ImageSource
         $this->colorSpaceDefinition = $colorSpaceDefinition;
         $this->softMask = $softMask;
         $this->additionalDictionaryEntries = $additionalDictionaryEntries;
+        $this->decode = $decode;
         $this->filters = $filters;
         $this->filter = count($this->filters) === 1 ? $this->filters[0]->name : null;
 
@@ -89,6 +96,7 @@ final readonly class ImageSource
         int $width,
         int $height,
         ImageColorSpace $colorSpace = ImageColorSpace::RGB,
+        ?array $decode = null,
     ): self {
         return new self(
             width: $width,
@@ -97,6 +105,7 @@ final readonly class ImageSource
             colorSpaceDefinition: null,
             bitsPerComponent: 8,
             data: $data,
+            decode: $decode,
             filters: [PdfFilter::dct()],
         );
     }
@@ -342,6 +351,7 @@ final readonly class ImageSource
                 ],
                 $this->filters,
             )) ?: '',
+            json_encode($this->decode) ?: '',
             $this->data,
             $this->softMask?->key() ?? '',
             implode("\0", $this->additionalDictionaryEntries),
@@ -369,6 +379,13 @@ final readonly class ImageSource
 
         if ($decodeParmsEntry !== null) {
             $entries[] = '/DecodeParms ' . $decodeParmsEntry;
+        }
+
+        if ($this->decode !== null) {
+            $entries[] = '/Decode [' . implode(' ', array_map(
+                static fn (int|float $value): string => rtrim(rtrim(sprintf('%.6F', $value), '0'), '.'),
+                $this->decode,
+            )) . ']';
         }
 
         if ($softMaskObjectId !== null) {

@@ -248,6 +248,42 @@ final class TiffFixture
         );
     }
 
+    public static function tinyUncompressedCmykTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 1,
+            height: 1,
+            bitsPerSample: [8, 8, 8, 8],
+            compression: 1,
+            photometricInterpretation: 5,
+            stripData: ["\x10\x20\x30\x40"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 4,
+        );
+    }
+
+    public static function tinyPredictorDeflateCmykTiffBytes(): string
+    {
+        $row = self::applyHorizontalPredictor("\x10\x20\x30\x40\x30\x50\x70\x90", 4);
+        $compressed = gzcompress($row);
+
+        if (!is_string($compressed)) {
+            throw new RuntimeException('Unable to compress TIFF CMYK predictor fixture.');
+        }
+
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8, 8, 8, 8],
+            compression: 8,
+            photometricInterpretation: 5,
+            stripData: [$compressed],
+            rowsPerStrip: 1,
+            samplesPerPixel: 4,
+            predictor: 2,
+        );
+    }
+
     public static function tinyMultiStripCcittGroup3TiffBytes(): string
     {
         $encoder = new CcittFaxEncoder();
