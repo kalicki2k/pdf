@@ -226,6 +226,22 @@ final class DocumentBuildExceptionTest extends TestCase
         );
     }
 
+    public function testItAddsATaggedStructureHintForSupportedStructureGuardErrors(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1a()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'Profile PDF/A-1a does not allow empty tagged lists. Tagged list 1 has no items.',
+            ),
+        );
+
+        self::assertSame(
+            'Use beginStructure()/endStructure() consistently and keep the tagged reading order, ParentTree, MCIDs and StructElem hierarchy on the validated tagged PDF path.',
+            $exception->hint,
+        );
+    }
+
     public function testItFallsBackToLegacyStringMatchingForUnconvertedValidationErrors(): void
     {
         $exception = DocumentBuildException::fromValidationFailure(

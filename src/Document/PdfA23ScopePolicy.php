@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Page\FileAttachmentAnnotation;
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotation;
@@ -57,7 +56,7 @@ final class PdfA23ScopePolicy
         }
 
         if ($this->usesPopup($annotation)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                 'Profile %s does not allow popup related objects in the current PDF/A-2/3 scope for page annotation %d on page %d.',
                 $document->profile->name(),
                 $annotationIndex + 1,
@@ -69,7 +68,7 @@ final class PdfA23ScopePolicy
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
             'Profile %s only allows Link, Text, Highlight and FreeText annotations in the current PDF/A-2/3 scope on page %d.',
             $document->profile->name(),
             $pageIndex + 1,

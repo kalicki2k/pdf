@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Document;
 use function implode;
 use function in_array;
 
-use InvalidArgumentException;
 use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
 use Kalle\Pdf\Document\TaggedPdf\TaggedListContentReference;
@@ -56,7 +55,7 @@ final readonly class PdfA1aSupportedStructureValidator
     private function assertSupportedTextBlock(Document $document, TaggedTextBlock $textBlock, int $index): void
     {
         if (!in_array($textBlock->tag, $this->roleRegistry->supportedLeafTextTags(), true)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'Profile %s supports only tagged text blocks with tags [%s]. Tagged text block %d uses unsupported tag "%s".',
                 $document->profile->name(),
                 implode(', ', $this->roleRegistry->supportedLeafTextTags()),
@@ -117,7 +116,7 @@ final readonly class PdfA1aSupportedStructureValidator
             $this->roleRegistry->assertKnownTag($element->tag);
 
             if (!$this->roleRegistry->isContainerTag($element->tag)) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'Profile %s requires tagged structure element "%s" to use a supported container tag, got "%s".',
                     $document->profile->name(),
                     $element->key,
@@ -126,7 +125,7 @@ final readonly class PdfA1aSupportedStructureValidator
             }
 
             if ($element->childKeys === []) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'Profile %s does not allow empty tagged structure container "%s".',
                     $document->profile->name(),
                     $element->key,
@@ -135,7 +134,7 @@ final readonly class PdfA1aSupportedStructureValidator
 
             foreach ($element->childKeys as $childKey) {
                 if (!isset($knownKeys[$childKey])) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                         'Profile %s requires tagged structure child "%s" to reference a known tagged element.',
                         $document->profile->name(),
                         $childKey,
@@ -150,7 +149,7 @@ final readonly class PdfA1aSupportedStructureValidator
     private function assertSupportedList(Document $document, TaggedList $list, int $index): void
     {
         if ($list->items === []) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'Profile %s does not allow empty tagged lists. Tagged list %d has no items.',
                 $document->profile->name(),
                 $index + 1,
@@ -174,7 +173,7 @@ final readonly class PdfA1aSupportedStructureValidator
     private function assertSupportedTable(Document $document, TaggedTable $table, int $index): void
     {
         if ($table->headerRows === [] && $table->bodyRows === [] && $table->footerRows === []) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'Profile %s does not allow empty tagged tables. Tagged table %d has no rows.',
                 $document->profile->name(),
                 $index + 1,
@@ -203,7 +202,7 @@ final readonly class PdfA1aSupportedStructureValidator
 
         foreach ($rows as $rowPosition => $row) {
             if (isset($rowIndexes[$row->rowIndex])) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'Profile %s does not allow duplicate tagged table row index %d in table %d %s section.',
                     $document->profile->name(),
                     $row->rowIndex,
@@ -215,7 +214,7 @@ final readonly class PdfA1aSupportedStructureValidator
             $rowIndexes[$row->rowIndex] = true;
 
             if ($row->cells === []) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'Profile %s does not allow empty tagged table rows. Table %d %s row %d has no cells.',
                     $document->profile->name(),
                     $tableIndex + 1,
@@ -242,7 +241,7 @@ final readonly class PdfA1aSupportedStructureValidator
 
         foreach ($cells as $cellPosition => $cell) {
             if (isset($columnIndexes[$cell->columnIndex])) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'Profile %s does not allow duplicate tagged table column index %d in table %d %s row %d.',
                     $document->profile->name(),
                     $cell->columnIndex,
@@ -255,7 +254,7 @@ final readonly class PdfA1aSupportedStructureValidator
             $columnIndexes[$cell->columnIndex] = true;
 
             if ($cell->contentReferences === []) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'Profile %s requires tagged table cells to reference marked content. Table %d %s row %d cell %d is empty.',
                     $document->profile->name(),
                     $tableIndex + 1,
@@ -266,7 +265,7 @@ final readonly class PdfA1aSupportedStructureValidator
             }
 
             if (!$cell->header && $cell->headerScope !== null) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                     'Profile %s only allows header scope on header cells. Table %d %s row %d cell %d is not a header cell.',
                     $document->profile->name(),
                     $tableIndex + 1,
@@ -306,7 +305,7 @@ final readonly class PdfA1aSupportedStructureValidator
         string $context,
     ): void {
         if ($pageIndex < 0 || !isset($document->pages[$pageIndex])) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'Profile %s requires valid tagged content page references. %s points to missing page index %d.',
                 $document->profile->name(),
                 ucfirst($context),
@@ -315,7 +314,7 @@ final readonly class PdfA1aSupportedStructureValidator
         }
 
         if ($markedContentId < 0) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'Profile %s requires non-negative marked-content ids. %s uses MCID %d.',
                 $document->profile->name(),
                 ucfirst($context),

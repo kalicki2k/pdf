@@ -6,8 +6,6 @@ namespace Kalle\Pdf\Document;
 
 use function array_key_exists;
 
-use InvalidArgumentException;
-
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
@@ -81,7 +79,7 @@ final class PdfAObjectGraphValidator
     private function assertObjectExists(array $objectsById, int $objectId, string $label): IndirectObject
     {
         if (!isset($objectsById[$objectId])) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                 'Missing serialized PDF object %d for %s in the final %s object graph.',
                 $objectId,
                 $label,
@@ -124,7 +122,10 @@ final class PdfAObjectGraphValidator
         }
 
         if ($document->language !== null && !str_contains($catalogObject->contents, '/Lang ')) {
-            throw new InvalidArgumentException('PDF/A catalog must serialize the document language.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                'PDF/A catalog must serialize the document language.',
+            );
         }
 
         if ($document->profile->isPdfA4() && str_contains($catalogObject->contents, '/OutputIntents [')) {
@@ -144,7 +145,10 @@ final class PdfAObjectGraphValidator
             $metadataObject = $this->assertObjectExists($objectsById, $state->metadataObjectId, 'metadata stream');
 
             if ($metadataObject->streamDictionaryContents === null || !str_contains($metadataObject->contents, '/Subtype /XML')) {
-                throw new InvalidArgumentException('PDF/A metadata stream must be serialized as an XML metadata stream object.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                    'PDF/A metadata stream must be serialized as an XML metadata stream object.',
+                );
             }
 
             $this->assertPdfA4MetadataObject($metadataObject);
@@ -154,7 +158,10 @@ final class PdfAObjectGraphValidator
             $iccProfileObject = $this->assertObjectExists($objectsById, $state->iccProfileObjectId, 'ICC profile stream');
 
             if ($iccProfileObject->streamDictionaryContents === null) {
-                throw new InvalidArgumentException('PDF/A ICC profile must be serialized as a stream object.');
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                    'PDF/A ICC profile must be serialized as a stream object.',
+                );
             }
         }
 
@@ -265,7 +272,10 @@ final class PdfAObjectGraphValidator
         }
 
         if (!str_contains($catalogObject->contents, '/MarkInfo << /Marked true >>')) {
-            throw new InvalidArgumentException('PDF/A tagged catalog must serialize /MarkInfo << /Marked true >>.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'PDF/A tagged catalog must serialize /MarkInfo << /Marked true >>.',
+            );
         }
 
         $this->assertReferencePresent(
@@ -275,7 +285,10 @@ final class PdfAObjectGraphValidator
         );
 
         if ($state->structTreeRootObjectId === null) {
-            throw new InvalidArgumentException('PDF/A tagged catalog requires a StructTreeRoot object ID.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID,
+                'PDF/A tagged catalog requires a StructTreeRoot object ID.',
+            );
         }
 
         $structTreeRootObject = $this->assertObjectExists($objectsById, $state->structTreeRootObjectId, 'StructTreeRoot');
@@ -309,7 +322,10 @@ final class PdfAObjectGraphValidator
         }
 
         if (!str_contains($catalogObject->contents, '/Names ')) {
-            throw new InvalidArgumentException('PDF/A catalog must serialize the embedded file name tree when attachments are present.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                'PDF/A catalog must serialize the embedded file name tree when attachments are present.',
+            );
         }
 
         foreach ($state->attachmentObjectIds as $attachmentObjectId) {
@@ -327,14 +343,14 @@ final class PdfAObjectGraphValidator
             $embeddedFileObject = $this->assertObjectExists($objectsById, $embeddedFileObjectId, sprintf('embedded file stream %d', $attachmentIndex + 1));
 
             if (!str_contains($attachmentObject->contents, '/Type /Filespec')) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                     'PDF/A attachment object %d must serialize as a /Filespec dictionary.',
                     $attachmentIndex + 1,
                 ));
             }
 
             if (!str_contains($attachmentObject->contents, '/F ' . $this->pdfString($attachment->filename))) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                     'PDF/A attachment object %d must serialize /F for filename "%s".',
                     $attachmentIndex + 1,
                     $attachment->filename,
@@ -342,7 +358,7 @@ final class PdfAObjectGraphValidator
             }
 
             if (!str_contains($attachmentObject->contents, '/UF ' . $this->pdfString($attachment->filename))) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                     'PDF/A attachment object %d must serialize /UF for filename "%s".',
                     $attachmentIndex + 1,
                     $attachment->filename,
@@ -352,7 +368,7 @@ final class PdfAObjectGraphValidator
             if (
                 preg_match('/\/EF\s*<<[^>]*\/F\s+' . preg_quote((string) $embeddedFileObjectId, '/') . '\s+0\s+R[^>]*>>/', $attachmentObject->contents) !== 1
             ) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                     'PDF/A attachment object %d must serialize an /EF dictionary that references embedded file stream %d via /F.',
                     $attachmentIndex + 1,
                     $embeddedFileObjectId,
@@ -362,7 +378,7 @@ final class PdfAObjectGraphValidator
             if (
                 preg_match('/\/EF\s*<<[^>]*\/UF\s+' . preg_quote((string) $embeddedFileObjectId, '/') . '\s+0\s+R[^>]*>>/', $attachmentObject->contents) !== 1
             ) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                     'PDF/A attachment object %d must serialize an /EF dictionary that references embedded file stream %d via /UF.',
                     $attachmentIndex + 1,
                     $embeddedFileObjectId,
@@ -370,14 +386,14 @@ final class PdfAObjectGraphValidator
             }
 
             if ($embeddedFileObject->streamDictionaryContents === null || !str_contains($embeddedFileObject->streamDictionaryContents, '/Type /EmbeddedFile')) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                     'PDF/A embedded file stream %d must serialize as an /EmbeddedFile stream object.',
                     $attachmentIndex + 1,
                 ));
             }
 
             if ($attachment->embeddedFile->mimeType !== null && !str_contains($embeddedFileObject->streamDictionaryContents, '/Subtype /')) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                     'PDF/A embedded file stream %d must serialize /Subtype for MIME-typed attachments.',
                     $attachmentIndex + 1,
                 ));
@@ -386,7 +402,7 @@ final class PdfAObjectGraphValidator
             $relationship = $this->attachmentRelationshipResolver->resolve($document, $attachment);
 
             if ($relationship !== null && !str_contains($attachmentObject->contents, '/AFRelationship /' . $relationship->value)) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                     'PDF/A attachment object %d must serialize /AFRelationship /%s.',
                     $attachmentIndex + 1,
                     $relationship->value,
@@ -399,7 +415,7 @@ final class PdfAObjectGraphValidator
         foreach ($document->attachments as $attachmentIndex => $attachment) {
             if ($this->attachmentRelationshipResolver->resolve($document, $attachment) === null) {
                 if ($document->profile->isPdfA2() || $document->profile->isPdfA3()) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_ASSOCIATED_FILES_NOT_ALLOWED, sprintf(
                         'Profile %s must not serialize non-associated attachments in the final PDF/A-2/3 object graph (attachment %d).',
                         $document->profile->name(),
                         $attachmentIndex + 1,
@@ -417,7 +433,10 @@ final class PdfAObjectGraphValidator
         }
 
         if (!str_contains($catalogObject->contents, '/AF [')) {
-            throw new InvalidArgumentException('PDF/A catalog must serialize an /AF array for associated files.');
+            throw new DocumentValidationException(
+                DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID,
+                'PDF/A catalog must serialize an /AF array for associated files.',
+            );
         }
 
         foreach ($associatedAttachmentObjectIds as $attachmentObjectId) {
@@ -479,14 +498,14 @@ final class PdfAObjectGraphValidator
             && array_key_exists($pageIndex, $state->pageStructParentIds)
             && !str_contains($pageObject->contents, '/StructParents ')
         ) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_TAGGED_STRUCTURE_INVALID, sprintf(
                 'PDF/A tagged page object %d must serialize /StructParents.',
                 $pageIndex + 1,
             ));
         }
 
         if ($document->profile->requiresPageAnnotationTabOrder() && ($state->pageAnnotationObjectIds[$pageIndex] ?? []) !== [] && !str_contains($pageObject->contents, '/Tabs /S')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                 'PDF/A page object %d must serialize /Tabs /S when annotations are present.',
                 $pageIndex + 1,
             ));
@@ -506,7 +525,7 @@ final class PdfAObjectGraphValidator
                 $annotationObjectId = $state->pageAnnotationObjectIds[$pageIndex][$annotationIndex] ?? null;
 
                 if ($annotationObjectId === null) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                         'Missing serialized page annotation object allocation for annotation %d on page %d.',
                         $annotationIndex + 1,
                         $pageIndex + 1,
@@ -538,7 +557,7 @@ final class PdfAObjectGraphValidator
                 $appearanceObjectId = $state->pageAnnotationAppearanceObjectIds[$pageIndex][$annotationIndex] ?? null;
 
                 if ($appearanceObjectId === null) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                         'PDF/A requires a serialized annotation appearance stream object for page annotation %d on page %d.',
                         $annotationIndex + 1,
                         $pageIndex + 1,
@@ -546,7 +565,7 @@ final class PdfAObjectGraphValidator
                 }
 
                 if (!$this->containsAppearanceReference($annotationObject->contents, $appearanceObjectId)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                         'PDF/A requires page annotation %d on page %d to serialize /AP << /N %d 0 R >>.',
                         $annotationIndex + 1,
                         $pageIndex + 1,
@@ -565,7 +584,7 @@ final class PdfAObjectGraphValidator
                     || !str_contains($appearanceObject->streamDictionaryContents, '/Type /XObject')
                     || !str_contains($appearanceObject->streamDictionaryContents, '/Subtype /Form')
                 ) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                         'PDF/A requires annotation appearance stream %d for page annotation %d on page %d to serialize as a form XObject stream.',
                         $appearanceObjectId,
                         $annotationIndex + 1,
@@ -596,7 +615,7 @@ final class PdfAObjectGraphValidator
         };
 
         if ($expectedSubtype === null) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                 'Profile %s only supports the current explicit PDF/A-2/3 annotation scope in the final object graph for page annotation %d on page %d.',
                 $document->profile->name(),
                 $annotationIndex + 1,
@@ -605,7 +624,7 @@ final class PdfAObjectGraphValidator
         }
 
         if (!str_contains($annotationObject->contents, '/Subtype /' . $expectedSubtype)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
                 'Profile %s requires page annotation %d on page %d to serialize /Subtype /%s in the final PDF/A-2/3 object graph.',
                 $document->profile->name(),
                 $annotationIndex + 1,
@@ -620,7 +639,7 @@ final class PdfAObjectGraphValidator
 
         if ($annotation->target->isExternalUrl()) {
             if (!str_contains($annotationObject->contents, '/A << /S /URI /URI ')) {
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_ACTION_NOT_ALLOWED, sprintf(
                     'Profile %s requires external link annotation %d on page %d to serialize a URI action in the final PDF/A-2/3 object graph.',
                     $document->profile->name(),
                     $annotationIndex + 1,
@@ -632,7 +651,7 @@ final class PdfAObjectGraphValidator
         }
 
         if (!str_contains($annotationObject->contents, '/Dest ')) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_ACTION_NOT_ALLOWED, sprintf(
                 'Profile %s requires internal link annotation %d on page %d to serialize a /Dest target in the final PDF/A-2/3 object graph.',
                 $document->profile->name(),
                 $annotationIndex + 1,
@@ -644,11 +663,11 @@ final class PdfAObjectGraphValidator
     private function assertReferencePresent(string $contents, ?int $objectId, string $message): void
     {
         if ($objectId === null) {
-            throw new InvalidArgumentException($message);
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, $message);
         }
 
         if (preg_match('/\b' . preg_quote((string) $objectId, '/') . '\s+0\s+R\b/', $contents) !== 1) {
-            throw new InvalidArgumentException($message);
+            throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, $message);
         }
     }
 
