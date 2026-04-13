@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Image;
 
 use function chr;
-use function count;
 use function intdiv;
 use function strlen;
 
@@ -103,6 +102,9 @@ final readonly class CcittFaxEncoder
         return $writer->bytes();
     }
 
+    /**
+     * @param list<string> $rows
+     */
     public function encodeRows(array $rows): string
     {
         $bitmap = (new MonochromeBitmapEncoder())->encodeRows($rows);
@@ -156,7 +158,7 @@ final readonly class CcittFaxEncoder
             $matched = false;
 
             foreach (self::COMMON_MAKEUP as $length => $bits) {
-                if ($length > $runLength || $length < 1792) {
+                if ($length > $runLength) {
                     continue;
                 }
 
@@ -211,7 +213,7 @@ final class CcittBitWriter
             $this->bitCount++;
 
             if ($this->bitCount === 8) {
-                $this->bytes .= chr($this->buffer);
+                $this->bytes .= chr($this->buffer & 0xFF);
                 $this->buffer = 0;
                 $this->bitCount = 0;
             }
@@ -224,6 +226,6 @@ final class CcittBitWriter
             return $this->bytes;
         }
 
-        return $this->bytes . chr($this->buffer << (8 - $this->bitCount));
+        return $this->bytes . chr(($this->buffer << (8 - $this->bitCount)) & 0xFF);
     }
 }

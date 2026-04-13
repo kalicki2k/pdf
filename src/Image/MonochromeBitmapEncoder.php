@@ -67,7 +67,7 @@ final readonly class MonochromeBitmapEncoder
                 $bitIndex++;
 
                 if ($bitIndex === 8) {
-                    $packed .= chr($currentByte);
+                    $packed .= chr($currentByte & 0xFF);
                     $currentByte = 0;
                     $bitIndex = 0;
                 }
@@ -80,7 +80,7 @@ final readonly class MonochromeBitmapEncoder
                     $bitIndex++;
                 }
 
-                $packed .= chr($currentByte);
+                $packed .= chr($currentByte & 0xFF);
             }
         }
 

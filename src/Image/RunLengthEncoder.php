@@ -26,7 +26,7 @@ final readonly class RunLengthEncoder
             $runLength = $this->repeatedRunLength($data, $offset, $length);
 
             if ($runLength >= 3) {
-                $encoded .= chr(257 - $runLength) . $data[$offset];
+                $encoded .= $this->byte(257 - $runLength) . $data[$offset];
                 $offset += $runLength;
 
                 continue;
@@ -46,7 +46,7 @@ final readonly class RunLengthEncoder
                 $literalLength++;
             }
 
-            $encoded .= chr($literalLength - 1) . substr($data, $literalStart, $literalLength);
+            $encoded .= $this->byte($literalLength - 1) . substr($data, $literalStart, $literalLength);
         }
 
         return $encoded . "\x80";
@@ -62,5 +62,10 @@ final readonly class RunLengthEncoder
         }
 
         return $runLength;
+    }
+
+    private function byte(int $value): string
+    {
+        return chr($value & 0xFF);
     }
 }

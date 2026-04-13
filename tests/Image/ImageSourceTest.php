@@ -231,6 +231,134 @@ final class ImageSourceTest extends TestCase
         unlink($path);
     }
 
+    public function testItCreatesAGrayscaleImageSourceFromAn8BitTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedGrayscaleTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(2, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::GRAY, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
+
+        unlink($path);
+    }
+
+    public function testItCreatesAnRgbImageSourceFromAn8BitRgbTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedRgbTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
+
+        unlink($path);
+    }
+
+    public function testItCreatesAnIndexedGifImageSourceFromAFilePath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, GifFixture::tinyOpaqueGifBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertSame('/FlateDecode', $source->filter);
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <FFFFFFFFFFFF>]', $source->pdfObjectContents());
+        self::assertNull($source->softMask);
+
+        unlink($path);
+    }
+
+    public function testItCreatesATransparentGifImageSourceWithSoftMaskFromAFilePath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, GifFixture::tinyTransparentGifBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000000000>]', $source->pdfObjectContents());
+        self::assertNotNull($source->softMask);
+        self::assertSame(ImageColorSpace::GRAY, $source->softMask->colorSpace);
+
+        unlink($path);
+    }
+
+    public function testItCreatesA24BitBmpImageSourceFromAFilePath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, BmpFixture::tiny24BitRgbBmpBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+        self::assertSame('/FlateDecode', $source->filter);
+        self::assertNull($source->softMask);
+
+        unlink($path);
+    }
+
+    public function testItCreatesA32BitBmpImageSourceWithSoftMaskFromAFilePath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, BmpFixture::tiny32BitRgbaBmpBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertNotNull($source->softMask);
+        self::assertSame(ImageColorSpace::GRAY, $source->softMask->colorSpace);
+
+        unlink($path);
+    }
+
     public function testItRejectsNonGraySoftMasks(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -262,11 +390,80 @@ final class ImageSourceTest extends TestCase
             self::fail('Unable to create a temporary image source path.');
         }
 
-        file_put_contents($path, base64_decode('R0lGODdhAQABAIAAAP///////ywAAAAAAQABAAACAkQBADs=', true));
+        file_put_contents($path, BmpFixture::unsupported8BitPalettedBmpBytes());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(
-            "Image path '%s' uses an unsupported image format.",
+            "BMP image '%s' uses unsupported bits-per-pixel value 8.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsAnimatedGifFiles(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, GifFixture::tinyAnimatedGifBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "GIF image '%s' uses multiple image frames, which are not supported.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsInterlacedGifFiles(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, GifFixture::tinyInterlacedGifBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "GIF image '%s' uses interlacing, which is not supported.",
+            $path,
+        ));
+
+        try {
+            ImageSource::fromPath($path);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testItRejectsMultipageTiffFiles(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::multipageBilevelTiffBytes());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf(
+            "TIFF image '%s' uses multiple image directories, which are not supported.",
             $path,
         ));
 

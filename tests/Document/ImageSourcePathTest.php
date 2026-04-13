@@ -11,6 +11,8 @@ use function unlink;
 
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Tests\Image\BmpFixture;
+use Kalle\Pdf\Tests\Image\GifFixture;
 use Kalle\Pdf\Tests\Image\JpegFixture;
 use Kalle\Pdf\Tests\Image\PngFixture;
 use Kalle\Pdf\Tests\Image\TiffFixture;
@@ -161,6 +163,92 @@ final class ImageSourcePathTest extends TestCase
         self::assertCount(1, $document->pages[0]->imageResources);
         self::assertStringContainsString('/ColorSpace /DeviceGray', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
         self::assertStringContainsString('/BitsPerComponent 1', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromAn8BitGrayscaleTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedGrayscaleTiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/ColorSpace /DeviceGray', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/BitsPerComponent 8', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromAn8BitRgbTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyUncompressedRgbTiffBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertStringContainsString('/ColorSpace /DeviceRGB', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString('/BitsPerComponent 8', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromAGifPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, GifFixture::tinyTransparentGifBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertNotNull($document->pages[0]->imageResources['Im1']->softMask);
+        self::assertStringContainsString('[/Indexed /DeviceRGB 1 <000000000000>]', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString("16 0 0 16 8 10 cm\n/Im1 Do", $document->pages[0]->contents);
+
+        unlink($path);
+    }
+
+    public function testItBuildsPageImageResourcesFromABmpPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-embedded-image-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary image path.');
+        }
+
+        file_put_contents($path, BmpFixture::tiny32BitRgbaBmpBytes());
+
+        $document = DefaultDocumentBuilder::make()
+            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->build();
+
+        self::assertCount(1, $document->pages[0]->imageResources);
+        self::assertNotNull($document->pages[0]->imageResources['Im1']->softMask);
+        self::assertStringContainsString('/ColorSpace /DeviceRGB', $document->pages[0]->imageResources['Im1']->pdfObjectContents());
+        self::assertStringContainsString("16 0 0 16 8 10 cm\n/Im1 Do", $document->pages[0]->contents);
 
         unlink($path);
     }

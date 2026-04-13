@@ -7,7 +7,6 @@ namespace Kalle\Pdf\Image;
 use function count;
 use function implode;
 use function is_int;
-use function is_string;
 use function preg_replace;
 use function rtrim;
 use function sprintf;
@@ -32,12 +31,15 @@ final readonly class PdfFilter
         }
 
         foreach ($this->decodeParameters as $key => $_value) {
-            if (!is_string($key) || $key === '') {
+            if ($key === '') {
                 throw new InvalidArgumentException('PDF decode parameter keys must be non-empty strings.');
             }
         }
     }
 
+    /**
+     * @param array<string, bool|int|float|string> $decodeParameters
+     */
     public static function named(string $name, array $decodeParameters = []): self
     {
         return new self($name, $decodeParameters);
@@ -48,11 +50,17 @@ final readonly class PdfFilter
         return new self('/DCTDecode');
     }
 
+    /**
+     * @param array<string, bool|int|float|string> $decodeParameters
+     */
     public static function flate(array $decodeParameters = []): self
     {
         return new self('/FlateDecode', $decodeParameters);
     }
 
+    /**
+     * @param array<string, bool|int|float|string> $decodeParameters
+     */
     public static function lzw(array $decodeParameters = []): self
     {
         return new self('/LZWDecode', $decodeParameters);
@@ -121,14 +129,18 @@ final readonly class PdfFilter
     }
 
     /**
+     * @param list<self> $filters
      * @return list<string>
      */
     public static function names(array $filters): array
     {
-        return array_map(
-            static fn (self $filter): string => $filter->name,
-            $filters,
-        );
+        $names = [];
+
+        foreach ($filters as $filter) {
+            $names[] = $filter->name;
+        }
+
+        return $names;
     }
 
     /**
@@ -180,7 +192,7 @@ final readonly class PdfFilter
         )) . ']';
     }
 
-    private function pdfValue(bool|int|float|string $value): string
+    private function pdfValue(bool | int | float | string $value): string
     {
         if (is_int($value)) {
             return (string) $value;

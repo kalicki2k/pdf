@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Image;
 
 use function chr;
-use function ord;
 use function strlen;
 
 final readonly class LzwEncoder
@@ -45,7 +44,7 @@ final readonly class LzwEncoder
             $writeCode(self::END_OF_DATA);
 
             if ($bitCount > 0) {
-                $encoded .= chr($bitBuffer << (8 - $bitCount));
+                $encoded .= chr(($bitBuffer << (8 - $bitCount)) & 0xFF);
             }
 
             return $encoded;
@@ -87,7 +86,7 @@ final readonly class LzwEncoder
         $writeCode(self::END_OF_DATA);
 
         if ($bitCount > 0) {
-            $encoded .= chr($bitBuffer << (8 - $bitCount));
+            $encoded .= chr(($bitBuffer << (8 - $bitCount)) & 0xFF);
         }
 
         return $encoded;

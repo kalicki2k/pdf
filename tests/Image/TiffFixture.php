@@ -45,6 +45,46 @@ final class TiffFixture
         );
     }
 
+    public static function tinyUncompressedGrayscaleTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 1,
+            photometricInterpretation: 1,
+            stripData: ["\x22\xCC"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+        );
+    }
+
+    public static function tinyUncompressedRgbTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 1,
+            height: 1,
+            bitsPerSample: [8, 8, 8],
+            compression: 1,
+            photometricInterpretation: 2,
+            stripData: ["\xFF\x00\x80"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 3,
+        );
+    }
+
+    public static function multipageBilevelTiffBytes(): string
+    {
+        $bytes = self::tinyUncompressedBilevelTiffBytes();
+        $secondIfdOffset = strlen($bytes);
+
+        return substr($bytes, 0, 118)
+            . pack('V', $secondIfdOffset)
+            . substr($bytes, 122)
+            . pack('v', 0)
+            . pack('V', 0);
+    }
+
     /**
      * @param list<string> $stripData
      */
@@ -83,6 +123,61 @@ final class TiffFixture
             self::entryShort(277, [1], $nextOffset, $extraValues),
             self::entryLong(278, [$rowsPerStrip], $nextOffset, $extraValues),
             self::entryLong(279, $stripByteCounts, $nextOffset, $extraValues),
+        ];
+
+        return 'II'
+            . pack('v', 42)
+            . pack('V', $ifdOffset)
+            . pack('v', $entryCount)
+            . implode('', $entries)
+            . pack('V', 0)
+            . $dataArea
+            . $extraValues;
+    }
+
+    /**
+     * @param list<int> $bitsPerSample
+     * @param list<string> $stripData
+     */
+    private static function imageTiffBytes(
+        int $width,
+        int $height,
+        array $bitsPerSample,
+        int $compression,
+        int $photometricInterpretation,
+        array $stripData,
+        int $rowsPerStrip,
+        int $samplesPerPixel,
+        int $planarConfiguration = 1,
+    ): string {
+        $ifdOffset = 8;
+        $entryCount = 10;
+        $firstDataOffset = $ifdOffset + 2 + ($entryCount * 12) + 4;
+        $dataArea = '';
+        $nextOffset = $firstDataOffset;
+        $extraValues = '';
+
+        $stripOffsets = [];
+        $stripByteCounts = [];
+
+        foreach ($stripData as $strip) {
+            $stripOffsets[] = $nextOffset;
+            $stripByteCounts[] = strlen($strip);
+            $dataArea .= $strip;
+            $nextOffset += strlen($strip);
+        }
+
+        $entries = [
+            self::entryLong(256, [$width], $nextOffset, $extraValues),
+            self::entryLong(257, [$height], $nextOffset, $extraValues),
+            self::entryShort(258, $bitsPerSample, $nextOffset, $extraValues),
+            self::entryShort(259, [$compression], $nextOffset, $extraValues),
+            self::entryShort(262, [$photometricInterpretation], $nextOffset, $extraValues),
+            self::entryLong(273, $stripOffsets, $nextOffset, $extraValues),
+            self::entryShort(277, [$samplesPerPixel], $nextOffset, $extraValues),
+            self::entryLong(278, [$rowsPerStrip], $nextOffset, $extraValues),
+            self::entryLong(279, $stripByteCounts, $nextOffset, $extraValues),
+            self::entryShort(284, [$planarConfiguration], $nextOffset, $extraValues),
         ];
 
         return 'II'

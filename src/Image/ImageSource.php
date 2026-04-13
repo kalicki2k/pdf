@@ -6,17 +6,12 @@ namespace Kalle\Pdf\Image;
 
 use function array_map;
 use function count;
-use function file_get_contents;
-use function get_debug_type;
 use function hash;
 use function implode;
-use function is_file;
-use function is_scalar;
 use function json_encode;
 use function strlen;
 
 use InvalidArgumentException;
-use RuntimeException;
 
 final readonly class ImageSource
 {
@@ -69,7 +64,7 @@ final readonly class ImageSource
         $this->colorSpaceDefinition = $colorSpaceDefinition;
         $this->softMask = $softMask;
         $this->additionalDictionaryEntries = $additionalDictionaryEntries;
-        $this->filters = array_values($filters);
+        $this->filters = $filters;
         $this->filter = count($this->filters) === 1 ? $this->filters[0]->name : null;
 
         if ($this->width <= 0) {
@@ -108,45 +103,7 @@ final readonly class ImageSource
 
     public static function fromPath(string $path): self
     {
-        if ($path === '' || !is_file($path)) {
-            throw new InvalidArgumentException(sprintf(
-                "Image path '%s' does not point to a readable file.",
-                $path,
-            ));
-        }
-
-        $data = file_get_contents($path);
-
-        if (!is_string($data)) {
-            throw new RuntimeException(sprintf(
-                "Unable to read image data from '%s'.",
-                $path,
-            ));
-        }
-
-        $imageInfo = getimagesizefromstring($data);
-
-        if ($imageInfo === false) {
-            throw new InvalidArgumentException(sprintf(
-                "Image path '%s' uses an unsupported image format.",
-                $path,
-            ));
-        }
-
-        return match ($imageInfo[2]) {
-            IMAGETYPE_JPEG => self::jpeg(
-                data: $data,
-                width: $imageInfo[0],
-                height: $imageInfo[1],
-                colorSpace: self::jpegColorSpaceFromImageInfo($path, $imageInfo),
-            ),
-            IMAGETYPE_PNG => new PngImageDecoder()->decode($data, $path),
-            IMAGETYPE_TIFF_II, IMAGETYPE_TIFF_MM => new TiffImageDecoder()->decode($data, $path),
-            default => throw new InvalidArgumentException(sprintf(
-                "Image path '%s' uses an unsupported image format.",
-                $path,
-            )),
-        };
+        return (new ImageSourceImporter())->fromPath($path);
     }
 
     public static function flate(
@@ -208,6 +165,9 @@ final readonly class ImageSource
         );
     }
 
+    /**
+     * @param array<string, bool|int|float|string> $decodeParameters
+     */
     public static function lzw(
         string $data,
         int $width,
@@ -436,26 +396,6 @@ final readonly class ImageSource
             . $this->pdfObjectStreamContents()
             . "\nendstream";
     }
-
-    /**
-     * @param array<string|int, mixed> $imageInfo
-     */
-    private static function jpegColorSpaceFromImageInfo(string $path, array $imageInfo): ImageColorSpace
-    {
-        $channels = $imageInfo['channels'] ?? null;
-
-        return match ($channels) {
-            1 => ImageColorSpace::GRAY,
-            3, null => ImageColorSpace::RGB,
-            4 => ImageColorSpace::CMYK,
-            default => throw new InvalidArgumentException(sprintf(
-                "JPEG image '%s' uses unsupported channel count '%s'.",
-                $path,
-                is_scalar($channels) ? (string) $channels : get_debug_type($channels),
-            )),
-        };
-    }
-
     private static function pdfHexString(string $bytes): string
     {
         return '<' . strtoupper(bin2hex($bytes)) . '>';
