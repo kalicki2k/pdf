@@ -515,7 +515,7 @@ $table = Table::define(
                 ->withHorizontalAlign(TextAlign::RIGHT),
         ),
     )
-    ->withFooterRows(
+    ->withFinalFooterRows(
         TableRow::fromTexts('Summe', '2 Positionen', '580,00 EUR'),
     );
 
@@ -526,7 +526,9 @@ $document = DefaultDocumentBuilder::make()
 
 `TableColumn::auto()` misst die Mindestbreite einer Spalte aus dem längsten untrennbaren Zellinhalt plus Padding. Das ist nützlich für Datums-, Ticket-, Mengen- oder Betragsspalten. `TableColumn::proportional(...)` verteilt den nach `fixed(...)`- und `auto()`-Spalten verbleibenden Platz.
 
-Ein umfangreicheres Beispiel liegt in `examples/table.php`; ein professionelles Mehrseiten-Beispiel mit wiederholtem Header und Footer in `examples/table-repeated-footer.php`. Die aktuelle Tabellen-API deckt damit auch absolutes Start-`y`, Rich-Text-Zellen sowie Tagged-Table-Abschnitte `THead`, `TBody` und `TFoot` ab.
+`withFooterRows(...)` bleibt als Alias für `withFinalFooterRows(...)` erhalten. Für Mehrseiten-Layouts mit Übertrag und Schlussbetrag stehen zusätzlich `withRepeatedFooterRows(...)` und `withFinalFooterRows(...)` zur Verfügung.
+
+Ein umfangreicheres Beispiel liegt in `examples/table.php`; ein professionelles Mehrseiten-Beispiel mit wiederholtem Header, wiederholtem Zwischenfooter und finalem Schlussfooter in `examples/table-repeated-footer.php`. Die aktuelle Tabellen-API deckt damit auch absolutes Start-`y`, Rich-Text-Zellen sowie Tagged-Table-Abschnitte `THead`, `TBody` und `TFoot` ab.
 
 ## Listen
 

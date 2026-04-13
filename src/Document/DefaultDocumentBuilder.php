@@ -627,11 +627,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ? null
             : $calculator->layoutRows($table->headerRows, $table, $columnWidths, new TextFlow($page), $font);
         $tableLayout = $calculator->layoutTable($table, $columnWidths, new TextFlow($page), $font);
-        $footerLayout = $table->footerRows === []
+        $repeatedFooterLayout = $table->repeatedFooterRows === []
             ? null
-            : $calculator->layoutRows($table->footerRows, $table, $columnWidths, new TextFlow($page), $font);
+            : $calculator->layoutRows($table->repeatedFooterRows, $table, $columnWidths, new TextFlow($page), $font);
+        $finalFooterLayout = $table->finalFooterRows === []
+            ? null
+            : $calculator->layoutRows($table->finalFooterRows, $table, $columnWidths, new TextFlow($page), $font);
         $taggedTableId = $clone->requiresTaggedStructure()
-            ? $clone->registerTaggedTable($headerLayout, $tableLayout, $footerLayout)
+            ? $clone->registerTaggedTable($headerLayout, $tableLayout, $repeatedFooterLayout, $finalFooterLayout)
             : null;
         $explicitStartY = $table->placement?->y;
 
@@ -648,8 +651,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $bodyRenderedOnCurrentPage = false;
         $minimumTableSegmentHeight = $table->cellPadding->vertical() + $clone->lineHeightForTable($table);
         $minimumTableStartHeight = $minimumTableSegmentHeight + ($headerLayout?->totalHeight() ?? 0.0);
-        $repeatedFooterHeight = $footerLayout !== null && $table->repeatFooterOnPageBreak
-            ? $footerLayout->totalHeight()
+        $repeatedFooterHeight = $repeatedFooterLayout !== null && $table->repeatFooterOnPageBreak
+            ? $repeatedFooterLayout->totalHeight()
             : 0.0;
 
         if ($captionLayout !== null) {
@@ -725,9 +728,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 }
 
                 if (!$groupFitsAfterHeader && $clone->currentPageCursorY !== null && $groupFitsOnFreshPage) {
-                    if ($bodyRenderedOnCurrentPage && $footerLayout !== null && $table->repeatFooterOnPageBreak) {
-                        $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
-                        $cursorY -= $footerLayout->totalHeight();
+                    if ($bodyRenderedOnCurrentPage && $repeatedFooterLayout !== null && $table->repeatFooterOnPageBreak) {
+                        $clone->renderTableLayout($table, $repeatedFooterLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
+                        $cursorY -= $repeatedFooterLayout->totalHeight();
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
@@ -758,9 +761,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 }
 
                 if ($availableHeight < $minimumTableSegmentHeight) {
-                    if ($bodyRenderedOnCurrentPage && $footerLayout !== null && $table->repeatFooterOnPageBreak) {
-                        $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
-                        $cursorY -= $footerLayout->totalHeight();
+                    if ($bodyRenderedOnCurrentPage && $repeatedFooterLayout !== null && $table->repeatFooterOnPageBreak) {
+                        $clone->renderTableLayout($table, $repeatedFooterLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
+                        $cursorY -= $repeatedFooterLayout->totalHeight();
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
@@ -794,9 +797,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $clone->currentPageCursorYIsTopBoundary = true;
 
                 if ($segmentOffset < $rowGroup->height) {
-                    if ($footerLayout !== null && $table->repeatFooterOnPageBreak) {
-                        $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
-                        $cursorY -= $footerLayout->totalHeight();
+                    if ($repeatedFooterLayout !== null && $table->repeatFooterOnPageBreak) {
+                        $clone->renderTableLayout($table, $repeatedFooterLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
+                        $cursorY -= $repeatedFooterLayout->totalHeight();
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
@@ -811,11 +814,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
         }
 
-        if ($footerLayout !== null) {
+        if ($finalFooterLayout !== null) {
             $headerHeight = !$headerRenderedOnCurrentPage && $headerLayout !== null && $table->repeatHeaderOnPageBreak
                 ? $headerLayout->totalHeight()
                 : 0.0;
-            $requiredHeight = $footerLayout->totalHeight() + $headerHeight;
+            $requiredHeight = $finalFooterLayout->totalHeight() + $headerHeight;
 
             if ($requiredHeight > $contentArea->height()) {
                 throw new DocumentValidationException(
@@ -841,8 +844,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $headerRenderedOnCurrentPage = true;
             }
 
-            $clone->renderTableLayout($table, $footerLayout, $font, $cursorY, $tableLeftX, $taggedTableId, 'footer');
-            $cursorY -= $footerLayout->totalHeight();
+            $clone->renderTableLayout(
+                $table,
+                $finalFooterLayout,
+                $font,
+                $cursorY,
+                $tableLeftX,
+                $taggedTableId,
+                'footer',
+                $repeatedFooterLayout !== null ? count($repeatedFooterLayout->rowHeights) : 0,
+            );
+            $cursorY -= $finalFooterLayout->totalHeight();
             $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
             $clone->currentPageCursorYIsTopBoundary = true;
         }
@@ -3742,6 +3754,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $tableLeftX,
         ?int $taggedTableId = null,
         ?string $taggedSection = null,
+        int $taggedRowOffset = 0,
     ): string {
         $contents = [];
         $x = $tableLeftX;
@@ -3809,6 +3822,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $segmentHeight,
             $markedContentId !== null ? ($taggedSection === 'header' ? 'TH' : 'TD') : null,
             $markedContentId,
+            $taggedRowOffset,
         );
 
         if ($cellLayout->border->isVisible()) {
@@ -3837,6 +3851,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $cellLayout->rowIndex,
                     $cellLayout->columnIndex,
                     $markedContentId,
+                    $taggedRowOffset,
                 );
             }
         }
@@ -3864,6 +3879,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $segmentHeight,
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
+        int $taggedRowOffset = 0,
     ): ?array {
         if ($cellLayout->usesRichText()) {
             return $this->visibleWrappedTextSegmentsContentForCellSegment(
@@ -3880,6 +3896,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $segmentHeight,
                 $markedContentTag,
                 $markedContentId,
+                $taggedRowOffset,
             );
         }
 
@@ -3954,6 +3971,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $segmentHeight,
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
+        int $taggedRowOffset = 0,
     ): ?array {
         $wrappedSegmentLines = $cellLayout->wrappedSegmentLines;
 
@@ -4050,6 +4068,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $leftX,
         ?int $taggedTableId = null,
         ?string $taggedSection = null,
+        int $taggedRowOffset = 0,
     ): void {
         $contents = [];
 
@@ -4066,6 +4085,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $leftX,
                 $taggedTableId,
                 $taggedSection,
+                $taggedRowOffset,
             );
         }
 
@@ -4086,6 +4106,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $segmentHeight,
         ?int $taggedTableId = null,
         ?string $taggedSection = null,
+        int $taggedRowOffset = 0,
     ): void {
         $contents = [];
 
@@ -4106,6 +4127,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $leftX,
                 $taggedTableId,
                 $taggedSection,
+                $taggedRowOffset,
             );
         }
 
@@ -4118,15 +4140,33 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function registerTaggedTable(
         ?TableLayout $headerLayout,
         TableLayout $bodyLayout,
-        ?TableLayout $footerLayout,
+        ?TableLayout $repeatedFooterLayout,
+        ?TableLayout $finalFooterLayout,
     ): int {
         $tableId = $this->nextTaggedTableId;
         $this->nextTaggedTableId++;
+        $footerRows = [];
+
+        if ($repeatedFooterLayout !== null) {
+            $footerRows = [
+                ...$footerRows,
+                ...$this->initializeTaggedTableRows($repeatedFooterLayout, false),
+            ];
+        }
+
+        if ($finalFooterLayout !== null) {
+            $offset = count($footerRows);
+
+            foreach ($this->initializeTaggedTableRows($finalFooterLayout, false) as $rowIndex => $row) {
+                $footerRows[$offset + $rowIndex] = $row;
+            }
+        }
+
         $this->taggedTables[$tableId] = [
             'captionReferences' => [],
             'headerRows' => $headerLayout !== null ? $this->initializeTaggedTableRows($headerLayout, true) : [],
             'bodyRows' => $this->initializeTaggedTableRows($bodyLayout, false),
-            'footerRows' => $footerLayout !== null ? $this->initializeTaggedTableRows($footerLayout, false) : [],
+            'footerRows' => $footerRows,
         ];
         $this->attachTaggedStructureChildKey('table:' . $tableId);
 
@@ -4168,13 +4208,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         int $rowIndex,
         int $columnIndex,
         int $markedContentId,
+        int $rowOffset = 0,
     ): void {
         $sectionKey = match ($section) {
             'header' => 'headerRows',
             'footer' => 'footerRows',
             default => 'bodyRows',
         };
-        $this->taggedTables[$tableId][$sectionKey][$rowIndex]['cells'][$columnIndex]['references'][] = $this->taggedContentReference($markedContentId);
+        $this->taggedTables[$tableId][$sectionKey][$rowIndex + $rowOffset]['cells'][$columnIndex]['references'][] = $this->taggedContentReference($markedContentId);
     }
 
     /**

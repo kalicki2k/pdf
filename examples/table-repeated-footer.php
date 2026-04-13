@@ -169,20 +169,27 @@ foreach ($lineItems as $index => [$serviceDate, $description, $ticket, $hours, $
 $vatAmount = $netTotal * 0.19;
 $grossTotal = $netTotal + $vatAmount;
 
-$table = $table->withFooterRows(
-    TableRow::fromCells(
-        $footerLabelCell('Monatssumme netto', 5),
-        $footerValueCell($currency($netTotal)),
-    ),
-    TableRow::fromCells(
-        $footerLabelCell('zzgl. USt. 19 %', 5),
-        $footerValueCell($currency($vatAmount)),
-    ),
-    TableRow::fromCells(
-        $footerLabelCell('Gesamtbetrag', 5),
-        $footerValueCell($currency($grossTotal)),
-    ),
-);
+$table = $table
+    ->withRepeatedFooterRows(
+        TableRow::fromCells(
+            $footerLabelCell('Zwischensumme bis hier', 5),
+            $footerValueCell($currency($netTotal)),
+        ),
+    )
+    ->withFinalFooterRows(
+        TableRow::fromCells(
+            $footerLabelCell('Monatssumme netto', 5),
+            $footerValueCell($currency($netTotal)),
+        ),
+        TableRow::fromCells(
+            $footerLabelCell('zzgl. USt. 19 %', 5),
+            $footerValueCell($currency($vatAmount)),
+        ),
+        TableRow::fromCells(
+            $footerLabelCell('Gesamtbetrag', 5),
+            $footerValueCell($currency($grossTotal)),
+        ),
+    );
 
 $document = DefaultDocumentBuilder::make()
     ->title('Managed Services Statement - March 2026')
@@ -250,7 +257,7 @@ $document = DefaultDocumentBuilder::make()
         spacingAfter: 8,
     ))
     ->table($table)
-    ->text('Hinweis: Die Footer-Zeilen mit Netto-, Steuer- und Gesamtbetrag werden auf jeder Folgeseite erneut ausgegeben. Das eignet sich fuer Berichte, Leistungsnachweise und Abrechnungsanlagen, bei denen Summen auf jeder Seite sichtbar bleiben sollen.', TextOptions::make(
+    ->text('Hinweis: Auf Folgeseiten wird ein wiederholter Zwischenfooter ausgegeben. Der ausfuehrliche Schlussfooter mit Netto-, Steuer- und Gesamtbetrag erscheint nur auf der letzten Seite. Das eignet sich fuer Berichte, Leistungsnachweise und Abrechnungsanlagen mit klarer Seitensumme und abschliessendem Rechnungsbetrag.', TextOptions::make(
         embeddedFont: $fontRegular,
         fontSize: 8.5,
         lineHeight: 12,

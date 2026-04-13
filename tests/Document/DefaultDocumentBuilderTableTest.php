@@ -674,7 +674,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
                     ->withTextOptions(TextOptions::make(fontSize: 12.0, lineHeight: 14.4)),
             )
             ->withRows(...$rows)
-            ->withFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'));
+            ->withFinalFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'));
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A8())
             ->margin(Margin::all(10.0))
@@ -705,7 +705,8 @@ final class DefaultDocumentBuilderTableTest extends TestCase
                     ->withRepeatedFooterOnPageBreak(),
             )
             ->withRows(...$rows)
-            ->withFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'));
+            ->withRepeatedFooterRows(TableRow::fromTexts('Foot Left', 'Foot Right'))
+            ->withFinalFooterRows(TableRow::fromTexts('Final Left', 'Final Right'));
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A8())
             ->margin(Margin::all(10.0))
@@ -714,7 +715,8 @@ final class DefaultDocumentBuilderTableTest extends TestCase
 
         self::assertCount(2, $document->pages);
         self::assertStringContainsString($this->encodedFootLeftSnippet(), $document->pages[0]->contents);
-        self::assertStringContainsString($this->encodedFootLeftSnippet(), $document->pages[1]->contents);
+        self::assertStringNotContainsString($this->encodedFootLeftSnippet(), $document->pages[1]->contents);
+        self::assertStringContainsString('[<46> 10 <69> <6e> <61> <6c> <20> <4c> 12 <65> 10 <66> -23 <74>] TJ', $document->pages[1]->contents);
     }
 
     public function testItRendersAColspanCellAcrossMultipleColumns(): void

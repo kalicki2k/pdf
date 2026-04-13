@@ -108,6 +108,24 @@ final class TableTest extends TestCase
         self::assertSame($caption, $table->caption);
         self::assertSame($placement, $table->placement);
         self::assertCount(1, $table->footerRows);
+        self::assertCount(1, $table->finalFooterRows);
+        self::assertCount(0, $table->repeatedFooterRows);
+    }
+
+    public function testItStoresRepeatedAndFinalFooterRowsSeparately(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(80.0),
+            TableColumn::fixed(80.0),
+        )
+            ->withRows(TableRow::fromTexts('A', 'B'))
+            ->withRepeatedFooterRows(TableRow::fromTexts('Running total', '1'))
+            ->withFinalFooterRows(TableRow::fromTexts('Final total', '2'));
+
+        self::assertCount(1, $table->repeatedFooterRows);
+        self::assertCount(1, $table->finalFooterRows);
+        self::assertCount(1, $table->footerRows);
+        self::assertSame('Final total', $table->footerRows[0]->cells[0]->text);
     }
 
     public function testItStoresExplicitHeaderScopeOnCells(): void

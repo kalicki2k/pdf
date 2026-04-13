@@ -83,9 +83,9 @@ foreach ($lineItems as $index => $item) {
         TableCell::text((string) ($index + 1))->withHorizontalAlign(TextAlign::CENTER),
         TableCell::text($item['period']),
         TableCell::text($item['description']),
-        TableCell::text($formatQuantity($item['quantity']) . ' ' . $item['unit'])->withHorizontalAlign(TextAlign::CENTER),
-        TableCell::text($formatAmount($item['unitPrice']))->withHorizontalAlign(TextAlign::RIGHT),
-        TableCell::text($formatAmount($lineTotal))->withHorizontalAlign(TextAlign::RIGHT),
+        TableCell::text($formatQuantity($item['quantity']) . ' ' . $item['unit'])->withHorizontalAlign(TextAlign::CENTER)->withNoWrap(),
+        TableCell::text($formatAmount($item['unitPrice']))->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
+        TableCell::text($formatAmount($lineTotal))->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
     );
 }
 
@@ -109,6 +109,8 @@ $table = Table::define(
             color: $textColor,
         ),
         cellPadding: CellPadding::symmetric(Units::mm(1.2), Units::mm(1.5)),
+        repeatFooterOnPageBreak: true,
+        spacingAfter: Units::mm(12),
     ))
     ->withHeaderRows(
         TableRow::fromCells(
@@ -121,17 +123,20 @@ $table = Table::define(
                 ->withBackgroundColor($tableHeaderColor),
             TableCell::text('Menge')
                 ->withBackgroundColor($tableHeaderColor)
-                ->withHorizontalAlign(TextAlign::CENTER),
+                ->withHorizontalAlign(TextAlign::CENTER)
+                ->withNoWrap(),
             TableCell::text('Satz netto')
                 ->withBackgroundColor($tableHeaderColor)
-                ->withHorizontalAlign(TextAlign::RIGHT),
+                ->withHorizontalAlign(TextAlign::RIGHT)
+                ->withNoWrap(),
             TableCell::text('Betrag netto')
                 ->withBackgroundColor($tableHeaderColor)
-                ->withHorizontalAlign(TextAlign::RIGHT),
+                ->withHorizontalAlign(TextAlign::RIGHT)
+                ->withNoWrap(),
         ),
     )
     ->withRows(...$tableRows)
-    ->withFooterRows(
+    ->withRepeatedFooterRows(
         TableRow::fromCells(
             TableCell::segments(
                 TextSegment::plain('Zwischensumme netto:', TextOptions::make(
@@ -144,7 +149,23 @@ $table = Table::define(
                     embeddedFont: $fontBold,
                     color: $textColor,
                 )),
-            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
+            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
+        ),
+    )
+    ->withFinalFooterRows(
+        TableRow::fromCells(
+            TableCell::segments(
+                TextSegment::plain('Zwischensumme netto:', TextOptions::make(
+                    embeddedFont: $fontBold,
+                    color: $textColor,
+                )),
+            )->withColspan(5)->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
+            TableCell::segments(
+                TextSegment::plain($formatAmount($subtotal), TextOptions::make(
+                    embeddedFont: $fontBold,
+                    color: $textColor,
+                )),
+            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
         ),
         TableRow::fromCells(
             TableCell::segments(
@@ -158,7 +179,7 @@ $table = Table::define(
                     embeddedFont: $fontBold,
                     color: $textColor,
                 )),
-            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
+            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
         ),
         TableRow::fromCells(
             TableCell::segments(
@@ -172,7 +193,7 @@ $table = Table::define(
                     embeddedFont: $fontBold,
                     color: $headlineColor,
                 )),
-            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT),
+            )->withBackgroundColor($tableFooterColor)->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
         ),
     );
 

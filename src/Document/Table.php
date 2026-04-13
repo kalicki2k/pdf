@@ -14,6 +14,13 @@ use Kalle\Pdf\Text\TextOptions;
 
 final readonly class Table
 {
+    /**
+     * Alias for the final footer rows so existing integrations can continue to read `footerRows`.
+     *
+     * @var list<TableRow>
+     */
+    public array $footerRows;
+
     public TableOptions $options;
     public ?TableCaption $caption;
     public ?TablePlacement $placement;
@@ -29,14 +36,16 @@ final readonly class Table
      * @param list<TableColumn> $columns
      * @param list<TableRow> $rows
      * @param list<TableRow> $headerRows
-     * @param list<TableRow> $footerRows
+     * @param list<TableRow> $repeatedFooterRows
+     * @param list<TableRow> $finalFooterRows
      */
     public function __construct(
         public array $columns,
         ?TableOptions $options = null,
         public array $rows = [],
         public array $headerRows = [],
-        public array $footerRows = [],
+        public array $repeatedFooterRows = [],
+        public array $finalFooterRows = [],
     ) {
         if (count($this->columns) === 0) {
             throw new InvalidArgumentException('A table must contain at least one column.');
@@ -53,10 +62,12 @@ final readonly class Table
         $this->spacingAfter = $this->options->spacingAfter;
         $this->repeatHeaderOnPageBreak = $this->options->repeatHeaderOnPageBreak;
         $this->repeatFooterOnPageBreak = $this->options->repeatFooterOnPageBreak;
+        $this->footerRows = $this->finalFooterRows;
 
         $this->assertRowsMatchGrid($this->headerRows);
         $this->assertRowsMatchGrid($this->rows);
-        $this->assertRowsMatchGrid($this->footerRows);
+        $this->assertRowsMatchGrid($this->repeatedFooterRows);
+        $this->assertRowsMatchGrid($this->finalFooterRows);
     }
 
     public static function define(TableColumn ...$columns): self
@@ -71,7 +82,8 @@ final readonly class Table
             columns: $this->columns,
             rows: [...$this->rows, $row],
             headerRows: $this->headerRows,
-            footerRows: $this->footerRows,
+            repeatedFooterRows: $this->repeatedFooterRows,
+            finalFooterRows: $this->finalFooterRows,
             options: $this->options,
         );
     }
@@ -83,7 +95,8 @@ final readonly class Table
             columns: $this->columns,
             rows: $rows,
             headerRows: $this->headerRows,
-            footerRows: $this->footerRows,
+            repeatedFooterRows: $this->repeatedFooterRows,
+            finalFooterRows: $this->finalFooterRows,
             options: $this->options,
         );
     }
@@ -95,19 +108,39 @@ final readonly class Table
             columns: $this->columns,
             rows: $this->rows,
             headerRows: $headerRows,
-            footerRows: $this->footerRows,
+            repeatedFooterRows: $this->repeatedFooterRows,
+            finalFooterRows: $this->finalFooterRows,
             options: $this->options,
         );
     }
 
     public function withFooterRows(TableRow ...$footerRows): self
     {
+        return $this->withFinalFooterRows(...$footerRows);
+    }
+
+    public function withRepeatedFooterRows(TableRow ...$footerRows): self
+    {
         /** @var list<TableRow> $footerRows */
         return new self(
             columns: $this->columns,
             rows: $this->rows,
             headerRows: $this->headerRows,
-            footerRows: $footerRows,
+            repeatedFooterRows: $footerRows,
+            finalFooterRows: $this->finalFooterRows,
+            options: $this->options,
+        );
+    }
+
+    public function withFinalFooterRows(TableRow ...$footerRows): self
+    {
+        /** @var list<TableRow> $footerRows */
+        return new self(
+            columns: $this->columns,
+            rows: $this->rows,
+            headerRows: $this->headerRows,
+            repeatedFooterRows: $this->repeatedFooterRows,
+            finalFooterRows: $footerRows,
             options: $this->options,
         );
     }
@@ -118,7 +151,8 @@ final readonly class Table
             columns: $this->columns,
             rows: $this->rows,
             headerRows: $this->headerRows,
-            footerRows: $this->footerRows,
+            repeatedFooterRows: $this->repeatedFooterRows,
+            finalFooterRows: $this->finalFooterRows,
             options: $options,
         );
     }

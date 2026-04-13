@@ -312,7 +312,7 @@ final class TableLayoutCalculator
         StandardFontDefinition | EmbeddedFontDefinition $font,
     ): array {
         $autoWidths = array_fill(0, count($table->columns), 0.0);
-        $rows = [...$table->headerRows, ...$table->rows, ...$table->footerRows];
+        $rows = [...$table->headerRows, ...$table->rows, ...$table->repeatedFooterRows, ...$table->finalFooterRows];
 
         foreach ($rows as $row) {
             $columnIndex = 0;

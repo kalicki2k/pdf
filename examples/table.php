@@ -117,7 +117,7 @@ $table = Table::define(
             TableCell::text('Summary row uses colspan and a highlighted background.', colspan: 2),
         ),
     )
-    ->withFooterRows(
+    ->withFinalFooterRows(
         TableRow::fromCells(
             TableCell::text('Totals')->withHeaderScope(TableHeaderScope::ROW)->withBackgroundColor(Color::hex('#e2e8f0')),
             TableCell::text('2 regions')->withBackgroundColor(Color::hex('#e2e8f0')),
