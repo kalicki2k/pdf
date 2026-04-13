@@ -230,7 +230,7 @@ final class PdfAObjectGraphValidator
     ): void {
         if (
             ($document->profile->isPdfA2() || $document->profile->isPdfA3())
-            && !$document->profile->requiresTaggedFormFields()
+            && !$document->profile->supportsAcroForms()
             && $state->acroFormObjectId !== null
         ) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED, sprintf(

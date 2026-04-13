@@ -65,6 +65,10 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA2a()->supportsCurrentTextFieldImplementation());
         self::assertFalse(Profile::pdfA2a()->supportsCurrentPushButtonImplementation());
         self::assertFalse(Profile::pdfA3a()->supportsCurrentSignatureFieldImplementation());
+        self::assertTrue(Profile::pdfA2u()->supportsCurrentTextFieldImplementation());
+        self::assertTrue(Profile::pdfA3b()->supportsCurrentTextFieldImplementation());
+        self::assertTrue(Profile::pdfA3u()->supportsCurrentTextFieldImplementation());
+        self::assertFalse(Profile::pdfA2u()->supportsCurrentSignatureFieldImplementation());
         self::assertFalse(Profile::pdfA3b()->supportsCurrentSignatureFieldImplementation());
         self::assertTrue(Profile::pdfA2b()->supportsCurrentPageAnnotationsImplementation());
     }

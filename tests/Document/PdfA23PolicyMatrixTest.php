@@ -95,18 +95,20 @@ final class PdfA23PolicyMatrixTest extends TestCase
         new DocumentSerializationPlanBuilder()->build($document);
     }
 
-    public function testItRejectsPdfA2uAcroFormsInTheCurrentScope(): void
+    public function testItAllowsPdfA2uAcroFormsInTheCurrentScope(): void
     {
         $document = $this->pdfA2BaselineBuilder(Profile::pdfA2u())
             ->textField('customer_name', 40, 500, 160, 18, 'Ada', 'Customer name')
             ->build();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.',
-        );
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
 
-        new DocumentSerializationPlanBuilder()->build($document);
+        self::assertStringContainsString('/AcroForm ', $serialized);
+        self::assertStringContainsString('/FT /Tx', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
     }
 
     public function testItRejectsPdfA3bPageLevelFileAttachmentAnnotations(): void
@@ -156,6 +158,39 @@ final class PdfA23PolicyMatrixTest extends TestCase
         self::assertStringContainsString('<pdfaid:part>3</pdfaid:part>', $serialized);
         self::assertStringContainsString('<pdfaid:conformance>U</pdfaid:conformance>', $serialized);
         self::assertStringContainsString('/Encoding /Identity-H', $serialized);
+    }
+
+    public function testItAllowsPdfA3bChoiceFieldsWithinTheCurrentScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA3b())
+            ->title('Archive Package')
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->listBox('skills', 40, 450, 120, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php'], 'Skills')
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/AcroForm ', $serialized);
+        self::assertStringContainsString('/FT /Ch', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
+    }
+
+    public function testItRejectsPdfA2uPushButtonsOutsideTheCurrentFormSubset(): void
+    {
+        $document = $this->pdfA2BaselineBuilder(Profile::pdfA2u())
+            ->pushButton('ack', 'Acknowledge', 40, 500, 120, 18, 'Acknowledge')
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-2u only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-2/3 form policy.',
+        );
+
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItAllowsPdfA3aTaggedDocumentsWithDocumentAssociatedFiles(): void
@@ -245,7 +280,7 @@ final class PdfA23PolicyMatrixTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-2a only allows tagged text fields, checkboxes, radio buttons and choice fields in the current PDF/A-2A form policy.',
+            'Profile PDF/A-2a only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-2/3 form policy.',
         );
 
         new DocumentSerializationPlanBuilder()->build($document);

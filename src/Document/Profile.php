@@ -466,7 +466,7 @@ final readonly class Profile
 
     public function supportsCurrentPushButtonImplementation(): bool
     {
-        if (($this->isPdfA() && $this->conformance === 'A') || $this->isPdfA4()) {
+        if ($this->isPdfA2() || $this->isPdfA3() || $this->isPdfA4() || ($this->isPdfA() && $this->conformance === 'A')) {
             return false;
         }
 
@@ -487,7 +487,7 @@ final readonly class Profile
 
     public function supportsCurrentSignatureFieldImplementation(): bool
     {
-        if (($this->isPdfA() && $this->conformance === 'A') || $this->isPdfA4()) {
+        if ($this->isPdfA2() || $this->isPdfA3() || $this->isPdfA4() || ($this->isPdfA() && $this->conformance === 'A')) {
             return false;
         }
 

@@ -481,7 +481,7 @@ final readonly class DocumentSerializationPlanValidator
 
             if (
                 ($document->profile->isPdfA2() || $document->profile->isPdfA3())
-                && $document->profile->pdfaConformance() === 'A'
+                && $document->profile->supportsAcroForms()
                 && !$this->pdfA23aFormFieldPolicy->supports($field)
             ) {
                 throw new DocumentValidationException(

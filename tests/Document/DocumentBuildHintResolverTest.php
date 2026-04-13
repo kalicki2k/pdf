@@ -233,13 +233,13 @@ final class DocumentBuildHintResolverTest extends TestCase
         self::assertNull($hint);
     }
 
-    public function testItAddsAnAcroFormHintForBlockedPdfA23Profiles(): void
+    public function testItAddsAnAcroFormHintForBlockedPdfAProfiles(): void
     {
         $hint = $this->resolver->resolve(
-            new Document(profile: Profile::pdfA2u()),
+            new Document(profile: Profile::pdfA1b()),
             new DocumentValidationException(
                 DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED,
-                'Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.',
+                'Profile PDF/A-1b does not allow AcroForm fields in the current implementation.',
             ),
         );
 

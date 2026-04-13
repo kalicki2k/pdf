@@ -94,8 +94,8 @@ final readonly class PdfAProfileSupport
             'PDF/A-2b' => new self(
                 'PDF/A-2b',
                 true,
-                'Supported for the current PDF/A-2b scope with embedded fonts, XMP metadata, OutputIntent and the explicitly validated annotation subset.',
-                self::baseCapabilityRules(
+                'Supported for the current PDF/A-2b scope with embedded fonts, XMP metadata, OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and the constrained AcroForm subset.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: false,
@@ -103,17 +103,23 @@ final readonly class PdfAProfileSupport
                     infoDictionary: true,
                     linkAnnotations: true,
                     nonLinkPageAnnotations: true,
-                    acroFormFields: false,
+                    acroFormFields: true,
                     documentAssociatedFiles: false,
                     documentEmbeddedAttachments: false,
                     transparency: true,
-                ),
+                ), [
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-2b form scope; push buttons and signature fields remain blocked.',
+                    ),
+                ]),
             ),
             'PDF/A-2u' => new self(
                 'PDF/A-2u',
                 true,
-                'Supported for the current PDF/A-2u scope with extractable Unicode fonts, XMP metadata, OutputIntent and the explicitly validated annotation subset.',
-                self::baseCapabilityRules(
+                'Supported for the current PDF/A-2u scope with extractable Unicode fonts, XMP metadata, OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and the constrained AcroForm subset.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: true,
@@ -121,11 +127,17 @@ final readonly class PdfAProfileSupport
                     infoDictionary: true,
                     linkAnnotations: true,
                     nonLinkPageAnnotations: true,
-                    acroFormFields: false,
+                    acroFormFields: true,
                     documentAssociatedFiles: false,
                     documentEmbeddedAttachments: false,
                     transparency: true,
-                ),
+                ), [
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-2u form scope; push buttons and signature fields remain blocked.',
+                    ),
+                ]),
             ),
             'PDF/A-3a' => new self(
                 'PDF/A-3a',
@@ -159,8 +171,8 @@ final readonly class PdfAProfileSupport
             'PDF/A-3b' => new self(
                 'PDF/A-3b',
                 true,
-                'Supported for the current PDF/A-3b scope with embedded fonts, XMP metadata, OutputIntent and document-level associated files.',
-                self::baseCapabilityRules(
+                'Supported for the current PDF/A-3b scope with embedded fonts, XMP metadata, OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and document-level associated files.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: false,
@@ -168,17 +180,23 @@ final readonly class PdfAProfileSupport
                     infoDictionary: true,
                     linkAnnotations: true,
                     nonLinkPageAnnotations: true,
-                    acroFormFields: false,
+                    acroFormFields: true,
                     documentAssociatedFiles: true,
                     documentEmbeddedAttachments: true,
                     transparency: true,
-                ),
+                ), [
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-3b form scope; push buttons and signature fields remain blocked.',
+                    ),
+                ]),
             ),
             'PDF/A-3u' => new self(
                 'PDF/A-3u',
                 true,
-                'Supported for the current PDF/A-3u scope with extractable Unicode fonts, XMP metadata, OutputIntent and document-level associated files.',
-                self::baseCapabilityRules(
+                'Supported for the current PDF/A-3u scope with extractable Unicode fonts, XMP metadata, OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and document-level associated files.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: true,
@@ -186,11 +204,17 @@ final readonly class PdfAProfileSupport
                     infoDictionary: true,
                     linkAnnotations: true,
                     nonLinkPageAnnotations: true,
-                    acroFormFields: false,
+                    acroFormFields: true,
                     documentAssociatedFiles: true,
                     documentEmbeddedAttachments: true,
                     transparency: true,
-                ),
+                ), [
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-3u form scope; push buttons and signature fields remain blocked.',
+                    ),
+                ]),
             ),
             'PDF/A-4' => new self(
                 'PDF/A-4',

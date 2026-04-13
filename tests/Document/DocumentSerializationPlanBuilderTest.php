@@ -769,18 +769,24 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
     }
 
-    public function testItRejectsAcroFormsForUnsupportedProfiles(): void
+    public function testItBuildsPdfA2uAcroFormsWithinTheCurrentScope(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
             profile: Profile::pdfA2u(),
-            acroForm: new AcroForm()->withField($this->testWidgetField()),
+            acroForm: new AcroForm()->withField(
+                new TextField('customer_name', 1, 10.0, 20.0, 80.0, 12.0, 'Ada', 'Customer name'),
+            ),
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.');
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array($builder->build($document)->objects),
+        ));
 
-        $builder->build($document);
+        self::assertStringContainsString('/AcroForm ', $serialized);
+        self::assertStringContainsString('/FT /Tx', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
     }
 
     public function testItRejectsAcroFormsForPdfA1b(): void
@@ -1000,7 +1006,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Subtype /Form', $objects[6]->contents);
     }
 
-    public function testItRejectsSignatureFieldsForUnsupportedProfiles(): void
+    public function testItRejectsSignatureFieldsForPdfA2uFormSubset(): void
     {
         $builder = new DocumentSerializationPlanBuilder();
         $document = new Document(
@@ -1011,7 +1017,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Profile PDF/A-2u does not allow AcroForm fields in the current PDF/A-2/3 scope.');
+        $this->expectExceptionMessage('Profile PDF/A-2u only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-2/3 form policy.');
 
         $builder->build($document);
     }
@@ -2033,7 +2039,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-2a only allows tagged text fields, checkboxes, radio buttons and choice fields in the current PDF/A-2A form policy.',
+            'Profile PDF/A-2a only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-2/3 form policy.',
         );
 
         $builder->build($document);

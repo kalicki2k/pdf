@@ -35,6 +35,17 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertTrue($support->capabilityRule(PdfACapability::ACRO_FORM_FIELDS)->allowed);
     }
 
+    public function testPdfA2uAndPdfA3bCapabilityMatrixIncludeCurrentFormScope(): void
+    {
+        $pdfA2uSupport = Profile::pdfA2u()->pdfaSupport();
+        $pdfA3bSupport = Profile::pdfA3b()->pdfaSupport();
+
+        self::assertNotNull($pdfA2uSupport);
+        self::assertNotNull($pdfA3bSupport);
+        self::assertTrue($pdfA2uSupport->capabilityRule(PdfACapability::ACRO_FORM_FIELDS)->allowed);
+        self::assertTrue($pdfA3bSupport->capabilityRule(PdfACapability::ACRO_FORM_FIELDS)->allowed);
+    }
+
     public function testPdfA1bCapabilityMatrixShowsVisualReproductionScope(): void
     {
         $support = Profile::pdfA1b()->pdfaSupport();

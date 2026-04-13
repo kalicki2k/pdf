@@ -72,7 +72,7 @@ final class PdfA23ScopePolicy
             return;
         }
 
-        if ($document->profile->pdfaConformance() === 'A') {
+        if ($document->profile->supportsAcroForms()) {
             return;
         }
 

@@ -27,9 +27,8 @@ final class PdfA23aFormFieldPolicy
     public function violationMessage(Profile $profile): string
     {
         return sprintf(
-            'Profile %s only allows tagged text fields, checkboxes, radio buttons and choice fields in the current PDF/A-%dA form policy.',
+            'Profile %s only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-2/3 form policy.',
             $profile->name(),
-            $profile->pdfaPart(),
         );
     }
 }
