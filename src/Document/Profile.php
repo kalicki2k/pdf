@@ -418,18 +418,33 @@ final readonly class Profile
 
     public function supportsCurrentCheckboxImplementation(): bool
     {
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::ACRO_FORM_FIELDS)
+                || $this->requiresTaggedFormFields();
+        }
+
         return $this->supportsAcroForms()
             || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentComboBoxImplementation(): bool
     {
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::ACRO_FORM_FIELDS)
+                || $this->requiresTaggedFormFields();
+        }
+
         return $this->supportsAcroForms()
             || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentListBoxImplementation(): bool
     {
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::ACRO_FORM_FIELDS)
+                || $this->requiresTaggedFormFields();
+        }
+
         return $this->supportsAcroForms()
             || $this->requiresTaggedFormFields();
     }
@@ -441,6 +456,11 @@ final readonly class Profile
 
     public function supportsCurrentPageAnnotationsImplementation(): bool
     {
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::LINK_ANNOTATIONS)
+                || $this->pdfaCapabilityAllowed(PdfACapability::NON_LINK_PAGE_ANNOTATIONS);
+        }
+
         return !$this->isPdfUa();
     }
 
@@ -452,18 +472,33 @@ final readonly class Profile
 
     public function supportsCurrentRadioButtonImplementation(): bool
     {
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::ACRO_FORM_FIELDS)
+                || $this->requiresTaggedFormFields();
+        }
+
         return $this->supportsAcroForms()
             || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentSignatureFieldImplementation(): bool
     {
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::ACRO_FORM_FIELDS)
+                || $this->requiresTaggedFormFields();
+        }
+
         return $this->supportsAcroForms()
             || $this->requiresTaggedFormFields();
     }
 
     public function supportsCurrentTextFieldImplementation(): bool
     {
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::ACRO_FORM_FIELDS)
+                || $this->requiresTaggedFormFields();
+        }
+
         return $this->supportsAcroForms()
             || $this->requiresTaggedFormFields();
     }

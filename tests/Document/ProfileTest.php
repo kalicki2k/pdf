@@ -59,6 +59,10 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA3a()->supportsCurrentPdfAImplementation());
         self::assertTrue(Profile::pdfA3b()->supportsCurrentPdfAImplementation());
         self::assertTrue(Profile::pdfA3u()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA2a()->supportsCurrentPageAnnotationsImplementation());
+        self::assertFalse(Profile::pdfA2a()->supportsCurrentTextFieldImplementation());
+        self::assertFalse(Profile::pdfA3b()->supportsCurrentSignatureFieldImplementation());
+        self::assertTrue(Profile::pdfA2b()->supportsCurrentPageAnnotationsImplementation());
     }
 
     public function testPdfA4FamilyIsExplicitlyBlockedUntilImplemented(): void
@@ -72,6 +76,8 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA4f()->writesPdfARevisionMetadata());
         self::assertFalse(Profile::pdfA3b()->writesPdfARevisionMetadata());
         self::assertFalse(Profile::pdfA4f()->supportsTransparency());
+        self::assertFalse(Profile::pdfA4()->supportsCurrentPageAnnotationsImplementation());
+        self::assertFalse(Profile::pdfA4()->supportsCurrentTextFieldImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentAssociatedFiles());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentEmbeddedFileAttachments());
 
