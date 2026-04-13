@@ -20,6 +20,12 @@ cs:
 cs-check:
 	$(DOCKER_COMPOSE) run --rm php composer cs:check
 
+rector:
+	$(DOCKER_COMPOSE) run --rm php composer rector
+
+rector-check:
+	$(DOCKER_COMPOSE) run --rm php composer rector:check
+
 test:
 	$(DOCKER_COMPOSE) run --rm php composer test
 

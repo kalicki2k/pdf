@@ -30,12 +30,15 @@
     "test:coverage": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-text",
     "test:coverage-html": "XDEBUG_MODE=coverage phpunit -c phpunit.xml --coverage-html var/coverage",
     "cs": "php-cs-fixer fix --config=.php-cs-fixer.php --verbose",
-    "cs:check": "php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --diff --verbose"
+    "cs:check": "php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --diff --verbose",
+    "rector": "vendor/bin/rector process --config=rector.php",
+    "rector:check": "vendor/bin/rector process --dry-run --config=rector.php"
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^11.5",
-    "friendsofphp/php-cs-fixer": "^3.80"
+    "friendsofphp/php-cs-fixer": "^3.80",
+    "rector/rector": "^2.1"
   },
   "require": {
     "php": "^8.4",

@@ -713,6 +713,18 @@ PHP-CS-Fixer im Prüfmodus ausführen:
 make cs-check
 ```
 
+Rector im Prüfmodus ausführen:
+
+```bash
+make rector-check
+```
+
+Rector-Änderungen anwenden:
+
+```bash
+make rector
+```
+
 PHPUnit im Container ausführen:
 
 ```bash
