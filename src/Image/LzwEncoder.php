@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Image;
 
 use function chr;
-use function ord;
 use function strlen;
 
 final readonly class LzwEncoder

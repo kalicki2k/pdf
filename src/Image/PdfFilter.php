@@ -180,7 +180,7 @@ final readonly class PdfFilter
         )) . ']';
     }
 
-    private function pdfValue(bool|int|float|string $value): string
+    private function pdfValue(bool | int | float | string $value): string
     {
         if (is_int($value)) {
             return (string) $value;
