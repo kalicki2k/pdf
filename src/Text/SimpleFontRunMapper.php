@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
+use function array_key_first;
 use function array_map;
+use function count;
 
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\PageFont;
 
+use function spl_object_id;
+
 final readonly class SimpleFontRunMapper implements FontRunMapper
 {
+    private const MAP_CACHE_LIMIT = 64;
+
     /**
      * @var array{
      *     embeddedGlyphs: list<EmbeddedGlyph>,
@@ -41,6 +47,19 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
         ?PageFont $embeddedPageFont = null,
         bool $useHexString = false,
     ): MappedTextRun {
+        /** @var array<string, MappedTextRun> $mapCache */
+        static $mapCache = [];
+
+        $cacheKey = $this->mapCacheKey($run, $font, $options, $pdfVersion, $embeddedPageFont, $useHexString);
+
+        if (isset($mapCache[$cacheKey])) {
+            $mappedRun = $mapCache[$cacheKey];
+            unset($mapCache[$cacheKey]);
+            $mapCache[$cacheKey] = $mappedRun;
+
+            return $mappedRun;
+        }
+
         $text = $run->text();
         $codePoints = $run->codePoints();
 
@@ -60,7 +79,7 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
                 )
                 : [];
 
-            return new MappedTextRun(
+            $mappedRun = new MappedTextRun(
                 script: $run->script,
                 text: $text,
                 encodedText: $useHexString
@@ -74,9 +93,11 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
                 useHexString: $useHexString,
                 width: ($embeddedRunData['widthInDesignUnits'] / $font->metadata->unitsPerEm) * $options->fontSize,
             );
+
+            return $this->rememberMappedRun($mapCache, $cacheKey, $mappedRun);
         }
 
-        return new MappedTextRun(
+        $mappedRun = new MappedTextRun(
             script: $run->script,
             text: $text,
             encodedText: $font->encodeText($text, $pdfVersion, $options->fontEncoding),
@@ -88,6 +109,45 @@ final readonly class SimpleFontRunMapper implements FontRunMapper
             useHexString: false,
             width: $font->measureTextWidth($text, $options->fontSize),
         );
+
+        return $this->rememberMappedRun($mapCache, $cacheKey, $mappedRun);
+    }
+
+    /**
+     * @param array<string, MappedTextRun> $mapCache
+     */
+    private function rememberMappedRun(array &$mapCache, string $cacheKey, MappedTextRun $mappedRun): MappedTextRun
+    {
+        $mapCache[$cacheKey] = $mappedRun;
+
+        if (count($mapCache) > self::MAP_CACHE_LIMIT) {
+            unset($mapCache[array_key_first($mapCache)]);
+        }
+
+        return $mappedRun;
+    }
+
+    private function mapCacheKey(
+        ShapedTextRun $run,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        TextOptions $options,
+        float $pdfVersion,
+        ?PageFont $embeddedPageFont,
+        bool $useHexString,
+    ): string {
+        $fontKey = $font instanceof EmbeddedFontDefinition
+            ? 'embedded:' . spl_object_id($font)
+            : 'standard:' . $font->name;
+        $pageFontKey = $embeddedPageFont !== null ? (string) spl_object_id($embeddedPageFont) : 'none';
+        $fontEncodingKey = $options->fontEncoding !== null ? $options->fontEncoding->value : 'none';
+
+        return spl_object_id($run)
+            . "\0" . $fontKey
+            . "\0" . $options->fontSize
+            . "\0" . $pdfVersion
+            . "\0" . $fontEncodingKey
+            . "\0" . ($useHexString ? 'hex' : 'text')
+            . "\0" . $pageFontKey;
     }
 
     /**
