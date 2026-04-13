@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
-use Kalle\Pdf\Document\DocumentBuildError;
-use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\PdfACapability;
 use Kalle\Pdf\Document\Profile;
 use PHPUnit\Framework\TestCase;
@@ -85,21 +83,16 @@ final class PdfAProfileSupportTest extends TestCase
         self::assertFalse($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
     }
 
-    public function testUnsupportedPdfAProfilesRaiseACodedValidationError(): void
+    public function testPdfA4eCapabilityMatrixReflectsTheCurrentConstrainedScope(): void
     {
         $support = Profile::pdfA4e()->pdfaSupport();
 
         self::assertNotNull($support);
-
-        try {
-            $support->assertSupported();
-            self::fail('Expected DocumentValidationException for unsupported PDF/A profile.');
-        } catch (DocumentValidationException $exception) {
-            self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
-            self::assertSame(
-                'Profile PDF/A-4e is not supported yet: PDF/A-4e is blocked until optional content, RichMedia, 3D engineering annotations, PDF/A-4e-specific engineering features and the dedicated PDF 2.0 validation path are implemented.',
-                $exception->getMessage(),
-            );
-        }
+        self::assertTrue($support->isSupported);
+        self::assertTrue($support->capabilityRule(PdfACapability::LINK_ANNOTATIONS)->allowed);
+        self::assertTrue($support->capabilityRule(PdfACapability::NON_LINK_PAGE_ANNOTATIONS)->allowed);
+        self::assertTrue($support->capabilityRule(PdfACapability::ACRO_FORM_FIELDS)->allowed);
+        self::assertFalse($support->capabilityRule(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS)->allowed);
+        self::assertFalse($support->capabilityRule(PdfACapability::OUTPUT_INTENT)->allowed);
     }
 }

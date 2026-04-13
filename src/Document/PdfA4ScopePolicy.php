@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use function implode;
 use function sprintf;
 
 use InvalidArgumentException;
@@ -59,36 +58,11 @@ final class PdfA4ScopePolicy
             ));
         }
 
-        if ($profile->pdfaConformance() === null || $profile->pdfaConformance() === 'F') {
+        if ($profile->pdfaConformance() === null || $profile->pdfaConformance() === 'E' || $profile->pdfaConformance() === 'F') {
             return null;
         }
 
-        if ($profile->pdfaConformance() !== 'E') {
-            return 'this PDF/A-4 conformance variant is modeled.';
-        }
-
-        $blockedFeatureLabels = [];
-
-        if (!$this->featureRule($profile, PdfA4Feature::OPTIONAL_CONTENT)->allowed) {
-            $blockedFeatureLabels[] = 'optional content';
-        }
-
-        if (!$this->featureRule($profile, PdfA4Feature::RICH_MEDIA)->allowed) {
-            $blockedFeatureLabels[] = 'RichMedia';
-        }
-
-        if (!$this->featureRule($profile, PdfA4Feature::THREE_D_ANNOTATIONS)->allowed) {
-            $blockedFeatureLabels[] = '3D engineering annotations';
-        }
-
-        if (!$this->featureRule($profile, PdfA4Feature::ENGINEERING_FEATURES)->allowed) {
-            $blockedFeatureLabels[] = 'PDF/A-4e-specific engineering features';
-        }
-
-        return sprintf(
-            '%s and the dedicated PDF 2.0 validation path are implemented.',
-            implode(', ', $blockedFeatureLabels),
-        );
+        return 'this PDF/A-4 conformance variant is modeled.';
     }
 
     private function basePdfA4Rule(PdfA4Feature $feature): PdfA4FeatureRule

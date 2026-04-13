@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Document\Document;
-use Kalle\Pdf\Document\DocumentBuildError;
-use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\PdfA4Feature;
 use Kalle\Pdf\Document\PdfA4ScopePolicy;
 use Kalle\Pdf\Document\Profile;
@@ -19,18 +17,9 @@ final class PdfA4ScopePolicyTest extends TestCase
         self::assertNull((new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4())));
     }
 
-    public function testItRejectsPdfA4e(): void
+    public function testItAllowsPdfA4e(): void
     {
-        try {
-            new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4e()));
-            self::fail('Expected DocumentValidationException for blocked PDF/A-4e profile.');
-        } catch (DocumentValidationException $exception) {
-            self::assertSame(DocumentBuildError::PDFA_PROFILE_NOT_SUPPORTED, $exception->error);
-            self::assertSame(
-                'Profile PDF/A-4e is blocked until optional content, RichMedia, 3D engineering annotations, PDF/A-4e-specific engineering features and the dedicated PDF 2.0 validation path are implemented.',
-                $exception->getMessage(),
-            );
-        }
+        self::assertNull((new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4e())));
     }
 
     public function testItAllowsPdfA4f(): void

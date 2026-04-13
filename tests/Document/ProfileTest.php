@@ -76,20 +76,25 @@ final class ProfileTest extends TestCase
     public function testPdfA4FamilySupportMatrixIsExplicit(): void
     {
         self::assertTrue(Profile::pdfA4()->supportsCurrentPdfAImplementation());
-        self::assertFalse(Profile::pdfA4e()->supportsCurrentPdfAImplementation());
+        self::assertTrue(Profile::pdfA4e()->supportsCurrentPdfAImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4()->usesPdfAOutputIntent());
         self::assertFalse(Profile::pdfA4()->writesInfoDictionary());
         self::assertTrue(Profile::pdfA4()->writesPdfARevisionMetadata());
+        self::assertTrue(Profile::pdfA4e()->writesPdfARevisionMetadata());
         self::assertTrue(Profile::pdfA4f()->writesPdfARevisionMetadata());
         self::assertFalse(Profile::pdfA3b()->writesPdfARevisionMetadata());
         self::assertTrue(Profile::pdfA4()->supportsTransparency());
+        self::assertTrue(Profile::pdfA4e()->supportsTransparency());
         self::assertTrue(Profile::pdfA4f()->supportsTransparency());
         self::assertTrue(Profile::pdfA4()->supportsCurrentPageAnnotationsImplementation());
+        self::assertTrue(Profile::pdfA4e()->supportsCurrentPageAnnotationsImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsCurrentPageAnnotationsImplementation());
         self::assertTrue(Profile::pdfA4()->supportsCurrentTextFieldImplementation());
+        self::assertTrue(Profile::pdfA4e()->supportsCurrentTextFieldImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsCurrentTextFieldImplementation());
         self::assertFalse(Profile::pdfA4()->supportsCurrentPushButtonImplementation());
+        self::assertFalse(Profile::pdfA4e()->supportsCurrentPushButtonImplementation());
         self::assertFalse(Profile::pdfA4f()->supportsCurrentSignatureFieldImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentAssociatedFiles());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentEmbeddedFileAttachments());
@@ -97,6 +102,10 @@ final class ProfileTest extends TestCase
         self::assertSame(
             'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and the constrained AcroForm subset; attachments remain blocked.',
             Profile::pdfA4()->pdfaSupport()?->supportSummary,
+        );
+        self::assertSame(
+            'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and the constrained AcroForm subset; optional content, RichMedia, 3D and other engineering features remain blocked.',
+            Profile::pdfA4e()->pdfaSupport()?->supportSummary,
         );
         self::assertSame(
             'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and document-level associated-file attachments.',

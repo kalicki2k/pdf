@@ -567,6 +567,31 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame(2.0, $plan->fileStructure->version);
     }
 
+    public function testItBuildsConstrainedPdfA4eDocumentsWithinTheCurrentSupportedScope(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4e())
+            ->title('Engineering Archive Copy')
+            ->text(
+                'Engineering Archive Copy',
+                TextOptions::make(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+                ),
+            )
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, iterator_to_array($plan->objects)));
+
+        self::assertNull($plan->fileStructure->trailer->infoObjectId);
+        self::assertSame(2.0, $plan->fileStructure->version);
+        self::assertStringContainsString('/AcroForm ', $serialized);
+        self::assertStringContainsString('/FT /Ch', $serialized);
+        self::assertStringNotContainsString('/OutputIntents', $serialized);
+    }
+
     public function testItBuildsPdfA4LinkAnnotationsWithinTheCurrentScope(): void
     {
         $builder = new DocumentSerializationPlanBuilder();

@@ -168,6 +168,34 @@ final class DocumentRendererTest extends TestCase
         self::assertStringNotContainsString("\n/Info ", $pdf);
     }
 
+    public function testItRendersConstrainedPdfA4eDocumentsWithinTheCurrentSupportedScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4e())
+            ->title('Engineering Archive Copy')
+            ->text(
+                'Engineering Archive Copy',
+                TextOptions::make(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+                ),
+            )
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringStartsWith('%PDF-2.0', $pdf);
+        self::assertStringContainsString('<pdfaid:part>4</pdfaid:part>', $pdf);
+        self::assertStringContainsString('<pdfaid:rev>2020</pdfaid:rev>', $pdf);
+        self::assertStringContainsString('<pdfaid:conformance>E</pdfaid:conformance>', $pdf);
+        self::assertStringNotContainsString('/OutputIntents', $pdf);
+        self::assertStringNotContainsString("\n/Info ", $pdf);
+    }
+
     public function testItRendersPdfA4fDocumentsWithDocumentLevelAssociatedFiles(): void
     {
         $document = DefaultDocumentBuilder::make()

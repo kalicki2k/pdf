@@ -62,6 +62,23 @@ final class PdfA4PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/AP << /N ', $serialized);
     }
 
+    public function testItAllowsPdfA4eTextAnnotationsWithinTheCurrentScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4e())
+            ->title('Engineering Archive Copy')
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/Subtype /Text', $serialized);
+        self::assertStringContainsString('/AP << /N ', $serialized);
+    }
+
     public function testItAllowsPdfA4ChoiceFieldsWithinTheCurrentScope(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -98,6 +115,25 @@ final class PdfA4PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/AcroForm ', $serialized);
         self::assertStringContainsString('/FT /Tx', $serialized);
         self::assertStringContainsString('/FT /Btn', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
+    }
+
+    public function testItAllowsPdfA4eChoiceFieldsWithinTheCurrentScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4e())
+            ->title('Engineering Archive Copy')
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->listBox('skills', 40, 450, 120, 48, ['cad' => 'CAD', 'pdf' => 'PDF'], ['cad'], 'Skills')
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/AcroForm ', $serialized);
+        self::assertStringContainsString('/FT /Ch', $serialized);
         self::assertStringNotContainsString('/Helv', $serialized);
     }
 

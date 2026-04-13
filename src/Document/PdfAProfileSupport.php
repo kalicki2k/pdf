@@ -247,21 +247,32 @@ final readonly class PdfAProfileSupport
             ),
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
-                false,
-                'PDF/A-4e is blocked until ' . self::pdfA4ScopePolicy()->blockedSelectionReason(Profile::pdfA4e()),
-                self::baseCapabilityRules(
+                true,
+                'Supported for the current constrained PDF/A-4e scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and the constrained AcroForm subset; optional content, RichMedia, 3D and other engineering features remain blocked.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: false,
                     outputIntent: false,
                     infoDictionary: false,
-                    linkAnnotations: false,
-                    nonLinkPageAnnotations: false,
-                    acroFormFields: false,
+                    linkAnnotations: true,
+                    nonLinkPageAnnotations: true,
+                    acroFormFields: true,
                     documentAssociatedFiles: false,
                     documentEmbeddedAttachments: false,
-                    transparency: false,
-                ),
+                    transparency: true,
+                ), [
+                    PdfACapability::NON_LINK_PAGE_ANNOTATIONS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text, Highlight and FreeText annotations are allowed within the currently validated PDF/A-4e scope; popup-related objects, file-attachment annotations and engineering-specific page annotations remain blocked.',
+                    ),
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-4e form scope; push buttons, signature fields and engineering-specific interactive features remain blocked.',
+                    ),
+                ]),
             ),
             'PDF/A-4f' => new self(
                 'PDF/A-4f',
@@ -299,14 +310,6 @@ final readonly class PdfAProfileSupport
                 [],
             ),
         };
-    }
-
-    private static function pdfA4ScopePolicy(): PdfA4ScopePolicy
-    {
-        /** @var PdfA4ScopePolicy|null $policy */
-        static $policy;
-
-        return $policy ??= new PdfA4ScopePolicy();
     }
 
     /**
