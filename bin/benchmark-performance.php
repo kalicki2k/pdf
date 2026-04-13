@@ -18,6 +18,8 @@ use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Writer\Renderer;
 use Kalle\Pdf\Writer\StringOutput;
 final class PerformanceBenchmark
@@ -35,6 +37,7 @@ final class PerformanceBenchmark
             'medium' => fn (): Document => $this->buildMediumDocument(),
             'large' => fn (): Document => $this->buildLargeDocument(),
             'text-heavy' => fn (): Document => $this->buildTextHeavyDocument(),
+            'content-heavy' => fn (): Document => $this->buildContentHeavyDocument(),
             'many-objects' => fn (): Document => $this->buildManyObjectsDocument(),
             'images' => fn (): Document => $this->buildImagesDocument(),
             'forms' => fn (): Document => $this->buildFormsDocument(),
@@ -266,6 +269,33 @@ final class PerformanceBenchmark
         return $builder->build();
     }
 
+    private function buildContentHeavyDocument(): Document
+    {
+        $font = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/noto-sans/NotoSans-Regular.ttf');
+        $builder = DefaultDocumentBuilder::make()
+            ->title('Content-heavy document')
+            ->pageSize(PageSize::A4())
+            ->margin(Margin::all(Units::mm(16)));
+
+        for ($page = 1; $page <= 10; ++$page) {
+            if ($page > 1) {
+                $builder = $builder->newPage();
+            }
+
+            for ($paragraph = 0; $paragraph < 18; ++$paragraph) {
+                $builder = $builder->text($this->contentHeavySegments($paragraph), new TextOptions(
+                    width: 490,
+                    embeddedFont: $font,
+                    fontSize: 10.5,
+                    lineHeight: 14.5,
+                    spacingAfter: 4,
+                ));
+            }
+        }
+
+        return $builder->build();
+    }
+
     private function buildManyObjectsDocument(): Document
     {
         $builder = DefaultDocumentBuilder::make()
@@ -416,6 +446,40 @@ final class PerformanceBenchmark
         }
 
         return $builder->build();
+    }
+
+    /**
+     * @return list<TextSegment>
+     */
+    private function contentHeavySegments(int $paragraph): array
+    {
+        $segments = [];
+
+        for ($index = 0; $index < 24; ++$index) {
+            $segments[] = TextSegment::plain('Section ' . $paragraph . '-' . $index . ' ');
+            $segments[] = TextSegment::link(
+                'docs',
+                TextLink::externalUrl(
+                    'https://example.com/docs/' . $paragraph . '/' . $index,
+                    'Open docs',
+                    'Open documentation',
+                    'docs-' . $paragraph . '-' . $index,
+                ),
+            );
+            $segments[] = TextSegment::plain(' and ');
+            $segments[] = TextSegment::link(
+                'api',
+                TextLink::externalUrl(
+                    'https://example.com/api/' . $paragraph . '/' . $index,
+                    'Open api',
+                    'Open API',
+                    'api-' . $paragraph . '-' . $index,
+                ),
+            );
+            $segments[] = TextSegment::plain(' for rollout. ');
+        }
+
+        return $segments;
     }
 
     private function elapsedMs(int $startedAt): float

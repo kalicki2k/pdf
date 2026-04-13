@@ -8,6 +8,7 @@ use function implode;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
+use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 
@@ -20,6 +21,11 @@ use function strlen;
 
 final readonly class TextBlockBuilder
 {
+    public function __construct(
+        private ?Debugger $debugger = null,
+    ) {
+    }
+
     /**
      * @param list<?string> $glyphNames
      * @param list<int> $textAdjustments
@@ -37,6 +43,12 @@ final readonly class TextBlockBuilder
         array $positionedFragments = [],
         bool $useHexString = false,
     ): string {
+        $scope = ($this->debugger ?? Debugger::disabled())->startPerformanceScope('text.content.block', [
+            'glyph_name_count' => count($glyphNames),
+            'adjustment_count' => count($textAdjustments),
+            'fragment_count' => count($positionedFragments),
+            'use_hex_string' => $useHexString ? 1 : 0,
+        ]);
         $lines = [
             'BT',
         ];
@@ -53,7 +65,13 @@ final readonly class TextBlockBuilder
                 'ET',
             ];
 
-            return implode("\n", $lines);
+            $result = implode("\n", $lines);
+            $scope->stop([
+                'content_length' => strlen($result),
+                'mode' => 'fragments',
+            ]);
+
+            return $result;
         }
 
         $lines = [
@@ -64,7 +82,13 @@ final readonly class TextBlockBuilder
             'ET',
         ];
 
-        return implode("\n", $lines);
+        $result = implode("\n", $lines);
+        $scope->stop([
+            'content_length' => strlen($result),
+            'mode' => 'inline',
+        ]);
+
+        return $result;
     }
 
     private function buildFillColorOperator(Color $color): string

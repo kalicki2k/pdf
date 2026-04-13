@@ -2880,6 +2880,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $fontRunMapper = $this->fontRunMapper();
         $textShaper = $this->textShaper();
         $textBlockBuilder = $this->textBlockBuilder();
+        $defaultSegmentFont = $options->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
+            : StandardFontDefinition::from($options->fontName);
+        /** @var array<string, array{runs: list<ShapedTextRun>, renderState: array{fontAlias: string, embeddedPageFont: ?PageFont, useHexString: bool}}> $defaultSegmentCache */
+        $defaultSegmentCache = [];
+        $scope = $this->debugger()->startPerformanceScope('text.content.segments', [
+            'line_count' => count($wrappedSegmentLines),
+        ]);
 
         foreach ($wrappedSegmentLines as $index => $lineSegments) {
             if ($lineSegments === []) {
@@ -2892,23 +2900,48 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $lineBaseX = $textFlow->lineX($x, $options, $isFirstLineOfParagraph);
             /** @var list<array{mappedRun: MappedTextRun, link: LinkTarget|TextLink|null, options: TextOptions, font: StandardFontDefinition|EmbeddedFontDefinition, fontAlias: string}> $lineEntries */
             $lineEntries = [];
+            $segmentScope = $this->debugger()->startPerformanceScope('text.content.segments.segment_runs', [
+                'segment_count' => count($lineSegments),
+            ]);
 
             foreach ($lineSegments as $segment) {
                 if ($segment->text === '') {
                     continue;
                 }
 
-                $segmentOptions = $this->textOptionsForSegment($options, $segment);
-                $segmentFont = $segmentOptions->embeddedFont !== null
-                    ? EmbeddedFontDefinition::fromSource($segmentOptions->embeddedFont)
-                    : StandardFontDefinition::from($segmentOptions->fontName);
-                $segmentRuns = $textShaper->shape($segment->text, $segmentOptions->baseDirection, $segmentFont);
-                $segmentRenderState = $this->prepareTextRenderState(
-                    $segment->text,
-                    $segmentOptions,
-                    $segmentFont,
-                    [$segmentRuns],
-                );
+                if ($segment->options === null) {
+                    $segmentOptions = $options;
+                    $segmentFont = $defaultSegmentFont;
+                    $cacheKey = $segment->text . "\0" . $segmentOptions->baseDirection->value;
+
+                    if (!isset($defaultSegmentCache[$cacheKey])) {
+                        $segmentRuns = $textShaper->shape($segment->text, $segmentOptions->baseDirection, $segmentFont);
+                        $defaultSegmentCache[$cacheKey] = [
+                            'runs' => $segmentRuns,
+                            'renderState' => $this->prepareTextRenderState(
+                                $segment->text,
+                                $segmentOptions,
+                                $segmentFont,
+                                [$segmentRuns],
+                            ),
+                        ];
+                    }
+
+                    $segmentRuns = $defaultSegmentCache[$cacheKey]['runs'];
+                    $segmentRenderState = $defaultSegmentCache[$cacheKey]['renderState'];
+                } else {
+                    $segmentOptions = $this->textOptionsForSegment($options, $segment);
+                    $segmentFont = $segmentOptions->embeddedFont !== null
+                        ? EmbeddedFontDefinition::fromSource($segmentOptions->embeddedFont)
+                        : StandardFontDefinition::from($segmentOptions->fontName);
+                    $segmentRuns = $textShaper->shape($segment->text, $segmentOptions->baseDirection, $segmentFont);
+                    $segmentRenderState = $this->prepareTextRenderState(
+                        $segment->text,
+                        $segmentOptions,
+                        $segmentFont,
+                        [$segmentRuns],
+                    );
+                }
 
                 foreach ($segmentRuns as $run) {
                     $mappedRun = $fontRunMapper->map(
@@ -2926,13 +2959,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
                     $lineEntries[] = [
                         'mappedRun' => $mappedRun,
-                        'link' => $segmentOptions->link,
+                        'link' => $segment->link,
                         'options' => $segmentOptions,
                         'font' => $segmentFont,
                         'fontAlias' => $segmentRenderState['fontAlias'],
                     ];
                 }
             }
+
+            $segmentScope->stop([
+                'entry_count' => count($lineEntries),
+            ]);
 
             if ($lineEntries === []) {
                 continue;
@@ -2961,6 +2998,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             $renderedEntries = [];
+            $renderScope = $this->debugger()->startPerformanceScope('text.content.segments.line_render', [
+                'entry_count' => count($lineEntries),
+            ]);
 
             foreach ($lineEntries as $lineEntry) {
                 /** @var array{mappedRun: MappedTextRun, link: LinkTarget|TextLink|null, options: TextOptions, font: StandardFontDefinition|EmbeddedFontDefinition, fontAlias: string} $lineEntry */
@@ -2996,7 +3036,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $runX += $mappedRun->width;
             }
 
+            $renderScope->stop([
+                'rendered_entry_count' => count($renderedEntries),
+            ]);
+
+            $mergeScope = $this->debugger()->startPerformanceScope('text.content.segments.merge', [
+                'entry_count' => count($renderedEntries),
+            ]);
             $mergedRenderedEntries = $this->mergeRenderedSegmentEntries($renderedEntries);
+            $mergeScope->stop([
+                'merged_entry_count' => count($mergedRenderedEntries),
+            ]);
             $lastLinkedGroupOnLine = null;
 
             foreach ($mergedRenderedEntries as $renderedEntryIndex => $renderedEntry) {
@@ -3045,6 +3095,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
         } elseif ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
             $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
         }
+
+        $scope->stop([
+            'line_count' => count($wrappedSegmentLines),
+            'annotation_count' => count($annotations),
+            'content_length' => strlen($contentsString),
+        ]);
 
         return [
             'contents' => $contentsString,
@@ -3366,6 +3422,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $ascent,
         ?string $taggedGroupKey = null,
     ): array {
+        $scope = $this->debugger()->startPerformanceScope('text.content.link', [
+            'width' => round($width, 3),
+            'has_tagged_group' => $taggedGroupKey !== null ? 1 : 0,
+        ]);
         $markedContentId = $this->requiresTaggedLinkAnnotations()
             ? $this->nextMarkedContentId()
             : null;
@@ -3378,7 +3438,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ]);
         }
 
-        return [
+        $result = [
             'contents' => $textBlockContent,
             'annotation' => new LinkAnnotation(
                 target: $link,
@@ -3392,6 +3452,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 taggedGroupKey: $taggedGroupKey,
             ),
         ];
+
+        $scope->stop([
+            'content_length' => strlen($textBlockContent),
+            'has_marked_content_id' => $markedContentId !== null ? 1 : 0,
+        ]);
+
+        return $result;
     }
 
     private function textOptionsWithLink(TextOptions $options, LinkTarget | TextLink | null $link): TextOptions
@@ -5074,6 +5141,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function textBlockBuilder(): TextBlockBuilder
     {
+        if ($this->debugConfig !== null) {
+            return new TextBlockBuilder($this->debugger());
+        }
+
         /** @var TextBlockBuilder|null $builder */
         static $builder = null;
 

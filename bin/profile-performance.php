@@ -16,6 +16,8 @@ use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Writer\StringOutput;
 
 final class PerformanceProfiler
@@ -27,6 +29,7 @@ final class PerformanceProfiler
     {
         return [
             'text-heavy' => fn (InMemoryDebugSink $sink): Document => $this->buildTextHeavyDocument($sink),
+            'content-heavy' => fn (InMemoryDebugSink $sink): Document => $this->buildContentHeavyDocument($sink),
             'pdfa' => fn (InMemoryDebugSink $sink): Document => $this->buildPdfaDocument($sink),
         ];
     }
@@ -137,11 +140,73 @@ final class PerformanceProfiler
         return $builder->build();
     }
 
+    private function buildContentHeavyDocument(InMemoryDebugSink $sink): Document
+    {
+        $font = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/noto-sans/NotoSans-Regular.ttf');
+        $builder = DefaultDocumentBuilder::make()
+            ->debug(DebugConfig::make()->logPerformance(LogLevel::Info)->sink($sink))
+            ->title('Content-heavy document')
+            ->pageSize(PageSize::A4())
+            ->margin(Margin::all(Units::mm(16)));
+
+        for ($page = 1; $page <= 10; ++$page) {
+            if ($page > 1) {
+                $builder = $builder->newPage();
+            }
+
+            for ($paragraph = 0; $paragraph < 18; ++$paragraph) {
+                $builder = $builder->text($this->contentHeavySegments($paragraph), new TextOptions(
+                    width: 490,
+                    embeddedFont: $font,
+                    fontSize: 10.5,
+                    lineHeight: 14.5,
+                    spacingAfter: 4,
+                ));
+            }
+        }
+
+        return $builder->build();
+    }
+
     private function lorem(int $sentences): string
     {
         $parts = array_fill(0, $sentences, 'Structured PDF output benefits from deterministic layout, stable object graphs and predictable serialization costs.');
 
         return implode(' ', $parts);
+    }
+
+    /**
+     * @return list<TextSegment>
+     */
+    private function contentHeavySegments(int $paragraph): array
+    {
+        $segments = [];
+
+        for ($index = 0; $index < 24; ++$index) {
+            $segments[] = TextSegment::plain('Section ' . $paragraph . '-' . $index . ' ');
+            $segments[] = TextSegment::link(
+                'docs',
+                TextLink::externalUrl(
+                    'https://example.com/docs/' . $paragraph . '/' . $index,
+                    'Open docs',
+                    'Open documentation',
+                    'docs-' . $paragraph . '-' . $index,
+                ),
+            );
+            $segments[] = TextSegment::plain(' and ');
+            $segments[] = TextSegment::link(
+                'api',
+                TextLink::externalUrl(
+                    'https://example.com/api/' . $paragraph . '/' . $index,
+                    'Open api',
+                    'Open API',
+                    'api-' . $paragraph . '-' . $index,
+                ),
+            );
+            $segments[] = TextSegment::plain(' for rollout. ');
+        }
+
+        return $segments;
     }
 
     private function elapsedMs(int $startedAt): float
