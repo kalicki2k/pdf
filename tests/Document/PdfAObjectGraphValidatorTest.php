@@ -32,8 +32,10 @@ use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\RichMediaAnnotation;
 use Kalle\Pdf\Page\RichMediaAssetType;
+use Kalle\Pdf\Page\RichMediaPresentationStyle;
 use Kalle\Pdf\Page\ThreeDAnnotation;
 use Kalle\Pdf\Page\ThreeDAssetType;
+use Kalle\Pdf\Page\ThreeDViewPreset;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
@@ -778,6 +780,41 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
+    public function testItRejectsPdfA4eThreeDAnnotationsWithUnexpectedViewPreset(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering 3D',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    annotations: [
+                        new ThreeDAnnotation(40, 500, 160, 90, 'u3d-data', ThreeDAssetType::U3D, '3D model', null, ThreeDViewPreset::EXPLODED),
+                    ],
+                ),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+        $annotationObjectId = $state->pageAnnotationObjectIds[0][0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($annotationObjectId): IndirectObject {
+                if ($object->objectId !== $annotationObjectId) {
+                    return $object;
+                }
+
+                return IndirectObject::plain($object->objectId, str_replace('/3DV /Exploded', '/3DV /Broken', $object->contents));
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e requires 3D annotation 1 on page 1 to serialize the constrained /3DV /Exploded view preset.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
     public function testItRejectsPdfA4eRichMediaAnnotationsWithUnsupportedRichMediaWiring(): void
     {
         $document = new Document(
@@ -818,6 +855,52 @@ final class PdfAObjectGraphValidatorTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Profile PDF/A-4e only allows the current constrained RichMedia annotation subset on page 1; additional /RichMediaInstance wiring remains blocked.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4eRichMediaAnnotationsWithUnexpectedPresentationStyle(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Media',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    annotations: [
+                        new RichMediaAnnotation(
+                            40,
+                            500,
+                            160,
+                            90,
+                            'demo.mp4',
+                            new EmbeddedFile('demo-video', 'video/mp4'),
+                            RichMediaAssetType::VIDEO,
+                            'Demo video',
+                            null,
+                            RichMediaPresentationStyle::WINDOWED,
+                        ),
+                    ],
+                ),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+        $settingsObjectId = $state->pageAnnotationRelatedObjectIds[0][0][3];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($settingsObjectId): IndirectObject {
+                if ($object->objectId !== $settingsObjectId) {
+                    return $object;
+                }
+
+                return IndirectObject::plain($object->objectId, str_replace('/Style /Windowed', '/Style /Fullscreen', $object->contents));
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e requires RichMedia annotation 1 on page 1 to serialize the constrained /Activation /Presentation style /Windowed and /Deactivation /Condition /XD.');
 
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }

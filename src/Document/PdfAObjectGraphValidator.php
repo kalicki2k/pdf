@@ -646,7 +646,7 @@ final class PdfAObjectGraphValidator
                     ),
                 );
 
-                $this->assertPdfAAnnotationObject($document, $annotation, $annotationObject, $pageIndex, $annotationIndex);
+                $this->assertPdfAAnnotationObject($document, $state, $objectsById, $annotation, $annotationObject, $pageIndex, $annotationIndex);
 
                 if (!$this->pdfAAnnotationAppearancePolicy->requiresAppearanceStream($document, $annotation)) {
                     continue;
@@ -693,8 +693,13 @@ final class PdfAObjectGraphValidator
         }
     }
 
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
     private function assertPdfAAnnotationObject(
         Document $document,
+        DocumentSerializationPlanBuildState $state,
+        array $objectsById,
         object $annotation,
         IndirectObject $annotationObject,
         int $pageIndex,
@@ -737,6 +742,8 @@ final class PdfAObjectGraphValidator
             if ($annotation instanceof RichMediaAnnotation) {
                 $this->assertPdfA4RichMediaAnnotationObject(
                     $document,
+                    $state,
+                    $objectsById,
                     $annotation,
                     $annotationObject,
                     $pageIndex,
@@ -1144,8 +1151,13 @@ final class PdfAObjectGraphValidator
         }
     }
 
+    /**
+     * @param array<int, IndirectObject> $objectsById
+     */
     private function assertPdfA4RichMediaAnnotationObject(
         Document $document,
+        DocumentSerializationPlanBuildState $state,
+        array $objectsById,
         RichMediaAnnotation $annotation,
         IndirectObject $annotationObject,
         int $pageIndex,
@@ -1166,6 +1178,29 @@ final class PdfAObjectGraphValidator
                 $document->profile->name(),
                 $annotationIndex + 1,
                 $pageIndex + 1,
+            ));
+        }
+
+        $settingsObjectId = $state->pageAnnotationRelatedObjectIds[$pageIndex][$annotationIndex][3] ?? null;
+        $settingsObject = $settingsObjectId === null
+            ? null
+            : $this->assertObjectExists(
+                $objectsById,
+                $settingsObjectId,
+                sprintf('RichMedia settings for annotation %d on page %d', $annotationIndex + 1, $pageIndex + 1),
+            );
+
+        if (
+            $settingsObject === null
+            || !str_contains($settingsObject->contents, '/Activation << /Condition /XA /Presentation << /Style /' . $annotation->presentationStyle->value . ' >> >>')
+            || !str_contains($settingsObject->contents, '/Deactivation << /Condition /XD >>')
+        ) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s requires RichMedia annotation %d on page %d to serialize the constrained /Activation /Presentation style /%s and /Deactivation /Condition /XD.',
+                $document->profile->name(),
+                $annotationIndex + 1,
+                $pageIndex + 1,
+                $annotation->presentationStyle->value,
             ));
         }
 
@@ -1194,6 +1229,16 @@ final class PdfAObjectGraphValidator
                 $document->profile->name(),
                 $annotationIndex + 1,
                 $pageIndex + 1,
+            ));
+        }
+
+        if (!str_contains($annotationObject->contents, '/3DV /' . $annotation->viewPreset->value)) {
+            throw new DocumentValidationException(DocumentBuildError::PDFA4_ENGINEERING_FEATURE_NOT_ALLOWED, sprintf(
+                'Profile %s requires 3D annotation %d on page %d to serialize the constrained /3DV /%s view preset.',
+                $document->profile->name(),
+                $annotationIndex + 1,
+                $pageIndex + 1,
+                $annotation->viewPreset->value,
             ));
         }
 

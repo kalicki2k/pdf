@@ -25,6 +25,7 @@ final readonly class RichMediaAnnotation implements AppearanceStreamAnnotation, 
         public RichMediaAssetType $assetType = RichMediaAssetType::VIDEO,
         public ?string $contents = null,
         public ?int $structParentId = null,
+        public RichMediaPresentationStyle $presentationStyle = RichMediaPresentationStyle::EMBEDDED,
     ) {
         if ($this->width <= 0.0) {
             throw new InvalidArgumentException('RichMedia annotation width must be greater than zero.');
@@ -55,6 +56,7 @@ final readonly class RichMediaAnnotation implements AppearanceStreamAnnotation, 
             assetType: $this->assetType,
             contents: $this->contents,
             structParentId: $structParentId,
+            presentationStyle: $this->presentationStyle,
         );
     }
 
@@ -183,7 +185,7 @@ final readonly class RichMediaAnnotation implements AppearanceStreamAnnotation, 
 
     private function richMediaSettingsDictionary(): string
     {
-        return '<< /Activation << /Condition /XA /Presentation << /Style /Embedded >> >>'
+        return '<< /Activation << /Condition /XA /Presentation << /Style /' . $this->presentationStyle->value . ' >> >>'
             . ' /Deactivation << /Condition /XD >> >>';
     }
 }

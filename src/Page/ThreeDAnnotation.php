@@ -23,6 +23,7 @@ final readonly class ThreeDAnnotation implements AppearanceStreamAnnotation, Pag
         public ThreeDAssetType $assetType = ThreeDAssetType::U3D,
         public ?string $contents = null,
         public ?int $structParentId = null,
+        public ThreeDViewPreset $viewPreset = ThreeDViewPreset::DEFAULT,
     ) {
         if ($this->width <= 0.0) {
             throw new InvalidArgumentException('3D annotation width must be greater than zero.');
@@ -48,6 +49,7 @@ final readonly class ThreeDAnnotation implements AppearanceStreamAnnotation, Pag
             assetType: $this->assetType,
             contents: $this->contents,
             structParentId: $structParentId,
+            viewPreset: $this->viewPreset,
         );
     }
 
@@ -59,7 +61,7 @@ final readonly class ThreeDAnnotation implements AppearanceStreamAnnotation, Pag
             '/Rect ' . $this->rect($this->x, $this->y, $this->width, $this->height),
             '/P ' . $context->pageObjectId . ' 0 R',
             '/3DD ' . $context->relatedObjectId(0) . ' 0 R',
-            '/3DV /Default',
+            '/3DV /' . $this->viewPreset->value,
         ];
 
         $structParentId = $this->structParentId ?? $context->structParentId;
