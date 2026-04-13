@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
+use function array_key_first;
+use function count;
+
 use Kalle\Pdf\Debug\Debugger;
+
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 
+use function spl_object_id;
+use function strlen;
+
 final readonly class SimpleTextShaper implements TextShaper
 {
+    private const SHAPE_CACHE_LIMIT = 16;
+
     /**
      * @var list<ScriptTextShaper>
      */
@@ -41,6 +50,20 @@ final readonly class SimpleTextShaper implements TextShaper
         TextDirection $baseDirection = TextDirection::LTR,
         StandardFontDefinition | EmbeddedFontDefinition | null $font = null,
     ): array {
+        /** @var array<string, list<ShapedTextRun>> $shapeCache */
+        static $shapeCache = [];
+
+        $cacheKey = $this->shapeCacheKey($text, $baseDirection, $font);
+
+        if (isset($shapeCache[$cacheKey])) {
+            /** @var list<ShapedTextRun> $cachedRuns */
+            $cachedRuns = $shapeCache[$cacheKey];
+            unset($shapeCache[$cacheKey]);
+            $shapeCache[$cacheKey] = $cachedRuns;
+
+            return $cachedRuns;
+        }
+
         $debugger = $this->debugger ?? Debugger::disabled();
         $resolveScope = $debugger->startPerformanceScope('text.shape.resolve', [
             'text_length' => strlen($text),
@@ -50,6 +73,7 @@ final readonly class SimpleTextShaper implements TextShaper
             'text_length' => strlen($text),
             'run_count' => count($scriptRuns),
         ]);
+        /** @var list<ShapedTextRun> $runs */
         $runs = [];
 
         foreach ($scriptRuns as $run) {
@@ -64,7 +88,28 @@ final readonly class SimpleTextShaper implements TextShaper
             ]);
         }
 
+        $shapeCache[$cacheKey] = $runs;
+
+        if (count($shapeCache) > self::SHAPE_CACHE_LIMIT) {
+            $oldestKey = array_key_first($shapeCache);
+            unset($shapeCache[$oldestKey]);
+        }
+
         return $runs;
+    }
+
+    private function shapeCacheKey(
+        string $text,
+        TextDirection $baseDirection,
+        StandardFontDefinition | EmbeddedFontDefinition | null $font,
+    ): string {
+        $fontKey = match (true) {
+            $font instanceof StandardFontDefinition => 'standard:' . $font->name,
+            $font instanceof EmbeddedFontDefinition => 'embedded:' . spl_object_id($font),
+            default => 'none',
+        };
+
+        return $baseDirection->value . "\0" . $fontKey . "\0" . $text;
     }
 
     private function scriptTextShaperFor(TextScript $script): ScriptTextShaper
