@@ -156,7 +156,12 @@ final class PdfA4PolicyMatrixTest extends TestCase
 
     public function testItRejectsPdfA4fPageLevelFileAttachmentAnnotations(): void
     {
-        $document = DefaultDocumentBuilder::make()
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-4f does not allow page-level file attachment annotations in the current PDF/A-4 scope. Use document-level associated files instead.',
+        );
+
+        DefaultDocumentBuilder::make()
             ->profile(Profile::pdfA4f())
             ->title('Archive Copy')
             ->fileAttachmentAnnotation(
@@ -169,15 +174,47 @@ final class PdfA4PolicyMatrixTest extends TestCase
                 null,
                 'Graph',
                 'Anhang',
-            )
+            );
+    }
+
+    public function testItRejectsPdfA4ePopupRelatedObjects(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4e())
+            ->title('Engineering Archive Copy')
+            ->textAnnotation(40, 500, 18, 18, 'Kommentar', 'QA', 'Comment', true)
+            ->popupAnnotation(70, 520, 120, 60, true)
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-4f does not allow page-level file attachment annotations in the current PDF/A-4 scope. Use document-level associated files instead.',
+            'Profile PDF/A-4e does not allow popup related objects in the current constrained PDF/A-4e scope for page annotation 1 on page 1.',
         );
 
         new DocumentSerializationPlanBuilder()->build($document);
+    }
+
+    public function testItRejectsPdfA4ePageLevelFileAttachmentAnnotations(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-4e does not allow page-level file attachment annotations in the current constrained PDF/A-4e scope. Use document-level associated files instead.',
+        );
+
+        DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4e())
+            ->title('Engineering Archive Copy')
+            ->fileAttachmentAnnotation(
+                'demo.txt',
+                new EmbeddedFile('hello', 'text/plain'),
+                40,
+                500,
+                12,
+                14,
+                null,
+                'Graph',
+                'Anhang',
+            );
     }
 
     public function testItRejectsPdfA4SquareAnnotationsOutsideTheCurrentSubset(): void
@@ -223,6 +260,22 @@ final class PdfA4PolicyMatrixTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             'Profile PDF/A-4f only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-4 form policy.',
+        );
+
+        new DocumentSerializationPlanBuilder()->build($document);
+    }
+
+    public function testItRejectsPdfA4ePushButtonsOutsideTheCurrentFormSubset(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4e())
+            ->title('Engineering Archive Copy')
+            ->pushButton('ack', 'Acknowledge', 40, 500, 120, 18, 'Acknowledge')
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-4e only allows text fields, checkboxes, radio buttons and choice fields in the current constrained PDF/A-4e form policy.',
         );
 
         new DocumentSerializationPlanBuilder()->build($document);

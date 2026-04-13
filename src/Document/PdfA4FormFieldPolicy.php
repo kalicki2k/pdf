@@ -27,8 +27,11 @@ final class PdfA4FormFieldPolicy
     public function violationMessage(Profile $profile): string
     {
         return sprintf(
-            'Profile %s only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-4 form policy.',
+            'Profile %s only allows text fields, checkboxes, radio buttons and choice fields in the %s.',
             $profile->name(),
+            $profile->pdfaConformance() === 'E'
+                ? 'current constrained PDF/A-4e form policy'
+                : 'current PDF/A-4 form policy',
         );
     }
 }

@@ -39,17 +39,21 @@ final class PdfA4AnnotationScopePolicy
             return;
         }
 
+        $scopeLabel = $this->scopeLabel($document->profile);
+
         if ($annotation instanceof FileAttachmentAnnotation) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_EMBEDDED_ATTACHMENTS_NOT_ALLOWED, sprintf(
-                'Profile %s does not allow page-level file attachment annotations in the current PDF/A-4 scope. Use document-level associated files instead.',
+                'Profile %s does not allow page-level file attachment annotations in the %s. Use document-level associated files instead.',
                 $document->profile->name(),
+                $scopeLabel,
             ));
         }
 
         if ($this->usesPopup($annotation)) {
             throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
-                'Profile %s does not allow popup related objects in the current PDF/A-4 scope for page annotation %d on page %d.',
+                'Profile %s does not allow popup related objects in the %s for page annotation %d on page %d.',
                 $document->profile->name(),
+                $scopeLabel,
                 $annotationIndex + 1,
                 $pageIndex + 1,
             ));
@@ -60,8 +64,9 @@ final class PdfA4AnnotationScopePolicy
         }
 
         throw new DocumentValidationException(DocumentBuildError::PDFA_OBJECT_GRAPH_INVALID, sprintf(
-            'Profile %s only allows Link, Text, Highlight and FreeText annotations in the current PDF/A-4 scope on page %d.',
+            'Profile %s only allows Link, Text, Highlight and FreeText annotations in the %s on page %d.',
             $document->profile->name(),
+            $scopeLabel,
             $pageIndex + 1,
         ));
     }
@@ -71,5 +76,12 @@ final class PdfA4AnnotationScopePolicy
         return $annotation instanceof SupportsPopupAnnotation
             && $annotation instanceof RelatedObjectsPageAnnotation
             && $annotation->relatedObjectCount() > 0;
+    }
+
+    private function scopeLabel(Profile $profile): string
+    {
+        return $profile->pdfaConformance() === 'E'
+            ? 'current constrained PDF/A-4e scope'
+            : 'current PDF/A-4 scope';
     }
 }

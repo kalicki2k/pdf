@@ -2100,11 +2100,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
         FileAttachmentAnnotationOptions $options,
     ): self {
         $clone = clone $this;
+        $profile = $clone->profileOrDefault();
 
-        if (!$clone->profileOrDefault()->supportsEmbeddedFileAttachments()) {
+        if ($profile->isPdfA4()) {
+            throw new InvalidArgumentException(sprintf(
+                'Profile %s does not allow page-level file attachment annotations in the %s. Use document-level associated files instead.',
+                $profile->name(),
+                $profile->pdfaConformance() === 'E'
+                    ? 'current constrained PDF/A-4e scope'
+                    : 'current PDF/A-4 scope',
+            ));
+        }
+
+        if (!$profile->supportsEmbeddedFileAttachments()) {
             throw new InvalidArgumentException(sprintf(
                 'Profile %s does not allow embedded file attachments.',
-                $clone->profileOrDefault()->name(),
+                $profile->name(),
             ));
         }
 
