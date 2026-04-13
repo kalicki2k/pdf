@@ -37,6 +37,7 @@ final readonly class DocumentSerializationPlanValidator
         private PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
         private PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
         private PdfA23ScopePolicy $pdfA23ScopePolicy = new PdfA23ScopePolicy(),
+        private PdfA4AnnotationScopePolicy $pdfA4AnnotationScopePolicy = new PdfA4AnnotationScopePolicy(),
         private PdfA4ScopePolicy $pdfA4ScopePolicy = new PdfA4ScopePolicy(),
     ) {
     }
@@ -137,6 +138,7 @@ final readonly class DocumentSerializationPlanValidator
                 }
 
                 $this->pdfA23ScopePolicy->assertPageAnnotationAllowed($document, $annotation, $pageIndex, $annotationIndex);
+                $this->pdfA4AnnotationScopePolicy->assertPageAnnotationAllowed($document, $annotation, $pageIndex, $annotationIndex);
 
                 if (
                     $document->profile->requiresAnnotationAppearanceStreams()

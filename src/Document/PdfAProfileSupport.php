@@ -195,20 +195,26 @@ final readonly class PdfAProfileSupport
             'PDF/A-4' => new self(
                 'PDF/A-4',
                 true,
-                'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and link annotations; forms, general page annotations and attachments remain blocked.',
-                self::baseCapabilityRules(
+                'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and the explicit Link/Text/Highlight/FreeText annotation subset; forms and attachments remain blocked.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: false,
                     outputIntent: false,
                     infoDictionary: false,
                     linkAnnotations: true,
-                    nonLinkPageAnnotations: false,
+                    nonLinkPageAnnotations: true,
                     acroFormFields: false,
                     documentAssociatedFiles: false,
                     documentEmbeddedAttachments: false,
                     transparency: true,
-                ),
+                ), [
+                    PdfACapability::NON_LINK_PAGE_ANNOTATIONS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text, Highlight and FreeText annotations are allowed within the currently validated PDF/A-4 scope; popup-related objects, file-attachment annotations and other page annotations remain blocked.',
+                    ),
+                ]),
             ),
             'PDF/A-4e' => new self(
                 'PDF/A-4e',
@@ -231,20 +237,26 @@ final readonly class PdfAProfileSupport
             'PDF/A-4f' => new self(
                 'PDF/A-4f',
                 true,
-                'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, link annotations and document-level associated-file attachments.',
-                self::baseCapabilityRules(
+                'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and document-level associated-file attachments.',
+                self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
                     extractableUnicodeFonts: false,
                     outputIntent: false,
                     infoDictionary: false,
                     linkAnnotations: true,
-                    nonLinkPageAnnotations: false,
+                    nonLinkPageAnnotations: true,
                     acroFormFields: false,
                     documentAssociatedFiles: true,
                     documentEmbeddedAttachments: true,
                     transparency: true,
-                ),
+                ), [
+                    PdfACapability::NON_LINK_PAGE_ANNOTATIONS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text, Highlight and FreeText annotations are allowed within the currently validated PDF/A-4f scope; popup-related objects, file-attachment annotations and other page annotations remain blocked.',
+                    ),
+                ]),
             ),
             default => new self(
                 $profile->name(),
