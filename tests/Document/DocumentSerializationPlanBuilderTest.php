@@ -590,6 +590,25 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/AP << /N ', $serialized);
     }
 
+    public function testItBuildsPdfA4AcroFormChoiceFieldsWithinTheCurrentScope(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4())
+            ->title('Archive Copy')
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->listBox('skills', 40, 450, 120, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php'], 'Skills')
+            ->build();
+
+        $plan = $builder->build($document);
+        $serialized = implode("\n", array_map(static fn ($object): string => $object->contents, iterator_to_array($plan->objects)));
+
+        self::assertStringContainsString('/AcroForm ', $serialized);
+        self::assertStringContainsString('/FT /Ch', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
+        self::assertSame(2.0, $plan->fileStructure->version);
+    }
+
     public function testItAllowsExplicitDocumentLevelAssociatedFilesForPdf20(): void
     {
         $builder = new DocumentSerializationPlanBuilder();

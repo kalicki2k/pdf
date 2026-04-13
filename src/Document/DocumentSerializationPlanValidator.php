@@ -33,6 +33,7 @@ final readonly class DocumentSerializationPlanValidator
         private PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
         private PdfA1aFormFieldPolicy $pdfA1aFormFieldPolicy = new PdfA1aFormFieldPolicy(),
         private PdfA23aFormFieldPolicy $pdfA23aFormFieldPolicy = new PdfA23aFormFieldPolicy(),
+        private PdfA4FormFieldPolicy $pdfA4FormFieldPolicy = new PdfA4FormFieldPolicy(),
         private PdfA1AnnotationPolicy $pdfA1AnnotationPolicy = new PdfA1AnnotationPolicy(),
         private PdfA1PolicyEnforcer $pdfA1PolicyEnforcer = new PdfA1PolicyEnforcer(),
         private PdfAAnnotationAppearancePolicy $pdfAAnnotationAppearancePolicy = new PdfAAnnotationAppearancePolicy(),
@@ -486,6 +487,17 @@ final readonly class DocumentSerializationPlanValidator
                 throw new DocumentValidationException(
                     DocumentBuildError::PDFA_TAGGED_FORM_SUBSET_REQUIRED,
                     $this->pdfA23aFormFieldPolicy->violationMessage($document->profile),
+                );
+            }
+
+            if (
+                $document->profile->isPdfA4()
+                && $document->profile->supportsAcroForms()
+                && !$this->pdfA4FormFieldPolicy->supports($field)
+            ) {
+                throw new DocumentValidationException(
+                    DocumentBuildError::PDFA_ACROFORM_NOT_ALLOWED,
+                    $this->pdfA4FormFieldPolicy->violationMessage($document->profile),
                 );
             }
 

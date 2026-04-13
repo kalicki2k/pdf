@@ -195,7 +195,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4' => new self(
                 'PDF/A-4',
                 true,
-                'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and the explicit Link/Text/Highlight/FreeText annotation subset; forms and attachments remain blocked.',
+                'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and the constrained AcroForm subset; attachments remain blocked.',
                 self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -204,7 +204,7 @@ final readonly class PdfAProfileSupport
                     infoDictionary: false,
                     linkAnnotations: true,
                     nonLinkPageAnnotations: true,
-                    acroFormFields: false,
+                    acroFormFields: true,
                     documentAssociatedFiles: false,
                     documentEmbeddedAttachments: false,
                     transparency: true,
@@ -213,6 +213,11 @@ final readonly class PdfAProfileSupport
                         true,
                         false,
                         'Text, Highlight and FreeText annotations are allowed within the currently validated PDF/A-4 scope; popup-related objects, file-attachment annotations and other page annotations remain blocked.',
+                    ),
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-4 form scope; push buttons and signature fields remain blocked.',
                     ),
                 ]),
             ),
@@ -237,7 +242,7 @@ final readonly class PdfAProfileSupport
             'PDF/A-4f' => new self(
                 'PDF/A-4f',
                 true,
-                'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and document-level associated-file attachments.',
+                'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and document-level associated-file attachments.',
                 self::overrideCapabilityRules(self::baseCapabilityRules(
                     taggedPdf: false,
                     documentLanguage: false,
@@ -246,7 +251,7 @@ final readonly class PdfAProfileSupport
                     infoDictionary: false,
                     linkAnnotations: true,
                     nonLinkPageAnnotations: true,
-                    acroFormFields: false,
+                    acroFormFields: true,
                     documentAssociatedFiles: true,
                     documentEmbeddedAttachments: true,
                     transparency: true,
@@ -255,6 +260,11 @@ final readonly class PdfAProfileSupport
                         true,
                         false,
                         'Text, Highlight and FreeText annotations are allowed within the currently validated PDF/A-4f scope; popup-related objects, file-attachment annotations and other page annotations remain blocked.',
+                    ),
+                    PdfACapability::ACRO_FORM_FIELDS->value => new PdfACapabilityRule(
+                        true,
+                        false,
+                        'Text fields, checkboxes, radio buttons and choice fields are allowed within the currently validated PDF/A-4f form scope; push buttons and signature fields remain blocked.',
                     ),
                 ]),
             ),

@@ -83,16 +83,19 @@ final class ProfileTest extends TestCase
         self::assertTrue(Profile::pdfA4f()->supportsTransparency());
         self::assertTrue(Profile::pdfA4()->supportsCurrentPageAnnotationsImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsCurrentPageAnnotationsImplementation());
-        self::assertFalse(Profile::pdfA4()->supportsCurrentTextFieldImplementation());
+        self::assertTrue(Profile::pdfA4()->supportsCurrentTextFieldImplementation());
+        self::assertTrue(Profile::pdfA4f()->supportsCurrentTextFieldImplementation());
+        self::assertFalse(Profile::pdfA4()->supportsCurrentPushButtonImplementation());
+        self::assertFalse(Profile::pdfA4f()->supportsCurrentSignatureFieldImplementation());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentAssociatedFiles());
         self::assertTrue(Profile::pdfA4f()->supportsDocumentEmbeddedFileAttachments());
 
         self::assertSame(
-            'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent and the explicit Link/Text/Highlight/FreeText annotation subset; forms and attachments remain blocked.',
+            'Supported for the current base PDF/A-4 scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and the constrained AcroForm subset; attachments remain blocked.',
             Profile::pdfA4()->pdfaSupport()?->supportSummary,
         );
         self::assertSame(
-            'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset and document-level associated-file attachments.',
+            'Supported for the current PDF/A-4f scope with PDF 2.0 metadata, pdfaid:rev, no Info dictionary, no OutputIntent, the explicit Link/Text/Highlight/FreeText annotation subset, the constrained AcroForm subset and document-level associated-file attachments.',
             Profile::pdfA4f()->pdfaSupport()?->supportSummary,
         );
     }

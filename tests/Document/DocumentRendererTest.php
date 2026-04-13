@@ -226,6 +226,27 @@ final class DocumentRendererTest extends TestCase
         self::assertStringNotContainsString("\n/Info ", $pdf);
     }
 
+    public function testItRendersPdfA4fAcroFormChoiceFieldsWithinTheCurrentScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4f())
+            ->title('Archive Copy')
+            ->comboBox('status', 72, 680, 140, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->listBox('skills', 72, 620, 140, 44, ['php' => 'PHP', 'pdf' => 'PDF'], ['php'], 'Skills')
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/AcroForm ', $pdf);
+        self::assertStringContainsString('/FT /Ch', $pdf);
+        self::assertStringNotContainsString('/Helv', $pdf);
+    }
+
     public function testItRendersEmbeddedFontTextWithNewlines(): void
     {
         $document = DefaultDocumentBuilder::make()

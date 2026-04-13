@@ -62,6 +62,45 @@ final class PdfA4PolicyMatrixTest extends TestCase
         self::assertStringContainsString('/AP << /N ', $serialized);
     }
 
+    public function testItAllowsPdfA4ChoiceFieldsWithinTheCurrentScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4())
+            ->title('Archive Copy')
+            ->comboBox('status', 40, 500, 120, 18, ['new' => 'New', 'done' => 'Done'], 'done', 'Status')
+            ->listBox('skills', 40, 450, 120, 48, ['php' => 'PHP', 'pdf' => 'PDF'], ['php'], 'Skills')
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/AcroForm ', $serialized);
+        self::assertStringContainsString('/FT /Ch', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
+    }
+
+    public function testItAllowsPdfA4fTextAndCheckboxFieldsWithinTheCurrentScope(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4f())
+            ->title('Archive Copy')
+            ->textField('customer_name', 40, 500, 140, 18, 'Ada', 'Customer name')
+            ->checkbox('accept_terms', 40, 460, 14, true, 'Accept terms')
+            ->build();
+
+        $serialized = implode("\n", array_map(
+            static fn ($object): string => $object->contents,
+            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
+        ));
+
+        self::assertStringContainsString('/AcroForm ', $serialized);
+        self::assertStringContainsString('/FT /Tx', $serialized);
+        self::assertStringContainsString('/FT /Btn', $serialized);
+        self::assertStringNotContainsString('/Helv', $serialized);
+    }
+
     public function testItRejectsPdfA4PopupRelatedObjects(): void
     {
         $document = DefaultDocumentBuilder::make()
@@ -116,6 +155,38 @@ final class PdfA4PolicyMatrixTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             'Profile PDF/A-4 only allows Link, Text, Highlight and FreeText annotations in the current PDF/A-4 scope on page 1.',
+        );
+
+        new DocumentSerializationPlanBuilder()->build($document);
+    }
+
+    public function testItRejectsPdfA4PushButtonsOutsideTheCurrentFormSubset(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4())
+            ->title('Archive Copy')
+            ->pushButton('ack', 'Acknowledge', 40, 500, 120, 18, 'Acknowledge')
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-4 only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-4 form policy.',
+        );
+
+        new DocumentSerializationPlanBuilder()->build($document);
+    }
+
+    public function testItRejectsPdfA4fSignatureFieldsOutsideTheCurrentFormSubset(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA4f())
+            ->title('Archive Copy')
+            ->signatureField('approval_signature', 40, 420, 160, 24, 'Approval signature')
+            ->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-4f only allows text fields, checkboxes, radio buttons and choice fields in the current PDF/A-4 form policy.',
         );
 
         new DocumentSerializationPlanBuilder()->build($document);
