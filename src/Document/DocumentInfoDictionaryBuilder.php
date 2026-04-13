@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use DateTimeImmutable;
-
 use function implode;
 use function substr;
+
+use DateTimeImmutable;
 
 final readonly class DocumentInfoDictionaryBuilder
 {

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function sprintf;
+
 use Kalle\Pdf\Document\Form\FormField;
 use Kalle\Pdf\Document\Form\PushButtonField;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\PageAnnotation;
-
-use function sprintf;
 
 final class PdfA1ActionPolicy
 {

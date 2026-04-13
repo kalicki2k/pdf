@@ -6,15 +6,10 @@ namespace Kalle\Pdf\Font;
 
 use function array_key_exists;
 use function array_values;
-
 use function bin2hex;
 use function count;
 use function dechex;
 use function implode;
-
-use InvalidArgumentException;
-use Kalle\Pdf\Page\EmbeddedGlyph;
-
 use function mb_chr;
 use function mb_convert_encoding;
 use function mb_ord;
@@ -24,6 +19,8 @@ use function str_pad;
 use function strlen;
 use function strtoupper;
 
+use InvalidArgumentException;
+use Kalle\Pdf\Page\EmbeddedGlyph;
 use WeakMap;
 
 final class EmbeddedFontDefinition

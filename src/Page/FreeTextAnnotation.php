@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page;
 
 use function implode;
-
-use InvalidArgumentException;
-use Kalle\Pdf\Color\Color;
-
-use Kalle\Pdf\Color\ColorSpace;
-
 use function number_format;
 use function rtrim;
 use function str_replace;
 use function strlen;
+
+use InvalidArgumentException;
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Color\ColorSpace;
 
 final readonly class FreeTextAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation
 {

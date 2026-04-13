@@ -4,36 +4,18 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Signature;
 
-use function base64_decode;
-
-use DateTimeInterface;
-
-use function file_get_contents;
-use function file_put_contents;
-use function implode;
-
-use InvalidArgumentException;
-
-use function is_string;
-
-use Kalle\Pdf\Document\Document;
-
-use Kalle\Pdf\Document\DocumentRenderer;
-use Kalle\Pdf\Document\Form\SignatureField;
-use Kalle\Pdf\Writer\Output;
-use Kalle\Pdf\Writer\StringOutput;
-
-use function openssl_pkcs7_sign;
-
 use const PKCS7_BINARY;
 use const PKCS7_DETACHED;
 
+use function base64_decode;
+use function file_get_contents;
+use function file_put_contents;
+use function implode;
+use function is_string;
+use function openssl_pkcs7_sign;
 use function preg_match;
 use function preg_quote;
 use function preg_replace;
-
-use RuntimeException;
-
 use function sprintf;
 use function str_contains;
 use function str_repeat;
@@ -42,11 +24,18 @@ use function strpos;
 use function substr;
 use function sys_get_temp_dir;
 use function tempnam;
-
-use Throwable;
-
 use function trim;
 use function unlink;
+
+use DateTimeInterface;
+use InvalidArgumentException;
+use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Document\DocumentRenderer;
+use Kalle\Pdf\Document\Form\SignatureField;
+use Kalle\Pdf\Writer\Output;
+use Kalle\Pdf\Writer\StringOutput;
+use RuntimeException;
+use Throwable;
 
 final readonly class DocumentSigner
 {

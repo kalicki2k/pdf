@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Font;
 
-use InvalidArgumentException;
-
 use function ord;
+
+use InvalidArgumentException;
 
 final readonly class StandardFontDefinition
 {

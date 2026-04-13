@@ -8,7 +8,6 @@ use function array_fill;
 use function count;
 
 use InvalidArgumentException;
-
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Text\TextOptions;

@@ -7,12 +7,6 @@ namespace Kalle\Pdf\Document;
 use function array_key_exists;
 use function array_map;
 use function implode;
-
-use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
-use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
-use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
-use Kalle\Pdf\Writer\IndirectObject;
-
 use function ksort;
 use function min;
 use function preg_match;
@@ -21,6 +15,11 @@ use function preg_replace;
 use function sprintf;
 use function str_contains;
 use function usort;
+
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
+use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
+use Kalle\Pdf\Writer\IndirectObject;
 
 final class PdfA1aTaggedStructureValidator
 {

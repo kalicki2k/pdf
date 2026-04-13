@@ -8,11 +8,11 @@ use function count;
 use function file_exists;
 use function file_get_contents;
 use function implode;
+use function is_readable;
+use function mb_ord;
+use function str_replace;
 
 use InvalidArgumentException;
-
-use function is_readable;
-
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Debug\DebugConfig;
@@ -52,7 +52,6 @@ use Kalle\Pdf\Drawing\Path;
 use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Encryption\Encryption;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
-
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
@@ -122,21 +121,11 @@ use Kalle\Pdf\Text\TextDirection;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
-
 use Kalle\Pdf\Text\TextSemantic;
-
 use Kalle\Pdf\Writer\FileOutput;
-
 use Kalle\Pdf\Writer\StreamOutput;
-
 use Kalle\Pdf\Writer\StringOutput;
-
-use function mb_ord;
-
 use Psr\Log\LoggerInterface;
-
-use function str_replace;
-
 use Throwable;
 
 class DefaultDocumentBuilder implements DocumentBuilder

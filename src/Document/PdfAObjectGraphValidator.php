@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function array_key_exists;
+use function preg_match;
+use function preg_quote;
+use function sprintf;
+use function str_contains;
+use function str_replace;
 
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotation;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
-
-use function preg_match;
-use function preg_quote;
-use function sprintf;
-use function str_contains;
-use function str_replace;
 
 final class PdfAObjectGraphValidator
 {

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Font;
 
+use function preg_match;
+use function strlen;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use PHPUnit\Framework\TestCase;
-
-use function preg_match;
-use function strlen;
 
 final class EmbeddedFontDefinitionTest extends TestCase
 {

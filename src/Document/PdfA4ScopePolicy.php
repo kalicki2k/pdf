@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use InvalidArgumentException;
-
 use function sprintf;
+
+use InvalidArgumentException;
 
 final class PdfA4ScopePolicy
 {

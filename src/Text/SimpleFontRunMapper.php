@@ -7,14 +7,12 @@ namespace Kalle\Pdf\Text;
 use function array_key_first;
 use function array_map;
 use function count;
+use function spl_object_id;
 
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\PageFont;
-
-use function spl_object_id;
-
 use WeakMap;
 
 final readonly class SimpleFontRunMapper implements FontRunMapper

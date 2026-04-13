@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Text;
 
 use function count;
-
-use Kalle\Pdf\Font\EmbeddedFontDefinition;
-use Kalle\Pdf\Font\StandardFontDefinition;
-
 use function mb_ord;
 use function preg_match;
 use function preg_split;
+
+use Kalle\Pdf\Font\EmbeddedFontDefinition;
+use Kalle\Pdf\Font\StandardFontDefinition;
 
 final readonly class DevanagariScriptTextShaper implements ScriptTextShaper
 {

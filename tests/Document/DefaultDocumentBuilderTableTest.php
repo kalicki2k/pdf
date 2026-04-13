@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use function implode;
+use function number_format;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
@@ -21,16 +22,11 @@ use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\VerticalAlign;
 use Kalle\Pdf\Page\Margin;
-
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
-
 use Kalle\Pdf\Text\TextSegment;
-
-use function number_format;
-
 use PHPUnit\Framework\TestCase;
 
 final class DefaultDocumentBuilderTableTest extends TestCase

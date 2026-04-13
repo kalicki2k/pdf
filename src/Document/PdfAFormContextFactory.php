@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Document;
 use function array_filter;
 use function array_values;
 use function dirname;
+use function preg_split;
 
 use Kalle\Pdf\Document\Form\ComboBoxField;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
@@ -17,8 +18,6 @@ use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\EmbeddedGlyph;
 use Kalle\Pdf\Page\PageFont;
-
-use function preg_split;
 
 final class PdfAFormContextFactory
 {

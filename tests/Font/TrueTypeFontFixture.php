@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Font;
 
 use function count;
-
-use InvalidArgumentException;
-
 use function str_pad;
 use function str_split;
 use function strlen;
 use function substr_replace;
 use function usort;
+
+use InvalidArgumentException;
 
 final class TrueTypeFontFixture
 {

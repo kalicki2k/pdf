@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document\Metadata;
 
+use function pack;
+use function str_repeat;
+use function substr_replace;
+
 use InvalidArgumentException;
 use Kalle\Pdf\Document\Metadata\IccProfile;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
-
-use function pack;
-
 use PHPUnit\Framework\TestCase;
-
-use function str_repeat;
-use function substr_replace;
 
 final class IccProfileTest extends TestCase
 {

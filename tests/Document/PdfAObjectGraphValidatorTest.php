@@ -6,15 +6,12 @@ namespace Kalle\Pdf\Tests\Document;
 
 use function array_map;
 use function array_values;
+use function dirname;
+use function iterator_to_array;
+use function preg_replace;
 
 use DateTimeImmutable;
-
-use function dirname;
-
 use InvalidArgumentException;
-
-use function iterator_to_array;
-
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
@@ -31,8 +28,6 @@ use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
-
-use function preg_replace;
 
 final class PdfAObjectGraphValidatorTest extends TestCase
 {

@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Document;
 
 use function array_map;
 use function dirname;
+use function preg_match_all;
 
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
@@ -33,11 +34,8 @@ use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextLink;
 use Kalle\Pdf\Text\TextOptions;
-
 use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
-
-use function preg_match_all;
 
 final class DocumentTaggedPdfObjectBuilderTest extends TestCase
 {

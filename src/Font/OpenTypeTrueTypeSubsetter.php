@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use function array_fill;
-
 use function ceil;
 use function count;
-
-use InvalidArgumentException;
-
 use function ksort;
 use function pack;
 use function strlen;
 use function substr_replace;
 use function usort;
+
+use InvalidArgumentException;
 
 final readonly class OpenTypeTrueTypeSubsetter
 {

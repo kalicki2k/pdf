@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Text;
 
 use function array_reverse;
+use function mb_ord;
+use function preg_split;
 
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
-
-use function mb_ord;
-use function preg_split;
 
 final readonly class ArabicScriptTextShaper implements ScriptTextShaper
 {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Page;
 
-use InvalidArgumentException;
-
 use function sprintf;
+
+use InvalidArgumentException;
 
 final readonly class AnnotationAppearanceRenderContext
 {

@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page;
 
 use function implode;
-
-use InvalidArgumentException;
-use Kalle\Pdf\Color\Color;
-
-use Kalle\Pdf\Writer\IndirectObject;
-
 use function max;
 use function min;
 use function strlen;
+
+use InvalidArgumentException;
+use Kalle\Pdf\Color\Color;
+use Kalle\Pdf\Writer\IndirectObject;
 
 final readonly class LineAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {

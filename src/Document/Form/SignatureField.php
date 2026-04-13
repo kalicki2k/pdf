@@ -6,12 +6,10 @@ namespace Kalle\Pdf\Document\Form;
 
 use function count;
 use function implode;
+use function max;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Writer\IndirectObject;
-
-use function max;
-
 use Override;
 
 /**

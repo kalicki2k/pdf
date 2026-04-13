@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests;
 
+use const OPENSSL_KEYTYPE_RSA;
+
+use function openssl_csr_new;
+use function openssl_csr_sign;
+use function openssl_pkey_export;
+use function openssl_pkey_new;
+use function openssl_x509_export;
+
 use Kalle\Pdf\Document\Signature\OpenSslPemSigningCredentials;
 use Kalle\Pdf\Document\Signature\PdfSignatureOptions;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Writer\StringOutput;
-
-use function openssl_csr_new;
-
-use function openssl_csr_sign;
-
-use const OPENSSL_KEYTYPE_RSA;
-
-use function openssl_pkey_export;
-use function openssl_pkey_new;
-use function openssl_x509_export;
-
 use PHPUnit\Framework\TestCase;
 
 final class PdfTest extends TestCase

@@ -9,11 +9,9 @@ use function array_values;
 use function count;
 use function implode;
 use function in_array;
-
-use InvalidArgumentException;
-
 use function is_string;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Writer\IndirectObject;
 use Override;
 

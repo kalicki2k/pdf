@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use function count;
-
-use InvalidArgumentException;
-
 use function mb_ord;
 use function strlen;
 use function substr;
 use function unpack;
+
+use InvalidArgumentException;
 
 final class OpenTypeFontParser
 {

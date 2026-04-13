@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\Form;
 
 use function array_map;
-
 use function count;
 use function implode;
 

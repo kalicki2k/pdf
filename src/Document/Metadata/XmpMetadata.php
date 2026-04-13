@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document\Metadata;
 
-use DateTimeImmutable;
-use DateTimeInterface;
-
 use const ENT_QUOTES;
 use const ENT_SUBSTITUTE;
 use const ENT_XML1;
 
 use function htmlspecialchars;
 use function implode;
-
-use Kalle\Pdf\Document\Document;
-
 use function strlen;
+
+use DateTimeImmutable;
+use DateTimeInterface;
+use Kalle\Pdf\Document\Document;
 
 final readonly class XmpMetadata
 {

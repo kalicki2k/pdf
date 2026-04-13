@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function count;
+use function str_replace;
 
 use DateTimeImmutable;
-
 use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Encryption\EncryptDictionaryBuilder;
 use Kalle\Pdf\Encryption\EncryptionProfileResolver;
@@ -18,8 +18,6 @@ use Kalle\Pdf\Writer\FileStructure;
 use Kalle\Pdf\Writer\IndirectObject;
 use Kalle\Pdf\Writer\Trailer;
 use Random\RandomException;
-
-use function str_replace;
 
 /**
  * Builds a minimal serialization plan from a prepared document.

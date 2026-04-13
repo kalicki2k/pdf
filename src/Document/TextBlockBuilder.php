@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function implode;
+use function number_format;
+use function str_replace;
+use function strlen;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Debug\Debugger;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
-
 use Kalle\Pdf\Text\PositionedTextFragment;
 use Kalle\Pdf\Text\TextOptions;
-
-use function number_format;
-use function str_replace;
-use function strlen;
 
 final readonly class TextBlockBuilder
 {

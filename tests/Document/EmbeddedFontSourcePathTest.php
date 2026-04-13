@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use function file_put_contents;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
 
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
 use Kalle\Pdf\Text\TextOptions;
-
 use PHPUnit\Framework\TestCase;
-
-use function sys_get_temp_dir;
-use function tempnam;
-use function unlink;
 
 final class EmbeddedFontSourcePathTest extends TestCase
 {

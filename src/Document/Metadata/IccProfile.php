@@ -6,19 +6,15 @@ namespace Kalle\Pdf\Document\Metadata;
 
 use function dirname;
 use function file_get_contents;
-
-use InvalidArgumentException;
-
 use function is_string;
-
-use Kalle\Pdf\Document\DocumentBuildError;
-
-use Kalle\Pdf\Document\DocumentValidationException;
-
 use function sprintf;
 use function str_contains;
 use function strlen;
 use function substr;
+
+use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 
 final readonly class IccProfile
 {

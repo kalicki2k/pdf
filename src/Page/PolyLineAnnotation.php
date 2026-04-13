@@ -7,16 +7,14 @@ namespace Kalle\Pdf\Page;
 use function array_map;
 use function array_shift;
 use function count;
-
 use function implode;
+use function max;
+use function min;
+use function strlen;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Writer\IndirectObject;
-
-use function max;
-use function min;
-use function strlen;
 
 final readonly class PolyLineAnnotation implements AppearanceStreamAnnotation, PageAnnotation, RelatedObjectsPageAnnotation, SupportsPopupAnnotation, PdfUaTaggedPageAnnotation
 {

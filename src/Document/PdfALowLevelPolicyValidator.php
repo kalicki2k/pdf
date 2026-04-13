@@ -6,6 +6,10 @@ namespace Kalle\Pdf\Document;
 
 use function count;
 use function in_array;
+use function preg_match;
+use function sprintf;
+use function strlen;
+use function substr;
 
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
 use Kalle\Pdf\Image\ImageSource;
@@ -17,11 +21,6 @@ use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
-
-use function preg_match;
-use function sprintf;
-use function strlen;
-use function substr;
 
 /**
  * Guards raw low-level injection paths for PDF/A profiles.

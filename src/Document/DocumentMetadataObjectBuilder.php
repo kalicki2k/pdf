@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function str_replace;
+
 use DateTimeImmutable;
 use Kalle\Pdf\Document\Metadata\IccProfile;
 use Kalle\Pdf\Document\Metadata\XmpMetadata;
 use Kalle\Pdf\Writer\IndirectObject;
-
-use function str_replace;
 
 final readonly class DocumentMetadataObjectBuilder
 {

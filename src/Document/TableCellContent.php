@@ -6,7 +6,6 @@ namespace Kalle\Pdf\Document;
 
 use function array_map;
 use function array_values;
-
 use function implode;
 
 use Kalle\Pdf\Text\TextSegment;

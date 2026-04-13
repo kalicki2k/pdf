@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use function file_get_contents;
-
-use InvalidArgumentException;
-
 use function is_file;
 
+use InvalidArgumentException;
 use RuntimeException;
 
 final readonly class EmbeddedFontSource

@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function max;
+use function preg_split;
+use function trim;
+
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Page;
-
 use Kalle\Pdf\Text\TextDirection;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
-
-use function max;
-use function preg_split;
-use function trim;
 
 final readonly class TextFlow
 {

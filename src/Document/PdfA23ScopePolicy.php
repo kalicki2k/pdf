@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function sprintf;
+
 use Kalle\Pdf\Page\FileAttachmentAnnotation;
 use Kalle\Pdf\Page\FreeTextAnnotation;
 use Kalle\Pdf\Page\HighlightAnnotation;
@@ -12,8 +14,6 @@ use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 use Kalle\Pdf\Page\SupportsPopupAnnotation;
 use Kalle\Pdf\Page\TextAnnotation;
-
-use function sprintf;
 
 final class PdfA23ScopePolicy
 {

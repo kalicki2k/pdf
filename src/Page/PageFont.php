@@ -6,19 +6,15 @@ namespace Kalle\Pdf\Page;
 
 use function array_values;
 use function json_encode;
+use function preg_split;
+use function sha1;
 
 use JsonException;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\EmbeddedFontSource;
-
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Font\StandardFontEncoding;
-
-use function preg_split;
-
 use RuntimeException;
-
-use function sha1;
 
 final readonly class PageFont
 {

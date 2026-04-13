@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Document;
 
 use function implode;
 use function in_array;
+use function sprintf;
 
 use Kalle\Pdf\Document\TaggedPdf\TaggedFigure;
 use Kalle\Pdf\Document\TaggedPdf\TaggedList;
@@ -14,11 +15,8 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedStructureRoleRegistry;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
-
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
-
-use function sprintf;
 
 final readonly class PdfA1aSupportedStructureValidator
 {

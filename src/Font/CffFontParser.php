@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Font;
 
 use function count;
-
-use InvalidArgumentException;
-
 use function ord;
 use function strlen;
 use function substr;
+
+use InvalidArgumentException;
 
 final readonly class CffFontParser
 {

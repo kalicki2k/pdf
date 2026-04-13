@@ -23,7 +23,6 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Text\TextOptions;
-
 use PHPUnit\Framework\TestCase;
 
 final class PdfA1aSupportedStructureValidatorTest extends TestCase

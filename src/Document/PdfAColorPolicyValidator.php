@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function sprintf;
+use function strlen;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Form\FormFieldRenderContext;
@@ -14,9 +17,6 @@ use Kalle\Pdf\Page\AppearanceStreamAnnotation;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
-
-use function sprintf;
-use function strlen;
 
 /**
  * Validates PDF/A-1 device color usage against the active output intent.

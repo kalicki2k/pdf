@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function array_key_exists;
-
 use function count;
 use function implode;
-
-use Kalle\Pdf\Writer\IndirectObject;
-
 use function number_format;
 use function rtrim;
 use function str_replace;
+
+use Kalle\Pdf\Writer\IndirectObject;
 
 final class DocumentOutlineObjectBuilder
 {

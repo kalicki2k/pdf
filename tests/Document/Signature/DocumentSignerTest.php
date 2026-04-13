@@ -4,7 +4,24 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document\Signature;
 
+use const OPENSSL_CMS_BINARY;
+use const OPENSSL_CMS_DETACHED;
+use const OPENSSL_CMS_NOVERIFY;
+use const OPENSSL_ENCODING_DER;
+use const OPENSSL_KEYTYPE_RSA;
+
 use function file_put_contents;
+use function openssl_cms_verify;
+use function openssl_csr_new;
+use function openssl_csr_sign;
+use function openssl_pkey_export;
+use function openssl_pkey_new;
+use function openssl_x509_export;
+use function preg_match;
+use function substr;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -12,35 +29,11 @@ use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\Signature\DocumentSigner;
 use Kalle\Pdf\Document\Signature\OpenSslPemSigningCredentials;
 use Kalle\Pdf\Document\Signature\PdfSignatureOptions;
-
 use Kalle\Pdf\Encryption\Encryption;
-
-use const OPENSSL_CMS_BINARY;
-use const OPENSSL_CMS_DETACHED;
-use const OPENSSL_CMS_NOVERIFY;
-
-use function openssl_cms_verify;
-use function openssl_csr_new;
-use function openssl_csr_sign;
-
-use const OPENSSL_ENCODING_DER;
-use const OPENSSL_KEYTYPE_RSA;
-
-use function openssl_pkey_export;
-use function openssl_pkey_new;
-use function openssl_x509_export;
-
 use OpenSSLAsymmetricKey;
-
 use OpenSSLCertificate;
 use OpenSSLCertificateSigningRequest;
 use PHPUnit\Framework\TestCase;
-
-use function preg_match;
-use function substr;
-use function sys_get_temp_dir;
-use function tempnam;
-use function unlink;
 
 final class DocumentSignerTest extends TestCase
 {

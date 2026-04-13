@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page;
 
 use function implode;
-
-use InvalidArgumentException;
-
 use function sprintf;
 use function str_replace;
+
+use InvalidArgumentException;
 
 final readonly class LinkAnnotation implements AppearanceStreamAnnotation, PageAnnotation
 {

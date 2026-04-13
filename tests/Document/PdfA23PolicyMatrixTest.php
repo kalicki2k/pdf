@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use function dirname;
-
-use InvalidArgumentException;
-
 use function iterator_to_array;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;

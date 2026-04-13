@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\TaggedPdf;
 
 use function explode;
-
-use InvalidArgumentException;
-
-use Kalle\Pdf\Document\Document;
-
 use function ksort;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
+
+use InvalidArgumentException;
+use Kalle\Pdf\Document\Document;
 
 final class TaggedStructureCollector
 {

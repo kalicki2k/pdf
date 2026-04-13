@@ -6,11 +6,10 @@ namespace Kalle\Pdf\Tests\Document;
 
 use function array_map;
 use function array_values;
+use function iterator_to_array;
+use function preg_replace;
 
 use InvalidArgumentException;
-
-use function iterator_to_array;
-
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Document\DocumentSerializationPlanBuilder;
@@ -22,12 +21,9 @@ use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Tests\Font\TrueTypeFontFixture;
-
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\IndirectObject;
 use PHPUnit\Framework\TestCase;
-
-use function preg_replace;
 
 final class PdfA1ObjectGraphValidatorTest extends TestCase
 {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Document;
 
 use function dirname;
+use function sprintf;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
@@ -18,10 +19,7 @@ use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Text\TextOptions;
-
 use PHPUnit\Framework\TestCase;
-
-use function sprintf;
 
 final class PdfA1PolicyMatrixTest extends TestCase
 {

@@ -6,14 +6,12 @@ namespace Kalle\Pdf\Text;
 
 use function array_key_first;
 use function count;
-
-use Kalle\Pdf\Debug\Debugger;
-
-use Kalle\Pdf\Font\EmbeddedFontDefinition;
-use Kalle\Pdf\Font\StandardFontDefinition;
-
 use function spl_object_id;
 use function strlen;
+
+use Kalle\Pdf\Debug\Debugger;
+use Kalle\Pdf\Font\EmbeddedFontDefinition;
+use Kalle\Pdf\Font\StandardFontDefinition;
 
 final readonly class SimpleTextShaper implements TextShaper
 {

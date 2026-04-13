@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Tests\Image;
 
 use function file_put_contents;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImageSource;
-
 use PHPUnit\Framework\TestCase;
-
-use function sys_get_temp_dir;
-use function tempnam;
-use function unlink;
 
 final class ImageSourceTest extends TestCase
 {

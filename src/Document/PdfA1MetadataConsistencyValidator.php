@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use function array_key_exists;
-
-use DateTimeImmutable;
-
 use const ENT_QUOTES;
 use const ENT_XML1;
 
+use function array_key_exists;
 use function html_entity_decode;
-
-use Kalle\Pdf\Document\Metadata\XmpMetadata;
-
 use function mb_convert_encoding;
 use function pack;
 use function preg_match;
@@ -22,6 +16,9 @@ use function preg_match_all;
 use function sprintf;
 use function strip_tags;
 use function trim;
+
+use DateTimeImmutable;
+use Kalle\Pdf\Document\Metadata\XmpMetadata;
 
 final readonly class PdfA1MetadataConsistencyValidator
 {

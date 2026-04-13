@@ -1,8 +1,10 @@
 <?php
 
 declare(strict_types=1);
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
 
-$finder = PhpCsFixer\Finder::create()
+$finder = Finder::create()
     ->in([
         __DIR__ . '/examples',
         __DIR__ . '/src',
@@ -10,7 +12,7 @@ $finder = PhpCsFixer\Finder::create()
     ])
     ->append([__DIR__ . '/example.php']);
 
-return new PhpCsFixer\Config()
+return new Config()
     ->setRiskyAllowed(false)
     ->setCacheFile(__DIR__ . '/.php-cs-fixer.cache')
     ->setRules([
@@ -40,13 +42,16 @@ return new PhpCsFixer\Config()
         ],
         'no_closing_tag' => true,
         'no_extra_blank_lines' => [
-            'tokens' => ['extra'],
+            'tokens' => ['extra', 'use'],
         ],
         'no_trailing_whitespace' => true,
         'no_unused_imports' => true,
         'no_unneeded_import_alias' => true,
         'no_whitespace_in_blank_line' => true,
-        'ordered_imports' => true,
+        'ordered_imports' => [
+            'imports_order' => ['const', 'function', 'class'],
+            'sort_algorithm' => 'alpha',
+        ],
         'single_blank_line_at_eof' => true,
         'single_import_per_statement' => true,
         'single_line_after_imports' => true,

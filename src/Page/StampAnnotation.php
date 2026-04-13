@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Page;
 
 use function implode;
+use function strlen;
 
 use InvalidArgumentException;
-
 use Kalle\Pdf\Color\Color;
-
-use function strlen;
 
 final readonly class StampAnnotation implements AppearanceStreamAnnotation, PageAnnotation, PdfUaTaggedPageAnnotation
 {

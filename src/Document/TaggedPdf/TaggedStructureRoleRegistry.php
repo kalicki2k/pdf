@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document\TaggedPdf;
 
 use function array_keys;
-
 use function array_unique;
 use function array_values;
 use function implode;
 use function in_array;
-
-use InvalidArgumentException;
-
 use function sort;
 use function sprintf;
+
+use InvalidArgumentException;
 
 final class TaggedStructureRoleRegistry
 {

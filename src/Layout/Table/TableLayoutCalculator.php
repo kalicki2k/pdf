@@ -7,11 +7,10 @@ namespace Kalle\Pdf\Layout\Table;
 use function array_map;
 use function array_sum;
 use function count;
+use function max;
 
 use InvalidArgumentException;
-
 use Kalle\Pdf\Document\Table;
-
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Document\TextFlow;
@@ -19,8 +18,6 @@ use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
-
-use function max;
 
 final class TableLayoutCalculator
 {
