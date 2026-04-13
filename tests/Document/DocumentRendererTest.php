@@ -140,6 +140,26 @@ final class DocumentRendererTest extends TestCase
         $renderer->write($document, $output);
     }
 
+    public function testItRendersEmbeddedFontTextWithNewlines(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text(
+                "Kundenfirma Mueller GmbH\nz. Hd. Anna Mueller\nBeispielweg 8",
+                new TextOptions(
+                    embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/inter/static/Inter-Regular.ttf'),
+                    width: 220,
+                    fontSize: 10,
+                    lineHeight: 14,
+                ),
+            )
+            ->build();
+
+        $output = new StringOutput();
+        (new DocumentRenderer())->write($document, $output);
+
+        self::assertStringContainsString('/Subtype /TrueType', $output->contents());
+    }
+
     public function testItDoesNotWrapWriterPhaseInvalidArgumentExceptionsAsBuildExceptions(): void
     {
         $document = DefaultDocumentBuilder::make()

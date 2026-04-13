@@ -134,6 +134,9 @@ use Kalle\Pdf\Writer\StringOutput;
 use function mb_ord;
 
 use Psr\Log\LoggerInterface;
+
+use function str_replace;
+
 use Throwable;
 
 class DefaultDocumentBuilder implements DocumentBuilder
@@ -4820,15 +4823,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'line_count' => count($shapedLines),
             'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
         ]);
+        $encodableText = $this->textForEmbeddedFontEncodingChecks($text);
         $usesUnicodeEmbeddedFont = $font instanceof EmbeddedFontDefinition
             && (
                 $forceUnicodeEmbeddedFont
                 ||
-                !$font->supportsText($text)
+                !$font->supportsText($encodableText)
                 || $this->containsShapedEmbeddedGlyphIds($shapedLines)
             );
 
-        if ($font instanceof EmbeddedFontDefinition && $usesUnicodeEmbeddedFont && !$font->supportsUnicodeText($text)) {
+        if ($font instanceof EmbeddedFontDefinition && $usesUnicodeEmbeddedFont && !$font->supportsUnicodeText($encodableText)) {
             throw new InvalidArgumentException(sprintf(
                 "Text cannot be encoded with embedded font '%s'.",
                 $font->metadata->postScriptName,
@@ -4863,6 +4867,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 : null,
             'useHexString' => $usesUnicodeEmbeddedFont,
         ];
+    }
+
+    private function textForEmbeddedFontEncodingChecks(string $text): string
+    {
+        return str_replace(["\r\n", "\r", "\n"], '', $text);
     }
 
     private function buildCellBorderSegmentContent(
