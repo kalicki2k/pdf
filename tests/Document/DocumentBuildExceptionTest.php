@@ -146,6 +146,38 @@ final class DocumentBuildExceptionTest extends TestCase
         );
     }
 
+    public function testItAddsAFormAltTextHintForTaggedFormProfiles(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1a()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_FORM_ALT_TEXT_REQUIRED,
+                'Profile PDF/A-1a requires an alternative description for form field "name".',
+            ),
+        );
+
+        self::assertSame(
+            'Set alternativeName on each affected form field, radio group and radio choice so the tagged form path remains accessible.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAPushButtonActionHintForBlockedPdfAFormActions(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1a()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_PUSH_BUTTON_ACTION_NOT_ALLOWED,
+                'Profile PDF/A-1a does not allow push button URI actions. Use an inert button without /A.',
+            ),
+        );
+
+        self::assertSame(
+            'Use inert push buttons without URI actions in this profile, or switch to a profile that allows the intended interaction model.',
+            $exception->hint,
+        );
+    }
+
     public function testItAddsAnAttachmentMimeTypeHintWhenAttachmentsAreAllowed(): void
     {
         $exception = DocumentBuildException::fromValidationFailure(
@@ -174,6 +206,38 @@ final class DocumentBuildExceptionTest extends TestCase
 
         self::assertSame(
             'Remove soft masks from image resources or flatten transparency before rendering in this profile.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAnEncryptionHintForPdfAProfiles(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA3b()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_ENCRYPTION_NOT_ALLOWED,
+                'Profile PDF/A-3b does not allow encryption.',
+            ),
+        );
+
+        self::assertSame(
+            'Disable document encryption for PDF/A output; archival profiles require an unencrypted file.',
+            $exception->hint,
+        );
+    }
+
+    public function testItAddsAnImageColorSpaceHintForPdfA1Profiles(): void
+    {
+        $exception = DocumentBuildException::fromValidationFailure(
+            new Document(profile: Profile::pdfA1b()),
+            new DocumentValidationException(
+                DocumentBuildError::PDFA_IMAGE_COLOR_SPACE_NOT_ALLOWED,
+                'Profile PDF/A-1b does not allow custom image color space definitions in the current implementation for image resource 1 on page 1.',
+            ),
+        );
+
+        self::assertSame(
+            'Use the validated PDF/A-1 image path without custom image color space definitions, or move to a profile that supports the intended color handling.',
             $exception->hint,
         );
     }

@@ -83,6 +83,12 @@ final class DocumentBuildException extends RuntimeException
             DocumentBuildError::PDFA_TAGGED_FORM_SUBSET_REQUIRED => $document->profile->requiresTaggedFormFields()
                 ? 'Use only the currently supported tagged form subset for this profile and provide alternative descriptions for each field.'
                 : null,
+            DocumentBuildError::PDFA_FORM_ALT_TEXT_REQUIRED => $document->profile->requiresFormFieldAlternativeDescriptions()
+                ? 'Set alternativeName on each affected form field, radio group and radio choice so the tagged form path remains accessible.'
+                : null,
+            DocumentBuildError::PDFA_PUSH_BUTTON_ACTION_NOT_ALLOWED => $document->profile->isPdfA()
+                ? 'Use inert push buttons without URI actions in this profile, or switch to a profile that allows the intended interaction model.'
+                : null,
             DocumentBuildError::PDFA_EMBEDDED_ATTACHMENTS_NOT_ALLOWED => !$document->profile->supportsDocumentEmbeddedFileAttachments()
                 ? 'Remove embedded attachments for this profile, or switch to a profile that explicitly allows the current attachment path.'
                 : null,
@@ -91,6 +97,12 @@ final class DocumentBuildException extends RuntimeException
                 : null,
             DocumentBuildError::PDFA_ASSOCIATED_FILES_NOT_ALLOWED => !$document->profile->supportsDocumentAssociatedFiles()
                 ? 'Use plain attachments only where the profile allows them, or switch to a profile with document-level associated file support.'
+                : null,
+            DocumentBuildError::PDFA_ENCRYPTION_NOT_ALLOWED => $document->profile->isPdfA()
+                ? 'Disable document encryption for PDF/A output; archival profiles require an unencrypted file.'
+                : null,
+            DocumentBuildError::PDFA_IMAGE_COLOR_SPACE_NOT_ALLOWED => $document->profile->isPdfA1()
+                ? 'Use the validated PDF/A-1 image path without custom image color space definitions, or move to a profile that supports the intended color handling.'
                 : null,
             DocumentBuildError::PDFA_OUTPUT_INTENT_INVALID => $document->profile->usesPdfAOutputIntent()
                 ? 'Use the default PDF/A output intent or pass ->pdfaOutputIntent(...) with a readable ICC profile that matches the document color usage.'

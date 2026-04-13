@@ -409,7 +409,7 @@ final readonly class DocumentSerializationPlanValidator
             foreach ($document->acroForm->fields as $field) {
                 if ($field instanceof RadioButtonGroup) {
                     if (($field->alternativeName ?? '') === '') {
-                        throw new InvalidArgumentException(sprintf(
+                        throw new DocumentValidationException(DocumentBuildError::PDFA_FORM_ALT_TEXT_REQUIRED, sprintf(
                             'Profile %s requires an alternative description for radio button group "%s".',
                             $document->profile->name(),
                             $field->name,
@@ -421,7 +421,7 @@ final readonly class DocumentSerializationPlanValidator
                             continue;
                         }
 
-                        throw new InvalidArgumentException(sprintf(
+                        throw new DocumentValidationException(DocumentBuildError::PDFA_FORM_ALT_TEXT_REQUIRED, sprintf(
                             'Profile %s requires an alternative description for radio button choice %d in group "%s".',
                             $document->profile->name(),
                             $choiceIndex + 1,
@@ -436,7 +436,7 @@ final readonly class DocumentSerializationPlanValidator
                     continue;
                 }
 
-                throw new InvalidArgumentException(sprintf(
+                throw new DocumentValidationException(DocumentBuildError::PDFA_FORM_ALT_TEXT_REQUIRED, sprintf(
                     'Profile %s requires an alternative description for form field "%s".',
                     $document->profile->name(),
                     $field->name,
@@ -514,7 +514,7 @@ final readonly class DocumentSerializationPlanValidator
                     && $document->profile->pdfaConformance() === 'A'
                     && $field->url !== null
                 ) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_PUSH_BUTTON_ACTION_NOT_ALLOWED, sprintf(
                         'Profile %s does not allow push button URI actions. Use an inert button without /A.',
                         $document->profile->name(),
                     ));
@@ -574,7 +574,7 @@ final readonly class DocumentSerializationPlanValidator
         }
 
         if ($document->encryption !== null) {
-            throw new InvalidArgumentException(sprintf(
+            throw new DocumentValidationException(DocumentBuildError::PDFA_ENCRYPTION_NOT_ALLOWED, sprintf(
                 'Profile %s does not allow encryption.',
                 $document->profile->name(),
             ));
@@ -613,7 +613,7 @@ final readonly class DocumentSerializationPlanValidator
                 $imageResourceIndex++;
 
                 if ($document->profile->isPdfA1() && $imageSource->colorSpaceDefinition !== null) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new DocumentValidationException(DocumentBuildError::PDFA_IMAGE_COLOR_SPACE_NOT_ALLOWED, sprintf(
                         'Profile %s does not allow custom image color space definitions in the current implementation for image resource %d on page %d.',
                         $document->profile->name(),
                         $imageResourceIndex,

@@ -19,9 +19,13 @@ enum DocumentBuildError: string
     case PDFA_TRANSPARENCY_NOT_ALLOWED = 'pdfa_transparency_not_allowed';
     case PDFA_ACROFORM_NOT_ALLOWED = 'pdfa_acroform_not_allowed';
     case PDFA_TAGGED_FORM_SUBSET_REQUIRED = 'pdfa_tagged_form_subset_required';
+    case PDFA_FORM_ALT_TEXT_REQUIRED = 'pdfa_form_alt_text_required';
+    case PDFA_PUSH_BUTTON_ACTION_NOT_ALLOWED = 'pdfa_push_button_action_not_allowed';
     case PDFA_EMBEDDED_ATTACHMENTS_NOT_ALLOWED = 'pdfa_embedded_attachments_not_allowed';
     case PDFA_ATTACHMENT_MIME_TYPE_REQUIRED = 'pdfa_attachment_mime_type_required';
     case PDFA_ASSOCIATED_FILES_NOT_ALLOWED = 'pdfa_associated_files_not_allowed';
+    case PDFA_ENCRYPTION_NOT_ALLOWED = 'pdfa_encryption_not_allowed';
+    case PDFA_IMAGE_COLOR_SPACE_NOT_ALLOWED = 'pdfa_image_color_space_not_allowed';
     case PDFA_OUTPUT_INTENT_INVALID = 'pdfa_output_intent_invalid';
     case PDFA4_METADATA_INVALID = 'pdfa4_metadata_invalid';
     case PDFA_LOW_LEVEL_CONTENT_NOT_ALLOWED = 'pdfa_low_level_content_not_allowed';
