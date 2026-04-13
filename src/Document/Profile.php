@@ -300,7 +300,7 @@ final readonly class Profile
     public function requiresDocumentLanguage(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA() && $this->conformance === 'A');
+            || $this->pdfaCapabilityRequired(PdfACapability::DOCUMENT_LANGUAGE);
     }
 
     public function requiresDocumentStructure(): bool
@@ -321,7 +321,7 @@ final readonly class Profile
     public function requiresExtractableEmbeddedUnicodeFonts(): bool
     {
         return $this->isPdfUa()
-            || ($this->isPdfA() && ($this->conformance === 'A' || $this->conformance === 'U'));
+            || $this->pdfaCapabilityRequired(PdfACapability::EXTRACTABLE_UNICODE_FONTS);
     }
 
     public function requiresFigureAltText(): bool
@@ -384,13 +384,13 @@ final readonly class Profile
 
     public function requiresTaggedPdf(): bool
     {
-        return $this->pdfaConformance() === 'A'
-            || $this->isPdfUa();
+        return $this->isPdfUa()
+            || $this->pdfaCapabilityRequired(PdfACapability::TAGGED_PDF);
     }
 
     public function supportsAcroForms(): bool
     {
-        return ($this->isPdfA1() && $this->conformance === 'A')
+        return $this->pdfaCapabilityAllowed(PdfACapability::ACRO_FORM_FIELDS)
             || (!$this->isPdfA()
             && !$this->isPdfUa());
     }
@@ -413,8 +413,7 @@ final readonly class Profile
     public function supportsDocumentAssociatedFiles(): bool
     {
         return ($this->isStandard() && $this->version >= Version::V2_0)
-            || $this->isPdfA3()
-            || $this->isPdfA4f();
+            || $this->pdfaCapabilityAllowed(PdfACapability::DOCUMENT_ASSOCIATED_FILES);
     }
 
     public function supportsCurrentCheckboxImplementation(): bool
@@ -471,7 +470,11 @@ final readonly class Profile
 
     public function supportsCurrentTransparencyImplementation(): bool
     {
-        return !$this->isPdfA1();
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::TRANSPARENCY);
+        }
+
+        return true;
     }
 
     public function supportsEmbeddedFileAttachments(): bool
@@ -483,8 +486,7 @@ final readonly class Profile
     {
         return $this->isStandard()
             || $this->isPdfUa()
-            || $this->isPdfA3()
-            || $this->isPdfA4f();
+            || $this->pdfaCapabilityAllowed(PdfACapability::DOCUMENT_EMBEDDED_ATTACHMENTS);
     }
 
     public function supportsEncryption(): bool
@@ -509,7 +511,11 @@ final readonly class Profile
 
     public function supportsTransparency(): bool
     {
-        return $this->version >= Version::V1_4 && !$this->isPdfA1();
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityAllowed(PdfACapability::TRANSPARENCY);
+        }
+
+        return $this->version >= Version::V1_4;
     }
 
     public function supportsWinAnsiEncoding(): bool
@@ -524,12 +530,16 @@ final readonly class Profile
 
     public function usesPdfAOutputIntent(): bool
     {
-        return $this->family === ProfileFamily::PDFA;
+        return $this->pdfaCapabilityRequired(PdfACapability::OUTPUT_INTENT);
     }
 
     public function writesInfoDictionary(): bool
     {
-        return !$this->isPdfA4();
+        if ($this->isPdfA()) {
+            return $this->pdfaCapabilityRequired(PdfACapability::INFO_DICTIONARY);
+        }
+
+        return true;
     }
 
     public function writesPdfAIdentificationMetadata(): bool
@@ -540,6 +550,24 @@ final readonly class Profile
     public function writesPdfUaIdentificationMetadata(): bool
     {
         return $this->isPdfUa();
+    }
+
+    private function pdfaCapabilityAllowed(PdfACapability $capability): bool
+    {
+        if (!$this->isPdfA()) {
+            return false;
+        }
+
+        return $this->pdfaSupport()?->capabilityRule($capability)->allowed ?? false;
+    }
+
+    private function pdfaCapabilityRequired(PdfACapability $capability): bool
+    {
+        if (!$this->isPdfA()) {
+            return false;
+        }
+
+        return $this->pdfaSupport()?->capabilityRule($capability)->required ?? false;
     }
 
     private function buildPdfAName(): string

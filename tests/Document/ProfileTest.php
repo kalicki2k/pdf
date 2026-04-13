@@ -66,6 +66,11 @@ final class ProfileTest extends TestCase
         self::assertFalse(Profile::pdfA4()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4e()->supportsCurrentPdfAImplementation());
         self::assertFalse(Profile::pdfA4f()->supportsCurrentPdfAImplementation());
+        self::assertFalse(Profile::pdfA4()->usesPdfAOutputIntent());
+        self::assertFalse(Profile::pdfA4()->writesInfoDictionary());
+        self::assertFalse(Profile::pdfA4f()->supportsTransparency());
+        self::assertTrue(Profile::pdfA4f()->supportsDocumentAssociatedFiles());
+        self::assertTrue(Profile::pdfA4f()->supportsDocumentEmbeddedFileAttachments());
 
         self::assertSame(
             'PDF/A-4 is blocked behind a dedicated PDF/A-4 policy and PDF 2.0 validation path.',
