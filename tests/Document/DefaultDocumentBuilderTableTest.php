@@ -486,6 +486,33 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         );
     }
 
+    public function testItAppliesSpacingBeforeAndAfterToImplicitTableFlow(): void
+    {
+        $table = Table::define(
+            TableColumn::fixed(100.0),
+        )
+            ->withOptions(
+                (TableOptions::make())
+                    ->withSpacingBefore(12.0)
+                    ->withSpacingAfter(16.0),
+            )
+            ->withRows(
+                TableRow::fromTexts('One'),
+            );
+
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(Units::mm(20)))
+            ->text('Lead', TextOptions::make(fontSize: 18.0, lineHeight: 18.0))
+            ->table($table)
+            ->text('After table')
+            ->build();
+
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 520.583 Td\n[", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 12 Tf\n60.693 474.583 Td\n(One) Tj\nET", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 434.183 Td\n[", $document->pages[0]->contents);
+    }
+
     public function testItCreatesANewPageBeforeARowThatDoesNotFit(): void
     {
         $rows = [];

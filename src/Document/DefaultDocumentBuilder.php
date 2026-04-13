@@ -642,7 +642,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             );
         }
 
-        $cursorY = $explicitStartY ?? $clone->currentPageCursorY ?? $contentArea->top;
+        $cursorY = $explicitStartY
+            ?? (($clone->currentPageCursorY ?? $contentArea->top) - $table->spacingBefore);
         $headerRenderedOnCurrentPage = false;
         $bodyRenderedOnCurrentPage = false;
         $minimumTableSegmentHeight = $table->cellPadding->vertical() + $clone->lineHeightForTable($table);
@@ -845,6 +846,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
             $clone->currentPageCursorYIsTopBoundary = true;
         }
+
+        $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY) - $table->spacingAfter;
+        $clone->currentPageCursorYIsTopBoundary = true;
 
         return $clone;
     }

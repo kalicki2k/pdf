@@ -23,6 +23,8 @@ final class TableOptionsTest extends TestCase
         self::assertEquals(new CellPadding(4.0, 4.0, 4.0, 4.0), $options->cellPadding);
         self::assertEquals(new Border(0.5, 0.5, 0.5, 0.5), $options->border);
         self::assertEquals(TextOptions::make(fontSize: 12.0, lineHeight: 14.4), $options->textOptions);
+        self::assertSame(0.0, $options->spacingBefore);
+        self::assertSame(0.0, $options->spacingAfter);
         self::assertFalse($options->repeatHeaderOnPageBreak);
         self::assertFalse($options->repeatFooterOnPageBreak);
     }
@@ -41,6 +43,8 @@ final class TableOptionsTest extends TestCase
             ->withCellPadding($padding)
             ->withBorder($border)
             ->withTextOptions($text)
+            ->withSpacingBefore(8.0)
+            ->withSpacingAfter(12.0)
             ->withRepeatedHeaderOnPageBreak()
             ->withRepeatedFooterOnPageBreak();
 
@@ -49,6 +53,8 @@ final class TableOptionsTest extends TestCase
         self::assertSame($padding, $options->cellPadding);
         self::assertSame($border, $options->border);
         self::assertSame($text, $options->textOptions);
+        self::assertSame(8.0, $options->spacingBefore);
+        self::assertSame(12.0, $options->spacingAfter);
         self::assertTrue($options->repeatHeaderOnPageBreak);
         self::assertTrue($options->repeatFooterOnPageBreak);
     }
@@ -67,6 +73,8 @@ final class TableOptionsTest extends TestCase
             caption: $caption,
             placement: $placement,
             cellPadding: $padding,
+            spacingBefore: 8.0,
+            spacingAfter: 12.0,
             repeatHeaderOnPageBreak: true,
             repeatFooterOnPageBreak: true,
         );
@@ -76,6 +84,8 @@ final class TableOptionsTest extends TestCase
         self::assertSame($padding, $options->cellPadding);
         self::assertSame($border, $options->border);
         self::assertSame($text, $options->textOptions);
+        self::assertSame(8.0, $options->spacingBefore);
+        self::assertSame(12.0, $options->spacingAfter);
         self::assertTrue($options->repeatHeaderOnPageBreak);
         self::assertTrue($options->repeatFooterOnPageBreak);
     }

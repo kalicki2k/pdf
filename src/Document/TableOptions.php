@@ -15,6 +15,8 @@ final readonly class TableOptions
     public ?TableCaption $caption;
     public ?TablePlacement $placement;
     public CellPadding $cellPadding;
+    public float $spacingBefore;
+    public float $spacingAfter;
     public bool $repeatHeaderOnPageBreak;
     public bool $repeatFooterOnPageBreak;
 
@@ -24,6 +26,8 @@ final readonly class TableOptions
         ?TableCaption $caption = null,
         ?TablePlacement $placement = null,
         CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
+        float $spacingBefore = 0.0,
+        float $spacingAfter = 0.0,
         bool $repeatHeaderOnPageBreak = false,
         bool $repeatFooterOnPageBreak = false,
     ): self {
@@ -33,6 +37,8 @@ final readonly class TableOptions
             caption: $caption,
             placement: $placement,
             cellPadding: $cellPadding,
+            spacingBefore: $spacingBefore,
+            spacingAfter: $spacingAfter,
             repeatHeaderOnPageBreak: $repeatHeaderOnPageBreak,
             repeatFooterOnPageBreak: $repeatFooterOnPageBreak,
         );
@@ -44,6 +50,8 @@ final readonly class TableOptions
         ?TableCaption $caption = null,
         ?TablePlacement $placement = null,
         CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
+        float $spacingBefore = 0.0,
+        float $spacingAfter = 0.0,
         bool $repeatHeaderOnPageBreak = false,
         bool $repeatFooterOnPageBreak = false,
     ) {
@@ -52,6 +60,8 @@ final readonly class TableOptions
         $this->caption = $caption;
         $this->placement = $placement;
         $this->cellPadding = $cellPadding;
+        $this->spacingBefore = $spacingBefore;
+        $this->spacingAfter = $spacingAfter;
         $this->repeatHeaderOnPageBreak = $repeatHeaderOnPageBreak;
         $this->repeatFooterOnPageBreak = $repeatFooterOnPageBreak;
     }
@@ -64,6 +74,8 @@ final readonly class TableOptions
             caption: $caption,
             placement: $this->placement,
             cellPadding: $this->cellPadding,
+            spacingBefore: $this->spacingBefore,
+            spacingAfter: $this->spacingAfter,
             repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
             repeatFooterOnPageBreak: $this->repeatFooterOnPageBreak,
         );
@@ -77,6 +89,8 @@ final readonly class TableOptions
             caption: $this->caption,
             placement: $placement,
             cellPadding: $this->cellPadding,
+            spacingBefore: $this->spacingBefore,
+            spacingAfter: $this->spacingAfter,
             repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
             repeatFooterOnPageBreak: $this->repeatFooterOnPageBreak,
         );
@@ -90,6 +104,8 @@ final readonly class TableOptions
             caption: $this->caption,
             placement: $this->placement,
             cellPadding: $cellPadding,
+            spacingBefore: $this->spacingBefore,
+            spacingAfter: $this->spacingAfter,
             repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
             repeatFooterOnPageBreak: $this->repeatFooterOnPageBreak,
         );
@@ -103,6 +119,8 @@ final readonly class TableOptions
             caption: $this->caption,
             placement: $this->placement,
             cellPadding: $this->cellPadding,
+            spacingBefore: $this->spacingBefore,
+            spacingAfter: $this->spacingAfter,
             repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
             repeatFooterOnPageBreak: $this->repeatFooterOnPageBreak,
         );
@@ -116,6 +134,38 @@ final readonly class TableOptions
             caption: $this->caption,
             placement: $this->placement,
             cellPadding: $this->cellPadding,
+            spacingBefore: $this->spacingBefore,
+            spacingAfter: $this->spacingAfter,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+            repeatFooterOnPageBreak: $this->repeatFooterOnPageBreak,
+        );
+    }
+
+    public function withSpacingBefore(float $spacingBefore): self
+    {
+        return new self(
+            border: $this->border,
+            textOptions: $this->textOptions,
+            caption: $this->caption,
+            placement: $this->placement,
+            cellPadding: $this->cellPadding,
+            spacingBefore: $spacingBefore,
+            spacingAfter: $this->spacingAfter,
+            repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
+            repeatFooterOnPageBreak: $this->repeatFooterOnPageBreak,
+        );
+    }
+
+    public function withSpacingAfter(float $spacingAfter): self
+    {
+        return new self(
+            border: $this->border,
+            textOptions: $this->textOptions,
+            caption: $this->caption,
+            placement: $this->placement,
+            cellPadding: $this->cellPadding,
+            spacingBefore: $this->spacingBefore,
+            spacingAfter: $spacingAfter,
             repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
             repeatFooterOnPageBreak: $this->repeatFooterOnPageBreak,
         );
@@ -129,6 +179,8 @@ final readonly class TableOptions
             caption: $this->caption,
             placement: $this->placement,
             cellPadding: $this->cellPadding,
+            spacingBefore: $this->spacingBefore,
+            spacingAfter: $this->spacingAfter,
             repeatHeaderOnPageBreak: $repeatHeaderOnPageBreak,
             repeatFooterOnPageBreak: $this->repeatFooterOnPageBreak,
         );
@@ -142,6 +194,8 @@ final readonly class TableOptions
             caption: $this->caption,
             placement: $this->placement,
             cellPadding: $this->cellPadding,
+            spacingBefore: $this->spacingBefore,
+            spacingAfter: $this->spacingAfter,
             repeatHeaderOnPageBreak: $this->repeatHeaderOnPageBreak,
             repeatFooterOnPageBreak: $repeatFooterOnPageBreak,
         );

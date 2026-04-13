@@ -20,6 +20,8 @@ final readonly class Table
     public CellPadding $cellPadding;
     public Border $border;
     public TextOptions $textOptions;
+    public float $spacingBefore;
+    public float $spacingAfter;
     public bool $repeatHeaderOnPageBreak;
     public bool $repeatFooterOnPageBreak;
 
@@ -47,6 +49,8 @@ final readonly class Table
         $this->cellPadding = $this->options->cellPadding;
         $this->border = $this->options->border;
         $this->textOptions = $this->options->textOptions;
+        $this->spacingBefore = $this->options->spacingBefore;
+        $this->spacingAfter = $this->options->spacingAfter;
         $this->repeatHeaderOnPageBreak = $this->options->repeatHeaderOnPageBreak;
         $this->repeatFooterOnPageBreak = $this->options->repeatFooterOnPageBreak;
 
