@@ -252,6 +252,27 @@ final class ImageSourceTest extends TestCase
         unlink($path);
     }
 
+    public function testItCreatesAGrayscaleImageSourceFromAPackBitsTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyPackBitsGrayscaleTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(2, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::GRAY, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
+
+        unlink($path);
+    }
+
     public function testItCreatesAnRgbImageSourceFromAn8BitRgbTiffPath(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
@@ -261,6 +282,27 @@ final class ImageSourceTest extends TestCase
         }
 
         file_put_contents($path, TiffFixture::tinyUncompressedRgbTiffBytes());
+
+        $source = ImageSource::fromPath($path);
+
+        self::assertSame(1, $source->width);
+        self::assertSame(1, $source->height);
+        self::assertSame(ImageColorSpace::RGB, $source->colorSpace);
+        self::assertSame(8, $source->bitsPerComponent);
+        self::assertContains($source->filter, ['/FlateDecode', '/LZWDecode', '/RunLengthDecode']);
+
+        unlink($path);
+    }
+
+    public function testItCreatesAnRgbImageSourceFromAnLzwTiffPath(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-image-source-');
+
+        if ($path === false) {
+            self::fail('Unable to create a temporary image source path.');
+        }
+
+        file_put_contents($path, TiffFixture::tinyLzwRgbTiffBytes());
 
         $source = ImageSource::fromPath($path);
 

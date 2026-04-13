@@ -7,6 +7,8 @@ namespace Kalle\Pdf\Tests\Image;
 use function count;
 use function strlen;
 
+use Kalle\Pdf\Image\LzwEncoder;
+
 final class TiffFixture
 {
     public static function tinyCcittGroup4TiffBytes(): string
@@ -59,6 +61,20 @@ final class TiffFixture
         );
     }
 
+    public static function tinyPackBitsGrayscaleTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 2,
+            height: 1,
+            bitsPerSample: [8],
+            compression: 32773,
+            photometricInterpretation: 1,
+            stripData: ["\x01\x22\xCC"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 1,
+        );
+    }
+
     public static function tinyUncompressedRgbTiffBytes(): string
     {
         return self::imageTiffBytes(
@@ -68,6 +84,20 @@ final class TiffFixture
             compression: 1,
             photometricInterpretation: 2,
             stripData: ["\xFF\x00\x80"],
+            rowsPerStrip: 1,
+            samplesPerPixel: 3,
+        );
+    }
+
+    public static function tinyLzwRgbTiffBytes(): string
+    {
+        return self::imageTiffBytes(
+            width: 1,
+            height: 1,
+            bitsPerSample: [8, 8, 8],
+            compression: 5,
+            photometricInterpretation: 2,
+            stripData: [(new LzwEncoder())->encode("\xFF\x00\x80")],
             rowsPerStrip: 1,
             samplesPerPixel: 3,
         );
