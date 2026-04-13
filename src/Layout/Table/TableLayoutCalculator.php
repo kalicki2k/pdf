@@ -31,8 +31,7 @@ final class TableLayoutCalculator
         float $availableWidth,
         ?TextFlow $textFlow = null,
         StandardFontDefinition | EmbeddedFontDefinition | null $font = null,
-    ): array
-    {
+    ): array {
         if ($availableWidth <= 0.0) {
             throw new InvalidArgumentException('Available table width must be greater than zero.');
         }

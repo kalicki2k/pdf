@@ -6,6 +6,7 @@ namespace Kalle\Pdf\Tests\Layout\Table;
 
 use function array_sum;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
@@ -70,7 +71,7 @@ final class TableLayoutCalculatorTest extends TestCase
             TableColumn::proportional(1.0),
         );
 
-        $this->expectExceptionObject(new \InvalidArgumentException(
+        $this->expectExceptionObject(new InvalidArgumentException(
             'Auto table columns require a text flow and font for width resolution.',
         ));
 
