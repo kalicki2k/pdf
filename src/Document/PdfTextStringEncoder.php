@@ -43,7 +43,7 @@ final class PdfTextStringEncoder
         $encoded = '';
 
         foreach (str_split($bytes) as $byte) {
-            $value = ord($byte);
+            $value = ord($byte[0]);
 
             $encoded .= match (true) {
                 $byte === '\\' => '\\\\',

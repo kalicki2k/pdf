@@ -90,7 +90,7 @@ abstract readonly class FormField
         $encoded = '';
 
         foreach (str_split($value) as $character) {
-            $ord = ord($character);
+            $ord = ord($character[0]);
 
             if (
                 ($ord >= 48 && $ord <= 57)

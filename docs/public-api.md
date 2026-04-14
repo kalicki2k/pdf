@@ -5,6 +5,7 @@
 Es gibt zwei praktische Einstiegspunkte:
 
 - `Kalle\Pdf\Pdf` als kleine Fassade
+- `Kalle\Pdf\Xml` als kleine Fassade fuer generische XML-Erzeugung
 - `Kalle\Pdf\Document\Document::make()` bzw. `DefaultDocumentBuilder::make()` fuer die Builder-API
 
 Die Fassade deckt vor allem diese Faelle ab:
@@ -17,6 +18,13 @@ Die Fassade deckt vor allem diese Faelle ab:
 - `Pdf::renderSigned()`
 - `Pdf::signedContents()`
 - `Pdf::measureTextWidth()`
+
+Fuer generische XML-Ausgabe steht ausserdem eine kleine zweite Fassade bereit:
+
+- `Xml::element()`
+- `Xml::text()`
+- `Xml::document()`
+- `Xml::serialize()`
 
 ## Minimaler Build
 
