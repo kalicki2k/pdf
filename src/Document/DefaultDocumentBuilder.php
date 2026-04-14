@@ -2993,35 +2993,32 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function startOverflowPageForAutoBreak(): void
     {
-        if (!$this->autoPageBreak) {
-            throw new DocumentValidationException(
-                DocumentBuildError::TABLE_LAYOUT_INVALID,
-                'Automatic page breaks are disabled and the table does not fit in the remaining page space.',
-            );
-        }
-
-        $this->advanceToOverflowPage();
+        $this->startOverflowPageForAutoLayout(
+            DocumentBuildError::TABLE_LAYOUT_INVALID,
+            'Automatic page breaks are disabled and the table does not fit in the remaining page space.',
+        );
     }
 
     private function startOverflowPageForAutoTextBreak(): void
     {
-        if (!$this->autoPageBreak) {
-            throw new DocumentValidationException(
-                DocumentBuildError::TEXT_LAYOUT_INVALID,
-                'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
-            );
-        }
-
-        $this->advanceToOverflowPage();
+        $this->startOverflowPageForAutoLayout(
+            DocumentBuildError::TEXT_LAYOUT_INVALID,
+            'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
+        );
     }
 
     private function startOverflowPageForAutoImageBreak(): void
     {
+        $this->startOverflowPageForAutoLayout(
+            DocumentBuildError::IMAGE_LAYOUT_INVALID,
+            'Automatic page breaks are disabled and the image does not fit in the remaining page space.',
+        );
+    }
+
+    private function startOverflowPageForAutoLayout(DocumentBuildError $error, string $message): void
+    {
         if (!$this->autoPageBreak) {
-            throw new DocumentValidationException(
-                DocumentBuildError::IMAGE_LAYOUT_INVALID,
-                'Automatic page breaks are disabled and the image does not fit in the remaining page space.',
-            );
+            throw new DocumentValidationException($error, $message);
         }
 
         $this->advanceToOverflowPage();
@@ -4783,7 +4780,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ]);
 
         if ($clone->shouldAutoPaginateFlowTextBlock($options, $taggedTextTag)) {
-            $clone->renderWrappedFlowTextBlockAcrossPages($text, $wrappedLines, $options, $font, $artifact);
+            $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact);
 
             return $clone;
         }
@@ -4830,7 +4827,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
      * @param list<string> $wrappedLines
      */
     private function renderWrappedFlowTextBlockAcrossPages(
-        string $text,
         array $wrappedLines,
         TextOptions $options,
         StandardFontDefinition | EmbeddedFontDefinition $font,
@@ -4964,7 +4960,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ]);
 
             if ($clone->shouldAutoPaginateFlowTextBlock($options, $taggedTextTag)) {
-                $clone->renderWrappedFlowTextBlockAcrossPages(implode("\n", $validatedLines), $wrappedLines, $options, $font, $artifact);
+                $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact);
 
                 return $clone;
             }
