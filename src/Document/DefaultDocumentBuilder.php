@@ -589,6 +589,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $textFlow = $clone->textFlow();
         $placement = $textFlow->placement($options, $font);
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
+
+        if ($clone->shouldAutoPaginateFlowTextBlock($options, $markedContentTag)) {
+            $clone->renderWrappedFlowTextSegmentsAcrossPages($wrappedSegmentLines, $options, $font, $artifact);
+
+            return $clone;
+        }
+
         $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
         $textResult = $clone->buildWrappedTextSegmentsContent(
             $wrappedSegmentLines,
@@ -614,6 +621,69 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $clone;
+    }
+
+    /**
+     * @param list<list<TextSegment>> $wrappedSegmentLines
+     */
+    private function renderWrappedFlowTextSegmentsAcrossPages(
+        array $wrappedSegmentLines,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        bool $artifact,
+    ): void {
+        $remainingLines = $wrappedSegmentLines;
+        $isContinuation = false;
+
+        while ($remainingLines !== []) {
+            $textFlow = $this->textFlow();
+            $chunkOptions = $this->flowTextChunkOptions($options, $isContinuation, false);
+            $placement = $textFlow->placement($chunkOptions, $font);
+            $lineCapacity = $this->flowTextLineCapacity($placement['y'], $chunkOptions, $textFlow);
+
+            if ($lineCapacity < 1) {
+                if ($this->currentPageCursorY !== null) {
+                    $this->startOverflowPageForAutoTextBreak();
+                    $isContinuation = true;
+
+                    continue;
+                }
+
+                throw new DocumentValidationException(
+                    DocumentBuildError::TEXT_LAYOUT_INVALID,
+                    'Text block does not fit within the available page content area.',
+                );
+            }
+
+            $chunkLines = array_slice($remainingLines, 0, $lineCapacity);
+            $isFinalChunk = count($chunkLines) === count($remainingLines);
+            $chunkOptions = $this->flowTextChunkOptions($options, $isContinuation, $isFinalChunk);
+            $textResult = $this->buildWrappedTextSegmentsContent(
+                $chunkLines,
+                $chunkOptions,
+                $textFlow,
+                $placement['x'],
+                $placement['y'],
+                ($this->profile ?? Profile::standard())->version(),
+                null,
+                null,
+                $artifact,
+            );
+
+            $this->currentPageContents = $this->appendPageContent(
+                $this->currentPageContents,
+                $textResult['contents'],
+            );
+            $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
+            $this->currentPageCursorY = $textFlow->nextCursorY($chunkOptions, $placement['y'], count($chunkLines));
+            $this->currentPageCursorYIsTopBoundary = false;
+            $remainingLines = array_slice($remainingLines, count($chunkLines));
+
+            if ($remainingLines !== []) {
+                $this->startOverflowPageForAutoTextBreak();
+                $isContinuation = true;
+            }
+        }
     }
 
     public function table(Table $table): DocumentBuilder

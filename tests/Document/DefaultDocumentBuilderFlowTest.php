@@ -18,6 +18,8 @@ use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
+use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
 final class DefaultDocumentBuilderFlowTest extends TestCase
@@ -278,6 +280,58 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
                 ->margin(Margin::all(10.0))
                 ->disableAutoPageBreak()
                 ->textLines($lines, TextOptions::make(
+                    fontSize: 18.0,
+                    lineHeight: 18.0,
+                ));
+            self::fail('Expected coded text layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TEXT_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    public function testItSplitsFlowTextSegmentsAcrossOverflowPagesLineByLine(): void
+    {
+        $segments = [];
+
+        for ($index = 1; $index <= 20; $index++) {
+            $suffix = $index < 20 ? "\n" : '';
+            $segments[] = TextSegment::link('Seg ' . $index . $suffix, TextLink::externalUrl('https://example.com/docs'));
+        }
+
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->text($segments, TextOptions::make(
+                fontSize: 18.0,
+                lineHeight: 18.0,
+            ))
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertCount(10, $document->pages[0]->annotations);
+        self::assertCount(10, $document->pages[1]->annotations);
+        self::assertSame('https://example.com/docs', $document->pages[1]->annotations[9]->target->externalUrlValue());
+    }
+
+    public function testItCanDisableAutomaticFlowTextSegmentPageBreaks(): void
+    {
+        $segments = [];
+
+        for ($index = 1; $index <= 20; $index++) {
+            $suffix = $index < 20 ? "\n" : '';
+            $segments[] = TextSegment::plain('Seg ' . $index . $suffix);
+        }
+
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A8())
+                ->margin(Margin::all(10.0))
+                ->disableAutoPageBreak()
+                ->text($segments, TextOptions::make(
                     fontSize: 18.0,
                     lineHeight: 18.0,
                 ));
