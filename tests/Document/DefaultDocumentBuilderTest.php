@@ -729,6 +729,49 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertStringContainsString("BT\n/F1 18 Tf\n40 701.89 Td\n[", $document->pages[0]->contents);
     }
 
+    public function testItCreatesOverflowPagesForFlowImages(): void
+    {
+        $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
+
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->image($image, ImagePlacement::flow(width: 120.0))
+            ->image($image, ImagePlacement::flow(width: 120.0))
+            ->image($image, ImagePlacement::flow(width: 120.0))
+            ->image($image, ImagePlacement::flow(width: 120.0))
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertCount(3, $document->pages[0]->images);
+        self::assertCount(1, $document->pages[1]->images);
+        self::assertEqualsWithDelta(19.764, $document->pages[0]->images[2]->placement->y, 0.001);
+        self::assertEqualsWithDelta(139.764, $document->pages[1]->images[0]->placement->y, 0.001);
+    }
+
+    public function testItCanDisableAutomaticFlowImagePageBreaks(): void
+    {
+        $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
+
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A8())
+                ->margin(Margin::all(10.0))
+                ->image($image, ImagePlacement::flow(width: 120.0))
+                ->image($image, ImagePlacement::flow(width: 120.0))
+                ->image($image, ImagePlacement::flow(width: 120.0))
+                ->disableAutoPageBreak()
+                ->image($image, ImagePlacement::flow(width: 120.0));
+            self::fail('Expected coded image layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::IMAGE_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Automatic page breaks are disabled and the image does not fit in the remaining page space.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
     public function testItWrapsTaggedPdfImagesInMarkedContent(): void
     {
         $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);

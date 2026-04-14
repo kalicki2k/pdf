@@ -988,6 +988,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone = clone $this;
         $imageAlias = $clone->imageAliasFor($source);
         [$width, $height] = $this->resolveImageDimensions($source, $placement);
+
+        if ($placement->isFlow()) {
+            $clone->prepareFlowImagePlacement($placement, $width, $height);
+        }
+
         $resolvedPlacement = $clone->resolveImagePlacement($placement, $width, $height);
         $markedContentId = $clone->markedContentIdForImage($accessibility);
         $structureKey = $markedContentId !== null
@@ -3004,6 +3009,18 @@ class DefaultDocumentBuilder implements DocumentBuilder
             throw new DocumentValidationException(
                 DocumentBuildError::TEXT_LAYOUT_INVALID,
                 'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
+            );
+        }
+
+        $this->advanceToOverflowPage();
+    }
+
+    private function startOverflowPageForAutoImageBreak(): void
+    {
+        if (!$this->autoPageBreak) {
+            throw new DocumentValidationException(
+                DocumentBuildError::IMAGE_LAYOUT_INVALID,
+                'Automatic page breaks are disabled and the image does not fit in the remaining page space.',
             );
         }
 
@@ -5667,6 +5684,32 @@ class DefaultDocumentBuilder implements DocumentBuilder
             width: $placement->width,
             height: $placement->height,
         );
+    }
+
+    private function prepareFlowImagePlacement(ImagePlacement $placement, float $width, float $height): void
+    {
+        $resolvedPlacement = $this->resolveImagePlacement($placement, $width, $height);
+        $contentArea = $this->buildCurrentPage()->contentArea();
+
+        if (($resolvedPlacement->y ?? 0.0) >= $contentArea->bottom) {
+            return;
+        }
+
+        if ($height > $contentArea->height()) {
+            throw new DocumentValidationException(
+                DocumentBuildError::IMAGE_LAYOUT_INVALID,
+                'Flow image height exceeds the available page content area.',
+            );
+        }
+
+        if ($this->currentPageCursorY === null) {
+            throw new DocumentValidationException(
+                DocumentBuildError::IMAGE_LAYOUT_INVALID,
+                'Flow image does not fit within the available page content area.',
+            );
+        }
+
+        $this->startOverflowPageForAutoImageBreak();
     }
 
     private function textFlow(): TextFlow
