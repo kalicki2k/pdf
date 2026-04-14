@@ -1003,6 +1003,105 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
     }
 
+    public function testItRejectsPdfA4eOptionalContentMembershipObjectsWithUnsupportedPolicy(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Membership Policy',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Assembly BDC\nq\n0 0 20 20 re\nf\nQ\nEMC",
+                    optionalContentGroups: [
+                        'LayerA' => new OptionalContentGroup('Base Geometry'),
+                        'LayerB' => new OptionalContentGroup('Dimensions'),
+                    ],
+                    optionalContentMemberships: [
+                        'Assembly' => new OptionalContentMembership(
+                            'Assembly View',
+                            ['LayerA', 'LayerB'],
+                            OptionalContentMembership::POLICY_ALL_ON,
+                        ),
+                    ],
+                ),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+        $membershipObjectId = array_values($state->pageOptionalContentMembershipObjectIds[0])[0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($membershipObjectId): IndirectObject {
+                if ($object->objectId !== $membershipObjectId) {
+                    return $object;
+                }
+
+                return IndirectObject::plain(
+                    $object->objectId,
+                    str_replace('/P /AllOn', '/P /Invalid', $object->contents),
+                );
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e must serialize optional content membership object ' . $membershipObjectId . ' with /P /AnyOn or /P /AllOn.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
+    public function testItRejectsPdfA4eOptionalContentMembershipObjectsWithUnexpectedVeOperator(): void
+    {
+        $document = new Document(
+            profile: Profile::pdfA4e(),
+            title: 'Engineering Membership Unexpected VE',
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    contents: "/OC /Exploded BDC\nq\n0 0 20 20 re\nf\nQ\nEMC",
+                    optionalContentGroups: [
+                        'LayerA' => new OptionalContentGroup('Base Geometry'),
+                        'LayerB' => new OptionalContentGroup('Dimensions'),
+                    ],
+                    optionalContentMemberships: [
+                        'Exploded' => new OptionalContentMembership(
+                            'Exploded View',
+                            ['LayerA', 'LayerB'],
+                            visibilityExpression: OptionalContentVisibilityExpression::and(
+                                OptionalContentVisibilityExpression::alias('LayerA'),
+                                OptionalContentVisibilityExpression::not(
+                                    OptionalContentVisibilityExpression::alias('LayerB'),
+                                ),
+                            ),
+                        ),
+                    ],
+                ),
+            ],
+        );
+        $state = $this->allocateState($document);
+        $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
+        $membershipObjectId = array_values($state->pageOptionalContentMembershipObjectIds[0])[0];
+
+        $objects = array_map(
+            static function (IndirectObject $object) use ($membershipObjectId): IndirectObject {
+                if ($object->objectId !== $membershipObjectId) {
+                    return $object;
+                }
+
+                return IndirectObject::plain(
+                    $object->objectId,
+                    str_replace('/VE [/And 5 0 R [/Not 6 0 R]]', '/VE [/Or 5 0 R 6 0 R]', $object->contents),
+                );
+            },
+            $objects,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Profile PDF/A-4e must serialize optional content membership object ' . $membershipObjectId . ' with the configured /VE expression.');
+
+        new PdfAObjectGraphValidator()->assertValid($document, $state, $objects);
+    }
+
     public function testItRejectsPdfA4eRichMediaObjects(): void
     {
         [$document, $state, $objects] = $this->pdfA4ObjectGraph(Profile::pdfA4e());
