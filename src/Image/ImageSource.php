@@ -91,6 +91,9 @@ final readonly class ImageSource
         }
     }
 
+    /**
+     * @param array<int, float|int>|null $decode
+     */
     public static function jpeg(
         string $data,
         int $width,
@@ -98,6 +101,9 @@ final readonly class ImageSource
         ImageColorSpace $colorSpace = ImageColorSpace::RGB,
         ?array $decode = null,
     ): self {
+        /** @var list<float|int>|null $decode */
+        $decode = $decode === null ? null : array_values($decode);
+
         return new self(
             width: $width,
             height: $height,
