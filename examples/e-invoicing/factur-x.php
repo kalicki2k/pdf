@@ -499,7 +499,7 @@ $document = Pdf::document()
         ),
     );
 
-$targetPath = $outputDirectory . '/invoice.pdf';
+$targetPath = $outputDirectory . '/factur-x.pdf';
 
 try {
     $document->writeToFile($targetPath);
