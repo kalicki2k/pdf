@@ -22,17 +22,6 @@ final readonly class TableLayout
     ) {
     }
 
-    public function rowTopY(int $rowIndex, float $tableTopY): float
-    {
-        $y = $tableTopY;
-
-        for ($index = 0; $index < $rowIndex; $index++) {
-            $y -= $this->rowHeights[$index];
-        }
-
-        return $y;
-    }
-
     public function cellHeight(TableCellLayout $cellLayout): float
     {
         $height = 0.0;
