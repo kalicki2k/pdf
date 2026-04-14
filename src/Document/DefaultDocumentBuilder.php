@@ -615,18 +615,45 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $artifact,
         );
 
-        $clone->currentPageContents = $this->appendPageContent(
-            $clone->currentPageContents,
-            $textResult['contents'],
+        $clone->applyRenderedFlowTextResult(
+            $textResult,
+            $textFlow,
+            $options,
+            $placement['y'],
+            count($wrappedSegmentLines),
+            $markedContentTag,
+            $markedContentId,
         );
-        $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
-        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedSegmentLines));
-        $clone->currentPageCursorYIsTopBoundary = false;
-        if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
-            $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
-        }
 
         return $clone;
+    }
+
+    /**
+     * @param array{contents: string, annotations: list<PageAnnotation>} $textResult
+     */
+    private function applyRenderedFlowTextResult(
+        array $textResult,
+        TextFlow $textFlow,
+        TextOptions $options,
+        float $startY,
+        int $lineCount,
+        ?string $markedContentTag,
+        ?int $markedContentId,
+        ?string $taggedTextKey = null,
+    ): ?string {
+        $this->currentPageContents = $this->appendPageContent(
+            $this->currentPageContents,
+            $textResult['contents'],
+        );
+        $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
+        $this->currentPageCursorY = $textFlow->nextCursorY($options, $startY, $lineCount);
+        $this->currentPageCursorYIsTopBoundary = false;
+
+        if ($markedContentTag === null || $markedContentId === null || $textResult['contents'] === '') {
+            return $taggedTextKey;
+        }
+
+        return $this->registerTaggedTextBlock($markedContentTag, $markedContentId, $taggedTextKey);
     }
 
     /**
@@ -4797,17 +4824,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $markedContentId,
             $artifact,
         );
-        $clone->currentPageContents = $this->appendPageContent(
-            $clone->currentPageContents,
-            $textResult['contents'],
+        $clone->applyRenderedFlowTextResult(
+            $textResult,
+            $textFlow,
+            $options,
+            $placement['y'],
+            count($wrappedLines),
+            $markedContentTag,
+            $markedContentId,
         );
-        $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
-        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], count($wrappedLines));
-        $clone->currentPageCursorYIsTopBoundary = false;
-
-        if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
-            $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
-        }
 
         return $clone;
     }
@@ -4919,17 +4944,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $markedContentId,
             );
 
-            $this->currentPageContents = $this->appendPageContent(
-                $this->currentPageContents,
-                $textResult['contents'],
+            $taggedTextKey = $this->applyRenderedFlowTextResult(
+                $textResult,
+                $textFlow,
+                $chunkOptions,
+                $placement['y'],
+                count($chunkLines),
+                $markedContentTag,
+                $markedContentId,
+                $taggedTextKey,
             );
-            $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
-            $this->currentPageCursorY = $textFlow->nextCursorY($chunkOptions, $placement['y'], count($chunkLines));
-            $this->currentPageCursorYIsTopBoundary = false;
-
-            if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
-                $taggedTextKey = $this->registerTaggedTextBlock($markedContentTag, $markedContentId, $taggedTextKey);
-            }
 
             $remainingLines = array_slice($remainingLines, count($chunkLines));
 
@@ -5046,17 +5070,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $lineCount = count($wrappedLines);
         }
 
-        $clone->currentPageContents = $this->appendPageContent(
-            $clone->currentPageContents,
-            $textResult['contents'],
+        $clone->applyRenderedFlowTextResult(
+            $textResult,
+            $textFlow,
+            $options,
+            $placement['y'],
+            $lineCount,
+            $markedContentTag,
+            $markedContentId,
         );
-        $clone->currentPageAnnotations = [...$clone->currentPageAnnotations, ...$textResult['annotations']];
-        $clone->currentPageCursorY = $textFlow->nextCursorY($options, $placement['y'], $lineCount);
-        $clone->currentPageCursorYIsTopBoundary = false;
-
-        if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
-            $clone->registerTaggedTextBlock($markedContentTag, $markedContentId);
-        }
 
         return $clone;
     }
