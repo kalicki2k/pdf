@@ -8,7 +8,11 @@ final readonly class CollectedTaggedStructure
 {
     /**
      * @param list<array{key: string, pageIndex: int, markedContentId: int, altText: ?string}> $figureEntries
-     * @param list<array{key: string, tag: string, pageIndex: int, markedContentId: int}> $textEntries
+     * @param list<array{
+     *   key: string,
+     *   tag: string,
+     *   references: list<array{pageIndex: int, markedContentId: int}>
+     * }> $textEntries
      * @param list<array{
      *   key: string,
      *   listId: int,

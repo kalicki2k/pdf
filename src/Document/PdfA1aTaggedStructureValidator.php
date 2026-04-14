@@ -261,10 +261,27 @@ final class PdfA1aTaggedStructureValidator
                 sprintf('text StructElem "%s"', $textEntry['key']),
             );
             $this->assertStructElemTagAndParent($contents, $textEntry['tag'], $this->expectedParentObjectId($textEntry['key'], $state));
-            $this->assertStructElemPageAndMarkedContent(
+
+            if (count($textEntry['references']) === 1) {
+                $this->assertStructElemPageAndMarkedContent(
+                    $contents,
+                    $state->pageObjectIds[$textEntry['references'][0]['pageIndex']],
+                    $textEntry['references'][0]['markedContentId'],
+                );
+
+                continue;
+            }
+
+            $this->assertMcrKids(
                 $contents,
-                $state->pageObjectIds[$textEntry['pageIndex']],
-                $textEntry['markedContentId'],
+                array_map(
+                    fn (array $reference): array => [
+                        $state->pageObjectIds[$reference['pageIndex']],
+                        $reference['markedContentId'],
+                    ],
+                    $textEntry['references'],
+                ),
+                sprintf('text StructElem "%s"', $textEntry['key']),
             );
         }
     }

@@ -96,7 +96,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
                 if ($accessibleLabel !== null && $accessibleLabel !== '') {
                     $lastAltTextPart = $groupedLinkEntries[$groupKey]['altTextParts'] === []
                         ? null
-                        : array_last($groupedLinkEntries[$groupKey]['altTextParts']);
+                        : $groupedLinkEntries[$groupKey]['altTextParts'][array_key_last($groupedLinkEntries[$groupKey]['altTextParts'])];
 
                     if ($lastAltTextPart !== $accessibleLabel) {
                         $groupedLinkEntries[$groupKey]['altTextParts'][] = $accessibleLabel;
@@ -405,13 +405,23 @@ final readonly class DocumentTaggedPdfObjectBuilder
         }
 
         foreach ($state->taggedStructure->textEntries as $textEntry) {
+            $references = $textEntry['references'];
             $objects[] = new IndirectObject(
                 $state->taggedStructureObjectIds->textStructElemObjectIds[$textEntry['key']],
                 new StructElem(
                     $textEntry['tag'],
                     $this->resolveParentObjectId($textEntry['key'], $state),
-                    pageObjectId: $state->pageObjectIds[$textEntry['pageIndex']],
-                    markedContentId: $textEntry['markedContentId'],
+                    pageObjectId: count($references) === 1 ? $state->pageObjectIds[$references[0]['pageIndex']] : null,
+                    markedContentId: count($references) === 1 ? $references[0]['markedContentId'] : null,
+                    kidEntries: count($references) > 1
+                        ? $this->taggedMarkedContentKidEntries(
+                            array_map(
+                                static fn (array $reference): object => (object) $reference,
+                                $references,
+                            ),
+                            $state->pageObjectIds,
+                        )
+                        : null,
                 )->objectContents(),
             );
         }

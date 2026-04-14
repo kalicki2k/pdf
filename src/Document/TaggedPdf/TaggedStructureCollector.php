@@ -56,9 +56,28 @@ final class TaggedStructureCollector
         foreach ($document->taggedTextBlocks as $index => $textBlock) {
             $key = $textBlock->key ?? 'text:' . $index;
             $this->addPageMarkedContentKey($pageMarkedContentKeys, $textBlock->pageIndex, $textBlock->markedContentId, $key);
-            $textEntries[] = [
-                'key' => $key,
-                'tag' => $textBlock->tag,
+
+            if (!isset($textEntries[$key])) {
+                $textEntries[$key] = [
+                    'key' => $key,
+                    'tag' => $textBlock->tag,
+                    'references' => [],
+                ];
+            }
+
+            if ($textEntries[$key]['tag'] !== $textBlock->tag) {
+                throw new DocumentValidationException(
+                    DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                    sprintf(
+                        'Tagged text key "%s" mixes multiple structure tags ("%s", "%s").',
+                        $key,
+                        $textEntries[$key]['tag'],
+                        $textBlock->tag,
+                    ),
+                );
+            }
+
+            $textEntries[$key]['references'][] = [
                 'pageIndex' => $textBlock->pageIndex,
                 'markedContentId' => $textBlock->markedContentId,
             ];
@@ -162,7 +181,7 @@ final class TaggedStructureCollector
 
         return new CollectedTaggedStructure(
             $figureEntries,
-            $textEntries,
+            array_values($textEntries),
             $listEntries,
             $containerEntries,
             $documentChildKeysInOrder,

@@ -54,6 +54,30 @@ final class TaggedStructureInvariantTest extends TestCase
         }
     }
 
+    public function testItGroupsTaggedTextBlocksBySharedKeyAcrossPages(): void
+    {
+        $document = new Document(
+            taggedTextBlocks: [
+                new TaggedTextBlock('P', 0, 7, 'text:intro'),
+                new TaggedTextBlock('P', 1, 3, 'text:intro'),
+            ],
+        );
+
+        $structure = new TaggedStructureCollector()->collect($document);
+
+        self::assertCount(1, $structure->textEntries);
+        self::assertSame('text:intro', $structure->textEntries[0]['key']);
+        self::assertSame('P', $structure->textEntries[0]['tag']);
+        self::assertSame(
+            [
+                ['pageIndex' => 0, 'markedContentId' => 7],
+                ['pageIndex' => 1, 'markedContentId' => 3],
+            ],
+            $structure->textEntries[0]['references'],
+        );
+        self::assertSame(['text:intro'], $structure->documentChildKeysInOrder);
+    }
+
     public function testItRaisesACodedErrorForUnknownTaggedPageContentKeys(): void
     {
         $objectIds = new TaggedStructureObjectIds(

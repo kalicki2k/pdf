@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Document;
 
+use function dirname;
+
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\DocumentBuildError;
 use Kalle\Pdf\Document\DocumentValidationException;
+use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableRow;
+use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Drawing\Units;
+use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Margin;
@@ -241,6 +246,34 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
                 $exception->getMessage(),
             );
         }
+    }
+
+    public function testItSplitsTaggedFlowTextAcrossOverflowPagesWithoutDuplicatingDocumentChildren(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfA1a())
+            ->title('Archive Copy')
+            ->language('de-DE')
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->text(implode("\n", array_fill(0, 20, 'Tagged flow text Привет')), TextOptions::make(
+                tag: TaggedStructureTag::P,
+                fontSize: 18.0,
+                lineHeight: 18.0,
+                embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+            ))
+            ->build();
+
+        self::assertGreaterThan(1, count($document->pages));
+        self::assertGreaterThan(1, count($document->taggedTextBlocks));
+        self::assertSame(
+            [$document->taggedTextBlocks[0]->key],
+            array_values(array_unique(array_map(
+                static fn ($block): ?string => $block->key,
+                $document->taggedTextBlocks,
+            ))),
+        );
+        self::assertSame([$document->taggedTextBlocks[0]->key], $document->taggedDocumentChildKeys);
     }
 
     public function testItSplitsFlowTextLinesAcrossOverflowPagesLineByLine(): void
@@ -584,5 +617,10 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         $formatted = number_format($value, 3, '.', '');
 
         return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    private function fontPath(): string
+    {
+        return dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf';
     }
 }

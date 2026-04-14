@@ -590,8 +590,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $placement = $textFlow->placement($options, $font);
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
 
-        if ($clone->shouldAutoPaginateFlowTextBlock($options, $markedContentTag)) {
-            $clone->renderWrappedFlowTextSegmentsAcrossPages($wrappedSegmentLines, $options, $font, $artifact);
+        if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
+            $clone->renderWrappedFlowTextSegmentsAcrossPages(
+                $wrappedSegmentLines,
+                $options,
+                $font,
+                $artifact,
+                $markedContentTag,
+            );
 
             return $clone;
         }
@@ -631,59 +637,36 @@ class DefaultDocumentBuilder implements DocumentBuilder
         TextOptions $options,
         StandardFontDefinition | EmbeddedFontDefinition $font,
         bool $artifact,
+        ?string $markedContentTag = null,
     ): void {
-        $remainingLines = $wrappedSegmentLines;
-        $isContinuation = false;
-
-        while ($remainingLines !== []) {
-            $textFlow = $this->textFlow();
-            $chunkOptions = $this->flowTextChunkOptions($options, $isContinuation, false);
-            $placement = $textFlow->placement($chunkOptions, $font);
-            $lineCapacity = $this->flowTextLineCapacity($placement['y'], $chunkOptions, $textFlow);
-
-            if ($lineCapacity < 1) {
-                if ($this->currentPageCursorY !== null) {
-                    $this->startOverflowPageForAutoTextBreak();
-                    $isContinuation = true;
-
-                    continue;
-                }
-
-                throw new DocumentValidationException(
-                    DocumentBuildError::TEXT_LAYOUT_INVALID,
-                    'Text block does not fit within the available page content area.',
+        $this->renderWrappedFlowTextAcrossPages(
+            $wrappedSegmentLines,
+            $options,
+            $font,
+            $markedContentTag,
+            static function (
+                self $builder,
+                array $chunkLines,
+                TextOptions $chunkOptions,
+                TextFlow $textFlow,
+                array $placement,
+                StandardFontDefinition | EmbeddedFontDefinition $font,
+                ?string $markedContentTag,
+                ?int $markedContentId,
+            ) use ($artifact): array {
+                return $builder->buildWrappedTextSegmentsContent(
+                    $chunkLines,
+                    $chunkOptions,
+                    $textFlow,
+                    $placement['x'],
+                    $placement['y'],
+                    ($builder->profile ?? Profile::standard())->version(),
+                    $markedContentTag,
+                    $markedContentId,
+                    $artifact,
                 );
-            }
-
-            $chunkLines = array_slice($remainingLines, 0, $lineCapacity);
-            $isFinalChunk = count($chunkLines) === count($remainingLines);
-            $chunkOptions = $this->flowTextChunkOptions($options, $isContinuation, $isFinalChunk);
-            $textResult = $this->buildWrappedTextSegmentsContent(
-                $chunkLines,
-                $chunkOptions,
-                $textFlow,
-                $placement['x'],
-                $placement['y'],
-                ($this->profile ?? Profile::standard())->version(),
-                null,
-                null,
-                $artifact,
-            );
-
-            $this->currentPageContents = $this->appendPageContent(
-                $this->currentPageContents,
-                $textResult['contents'],
-            );
-            $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
-            $this->currentPageCursorY = $textFlow->nextCursorY($chunkOptions, $placement['y'], count($chunkLines));
-            $this->currentPageCursorYIsTopBoundary = false;
-            $remainingLines = array_slice($remainingLines, count($chunkLines));
-
-            if ($remainingLines !== []) {
-                $this->startOverflowPageForAutoTextBreak();
-                $isContinuation = true;
-            }
-        }
+            },
+        );
     }
 
     public function table(Table $table): DocumentBuilder
@@ -4550,15 +4533,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $taggedLists;
     }
 
-    private function registerTaggedTextBlock(string $tag, int $markedContentId): void
+    private function registerTaggedTextBlock(string $tag, int $markedContentId, ?string $key = null): string
     {
-        $key = 'text:' . count($this->taggedTextBlocks);
+        $attachToStructure = $key === null;
+        $key ??= 'text:' . count($this->taggedTextBlocks);
         $this->taggedTextBlocks[] = [
             'key' => $key,
             'tag' => $tag,
             ...$this->taggedContentReference($markedContentId),
         ];
-        $this->attachTaggedStructureChildKey($key);
+
+        if ($attachToStructure) {
+            $this->attachTaggedStructureChildKey($key);
+        }
+
+        return $key;
     }
 
     private function registerTaggedFigure(int $markedContentId, ?string $altText): void
@@ -4779,8 +4768,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'text_length' => strlen($text),
         ]);
 
-        if ($clone->shouldAutoPaginateFlowTextBlock($options, $taggedTextTag)) {
-            $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact);
+        if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
+            $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact, $taggedTextTag);
 
             return $clone;
         }
@@ -4831,9 +4820,69 @@ class DefaultDocumentBuilder implements DocumentBuilder
         TextOptions $options,
         StandardFontDefinition | EmbeddedFontDefinition $font,
         bool $artifact,
+        ?string $markedContentTag = null,
+    ): void {
+        $this->renderWrappedFlowTextAcrossPages(
+            $wrappedLines,
+            $options,
+            $font,
+            $markedContentTag,
+            static function (
+                self $builder,
+                array $chunkLines,
+                TextOptions $chunkOptions,
+                TextFlow $textFlow,
+                array $placement,
+                StandardFontDefinition | EmbeddedFontDefinition $font,
+                ?string $markedContentTag,
+                ?int $markedContentId,
+            ) use ($artifact): array {
+                $shapedLines = $builder->shapeWrappedTextLines($chunkLines, $chunkOptions, $font);
+                $renderState = $builder->prepareTextRenderState(implode("\n", $chunkLines), $chunkOptions, $font, $shapedLines);
+
+                return $builder->buildWrappedTextContent(
+                    $chunkLines,
+                    $shapedLines,
+                    $chunkOptions,
+                    $textFlow,
+                    $placement['x'],
+                    $placement['y'],
+                    $renderState['fontAlias'],
+                    $font,
+                    $renderState['embeddedPageFont'],
+                    $renderState['useHexString'],
+                    ($builder->profile ?? Profile::standard())->version(),
+                    $markedContentTag,
+                    $markedContentId,
+                    $artifact,
+                );
+            },
+        );
+    }
+
+    /**
+     * @param list<mixed> $wrappedLines
+     * @param callable(
+     *   self,
+     *   array,
+     *   TextOptions,
+     *   TextFlow,
+     *   array{x: float, y: float, width: float},
+     *   StandardFontDefinition|EmbeddedFontDefinition,
+     *   ?string,
+     *   ?int
+     * ): array{contents: string, annotations: list<PageAnnotation>} $renderer
+     */
+    private function renderWrappedFlowTextAcrossPages(
+        array $wrappedLines,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        ?string $markedContentTag,
+        callable $renderer,
     ): void {
         $remainingLines = $wrappedLines;
         $isContinuation = false;
+        $taggedTextKey = null;
 
         while ($remainingLines !== []) {
             $textFlow = $this->textFlow();
@@ -4858,23 +4907,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $chunkLines = array_slice($remainingLines, 0, $lineCapacity);
             $isFinalChunk = count($chunkLines) === count($remainingLines);
             $chunkOptions = $this->flowTextChunkOptions($options, $isContinuation, $isFinalChunk);
-            $shapedLines = $this->shapeWrappedTextLines($chunkLines, $chunkOptions, $font);
-            $renderState = $this->prepareTextRenderState(implode("\n", $chunkLines), $chunkOptions, $font, $shapedLines);
-            $textResult = $this->buildWrappedTextContent(
+            $markedContentId = $markedContentTag !== null ? $this->nextTaggedMarkedContentId() : null;
+            $textResult = $renderer(
+                $this,
                 $chunkLines,
-                $shapedLines,
                 $chunkOptions,
                 $textFlow,
-                $placement['x'],
-                $placement['y'],
-                $renderState['fontAlias'],
+                $placement,
                 $font,
-                $renderState['embeddedPageFont'],
-                $renderState['useHexString'],
-                ($this->profile ?? Profile::standard())->version(),
-                null,
-                null,
-                $artifact,
+                $markedContentTag,
+                $markedContentId,
             );
 
             $this->currentPageContents = $this->appendPageContent(
@@ -4884,6 +4926,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
             $this->currentPageCursorY = $textFlow->nextCursorY($chunkOptions, $placement['y'], count($chunkLines));
             $this->currentPageCursorYIsTopBoundary = false;
+
+            if ($markedContentTag !== null && $markedContentId !== null && $textResult['contents'] !== '') {
+                $taggedTextKey = $this->registerTaggedTextBlock($markedContentTag, $markedContentId, $taggedTextKey);
+            }
+
             $remainingLines = array_slice($remainingLines, count($chunkLines));
 
             if ($remainingLines !== []) {
@@ -4936,6 +4983,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         if ($containsSegments) {
             $wrappedSegmentLines = $clone->wrapExplicitTextSegmentLines($validatedSegments, $options, $font, $textFlow, $placement['x']);
+
+            if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
+                $clone->renderWrappedFlowTextSegmentsAcrossPages(
+                    $wrappedSegmentLines,
+                    $options,
+                    $font,
+                    $artifact,
+                    $markedContentTag,
+                );
+
+                return $clone;
+            }
+
             $textResult = $clone->buildWrappedTextSegmentsContent(
                 $wrappedSegmentLines,
                 $options,
@@ -4959,8 +5019,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 'text_length' => strlen(implode('', $validatedLines)),
             ]);
 
-            if ($clone->shouldAutoPaginateFlowTextBlock($options, $taggedTextTag)) {
-                $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact);
+            if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
+                $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact, $taggedTextTag);
 
                 return $clone;
             }
@@ -5713,10 +5773,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return new TextFlow($this->buildCurrentPage(), $this->currentPageCursorY, $this->currentPageCursorYIsTopBoundary);
     }
 
-    private function shouldAutoPaginateFlowTextBlock(TextOptions $options, ?string $taggedTextTag): bool
+    private function shouldAutoPaginateFlowTextBlock(TextOptions $options): bool
     {
-        return $taggedTextTag === null
-            && $options->top === null
+        return $options->top === null
             && $options->bottom === null;
     }
 

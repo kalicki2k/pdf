@@ -34,6 +34,7 @@ use Kalle\Pdf\Image\ImageAccessibility;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Page;
@@ -244,6 +245,27 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
             ['H1', 'P', 'Table', 'Figure'],
             $this->documentChildTags(iterator_to_array($plan->objects)),
         );
+    }
+
+    public function testItKeepsTaggedFlowTextAsOneLogicalStructureElementAcrossOverflowPages(): void
+    {
+        $plan = new DocumentSerializationPlanBuilder()->build(
+            DefaultDocumentBuilder::make()
+                ->profile(Profile::pdfA1a())
+                ->title('Archive Copy')
+                ->language('de-DE')
+                ->pageSize(PageSize::A8())
+                ->margin(Margin::all(10.0))
+                ->text(implode("\n", array_fill(0, 20, 'Tagged flow text Привет')), TextOptions::make(
+                    tag: TaggedStructureTag::P,
+                    fontSize: 18.0,
+                    lineHeight: 18.0,
+                    embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
+                ))
+                ->build(),
+        );
+
+        self::assertSame(['P'], $this->documentChildTags(iterator_to_array($plan->objects)));
     }
 
     public function testItBuildsDocumentChildrenInReadingOrderWithSemanticGraphics(): void
