@@ -11,6 +11,7 @@ use Kalle\Pdf\Document\TableCaption;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableHeaderScope;
+use Kalle\Pdf\Document\TableOptions;
 use Kalle\Pdf\Document\TablePlacement;
 use Kalle\Pdf\Document\TableRow;
 use Kalle\Pdf\Font\EmbeddedFontSource;
@@ -36,8 +37,16 @@ $table = Table::define(
     TableColumn::fixed(120.0),
     TableColumn::fixed(120.0),
 )
-    ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
-    ->withCaption(TableCaption::text('Quartalsübersicht Привет'))
+    ->withOptions(
+        TableOptions::make()
+            ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
+            ->withCaption(TableCaption::text('Quartalsübersicht Привет'))
+            ->withTextOptions(TextOptions::make(
+                fontSize: 12,
+                lineHeight: 15,
+                embeddedFont: EmbeddedFontSource::fromPath($fontPath),
+            )),
+    )
     ->withHeaderRows(
         TableRow::fromCells(
             TableCell::text('Регион', rowspan: 2)->withHeaderScope(TableHeaderScope::BOTH),
@@ -55,12 +64,7 @@ $table = Table::define(
     )
     ->withFooterRows(
         TableRow::fromTexts('Итого', '22', '25'),
-    )
-    ->withTextOptions(TextOptions::make(
-        fontSize: 12,
-        lineHeight: 15,
-        embeddedFont: EmbeddedFontSource::fromPath($fontPath),
-    ));
+    );
 
 $document = DefaultDocumentBuilder::make()
     ->profile(Profile::pdfA1a())
