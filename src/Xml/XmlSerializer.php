@@ -66,7 +66,7 @@ final readonly class XmlSerializer
             return $indent . '<' . $element->name . $attributes . '/>';
         }
 
-        if ($this->hasOnlyTextChildren($element)) {
+        if ($this->hasTextChildren($element)) {
             return $indent . '<' . $element->name . $attributes . '>'
                 . $this->serializeChildrenCompact($element->children)
                 . '</' . $element->name . '>';
@@ -106,15 +106,15 @@ final readonly class XmlSerializer
         return ' ' . implode(' ', $pairs);
     }
 
-    private function hasOnlyTextChildren(XmlElement $element): bool
+    private function hasTextChildren(XmlElement $element): bool
     {
         foreach ($element->children as $child) {
-            if (!$child instanceof XmlText) {
-                return false;
+            if ($child instanceof XmlText) {
+                return true;
             }
         }
 
-        return count($element->children) > 0;
+        return false;
     }
 
     private function escapeText(string $value): string

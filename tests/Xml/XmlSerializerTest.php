@@ -53,4 +53,22 @@ XML
             $xml,
         );
     }
+
+    public function testPrettyPrintingDoesNotInsertWhitespaceIntoMixedContent(): void
+    {
+        $document = new XmlDocument(
+            new XmlElement('p', children: [
+                new XmlText('Hello '),
+                new XmlElement('strong', children: [new XmlText('world')]),
+                new XmlText('!'),
+            ]),
+        );
+
+        $xml = new XmlSerializer()->serialize($document);
+
+        self::assertSame(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<p>Hello <strong>world</strong>!</p>\n",
+            $xml,
+        );
+    }
 }

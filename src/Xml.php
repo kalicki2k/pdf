@@ -8,6 +8,7 @@ use Kalle\Pdf\Xml\XmlDocument;
 use Kalle\Pdf\Xml\XmlElement;
 use Kalle\Pdf\Xml\XmlNode;
 use Kalle\Pdf\Xml\XmlSerializer;
+use Kalle\Pdf\Xml\XmlStreamWriter;
 use Kalle\Pdf\Xml\XmlText;
 use Kalle\Pdf\Xml\XmlWriter;
 
@@ -56,5 +57,10 @@ final readonly class Xml
     public static function writeToFile(XmlDocument $document, string $path, bool $pretty = true): void
     {
         new XmlWriter()->writeToFile($document, $path, $pretty);
+    }
+
+    public static function streamWriter(): XmlStreamWriter
+    {
+        return new XmlStreamWriter();
     }
 }

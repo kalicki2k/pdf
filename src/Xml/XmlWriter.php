@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Xml;
 
-use InvalidArgumentException;
-use RuntimeException;
-
 use function fclose;
 use function fflush;
 use function fopen;
@@ -14,6 +11,9 @@ use function fwrite;
 use function get_resource_type;
 use function is_resource;
 use function str_repeat;
+
+use InvalidArgumentException;
+use RuntimeException;
 
 final readonly class XmlWriter
 {
@@ -96,15 +96,11 @@ final readonly class XmlWriter
             return;
         }
 
-        if ($this->hasOnlyTextChildren($element)) {
+        if ($this->hasTextChildren($element)) {
             $this->writeBytes($stream, '>');
 
             foreach ($element->children as $child) {
-                if (!$child instanceof XmlText) {
-                    throw new InvalidArgumentException('Unsupported XML node type.');
-                }
-
-                $this->writeBytes($stream, $this->escapeText($child->value));
+                $this->writeCompactChild($stream, $child);
             }
 
             $this->writeBytes($stream, '</' . $element->name . '>');
@@ -160,15 +156,15 @@ final readonly class XmlWriter
         return ' ' . implode(' ', $pairs);
     }
 
-    private function hasOnlyTextChildren(XmlElement $element): bool
+    private function hasTextChildren(XmlElement $element): bool
     {
         foreach ($element->children as $child) {
-            if (!$child instanceof XmlText) {
-                return false;
+            if ($child instanceof XmlText) {
+                return true;
             }
         }
 
-        return $element->children !== [];
+        return false;
     }
 
     private function escapeText(string $value): string
