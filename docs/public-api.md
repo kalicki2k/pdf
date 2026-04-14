@@ -103,6 +103,11 @@ Builder-Methoden:
 - `image(ImageSource $source, ImagePlacement $placement, ?ImageAccessibility $accessibility = null)`
 - `imageFile(string $path, ImagePlacement $placement, ?ImageAccessibility $accessibility = null)`
 
+Bildplatzierung ist aktuell in zwei Modi verfuegbar:
+
+- absolut ueber `ImagePlacement::at(x, y, width: ..., height: ...)`
+- im Seitenfluss ueber `ImagePlacement::flow(width: ..., height: ..., align: ImageAlign::LEFT|CENTER|RIGHT, spacingBefore: ..., spacingAfter: ...)`
+
 Der stabile Dateipfad laeuft ueber `ImageSource::fromPath()`. Der tatsaechliche Importscope ist in [docs/image-import.md](/home/skalicki/Projekte/kalle/pdf2/docs/image-import.md) beschrieben.
 
 ## Vektorgrafik

@@ -12,9 +12,9 @@ use function is_readable;
 use function is_resource;
 use function mb_ord;
 use function rewind;
+use function str_replace;
 use function stream_get_contents;
 use function stream_get_meta_data;
-use function str_replace;
 
 use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
@@ -64,6 +64,7 @@ use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Font\StandardFontGlyphRun;
 use Kalle\Pdf\Font\StandardFontMetrics;
 use Kalle\Pdf\Image\ImageAccessibility;
+use Kalle\Pdf\Image\ImageAlign;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Layout\Table\Border;
@@ -916,13 +917,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone = clone $this;
         $imageAlias = $clone->imageAliasFor($source);
         [$width, $height] = $this->resolveImageDimensions($source, $placement);
+        $resolvedPlacement = $clone->resolveImagePlacement($placement, $width, $height);
         $markedContentId = $clone->markedContentIdForImage($accessibility);
         $structureKey = $markedContentId !== null
             ? 'figure:image:' . count($clone->pages) . ':' . count($clone->currentPageImages)
             : null;
         $clone->currentPageImages[] = new PageImage(
             $imageAlias,
-            $placement,
+            $resolvedPlacement,
             $accessibility,
             $markedContentId,
             $structureKey,
@@ -934,8 +936,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $clone->currentPageContents = $this->appendPageContent(
             $clone->currentPageContents,
-            $this->buildImageContent($imageAlias, $placement->x, $placement->y, $width, $height, $accessibility, $markedContentId),
+            $this->buildImageContent(
+                $imageAlias,
+                $resolvedPlacement->x ?? 0.0,
+                $resolvedPlacement->y ?? 0.0,
+                $width,
+                $height,
+                $accessibility,
+                $markedContentId,
+            ),
         );
+
+        if ($placement->isFlow()) {
+            $clone->currentPageCursorY = ($resolvedPlacement->y ?? 0.0) - $placement->spacingAfter;
+            $clone->currentPageCursorYIsTopBoundary = true;
+        }
 
         return $clone;
     }
@@ -1073,7 +1088,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         string $filename,
         string $contents,
         ?string $description = null,
-        string|MimeType|null $mimeType = null,
+        string | MimeType | null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): DocumentBuilder {
         $clone = clone $this;
@@ -1091,7 +1106,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         string $path,
         ?string $filename = null,
         ?string $description = null,
-        string|MimeType|null $mimeType = null,
+        string | MimeType | null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): DocumentBuilder {
         if (!file_exists($path)) {
@@ -1130,7 +1145,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $stream,
         string $filename,
         ?string $description = null,
-        string|MimeType|null $mimeType = null,
+        string | MimeType | null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): DocumentBuilder {
         if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
@@ -1139,7 +1154,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $metadata = stream_get_meta_data($stream);
 
-        if (($metadata['seekable'] ?? false) === true) {
+        if ($metadata['seekable']) {
             rewind($stream);
         }
 
@@ -5412,6 +5427,29 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return [(float) $source->width, (float) $source->height];
+    }
+
+    private function resolveImagePlacement(ImagePlacement $placement, float $width, float $height): ImagePlacement
+    {
+        if ($placement->isAbsolute()) {
+            return $placement;
+        }
+
+        $page = $this->buildCurrentPage();
+        $contentArea = $page->contentArea();
+        $topBoundary = ($this->currentPageCursorY ?? $contentArea->top) - $placement->spacingBefore;
+        $x = match ($placement->align ?? ImageAlign::LEFT) {
+            ImageAlign::LEFT => $contentArea->left,
+            ImageAlign::CENTER => $contentArea->left + (($contentArea->width() - $width) / 2.0),
+            ImageAlign::RIGHT => $contentArea->right - $width,
+        };
+
+        return new ImagePlacement(
+            x: $x,
+            y: $topBoundary - $height,
+            width: $placement->width,
+            height: $placement->height,
+        );
     }
 
     private function textFlow(): TextFlow

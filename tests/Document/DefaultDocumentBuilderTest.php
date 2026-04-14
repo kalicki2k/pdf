@@ -37,6 +37,7 @@ use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Image\ImageAccessibility;
+use Kalle\Pdf\Image\ImageAlign;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
@@ -628,6 +629,54 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame('Im1', $document->pages[0]->images[0]->resourceAlias);
         self::assertSame('Logo', $document->pages[0]->images[0]->accessibility?->altText);
         self::assertStringContainsString("120 0 0 60 40 500 cm\n/Im1 Do", $document->pages[0]->contents);
+    }
+
+    public function testItPlacesFlowImagesAtTheCurrentContentStartByDefault(): void
+    {
+        $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
+
+        $document = DefaultDocumentBuilder::make()
+            ->margin(Margin::all(40.0))
+            ->image($image, ImagePlacement::flow(width: 120.0))
+            ->build();
+
+        self::assertSame(40.0, $document->pages[0]->images[0]->placement->x);
+        self::assertEqualsWithDelta(741.89, $document->pages[0]->images[0]->placement->y, 0.001);
+        self::assertStringContainsString("120 0 0 60 40 741.89 cm\n/Im1 Do", $document->pages[0]->contents);
+    }
+
+    public function testItAlignsFlowImagesWithinTheContentArea(): void
+    {
+        $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
+
+        $document = DefaultDocumentBuilder::make()
+            ->margin(Margin::all(40.0))
+            ->image($image, ImagePlacement::flow(width: 120.0, align: ImageAlign::CENTER))
+            ->image($image, ImagePlacement::flow(width: 120.0, align: ImageAlign::RIGHT))
+            ->build();
+
+        self::assertEqualsWithDelta(237.638, $document->pages[0]->images[0]->placement->x, 0.001);
+        self::assertEqualsWithDelta(741.89, $document->pages[0]->images[0]->placement->y, 0.001);
+        self::assertEqualsWithDelta(435.276, $document->pages[0]->images[1]->placement->x, 0.001);
+        self::assertEqualsWithDelta(681.89, $document->pages[0]->images[1]->placement->y, 0.001);
+        self::assertStringContainsString("120 0 0 60 237.638 741.89 cm\n/Im1 Do", $document->pages[0]->contents);
+        self::assertStringContainsString("120 0 0 60 435.276 681.89 cm\n/Im1 Do", $document->pages[0]->contents);
+    }
+
+    public function testItMovesTheCursorBelowFlowImagesForFollowingText(): void
+    {
+        $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
+
+        $document = DefaultDocumentBuilder::make()
+            ->margin(Margin::all(40.0))
+            ->image($image, ImagePlacement::flow(width: 120.0, spacingBefore: 10.0, spacingAfter: 12.0))
+            ->text('After image')
+            ->build();
+
+        self::assertSame(40.0, $document->pages[0]->images[0]->placement->x);
+        self::assertEqualsWithDelta(731.89, $document->pages[0]->images[0]->placement->y, 0.001);
+        self::assertStringContainsString("120 0 0 60 40 731.89 cm\n/Im1 Do", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 18 Tf\n40 701.89 Td\n[", $document->pages[0]->contents);
     }
 
     public function testItWrapsTaggedPdfImagesInMarkedContent(): void
