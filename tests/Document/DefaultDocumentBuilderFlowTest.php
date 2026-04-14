@@ -22,8 +22,8 @@ use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\TextAlign;
-use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextLink;
+use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 use PHPUnit\Framework\TestCase;
 
