@@ -384,6 +384,24 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+Fuer manuelle Overflow-Seiten gibt es zusaetzlich `startOverflowPage()`. Im Unterschied zu `newPage()` uebernimmt diese Methode die aktuelle Seitengroesse, Raender und weitere aktive Seiteneinstellungen der laufenden Seite:
+
+```php
+$document = DefaultDocumentBuilder::make()
+    ->text('Einleitung')
+    ->startOverflowPage()
+    ->text('Fortsetzung auf der naechsten Overflow-Seite')
+    ->build();
+```
+
+Der aktuelle automatische Seitenumbruch betrifft vor allem Tabellen. Falls dieser Pfad bewusst unterbunden werden soll, kann er ueber `disableAutoPageBreak()` deaktiviert werden:
+
+```php
+$builder = DefaultDocumentBuilder::make()
+    ->disableAutoPageBreak()
+    ->table($table);
+```
+
 Die rechteckbasierten Annotationen (`Link`, `Text`, `Highlight`) nutzen ausserdem jetzt ein kleines gemeinsames Metadaten-Fundament ueber `AnnotationMetadata`, auf das die jeweiligen `...Options`-Value-Objects aufsetzen. Dasselbe Muster deckt inzwischen auch weitere Markup- und Geometrie-Typen wie `Underline`, `StrikeOut`, `Squiggly`, `Stamp`, `Square`, `Circle`, `Caret`, `Ink`, `Line`, `PolyLine` und `Polygon` ab. Popups koennen ueber `popupAnnotation(...)` weiterhin an die zuletzt hinzugefuegte kompatible Seitenannotation gebunden werden oder explizit ueber `lastPageAnnotationReference()` plus `popupAnnotationFor(...)`. Seitengebundene Dateianhaenge setzen auf derselben Builder-API auf und koennen entweder neue Attachments anlegen oder vorhandene Dokument-Attachments ueber `existingFileAttachmentAnnotation(...)` wiederverwenden.
 
 Fuer einfache Kommentar-Notizen gibt es ausserdem eine kleine `Text`-Annotation mit festem Rechteck und eigenem `/AP`-Stream, die sich damit auch fuer den aktuellen PDF/A-2u-Pfad eignet. Dasselbe gilt jetzt fuer eine schlanke `Highlight`-Annotation mit festen `QuadPoints` und fuer `FreeText`, das seinen Appearance-Stream mit dem verwendeten Seitenfont rendert.

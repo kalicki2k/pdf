@@ -6,14 +6,12 @@ namespace Kalle\Pdf\Image;
 
 use function function_exists;
 use function imagecolorat;
-use function imagedestroy;
 use function imageistruecolor;
 use function imagepalettetotruecolor;
 use function imagesx;
 use function imagesy;
 use function round;
 use function sprintf;
-use function strpos;
 use function substr;
 
 use GdImage;

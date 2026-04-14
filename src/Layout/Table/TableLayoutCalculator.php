@@ -296,7 +296,7 @@ final class TableLayoutCalculator
 
     private function tableContainsAutoColumns(Table $table): bool
     {
-        return array_any($table->columns, fn($column) => $column->width->isAuto());
+        return array_any($table->columns, fn ($column) => $column->width->isAuto());
     }
 
     /**

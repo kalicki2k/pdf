@@ -107,7 +107,7 @@ final readonly class XmlSerializer
 
     private function hasTextChildren(XmlElement $element): bool
     {
-        return array_any($element->children, fn($child) => $child instanceof XmlText);
+        return array_any($element->children, fn ($child) => $child instanceof XmlText);
     }
 
     private function escapeText(string $value): string

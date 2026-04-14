@@ -552,6 +552,41 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         );
     }
 
+    public function testItCanDisableAutomaticTablePageBreaks(): void
+    {
+        $rows = [];
+
+        for ($index = 1; $index <= 10; $index++) {
+            $rows[] = TableRow::fromTexts('Item ' . $index, 'Value ' . $index);
+        }
+
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withOptions(
+                (TableOptions::make())
+                    ->withCellPadding(CellPadding::all(6.0))
+                    ->withTextOptions(TextOptions::make(fontSize: 12.0, lineHeight: 14.4)),
+            )
+            ->withRows(...$rows);
+
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A8())
+                ->margin(Margin::all(10.0))
+                ->disableAutoPageBreak()
+                ->table($table);
+            self::fail('Expected coded table layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TABLE_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Automatic page breaks are disabled and the table does not fit in the remaining page space.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
     public function testItDoesNotRepeatHeaderRowsByDefault(): void
     {
         $rows = [];

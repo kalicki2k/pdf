@@ -21,6 +21,7 @@ use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Page\Margin;
+use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Text\TextAlign;
@@ -343,7 +344,11 @@ $document = Pdf::document()
             embeddedFont: $fontRegular,
             color: $textColor,
         ),
-    );
+    )->newPage(PageOptions::make(
+        pageSize: PageSize::A4(),
+        margin: Margin::all(36),
+    ))
+    ->text('Seite 3', TextOptions::make(left: 0, bottom: 0, embeddedFont: $fontRegular));
 
 $targetPath = $outputDirectory . '/invoice.pdf';
 

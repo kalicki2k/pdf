@@ -64,6 +64,8 @@ Wichtige Builder-Methoden fuer Seitenerzeugung:
 
 - `pageSize()`, `margin()`
 - `newPage()`
+- `startOverflowPage()`
+- `disableAutoPageBreak()`
 - `content()` fuer rohe Content-Operationen
 - `text()` und `textLines()`
 - `glyphs()` fuer Standardfont-Glyph-Runs
@@ -84,6 +86,8 @@ Fuer komplexeren Text sind ausserdem vorhanden:
 - Bidi- und Script-Shaping im internen Textpfad
 
 Seiteneigenschaften koennen ueber `PageOptions` pro Seite ueberschrieben werden. Der aktuelle Scope umfasst dabei unter anderem `pageSize`, `orientation`, `margin`, `backgroundColor`, `label`, `name` sowie die PDF-Seitenboxen `cropBox`, `bleedBox`, `trimBox` und `artBox`.
+
+`newPage()` startet eine neue Seite mit optional neuen `PageOptions`. `startOverflowPage()` startet dagegen explizit eine Folgeseite mit den aktuell aktiven Seiteneinstellungen. Das ist fuer manuelle Ueberlaeufe bei Text, Bildern oder Formularen gedacht. `disableAutoPageBreak()` deaktiviert aktuell den automatischen Tabellen-Overflow; wenn eine Tabelle dann nicht mehr in den verbleibenden Platz passt, wirft der Builder einen Validierungsfehler.
 
 ## Fonts
 

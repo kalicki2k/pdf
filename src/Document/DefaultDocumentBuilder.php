@@ -207,6 +207,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private ?DebugConfig $debugConfig = null;
     private ?DebugSink $debugSink = null;
     private bool $renderingPageDecoration = false;
+    private bool $autoPageBreak = true;
 
     public static function make(): self
     {
@@ -690,7 +691,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             if (($captionLayout['height'] + $minimumTableStartHeight) > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
-                $clone->startOverflowPage();
+                $clone->startOverflowPageForAutoBreak();
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
                 ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -712,7 +713,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
-                $clone->startOverflowPage();
+                $clone->startOverflowPageForAutoBreak();
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
                 ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -764,7 +765,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
-                    $clone->startOverflowPage();
+                    $clone->startOverflowPageForAutoBreak();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -797,7 +798,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
-                    $clone->startOverflowPage();
+                    $clone->startOverflowPageForAutoBreak();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -836,7 +837,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
-                    $clone->startOverflowPage();
+                    $clone->startOverflowPageForAutoBreak();
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -872,7 +873,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             if ($requiredHeight > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
-                $clone->startOverflowPage();
+                $clone->startOverflowPageForAutoBreak();
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
                 ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -2716,6 +2717,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $clone;
     }
 
+    public function disableAutoPageBreak(bool $disabled = true): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->autoPageBreak = !$disabled;
+
+        return $clone;
+    }
+
+    public function startOverflowPage(): DocumentBuilder
+    {
+        $clone = clone $this;
+        $clone->advanceToOverflowPage();
+
+        return $clone;
+    }
+
     public function newPage(?PageOptions $options = null): DocumentBuilder
     {
         $clone = clone $this;
@@ -2893,13 +2910,37 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageNextMarkedContentId = 0;
     }
 
-    private function startOverflowPage(): void
+    private function advanceToOverflowPage(): void
     {
         $this->pages[] = $this->buildCurrentPage();
-        $this->resetCurrentPage(new PageOptions(
+        $this->resetCurrentPage($this->currentPageOptions());
+    }
+
+    private function startOverflowPageForAutoBreak(): void
+    {
+        if (!$this->autoPageBreak) {
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_LAYOUT_INVALID,
+                'Automatic page breaks are disabled and the table does not fit in the remaining page space.',
+            );
+        }
+
+        $this->advanceToOverflowPage();
+    }
+
+    private function currentPageOptions(): PageOptions
+    {
+        return new PageOptions(
             pageSize: $this->currentPageSize,
             margin: $this->currentPageMargin,
-        ));
+            backgroundColor: $this->currentPageBackgroundColor,
+            label: $this->currentPageLabel,
+            name: $this->currentPageName,
+            cropBox: $this->currentPageCropBox,
+            bleedBox: $this->currentPageBleedBox,
+            trimBox: $this->currentPageTrimBox,
+            artBox: $this->currentPageArtBox,
+        );
     }
 
     private function resolvePageSize(?PageOptions $options): ?PageSize

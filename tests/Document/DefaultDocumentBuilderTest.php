@@ -187,6 +187,56 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame(24.0, $document->pages[1]->margin?->top);
     }
 
+    public function testStartOverflowPageKeepsCurrentPageSettings(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->text('Page 1')
+            ->newPage(new PageOptions(
+                pageSize: PageSize::A5(),
+                orientation: PageOrientation::LANDSCAPE,
+                margin: Margin::all(24.0),
+                backgroundColor: Color::hex('#f5f5f5'),
+                label: 'appendix',
+                name: 'appendix-a',
+                cropBox: PageBox::fromPoints(12.0, 18.0, 580.0, 400.0),
+                bleedBox: PageBox::fromPoints(13.0, 19.0, 579.0, 399.0),
+                trimBox: PageBox::fromPoints(14.0, 20.0, 578.0, 398.0),
+                artBox: PageBox::fromPoints(15.0, 21.0, 577.0, 397.0),
+            ))
+            ->text('Page 2')
+            ->startOverflowPage()
+            ->text('Page 3')
+            ->build();
+
+        self::assertCount(3, $document->pages);
+        self::assertStringContainsString('[<50>', $document->pages[1]->contents);
+        self::assertStringContainsString('[<50>', $document->pages[2]->contents);
+        self::assertSame(PageSize::A5()->landscape()->width(), $document->pages[2]->size->width());
+        self::assertSame(PageSize::A5()->landscape()->height(), $document->pages[2]->size->height());
+        self::assertSame(24.0, $document->pages[2]->margin?->top);
+        self::assertNotNull($document->pages[2]->backgroundColor);
+        self::assertSame(ColorSpace::RGB, $document->pages[2]->backgroundColor->space);
+        self::assertSame([245 / 255, 245 / 255, 245 / 255], $document->pages[2]->backgroundColor->components());
+        self::assertSame('appendix', $document->pages[2]->label);
+        self::assertSame('appendix-a', $document->pages[2]->name);
+        self::assertSame(12.0, $document->pages[2]->cropBox?->left);
+        self::assertSame(18.0, $document->pages[2]->cropBox?->bottom);
+        self::assertSame(580.0, $document->pages[2]->cropBox?->right);
+        self::assertSame(400.0, $document->pages[2]->cropBox?->top);
+        self::assertSame(13.0, $document->pages[2]->bleedBox?->left);
+        self::assertSame(19.0, $document->pages[2]->bleedBox?->bottom);
+        self::assertSame(579.0, $document->pages[2]->bleedBox?->right);
+        self::assertSame(399.0, $document->pages[2]->bleedBox?->top);
+        self::assertSame(14.0, $document->pages[2]->trimBox?->left);
+        self::assertSame(20.0, $document->pages[2]->trimBox?->bottom);
+        self::assertSame(578.0, $document->pages[2]->trimBox?->right);
+        self::assertSame(398.0, $document->pages[2]->trimBox?->top);
+        self::assertSame(15.0, $document->pages[2]->artBox?->left);
+        self::assertSame(21.0, $document->pages[2]->artBox?->bottom);
+        self::assertSame(577.0, $document->pages[2]->artBox?->right);
+        self::assertSame(397.0, $document->pages[2]->artBox?->top);
+    }
+
     public function testNewPageOptionsOverrideOnlyExplicitFieldsOnTopOfDefaults(): void
     {
         $document = DefaultDocumentBuilder::make()

@@ -10,7 +10,6 @@ use function imagealphablending;
 use function imagecolorallocate;
 use function imagecolorallocatealpha;
 use function imagecreatetruecolor;
-use function imagedestroy;
 use function imagefill;
 use function imagesavealpha;
 use function imagewebp;
