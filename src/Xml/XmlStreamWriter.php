@@ -257,11 +257,6 @@ final class XmlStreamWriter
         }
 
         $index = array_key_last($this->elementStack);
-
-        if ($index === null) {
-            return;
-        }
-
         $this->elementStack[$index]['hasText'] = true;
     }
 
@@ -272,11 +267,6 @@ final class XmlStreamWriter
         }
 
         $index = array_key_last($this->elementStack);
-
-        if ($index === null) {
-            return;
-        }
-
         $this->elementStack[$index]['hasElement'] = true;
     }
 

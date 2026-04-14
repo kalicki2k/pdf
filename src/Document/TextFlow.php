@@ -317,7 +317,7 @@ final readonly class TextFlow
             array_shift($tokens);
         }
 
-        while ($tokens !== [] && trim($tokens[array_key_last($tokens)]->text) === '') {
+        while ($tokens !== [] && trim(array_last($tokens)->text) === '') {
             array_pop($tokens);
         }
 

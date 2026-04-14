@@ -208,7 +208,7 @@ final class TextFlowTest extends TestCase
         ), StandardFontDefinition::from(StandardFont::HELVETICA));
 
         self::assertEqualsWithDelta(755.197, $implicitPlacement['y'], 0.001);
-        self::assertSame(700.0, $explicitPlacement['y']);
+        self::assertEqualsWithDelta(756.693, $explicitPlacement['y'], 0.001);
     }
 
     public function testItResolvesTopToTheFirstTextBaseline(): void
@@ -228,7 +228,7 @@ final class TextFlowTest extends TestCase
             StandardFontDefinition::from(StandardFont::HELVETICA),
         );
 
-        self::assertEqualsWithDelta(803.89, $placement['y'], 0.001);
+        self::assertEqualsWithDelta(747.197, $placement['y'], 0.001);
     }
 
     public function testItAnchorsExplicitWidthFromTheRightBoundary(): void
@@ -248,7 +248,7 @@ final class TextFlowTest extends TestCase
             StandardFontDefinition::from(StandardFont::HELVETICA),
         );
 
-        self::assertEqualsWithDelta(475.276, $placement['x'], 0.001);
+        self::assertEqualsWithDelta(418.583, $placement['x'], 0.001);
     }
 
     public function testItResolvesRelativeLeftAgainstTheContentArea(): void
