@@ -732,6 +732,8 @@ $document = DefaultDocumentBuilder::make()
     ->build();
 ```
 
+Groessere Hybridbeispiele mit eingebettetem E-Rechnungs-XML liegen in `examples/e-invoicing/factur-x.php` und `examples/e-invoicing/xrechnung.php`.
+
 ## Formulare
 
 Die aktuelle AcroForm-API deckt fuer Standard-PDFs Textfelder, Checkboxen, Radio Buttons, ComboBoxen, ListBoxen, Push Buttons und Signaturfelder ab. Fuer Tagged-Profile ist der Strukturpfad inzwischen breiter: Textfelder, Checkboxen, Radio-Button-Gruppen, ComboBoxen, ListBoxen, Signaturfelder und inerte Push Buttons werden als `/Form`-Strukturelemente mit `OBJR`/`ParentTree` serialisiert. Das gilt fuer den aktuellen `PDF/UA-1`-Pfad und fuer den offiziell freigegebenen `PDF/A-1a`-Form-Scope. Push Buttons mit URI-Aktionen bleiben fuer `PDF/A-1a` weiterhin explizit gesperrt, weil der Widget-`/A`-Pfad veraPDF-relevante PDF/A-1a-Verstoesse erzeugt. Sichtbare Signaturfelder werden direkt ueber die Formular-API erzeugt; die kryptographische Signaturintegration fuer unterstuetzte Dokumente ist unten als separater Signier-Schritt beschrieben.

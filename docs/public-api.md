@@ -276,7 +276,8 @@ Die aktuelle Implementierung signiert per inkrementellem Update und blockiert si
 
 Die `examples/`-Dateien bilden den tatsaechlichen API-Scope gut ab. Besonders nuetzlich:
 
-- `invoice.php` fuer ein groesseres zusammengesetztes Dokument
+- `e-invoicing/factur-x.php` fuer ein groesseres zusammengesetztes Factur-X-Dokument
+- `e-invoicing/xrechnung.php` fuer ein groesseres zusammengesetztes XRechnungs-Dokument
 - `text-layout.php` fuer Flow-Text
 - `table.php` und `table-repeated-footer.php`
 - `graphics-primitives.php`

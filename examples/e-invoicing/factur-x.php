@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\MaterialColor;
@@ -24,7 +24,6 @@ use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Page\Margin;
-use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Pdf;
 use Kalle\Pdf\Text\TextAlign;
@@ -33,7 +32,7 @@ use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Text\TextSemantic;
 use Kalle\Pdf\Xml;
 
-$outputDirectory = __DIR__ . '/../var/examples';
+$outputDirectory = __DIR__ . '/../../var/examples';
 
 if (!is_dir($outputDirectory) && !mkdir($outputDirectory, 0777, true) && !is_dir($outputDirectory)) {
     throw new RuntimeException('Unable to create example output directory.');
@@ -51,9 +50,9 @@ $mutedColor = Color::material(MaterialColor::BLUE_GREY, 500);
 $tableHeaderColor = Color::material(MaterialColor::BLUE_GREY, 50);
 $tableBorderColor = Color::material(MaterialColor::GREY, 400);
 $tableFooterColor = Color::material(MaterialColor::BLUE_GREY, 100);
-$fontRegular = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/inter/static/Inter-Regular.ttf');
-$fontBold = EmbeddedFontSource::fromPath(__DIR__ . '/../assets/fonts/inter/static/Inter-Bold.ttf');
-$logoPath = __DIR__ . '/../assets/images/MusterfirmaGmbHLogoDesign.png';
+$fontRegular = EmbeddedFontSource::fromPath(__DIR__ . '/../../assets/fonts/inter/static/Inter-Regular.ttf');
+$fontBold = EmbeddedFontSource::fromPath(__DIR__ . '/../../assets/fonts/inter/static/Inter-Bold.ttf');
+$logoPath = __DIR__ . '/../../assets/images/MusterfirmaGmbHLogoDesign.png';
 
 $invoiceNumber = 'RE-2026-0415';
 $invoiceDate = '13.04.2026';
@@ -368,7 +367,7 @@ $document = Pdf::document()
     ->subject('Ausgangsrechnung')
     ->keywords('Rechnung, Buchhaltung, Leistungsabrechnung')
     ->language('de-DE')
-    ->creator('examples/invoice.php')
+    ->creator('examples/e-invoicing/factur-x.php')
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->margin(Margin::all(Units::mm(20)))

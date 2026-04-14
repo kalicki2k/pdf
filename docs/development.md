@@ -104,7 +104,8 @@ Die PDF/A-Regression in CI deckt aktuell nur einen Teil der lokalen `Makefile`-T
 
 Nuetzliche Beispiele fuer manuelle Pruefung:
 
-- `examples/invoice.php`
+- `examples/e-invoicing/factur-x.php`
+- `examples/e-invoicing/xrechnung.php`
 - `examples/graphics-primitives.php`
 - `examples/complex-text-shaping.php`
 - `examples/encryption.php`
