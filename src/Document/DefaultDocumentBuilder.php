@@ -572,22 +572,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function renderTextSegments(array $segments, ?TextOptions $options, ?string $markedContentTag): DocumentBuilder
     {
         $clone = clone $this;
-        $options ??= TextOptions::make();
-        $artifact = $options->semantic === TextSemantic::ARTIFACT;
 
         if ($segments === []) {
             return $clone;
         }
 
-        $text = implode('', array_map(
-            static fn (TextSegment $segment): string => $segment->text,
-            $segments,
-        ));
-        $font = $options->embeddedFont !== null
-            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
-            : StandardFontDefinition::from($options->fontName);
-        $textFlow = $clone->textFlow();
-        $placement = $textFlow->placement($options, $font);
+        [
+            'options' => $options,
+            'artifact' => $artifact,
+            'font' => $font,
+            'textFlow' => $textFlow,
+            'placement' => $placement,
+            'markedContentTag' => $markedContentTag,
+        ] = $clone->resolveFlowTextRenderContext($options, $markedContentTag);
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
 
         if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
@@ -603,26 +600,34 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
-        $textResult = $clone->buildWrappedTextSegmentsContent(
+        $clone->renderFlowTextWithoutOverflow(
             $wrappedSegmentLines,
             $options,
             $textFlow,
-            $placement['x'],
-            $placement['y'],
-            ($this->profile ?? Profile::standard())->version(),
+            $placement,
             $markedContentTag,
             $markedContentId,
-            $artifact,
-        );
-
-        $clone->applyRenderedFlowTextResult(
-            $textResult,
-            $textFlow,
-            $options,
-            $placement['y'],
-            count($wrappedSegmentLines),
-            $markedContentTag,
-            $markedContentId,
+            static function (
+                self $builder,
+                array $wrappedLines,
+                TextOptions $options,
+                TextFlow $textFlow,
+                array $placement,
+                ?string $markedContentTag,
+                ?int $markedContentId,
+            ) use ($artifact): array {
+                return $builder->buildWrappedTextSegmentsContent(
+                    $wrappedLines,
+                    $options,
+                    $textFlow,
+                    $placement['x'],
+                    $placement['y'],
+                    ($builder->profile ?? Profile::standard())->version(),
+                    $markedContentTag,
+                    $markedContentId,
+                    $artifact,
+                );
+            },
         );
 
         return $clone;
@@ -654,6 +659,48 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $this->registerTaggedTextBlock($markedContentTag, $markedContentId, $taggedTextKey);
+    }
+
+    /**
+     * @param list<mixed> $wrappedLines
+     * @param callable(
+     *   self,
+     *   array,
+     *   TextOptions,
+     *   TextFlow,
+     *   array{x: float, y: float, width: float},
+     *   ?string,
+     *   ?int
+     * ): array{contents: string, annotations: list<PageAnnotation>} $renderer
+     */
+    private function renderFlowTextWithoutOverflow(
+        array $wrappedLines,
+        TextOptions $options,
+        TextFlow $textFlow,
+        array $placement,
+        ?string $markedContentTag,
+        ?int $markedContentId,
+        callable $renderer,
+    ): void {
+        $textResult = $renderer(
+            $this,
+            $wrappedLines,
+            $options,
+            $textFlow,
+            $placement,
+            $markedContentTag,
+            $markedContentId,
+        );
+
+        $this->applyRenderedFlowTextResult(
+            $textResult,
+            $textFlow,
+            $options,
+            $placement['y'],
+            count($wrappedLines),
+            $markedContentTag,
+            $markedContentId,
+        );
     }
 
     /**
@@ -4777,61 +4824,59 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function renderTextBlock(string $text, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
     {
         $clone = clone $this;
-        $options ??= TextOptions::make();
-        $artifact = $options->semantic === TextSemantic::ARTIFACT;
-        $font = $options->embeddedFont !== null
-            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
-            : StandardFontDefinition::from($options->fontName);
-        $textFlow = $clone->textFlow();
-        $placement = $textFlow->placement($options, $font);
-        $debugger = $clone->debugger();
-        $wrapScope = $debugger->startPerformanceScope('text.wrap', [
-            'mode' => 'block',
-        ]);
-        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $placement['x']);
-        $wrapScope->stop([
-            'mode' => 'block',
-            'line_count' => count($wrappedLines),
-            'text_length' => strlen($text),
-        ]);
+        [
+            'options' => $options,
+            'artifact' => $artifact,
+            'font' => $font,
+            'textFlow' => $textFlow,
+            'placement' => $placement,
+            'markedContentTag' => $markedContentTag,
+        ] = $clone->resolveFlowTextRenderContext($options, $taggedTextTag);
+        $wrappedLines = $clone->wrapTextBlockWithDebug($text, $options, $font, $textFlow, $placement['x']);
 
         if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
-            $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact, $taggedTextTag);
+            $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact, $markedContentTag);
 
             return $clone;
         }
 
         $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, $shapedLines);
-        $markedContentTag = $taggedTextTag !== null && $clone->requiresTaggedStructure()
-            ? $taggedTextTag
-            : null;
         $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
 
-        $textResult = $clone->buildWrappedTextContent(
+        $clone->renderFlowTextWithoutOverflow(
             $wrappedLines,
-            $shapedLines,
             $options,
             $textFlow,
-            $placement['x'],
-            $placement['y'],
-            $renderState['fontAlias'],
-            $font,
-            $renderState['embeddedPageFont'],
-            $renderState['useHexString'],
-            ($this->profile ?? Profile::standard())->version(),
+            $placement,
             $markedContentTag,
             $markedContentId,
-            $artifact,
-        );
-        $clone->applyRenderedFlowTextResult(
-            $textResult,
-            $textFlow,
-            $options,
-            $placement['y'],
-            count($wrappedLines),
-            $markedContentTag,
-            $markedContentId,
+            static function (
+                self $builder,
+                array $wrappedLines,
+                TextOptions $options,
+                TextFlow $textFlow,
+                array $placement,
+                ?string $markedContentTag,
+                ?int $markedContentId,
+            ) use ($artifact, $font, $renderState, $shapedLines): array {
+                return $builder->buildWrappedTextContent(
+                    $wrappedLines,
+                    $shapedLines,
+                    $options,
+                    $textFlow,
+                    $placement['x'],
+                    $placement['y'],
+                    $renderState['fontAlias'],
+                    $font,
+                    $renderState['embeddedPageFont'],
+                    $renderState['useHexString'],
+                    ($builder->profile ?? Profile::standard())->version(),
+                    $markedContentTag,
+                    $markedContentId,
+                    $artifact,
+                );
+            },
         );
 
         return $clone;
@@ -4970,9 +5015,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function renderTextLines(array $lines, ?TextOptions $options, ?string $taggedTextTag): DocumentBuilder
     {
         $clone = clone $this;
-        $options ??= TextOptions::make();
-        $artifact = $options->semantic === TextSemantic::ARTIFACT;
-        $debugger = $clone->debugger();
 
         if ($lines === []) {
             return $clone;
@@ -4995,14 +5037,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $validatedSegments[] = new TextSegment($line);
         }
 
-        $font = $options->embeddedFont !== null
-            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
-            : StandardFontDefinition::from($options->fontName);
-        $textFlow = $clone->textFlow();
-        $placement = $textFlow->placement($options, $font);
-        $markedContentTag = $taggedTextTag !== null && $clone->requiresTaggedStructure()
-            ? $taggedTextTag
-            : null;
+        [
+            'options' => $options,
+            'artifact' => $artifact,
+            'font' => $font,
+            'textFlow' => $textFlow,
+            'placement' => $placement,
+            'markedContentTag' => $markedContentTag,
+        ] = $clone->resolveFlowTextRenderContext($options, $taggedTextTag);
         $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
 
         if ($containsSegments) {
@@ -5020,67 +5062,163 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 return $clone;
             }
 
-            $textResult = $clone->buildWrappedTextSegmentsContent(
+            $clone->renderFlowTextWithoutOverflow(
                 $wrappedSegmentLines,
                 $options,
                 $textFlow,
-                $placement['x'],
-                $placement['y'],
-                ($this->profile ?? Profile::standard())->version(),
+                $placement,
                 $markedContentTag,
                 $markedContentId,
-                $artifact,
+                static function (
+                    self $builder,
+                    array $wrappedLines,
+                    TextOptions $options,
+                    TextFlow $textFlow,
+                    array $placement,
+                    ?string $markedContentTag,
+                    ?int $markedContentId,
+                ) use ($artifact): array {
+                    return $builder->buildWrappedTextSegmentsContent(
+                        $wrappedLines,
+                        $options,
+                        $textFlow,
+                        $placement['x'],
+                        $placement['y'],
+                        ($builder->profile ?? Profile::standard())->version(),
+                        $markedContentTag,
+                        $markedContentId,
+                        $artifact,
+                    );
+                },
             );
-            $lineCount = count($wrappedSegmentLines);
+
+            return $clone;
         } else {
-            $wrapScope = $debugger->startPerformanceScope('text.wrap', [
-                'mode' => 'lines',
-            ]);
-            $wrappedLines = $clone->wrapExplicitTextLines($validatedLines, $options, $font, $textFlow, $placement['x']);
-            $wrapScope->stop([
-                'mode' => 'lines',
-                'line_count' => count($wrappedLines),
-                'text_length' => strlen(implode('', $validatedLines)),
-            ]);
+            $wrappedLines = $clone->wrapTextLinesWithDebug($validatedLines, $options, $font, $textFlow, $placement['x']);
 
             if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
-                $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact, $taggedTextTag);
+                $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact, $markedContentTag);
 
                 return $clone;
             }
 
             $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
             $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, $shapedLines);
-            $textResult = $clone->buildWrappedTextContent(
+            $clone->renderFlowTextWithoutOverflow(
                 $wrappedLines,
-                $shapedLines,
                 $options,
                 $textFlow,
-                $placement['x'],
-                $placement['y'],
-                $renderState['fontAlias'],
-                $font,
-                $renderState['embeddedPageFont'],
-                $renderState['useHexString'],
-                ($this->profile ?? Profile::standard())->version(),
+                $placement,
                 $markedContentTag,
                 $markedContentId,
-                $artifact,
+                static function (
+                    self $builder,
+                    array $wrappedLines,
+                    TextOptions $options,
+                    TextFlow $textFlow,
+                    array $placement,
+                    ?string $markedContentTag,
+                    ?int $markedContentId,
+                ) use ($artifact, $font, $renderState, $shapedLines): array {
+                    return $builder->buildWrappedTextContent(
+                        $wrappedLines,
+                        $shapedLines,
+                        $options,
+                        $textFlow,
+                        $placement['x'],
+                        $placement['y'],
+                        $renderState['fontAlias'],
+                        $font,
+                        $renderState['embeddedPageFont'],
+                        $renderState['useHexString'],
+                        ($builder->profile ?? Profile::standard())->version(),
+                        $markedContentTag,
+                        $markedContentId,
+                        $artifact,
+                    );
+                },
             );
-            $lineCount = count($wrappedLines);
+
+            return $clone;
         }
+    }
 
-        $clone->applyRenderedFlowTextResult(
-            $textResult,
-            $textFlow,
-            $options,
-            $placement['y'],
-            $lineCount,
-            $markedContentTag,
-            $markedContentId,
-        );
+    /**
+     * @return list<string>
+     */
+    private function wrapTextBlockWithDebug(
+        string $text,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        TextFlow $textFlow,
+        float $x,
+    ): array {
+        $wrapScope = $this->debugger()->startPerformanceScope('text.wrap', [
+            'mode' => 'block',
+        ]);
+        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $x);
+        $wrapScope->stop([
+            'mode' => 'block',
+            'line_count' => count($wrappedLines),
+            'text_length' => strlen($text),
+        ]);
 
-        return $clone;
+        return $wrappedLines;
+    }
+
+    /**
+     * @param list<string> $lines
+     * @return list<string>
+     */
+    private function wrapTextLinesWithDebug(
+        array $lines,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        TextFlow $textFlow,
+        float $x,
+    ): array {
+        $wrapScope = $this->debugger()->startPerformanceScope('text.wrap', [
+            'mode' => 'lines',
+        ]);
+        $wrappedLines = $this->wrapExplicitTextLines($lines, $options, $font, $textFlow, $x);
+        $wrapScope->stop([
+            'mode' => 'lines',
+            'line_count' => count($wrappedLines),
+            'text_length' => strlen(implode('', $lines)),
+        ]);
+
+        return $wrappedLines;
+    }
+
+    /**
+     * @return array{
+     *   options: TextOptions,
+     *   artifact: bool,
+     *   font: StandardFontDefinition|EmbeddedFontDefinition,
+     *   textFlow: TextFlow,
+     *   placement: array{x: float, y: float, width: float},
+     *   markedContentTag: ?string
+     * }
+     */
+    private function resolveFlowTextRenderContext(?TextOptions $options, ?string $taggedTextTag): array
+    {
+        $options ??= TextOptions::make();
+        $artifact = $options->semantic === TextSemantic::ARTIFACT;
+        $font = $options->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($options->embeddedFont)
+            : StandardFontDefinition::from($options->fontName);
+        $textFlow = $this->textFlow();
+
+        return [
+            'options' => $options,
+            'artifact' => $artifact,
+            'font' => $font,
+            'textFlow' => $textFlow,
+            'placement' => $textFlow->placement($options, $font),
+            'markedContentTag' => $taggedTextTag !== null && $this->requiresTaggedStructure()
+                ? $taggedTextTag
+                : null,
+        ];
     }
 
     /**
