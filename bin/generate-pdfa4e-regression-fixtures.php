@@ -8,6 +8,8 @@ use Kalle\Pdf\Document\DocumentRenderer;
 use Kalle\Pdf\Document\OptionalContentConfiguration;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Page\OptionalContentGroup;
+use Kalle\Pdf\Page\OptionalContentMembership;
+use Kalle\Pdf\Page\OptionalContentVisibilityExpression;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Page\RichMediaAnnotation;
@@ -35,6 +37,8 @@ if (!is_dir($outputDir) && !mkdir($outputDir, 0777, true) && !is_dir($outputDir)
 
 $fixtures = [
     $outputDir . '/pdf-a-4e-optional-content.pdf' => createPdfA4eOptionalContentFixture(),
+    $outputDir . '/pdf-a-4e-ocmd-all-on.pdf' => createPdfA4eOcmdFixture(),
+    $outputDir . '/pdf-a-4e-ve-expression.pdf' => createPdfA4eVisibilityExpressionFixture(),
     $outputDir . '/pdf-a-4e-richmedia-windowed.pdf' => createPdfA4eRichMediaWindowedFixture(),
     $outputDir . '/pdf-a-4e-3d-exploded.pdf' => createPdfA4eThreeDExplodedFixture(),
 ];
@@ -74,6 +78,71 @@ function createPdfA4eOptionalContentFixture(): Document
                 ['LayerA', 'LayerB'],
                 initialOn: ['LayerA'],
                 initialOff: ['LayerB'],
+            ),
+        ],
+    );
+}
+
+function createPdfA4eOcmdFixture(): Document
+{
+    return new Document(
+        profile: Profile::pdfA4e(),
+        title: 'PDF/A-4e OCMD Regression',
+        author: 'kalle/pdf2',
+        subject: 'PDF/A-4e OCMD regression fixture',
+        language: 'de-DE',
+        creator: 'Regression Fixture',
+        creatorTool: 'bin/generate-pdfa4e-regression-fixtures.php',
+        pages: [
+            new Page(
+                PageSize::A4(),
+                contents: "/OC /Assembly BDC\nEMC",
+                optionalContentGroups: [
+                    'LayerA' => new OptionalContentGroup('Base Geometry'),
+                    'LayerB' => new OptionalContentGroup('Dimensions'),
+                ],
+                optionalContentMemberships: [
+                    'Assembly' => new OptionalContentMembership(
+                        'Assembly View',
+                        ['LayerA', 'LayerB'],
+                        OptionalContentMembership::POLICY_ALL_ON,
+                    ),
+                ],
+            ),
+        ],
+    );
+}
+
+function createPdfA4eVisibilityExpressionFixture(): Document
+{
+    return new Document(
+        profile: Profile::pdfA4e(),
+        title: 'PDF/A-4e VE Regression',
+        author: 'kalle/pdf2',
+        subject: 'PDF/A-4e visibility expression regression fixture',
+        language: 'de-DE',
+        creator: 'Regression Fixture',
+        creatorTool: 'bin/generate-pdfa4e-regression-fixtures.php',
+        pages: [
+            new Page(
+                PageSize::A4(),
+                contents: "/OC /Exploded BDC\nEMC",
+                optionalContentGroups: [
+                    'LayerA' => new OptionalContentGroup('Base Geometry'),
+                    'LayerB' => new OptionalContentGroup('Dimensions'),
+                ],
+                optionalContentMemberships: [
+                    'Exploded' => new OptionalContentMembership(
+                        'Exploded View',
+                        ['LayerA', 'LayerB'],
+                        visibilityExpression: OptionalContentVisibilityExpression::and(
+                            OptionalContentVisibilityExpression::alias('LayerA'),
+                            OptionalContentVisibilityExpression::not(
+                                OptionalContentVisibilityExpression::alias('LayerB'),
+                            ),
+                        ),
+                    ),
+                ],
             ),
         ],
     );
