@@ -9,7 +9,11 @@ use function file_exists;
 use function file_get_contents;
 use function implode;
 use function is_readable;
+use function is_resource;
 use function mb_ord;
+use function rewind;
+use function stream_get_contents;
+use function stream_get_meta_data;
 use function str_replace;
 
 use InvalidArgumentException;
@@ -23,6 +27,7 @@ use Kalle\Pdf\Debug\PsrDebugSink;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
 use Kalle\Pdf\Document\Attachment\FileAttachment;
+use Kalle\Pdf\Document\Attachment\MimeType;
 use Kalle\Pdf\Document\Form\AcroForm;
 use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
@@ -1068,7 +1073,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         string $filename,
         string $contents,
         ?string $description = null,
-        ?string $mimeType = null,
+        string|MimeType|null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): DocumentBuilder {
         $clone = clone $this;
@@ -1086,7 +1091,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         string $path,
         ?string $filename = null,
         ?string $description = null,
-        ?string $mimeType = null,
+        string|MimeType|null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): DocumentBuilder {
         if (!file_exists($path)) {
@@ -1113,10 +1118,42 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $this->attachment(
-            $filename ?? basename($path),
+            $attachmentFilename = $filename ?? basename($path),
             $contents,
             $description,
-            $mimeType,
+            $mimeType ?? MimeType::fromFilename($attachmentFilename),
+            $associatedFileRelationship,
+        );
+    }
+
+    public function attachmentFromStream(
+        $stream,
+        string $filename,
+        ?string $description = null,
+        string|MimeType|null $mimeType = null,
+        ?AssociatedFileRelationship $associatedFileRelationship = null,
+    ): DocumentBuilder {
+        if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
+            throw new InvalidArgumentException('Attachment stream must be a valid stream resource.');
+        }
+
+        $metadata = stream_get_meta_data($stream);
+
+        if (($metadata['seekable'] ?? false) === true) {
+            rewind($stream);
+        }
+
+        $contents = stream_get_contents($stream);
+
+        if (!is_string($contents)) {
+            throw new InvalidArgumentException('Attachment stream could not be read.');
+        }
+
+        return $this->attachment(
+            $filename,
+            $contents,
+            $description,
+            $mimeType ?? MimeType::fromFilename($filename),
             $associatedFileRelationship,
         );
     }

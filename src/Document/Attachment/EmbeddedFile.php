@@ -10,12 +10,18 @@ final readonly class EmbeddedFile
 {
     public function __construct(
         public string $contents,
-        public ?string $mimeType = null,
+        string|MimeType|null $mimeType = null,
     ) {
+        $this->mimeType = $mimeType instanceof MimeType
+            ? $mimeType->value
+            : $mimeType;
+
         if ($this->mimeType === '') {
             throw new InvalidArgumentException('Embedded file MIME type must not be empty.');
         }
     }
+
+    public ?string $mimeType;
 
     public function size(): int
     {

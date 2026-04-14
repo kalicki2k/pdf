@@ -9,6 +9,7 @@ use Kalle\Pdf\Debug\DebugConfig;
 use Kalle\Pdf\Debug\DebugSink;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
+use Kalle\Pdf\Document\Attachment\MimeType;
 use Kalle\Pdf\Document\Form\OptionalContentStateAction;
 use Kalle\Pdf\Document\Metadata\PdfAOutputIntent;
 use Kalle\Pdf\Document\TableOfContents\TableOfContentsOptions;
@@ -171,7 +172,7 @@ interface DocumentBuilder
         string $filename,
         string $contents,
         ?string $description = null,
-        ?string $mimeType = null,
+        string|MimeType|null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): self;
 
@@ -179,7 +180,18 @@ interface DocumentBuilder
         string $path,
         ?string $filename = null,
         ?string $description = null,
-        ?string $mimeType = null,
+        string|MimeType|null $mimeType = null,
+        ?AssociatedFileRelationship $associatedFileRelationship = null,
+    ): self;
+
+    /**
+     * @param resource $stream
+     */
+    public function attachmentFromStream(
+        $stream,
+        string $filename,
+        ?string $description = null,
+        string|MimeType|null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): self;
 

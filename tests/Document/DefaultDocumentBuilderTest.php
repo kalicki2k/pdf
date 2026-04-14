@@ -9,6 +9,7 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\ColorSpace;
 use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
 use Kalle\Pdf\Document\Attachment\EmbeddedFile;
+use Kalle\Pdf\Document\Attachment\MimeType;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
 use Kalle\Pdf\Document\DocumentBuildError;
 use Kalle\Pdf\Document\DocumentValidationException;
@@ -394,7 +395,7 @@ final class DefaultDocumentBuilderTest extends TestCase
                 'source-data.xml',
                 '<root/>',
                 'Machine-readable source',
-                'application/xml',
+                MimeType::XML,
                 AssociatedFileRelationship::DATA,
             )
             ->build();
@@ -405,6 +406,36 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame('application/xml', $document->attachments[0]->embeddedFile->mimeType);
         self::assertSame('Machine-readable source', $document->attachments[0]->description);
         self::assertSame(AssociatedFileRelationship::DATA, $document->attachments[0]->associatedFileRelationship);
+    }
+
+    public function testItAddsEmbeddedFileAttachmentsFromAFileWithMimeTypeEnum(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-attachment-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary path for the attachment import test.');
+        }
+
+        file_put_contents($path, 'attachment-data');
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->attachmentFromFile(
+                    $path,
+                    filename: 'custom.txt',
+                    description: 'Imported attachment',
+                    mimeType: MimeType::PLAIN_TEXT,
+                )
+                ->build();
+
+            self::assertCount(1, $document->attachments);
+            self::assertSame('custom.txt', $document->attachments[0]->filename);
+            self::assertSame('attachment-data', $document->attachments[0]->embeddedFile->contents);
+            self::assertSame('Imported attachment', $document->attachments[0]->description);
+            self::assertSame('text/plain', $document->attachments[0]->embeddedFile->mimeType);
+        } finally {
+            unlink($path);
+        }
     }
 
     public function testItAddsEmbeddedFileAttachmentsFromAFile(): void
@@ -435,6 +466,55 @@ final class DefaultDocumentBuilderTest extends TestCase
         } finally {
             unlink($path);
         }
+    }
+
+    public function testItDetectsMimeTypeAutomaticallyForAttachmentFiles(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf2-attachment-');
+
+        if ($path === false) {
+            self::fail('Unable to allocate a temporary path for the attachment import test.');
+        }
+
+        $xmlPath = $path . '.xml';
+        rename($path, $xmlPath);
+        file_put_contents($xmlPath, '<root/>');
+
+        try {
+            $document = DefaultDocumentBuilder::make()
+                ->attachmentFromFile($xmlPath)
+                ->build();
+
+            self::assertCount(1, $document->attachments);
+            self::assertSame('application/xml', $document->attachments[0]->embeddedFile->mimeType);
+        } finally {
+            unlink($xmlPath);
+        }
+    }
+
+    public function testItAddsEmbeddedFileAttachmentsFromAStream(): void
+    {
+        $stream = fopen('php://temp', 'w+b');
+
+        if ($stream === false) {
+            self::fail('Unable to open a temporary stream for attachment import.');
+        }
+
+        fwrite($stream, '<root/>');
+
+        $document = DefaultDocumentBuilder::make()
+            ->attachmentFromStream(
+                $stream,
+                'invoice.xml',
+                'Imported attachment',
+            )
+            ->build();
+
+        self::assertCount(1, $document->attachments);
+        self::assertSame('invoice.xml', $document->attachments[0]->filename);
+        self::assertSame('<root/>', $document->attachments[0]->embeddedFile->contents);
+        self::assertSame('application/xml', $document->attachments[0]->embeddedFile->mimeType);
+        self::assertSame('Imported attachment', $document->attachments[0]->description);
     }
 
     public function testItRejectsMissingAttachmentFiles(): void
