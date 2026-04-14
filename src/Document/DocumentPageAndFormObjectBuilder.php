@@ -19,6 +19,7 @@ use Kalle\Pdf\Page\OptionalContentGroup;
 use Kalle\Pdf\Page\OptionalContentMembership;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
+use Kalle\Pdf\Page\PageBox;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\RelatedObjectsPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
@@ -256,7 +257,7 @@ final class DocumentPageAndFormObjectBuilder
         );
     }
 
-    private function buildPageBoxEntry(string $name, ?\Kalle\Pdf\Page\PageBox $box): string
+    private function buildPageBoxEntry(string $name, ?PageBox $box): string
     {
         if ($box === null) {
             return '';

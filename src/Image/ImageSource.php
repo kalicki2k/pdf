@@ -389,7 +389,7 @@ final readonly class ImageSource
 
         if ($this->decode !== null) {
             $entries[] = '/Decode [' . implode(' ', array_map(
-                static fn (int|float $value): string => rtrim(rtrim(sprintf('%.6F', $value), '0'), '.'),
+                static fn (int | float $value): string => rtrim(rtrim(sprintf('%.6F', $value), '0'), '.'),
                 $this->decode,
             )) . ']';
         }

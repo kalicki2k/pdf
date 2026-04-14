@@ -14,6 +14,7 @@ use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImageSource;
 use Kalle\Pdf\Image\WebpImageDecoder;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class ImageSourceTest extends TestCase
 {
@@ -695,7 +696,7 @@ final class ImageSourceTest extends TestCase
             return;
         }
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unable to create lossless WebP fixture without GD lossless WebP support.');
 
         WebpFixture::tinyLosslessWebpBytes();

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Image;
 
-use function ord;
 use function get_debug_type;
 use function is_scalar;
+use function ord;
 use function sprintf;
 use function strlen;
 use function substr;
