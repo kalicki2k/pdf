@@ -10,7 +10,6 @@ use Kalle\Pdf\Document\Form\CheckboxField;
 use Kalle\Pdf\Document\Form\ComboBoxField;
 use Kalle\Pdf\Document\Form\FormField;
 use Kalle\Pdf\Document\Form\ListBoxField;
-use Kalle\Pdf\Document\Form\PushButtonField;
 use Kalle\Pdf\Document\Form\RadioButtonGroup;
 use Kalle\Pdf\Document\Form\TextField;
 
@@ -22,15 +21,12 @@ final class PdfA4FormFieldPolicy
             || $field instanceof CheckboxField
             || $field instanceof RadioButtonGroup
             || $field instanceof ComboBoxField
-            || $field instanceof ListBoxField
-            || ($field instanceof PushButtonField && $field->optionalContentStateAction !== null);
+            || $field instanceof ListBoxField;
     }
 
     public function violationMessage(Profile $profile): string
     {
-        $allowedFields = $profile->pdfaConformance() === 'E'
-            ? 'text fields, checkboxes, radio buttons, choice fields and optional-content state push buttons'
-            : 'text fields, checkboxes, radio buttons and choice fields';
+        $allowedFields = 'text fields, checkboxes, radio buttons and choice fields';
 
         return sprintf(
             'Profile %s only allows %s in the %s.',

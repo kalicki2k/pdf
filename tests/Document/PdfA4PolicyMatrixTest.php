@@ -579,7 +579,7 @@ final class PdfA4PolicyMatrixTest extends TestCase
         new DocumentSerializationPlanBuilder()->build($document);
     }
 
-    public function testItAllowsPdfA4eOptionalContentStatePushButtonsWithinTheCurrentFormSubset(): void
+    public function testItRejectsPdfA4eOptionalContentStatePushButtonsOutsideTheCurrentExternallyValidatedFormSubset(): void
     {
         $document = new Document(
             profile: Profile::pdfA4e(),
@@ -608,15 +608,12 @@ final class PdfA4PolicyMatrixTest extends TestCase
             ),
         );
 
-        $serialized = implode("\n", array_map(
-            static fn ($object): string => $object->contents,
-            iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects),
-        ));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Profile PDF/A-4e only allows text fields, checkboxes, radio buttons and choice fields in the current constrained PDF/A-4e form policy.',
+        );
 
-        self::assertStringContainsString('/FT /Btn', $serialized);
-        self::assertStringContainsString('/A << /S /SetOCGState /State [', $serialized);
-        self::assertStringContainsString('/ON ', $serialized);
-        self::assertStringContainsString('/OFF ', $serialized);
+        new DocumentSerializationPlanBuilder()->build($document);
     }
 
     public function testItRejectsPdfA4ePlainPushButtonsOutsideTheCurrentFormSubset(): void
@@ -629,7 +626,7 @@ final class PdfA4PolicyMatrixTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Profile PDF/A-4e only allows text fields, checkboxes, radio buttons, choice fields and optional-content state push buttons in the current constrained PDF/A-4e form policy.',
+            'Profile PDF/A-4e only allows text fields, checkboxes, radio buttons and choice fields in the current constrained PDF/A-4e form policy.',
         );
 
         new DocumentSerializationPlanBuilder()->build($document);
