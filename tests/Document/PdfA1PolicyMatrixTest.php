@@ -86,7 +86,7 @@ final class PdfA1PolicyMatrixTest extends TestCase
             'indexed-image' => $builder
                 ->image(
                     ImageSource::indexed('palette-data', 1, 1, 8, "\x80\x80\x80"),
-                    ImagePlacement::at(10, 20),
+                    ImagePlacement::absolute(left: 10, bottom: 20),
                     ImageAccessibility::alternativeText('Indexed image'),
                 )
                 ->build(),
@@ -103,7 +103,7 @@ final class PdfA1PolicyMatrixTest extends TestCase
                         ImageColorSpace::RGB,
                         softMask: ImageSource::alphaMask('alpha-data', 2, 1),
                     ),
-                    ImagePlacement::at(10, 20),
+                    ImagePlacement::absolute(left: 10, bottom: 20),
                     ImageAccessibility::alternativeText('Transparent image'),
                 )
                 ->build(),

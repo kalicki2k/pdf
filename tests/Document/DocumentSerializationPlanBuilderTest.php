@@ -1328,7 +1328,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(40, 500, width: 120),
+                ImagePlacement::absolute(left: 40, bottom: 500, width: 120),
                 ImageAccessibility::alternativeText('Example image'),
             )
             ->build();
@@ -2828,7 +2828,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     ImageColorSpace::RGB,
                     softMask: ImageSource::alphaMask('alpha-data', 2, 1),
                 ),
-                ImagePlacement::at(10, 20),
+                ImagePlacement::absolute(left: 10, bottom: 20),
                 ImageAccessibility::alternativeText('Transparent image'),
             )
             ->build();
@@ -2870,7 +2870,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfUa1())
             ->title('Accessible Copy')
             ->language('de-DE')
-            ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::at(40, 500, width: 120))
+            ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::absolute(left: 40, bottom: 500, width: 120))
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
@@ -2886,7 +2886,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::at(40, 500, width: 120))
+            ->image(ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB), ImagePlacement::absolute(left: 40, bottom: 500, width: 120))
             ->build();
 
         $this->expectException(InvalidArgumentException::class);
@@ -3293,7 +3293,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     ImageColorSpace::RGB,
                     softMask: ImageSource::alphaMask('alpha-data', 2, 1),
                 ),
-                ImagePlacement::at(10, 20),
+                ImagePlacement::absolute(left: 10, bottom: 20),
                 ImageAccessibility::alternativeText('Transparent image'),
             )
             ->build();
@@ -3318,7 +3318,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     8,
                     "\x80\x80\x80",
                 ),
-                ImagePlacement::at(10, 20),
+                ImagePlacement::absolute(left: 10, bottom: 20),
                 ImageAccessibility::alternativeText('Indexed image'),
             )
             ->build();
@@ -3341,7 +3341,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ))
             ->image(
                 $this->jpegImageSourceFromBytes(JpegFixture::tinyCmykJpegBytes()),
-                ImagePlacement::at(10, 20),
+                ImagePlacement::absolute(left: 10, bottom: 20),
                 ImageAccessibility::alternativeText('CMYK image'),
             )
             ->build();
@@ -3365,7 +3365,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->title('Archive Copy')
             ->image(
                 $this->jpegImageSourceFromBytes(JpegFixture::tinyCmykJpegBytes()),
-                ImagePlacement::at(10, 20),
+                ImagePlacement::absolute(left: 10, bottom: 20),
                 ImageAccessibility::alternativeText('CMYK image'),
             )
             ->build();
@@ -3385,7 +3385,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->pdfaOutputIntent(PdfAOutputIntent::defaultCmyk())
             ->image(
                 $this->jpegImageSourceFromBytes(JpegFixture::tinyRgbJpegBytes()),
-                ImagePlacement::at(10, 20),
+                ImagePlacement::absolute(left: 10, bottom: 20),
                 ImageAccessibility::alternativeText('RGB image'),
             )
             ->build();
@@ -3410,7 +3410,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                     '11111111',
                     '00000000',
                 ]),
-                ImagePlacement::at(10, 20),
+                ImagePlacement::absolute(left: 10, bottom: 20),
                 ImageAccessibility::alternativeText('CCITT image'),
             )
             ->build();
@@ -3445,7 +3445,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 ))
                 ->imageFile(
                     $path,
-                    ImagePlacement::at(10, 20),
+                    ImagePlacement::absolute(left: 10, bottom: 20),
                     ImageAccessibility::alternativeText('Predictor grayscale TIFF'),
                 )
                 ->build();
@@ -3484,7 +3484,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 ))
                 ->imageFile(
                     $path,
-                    ImagePlacement::at(10, 20),
+                    ImagePlacement::absolute(left: 10, bottom: 20),
                     ImageAccessibility::alternativeText('CMYK TIFF'),
                 )
                 ->build();
@@ -3693,7 +3693,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->language('de-DE')
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(40, 500, width: 120),
+                ImagePlacement::absolute(left: 40, bottom: 500, width: 120),
                 ImageAccessibility::decorative(),
             )
             ->build();
@@ -3717,7 +3717,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->language('de-DE')
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(40, 500, width: 120),
+                ImagePlacement::absolute(left: 40, bottom: 500, width: 120),
                 ImageAccessibility::alternativeText('Logo'),
             )
             ->build();

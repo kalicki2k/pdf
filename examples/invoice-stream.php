@@ -313,10 +313,10 @@ $document = Pdf::document()
     )
     ->imageFile(
         $logoPath,
-        ImagePlacement::at(
-            Units::mm(136),
-            Units::mm(262),
-            Units::mm(48),
+        ImagePlacement::absolute(
+            left: Units::mm(136),
+            bottom: Units::mm(262),
+            width: Units::mm(48),
         ),
     )
     ->textLines(

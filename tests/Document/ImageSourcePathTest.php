@@ -31,7 +31,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, JpegFixture::tinyGrayJpegBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(24, 48, width: 72))
+            ->imageFile($path, ImagePlacement::absolute(left: 24, bottom: 48, width: 72))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -51,7 +51,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, JpegFixture::tinyCmykJpegBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(24, 48, width: 72))
+            ->imageFile($path, ImagePlacement::absolute(left: 24, bottom: 48, width: 72))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -73,7 +73,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, PngFixture::tinyRgbaPngBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(12, 18, width: 24))
+            ->imageFile($path, ImagePlacement::absolute(left: 12, bottom: 18, width: 24))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -94,7 +94,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, PngFixture::tinyIndexedPngBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -115,7 +115,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, PngFixture::tinyIndexedTransparentPngBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -137,7 +137,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyCcittGroup4TiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -158,7 +158,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyUncompressedBilevelTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -179,7 +179,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyUncompressedGrayscaleTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -200,7 +200,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyPackBitsGrayscaleTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -221,7 +221,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyPredictorLzwGrayscaleTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -242,7 +242,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyUncompressedRgbTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -263,7 +263,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyUncompressedPaletteTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -284,7 +284,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyLzwPaletteTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -304,7 +304,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyLzwRgbTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -325,7 +325,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyPredictorDeflateRgbTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -346,7 +346,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyUncompressedCmykTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -367,7 +367,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyPredictorDeflateCmykTiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -388,7 +388,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, TiffFixture::tinyMultiStripCcittGroup3TiffBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -409,7 +409,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, GifFixture::tinyTransparentGifBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -431,7 +431,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, BmpFixture::tiny32BitRgbaBmpBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -453,7 +453,7 @@ final class ImageSourcePathTest extends TestCase
         file_put_contents($path, BmpFixture::tiny32BitBitfieldsReversedBmpBytes());
 
         $document = DefaultDocumentBuilder::make()
-            ->imageFile($path, ImagePlacement::at(8, 10, width: 16))
+            ->imageFile($path, ImagePlacement::absolute(left: 8, bottom: 10, width: 16))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);

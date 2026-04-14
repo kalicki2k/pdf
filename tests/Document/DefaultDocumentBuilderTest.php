@@ -670,7 +670,7 @@ final class DefaultDocumentBuilderTest extends TestCase
         $image = ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB);
 
         $document = DefaultDocumentBuilder::make()
-            ->image($image, ImagePlacement::at(40, 500, width: 120), ImageAccessibility::alternativeText('Logo'))
+            ->image($image, ImagePlacement::absolute(left: 40, bottom: 500, width: 120), ImageAccessibility::alternativeText('Logo'))
             ->build();
 
         self::assertCount(1, $document->pages[0]->imageResources);
@@ -687,11 +687,11 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         $document = DefaultDocumentBuilder::make()
             ->margin(Margin::all(40.0))
-            ->image($image, ImagePlacement::flow(width: 120.0))
+            ->image($image, ImagePlacement::static(width: 120.0))
             ->build();
 
-        self::assertSame(40.0, $document->pages[0]->images[0]->placement->x);
-        self::assertEqualsWithDelta(741.89, $document->pages[0]->images[0]->placement->y, 0.001);
+        self::assertSame(40.0, $document->pages[0]->images[0]->placement->left);
+        self::assertEqualsWithDelta(741.89, $document->pages[0]->images[0]->placement->bottom, 0.001);
         self::assertStringContainsString("120 0 0 60 40 741.89 cm\n/Im1 Do", $document->pages[0]->contents);
     }
 
@@ -701,14 +701,14 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         $document = DefaultDocumentBuilder::make()
             ->margin(Margin::all(40.0))
-            ->image($image, ImagePlacement::flow(width: 120.0, align: ImageAlign::CENTER))
-            ->image($image, ImagePlacement::flow(width: 120.0, align: ImageAlign::RIGHT))
+            ->image($image, ImagePlacement::static(width: 120.0, align: ImageAlign::CENTER))
+            ->image($image, ImagePlacement::static(width: 120.0, align: ImageAlign::RIGHT))
             ->build();
 
-        self::assertEqualsWithDelta(237.638, $document->pages[0]->images[0]->placement->x, 0.001);
-        self::assertEqualsWithDelta(741.89, $document->pages[0]->images[0]->placement->y, 0.001);
-        self::assertEqualsWithDelta(435.276, $document->pages[0]->images[1]->placement->x, 0.001);
-        self::assertEqualsWithDelta(681.89, $document->pages[0]->images[1]->placement->y, 0.001);
+        self::assertEqualsWithDelta(237.638, $document->pages[0]->images[0]->placement->left, 0.001);
+        self::assertEqualsWithDelta(741.89, $document->pages[0]->images[0]->placement->bottom, 0.001);
+        self::assertEqualsWithDelta(435.276, $document->pages[0]->images[1]->placement->left, 0.001);
+        self::assertEqualsWithDelta(681.89, $document->pages[0]->images[1]->placement->bottom, 0.001);
         self::assertStringContainsString("120 0 0 60 237.638 741.89 cm\n/Im1 Do", $document->pages[0]->contents);
         self::assertStringContainsString("120 0 0 60 435.276 681.89 cm\n/Im1 Do", $document->pages[0]->contents);
     }
@@ -719,12 +719,12 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         $document = DefaultDocumentBuilder::make()
             ->margin(Margin::all(40.0))
-            ->image($image, ImagePlacement::flow(width: 120.0, spacingBefore: 10.0, spacingAfter: 12.0))
+            ->image($image, ImagePlacement::static(width: 120.0, spacingBefore: 10.0, spacingAfter: 12.0))
             ->text('After image')
             ->build();
 
-        self::assertSame(40.0, $document->pages[0]->images[0]->placement->x);
-        self::assertEqualsWithDelta(731.89, $document->pages[0]->images[0]->placement->y, 0.001);
+        self::assertSame(40.0, $document->pages[0]->images[0]->placement->left);
+        self::assertEqualsWithDelta(731.89, $document->pages[0]->images[0]->placement->bottom, 0.001);
         self::assertStringContainsString("120 0 0 60 40 731.89 cm\n/Im1 Do", $document->pages[0]->contents);
         self::assertStringContainsString("BT\n/F1 18 Tf\n40 701.89 Td\n[", $document->pages[0]->contents);
     }
@@ -736,17 +736,17 @@ final class DefaultDocumentBuilderTest extends TestCase
         $document = DefaultDocumentBuilder::make()
             ->pageSize(PageSize::A8())
             ->margin(Margin::all(10.0))
-            ->image($image, ImagePlacement::flow(width: 120.0))
-            ->image($image, ImagePlacement::flow(width: 120.0))
-            ->image($image, ImagePlacement::flow(width: 120.0))
-            ->image($image, ImagePlacement::flow(width: 120.0))
+            ->image($image, ImagePlacement::static(width: 120.0))
+            ->image($image, ImagePlacement::static(width: 120.0))
+            ->image($image, ImagePlacement::static(width: 120.0))
+            ->image($image, ImagePlacement::static(width: 120.0))
             ->build();
 
         self::assertCount(2, $document->pages);
         self::assertCount(3, $document->pages[0]->images);
         self::assertCount(1, $document->pages[1]->images);
-        self::assertEqualsWithDelta(19.764, $document->pages[0]->images[2]->placement->y, 0.001);
-        self::assertEqualsWithDelta(139.764, $document->pages[1]->images[0]->placement->y, 0.001);
+        self::assertEqualsWithDelta(19.764, $document->pages[0]->images[2]->placement->bottom, 0.001);
+        self::assertEqualsWithDelta(139.764, $document->pages[1]->images[0]->placement->bottom, 0.001);
     }
 
     public function testItCanDisableAutomaticFlowImagePageBreaks(): void
@@ -757,11 +757,11 @@ final class DefaultDocumentBuilderTest extends TestCase
             DefaultDocumentBuilder::make()
                 ->pageSize(PageSize::A8())
                 ->margin(Margin::all(10.0))
-                ->image($image, ImagePlacement::flow(width: 120.0))
-                ->image($image, ImagePlacement::flow(width: 120.0))
-                ->image($image, ImagePlacement::flow(width: 120.0))
+                ->image($image, ImagePlacement::static(width: 120.0))
+                ->image($image, ImagePlacement::static(width: 120.0))
+                ->image($image, ImagePlacement::static(width: 120.0))
                 ->disableAutoPageBreak()
-                ->image($image, ImagePlacement::flow(width: 120.0));
+                ->image($image, ImagePlacement::static(width: 120.0));
             self::fail('Expected coded image layout validation error.');
         } catch (DocumentValidationException $exception) {
             self::assertSame(DocumentBuildError::IMAGE_LAYOUT_INVALID, $exception->error);
@@ -778,8 +778,8 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         $document = DefaultDocumentBuilder::make()
             ->profile(Profile::pdfUa1())
-            ->image($image, ImagePlacement::at(40, 500, width: 120), ImageAccessibility::alternativeText('Logo'))
-            ->image($image, ImagePlacement::at(40, 420, width: 120), ImageAccessibility::decorative())
+            ->image($image, ImagePlacement::absolute(left: 40, bottom: 500, width: 120), ImageAccessibility::alternativeText('Logo'))
+            ->image($image, ImagePlacement::absolute(left: 40, bottom: 420, width: 120), ImageAccessibility::decorative())
             ->build();
 
         self::assertSame(0, $document->pages[0]->images[0]->markedContentId);

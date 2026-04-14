@@ -1072,8 +1072,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $clone->currentPageContents,
             $this->buildImageContent(
                 $imageAlias,
-                $resolvedPlacement->x ?? 0.0,
-                $resolvedPlacement->y ?? 0.0,
+                $resolvedPlacement->left ?? 0.0,
+                $resolvedPlacement->bottom ?? 0.0,
                 $width,
                 $height,
                 $accessibility,
@@ -1081,8 +1081,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ),
         );
 
-        if ($placement->isFlow()) {
-            $clone->currentPageCursorY = ($resolvedPlacement->y ?? 0.0) - $placement->spacingAfter;
+        if ($placement->isStatic()) {
+            $clone->currentPageCursorY = ($resolvedPlacement->bottom ?? 0.0) - $placement->spacingAfter;
             $clone->currentPageCursorYIsTopBoundary = true;
         }
 
@@ -5862,22 +5862,41 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function resolveImagePlacement(ImagePlacement $placement, float $width, float $height): ImagePlacement
     {
-        if ($placement->isAbsolute()) {
-            return $placement;
-        }
-
         $page = $this->buildCurrentPage();
         $contentArea = $page->contentArea();
-        $topBoundary = ($this->currentPageCursorY ?? $contentArea->top) - $placement->spacingBefore;
-        $x = match ($placement->align ?? ImageAlign::LEFT) {
-            ImageAlign::LEFT => $contentArea->left,
-            ImageAlign::CENTER => $contentArea->left + (($contentArea->width() - $width) / 2.0),
-            ImageAlign::RIGHT => $contentArea->right - $width,
-        };
 
-        return new ImagePlacement(
-            x: $x,
-            y: $topBoundary - $height,
+        if ($placement->isStatic()) {
+            $topBoundary = ($this->currentPageCursorY ?? $contentArea->top) - $placement->spacingBefore;
+            $left = match ($placement->align ?? ImageAlign::LEFT) {
+                ImageAlign::LEFT => $contentArea->left,
+                ImageAlign::CENTER => $contentArea->left + (($contentArea->width() - $width) / 2.0),
+                ImageAlign::RIGHT => $contentArea->right - $width,
+            };
+
+            return ImagePlacement::absolute(
+                left: $left,
+                bottom: $topBoundary - $height,
+                width: $placement->width,
+                height: $placement->height,
+            );
+        }
+
+        $referenceLeft = $placement->isRelative() ? $contentArea->left : 0.0;
+        $referenceRight = $placement->isRelative() ? $contentArea->right : $page->size->width();
+        $referenceTop = $placement->isRelative() ? $contentArea->top : $page->size->height();
+        $referenceBottom = $placement->isRelative() ? $contentArea->bottom : 0.0;
+
+        $left = $placement->left !== null
+            ? $referenceLeft + $placement->left
+            : $referenceRight - $placement->right - $width;
+
+        $bottom = $placement->bottom !== null
+            ? $referenceBottom + $placement->bottom
+            : $referenceTop - $placement->top - $height;
+
+        return ImagePlacement::absolute(
+            left: $left,
+            bottom: $bottom,
             width: $placement->width,
             height: $placement->height,
         );
@@ -5888,7 +5907,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $resolvedPlacement = $this->resolveImagePlacement($placement, $width, $height);
         $contentArea = $this->buildCurrentPage()->contentArea();
 
-        if (($resolvedPlacement->y ?? 0.0) >= $contentArea->bottom) {
+        if (($resolvedPlacement->bottom ?? 0.0) >= $contentArea->bottom) {
             return;
         }
 
@@ -5914,7 +5933,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function resolvePlacedImage(ImagePlacement $placement, float $width, float $height): ImagePlacement
     {
-        if ($placement->isFlow()) {
+        if ($placement->isStatic()) {
             $this->prepareFlowImagePlacement($placement, $width, $height);
         }
 

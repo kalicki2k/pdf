@@ -201,7 +201,7 @@ use Kalle\Pdf\Image\ImageSource;
 $document = DefaultDocumentBuilder::make()
     ->image(
         ImageSource::jpeg($jpegBytes, 600, 300, ImageColorSpace::RGB),
-        ImagePlacement::at(40, 500, width: 180),
+        ImagePlacement::absolute(left: 40, bottom: 500, width: 180),
     )
     ->build();
 ```

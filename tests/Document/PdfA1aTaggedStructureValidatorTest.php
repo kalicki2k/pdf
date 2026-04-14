@@ -269,7 +269,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
             ))
             ->image(
                 ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
-                ImagePlacement::at(72, 440, 32, 32),
+                ImagePlacement::absolute(left: 72, bottom: 440, width: 32, height: 32),
                 ImageAccessibility::alternativeText('Project figure'),
             );
 

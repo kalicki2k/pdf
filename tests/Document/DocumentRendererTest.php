@@ -403,7 +403,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(40, 500, width: 120),
+                ImagePlacement::absolute(left: 40, bottom: 500, width: 120),
                 ImageAccessibility::alternativeText('Logo'),
             )
             ->build();
@@ -674,7 +674,7 @@ final class DocumentRendererTest extends TestCase
             )
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(320, 610, width: 140),
+                ImagePlacement::absolute(left: 320, bottom: 610, width: 140),
                 ImageAccessibility::alternativeText('Projektgrafik'),
             )
             ->linkToPage(1, 72, 560, 180, 16, 'Spezifikation öffnen')
@@ -728,12 +728,12 @@ final class DocumentRendererTest extends TestCase
             ))
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(240, 620, width: 80),
+                ImagePlacement::absolute(left: 240, bottom: 620, width: 80),
                 ImageAccessibility::alternativeText('Meaningful image'),
             )
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 40, 40, ImageColorSpace::RGB),
-                ImagePlacement::at(340, 620, width: 32),
+                ImagePlacement::absolute(left: 340, bottom: 620, width: 32),
                 ImageAccessibility::decorative(),
             )
             ->build();
@@ -859,7 +859,7 @@ final class DocumentRendererTest extends TestCase
             ->table($table)
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(320, 610, width: 140),
+                ImagePlacement::absolute(left: 320, bottom: 610, width: 140),
                 ImageAccessibility::alternativeText('Projektgrafik'),
             )
             ->linkToPage(1, 72, 480, 180, 16, 'Spezifikation oeffnen')
@@ -2281,7 +2281,7 @@ final class DocumentRendererTest extends TestCase
             ))
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(72, 610, width: 160),
+                ImagePlacement::absolute(left: 72, bottom: 610, width: 160),
             )
             ->build();
 
@@ -2320,7 +2320,7 @@ final class DocumentRendererTest extends TestCase
                     '11111111',
                     '00000000',
                 ]),
-                ImagePlacement::at(72, 610, width: 160),
+                ImagePlacement::absolute(left: 72, bottom: 610, width: 160),
             )
             ->build();
 
@@ -2350,7 +2350,7 @@ final class DocumentRendererTest extends TestCase
 
         try {
             $document = DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(72, 610, width: 160))
+                ->imageFile($path, ImagePlacement::absolute(left: 72, bottom: 610, width: 160))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2397,8 +2397,8 @@ final class DocumentRendererTest extends TestCase
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     color: Color::rgb(0.08, 0.16, 0.35),
                 ))
-                ->imageFile($rgbPath, ImagePlacement::at(72, 610, width: 120))
-                ->imageFile($ccittPath, ImagePlacement::at(220, 610, width: 120))
+                ->imageFile($rgbPath, ImagePlacement::absolute(left: 72, bottom: 610, width: 120))
+                ->imageFile($ccittPath, ImagePlacement::absolute(left: 220, bottom: 610, width: 120))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2436,9 +2436,9 @@ final class DocumentRendererTest extends TestCase
         try {
             $document = DefaultDocumentBuilder::make()
                 ->title('TIFF Interop Regression')
-                ->imageFile($grayPath, ImagePlacement::at(40, 650, width: 80))
-                ->imageFile($rgbPath, ImagePlacement::at(140, 650, width: 80))
-                ->imageFile($ccittPath, ImagePlacement::at(240, 650, width: 80))
+                ->imageFile($grayPath, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
+                ->imageFile($rgbPath, ImagePlacement::absolute(left: 140, bottom: 650, width: 80))
+                ->imageFile($ccittPath, ImagePlacement::absolute(left: 240, bottom: 650, width: 80))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2477,9 +2477,9 @@ final class DocumentRendererTest extends TestCase
         try {
             $document = DefaultDocumentBuilder::make()
                 ->title('TIFF Golden Regression')
-                ->imageFile($grayPath, ImagePlacement::at(40, 650, width: 80))
-                ->imageFile($rgbPath, ImagePlacement::at(140, 650, width: 80))
-                ->imageFile($ccittPath, ImagePlacement::at(240, 650, width: 80))
+                ->imageFile($grayPath, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
+                ->imageFile($rgbPath, ImagePlacement::absolute(left: 140, bottom: 650, width: 80))
+                ->imageFile($ccittPath, ImagePlacement::absolute(left: 240, bottom: 650, width: 80))
                 ->build();
 
             $output = new StringOutput();
@@ -2509,7 +2509,7 @@ final class DocumentRendererTest extends TestCase
 
         try {
             $document = DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2539,7 +2539,7 @@ final class DocumentRendererTest extends TestCase
 
         try {
             $document = DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2570,7 +2570,7 @@ final class DocumentRendererTest extends TestCase
 
         try {
             $document = DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2604,8 +2604,8 @@ final class DocumentRendererTest extends TestCase
         try {
             $document = DefaultDocumentBuilder::make()
                 ->title('Transparent Golden Regression')
-                ->imageFile($gifPath, ImagePlacement::at(40, 650, width: 80))
-                ->imageFile($bmpPath, ImagePlacement::at(140, 650, width: 80))
+                ->imageFile($gifPath, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
+                ->imageFile($bmpPath, ImagePlacement::absolute(left: 140, bottom: 650, width: 80))
                 ->build();
 
             $output = new StringOutput();
@@ -2635,7 +2635,7 @@ final class DocumentRendererTest extends TestCase
 
         try {
             $document = DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2665,7 +2665,7 @@ final class DocumentRendererTest extends TestCase
 
         try {
             $document = DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2694,7 +2694,7 @@ final class DocumentRendererTest extends TestCase
 
         try {
             $document = DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                 ->build();
 
             $renderer = new DocumentRenderer();
@@ -2730,7 +2730,7 @@ final class DocumentRendererTest extends TestCase
         try {
             if (\function_exists('gd_info') && ((\gd_info()['WebP Support'] ?? false) === true)) {
                 $document = DefaultDocumentBuilder::make()
-                    ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                    ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                     ->build();
 
                 $renderer = new DocumentRenderer();
@@ -2755,7 +2755,7 @@ final class DocumentRendererTest extends TestCase
             ));
 
             DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                 ->build();
         } finally {
             unlink($path);
@@ -2780,7 +2780,7 @@ final class DocumentRendererTest extends TestCase
         try {
             if (\function_exists('gd_info') && ((\gd_info()['WebP Support'] ?? false) === true)) {
                 $document = DefaultDocumentBuilder::make()
-                    ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                    ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                     ->build();
 
                 $renderer = new DocumentRenderer();
@@ -2806,7 +2806,7 @@ final class DocumentRendererTest extends TestCase
             ));
 
             DefaultDocumentBuilder::make()
-                ->imageFile($path, ImagePlacement::at(40, 650, width: 80))
+                ->imageFile($path, ImagePlacement::absolute(left: 40, bottom: 650, width: 80))
                 ->build();
         } finally {
             unlink($path);

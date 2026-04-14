@@ -125,7 +125,7 @@ final class DocumentRendererEncryptionTest extends TestCase
             ))
             ->image(
                 ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-                ImagePlacement::at(40, 620, width: 120),
+                ImagePlacement::absolute(left: 40, bottom: 620, width: 120),
             )
             ->table($table)
             ->contents();

@@ -159,7 +159,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 )
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
-                    ImagePlacement::at(72, 440, 32, 32),
+                    ImagePlacement::absolute(left: 72, bottom: 440, width: 32, height: 32),
                     ImageAccessibility::alternativeText('Project figure'),
                 )
                 ->build(),
@@ -235,7 +235,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 )
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
-                    ImagePlacement::at(72, 620, 32, 32),
+                    ImagePlacement::absolute(left: 72, bottom: 620, width: 32, height: 32),
                     ImageAccessibility::alternativeText('Second page figure'),
                 )
                 ->build(),
@@ -331,7 +331,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 )
                 ->image(
                     ImageSource::flate('rgb', 1, 1, ImageColorSpace::RGB),
-                    ImagePlacement::at(72, 460, 32, 32),
+                    ImagePlacement::absolute(left: 72, bottom: 460, width: 32, height: 32),
                     ImageAccessibility::alternativeText('Decorative figure'),
                 )
                 ->build(),
