@@ -17,6 +17,9 @@ use RuntimeException;
 
 final readonly class XmlWriter
 {
+    /**
+     * @param resource $stream
+     */
     public function writeToStream(XmlDocument $document, $stream, bool $pretty = true): void
     {
         if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
@@ -66,6 +69,9 @@ final readonly class XmlWriter
         }
     }
 
+    /**
+     * @param resource $stream
+     */
     private function writeElementCompact($stream, XmlElement $element): void
     {
         $this->writeBytes($stream, '<' . $element->name . $this->serializeAttributes($element));
@@ -85,6 +91,9 @@ final readonly class XmlWriter
         $this->writeBytes($stream, '</' . $element->name . '>');
     }
 
+    /**
+     * @param resource $stream
+     */
     private function writeElementPretty($stream, XmlElement $element, int $depth = 0): void
     {
         $indent = str_repeat('  ', $depth);
@@ -123,6 +132,9 @@ final readonly class XmlWriter
         $this->writeBytes($stream, "\n" . $indent . '</' . $element->name . '>');
     }
 
+    /**
+     * @param resource $stream
+     */
     private function writeCompactChild($stream, XmlNode $node): void
     {
         match (true) {
@@ -132,6 +144,9 @@ final readonly class XmlWriter
         };
     }
 
+    /**
+     * @param resource $stream
+     */
     private function writePrettyChild($stream, XmlNode $node, int $depth): void
     {
         match (true) {
@@ -196,6 +211,9 @@ final readonly class XmlWriter
         );
     }
 
+    /**
+     * @param resource $stream
+     */
     private function writeBytes($stream, string $bytes): void
     {
         $remainingBytes = $bytes;
