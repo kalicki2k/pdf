@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Text;
 
+use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
+use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Page\LinkTarget;
 
 /**
@@ -69,8 +71,11 @@ final readonly class TextOptions
     /**
      * Creates a generic text option object for block rendering.
      *
-     * @param ?float $x Absolute left text position. When omitted, the current flow cursor or page margin is used.
-     * @param ?float $y Absolute top-baseline anchor for the first rendered line. When omitted, normal text flow placement is used.
+     * @param ?float $left Absolute left text position. When omitted, the current flow cursor or page margin is used.
+     * @param ?float $right Absolute right inset used to resolve the text block width or anchor.
+     * @param ?float $top Absolute top text anchor for the first rendered line. The builder resolves this to the first baseline.
+     * @param ?float $bottom Absolute baseline anchor for the first rendered line.
+     * @param ?PositionMode $positionMode Reference area for explicit insets. `ABSOLUTE` uses the full page, `RELATIVE` uses the content area.
      * @param ?float $width Fixed layout width used for wrapping and alignment.
      * @param ?float $maxWidth Optional maximum width when no fixed width is configured.
      * @param float $fontSize Font size in PDF points.
@@ -91,8 +96,11 @@ final readonly class TextOptions
      * @param TextSemantic $semantic Whether the text should be treated as logical content or as an artifact.
      */
     public static function make(
-        ?float $x = null,
-        ?float $y = null,
+        ?float $left = null,
+        ?float $right = null,
+        ?float $top = null,
+        ?float $bottom = null,
+        ?PositionMode $positionMode = null,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::DEFAULT_FONT_SIZE,
@@ -113,8 +121,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return new self(
-            x: $x,
-            y: $y,
+            left: $left,
+            right: $right,
+            top: $top,
+            bottom: $bottom,
+            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -142,8 +153,11 @@ final readonly class TextOptions
      * Accepts the same overrides as `make()`, but starts from the body preset size and line height.
      */
     public static function body(
-        ?float $x = null,
-        ?float $y = null,
+        ?float $left = null,
+        ?float $right = null,
+        ?float $top = null,
+        ?float $bottom = null,
+        ?PositionMode $positionMode = null,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::BODY_FONT_SIZE,
@@ -164,8 +178,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return self::make(
-            x: $x,
-            y: $y,
+            left: $left,
+            right: $right,
+            top: $top,
+            bottom: $bottom,
+            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -193,8 +210,11 @@ final readonly class TextOptions
      * Accepts the same overrides as `make()`, but starts from the small preset size and line height.
      */
     public static function small(
-        ?float $x = null,
-        ?float $y = null,
+        ?float $left = null,
+        ?float $right = null,
+        ?float $top = null,
+        ?float $bottom = null,
+        ?PositionMode $positionMode = null,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::SMALL_FONT_SIZE,
@@ -215,8 +235,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return self::make(
-            x: $x,
-            y: $y,
+            left: $left,
+            right: $right,
+            top: $top,
+            bottom: $bottom,
+            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -244,8 +267,11 @@ final readonly class TextOptions
      * Accepts the same overrides as `make()`, but starts from the caption preset size and line height.
      */
     public static function caption(
-        ?float $x = null,
-        ?float $y = null,
+        ?float $left = null,
+        ?float $right = null,
+        ?float $top = null,
+        ?float $bottom = null,
+        ?PositionMode $positionMode = null,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::CAPTION_FONT_SIZE,
@@ -266,8 +292,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return self::make(
-            x: $x,
-            y: $y,
+            left: $left,
+            right: $right,
+            top: $top,
+            bottom: $bottom,
+            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -295,8 +324,11 @@ final readonly class TextOptions
      * Accepts the same overrides as `make()`, but starts from the heading preset size and line height.
      */
     public static function heading(
-        ?float $x = null,
-        ?float $y = null,
+        ?float $left = null,
+        ?float $right = null,
+        ?float $top = null,
+        ?float $bottom = null,
+        ?PositionMode $positionMode = null,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::HEADING_FONT_SIZE,
@@ -317,8 +349,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return self::make(
-            x: $x,
-            y: $y,
+            left: $left,
+            right: $right,
+            top: $top,
+            bottom: $bottom,
+            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -341,8 +376,11 @@ final readonly class TextOptions
     }
 
     /**
-     * @param ?float $x Absolute left text position. When omitted, the current flow cursor or page margin is used.
-     * @param ?float $y Absolute top-baseline anchor for the first rendered line. When omitted, normal text flow placement is used.
+     * @param ?float $left Absolute left text position. When omitted, the current flow cursor or page margin is used.
+     * @param ?float $right Absolute right inset used to resolve the text block width or anchor.
+     * @param ?float $top Absolute top text anchor for the first rendered line. The builder resolves this to the first baseline.
+     * @param ?float $bottom Absolute baseline anchor for the first rendered line.
+     * @param ?PositionMode $positionMode Reference area for explicit insets. `ABSOLUTE` uses the full page, `RELATIVE` uses the content area.
      * @param ?float $width Fixed layout width used for wrapping and alignment.
      * @param ?float $maxWidth Optional maximum width when no fixed width is configured.
      * @param float $fontSize Font size in PDF points.
@@ -363,8 +401,11 @@ final readonly class TextOptions
      * @param TextSemantic $semantic Whether the text should be treated as logical content or as an artifact.
      */
     private function __construct(
-        public ?float $x = null,
-        public ?float $y = null,
+        public ?float $left = null,
+        public ?float $right = null,
+        public ?float $top = null,
+        public ?float $bottom = null,
+        public ?PositionMode $positionMode = null,
         public ?float $width = null,
         public ?float $maxWidth = null,
         public float $fontSize = self::DEFAULT_FONT_SIZE,
@@ -384,5 +425,12 @@ final readonly class TextOptions
         public ?TaggedStructureTag $tag = null,
         public TextSemantic $semantic = TextSemantic::CONTENT,
     ) {
+        if ($this->top !== null && $this->bottom !== null) {
+            throw new InvalidArgumentException('TextOptions top and bottom cannot be combined.');
+        }
+
+        if ($this->positionMode === PositionMode::STATIC) {
+            throw new InvalidArgumentException('TextOptions do not support static position mode. Omit insets to use flow layout.');
+        }
     }
 }

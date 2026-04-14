@@ -112,7 +112,7 @@ final readonly class GifImageDecoder
             ));
         }
 
-        return (new DecodedRasterImage(
+        return new DecodedRasterImage(
             width: $screenWidth,
             height: $screenHeight,
             colorSpace: ImageColorSpace::RGB,
@@ -120,16 +120,16 @@ final readonly class GifImageDecoder
             pixelData: $imageDescriptor['indexBytes'],
             alphaData: $imageDescriptor['alphaBytes'],
             lookupTable: $imageDescriptor['palette'],
-        ))->toImageSource($path);
+        )->toImageSource($path);
     }
 
     private function readExtension(string $data, int $offset, string $path, ?int &$transparencyIndex): int
     {
-        $label = ord($data[$offset] ?? "\0");
+        $label = ord(($data[$offset] ?? "\0")[0]);
         $offset++;
 
         if ($label === 0xF9) {
-            $blockSize = ord($data[$offset] ?? "\0");
+            $blockSize = ord(($data[$offset] ?? "\0")[0]);
             $offset++;
 
             if ($blockSize !== 4 || strlen(substr($data, $offset, 4)) !== 4) {
@@ -226,7 +226,7 @@ final readonly class GifImageDecoder
             ));
         }
 
-        $minimumCodeSize = ord($data[$offset] ?? "\0");
+        $minimumCodeSize = ord(($data[$offset] ?? "\0")[0]);
         $offset++;
         ['payload' => $imageData, 'nextOffset' => $offset] = $this->readSubBlocks($data, $offset, $path);
         $indexBytes = $this->lzwDecoder->decode($imageData, $minimumCodeSize, $path);
@@ -278,7 +278,7 @@ final readonly class GifImageDecoder
         $payload = '';
 
         while (true) {
-            $blockLength = ord($data[$offset] ?? "\0");
+            $blockLength = ord(($data[$offset] ?? "\0")[0]);
             $offset++;
 
             if ($blockLength === 0) {

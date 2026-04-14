@@ -34,8 +34,6 @@ final readonly class Table
     public float $spacingAfter;
     public bool $repeatHeaderOnPageBreak;
     public bool $repeatFooterOnPageBreak;
-    public ?Closure $repeatedFooterRenderer;
-    public ?Closure $finalFooterRenderer;
 
     /**
      * @param list<TableColumn> $columns
@@ -51,8 +49,8 @@ final readonly class Table
         public array $headerRows = [],
         public array $repeatedFooterRows = [],
         public array $finalFooterRows = [],
-        ?Closure $repeatedFooterRenderer = null,
-        ?Closure $finalFooterRenderer = null,
+        public ?Closure $repeatedFooterRenderer = null,
+        public ?Closure $finalFooterRenderer = null,
     ) {
         if (count($this->columns) === 0) {
             throw new InvalidArgumentException('A table must contain at least one column.');
@@ -70,8 +68,6 @@ final readonly class Table
         $this->repeatHeaderOnPageBreak = $this->options->repeatHeaderOnPageBreak;
         $this->repeatFooterOnPageBreak = $this->options->repeatFooterOnPageBreak;
         $this->footerRows = $this->finalFooterRows;
-        $this->repeatedFooterRenderer = $repeatedFooterRenderer;
-        $this->finalFooterRenderer = $finalFooterRenderer;
 
         $this->assertRowsMatchGrid($this->headerRows);
         $this->assertRowsMatchGrid($this->rows);

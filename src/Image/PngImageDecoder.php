@@ -127,7 +127,7 @@ final readonly class PngImageDecoder
                 ));
             }
 
-            return (new DecodedRasterImage(
+            return new DecodedRasterImage(
                 width: $header['width'],
                 height: $header['height'],
                 colorSpace: ImageColorSpace::RGB,
@@ -135,17 +135,17 @@ final readonly class PngImageDecoder
                 pixelData: $colorBytes,
                 alphaData: $alphaBytes !== '' ? $alphaBytes : null,
                 lookupTable: $indexedPalette,
-            ))->toImageSource($path);
+            )->toImageSource($path);
         }
 
-        return (new DecodedRasterImage(
+        return new DecodedRasterImage(
             width: $header['width'],
             height: $header['height'],
             colorSpace: $header['colorSpace'],
             bitsPerComponent: $header['bitsPerComponent'],
             pixelData: $colorBytes,
             alphaData: $alphaBytes !== '' ? $alphaBytes : null,
-        ))->toImageSource($path);
+        )->toImageSource($path);
     }
 
     /**
@@ -252,7 +252,7 @@ final readonly class PngImageDecoder
         $previousRow = str_repeat("\0", $header['rowBytes']);
 
         for ($rowIndex = 0; $rowIndex < $header['height']; $rowIndex++) {
-            $filterType = ord($inflated[$offset] ?? "\0");
+            $filterType = ord(($inflated[$offset] ?? "\0")[0]);
             $offset++;
             $rowData = substr($inflated, $offset, $header['rowBytes']);
             $offset += $header['rowBytes'];
@@ -285,8 +285,8 @@ final readonly class PngImageDecoder
         for ($index = 0; $index < $rowLength; $index++) {
             $raw = ord($rowData[$index]);
             $left = $index >= $bytesPerPixel ? ord($decoded[$index - $bytesPerPixel]) : 0;
-            $up = ord($previousRow[$index] ?? "\0");
-            $upperLeft = $index >= $bytesPerPixel ? ord($previousRow[$index - $bytesPerPixel] ?? "\0") : 0;
+            $up = ord(($previousRow[$index] ?? "\0")[0]);
+            $upperLeft = $index >= $bytesPerPixel ? ord(($previousRow[$index - $bytesPerPixel] ?? "\0")[0]) : 0;
 
             $value = match ($filterType) {
                 0 => $raw,

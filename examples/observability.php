@@ -60,40 +60,40 @@ $builder = Document::make()
     )
     ->namedDestination('contents')
     ->text('PDF Engine Observability Report', TextOptions::make(
-        x: 72,
-        y: 780,
+        left: 72,
+        bottom: 780,
         fontSize: 24,
         lineHeight: 28,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $titleColor,
     ))
     ->text('This example produces a ten-page report and writes structured debug output as newline-delimited JSON. The built-in JsonDebugSink receives lifecycle, PDF structure and performance events through the Debugger facade while the document itself stays a regular PDF build.', TextOptions::make(
-        x: 72,
-        y: 738,
+        left: 72,
+        bottom: 738,
         width: 450,
         fontSize: 11,
         lineHeight: 15,
         color: $bodyColor,
     ))
     ->text('Contents', TextOptions::make(
-        x: 72,
-        y: 676,
+        left: 72,
+        bottom: 676,
         fontSize: 14,
         lineHeight: 18,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $sectionColor,
     ))
     ->text('Rendered output', TextOptions::make(
-        x: 72,
-        y: 180,
+        left: 72,
+        bottom: 180,
         fontSize: 12,
         lineHeight: 16,
         fontName: StandardFont::HELVETICA_BOLD->value,
         color: $accentColor,
     ))
     ->text('PDF: ' . $pdfPath . "\nLog: " . $logPath . "\nEvents include document.created, page.added, object.created, object.serialized, xref.written, trailer.written, document.render, page.render and file.write.", TextOptions::make(
-        x: 72,
-        y: 150,
+        left: 72,
+        bottom: 150,
         width: 450,
         fontSize: 10,
         lineHeight: 14,
@@ -109,16 +109,16 @@ foreach ($reportSections as $index => $section) {
 
     $builder = $builder
         ->text($label, TextOptions::make(
-            x: 88,
-            y: $linkY,
+            left: 88,
+            bottom: $linkY,
             width: 350,
             fontSize: 12,
             lineHeight: 15,
             color: $bodyColor,
         ))
         ->text('Focus: ' . $section['focus'], TextOptions::make(
-            x: 88,
-            y: $linkY - 18,
+            left: 88,
+            bottom: $linkY - 18,
             width: 380,
             fontSize: 9.5,
             lineHeight: 13,
@@ -215,8 +215,8 @@ foreach ($reportSections as $index => $section) {
             'Back to report contents',
         )
         ->text('Back to contents', TextOptions::make(
-            x: 72,
-            y: 58,
+            left: 72,
+            bottom: 58,
             fontSize: 10,
             lineHeight: 12,
             color: $accentColor,

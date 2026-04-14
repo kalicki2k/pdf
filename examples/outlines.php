@@ -84,8 +84,8 @@ DefaultDocumentBuilder::make()
         $body,
     )
     ->text('Target Section', TextOptions::make(
-        x: 72,
-        y: 620,
+        left: 72,
+        bottom: 620,
         fontSize: 18,
         lineHeight: 22,
         spacingAfter: 6,
@@ -95,8 +95,8 @@ DefaultDocumentBuilder::make()
     ->text(
         'The child outline named "Target Section" uses explicit coordinates so the viewer opens this page close to the highlighted block.',
         TextOptions::make(
-            x: 72,
-            y: 590,
+            left: 72,
+            bottom: 590,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -104,8 +104,8 @@ DefaultDocumentBuilder::make()
         ),
     )
     ->text('Implementation Notes', TextOptions::make(
-        x: 72,
-        y: 520,
+        left: 72,
+        bottom: 520,
         fontSize: 16,
         lineHeight: 20,
         spacingAfter: 6,
@@ -115,8 +115,8 @@ DefaultDocumentBuilder::make()
     ->text(
         'This subsection bookmark demonstrates one additional nesting level. The current API keeps levels explicit, which makes the resulting hierarchy deterministic and easy to reason about.',
         TextOptions::make(
-            x: 72,
-            y: 492,
+            left: 72,
+            bottom: 492,
             width: 360,
             fontSize: 11,
             lineHeight: 15,

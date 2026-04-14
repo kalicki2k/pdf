@@ -8,6 +8,7 @@ use Kalle\Pdf\Document\TextFlow;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
+use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
@@ -202,11 +203,93 @@ final class TextFlowTest extends TestCase
             spacingBefore: 12.0,
         ), StandardFontDefinition::from(StandardFont::HELVETICA));
         $explicitPlacement = $flow->placement(TextOptions::make(
-            y: 700.0,
+            bottom: 700.0,
             spacingBefore: 12.0,
         ), StandardFontDefinition::from(StandardFont::HELVETICA));
 
         self::assertEqualsWithDelta(755.197, $implicitPlacement['y'], 0.001);
         self::assertSame(700.0, $explicitPlacement['y']);
+    }
+
+    public function testItResolvesTopToTheFirstTextBaseline(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A4(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $placement = $flow->placement(
+            TextOptions::make(
+                top: 20.0,
+                spacingBefore: 12.0,
+            ),
+            StandardFontDefinition::from(StandardFont::HELVETICA),
+        );
+
+        self::assertEqualsWithDelta(803.89, $placement['y'], 0.001);
+    }
+
+    public function testItAnchorsExplicitWidthFromTheRightBoundary(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A4(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $placement = $flow->placement(
+            TextOptions::make(
+                right: 20.0,
+                width: 100.0,
+            ),
+            StandardFontDefinition::from(StandardFont::HELVETICA),
+        );
+
+        self::assertEqualsWithDelta(475.276, $placement['x'], 0.001);
+    }
+
+    public function testItResolvesRelativeLeftAgainstTheContentArea(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A4(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $placement = $flow->placement(
+            TextOptions::make(
+                left: 20.0,
+                bottom: 20.0,
+                positionMode: PositionMode::RELATIVE,
+            ),
+            StandardFontDefinition::from(StandardFont::HELVETICA),
+        );
+
+        self::assertEqualsWithDelta(76.693, $placement['x'], 0.001);
+        self::assertEqualsWithDelta(76.693, $placement['y'], 0.001);
+    }
+
+    public function testItResolvesRelativeTopAgainstTheContentArea(): void
+    {
+        $flow = new TextFlow(
+            new Page(
+                size: PageSize::A4(),
+                margin: Margin::all(Units::mm(20)),
+            ),
+        );
+
+        $placement = $flow->placement(
+            TextOptions::make(
+                top: 20.0,
+                positionMode: PositionMode::RELATIVE,
+            ),
+            StandardFontDefinition::from(StandardFont::HELVETICA),
+        );
+
+        self::assertEqualsWithDelta(747.197, $placement['y'], 0.001);
     }
 }

@@ -34,21 +34,21 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             ->margin(Margin::all(Units::mm(20)))
             ->header(static function (PageDecorationContext $page, int $pageNumber): void {
                 $page->text('Header ' . $pageNumber, TextOptions::make(
-                    x: $page->page()->contentArea()->left,
-                    y: $page->page()->contentArea()->top,
+                    left: $page->page()->contentArea()->left,
+                    bottom: $page->page()->contentArea()->top,
                     fontSize: 12.0,
                 ));
             })
             ->footer(static function (PageDecorationContext $page, int $pageNumber): void {
                 $page->text('Footer ' . $pageNumber, TextOptions::make(
-                    x: $page->page()->contentArea()->left,
-                    y: $page->page()->contentArea()->bottom + 12.0,
+                    left: $page->page()->contentArea()->left,
+                    bottom: $page->page()->contentArea()->bottom + 12.0,
                     fontSize: 12.0,
                 ));
             })
-            ->text('Body 1', TextOptions::make(x: 80.0, y: 420.0, fontSize: 12.0))
+            ->text('Body 1', TextOptions::make(left: 80.0, bottom: 420.0, fontSize: 12.0))
             ->newPage(new PageOptions(pageSize: PageSize::A6()))
-            ->text('Body 2', TextOptions::make(x: 80.0, y: 320.0, fontSize: 12.0))
+            ->text('Body 2', TextOptions::make(left: 80.0, bottom: 320.0, fontSize: 12.0))
             ->build();
 
         self::assertCount(2, $document->pages);
@@ -93,15 +93,15 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             ->margin(Margin::all(Units::mm(10)))
             ->header(static function (PageDecorationContext $page, int $pageNumber): void {
                 $page->text('Header ' . $pageNumber, TextOptions::make(
-                    x: $page->page()->contentArea()->left,
-                    y: $page->page()->contentArea()->top,
+                    left: $page->page()->contentArea()->left,
+                    bottom: $page->page()->contentArea()->top,
                     fontSize: 10.0,
                 ));
             })
             ->footer(static function (PageDecorationContext $page, int $pageNumber): void {
                 $page->text('Footer ' . $pageNumber, TextOptions::make(
-                    x: $page->page()->contentArea()->left,
-                    y: $page->page()->contentArea()->bottom + 10.0,
+                    left: $page->page()->contentArea()->left,
+                    bottom: $page->page()->contentArea()->bottom + 10.0,
                     fontSize: 10.0,
                 ));
             })
@@ -123,8 +123,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             ->margin(Margin::all(24.0))
             ->header(static function (PageDecorationContext $page, int $pageNumber): void {
                 $page->text('Header ' . $pageNumber, TextOptions::make(
-                    x: $page->page()->contentArea()->left,
-                    y: $page->page()->contentArea()->top,
+                    left: $page->page()->contentArea()->left,
+                    bottom: $page->page()->contentArea()->top,
                     fontSize: 12.0,
                 ));
             })
@@ -147,8 +147,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 $page->text(
                     'Header ' . $page->pageNumber() . '/' . $page->totalPages(),
                     TextOptions::make(
-                        x: $page->page()->contentArea()->left,
-                        y: $page->page()->contentArea()->top,
+                        left: $page->page()->contentArea()->left,
+                        bottom: $page->page()->contentArea()->top,
                         fontSize: 12.0,
                     ),
                 );
@@ -161,8 +161,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 $page->text(
                     'Footer ' . $page->pageNumber() . '/' . $page->totalPages(),
                     TextOptions::make(
-                        x: $page->page()->contentArea()->left,
-                        y: $page->page()->contentArea()->bottom + 12.0,
+                        left: $page->page()->contentArea()->left,
+                        bottom: $page->page()->contentArea()->bottom + 12.0,
                         fontSize: 12.0,
                     ),
                 );
@@ -189,8 +189,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(24.0))
             ->pageNumbers(TextOptions::make(
-                x: 24.0,
-                y: 20.0,
+                left: 24.0,
+                bottom: 20.0,
                 fontSize: 10.0,
             ), 'Seite {{page}} von {{pages}}')
             ->text('Page 1')
@@ -211,8 +211,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 static fn (PageDecorationContext $page): bool => !$page->isFirstPage(),
                 static function (PageDecorationContext $page): void {
                     $page->text('Conditional header', TextOptions::make(
-                        x: $page->page()->contentArea()->left,
-                        y: $page->page()->contentArea()->top,
+                        left: $page->page()->contentArea()->left,
+                        bottom: $page->page()->contentArea()->top,
                         fontSize: 12.0,
                     ));
                 },
@@ -221,8 +221,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 static fn (PageDecorationContext $page): bool => $page->pageNumber() % 2 === 0,
                 static function (PageDecorationContext $page): void {
                     $page->text('Even footer', TextOptions::make(
-                        x: $page->page()->contentArea()->left,
-                        y: $page->page()->contentArea()->bottom + 12.0,
+                        left: $page->page()->contentArea()->left,
+                        bottom: $page->page()->contentArea()->bottom + 12.0,
                         fontSize: 12.0,
                     ));
                 },
@@ -250,14 +250,14 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             ->language('de-DE')
             ->header(static function (PageDecorationContext $page, int $pageNumber): void {
                 $page->text('Header ' . $pageNumber, TextOptions::make(
-                    x: 24.0,
-                    y: 800.0,
+                    left: 24.0,
+                    bottom: 800.0,
                     fontSize: 12.0,
                 ));
             })
             ->text('Body', TextOptions::make(
-                x: 24.0,
-                y: 760.0,
+                left: 24.0,
+                bottom: 760.0,
                 fontSize: 12.0,
             ))
             ->build();
@@ -274,8 +274,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             ->margin(Margin::all(24.0))
             ->header(static function (PageDecorationContext $page, int $pageNumber): void {
                 $page->text('Decorated header', TextOptions::make(
-                    x: $page->page()->contentArea()->left,
-                    y: $page->page()->contentArea()->top,
+                    left: $page->page()->contentArea()->left,
+                    bottom: $page->page()->contentArea()->top,
                     fontSize: 10.0,
                 ));
             })
@@ -286,8 +286,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             ->text([
                 TextSegment::link('Open docs', TextLink::externalUrl('https://example.com/docs')),
             ], TextOptions::make(
-                x: 40.0,
-                y: 300.0,
+                left: 40.0,
+                bottom: 300.0,
                 fontSize: 12.0,
             ))
             ->build();

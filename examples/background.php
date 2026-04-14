@@ -25,8 +25,8 @@ Pdf::document()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->text('Page 1: default white background', TextOptions::make(
-        x: Units::mm(20),
-        y: Units::mm(270),
+        left: Units::mm(20),
+        bottom: Units::mm(270),
         fontSize: 18,
         fontName: 'Helvetica',
     ))
@@ -35,14 +35,14 @@ Pdf::document()
         backgroundColor: Color::hex('#f5f5f5'),
     ))
     ->text('Page 2: light gray background', TextOptions::make(
-        x: Units::mm(20),
-        y: Units::mm(270),
+        left: Units::mm(20),
+        bottom: Units::mm(270),
         fontSize: 18,
         fontName: 'Helvetica',
     ))
     ->text('Backgrounds are rendered as a full-page rectangle before text.', TextOptions::make(
-        x: Units::mm(20),
-        y: Units::mm(255),
+        left: Units::mm(20),
+        bottom: Units::mm(255),
         fontSize: 12,
         fontName: 'Courier',
     ))

@@ -116,13 +116,13 @@ final readonly class BmpImageDecoder
             }
         }
 
-        return (new DecodedRasterImage(
+        return new DecodedRasterImage(
             width: $width,
             height: $height,
             colorSpace: ImageColorSpace::RGB,
             bitsPerComponent: 8,
             pixelData: $rgb,
-        ))->toImageSource($path);
+        )->toImageSource($path);
     }
 
     private function decode32Bit(
@@ -202,14 +202,14 @@ final readonly class BmpImageDecoder
             }
         }
 
-        return (new DecodedRasterImage(
+        return new DecodedRasterImage(
             width: $width,
             height: $height,
             colorSpace: ImageColorSpace::RGB,
             bitsPerComponent: 8,
             pixelData: $rgb,
             alphaData: $hasAlpha ? $alpha : null,
-        ))->toImageSource($path);
+        )->toImageSource($path);
     }
 
     private function bmpRowStride(int $width, int $bitsPerPixel): int

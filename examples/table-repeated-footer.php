@@ -226,7 +226,7 @@ $document = DefaultDocumentBuilder::make()
         'Leistungszeitraum: 01.03.2026 bis 31.03.2026',
         'Service-Level: Managed Operations & Continuous Delivery',
     ], TextOptions::make(
-        y: Units::mm(252),
+        bottom: Units::mm(252),
         width: Units::mm(88),
         embeddedFont: $fontRegular,
         fontSize: 9,
@@ -238,8 +238,8 @@ $document = DefaultDocumentBuilder::make()
         'Reporting Cycle: monatlich',
         'Abrechnungsbasis: Time & Material',
     ], TextOptions::make(
-        x: Units::mm(122),
-        y: Units::mm(252),
+        left: Units::mm(122),
+        bottom: Units::mm(252),
         width: Units::mm(70),
         embeddedFont: $fontRegular,
         fontSize: 9,
@@ -248,7 +248,7 @@ $document = DefaultDocumentBuilder::make()
         align: TextAlign::RIGHT,
     ))
     ->text('Der Leistungsnachweis unten ist bewusst ueber mehrere Seiten aufgebaut, damit wiederholte Tabellenkoepfe und wiederholte Footer-Zeilen in einem realistischen Abrechnungsdokument sichtbar werden.', TextOptions::make(
-        y: Units::mm(228),
+        bottom: Units::mm(228),
         width: Units::mm(174),
         embeddedFont: $fontRegular,
         fontSize: 9,

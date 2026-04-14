@@ -15,22 +15,7 @@ use InvalidArgumentException;
 
 final readonly class ImageSource
 {
-    public int $width;
-    public int $height;
-    public ImageColorSpace $colorSpace;
-    public int $bitsPerComponent;
-    public string $data;
-    public ?string $colorSpaceDefinition;
     public ?string $filter;
-    public ?self $softMask;
-    /**
-     * @var list<string>
-     */
-    public array $additionalDictionaryEntries;
-    /**
-     * @var list<float|int>|null
-     */
-    public ?array $decode;
     /**
      * @var list<PdfFilter>
      */
@@ -42,16 +27,16 @@ final readonly class ImageSource
      * @param list<PdfFilter> $filters
      */
     public function __construct(
-        int $width,
-        int $height,
-        ImageColorSpace $colorSpace,
-        int $bitsPerComponent,
-        string $data,
-        ?string $colorSpaceDefinition = null,
+        public int $width,
+        public int $height,
+        public ImageColorSpace $colorSpace,
+        public int $bitsPerComponent,
+        public string $data,
+        public ?string $colorSpaceDefinition = null,
         ?string $filter = null,
-        ?self $softMask = null,
-        array $additionalDictionaryEntries = [],
-        ?array $decode = null,
+        public ?self $softMask = null,
+        public array $additionalDictionaryEntries = [],
+        public ?array $decode = null,
         array $filters = [],
     ) {
         if ($filters !== [] && $filter !== null) {
@@ -61,16 +46,6 @@ final readonly class ImageSource
         if ($filters === [] && $filter !== null) {
             $filters = [PdfFilter::named($filter)];
         }
-
-        $this->width = $width;
-        $this->height = $height;
-        $this->colorSpace = $colorSpace;
-        $this->bitsPerComponent = $bitsPerComponent;
-        $this->data = $data;
-        $this->colorSpaceDefinition = $colorSpaceDefinition;
-        $this->softMask = $softMask;
-        $this->additionalDictionaryEntries = $additionalDictionaryEntries;
-        $this->decode = $decode;
         $this->filters = $filters;
         $this->filter = count($this->filters) === 1 ? $this->filters[0]->name : null;
 
@@ -118,7 +93,7 @@ final readonly class ImageSource
 
     public static function fromPath(string $path): self
     {
-        return (new ImageSourceImporter())->fromPath($path);
+        return new ImageSourceImporter()->fromPath($path);
     }
 
     public static function flate(
@@ -213,7 +188,7 @@ final readonly class ImageSource
         ?self $softMask = null,
     ): self {
         return self::lzw(
-            data: (new LzwEncoder())->encode($data),
+            data: new LzwEncoder()->encode($data),
             width: $width,
             height: $height,
             colorSpace: $colorSpace,
@@ -251,7 +226,7 @@ final readonly class ImageSource
         ?self $softMask = null,
     ): self {
         return self::runLength(
-            data: (new RunLengthEncoder())->encode($data),
+            data: new RunLengthEncoder()->encode($data),
             width: $width,
             height: $height,
             colorSpace: $colorSpace,
@@ -299,7 +274,7 @@ final readonly class ImageSource
         int $bitsPerComponent = 8,
         ?self $softMask = null,
     ): self {
-        return (new ImageCompressionSelector())->select(
+        return new ImageCompressionSelector()->select(
             data: $data,
             width: $width,
             height: $height,
@@ -314,7 +289,7 @@ final readonly class ImageSource
      */
     public static function monochrome(array $rows): self
     {
-        $bitmap = (new MonochromeBitmapEncoder())->encodeRows($rows);
+        $bitmap = new MonochromeBitmapEncoder()->encodeRows($rows);
 
         return self::compressed(
             data: $bitmap->data,
@@ -330,10 +305,10 @@ final readonly class ImageSource
      */
     public static function monochromeCcitt(array $rows): self
     {
-        $bitmap = (new MonochromeBitmapEncoder())->encodeRows($rows);
+        $bitmap = new MonochromeBitmapEncoder()->encodeRows($rows);
 
         return self::ccittFax(
-            data: (new CcittFaxEncoder())->encodeBitmap($bitmap->data, $bitmap->width, $bitmap->height),
+            data: new CcittFaxEncoder()->encodeBitmap($bitmap->data, $bitmap->width, $bitmap->height),
             width: $bitmap->width,
             height: $bitmap->height,
             k: 0,

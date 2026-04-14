@@ -172,7 +172,7 @@ interface DocumentBuilder
         string $filename,
         string $contents,
         ?string $description = null,
-        string|MimeType|null $mimeType = null,
+        string | MimeType | null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): self;
 
@@ -180,7 +180,7 @@ interface DocumentBuilder
         string $path,
         ?string $filename = null,
         ?string $description = null,
-        string|MimeType|null $mimeType = null,
+        string | MimeType | null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): self;
 
@@ -191,7 +191,7 @@ interface DocumentBuilder
         $stream,
         string $filename,
         ?string $description = null,
-        string|MimeType|null $mimeType = null,
+        string | MimeType | null $mimeType = null,
         ?AssociatedFileRelationship $associatedFileRelationship = null,
     ): self;
 

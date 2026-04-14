@@ -10,7 +10,7 @@ final readonly class EmbeddedFile
 {
     public function __construct(
         public string $contents,
-        string|MimeType|null $mimeType = null,
+        string | MimeType | null $mimeType = null,
     ) {
         $this->mimeType = $mimeType instanceof MimeType
             ? $mimeType->value

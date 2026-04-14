@@ -96,8 +96,8 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->creatorTool('pdf2 test suite')
             ->pageSize(PageSize::A5())
             ->text('Hello (PDF) \\ Test', TextOptions::make(
-                x: Units::mm(20),
-                y: Units::mm(250),
+                left: Units::mm(20),
+                bottom: Units::mm(250),
                 fontSize: 14,
                 fontName: 'Times-Roman',
             ))
@@ -274,13 +274,13 @@ final class DefaultDocumentBuilderTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->textLines(['Firma', 'Strasse 1'], TextOptions::make(
-                x: 72.0,
-                y: 720.0,
+                left: 72.0,
+                bottom: 720.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
             ->text('Ort', TextOptions::make(
-                x: 72.0,
+                left: 72.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
@@ -1316,8 +1316,8 @@ final class DefaultDocumentBuilderTest extends TestCase
                     TextOptions::make(fontName: 'Helvetica-Bold'),
                 ),
             ], TextOptions::make(
-                x: Units::mm(20),
-                y: Units::mm(250),
+                left: Units::mm(20),
+                bottom: Units::mm(250),
                 fontSize: 9,
                 lineHeight: 12,
                 fontName: 'Helvetica',
@@ -1339,7 +1339,7 @@ final class DefaultDocumentBuilderTest extends TestCase
 
         DefaultDocumentBuilder::make()
             ->text([
-                TextSegment::plain('Hello', TextOptions::make(x: 20)),
+                TextSegment::plain('Hello', TextOptions::make(left: 20)),
             ])
             ->build();
     }

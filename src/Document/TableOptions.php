@@ -10,15 +10,7 @@ use Kalle\Pdf\Text\TextOptions;
 
 final readonly class TableOptions
 {
-    public Border $border;
     public TextOptions $textOptions;
-    public ?TableCaption $caption;
-    public ?TablePlacement $placement;
-    public CellPadding $cellPadding;
-    public float $spacingBefore;
-    public float $spacingAfter;
-    public bool $repeatHeaderOnPageBreak;
-    public bool $repeatFooterOnPageBreak;
 
     public static function make(
         Border $border = new Border(0.5, 0.5, 0.5, 0.5),
@@ -45,25 +37,17 @@ final readonly class TableOptions
     }
 
     private function __construct(
-        Border $border = new Border(0.5, 0.5, 0.5, 0.5),
+        public Border $border = new Border(0.5, 0.5, 0.5, 0.5),
         ?TextOptions $textOptions = null,
-        ?TableCaption $caption = null,
-        ?TablePlacement $placement = null,
-        CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
-        float $spacingBefore = 0.0,
-        float $spacingAfter = 0.0,
-        bool $repeatHeaderOnPageBreak = false,
-        bool $repeatFooterOnPageBreak = false,
+        public ?TableCaption $caption = null,
+        public ?TablePlacement $placement = null,
+        public CellPadding $cellPadding = new CellPadding(4.0, 4.0, 4.0, 4.0),
+        public float $spacingBefore = 0.0,
+        public float $spacingAfter = 0.0,
+        public bool $repeatHeaderOnPageBreak = false,
+        public bool $repeatFooterOnPageBreak = false,
     ) {
-        $this->border = $border;
         $this->textOptions = $textOptions ?? TextOptions::make(fontSize: 12.0, lineHeight: 14.4);
-        $this->caption = $caption;
-        $this->placement = $placement;
-        $this->cellPadding = $cellPadding;
-        $this->spacingBefore = $spacingBefore;
-        $this->spacingAfter = $spacingAfter;
-        $this->repeatHeaderOnPageBreak = $repeatHeaderOnPageBreak;
-        $this->repeatFooterOnPageBreak = $repeatFooterOnPageBreak;
     }
 
     public function withCaption(?TableCaption $caption): self

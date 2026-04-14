@@ -70,7 +70,7 @@ Wichtige Builder-Methoden fuer Seitenerzeugung:
 
 Text wird ueber `TextOptions` gesteuert. Relevante Optionen aus Code und Beispielen:
 
-- Position und Breite: `x`, `y`, `width`
+- Position und Breite: `left`, `right`, `top`, `bottom`, `width`
 - Typografie: `fontName`, `embeddedFont`, `fontSize`, `lineHeight`
 - Abstand: `spacingBefore`, `spacingAfter`
 - Farbe und Ausrichtung

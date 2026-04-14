@@ -138,10 +138,10 @@ final class DocumentFontAndImageObjectBuilderTest extends TestCase
         );
 
         $objects = new DocumentFontAndImageObjectBuilder()->buildObjects($document, $state);
-        $imageObject = array_values(array_filter(
+        $imageObject = array_first(array_filter(
             $objects,
             static fn (object $object): bool => $object->streamDictionaryContents !== null && str_contains($object->streamDictionaryContents, '/Subtype /Image'),
-        ))[0] ?? null;
+        )) ?? null;
 
         self::assertNotNull($imageObject);
         self::assertStringContainsString('/Filter /CCITTFaxDecode', (string) $imageObject->streamDictionaryContents);

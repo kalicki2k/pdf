@@ -27,16 +27,16 @@ $bodyColor = Color::hex('#334155');
 $mutedColor = Color::hex('#64748b');
 
 $headerOptions = TextOptions::make(
-    x: $margin->left,
-    y: PageSize::A4()->height() - $margin->top,
+    left: $margin->left,
+    bottom: PageSize::A4()->height() - $margin->top,
     fontSize: 11,
     lineHeight: 13,
     fontName: StandardFont::HELVETICA_BOLD->value,
     color: $accentColor,
 );
 $footerOptions = TextOptions::make(
-    x: $margin->left,
-    y: $margin->bottom - 2,
+    left: $margin->left,
+    bottom: $margin->bottom - 2,
     width: PageSize::A4()->width() - $margin->left - $margin->right,
     fontSize: 10,
     lineHeight: 12,
@@ -57,8 +57,8 @@ $builder = DefaultDocumentBuilder::make()
     ->header(static function (PageDecorationContext $page, int $pageNumber) use ($headerOptions): void {
         $page->text('Quarterly Operations Report', $headerOptions);
         $page->text('Section ' . $pageNumber, TextOptions::make(
-            x: $page->page()->contentArea()->right - 90,
-            y: $page->page()->contentArea()->top,
+            left: $page->page()->contentArea()->right - 90,
+            bottom: $page->page()->contentArea()->top,
             width: 90,
             fontSize: 10,
             lineHeight: 12,

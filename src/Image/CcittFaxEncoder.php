@@ -107,7 +107,7 @@ final readonly class CcittFaxEncoder
      */
     public function encodeRows(array $rows): string
     {
-        $bitmap = (new MonochromeBitmapEncoder())->encodeRows($rows);
+        $bitmap = new MonochromeBitmapEncoder()->encodeRows($rows);
 
         return $this->encodeBitmap($bitmap->data, $bitmap->width, $bitmap->height);
     }

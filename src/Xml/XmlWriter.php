@@ -173,13 +173,7 @@ final readonly class XmlWriter
 
     private function hasTextChildren(XmlElement $element): bool
     {
-        foreach ($element->children as $child) {
-            if ($child instanceof XmlText) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($element->children, fn($child) => $child instanceof XmlText);
     }
 
     private function escapeText(string $value): string

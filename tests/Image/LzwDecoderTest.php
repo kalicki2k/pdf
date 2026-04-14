@@ -13,15 +13,15 @@ final class LzwDecoderTest extends TestCase
     public function testItDecodesDataEncodedByTheMatchingEncoder(): void
     {
         $source = "ABCABCABC\x00\xFF";
-        $encoded = (new LzwEncoder())->encode($source);
+        $encoded = new LzwEncoder()->encode($source);
 
-        self::assertSame($source, (new LzwDecoder())->decode($encoded));
+        self::assertSame($source, new LzwDecoder()->decode($encoded));
     }
 
     public function testItDecodesAnEmptyPayload(): void
     {
-        $encoded = (new LzwEncoder())->encode('');
+        $encoded = new LzwEncoder()->encode('');
 
-        self::assertSame('', (new LzwDecoder())->decode($encoded));
+        self::assertSame('', new LzwDecoder()->decode($encoded));
     }
 }

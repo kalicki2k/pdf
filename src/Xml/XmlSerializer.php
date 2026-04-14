@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Xml;
 
 use function array_map;
-use function count;
 use function implode;
 use function str_repeat;
 
@@ -108,13 +107,7 @@ final readonly class XmlSerializer
 
     private function hasTextChildren(XmlElement $element): bool
     {
-        foreach ($element->children as $child) {
-            if ($child instanceof XmlText) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($element->children, fn($child) => $child instanceof XmlText);
     }
 
     private function escapeText(string $value): string

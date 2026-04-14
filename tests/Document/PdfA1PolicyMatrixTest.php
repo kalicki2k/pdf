@@ -121,8 +121,8 @@ final class PdfA1PolicyMatrixTest extends TestCase
             ->title('Archive Copy')
             ->language('de-DE')
             ->text('Baseline Absatz Привет', TextOptions::make(
-                x: 72,
-                y: 720,
+                left: 72,
+                bottom: 720,
                 width: 320,
                 fontSize: 12,
                 lineHeight: 16,

@@ -12,7 +12,7 @@ final class MonochromeBitmapEncoderTest extends TestCase
 {
     public function testItPacksRowsIntoPdfDeviceGrayBits(): void
     {
-        $bitmap = (new MonochromeBitmapEncoder())->encodeRows([
+        $bitmap = new MonochromeBitmapEncoder()->encodeRows([
             '10101010',
             '01010101',
         ]);
@@ -24,7 +24,7 @@ final class MonochromeBitmapEncoderTest extends TestCase
 
     public function testItPadsIncompleteRowsWithWhitePixels(): void
     {
-        $bitmap = (new MonochromeBitmapEncoder())->encodeRows([
+        $bitmap = new MonochromeBitmapEncoder()->encodeRows([
             '111',
         ]);
 
@@ -36,7 +36,7 @@ final class MonochromeBitmapEncoderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Monochrome bitmap row 2 has width 1; expected 2.');
 
-        (new MonochromeBitmapEncoder())->encodeRows([
+        new MonochromeBitmapEncoder()->encodeRows([
             '11',
             '1',
         ]);

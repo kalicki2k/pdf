@@ -105,7 +105,7 @@ final readonly class CffFontParser
     public function charsetSids(): array
     {
         $offset = $this->charsetOffset();
-        $format = ord($this->readBytes($offset, 1));
+        $format = ord($this->readBytes($offset, 1)[0]);
         $count = $this->charStringCount();
         $sids = [0];
 
@@ -127,7 +127,7 @@ final readonly class CffFontParser
             $firstSid = $this->readUInt16($cursor);
             $cursor += 2;
             $rangeLength = $format === 1
-                ? ord($this->readBytes($cursor, 1))
+                ? ord($this->readBytes($cursor, 1)[0])
                 : $this->readUInt16($cursor);
             $cursor += $format === 1 ? 1 : 2;
 
@@ -157,7 +157,7 @@ final readonly class CffFontParser
             ];
         }
 
-        $offSize = ord($this->readBytes($offset + 2, 1));
+        $offSize = ord($this->readBytes($offset + 2, 1)[0]);
         $offsetsStart = $offset + 3;
         $dataStart = $offsetsStart + (($count + 1) * $offSize);
         $items = [];
@@ -264,7 +264,7 @@ final readonly class CffFontParser
         $value = 0;
 
         for ($index = 0; $index < $size; $index++) {
-            $value = ($value << 8) | ord($this->readBytes($offset + $index, 1));
+            $value = ($value << 8) | ord($this->readBytes($offset + $index, 1)[0]);
         }
 
         return $value;

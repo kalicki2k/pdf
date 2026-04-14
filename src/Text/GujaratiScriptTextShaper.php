@@ -189,7 +189,7 @@ final readonly class GujaratiScriptTextShaper implements ScriptTextShaper
         StandardFontDefinition | EmbeddedFontDefinition | null $font,
     ): ShapedGlyph {
         if ($font instanceof EmbeddedFontDefinition && $font->parser->hasGposFeature('mkmk')) {
-            $previousGlyph = $glyphs === [] ? null : $glyphs[array_key_last($glyphs)];
+            $previousGlyph = $glyphs === [] ? null : array_last($glyphs);
 
             if ($previousGlyph !== null && $this->isPositionedMark($previousGlyph->unicodeText ?? $previousGlyph->character)) {
                 $baseMarkGlyphId = $previousGlyph->glyphId;

@@ -281,8 +281,8 @@ final readonly class DocumentTableOfContentsBuilder
     ): array {
         $builder = DefaultDocumentBuilder::make()->pageSize($pageSize);
         $builder = $builder->text($options->title, TextOptions::make(
-            x: $layout['left'],
-            y: $layout['top'],
+            left: $layout['left'],
+            bottom: $layout['top'],
             fontSize: $options->titleSize,
             fontName: $options->fontName,
             embeddedFont: $options->embeddedFont,
@@ -312,8 +312,8 @@ final readonly class DocumentTableOfContentsBuilder
             $leaderText = $this->buildLeaderText($leaderWidth, $options);
 
             $builder = $builder->text($entryTitle, TextOptions::make(
-                x: $layout['left'] + $indent,
-                y: $currentY,
+                left: $layout['left'] + $indent,
+                bottom: $currentY,
                 fontSize: $options->entrySize,
                 fontName: $options->fontName,
                 embeddedFont: $options->embeddedFont,
@@ -322,8 +322,8 @@ final readonly class DocumentTableOfContentsBuilder
 
             if ($leaderText !== '') {
                 $builder = $builder->text($leaderText, TextOptions::make(
-                    x: $layout['left'] + $indent + $entryTitleWidth + ($options->style->pageNumberGap / 2),
-                    y: $currentY,
+                    left: $layout['left'] + $indent + $entryTitleWidth + ($options->style->pageNumberGap / 2),
+                    bottom: $currentY,
                     fontSize: $options->entrySize,
                     fontName: $options->fontName,
                     embeddedFont: $options->embeddedFont,
@@ -331,8 +331,8 @@ final readonly class DocumentTableOfContentsBuilder
             }
 
             $builder = $builder->text($pageNumberText, TextOptions::make(
-                x: $layout['right'] - $pageNumberWidth,
-                y: $currentY,
+                left: $layout['right'] - $pageNumberWidth,
+                bottom: $currentY,
                 fontSize: $options->entrySize,
                 fontName: $options->fontName,
                 embeddedFont: $options->embeddedFont,

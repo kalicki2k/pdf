@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Tests\Text;
 
+use InvalidArgumentException;
+use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextLink;
@@ -122,5 +124,21 @@ final class TextOptionsTest extends TestCase
 
         self::assertSame(TextOptions::HEADING_FONT_SIZE, $options->fontSize);
         self::assertSame(TextOptions::HEADING_LINE_HEIGHT, $options->lineHeight);
+    }
+
+    public function testItRejectsCombiningTopAndBottomAnchors(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('TextOptions top and bottom cannot be combined.');
+
+        TextOptions::make(top: 100.0, bottom: 80.0);
+    }
+
+    public function testItRejectsStaticPositionMode(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('TextOptions do not support static position mode. Omit insets to use flow layout.');
+
+        TextOptions::make(positionMode: PositionMode::STATIC);
     }
 }

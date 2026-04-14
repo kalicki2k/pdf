@@ -276,15 +276,15 @@ use Kalle\Pdf\Text\TextOptions;
 $document = DefaultDocumentBuilder::make()
     ->header(static function (PageDecorationContext $page, int $pageNumber): void {
         $page->text('Projektstatus', TextOptions::make(
-            x: $page->page()->contentArea()->left,
-            y: $page->page()->contentArea()->top,
+            left: $page->page()->contentArea()->left,
+            bottom: $page->page()->contentArea()->top,
             fontSize: 12,
         ));
     })
     ->footer(static function (PageDecorationContext $page, int $pageNumber): void {
         $page->text('Seite ' . $pageNumber, TextOptions::make(
-            x: $page->page()->contentArea()->left,
-            y: $page->page()->contentArea()->bottom + 12,
+            left: $page->page()->contentArea()->left,
+            bottom: $page->page()->contentArea()->bottom + 12,
             fontSize: 10,
         ));
     })
@@ -295,15 +295,15 @@ $document = DefaultDocumentBuilder::make()
 ```php
 $document = DefaultDocumentBuilder::make()
     ->pageNumbers(
-        TextOptions::make(x: 40, y: 20, fontSize: 10),
+        TextOptions::make(left: 40, bottom: 20, fontSize: 10),
         'Seite {{page}} von {{pages}}',
     )
     ->headerOn(
         static fn (PageDecorationContext $page): bool => !$page->isFirstPage(),
         static function (PageDecorationContext $page): void {
             $page->text('Kapitelkopf', TextOptions::make(
-                x: $page->page()->contentArea()->left,
-                y: $page->page()->contentArea()->top,
+                left: $page->page()->contentArea()->left,
+                bottom: $page->page()->contentArea()->top,
                 fontSize: 12,
             ));
         },
@@ -633,7 +633,7 @@ $document = DefaultDocumentBuilder::make()
     ->list(
         ['Erster Punkt', 'Zweiter Punkt'],
         new ListOptions(type: ListType::BULLET),
-        TextOptions::make(x: 72, y: 720, width: 220, fontSize: 12),
+        TextOptions::make(left: 72, bottom: 720, width: 220, fontSize: 12),
     )
     ->list(
         ['Schritt eins', 'Schritt zwei'],

@@ -334,8 +334,8 @@ $document = Pdf::document()
             'USt-IdNr.: DE123456789',
         ],
         TextOptions::make(
-            x: Units::mm(120),
-            y: Units::mm(242),
+            left: Units::mm(120),
+            bottom: Units::mm(242),
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 11,
@@ -348,7 +348,7 @@ $document = Pdf::document()
     ->text(
         'DEIN FIRMENNAME - Strasse Hausnummer - PLZ Ort - Deutschland',
         TextOptions::make(
-            y: Units::mm(252),
+            bottom: Units::mm(252),
             width: Units::mm(95),
             fontSize: 6,
             lineHeight: 8,
@@ -367,7 +367,7 @@ $document = Pdf::document()
     ->text(
         "Kundenfirma Mueller GmbH\nz. Hd. Anna Mueller\nBeispielweg 8\n80331 Muenchen\nDeutschland",
         TextOptions::make(
-            y: Units::mm(246.2),
+            bottom: Units::mm(246.2),
             width: Units::mm(85),
             fontSize: 9,
             lineHeight: 12,
@@ -378,7 +378,7 @@ $document = Pdf::document()
     ->text(
         'Rechnung',
         TextOptions::make(
-            y: Units::mm(188),
+            bottom: Units::mm(188),
             fontSize: 22,
             embeddedFont: $fontBold,
             color: $headlineColor,
@@ -419,7 +419,7 @@ $document = Pdf::document()
     ->text(
         "Bitte ueberweisen Sie den Gesamtbetrag {$paymentTerms} auf das unten genannte Geschaeftskonto.\n\nBank: Musterbank AG\nIBAN: DE12 3456 7890 1234 5678 90\nBIC: MUSTDEFFXXX\n\nBei Rueckfragen antworte ich gerne unter projekte@deinefirma.de.",
         TextOptions::make(
-            x: Units::mm(120),
+            left: Units::mm(120),
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 13,

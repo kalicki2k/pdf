@@ -66,16 +66,14 @@ final readonly class WebpImageDecoder
             }
         }
 
-        imagedestroy($image);
-
-        return (new DecodedRasterImage(
+        return new DecodedRasterImage(
             width: $width,
             height: $height,
             colorSpace: ImageColorSpace::RGB,
             bitsPerComponent: 8,
             pixelData: $rgb,
             alphaData: $hasAlpha ? $alpha : null,
-        ))->toImageSource($path);
+        )->toImageSource($path);
     }
 
     private function guardAgainstAnimatedWebp(string $data, string $path): void
@@ -84,7 +82,7 @@ final readonly class WebpImageDecoder
             return;
         }
 
-        if (strpos($data, 'ANIM', 12) !== false || strpos($data, 'ANMF', 12) !== false) {
+        if (str_contains(substr($data, 12), 'ANIM') || str_contains(substr($data, 12), 'ANMF')) {
             throw new InvalidArgumentException(sprintf(
                 "WEBP image '%s' uses animation, which is not supported.",
                 $path,

@@ -43,15 +43,15 @@ Pdf::document()
     ->creator('examples/embedded-cff-font.php')
     ->creatorTool('pdf2')
     ->text($headline, TextOptions::make(
-        x: Units::mm(20),
-        y: Units::mm(270),
+        left: Units::mm(20),
+        bottom: Units::mm(270),
         fontSize: 24,
         embeddedFont: $fontSource,
         color: Color::hex('#0f172a'),
     ))
     ->text($body, TextOptions::make(
-        x: Units::mm(20),
-        y: Units::mm(250),
+        left: Units::mm(20),
+        bottom: Units::mm(250),
         fontSize: 12,
         lineHeight: 16,
         embeddedFont: $fontSource,

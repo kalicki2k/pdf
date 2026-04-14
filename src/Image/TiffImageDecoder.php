@@ -143,11 +143,11 @@ final readonly class TiffImageDecoder
             $stripDecoder = static fn (string $strip): string => $strip;
 
             if ($compression === self::COMPRESSION_PACKBITS) {
-                $stripDecoder = static fn (string $strip): string => (new PackBitsDecoder())->decode($strip);
+                $stripDecoder = static fn (string $strip): string => new PackBitsDecoder()->decode($strip);
             } elseif ($compression === self::COMPRESSION_LZW) {
-                $stripDecoder = static fn (string $strip): string => (new LzwDecoder())->decode($strip);
+                $stripDecoder = static fn (string $strip): string => new LzwDecoder()->decode($strip);
             } else {
-                $stripDecoder = static fn (string $strip): string => (new FlateDecoder())->decode($strip);
+                $stripDecoder = static fn (string $strip): string => new FlateDecoder()->decode($strip);
             }
 
             return $this->decodeCompressedRaster(

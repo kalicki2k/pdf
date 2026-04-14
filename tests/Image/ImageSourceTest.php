@@ -719,7 +719,7 @@ final class ImageSourceTest extends TestCase
         ));
 
         try {
-            (new WebpImageDecoder())->decode(WebpFixture::tinyAnimatedWebpBytes(), $path);
+            new WebpImageDecoder()->decode(WebpFixture::tinyAnimatedWebpBytes(), $path);
         } finally {
             unlink($path);
         }

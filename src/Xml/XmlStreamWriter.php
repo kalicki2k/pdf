@@ -238,7 +238,7 @@ final class XmlStreamWriter
             return false;
         }
 
-        return $this->elementStack[array_key_last($this->elementStack)]['hasText'];
+        return array_last($this->elementStack)['hasText'];
     }
 
     private function currentElementHasElement(): bool
@@ -247,7 +247,7 @@ final class XmlStreamWriter
             return false;
         }
 
-        return $this->elementStack[array_key_last($this->elementStack)]['hasElement'];
+        return array_last($this->elementStack)['hasElement'];
     }
 
     private function markCurrentElementHasText(): void

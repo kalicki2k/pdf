@@ -14,17 +14,17 @@ final class PdfA4ScopePolicyTest extends TestCase
 {
     public function testItAllowsBasePdfA4(): void
     {
-        self::assertNull((new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4())));
+        self::assertNull(new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4())));
     }
 
     public function testItAllowsPdfA4e(): void
     {
-        self::assertNull((new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4e())));
+        self::assertNull(new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4e())));
     }
 
     public function testItAllowsPdfA4f(): void
     {
-        self::assertNull((new PdfA4ScopePolicy())->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4f())));
+        self::assertNull(new PdfA4ScopePolicy()->assertProfileSelectionAllowed(new Document(profile: Profile::pdfA4f())));
     }
 
     public function testItExposesBasePdfA4FeatureRules(): void

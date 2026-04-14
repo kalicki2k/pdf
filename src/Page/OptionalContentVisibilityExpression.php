@@ -13,10 +13,10 @@ use InvalidArgumentException;
 
 final readonly class OptionalContentVisibilityExpression
 {
-    private const TYPE_ALIAS = 'alias';
-    private const TYPE_AND = 'And';
-    private const TYPE_OR = 'Or';
-    private const TYPE_NOT = 'Not';
+    private const string TYPE_ALIAS = 'alias';
+    private const string TYPE_AND = 'And';
+    private const string TYPE_OR = 'Or';
+    private const string TYPE_NOT = 'Not';
 
     /**
      * @param list<self> $operands

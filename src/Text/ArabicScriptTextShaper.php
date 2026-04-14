@@ -137,7 +137,7 @@ final readonly class ArabicScriptTextShaper implements ScriptTextShaper
             return null;
         }
 
-        $previousGlyph = $glyphs === [] ? null : $glyphs[array_key_last($glyphs)];
+        $previousGlyph = $glyphs === [] ? null : array_last($glyphs);
 
         if ($previousGlyph === null || !$this->joiningData->isTransparent($previousGlyph->unicodeText ?? $previousGlyph->character)) {
             return null;

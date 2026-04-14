@@ -598,7 +598,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             new DateTimeImmutable('2026-04-12T10:00:00+02:00'),
             '',
         );
-        $ocgObjectId = array_values($state->optionalContentGroupObjectIds)[0];
+        $ocgObjectId = array_first($state->optionalContentGroupObjectIds);
         $objects = [
             IndirectObject::plain(1, '<< /Type /Catalog /Pages 2 0 R /Metadata ' . $state->metadataObjectId . ' 0 R >>'),
             IndirectObject::plain(2, '<< /Type /Pages /Count 1 /Kids [3 0 R] >>'),
@@ -925,7 +925,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         );
         $state = $this->allocateState($document);
         $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
-        $membershipObjectId = array_values($state->pageOptionalContentMembershipObjectIds[0])[0];
+        $membershipObjectId = array_first($state->pageOptionalContentMembershipObjectIds[0]);
 
         $objects = array_map(
             static function (IndirectObject $object) use ($membershipObjectId): IndirectObject {
@@ -977,7 +977,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         );
         $state = $this->allocateState($document);
         $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
-        $membershipObjectId = array_values($state->pageOptionalContentMembershipObjectIds[0])[0];
+        $membershipObjectId = array_first($state->pageOptionalContentMembershipObjectIds[0]);
 
         $objects = array_map(
             static function (IndirectObject $object) use ($membershipObjectId): IndirectObject {
@@ -1028,7 +1028,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         );
         $state = $this->allocateState($document);
         $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
-        $membershipObjectId = array_values($state->pageOptionalContentMembershipObjectIds[0])[0];
+        $membershipObjectId = array_first($state->pageOptionalContentMembershipObjectIds[0]);
 
         $objects = array_map(
             static function (IndirectObject $object) use ($membershipObjectId): IndirectObject {
@@ -1080,7 +1080,7 @@ final class PdfAObjectGraphValidatorTest extends TestCase
         );
         $state = $this->allocateState($document);
         $objects = iterator_to_array(new DocumentSerializationPlanBuilder()->build($document)->objects);
-        $membershipObjectId = array_values($state->pageOptionalContentMembershipObjectIds[0])[0];
+        $membershipObjectId = array_first($state->pageOptionalContentMembershipObjectIds[0]);
 
         $objects = array_map(
             static function (IndirectObject $object) use ($membershipObjectId): IndirectObject {
@@ -1137,8 +1137,8 @@ final class PdfAObjectGraphValidatorTest extends TestCase
             ->creator('Regression Fixture')
             ->creatorTool('PdfAObjectGraphValidatorTest')
             ->text('PDF/A-2u Regression Ж', TextOptions::make(
-                x: 72,
-                y: 760,
+                left: 72,
+                bottom: 760,
                 fontSize: 18,
                 embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
             ))

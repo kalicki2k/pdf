@@ -11,6 +11,7 @@ use function trim;
 use Kalle\Pdf\Font\EmbeddedFontDefinition;
 use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
+use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Text\TextDirection;
 use Kalle\Pdf\Text\TextOptions;
@@ -30,23 +31,46 @@ final readonly class TextFlow
      */
     public function placement(TextOptions $options, StandardFontDefinition | EmbeddedFontDefinition $font): array
     {
-        $contentArea = $this->page->contentArea();
+        $pageHeight = $this->page->size->height();
+        [
+            'left' => $referenceLeft,
+            'right' => $referenceRight,
+            'top' => $referenceTop,
+            'bottom' => $referenceBottom,
+        ] = $this->positionReference($options);
+        $defaultLeft = $this->page->margin !== null
+            ? $this->page->contentArea()->left
+            : 0.0;
+        $rightBoundary = $this->resolvedRightBoundary($options);
 
-        $x = $options->x
-            ?? ($this->page->margin !== null ? $contentArea->left : 0.0);
+        $x = $options->left
+            ?? ($options->right !== null && $options->width !== null
+                ? max($rightBoundary - $options->width, 0.0)
+                : $defaultLeft);
 
-        $topBoundary = $this->page->margin !== null
-            ? $contentArea->top
-            : $this->page->size->height();
+        $topBoundary = $this->hasExplicitInsets($options)
+            ? $referenceTop
+            : ($this->page->margin !== null
+                ? $this->page->contentArea()->top
+                : $pageHeight);
+        $topGlyphOffset = $this->topGlyphOffset($options, $font);
 
-        $resolvedY = $options->y
-            ?? ($this->cursorY !== null
-                ? $this->cursorY - ($this->cursorYIsTopBoundary ? $this->topGlyphOffset($options, $font) : 0.0)
-                : null)
-            ?? ($topBoundary - $this->topGlyphOffset($options, $font));
+        if ($options->left !== null && $this->hasExplicitInsets($options)) {
+            $x = $referenceLeft + $options->left;
+        }
 
-        $y = $options->y
-            ?? ($resolvedY - $this->spacingBefore($options));
+        $resolvedY = $options->top !== null
+            ? $referenceTop - $options->top - $topGlyphOffset
+            : ($options->bottom !== null
+                ? $referenceBottom + $options->bottom
+                : (($this->cursorY !== null
+                    ? $this->cursorY - ($this->cursorYIsTopBoundary ? $topGlyphOffset : 0.0)
+                    : null)
+                ?? ($topBoundary - $topGlyphOffset)));
+
+        $y = $options->top !== null || $options->bottom !== null
+            ? $resolvedY
+            : ($resolvedY - $this->spacingBefore($options));
 
         return [
             'x' => $x,
@@ -214,9 +238,7 @@ final readonly class TextFlow
             return max($options->width, 0.0);
         }
 
-        $rightBoundary = $this->page->margin !== null
-            ? $this->page->contentArea()->right
-            : $this->page->size->width();
+        $rightBoundary = $this->resolvedRightBoundary($options);
 
         $availableWidth = max($rightBoundary - $x, 0.0);
 
@@ -295,7 +317,7 @@ final readonly class TextFlow
             array_shift($tokens);
         }
 
-        while ($tokens !== [] && trim($tokens[array_key_last($tokens)]->text) === '') {
+        while ($tokens !== [] && trim(array_last($tokens)->text) === '') {
             array_pop($tokens);
         }
 
@@ -327,8 +349,11 @@ final readonly class TextFlow
         }
 
         return TextOptions::make(
-            x: $baseOptions->x,
-            y: $baseOptions->y,
+            left: $baseOptions->left,
+            right: $baseOptions->right,
+            bottom: $baseOptions->bottom,
+            top: $baseOptions->top,
+            positionMode: $baseOptions->positionMode,
             width: $baseOptions->width,
             maxWidth: $baseOptions->maxWidth,
             fontSize: $this->segmentFontSize($baseOptions, $segment->options),
@@ -348,6 +373,53 @@ final readonly class TextFlow
             tag: $baseOptions->tag,
             semantic: $baseOptions->semantic,
         );
+    }
+
+    private function resolvedRightBoundary(?TextOptions $options = null): float
+    {
+        if ($options !== null && $this->hasExplicitInsets($options)) {
+            ['right' => $rightBoundary] = $this->positionReference($options);
+
+            return $rightBoundary - ($options->right ?? 0.0);
+        }
+
+        $rightBoundary = $this->page->margin !== null
+            ? $this->page->contentArea()->right
+            : $this->page->size->width();
+
+        return $rightBoundary - ($options?->right ?? 0.0);
+    }
+
+    /**
+     * @return array{left: float, right: float, top: float, bottom: float}
+     */
+    private function positionReference(?TextOptions $options = null): array
+    {
+        if ($options?->positionMode === PositionMode::RELATIVE) {
+            $contentArea = $this->page->contentArea();
+
+            return [
+                'left' => $contentArea->left,
+                'right' => $contentArea->right,
+                'top' => $contentArea->top,
+                'bottom' => $contentArea->bottom,
+            ];
+        }
+
+        return [
+            'left' => 0.0,
+            'right' => $this->page->size->width(),
+            'top' => $this->page->size->height(),
+            'bottom' => 0.0,
+        ];
+    }
+
+    private function hasExplicitInsets(TextOptions $options): bool
+    {
+        return $options->left !== null
+            || $options->right !== null
+            || $options->top !== null
+            || $options->bottom !== null;
     }
 
     private function segmentFontSize(TextOptions $baseOptions, TextOptions $segmentOptions): float

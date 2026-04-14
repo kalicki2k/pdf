@@ -112,7 +112,7 @@ final readonly class JpegImageDecoder
             if ($marker === 0xEE) {
                 $payload = substr($data, $offset + 2, $segmentLength - 2);
 
-                if (strlen($payload) >= 12 && substr($payload, 0, 5) === 'Adobe') {
+                if (strlen($payload) >= 12 && str_starts_with($payload, 'Adobe')) {
                     $colorTransform = ord($payload[11]);
 
                     return $colorTransform === 0 || $colorTransform === 2;

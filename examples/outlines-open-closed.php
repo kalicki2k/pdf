@@ -66,8 +66,8 @@ DefaultDocumentBuilder::make()
         $body,
     )
     ->text('Open Section 1', TextOptions::make(
-        x: 72,
-        y: 700,
+        left: 72,
+        bottom: 700,
         fontSize: 16,
         lineHeight: 20,
         fontName: StandardFont::HELVETICA_BOLD->value,
@@ -76,8 +76,8 @@ DefaultDocumentBuilder::make()
     ->text(
         'This target belongs to an outline child under an open parent node.',
         TextOptions::make(
-            x: 72,
-            y: 676,
+            left: 72,
+            bottom: 676,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -85,8 +85,8 @@ DefaultDocumentBuilder::make()
         ),
     )
     ->text('Open Section 2', TextOptions::make(
-        x: 72,
-        y: 600,
+        left: 72,
+        bottom: 600,
         fontSize: 16,
         lineHeight: 20,
         fontName: StandardFont::HELVETICA_BOLD->value,
@@ -95,8 +95,8 @@ DefaultDocumentBuilder::make()
     ->text(
         'This second child stays visible in the outline tree because its parent node is open.',
         TextOptions::make(
-            x: 72,
-            y: 576,
+            left: 72,
+            bottom: 576,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -113,8 +113,8 @@ DefaultDocumentBuilder::make()
         $body,
     )
     ->text('Collapsed Section', TextOptions::make(
-        x: 72,
-        y: 690,
+        left: 72,
+        bottom: 690,
         fontSize: 16,
         lineHeight: 20,
         fontName: StandardFont::HELVETICA_BOLD->value,
@@ -123,8 +123,8 @@ DefaultDocumentBuilder::make()
     ->text(
         'This section is itself closed and contains a nested child bookmark below.',
         TextOptions::make(
-            x: 72,
-            y: 666,
+            left: 72,
+            bottom: 666,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -132,8 +132,8 @@ DefaultDocumentBuilder::make()
         ),
     )
     ->text('Nested Detail', TextOptions::make(
-        x: 72,
-        y: 590,
+        left: 72,
+        bottom: 590,
         fontSize: 15,
         lineHeight: 19,
         fontName: StandardFont::HELVETICA_BOLD->value,
@@ -142,8 +142,8 @@ DefaultDocumentBuilder::make()
     ->text(
         'This bookmark target exists, but the closed ancestor path means it should not be expanded automatically when the document opens.',
         TextOptions::make(
-            x: 72,
-            y: 566,
+            left: 72,
+            bottom: 566,
             width: 360,
             fontSize: 11,
             lineHeight: 15,

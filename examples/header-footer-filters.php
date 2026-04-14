@@ -38,8 +38,8 @@ $builder = DefaultDocumentBuilder::make()
     ->margin($margin)
     ->pageNumbers(
         TextOptions::make(
-            x: $margin->left,
-            y: $margin->bottom - 2,
+            left: $margin->left,
+            bottom: $margin->bottom - 2,
             width: PageSize::A4()->width() - $margin->left - $margin->right,
             fontSize: 10,
             lineHeight: 12,
@@ -53,8 +53,8 @@ $builder = DefaultDocumentBuilder::make()
         static fn (PageDecorationContext $page): bool => !$page->isFirstPage(),
         static function (PageDecorationContext $page): void {
             $page->text('Operations Manual', TextOptions::make(
-                x: $page->page()->contentArea()->left,
-                y: $page->page()->contentArea()->top,
+                left: $page->page()->contentArea()->left,
+                bottom: $page->page()->contentArea()->top,
                 fontSize: 11,
                 lineHeight: 13,
                 fontName: StandardFont::HELVETICA_BOLD->value,
@@ -66,8 +66,8 @@ $builder = DefaultDocumentBuilder::make()
         static fn (PageDecorationContext $page): bool => $page->pageNumber() % 2 === 0,
         static function (PageDecorationContext $page): void {
             $page->text('Internal review copy', TextOptions::make(
-                x: $page->page()->contentArea()->left,
-                y: $page->page()->contentArea()->bottom + 10,
+                left: $page->page()->contentArea()->left,
+                bottom: $page->page()->contentArea()->bottom + 10,
                 fontSize: 9,
                 lineHeight: 11,
                 fontName: StandardFont::HELVETICA_BOLD->value,

@@ -12,7 +12,7 @@ final class CcittFaxEncoderTest extends TestCase
 {
     public function testItEncodesMonochromeRowsIntoCcittData(): void
     {
-        $encoded = (new CcittFaxEncoder())->encodeRows([
+        $encoded = new CcittFaxEncoder()->encodeRows([
             '11111111',
             '00000000',
         ]);
@@ -25,6 +25,6 @@ final class CcittFaxEncoderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('CCITT bitmap size does not match width and height.');
 
-        (new CcittFaxEncoder())->encodeBitmap("\x00", 16, 1);
+        new CcittFaxEncoder()->encodeBitmap("\x00", 16, 1);
     }
 }

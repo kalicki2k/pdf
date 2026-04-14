@@ -25,8 +25,8 @@ Pdf::document()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->text('Page 1 uses the full MediaBox.', TextOptions::make(
-        x: Units::mm(20),
-        y: Units::mm(270),
+        left: Units::mm(20),
+        bottom: Units::mm(270),
         fontSize: 18,
         fontName: 'Helvetica',
     ))
@@ -58,14 +58,14 @@ Pdf::document()
         ),
     ))
     ->text('Page 2 defines CropBox, BleedBox, TrimBox and ArtBox.', TextOptions::make(
-        x: Units::mm(20),
-        y: Units::mm(270),
+        left: Units::mm(20),
+        bottom: Units::mm(270),
         fontSize: 18,
         fontName: 'Helvetica',
     ))
     ->text('CropBox is inset by 10 mm, BleedBox by 7 mm, TrimBox by 12 mm and ArtBox by 20 mm.', TextOptions::make(
-        x: Units::mm(20),
-        y: Units::mm(255),
+        left: Units::mm(20),
+        bottom: Units::mm(255),
         fontSize: 12,
         fontName: 'Courier',
     ))

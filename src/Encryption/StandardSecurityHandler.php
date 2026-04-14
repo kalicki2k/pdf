@@ -172,7 +172,7 @@ final readonly class StandardSecurityHandler
         $result = '';
 
         foreach (str_split($key) as $byte) {
-            $result .= chr((ord($byte) ^ $value) & 0xFF);
+            $result .= chr((ord($byte[0]) ^ $value) & 0xFF);
         }
 
         return $result;

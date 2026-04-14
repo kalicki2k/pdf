@@ -96,7 +96,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
                 if ($accessibleLabel !== null && $accessibleLabel !== '') {
                     $lastAltTextPart = $groupedLinkEntries[$groupKey]['altTextParts'] === []
                         ? null
-                        : $groupedLinkEntries[$groupKey]['altTextParts'][array_key_last($groupedLinkEntries[$groupKey]['altTextParts'])];
+                        : array_last($groupedLinkEntries[$groupKey]['altTextParts']);
 
                     if ($lastAltTextPart !== $accessibleLabel) {
                         $groupedLinkEntries[$groupKey]['altTextParts'][] = $accessibleLabel;

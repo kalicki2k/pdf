@@ -107,7 +107,6 @@ final class WebpFixture
         ob_start();
         $written = imagewebp($image, null, $quality);
         $bytes = ob_get_clean();
-        imagedestroy($image);
 
         if ($written !== true || !is_string($bytes)) {
             throw new RuntimeException('Unable to encode GD WebP fixture.');

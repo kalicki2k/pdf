@@ -52,22 +52,22 @@ DefaultDocumentBuilder::make()
     ->pageSize(PageSize::A4())
     ->margin($margin)
     ->text('Graphics Primitives', TextOptions::make(
-        x: $margin->left,
-        y: PageSize::A4()->height() - $margin->top,
+        left: $margin->left,
+        bottom: PageSize::A4()->height() - $margin->top,
         fontSize: 24,
         color: $titleColor,
     ))
     ->text('This example combines several small graphics examples on one page: lines, stroked and filled rectangles, a rounded panel and custom paths.', TextOptions::make(
-        x: $margin->left,
-        y: 760,
+        left: $margin->left,
+        bottom: 760,
         width: 470,
         fontSize: 11,
         lineHeight: 16,
         color: $bodyColor,
     ))
     ->text('1. Line styles', TextOptions::make(
-        x: 55,
-        y: 710,
+        left: 55,
+        bottom: 710,
         fontSize: 14,
         color: $accentColor,
     ))
@@ -75,59 +75,59 @@ DefaultDocumentBuilder::make()
     ->line(70, 665, 250, 665, new StrokeStyle(3.0, $accentColor))
     ->line(70, 645, 250, 645, new StrokeStyle(6.0, $dangerColor))
     ->text('Thin neutral, medium accent, heavy alert.', TextOptions::make(
-        x: 270,
-        y: 665,
+        left: 270,
+        bottom: 665,
         width: 220,
         fontSize: 10,
         lineHeight: 14,
         color: $mutedColor,
     ))
     ->text('2. Rectangles', TextOptions::make(
-        x: 55,
-        y: 605,
+        left: 55,
+        bottom: 605,
         fontSize: 14,
         color: $accentColor,
     ))
     ->rectangle(70, 520, 90, 50, new StrokeStyle(1.5, $accentColor))
     ->rectangle(180, 520, 90, 50, fillColor: $fillBlue)
     ->rectangle(290, 520, 90, 50, new StrokeStyle(1.5, $dangerColor), $fillRed)
-    ->text('Stroke only', TextOptions::make(x: 82, y: 500, fontSize: 10, color: $mutedColor))
-    ->text('Fill only', TextOptions::make(x: 195, y: 500, fontSize: 10, color: $mutedColor))
-    ->text('Fill + stroke', TextOptions::make(x: 298, y: 500, fontSize: 10, color: $mutedColor))
+    ->text('Stroke only', TextOptions::make(left: 82, bottom: 500, fontSize: 10, color: $mutedColor))
+    ->text('Fill only', TextOptions::make(left: 195, bottom: 500, fontSize: 10, color: $mutedColor))
+    ->text('Fill + stroke', TextOptions::make(left: 298, bottom: 500, fontSize: 10, color: $mutedColor))
     ->text('3. Paths', TextOptions::make(
-        x: 55,
-        y: 455,
+        left: 55,
+        bottom: 455,
         fontSize: 14,
         color: $accentColor,
     ))
     ->path($triangle, new StrokeStyle(1.5, $dangerColor), $fillAmber)
     ->path($wave, new StrokeStyle(2.0, $accentColor))
     ->text('A closed triangle path can be filled and stroked; an open path stays stroked only.', TextOptions::make(
-        x: 320,
-        y: 410,
+        left: 320,
+        bottom: 410,
         width: 170,
         fontSize: 10,
         lineHeight: 14,
         color: $mutedColor,
     ))
     ->text('4. Rounded rectangle', TextOptions::make(
-        x: 55,
-        y: 280,
+        left: 55,
+        bottom: 280,
         fontSize: 14,
         color: $accentColor,
     ))
     ->roundedRectangle(70, 120, 420, 120, 18, new StrokeStyle(1.25, $accentColor), $fillBlue)
     ->text('Rounded rectangles reuse the same path machinery internally. That keeps the public API small while still covering a common page-decoration primitive.', TextOptions::make(
-        x: 95,
-        y: 205,
+        left: 95,
+        bottom: 205,
         width: 360,
         fontSize: 11,
         lineHeight: 16,
         color: $bodyColor,
     ))
     ->text('Output: var/examples/graphics-primitives.pdf', TextOptions::make(
-        x: 95,
-        y: 145,
+        left: 95,
+        bottom: 145,
         fontSize: 10,
         color: $mutedColor,
     ))

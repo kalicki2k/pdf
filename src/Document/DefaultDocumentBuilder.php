@@ -504,8 +504,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $bodyMarkedContentId = $taggedListId !== null ? $clone->nextTaggedMarkedContentId() : null;
             $labelOptions = $this->copyTextOptions(
                 $text,
-                x: $baseX,
-                y: $currentY,
+                left: $baseX,
+                bottom: $currentY,
                 width: $markerWidth > 0.0 ? $markerWidth : null,
                 spacingBefore: null,
                 spacingAfter: null,
@@ -515,8 +515,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 : null;
             $bodyOptions = $this->copyTextOptions(
                 $text,
-                x: $baseX + $indent,
-                y: $currentY,
+                left: $baseX + $indent,
+                bottom: $currentY,
                 width: $bodyWidth,
                 spacingBefore: null,
                 spacingAfter: null,
@@ -1688,8 +1688,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ? EmbeddedFontDefinition::fromSource($textOptions->embeddedFont)
             : StandardFontDefinition::from($textOptions->fontName);
         $appearanceOptions = TextOptions::make(
-            x: 2.0,
-            y: $height - 2.0 - $font->ascent($textOptions->fontSize),
+            left: 2.0,
+            bottom: $height - 2.0 - $font->ascent($textOptions->fontSize),
             width: max($width - 4.0, 0.0),
             fontSize: $textOptions->fontSize,
             lineHeight: $textOptions->lineHeight,
@@ -3674,8 +3674,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function textOptionsWithLink(TextOptions $options, LinkTarget | TextLink | null $link): TextOptions
     {
         return TextOptions::make(
-            x: $options->x,
-            y: $options->y,
+            left: $options->left,
+            right: $options->right,
+            bottom: $options->bottom,
+            top: $options->top,
+            positionMode: $options->positionMode,
             width: $options->width,
             maxWidth: $options->maxWidth,
             fontSize: $options->fontSize,
@@ -3706,8 +3709,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->assertInlineSegmentTextOptions($segment->options);
 
         return TextOptions::make(
-            x: $options->x,
-            y: $options->y,
+            left: $options->left,
+            right: $options->right,
+            bottom: $options->bottom,
+            top: $options->top,
+            positionMode: $options->positionMode,
             width: $options->width,
             maxWidth: $options->maxWidth,
             fontSize: $this->segmentFontSize($options, $segment->options),
@@ -3732,8 +3738,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function assertInlineSegmentTextOptions(TextOptions $options): void
     {
         if (
-            $options->x !== null
-            || $options->y !== null
+            $options->left !== null
+            || $options->right !== null
+            || $options->top !== null
+            || $options->bottom !== null
             || $options->width !== null
             || $options->maxWidth !== null
             || $options->lineHeight !== null
@@ -4888,15 +4896,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function copyTextOptions(
         TextOptions $options,
-        ?float $x = null,
-        ?float $y = null,
+        ?float $left = null,
+        ?float $bottom = null,
         ?float $width = null,
         ?float $spacingBefore = null,
         ?float $spacingAfter = null,
     ): TextOptions {
         return TextOptions::make(
-            x: $x,
-            y: $y,
+            left: $left,
+            bottom: $bottom,
+            positionMode: $options->positionMode,
             width: $width,
             maxWidth: $options->maxWidth,
             fontSize: $options->fontSize,

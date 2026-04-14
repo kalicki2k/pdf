@@ -13,8 +13,8 @@ use InvalidArgumentException;
 
 final readonly class OptionalContentMembership
 {
-    public const POLICY_ANY_ON = 'AnyOn';
-    public const POLICY_ALL_ON = 'AllOn';
+    public const string POLICY_ANY_ON = 'AnyOn';
+    public const string POLICY_ALL_ON = 'AllOn';
 
     /**
      * @param list<string> $groupAliases

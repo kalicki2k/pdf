@@ -41,7 +41,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
                 color: Color::gray(0.5),
             ))
             ->text('CMYK', TextOptions::make(
-                y: 680.0,
+                bottom: 680.0,
                 color: Color::cmyk(0.1, 0.2, 0.3, 0.4),
             ))
             ->build();
@@ -102,13 +102,13 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->text("Line 1\nLine 2", TextOptions::make(
-                x: 72.0,
-                y: 720.0,
+                left: 72.0,
+                bottom: 720.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
             ->text('After', TextOptions::make(
-                x: 72.0,
+                left: 72.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
@@ -123,13 +123,13 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->text("Line 1\n\nLine 2", TextOptions::make(
-                x: 72.0,
-                y: 720.0,
+                left: 72.0,
+                bottom: 720.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
             ->text('After', TextOptions::make(
-                x: 72.0,
+                left: 72.0,
                 fontSize: 10.0,
                 lineHeight: 12.0,
             ))
@@ -205,7 +205,7 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->text('Body', TextOptions::make(
-                y: 680.0,
+                bottom: 680.0,
                 spacingBefore: 12.0,
             ))
             ->build();
