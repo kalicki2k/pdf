@@ -15,6 +15,10 @@ final readonly class PageOptions
         public ?Color $backgroundColor = null,
         public ?string $label = null,
         public ?string $name = null,
+        public ?PageBox $cropBox = null,
+        public ?PageBox $bleedBox = null,
+        public ?PageBox $trimBox = null,
+        public ?PageBox $artBox = null,
     ) {
     }
 }

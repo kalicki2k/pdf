@@ -92,6 +92,7 @@ use Kalle\Pdf\Page\NamedDestination;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageAnnotationReference;
+use Kalle\Pdf\Page\PageBox;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageImage;
 use Kalle\Pdf\Page\PageOptions;
@@ -175,6 +176,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private ?Color $currentPageBackgroundColor = null;
     private ?string $currentPageLabel = null;
     private ?string $currentPageName = null;
+    private ?PageBox $currentPageCropBox = null;
+    private ?PageBox $currentPageBleedBox = null;
+    private ?PageBox $currentPageTrimBox = null;
+    private ?PageBox $currentPageArtBox = null;
     private ?string $title = null;
     private ?string $author = null;
     private ?string $subject = null;
@@ -2800,6 +2805,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
             backgroundColor: $this->currentPageBackgroundColor,
             label: $this->currentPageLabel,
             name: $this->currentPageName,
+            cropBox: $this->currentPageCropBox,
+            bleedBox: $this->currentPageBleedBox,
+            trimBox: $this->currentPageTrimBox,
+            artBox: $this->currentPageArtBox,
         );
     }
 
@@ -2825,6 +2834,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageBackgroundColor = $options?->backgroundColor;
         $this->currentPageLabel = $options?->label;
         $this->currentPageName = $options?->name;
+        $this->currentPageCropBox = $options?->cropBox;
+        $this->currentPageBleedBox = $options?->bleedBox;
+        $this->currentPageTrimBox = $options?->trimBox;
+        $this->currentPageArtBox = $options?->artBox;
         $this->currentPageNextMarkedContentId = 0;
     }
 
@@ -5679,6 +5692,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone->currentPageBackgroundColor = $page->backgroundColor;
         $clone->currentPageLabel = $page->label;
         $clone->currentPageName = $page->name;
+        $clone->currentPageCropBox = $page->cropBox;
+        $clone->currentPageBleedBox = $page->bleedBox;
+        $clone->currentPageTrimBox = $page->trimBox;
+        $clone->currentPageArtBox = $page->artBox;
         $clone->currentPageNextMarkedContentId = 0;
         $clone->renderingPageDecoration = true;
         $clone->taggedTables = [];

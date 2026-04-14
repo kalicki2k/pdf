@@ -55,7 +55,12 @@ final class DocumentPageAndFormObjectBuilder
                 $pageObjectId,
                 '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '
                 . $this->formatNumber($page->size->width()) . ' '
-                . $this->formatNumber($page->size->height()) . '] /Resources '
+                . $this->formatNumber($page->size->height()) . ']'
+                . $this->buildPageBoxEntry('CropBox', $page->cropBox)
+                . $this->buildPageBoxEntry('BleedBox', $page->bleedBox)
+                . $this->buildPageBoxEntry('TrimBox', $page->trimBox)
+                . $this->buildPageBoxEntry('ArtBox', $page->artBox)
+                . ' /Resources '
                 . $this->buildPageResources(
                     $page->fontResources,
                     $page->imageResources,
@@ -249,6 +254,19 @@ final class DocumentPageAndFormObjectBuilder
             relatedObjectIds: $relatedObjectIds,
             attachmentObjectIdsByFilename: $attachmentObjectIdsByFilename,
         );
+    }
+
+    private function buildPageBoxEntry(string $name, ?\Kalle\Pdf\Page\PageBox $box): string
+    {
+        if ($box === null) {
+            return '';
+        }
+
+        return ' /' . $name . ' ['
+            . $this->formatNumber($box->left) . ' '
+            . $this->formatNumber($box->bottom) . ' '
+            . $this->formatNumber($box->right) . ' '
+            . $this->formatNumber($box->top) . ']';
     }
 
     private function buildStructParentsEntry(?int $structParentId): string

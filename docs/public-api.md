@@ -75,6 +75,8 @@ Fuer komplexeren Text sind ausserdem vorhanden:
 - `TextLink` fuer explizite Link-Spans
 - Bidi- und Script-Shaping im internen Textpfad
 
+Seiteneigenschaften koennen ueber `PageOptions` pro Seite ueberschrieben werden. Der aktuelle Scope umfasst dabei unter anderem `pageSize`, `orientation`, `margin`, `backgroundColor`, `label`, `name` sowie die PDF-Seitenboxen `cropBox`, `bleedBox`, `trimBox` und `artBox`.
+
 ## Fonts
 
 Es gibt zwei Fontpfade:

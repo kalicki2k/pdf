@@ -66,6 +66,7 @@ use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageAnnotation;
 use Kalle\Pdf\Page\PageAnnotationRenderContext;
+use Kalle\Pdf\Page\PageBox;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
@@ -1086,6 +1087,30 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertSame("<< /Length 3 >>\nstream\nq\nQ\nendstream", $objects[3]->contents);
         self::assertSame('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 419.528 595.276] /Resources << >> /Contents 6 0 R >>', $objects[4]->contents);
         self::assertSame("<< /Length 0 >>\nstream\nendstream", $objects[5]->contents);
+    }
+
+    public function testItWritesCropBoxWhenConfiguredForAPage(): void
+    {
+        $builder = new DocumentSerializationPlanBuilder();
+        $document = new Document(
+            pages: [
+                new Page(
+                    PageSize::A4(),
+                    cropBox: PageBox::fromPoints(20.0, 30.0, 575.0, 820.0),
+                    bleedBox: PageBox::fromPoints(18.0, 28.0, 577.0, 822.0),
+                    trimBox: PageBox::fromPoints(22.0, 32.0, 573.0, 818.0),
+                    artBox: PageBox::fromPoints(40.0, 50.0, 550.0, 790.0),
+                ),
+            ],
+        );
+
+        $plan = $builder->build($document);
+        $objects = iterator_to_array($plan->objects);
+
+        self::assertSame(
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /CropBox [20 30 575 820] /BleedBox [18 28 577 822] /TrimBox [22 32 573 818] /ArtBox [40 50 550 790] /Resources << >> /Contents 4 0 R >>',
+            $objects[2]->contents,
+        );
     }
 
     private function testWidgetField(int $pageNumber = 1): WidgetFormField

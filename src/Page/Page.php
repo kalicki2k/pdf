@@ -35,7 +35,15 @@ final readonly class Page
         public ?string $label = null,
         public ?string $name = null,
         public array $optionalContentMemberships = [],
+        public ?PageBox $cropBox = null,
+        public ?PageBox $bleedBox = null,
+        public ?PageBox $trimBox = null,
+        public ?PageBox $artBox = null,
     ) {
+        $this->cropBox?->assertFitsWithin($this->size);
+        $this->bleedBox?->assertFitsWithin($this->size);
+        $this->trimBox?->assertFitsWithin($this->size);
+        $this->artBox?->assertFitsWithin($this->size);
     }
 
     public function contentArea(): ContentArea

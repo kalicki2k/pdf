@@ -58,6 +58,7 @@ use Kalle\Pdf\Page\LinkTarget;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\MarkupAnnotationOptions;
 use Kalle\Pdf\Page\PageAnnotationReference;
+use Kalle\Pdf\Page\PageBox;
 use Kalle\Pdf\Page\PageFont;
 use Kalle\Pdf\Page\PageOptions;
 use Kalle\Pdf\Page\PageOrientation;
@@ -129,6 +130,10 @@ final class DefaultDocumentBuilderTest extends TestCase
                 backgroundColor: Color::hex('#f5f5f5'),
                 label: 'appendix',
                 name: 'appendix-a',
+                cropBox: PageBox::fromPoints(12.0, 18.0, 580.0, 400.0),
+                bleedBox: PageBox::fromPoints(13.0, 19.0, 579.0, 399.0),
+                trimBox: PageBox::fromPoints(14.0, 20.0, 578.0, 398.0),
+                artBox: PageBox::fromPoints(15.0, 21.0, 577.0, 397.0),
             ))
             ->text('Page 2')
             ->build();
@@ -146,6 +151,22 @@ final class DefaultDocumentBuilderTest extends TestCase
         self::assertSame([245 / 255, 245 / 255, 245 / 255], $document->pages[1]->backgroundColor->components());
         self::assertSame('appendix', $document->pages[1]->label);
         self::assertSame('appendix-a', $document->pages[1]->name);
+        self::assertSame(12.0, $document->pages[1]->cropBox?->left);
+        self::assertSame(18.0, $document->pages[1]->cropBox?->bottom);
+        self::assertSame(580.0, $document->pages[1]->cropBox?->right);
+        self::assertSame(400.0, $document->pages[1]->cropBox?->top);
+        self::assertSame(13.0, $document->pages[1]->bleedBox?->left);
+        self::assertSame(19.0, $document->pages[1]->bleedBox?->bottom);
+        self::assertSame(579.0, $document->pages[1]->bleedBox?->right);
+        self::assertSame(399.0, $document->pages[1]->bleedBox?->top);
+        self::assertSame(14.0, $document->pages[1]->trimBox?->left);
+        self::assertSame(20.0, $document->pages[1]->trimBox?->bottom);
+        self::assertSame(578.0, $document->pages[1]->trimBox?->right);
+        self::assertSame(398.0, $document->pages[1]->trimBox?->top);
+        self::assertSame(15.0, $document->pages[1]->artBox?->left);
+        self::assertSame(21.0, $document->pages[1]->artBox?->bottom);
+        self::assertSame(577.0, $document->pages[1]->artBox?->right);
+        self::assertSame(397.0, $document->pages[1]->artBox?->top);
     }
 
     public function testNewPageWithoutOptionsKeepsDocumentPageDefaults(): void
