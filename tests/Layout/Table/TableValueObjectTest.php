@@ -76,6 +76,17 @@ final class TableValueObjectTest extends TestCase
         self::assertSame(180.0, $placement->width);
     }
 
+    public function testTablePlacementCanBeStatic(): void
+    {
+        $placement = TablePlacement::static();
+
+        self::assertSame(PositionMode::STATIC, $placement->positionMode);
+        self::assertNull($placement->left);
+        self::assertNull($placement->right);
+        self::assertNull($placement->top);
+        self::assertNull($placement->width);
+    }
+
     public function testTablePlacementCanOmitWidthWhenBothHorizontalInsetsAreProvided(): void
     {
         $placement = TablePlacement::relative(left: 30.0, right: 20.0, top: 12.0);

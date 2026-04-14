@@ -173,6 +173,34 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         );
     }
 
+    public function testStaticTablePlacementUsesTheNormalFlowFrame(): void
+    {
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::static()))
+            ->withRows(
+                TableRow::fromTexts('Left', 'Right'),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->table($table)
+            ->build();
+
+        $page = $document->pages[0];
+
+        self::assertStringContainsString(
+            $this->formatNumber($page->contentArea()->left) . ' ' . $this->formatNumber($page->contentArea()->top) . ' m',
+            $page->contents,
+        );
+        self::assertStringContainsString(
+            $this->formatNumber($page->contentArea()->right) . ' ' . $this->formatNumber($page->contentArea()->top) . ' l',
+            $page->contents,
+        );
+    }
+
     public function testItRejectsExplicitTablePlacementTopAboveTheCurrentFlowCursor(): void
     {
         $table = Table::define(

@@ -13,6 +13,14 @@ use Kalle\Pdf\Layout\PositionMode;
 final readonly class TablePlacement
 {
     /**
+     * Creates a table placement in the normal document flow.
+     */
+    public static function static(): self
+    {
+        return new self(positionMode: PositionMode::STATIC);
+    }
+
+    /**
      * Creates a table placement relative to the full page box.
      *
      * @param ?float $left Left inset from the page edge.
@@ -68,6 +76,11 @@ final readonly class TablePlacement
         return $this->positionMode === PositionMode::RELATIVE;
     }
 
+    public function isStatic(): bool
+    {
+        return $this->positionMode === PositionMode::STATIC;
+    }
+
     private function __construct(
         public PositionMode $positionMode = PositionMode::RELATIVE,
         public ?float $left = null,
@@ -75,6 +88,14 @@ final readonly class TablePlacement
         public ?float $top = null,
         public ?float $width = null,
     ) {
+        if ($this->positionMode === PositionMode::STATIC) {
+            if ($this->left !== null || $this->right !== null || $this->top !== null || $this->width !== null) {
+                throw new InvalidArgumentException('Static table placement cannot define left, right, top or width.');
+            }
+
+            return;
+        }
+
         if ($this->width !== null && $this->width <= 0.0) {
             throw new InvalidArgumentException('Table placement width must be greater than zero.');
         }

@@ -5432,7 +5432,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     {
         $contentArea = $page->contentArea();
 
-        if ($table->placement === null) {
+        if ($table->placement === null || $table->placement->isStatic()) {
             return [
                 'x' => $contentArea->left,
                 'width' => $contentArea->width(),

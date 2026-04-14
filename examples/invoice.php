@@ -6,6 +6,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Color\MaterialColor;
+use Kalle\Pdf\Document\Attachment\AssociatedFileRelationship;
+use Kalle\Pdf\Document\Attachment\MimeType;
 use Kalle\Pdf\Document\DocumentBuildException;
 use Kalle\Pdf\Document\Profile;
 use Kalle\Pdf\Document\Table;
@@ -29,6 +31,7 @@ use Kalle\Pdf\Text\TextAlign;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
 use Kalle\Pdf\Text\TextSemantic;
+use Kalle\Pdf\Xml;
 
 $outputDirectory = __DIR__ . '/../var/examples';
 
@@ -54,7 +57,10 @@ $logoPath = __DIR__ . '/../assets/images/MusterfirmaGmbHLogoDesign.png';
 
 $invoiceNumber = 'RE-2026-0415';
 $invoiceDate = '13.04.2026';
+$invoiceIssueDate = '20260413';
 $servicePeriod = '01.03.2026 - 31.03.2026';
+$serviceStartDate = '20260301';
+$serviceEndDate = '20260331';
 $customerNumber = 'KD-10482';
 $projectCode = 'PLT-OPS-2026-Q2';
 $purchaseOrder = 'PO-7781-BCG';
@@ -84,10 +90,12 @@ $lineItems = [
 
 $formatAmount = static fn (float $amount): string => number_format($amount, 2, ',', '.') . ' €';
 $formatQuantity = static fn (float $quantity): string => rtrim(rtrim(number_format($quantity, 2, ',', '.'), '0'), ',');
+$formatDecimal = static fn (float $value): string => number_format($value, 2, '.', '');
 
 $subtotal = 0.0;
 $runningNetTotals = [0.0];
 $tableRows = [];
+$invoiceXmlLines = [];
 
 foreach ($lineItems as $index => $item) {
     $lineTotal = $item['quantity'] * $item['unitPrice'];
@@ -102,6 +110,34 @@ foreach ($lineItems as $index => $item) {
         TableCell::text($formatAmount($item['unitPrice']))->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
         TableCell::text($formatAmount($lineTotal))->withHorizontalAlign(TextAlign::RIGHT)->withNoWrap(),
     );
+
+    $invoiceXmlLines[] = Xml::element('ram:IncludedSupplyChainTradeLineItem')->withChildren([
+        Xml::element('ram:AssociatedDocumentLineDocument')->withChildren([
+            Xml::element('ram:LineID')->withText((string) ($index + 1)),
+        ]),
+        Xml::element('ram:SpecifiedTradeProduct')->withChildren([
+            Xml::element('ram:Name')->withText($item['description']),
+            Xml::element('ram:Description')->withText('Leistungszeitraum ' . $item['period']),
+        ]),
+        Xml::element('ram:SpecifiedLineTradeAgreement')->withChildren([
+            Xml::element('ram:NetPriceProductTradePrice')->withChildren([
+                Xml::element('ram:ChargeAmount')->withText($formatDecimal($item['unitPrice'])),
+            ]),
+        ]),
+        Xml::element('ram:SpecifiedLineTradeDelivery')->withChildren([
+            Xml::element('ram:BilledQuantity', ['unitCode' => 'HUR'])->withText($formatDecimal($item['quantity'])),
+        ]),
+        Xml::element('ram:SpecifiedLineTradeSettlement')->withChildren([
+            Xml::element('ram:ApplicableTradeTax')->withChildren([
+                Xml::element('ram:TypeCode')->withText('VAT'),
+                Xml::element('ram:CategoryCode')->withText('S'),
+                Xml::element('ram:RateApplicablePercent')->withText('19.00'),
+            ]),
+            Xml::element('ram:SpecifiedTradeSettlementLineMonetarySummation')->withChildren([
+                Xml::element('ram:LineTotalAmount')->withText($formatDecimal($lineTotal)),
+            ]),
+        ]),
+    ]);
 }
 
 $taxAmount = round($subtotal * 0.19, 2);
@@ -216,6 +252,115 @@ $table = Table::define(
         ),
     );
 
+$xmlDocument = Xml::document(
+    root: Xml::element('rsm:CrossIndustryInvoice', [
+        'xmlns:rsm' => 'urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100',
+        'xmlns:ram' => 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100',
+        'xmlns:udt' => 'urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100',
+    ])->withChildren([
+        Xml::element('rsm:ExchangedDocumentContext')->withChildren([
+            Xml::element('ram:GuidelineSpecifiedDocumentContextParameter')->withChildren([
+                Xml::element('ram:ID')->withText('urn:factur-x.eu:1p0:en16931:extended'),
+            ]),
+        ]),
+        Xml::element('rsm:ExchangedDocument')->withChildren([
+            Xml::element('ram:ID')->withText($invoiceNumber),
+            Xml::element('ram:TypeCode')->withText('380'),
+            Xml::element('ram:IssueDateTime')->withChildren([
+                Xml::element('udt:DateTimeString', ['format' => '102'])->withText($invoiceIssueDate),
+            ]),
+            Xml::element('ram:IncludedNote')->withChildren([
+                Xml::element('ram:Content')->withText('Kundennummer ' . $customerNumber . ', Projektcode ' . $projectCode . ', Bestellreferenz ' . $purchaseOrder),
+            ]),
+        ]),
+        Xml::element('rsm:SupplyChainTradeTransaction')->withChildren([
+            ...$invoiceXmlLines,
+            Xml::element('ram:ApplicableHeaderTradeAgreement')->withChildren([
+                Xml::element('ram:BuyerReference')->withText($customerNumber),
+                Xml::element('ram:SellerTradeParty')->withChildren([
+                    Xml::element('ram:Name')->withText('DEIN FIRMENNAME'),
+                    Xml::element('ram:DefinedTradeContact')->withChildren([
+                        Xml::element('ram:TelephoneUniversalCommunication')->withChildren([
+                            Xml::element('ram:CompleteNumber')->withText('0123 456789'),
+                        ]),
+                        Xml::element('ram:EmailURIUniversalCommunication')->withChildren([
+                            Xml::element('ram:URIID')->withText('info@deinefirma.de'),
+                        ]),
+                    ]),
+                    Xml::element('ram:PostalTradeAddress')->withChildren([
+                        Xml::element('ram:PostcodeCode')->withText('00000'),
+                        Xml::element('ram:LineOne')->withText('Strasse Hausnummer'),
+                        Xml::element('ram:CityName')->withText('Ort'),
+                        Xml::element('ram:CountryID')->withText('DE'),
+                    ]),
+                    Xml::element('ram:SpecifiedTaxRegistration')->withChildren([
+                        Xml::element('ram:ID', ['schemeID' => 'VA'])->withText('DE123456789'),
+                    ]),
+                ]),
+                Xml::element('ram:BuyerTradeParty')->withChildren([
+                    Xml::element('ram:Name')->withText('Kundenfirma Mueller GmbH'),
+                    Xml::element('ram:DefinedTradeContact')->withChildren([
+                        Xml::element('ram:PersonName')->withText('Anna Mueller'),
+                    ]),
+                    Xml::element('ram:PostalTradeAddress')->withChildren([
+                        Xml::element('ram:PostcodeCode')->withText('80331'),
+                        Xml::element('ram:LineOne')->withText('Beispielweg 8'),
+                        Xml::element('ram:CityName')->withText('Muenchen'),
+                        Xml::element('ram:CountryID')->withText('DE'),
+                    ]),
+                ]),
+            ]),
+            Xml::element('ram:ApplicableHeaderTradeDelivery')->withChildren([
+                Xml::element('ram:ActualDeliverySupplyChainEvent')->withChildren([
+                    Xml::element('ram:OccurrenceDateTime')->withChildren([
+                        Xml::element('udt:DateTimeString', ['format' => '102'])->withText($serviceEndDate),
+                    ]),
+                ]),
+            ]),
+            Xml::element('ram:ApplicableHeaderTradeSettlement')->withChildren([
+                Xml::element('ram:InvoiceCurrencyCode')->withText('EUR'),
+                Xml::element('ram:SpecifiedTradeSettlementPaymentMeans')->withChildren([
+                    Xml::element('ram:TypeCode')->withText('58'),
+                    Xml::element('ram:PayeePartyCreditorFinancialAccount')->withChildren([
+                        Xml::element('ram:IBANID')->withText('DE12345678901234567890'),
+                    ]),
+                    Xml::element('ram:PayeeSpecifiedCreditorFinancialInstitution')->withChildren([
+                        Xml::element('ram:BICID')->withText('MUSTDEFFXXX'),
+                    ]),
+                ]),
+                Xml::element('ram:ApplicableTradeTax')->withChildren([
+                    Xml::element('ram:CalculatedAmount')->withText($formatDecimal($taxAmount)),
+                    Xml::element('ram:TypeCode')->withText('VAT'),
+                    Xml::element('ram:BasisAmount')->withText($formatDecimal($subtotal)),
+                    Xml::element('ram:CategoryCode')->withText('S'),
+                    Xml::element('ram:RateApplicablePercent')->withText('19.00'),
+                ]),
+                Xml::element('ram:BillingSpecifiedPeriod')->withChildren([
+                    Xml::element('ram:StartDateTime')->withChildren([
+                        Xml::element('udt:DateTimeString', ['format' => '102'])->withText($serviceStartDate),
+                    ]),
+                    Xml::element('ram:EndDateTime')->withChildren([
+                        Xml::element('udt:DateTimeString', ['format' => '102'])->withText($serviceEndDate),
+                    ]),
+                ]),
+                Xml::element('ram:SpecifiedTradePaymentTerms')->withChildren([
+                    Xml::element('ram:Description')->withText($paymentTerms),
+                ]),
+                Xml::element('ram:SpecifiedTradeSettlementHeaderMonetarySummation')->withChildren([
+                    Xml::element('ram:LineTotalAmount')->withText($formatDecimal($subtotal)),
+                    Xml::element('ram:TaxBasisTotalAmount')->withText($formatDecimal($subtotal)),
+                    Xml::element('ram:TaxTotalAmount', ['currencyID' => 'EUR'])->withText($formatDecimal($taxAmount)),
+                    Xml::element('ram:GrandTotalAmount')->withText($formatDecimal($totalAmount)),
+                    Xml::element('ram:DuePayableAmount')->withText($formatDecimal($totalAmount)),
+                ]),
+            ]),
+        ]),
+    ]),
+    standalone: true,
+);
+
+$invoiceXml = Xml::serialize($xmlDocument);
+
 $document = Pdf::document()
     ->profile(Profile::pdfA3b())
     ->title('Rechnung ' . $invoiceNumber)
@@ -227,12 +372,19 @@ $document = Pdf::document()
     ->creatorTool('pdf2')
     ->pageSize(PageSize::A4())
     ->margin(Margin::all(Units::mm(20)))
+    ->attachment(
+        'factur-x.xml',
+        $invoiceXml,
+        'Maschinenlesbare Factur-X Rechnungsdaten',
+        MimeType::XML,
+        AssociatedFileRelationship::ALTERNATIVE,
+    )
     ->imageFile(
         $logoPath,
         ImagePlacement::absolute(
-            left: Units::mm(136),
-            bottom: Units::mm(262),
-            width: Units::mm(48),
+            right: Units::mm(20),
+            top: Units::mm(10),
+            width: Units::mm(80),
         ),
     )
     ->textLines(
@@ -250,9 +402,8 @@ $document = Pdf::document()
             'USt-IdNr.: DE123456789',
         ],
         TextOptions::make(
-            left: Units::mm(120),
-            bottom: Units::mm(242),
-            positionMode: PositionMode::ABSOLUTE,
+            right: Units::mm(0),
+            top: Units::mm(12.5),
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 11,
@@ -318,8 +469,6 @@ $document = Pdf::document()
             TextSegment::plain(PHP_EOL . 'Bestellreferenz: ' . $purchaseOrder),
         ],
         TextOptions::make(
-            // bottom: Units::mm(181),
-            // width: Units::mm(80),
             fontSize: 9,
             lineHeight: 12,
             spacingAfter: Units::mm(10),
@@ -330,7 +479,6 @@ $document = Pdf::document()
     ->text(
         "Sehr geehrte Frau Mueller,\n\nvielen Dank fuer die weitere Zusammenarbeit im Maerz 2026. Nachfolgend berechne ich die im Leistungsmonat erbrachten Betriebs-, Optimierungs- und Projektleistungen fuer Ihre E-Commerce-Plattform.",
         TextOptions::make(
-            // bottom: Units::mm(155),
             width: $contentWidth,
             fontSize: 9,
             lineHeight: 13,
@@ -350,11 +498,7 @@ $document = Pdf::document()
             embeddedFont: $fontRegular,
             color: $textColor,
         ),
-    )->newPage(PageOptions::make(
-        pageSize: PageSize::A4(),
-        margin: Margin::all(36),
-    ))
-    ->text('Seite 3', TextOptions::make(left: 0, bottom: 0, positionMode: PositionMode::ABSOLUTE, embeddedFont: $fontRegular));
+    );
 
 $targetPath = $outputDirectory . '/invoice.pdf';
 
