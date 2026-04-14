@@ -773,12 +773,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $taggedTableId = $clone->requiresTaggedStructure()
             ? $clone->registerTaggedTable($headerLayout, $tableLayout, $repeatedFooterLayout, $finalFooterLayout)
             : null;
-        $explicitStartY = $table->placement?->y;
+        $explicitStartY = $table->placement?->top !== null
+            ? $this->resolveTableTop($table->placement, $page)
+            : null;
 
         if ($explicitStartY !== null && $clone->currentPageCursorY !== null && $explicitStartY > $clone->currentPageCursorY) {
             throw new DocumentValidationException(
                 DocumentBuildError::TABLE_LAYOUT_INVALID,
-                'Explicit table placement y must not be above the current flow cursor on the page.',
+                'Explicit table placement top must not be above the current flow cursor on the page.',
             );
         }
 
@@ -801,7 +803,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             if (($captionLayout['height'] + $minimumTableStartHeight) > ($cursorY - $contentArea->bottom) && $explicitStartY !== null) {
                 throw new DocumentValidationException(
                     DocumentBuildError::TABLE_LAYOUT_INVALID,
-                    'Explicit table placement y leaves no space for caption and table start.',
+                    'Explicit table placement top leaves no space for caption and table start.',
                 );
             }
 
@@ -826,7 +828,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $explicitStartY !== null) {
                 throw new DocumentValidationException(
                     DocumentBuildError::TABLE_LAYOUT_INVALID,
-                    'Explicit table placement y leaves no space for the configured header rows.',
+                    'Explicit table placement top leaves no space for the configured header rows.',
                 );
             }
 
@@ -5423,6 +5425,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /**
      * @return array{x: float, width: float}
      */
+    /**
+     * @return array{x: float, width: float}
+     */
     private function resolveTablePlacement(Table $table, Page $page): array
     {
         $contentArea = $page->contentArea();
@@ -5434,40 +5439,79 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ];
         }
 
-        if ($table->placement->x < $contentArea->left) {
+        ['x' => $resolvedX, 'width' => $resolvedWidth] = $this->resolveTableFrame($table->placement, $page);
+
+        if ($resolvedX < $contentArea->left) {
             throw new DocumentValidationException(
                 DocumentBuildError::TABLE_LAYOUT_INVALID,
-                'Table placement x must not start left of the page content area.',
+                'Table placement left must not start left of the page content area.',
             );
         }
 
-        if (($table->placement->x + $table->placement->width) > $contentArea->right) {
+        if (($resolvedX + $resolvedWidth) > $contentArea->right) {
             throw new DocumentValidationException(
                 DocumentBuildError::TABLE_LAYOUT_INVALID,
                 'Table placement width exceeds the page content area.',
             );
         }
 
-        if ($table->placement->y !== null && ($table->placement->y > $contentArea->top || $table->placement->y < $contentArea->bottom)) {
+        $resolvedTop = $table->placement->top !== null
+            ? $this->resolveTableTop($table->placement, $page)
+            : null;
+
+        if ($resolvedTop !== null && ($resolvedTop > $contentArea->top || $resolvedTop < $contentArea->bottom)) {
             throw new DocumentValidationException(
                 DocumentBuildError::TABLE_LAYOUT_INVALID,
-                'Table placement y must stay within the page content area.',
+                'Table placement top must stay within the page content area.',
             );
         }
 
         return [
-            'x' => $table->placement->x,
-            'width' => $table->placement->width,
+            'x' => $resolvedX,
+            'width' => $resolvedWidth,
         ];
     }
 
     private function nextTableCursorY(Table $table, Page $page, float $tableBottomY): float
     {
-        if ($table->placement?->y === null) {
+        if ($table->placement?->top === null) {
             return $tableBottomY;
         }
 
         return min($this->currentPageCursorY ?? $page->contentArea()->top, $tableBottomY);
+    }
+
+    /**
+     * @return array{x: float, width: float}
+     */
+    private function resolveTableFrame(TablePlacement $placement, Page $page): array
+    {
+        $referenceLeft = $placement->isRelative() ? $page->contentArea()->left : 0.0;
+        $referenceRight = $placement->isRelative() ? $page->contentArea()->right : $page->size->width();
+        $resolvedWidth = (float) ($placement->width ?? ($referenceRight - $referenceLeft - ($placement->left ?? 0.0) - ($placement->right ?? 0.0)));
+
+        if ($resolvedWidth <= 0.0) {
+            throw new DocumentValidationException(
+                DocumentBuildError::TABLE_LAYOUT_INVALID,
+                'Table placement width must resolve to a value greater than zero.',
+            );
+        }
+
+        $resolvedLeft = (float) ($placement->left !== null
+            ? $referenceLeft + $placement->left
+            : $referenceRight - ($placement->right ?? 0.0) - $resolvedWidth);
+
+        return [
+            'x' => $resolvedLeft,
+            'width' => $resolvedWidth,
+        ];
+    }
+
+    private function resolveTableTop(TablePlacement $placement, Page $page): float
+    {
+        $referenceTop = $placement->isRelative() ? $page->contentArea()->top : $page->size->height();
+
+        return $referenceTop - $placement->top;
     }
 
     private function tableFooterContext(Table $table, int $completedBodyRowCount, bool $isLastPage): TableFooterContext

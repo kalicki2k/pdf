@@ -19,6 +19,7 @@ final class TextOptionsTest extends TestCase
         $options = TextOptions::make();
 
         self::assertSame(TextAlign::LEFT, $options->align);
+        self::assertSame(PositionMode::RELATIVE, $options->positionMode);
     }
 
     public function testItAcceptsAnExplicitAlignment(): void

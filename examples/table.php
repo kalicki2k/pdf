@@ -49,7 +49,7 @@ $table = Table::define(
 )
     ->withOptions(
         (TableOptions::make())
-            ->withPlacement(TablePlacement::at(50.0, 430.0, 320.0))
+            ->withPlacement(TablePlacement::absolute(left: 50.0, top: 411.89, width: 320.0))
             ->withCaption(
                 TableCaption::text('Tables in pdf2: caption, repeated headers, row headers, spans, backgrounds, vertical alignment, footer and tagged PDF scope')
                     ->withTextOptions($captionText)

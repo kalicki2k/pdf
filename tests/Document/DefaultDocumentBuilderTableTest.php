@@ -85,7 +85,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(new TablePlacement(70.0, 180.0))
+                    ->withPlacement(TablePlacement::absolute(left: 70.0, width: 180.0))
                     ->withCellPadding(CellPadding::all(4.0)),
             )
             ->withRows(
@@ -117,13 +117,13 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         );
     }
 
-    public function testItUsesExplicitTablePlacementYOnTheCurrentPage(): void
+    public function testItUsesExplicitTablePlacementTopOnTheCurrentPage(): void
     {
         $table = Table::define(
             TableColumn::fixed(90.0),
             TableColumn::fixed(90.0),
         )
-            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::at(70.0, 460.0, 180.0)))
+            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::absolute(left: 70.0, top: 24.0, width: 180.0)))
             ->withRows(
                 TableRow::fromTexts('Left', 'Right'),
             );
@@ -136,21 +136,49 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $font = StandardFontDefinition::from('Helvetica');
 
         self::assertStringContainsString(
-            '70 460 m',
+            '70 ' . $this->formatNumber($page->contentArea()->top) . ' m',
             $page->contents,
         );
         self::assertStringContainsString(
-            '74 ' . $this->formatNumber(460.0 - 4.0 - $font->ascent(12.0)) . ' Td',
+            '74 ' . $this->formatNumber($page->contentArea()->top - 4.0 - $font->ascent(12.0)) . ' Td',
             $page->contents,
         );
     }
 
-    public function testItRejectsExplicitTablePlacementYAboveTheCurrentFlowCursor(): void
+    public function testItDerivesRelativeTableWidthFromLeftAndRightInsets(): void
+    {
+        $table = Table::define(
+            TableColumn::proportional(1.0),
+            TableColumn::proportional(1.0),
+        )
+            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::relative(left: 20.0, right: 20.0, top: 0.0)))
+            ->withRows(
+                TableRow::fromTexts('Left', 'Right'),
+            );
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A5())
+            ->margin(Margin::all(24.0))
+            ->table($table)
+            ->build();
+
+        $page = $document->pages[0];
+
+        self::assertStringContainsString(
+            $this->formatNumber($page->contentArea()->left + 20.0) . ' ' . $this->formatNumber($page->contentArea()->top) . ' m',
+            $page->contents,
+        );
+        self::assertStringContainsString(
+            $this->formatNumber($page->contentArea()->right - 20.0) . ' ' . $this->formatNumber($page->contentArea()->top) . ' l',
+            $page->contents,
+        );
+    }
+
+    public function testItRejectsExplicitTablePlacementTopAboveTheCurrentFlowCursor(): void
     {
         $table = Table::define(
             TableColumn::fixed(90.0),
         )
-            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::at(60.0, 550.0, 90.0)))
+            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::absolute(left: 60.0, top: 45.276, width: 90.0)))
             ->withRows(
                 TableRow::fromTexts('Value'),
             );
@@ -168,7 +196,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         } catch (DocumentValidationException $exception) {
             self::assertSame(DocumentBuildError::TABLE_LAYOUT_INVALID, $exception->error);
             self::assertSame(
-                'Explicit table placement y must not be above the current flow cursor on the page.',
+                'Explicit table placement top must not be above the current flow cursor on the page.',
                 $exception->getMessage(),
             );
         }
@@ -179,7 +207,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(90.0),
         )
-            ->withOptions((TableOptions::make())->withPlacement(new TablePlacement(10.0, 90.0)))
+            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::absolute(left: 10.0, width: 90.0)))
             ->withRows(
                 TableRow::fromTexts('Value'),
             );
@@ -193,7 +221,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         } catch (DocumentValidationException $exception) {
             self::assertSame(DocumentBuildError::TABLE_LAYOUT_INVALID, $exception->error);
             self::assertSame(
-                'Table placement x must not start left of the page content area.',
+                'Table placement left must not start left of the page content area.',
                 $exception->getMessage(),
             );
         }
@@ -204,7 +232,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(360.0),
         )
-            ->withOptions((TableOptions::make())->withPlacement(new TablePlacement(70.0, 360.0)))
+            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::absolute(left: 70.0, width: 360.0)))
             ->withRows(
                 TableRow::fromTexts('Value'),
             );
@@ -224,12 +252,12 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         }
     }
 
-    public function testItRejectsTablePlacementYOutsideThePageContentArea(): void
+    public function testItRejectsTablePlacementTopOutsideThePageContentArea(): void
     {
         $table = Table::define(
             TableColumn::fixed(90.0),
         )
-            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::at(60.0, 20.0, 90.0)))
+            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::absolute(left: 60.0, top: 575.276, width: 90.0)))
             ->withRows(
                 TableRow::fromTexts('Value'),
             );
@@ -243,7 +271,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         } catch (DocumentValidationException $exception) {
             self::assertSame(DocumentBuildError::TABLE_LAYOUT_INVALID, $exception->error);
             self::assertSame(
-                'Table placement y must stay within the page content area.',
+                'Table placement top must stay within the page content area.',
                 $exception->getMessage(),
             );
         }
@@ -259,7 +287,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(new TablePlacement(60.0, 160.0))
+                    ->withPlacement(TablePlacement::absolute(left: 60.0, width: 160.0))
                     ->withBorder(Border::none())
                     ->withCellPadding(CellPadding::all(6.0)),
             )
@@ -297,7 +325,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         $table = Table::define(
             TableColumn::fixed(180.0),
         )
-            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::at(60.0, 480.0, 180.0)))
+            ->withOptions((TableOptions::make())->withPlacement(TablePlacement::absolute(left: 60.0, top: 115.276, width: 180.0)))
             ->withRows(
                 TableRow::fromCells(
                     TableCell::segments(
@@ -327,7 +355,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(TablePlacement::at(40.0, 360.0, 106.0))
+                    ->withPlacement(TablePlacement::absolute(left: 40.0, top: 59.528, width: 106.0))
                     ->withCellPadding(CellPadding::symmetric(4.0, 3.0)),
             )
             ->withRows(
@@ -361,7 +389,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(TablePlacement::at(20.0, 360.0, 220.0))
+                    ->withPlacement(TablePlacement::absolute(left: 20.0, top: 59.528, width: 220.0))
                     ->withRepeatedHeaderOnPageBreak()
                     ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
                     ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
@@ -419,7 +447,7 @@ final class DefaultDocumentBuilderTableTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(TablePlacement::at(20.0, 360.0, 164.0))
+                    ->withPlacement(TablePlacement::absolute(left: 20.0, top: 59.528, width: 164.0))
                     ->withRepeatedHeaderOnPageBreak()
                     ->withCellPadding(CellPadding::symmetric(4.0, 3.0))
                     ->withTextOptions(TextOptions::make(fontSize: 9.0, lineHeight: 11.5)),

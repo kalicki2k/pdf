@@ -9,6 +9,7 @@ use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\TableCell;
 use Kalle\Pdf\Document\TableCellContent;
 use Kalle\Pdf\Document\TablePlacement;
+use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Layout\Table\ColumnWidth;
@@ -54,16 +55,34 @@ final class TableValueObjectTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new TablePlacement(30.0, 0.0);
+        TablePlacement::relative(left: 30.0, width: 0.0);
     }
 
-    public function testTablePlacementCanCarryAbsoluteYCoordinates(): void
+    public function testTablePlacementRejectsMissingWidthWithoutBothHorizontalInsets(): void
     {
-        $placement = TablePlacement::at(30.0, 420.0, 180.0);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Table placement requires a width unless both left and right are provided.');
 
-        self::assertSame(30.0, $placement->x);
-        self::assertSame(420.0, $placement->y);
+        TablePlacement::relative(left: 30.0);
+    }
+
+    public function testTablePlacementCanCarryRelativeTopCoordinates(): void
+    {
+        $placement = TablePlacement::relative(left: 30.0, top: 420.0, width: 180.0);
+
+        self::assertSame(PositionMode::RELATIVE, $placement->positionMode);
+        self::assertSame(30.0, $placement->left);
+        self::assertSame(420.0, $placement->top);
         self::assertSame(180.0, $placement->width);
+    }
+
+    public function testTablePlacementCanOmitWidthWhenBothHorizontalInsetsAreProvided(): void
+    {
+        $placement = TablePlacement::relative(left: 30.0, right: 20.0, top: 12.0);
+
+        self::assertSame(30.0, $placement->left);
+        self::assertSame(20.0, $placement->right);
+        self::assertNull($placement->width);
     }
 
     public function testTableCellCanCarryCellSpecificOverrides(): void

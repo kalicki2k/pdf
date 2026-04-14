@@ -178,7 +178,7 @@ final class TableLayoutCalculatorTest extends TestCase
                 (TableOptions::make())
                     ->withCellPadding(CellPadding::all(4.0))
                     ->withBorder(Border::all(0.5))
-                    ->withPlacement(new TablePlacement(40.0, 160.0))
+                    ->withPlacement(TablePlacement::absolute(left: 40.0, width: 160.0))
                     ->withTextOptions(TextOptions::make(fontSize: 10.0, lineHeight: 12.0)),
             )
             ->withRows(TableRow::fromCells(

@@ -16,6 +16,7 @@ use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Image\ImageColorSpace;
 use Kalle\Pdf\Image\ImagePlacement;
 use Kalle\Pdf\Image\ImageSource;
+use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Page\Margin;
 use Kalle\Pdf\Page\PageOptions;
@@ -36,6 +37,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 $page->text('Header ' . $pageNumber, TextOptions::make(
                     left: $page->page()->contentArea()->left,
                     bottom: $page->page()->contentArea()->top,
+                    positionMode: PositionMode::RELATIVE,
                     fontSize: 12.0,
                 ));
             })
@@ -43,12 +45,23 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 $page->text('Footer ' . $pageNumber, TextOptions::make(
                     left: $page->page()->contentArea()->left,
                     bottom: $page->page()->contentArea()->bottom + 12.0,
+                    positionMode: PositionMode::RELATIVE,
                     fontSize: 12.0,
                 ));
             })
-            ->text('Body 1', TextOptions::make(left: 80.0, bottom: 420.0, fontSize: 12.0))
+            ->text('Body 1', TextOptions::make(
+                left: 80.0,
+                bottom: 420.0,
+                positionMode: PositionMode::ABSOLUTE,
+                fontSize: 12.0,
+            ))
             ->newPage(PageOptions::make(pageSize: PageSize::A6()))
-            ->text('Body 2', TextOptions::make(left: 80.0, bottom: 320.0, fontSize: 12.0))
+            ->text('Body 2', TextOptions::make(
+                left: 80.0,
+                bottom: 320.0,
+                positionMode: PositionMode::ABSOLUTE,
+                fontSize: 12.0,
+            ))
             ->build();
 
         self::assertCount(2, $document->pages);
@@ -58,7 +71,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
         self::assertMatchesRegularExpression($this->textRegex('Footer 2'), $document->pages[1]->contents);
 
         $headerPosition = strpos($document->pages[0]->contents, '113.386 595.276 Td');
-        $bodyPosition = strpos($document->pages[0]->contents, '136.693 476.693 Td');
+        $bodyPosition = strpos($document->pages[0]->contents, '80 420 Td');
         $footerPosition = strpos($document->pages[0]->contents, '113.386 125.386 Td');
 
         self::assertNotFalse($headerPosition);
@@ -82,7 +95,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(TablePlacement::at(32.0, 360.0, 140.0))
+                    ->withPlacement(TablePlacement::absolute(left: 32.0, top: 59.528, width: 140.0))
                     ->withCellPadding(CellPadding::all(4.0))
                     ->withTextOptions(TextOptions::make(fontSize: 12.0, lineHeight: 14.4)),
             )
@@ -95,6 +108,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 $page->text('Header ' . $pageNumber, TextOptions::make(
                     left: $page->page()->contentArea()->left,
                     bottom: $page->page()->contentArea()->top,
+                    positionMode: PositionMode::RELATIVE,
                     fontSize: 10.0,
                 ));
             })
@@ -102,6 +116,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 $page->text('Footer ' . $pageNumber, TextOptions::make(
                     left: $page->page()->contentArea()->left,
                     bottom: $page->page()->contentArea()->bottom + 10.0,
+                    positionMode: PositionMode::RELATIVE,
                     fontSize: 10.0,
                 ));
             })
@@ -125,6 +140,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 $page->text('Header ' . $pageNumber, TextOptions::make(
                     left: $page->page()->contentArea()->left,
                     bottom: $page->page()->contentArea()->top,
+                    positionMode: PositionMode::RELATIVE,
                     fontSize: 12.0,
                 ));
             })
@@ -191,6 +207,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             ->pageNumbers(TextOptions::make(
                 left: 24.0,
                 bottom: 20.0,
+                positionMode: PositionMode::RELATIVE,
                 fontSize: 10.0,
             ), 'Seite {{page}} von {{pages}}')
             ->text('Page 1')
@@ -213,6 +230,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                     $page->text('Conditional header', TextOptions::make(
                         left: $page->page()->contentArea()->left,
                         bottom: $page->page()->contentArea()->top,
+                        positionMode: PositionMode::RELATIVE,
                         fontSize: 12.0,
                     ));
                 },
@@ -223,6 +241,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                     $page->text('Even footer', TextOptions::make(
                         left: $page->page()->contentArea()->left,
                         bottom: $page->page()->contentArea()->bottom + 12.0,
+                        positionMode: PositionMode::RELATIVE,
                         fontSize: 12.0,
                     ));
                 },
@@ -276,6 +295,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 $page->text('Decorated header', TextOptions::make(
                     left: $page->page()->contentArea()->left,
                     bottom: $page->page()->contentArea()->top,
+                    positionMode: PositionMode::RELATIVE,
                     fontSize: 10.0,
                 ));
             })

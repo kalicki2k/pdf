@@ -598,7 +598,7 @@ final class DocumentRendererTest extends TestCase
                 )
                     ->withOptions(
                         (TableOptions::make())
-                            ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
+                            ->withPlacement(TablePlacement::absolute(left: 72.0, top: 141.89, width: 360.0))
                             ->withCaption(TableCaption::text('Quarterly summary Привет'))
                             ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
@@ -710,7 +710,7 @@ final class DocumentRendererTest extends TestCase
                 )
                     ->withOptions(
                         (TableOptions::make())
-                            ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                            ->withPlacement(TablePlacement::absolute(left: 72.0, top: 141.89, width: 120.0))
                             ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
                                 lineHeight: 15,
@@ -769,7 +769,7 @@ final class DocumentRendererTest extends TestCase
                 )
                     ->withOptions(
                         (TableOptions::make())
-                            ->withPlacement(TablePlacement::at(72.0, 700.0, 240.0))
+                            ->withPlacement(TablePlacement::absolute(left: 72.0, top: 141.89, width: 240.0))
                             ->withTextOptions(TextOptions::make(
                                 fontSize: 12,
                                 lineHeight: 15,
@@ -811,7 +811,7 @@ final class DocumentRendererTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
+                    ->withPlacement(TablePlacement::absolute(left: 72.0, top: 321.89, width: 240.0))
                     ->withCaption(TableCaption::text('Kurzuebersicht Привет'))
                     ->withTextOptions(TextOptions::make(
                         fontSize: 12,
@@ -1892,7 +1892,7 @@ final class DocumentRendererTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(new TablePlacement(24.0, 270.0))
+                    ->withPlacement(TablePlacement::absolute(left: 24.0, width: 270.0))
                     ->withCaption(TableCaption::text('Quarterly summary')),
             )
             ->withHeaderRows(

@@ -590,7 +590,7 @@ $table = Table::define(
 )
     ->withOptions(TableOptions::make(
         caption: TableCaption::text('Produktuebersicht'),
-        placement: TablePlacement::at(72, 520, 320),
+        placement: TablePlacement::absolute(left: 72, top: 321.89, width: 320),
         cellPadding: CellPadding::all(6),
         border: Border::all(0.5),
         textOptions: TextOptions::make(fontSize: 10, lineHeight: 12),

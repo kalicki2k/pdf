@@ -19,6 +19,7 @@ use Kalle\Pdf\Drawing\StrokeStyle;
 use Kalle\Pdf\Drawing\Units;
 use Kalle\Pdf\Font\EmbeddedFontSource;
 use Kalle\Pdf\Image\ImagePlacement;
+use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Layout\Table\Border;
 use Kalle\Pdf\Layout\Table\CellPadding;
 use Kalle\Pdf\Page\Margin;
@@ -336,6 +337,7 @@ $document = Pdf::document()
         TextOptions::make(
             left: Units::mm(120),
             bottom: Units::mm(242),
+            positionMode: PositionMode::ABSOLUTE,
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 11,
@@ -349,6 +351,7 @@ $document = Pdf::document()
         'DEIN FIRMENNAME - Strasse Hausnummer - PLZ Ort - Deutschland',
         TextOptions::make(
             bottom: Units::mm(252),
+            positionMode: PositionMode::ABSOLUTE,
             width: Units::mm(95),
             fontSize: 6,
             lineHeight: 8,
@@ -368,6 +371,7 @@ $document = Pdf::document()
         "Kundenfirma Mueller GmbH\nz. Hd. Anna Mueller\nBeispielweg 8\n80331 Muenchen\nDeutschland",
         TextOptions::make(
             bottom: Units::mm(246.2),
+            positionMode: PositionMode::ABSOLUTE,
             width: Units::mm(85),
             fontSize: 9,
             lineHeight: 12,
@@ -379,6 +383,7 @@ $document = Pdf::document()
         'Rechnung',
         TextOptions::make(
             bottom: Units::mm(188),
+            positionMode: PositionMode::ABSOLUTE,
             fontSize: 22,
             embeddedFont: $fontBold,
             color: $headlineColor,
@@ -420,6 +425,7 @@ $document = Pdf::document()
         "Bitte ueberweisen Sie den Gesamtbetrag {$paymentTerms} auf das unten genannte Geschaeftskonto.\n\nBank: Musterbank AG\nIBAN: DE12 3456 7890 1234 5678 90\nBIC: MUSTDEFFXXX\n\nBei Rueckfragen antworte ich gerne unter projekte@deinefirma.de.",
         TextOptions::make(
             left: Units::mm(120),
+            positionMode: PositionMode::ABSOLUTE,
             width: Units::mm(70),
             fontSize: 9,
             lineHeight: 13,

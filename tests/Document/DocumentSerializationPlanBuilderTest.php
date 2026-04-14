@@ -3025,7 +3025,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
                 )
                     ->withOptions(
                         (TableOptions::make())
-                            ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
+                            ->withPlacement(TablePlacement::absolute(left: 72.0, top: 141.89, width: 360.0))
                             ->withCaption(TableCaption::text('Quarterly summary Привет'))
                             ->withTextOptions(TextOptions::make(
                                 fontSize: 12,

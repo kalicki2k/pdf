@@ -250,7 +250,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
                 )
                     ->withOptions(
                         (TableOptions::make())
-                            ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
+                            ->withPlacement(TablePlacement::absolute(left: 72.0, top: 321.89, width: 240.0))
                             ->withCaption(TableCaption::text('Table caption Привет'))
                             ->withTextOptions(TextOptions::make(
                                 fontSize: 12,

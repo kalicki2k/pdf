@@ -93,7 +93,7 @@ final class TableTest extends TestCase
     public function testItStoresCaptionAndFooterRowsExplicitly(): void
     {
         $caption = TableCaption::text('Quarterly overview')->withSpacingAfter(8.0);
-        $placement = new TablePlacement(48.0, 220.0);
+        $placement = TablePlacement::absolute(left: 48.0, width: 220.0);
         $table = Table::define(
             TableColumn::fixed(80.0),
             TableColumn::fixed(80.0),
@@ -159,7 +159,7 @@ final class TableTest extends TestCase
 
     public function testItStoresAbsolutePlacementAndRichCellContentExplicitly(): void
     {
-        $placement = TablePlacement::at(48.0, 460.0, 220.0);
+        $placement = TablePlacement::absolute(left: 48.0, top: 381.89, width: 220.0);
         $cell = TableCell::segments(
             TextSegment::plain('Read '),
             TextSegment::link('docs', TextLink::externalUrl('https://example.com/docs')),
@@ -182,7 +182,7 @@ final class TableTest extends TestCase
     public function testItAppliesTableOptionsAsTheSingleTableOptionSource(): void
     {
         $caption = TableCaption::text('Quarterly overview');
-        $placement = TablePlacement::at(48.0, 460.0, 220.0);
+        $placement = TablePlacement::absolute(left: 48.0, top: 381.89, width: 220.0);
         $padding = CellPadding::symmetric(2.0, 3.0);
         $border = Border::all(1.0);
         $text = TextOptions::make(fontSize: 9.0, lineHeight: 12.0);

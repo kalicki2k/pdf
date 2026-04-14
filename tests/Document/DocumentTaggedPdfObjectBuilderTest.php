@@ -144,7 +144,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                     )
                         ->withOptions(
                             (TableOptions::make())
-                                ->withPlacement(TablePlacement::at(72.0, 520.0, 240.0))
+                                ->withPlacement(TablePlacement::absolute(left: 72.0, top: 321.89, width: 240.0))
                                 ->withCaption(TableCaption::text('Table caption Привет'))
                                 ->withTextOptions(TextOptions::make(
                                     fontSize: 12,
@@ -224,7 +224,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                     Table::define(TableColumn::fixed(120.0))
                         ->withOptions(
                             (TableOptions::make())
-                                ->withPlacement(TablePlacement::at(72.0, 700.0, 120.0))
+                                ->withPlacement(TablePlacement::absolute(left: 72.0, top: 141.89, width: 120.0))
                                 ->withTextOptions(TextOptions::make(
                                     fontSize: 12,
                                     lineHeight: 15,
@@ -321,7 +321,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                     Table::define(TableColumn::fixed(120.0))
                         ->withOptions(
                             (TableOptions::make())
-                                ->withPlacement(TablePlacement::at(72.0, 540.0, 120.0))
+                                ->withPlacement(TablePlacement::absolute(left: 72.0, top: 301.89, width: 120.0))
                                 ->withCaption(TableCaption::text('Table caption'))
                                 ->withTextOptions(TextOptions::make(
                                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),

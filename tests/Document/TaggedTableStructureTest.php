@@ -31,7 +31,7 @@ final class TaggedTableStructureTest extends TestCase
         )
             ->withOptions(
                 (TableOptions::make())
-                    ->withPlacement(TablePlacement::at(24.0, 520.0, 270.0))
+                    ->withPlacement(TablePlacement::absolute(left: 24.0, top: 75.276, width: 270.0))
                     ->withCaption(TableCaption::text('Quarterly summary')),
             )
             ->withHeaderRows(

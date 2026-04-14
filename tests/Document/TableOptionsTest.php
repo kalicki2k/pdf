@@ -32,7 +32,7 @@ final class TableOptionsTest extends TestCase
     public function testItProvidesImmutableWithMethods(): void
     {
         $caption = TableCaption::text('Quarterly overview');
-        $placement = TablePlacement::at(48.0, 460.0, 220.0);
+        $placement = TablePlacement::absolute(left: 48.0, top: 381.89, width: 220.0);
         $padding = CellPadding::symmetric(2.0, 3.0);
         $border = Border::all(1.0);
         $text = TextOptions::make(fontSize: 9.0, lineHeight: 12.0);
@@ -62,7 +62,7 @@ final class TableOptionsTest extends TestCase
     public function testMakeFactoryBuildsTableOptions(): void
     {
         $caption = TableCaption::text('Quarterly overview');
-        $placement = TablePlacement::at(48.0, 460.0, 220.0);
+        $placement = TablePlacement::absolute(left: 48.0, top: 381.89, width: 220.0);
         $padding = CellPadding::symmetric(2.0, 3.0);
         $border = Border::all(1.0);
         $text = TextOptions::make(fontSize: 9.0, lineHeight: 12.0);
