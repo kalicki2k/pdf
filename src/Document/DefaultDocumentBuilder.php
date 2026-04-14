@@ -607,15 +607,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $placement,
             $markedContentTag,
             $markedContentId,
-            static function (
-                self $builder,
-                array $wrappedLines,
-                TextOptions $options,
-                TextFlow $textFlow,
-                array $placement,
-                ?string $markedContentTag,
-                ?int $markedContentId,
-            ) use ($artifact): array {
+            static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact): array {
+                /** @var list<list<TextSegment>> $wrappedLines */
+
                 return $builder->buildWrappedTextSegmentsContent(
                     $wrappedLines,
                     $options,
@@ -662,13 +656,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<mixed> $wrappedLines
+     * @param list<string>|list<list<TextSegment>> $wrappedLines
+     * @param array{x: float, y: float} $placement
      * @param callable(
      *   self,
-     *   array,
+     *   list<string>|list<list<TextSegment>>,
      *   TextOptions,
      *   TextFlow,
-     *   array{x: float, y: float, width: float},
+     *   array{x: float, y: float},
      *   ?string,
      *   ?int
      * ): array{contents: string, annotations: list<PageAnnotation>} $renderer
@@ -718,16 +713,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $options,
             $font,
             $markedContentTag,
-            static function (
-                self $builder,
-                array $chunkLines,
-                TextOptions $chunkOptions,
-                TextFlow $textFlow,
-                array $placement,
-                StandardFontDefinition | EmbeddedFontDefinition $font,
-                ?string $markedContentTag,
-                ?int $markedContentId,
-            ) use ($artifact): array {
+            static function (self $builder, array $chunkLines, TextOptions $chunkOptions, TextFlow $textFlow, array $placement, StandardFontDefinition | EmbeddedFontDefinition $font, ?string $markedContentTag, ?int $markedContentId) use ($artifact): array {
+                /** @var list<list<TextSegment>> $chunkLines */
+
                 return $builder->buildWrappedTextSegmentsContent(
                     $chunkLines,
                     $chunkOptions,
@@ -818,7 +806,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             if (($captionLayout['height'] + $minimumTableStartHeight) > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
-                $clone->startOverflowPageForAutoBreak();
+                $clone->startOverflowPageForAutoLayout(
+                    DocumentBuildError::TABLE_LAYOUT_INVALID,
+                    $clone->autoLayoutOverflowMessage(DocumentBuildError::TABLE_LAYOUT_INVALID),
+                );
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
                 ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -840,7 +831,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             if ($headerLayout->totalHeight() > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
-                $clone->startOverflowPageForAutoBreak();
+                $clone->startOverflowPageForAutoLayout(
+                    DocumentBuildError::TABLE_LAYOUT_INVALID,
+                    $clone->autoLayoutOverflowMessage(DocumentBuildError::TABLE_LAYOUT_INVALID),
+                );
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
                 ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -892,7 +886,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
-                    $clone->startOverflowPageForAutoBreak();
+                    $clone->startOverflowPageForAutoLayout(
+                        DocumentBuildError::TABLE_LAYOUT_INVALID,
+                        $clone->autoLayoutOverflowMessage(DocumentBuildError::TABLE_LAYOUT_INVALID),
+                    );
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -925,7 +922,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
-                    $clone->startOverflowPageForAutoBreak();
+                    $clone->startOverflowPageForAutoLayout(
+                        DocumentBuildError::TABLE_LAYOUT_INVALID,
+                        $clone->autoLayoutOverflowMessage(DocumentBuildError::TABLE_LAYOUT_INVALID),
+                    );
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -964,7 +964,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $clone->currentPageCursorY = $clone->nextTableCursorY($table, $page, $cursorY);
                         $clone->currentPageCursorYIsTopBoundary = true;
                     }
-                    $clone->startOverflowPageForAutoBreak();
+                    $clone->startOverflowPageForAutoLayout(
+                        DocumentBuildError::TABLE_LAYOUT_INVALID,
+                        $clone->autoLayoutOverflowMessage(DocumentBuildError::TABLE_LAYOUT_INVALID),
+                    );
                     $page = $clone->buildCurrentPage();
                     $contentArea = $page->contentArea();
                     ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -1000,7 +1003,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
             }
 
             if ($requiredHeight > ($cursorY - $contentArea->bottom) && $clone->currentPageCursorY !== null) {
-                $clone->startOverflowPageForAutoBreak();
+                $clone->startOverflowPageForAutoLayout(
+                    DocumentBuildError::TABLE_LAYOUT_INVALID,
+                    $clone->autoLayoutOverflowMessage(DocumentBuildError::TABLE_LAYOUT_INVALID),
+                );
                 $page = $clone->buildCurrentPage();
                 $contentArea = $page->contentArea();
                 ['x' => $tableLeftX, 'width' => $tableWidth] = $clone->resolveTablePlacement($table, $page);
@@ -1045,12 +1051,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $clone = clone $this;
         $imageAlias = $clone->imageAliasFor($source);
         [$width, $height] = $this->resolveImageDimensions($source, $placement);
-
-        if ($placement->isFlow()) {
-            $clone->prepareFlowImagePlacement($placement, $width, $height);
-        }
-
-        $resolvedPlacement = $clone->resolveImagePlacement($placement, $width, $height);
+        $resolvedPlacement = $clone->resolvePlacedImage($placement, $width, $height);
         $markedContentId = $clone->markedContentIdForImage($accessibility);
         $structureKey = $markedContentId !== null
             ? 'figure:image:' . count($clone->pages) . ':' . count($clone->currentPageImages)
@@ -3048,30 +3049,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->resetCurrentPage($this->currentPageOptions());
     }
 
-    private function startOverflowPageForAutoBreak(): void
-    {
-        $this->startOverflowPageForAutoLayout(
-            DocumentBuildError::TABLE_LAYOUT_INVALID,
-            'Automatic page breaks are disabled and the table does not fit in the remaining page space.',
-        );
-    }
-
-    private function startOverflowPageForAutoTextBreak(): void
-    {
-        $this->startOverflowPageForAutoLayout(
-            DocumentBuildError::TEXT_LAYOUT_INVALID,
-            'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
-        );
-    }
-
-    private function startOverflowPageForAutoImageBreak(): void
-    {
-        $this->startOverflowPageForAutoLayout(
-            DocumentBuildError::IMAGE_LAYOUT_INVALID,
-            'Automatic page breaks are disabled and the image does not fit in the remaining page space.',
-        );
-    }
-
     private function startOverflowPageForAutoLayout(DocumentBuildError $error, string $message): void
     {
         if (!$this->autoPageBreak) {
@@ -3079,6 +3056,16 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $this->advanceToOverflowPage();
+    }
+
+    private function autoLayoutOverflowMessage(DocumentBuildError $error): string
+    {
+        return match ($error) {
+            DocumentBuildError::TABLE_LAYOUT_INVALID => 'Automatic page breaks are disabled and the table does not fit in the remaining page space.',
+            DocumentBuildError::TEXT_LAYOUT_INVALID => 'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
+            DocumentBuildError::IMAGE_LAYOUT_INVALID => 'Automatic page breaks are disabled and the image does not fit in the remaining page space.',
+            default => 'Automatic page breaks are disabled and the content does not fit in the remaining page space.',
+        };
     }
 
     private function currentPageOptions(): PageOptions
@@ -4840,8 +4827,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
             return $clone;
         }
 
-        $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
-        $renderState = $clone->prepareTextRenderState($text, $options, $font, $shapedLines);
         $markedContentId = $markedContentTag !== null ? $clone->nextTaggedMarkedContentId() : null;
 
         $clone->renderFlowTextWithoutOverflow(
@@ -4851,27 +4836,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $placement,
             $markedContentTag,
             $markedContentId,
-            static function (
-                self $builder,
-                array $wrappedLines,
-                TextOptions $options,
-                TextFlow $textFlow,
-                array $placement,
-                ?string $markedContentTag,
-                ?int $markedContentId,
-            ) use ($artifact, $font, $renderState, $shapedLines): array {
-                return $builder->buildWrappedTextContent(
+            static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $font, $text): array {
+                /** @var list<string> $wrappedLines */
+
+                return $builder->buildWrappedStringTextContent(
+                    $text,
                     $wrappedLines,
-                    $shapedLines,
                     $options,
                     $textFlow,
                     $placement['x'],
                     $placement['y'],
-                    $renderState['fontAlias'],
                     $font,
-                    $renderState['embeddedPageFont'],
-                    $renderState['useHexString'],
-                    ($builder->profile ?? Profile::standard())->version(),
                     $markedContentTag,
                     $markedContentId,
                     $artifact,
@@ -4897,31 +4872,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $options,
             $font,
             $markedContentTag,
-            static function (
-                self $builder,
-                array $chunkLines,
-                TextOptions $chunkOptions,
-                TextFlow $textFlow,
-                array $placement,
-                StandardFontDefinition | EmbeddedFontDefinition $font,
-                ?string $markedContentTag,
-                ?int $markedContentId,
-            ) use ($artifact): array {
-                $shapedLines = $builder->shapeWrappedTextLines($chunkLines, $chunkOptions, $font);
-                $renderState = $builder->prepareTextRenderState(implode("\n", $chunkLines), $chunkOptions, $font, $shapedLines);
+            static function (self $builder, array $chunkLines, TextOptions $chunkOptions, TextFlow $textFlow, array $placement, StandardFontDefinition | EmbeddedFontDefinition $font, ?string $markedContentTag, ?int $markedContentId) use ($artifact): array {
+                /** @var list<string> $chunkLines */
 
-                return $builder->buildWrappedTextContent(
+                return $builder->buildWrappedStringTextContent(
+                    implode("\n", $chunkLines),
                     $chunkLines,
-                    $shapedLines,
                     $chunkOptions,
                     $textFlow,
                     $placement['x'],
                     $placement['y'],
-                    $renderState['fontAlias'],
                     $font,
-                    $renderState['embeddedPageFont'],
-                    $renderState['useHexString'],
-                    ($builder->profile ?? Profile::standard())->version(),
                     $markedContentTag,
                     $markedContentId,
                     $artifact,
@@ -4931,13 +4892,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param list<mixed> $wrappedLines
+     * @param list<string>|list<list<TextSegment>> $wrappedLines
      * @param callable(
      *   self,
-     *   array,
+     *   list<string>|list<list<TextSegment>>,
      *   TextOptions,
      *   TextFlow,
-     *   array{x: float, y: float, width: float},
+     *   array{x: float, y: float},
      *   StandardFontDefinition|EmbeddedFontDefinition,
      *   ?string,
      *   ?int
@@ -4962,7 +4923,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
             if ($lineCapacity < 1) {
                 if ($this->currentPageCursorY !== null) {
-                    $this->startOverflowPageForAutoTextBreak();
+                    $this->startOverflowPageForAutoLayout(
+                        DocumentBuildError::TEXT_LAYOUT_INVALID,
+                        $this->autoLayoutOverflowMessage(DocumentBuildError::TEXT_LAYOUT_INVALID),
+                    );
                     $isContinuation = true;
 
                     continue;
@@ -5003,7 +4967,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $remainingLines = array_slice($remainingLines, count($chunkLines));
 
             if ($remainingLines !== []) {
-                $this->startOverflowPageForAutoTextBreak();
+                $this->startOverflowPageForAutoLayout(
+                    DocumentBuildError::TEXT_LAYOUT_INVALID,
+                    $this->autoLayoutOverflowMessage(DocumentBuildError::TEXT_LAYOUT_INVALID),
+                );
                 $isContinuation = true;
             }
         }
@@ -5069,15 +5036,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $placement,
                 $markedContentTag,
                 $markedContentId,
-                static function (
-                    self $builder,
-                    array $wrappedLines,
-                    TextOptions $options,
-                    TextFlow $textFlow,
-                    array $placement,
-                    ?string $markedContentTag,
-                    ?int $markedContentId,
-                ) use ($artifact): array {
+                static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact): array {
+                    /** @var list<list<TextSegment>> $wrappedLines */
+
                     return $builder->buildWrappedTextSegmentsContent(
                         $wrappedLines,
                         $options,
@@ -5102,8 +5063,6 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 return $clone;
             }
 
-            $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
-            $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, $shapedLines);
             $clone->renderFlowTextWithoutOverflow(
                 $wrappedLines,
                 $options,
@@ -5111,27 +5070,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $placement,
                 $markedContentTag,
                 $markedContentId,
-                static function (
-                    self $builder,
-                    array $wrappedLines,
-                    TextOptions $options,
-                    TextFlow $textFlow,
-                    array $placement,
-                    ?string $markedContentTag,
-                    ?int $markedContentId,
-                ) use ($artifact, $font, $renderState, $shapedLines): array {
-                    return $builder->buildWrappedTextContent(
+                static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $font, $validatedLines): array {
+                    /** @var list<string> $wrappedLines */
+
+                    return $builder->buildWrappedStringTextContent(
+                        implode('', $validatedLines),
                         $wrappedLines,
-                        $shapedLines,
                         $options,
                         $textFlow,
                         $placement['x'],
                         $placement['y'],
-                        $renderState['fontAlias'],
                         $font,
-                        $renderState['embeddedPageFont'],
-                        $renderState['useHexString'],
-                        ($builder->profile ?? Profile::standard())->version(),
                         $markedContentTag,
                         $markedContentId,
                         $artifact,
@@ -5196,7 +5145,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
      *   artifact: bool,
      *   font: StandardFontDefinition|EmbeddedFontDefinition,
      *   textFlow: TextFlow,
-     *   placement: array{x: float, y: float, width: float},
+     *   placement: array{x: float, y: float},
      *   markedContentTag: ?string
      * }
      */
@@ -5222,38 +5171,32 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @return array{contents: string, annotations: list<PageAnnotation>, lineCount: int}
+     * @param list<string> $wrappedLines
+     * @return array{contents: string, annotations: list<PageAnnotation>}
      */
-    private function renderTextBlockAt(
+    private function buildWrappedStringTextContent(
         string $text,
+        array $wrappedLines,
         TextOptions $options,
-        StandardFontDefinition | EmbeddedFontDefinition $font,
         TextFlow $textFlow,
         float $x,
         float $y,
-        ?string $markedContentTag,
-        ?int $markedContentId,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        ?string $markedContentTag = null,
+        ?int $markedContentId = null,
+        bool $artifact = false,
+        bool $forceUnicodeEmbeddedFont = false,
     ): array {
-        $artifact = $options->semantic === TextSemantic::ARTIFACT;
-        $debugger = $this->debugger();
-        $wrapScope = $debugger->startPerformanceScope('text.wrap', [
-            'mode' => 'block_at',
-        ]);
-        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $x);
-        $wrapScope->stop([
-            'mode' => 'block_at',
-            'line_count' => count($wrappedLines),
-            'text_length' => strlen($text),
-        ]);
         $shapedLines = $this->shapeWrappedTextLines($wrappedLines, $options, $font);
         $renderState = $this->prepareTextRenderState(
             $text,
             $options,
             $font,
             $shapedLines,
-            ($this->profile ?? Profile::standard())->isPdfA() && $font instanceof EmbeddedFontDefinition,
+            $forceUnicodeEmbeddedFont,
         );
-        $textResult = $this->buildWrappedTextContent(
+
+        return $this->buildWrappedTextContent(
             $wrappedLines,
             $shapedLines,
             $options,
@@ -5268,6 +5211,44 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $markedContentTag,
             $markedContentId,
             $artifact,
+        );
+    }
+
+    /**
+     * @return array{contents: string, annotations: list<PageAnnotation>, lineCount: int}
+     */
+    private function renderTextBlockAt(
+        string $text,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        TextFlow $textFlow,
+        float $x,
+        float $y,
+        ?string $markedContentTag,
+        ?int $markedContentId,
+    ): array {
+        $artifact = $options->semantic === TextSemantic::ARTIFACT;
+        $wrapScope = $this->debugger()->startPerformanceScope('text.wrap', [
+            'mode' => 'block_at',
+        ]);
+        $wrappedLines = $textFlow->wrapTextLines($text, $options, $font, $x);
+        $wrapScope->stop([
+            'mode' => 'block_at',
+            'line_count' => count($wrappedLines),
+            'text_length' => strlen($text),
+        ]);
+        $textResult = $this->buildWrappedStringTextContent(
+            $text,
+            $wrappedLines,
+            $options,
+            $textFlow,
+            $x,
+            $y,
+            $font,
+            $markedContentTag,
+            $markedContentId,
+            $artifact,
+            forceUnicodeEmbeddedFont: ($this->profile ?? Profile::standard())->isPdfA() && $font instanceof EmbeddedFontDefinition,
         );
 
         return [
@@ -5925,7 +5906,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
             );
         }
 
-        $this->startOverflowPageForAutoImageBreak();
+        $this->startOverflowPageForAutoLayout(
+            DocumentBuildError::IMAGE_LAYOUT_INVALID,
+            $this->autoLayoutOverflowMessage(DocumentBuildError::IMAGE_LAYOUT_INVALID),
+        );
+    }
+
+    private function resolvePlacedImage(ImagePlacement $placement, float $width, float $height): ImagePlacement
+    {
+        if ($placement->isFlow()) {
+            $this->prepareFlowImagePlacement($placement, $width, $height);
+        }
+
+        return $this->resolveImagePlacement($placement, $width, $height);
     }
 
     private function textFlow(): TextFlow

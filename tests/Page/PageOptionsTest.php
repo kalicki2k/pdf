@@ -17,7 +17,7 @@ final class PageOptionsTest extends TestCase
 {
     public function testItCarriesPageConfigurationValues(): void
     {
-        $options = new PageOptions(
+        $options = PageOptions::make(
             pageSize: PageSize::A5(),
             orientation: PageOrientation::LANDSCAPE,
             margin: Margin::all(24.0),

@@ -1198,7 +1198,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         $builder = new DocumentSerializationPlanBuilder();
         $document = DefaultDocumentBuilder::make()
             ->text('Cover')
-            ->newPage(new PageOptions(
+            ->newPage(PageOptions::make(
                 pageSize: PageSize::A5(),
                 orientation: PageOrientation::LANDSCAPE,
                 margin: Margin::all(24.0),

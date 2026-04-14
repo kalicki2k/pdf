@@ -292,7 +292,7 @@ final readonly class DocumentTableOfContentsBuilder
 
         foreach ($resolvedEntries as $resolvedEntry) {
             if ($currentY < $layout['bottom'] + $layout['entryLineHeight']) {
-                $builder = $builder->newPage(new PageOptions(pageSize: $pageSize));
+                $builder = $builder->newPage(PageOptions::make(pageSize: $pageSize));
                 $currentY = $layout['newPageEntryY'];
                 $pageNumber++;
             }

@@ -125,7 +125,7 @@ final class DefaultDocumentBuilderTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->text('Page 1')
-            ->newPage(new PageOptions(
+            ->newPage(PageOptions::make(
                 pageSize: PageSize::A5(),
                 orientation: PageOrientation::LANDSCAPE,
                 margin: Margin::all(24.0),
@@ -191,7 +191,7 @@ final class DefaultDocumentBuilderTest extends TestCase
     {
         $document = DefaultDocumentBuilder::make()
             ->text('Page 1')
-            ->newPage(new PageOptions(
+            ->newPage(PageOptions::make(
                 pageSize: PageSize::A5(),
                 orientation: PageOrientation::LANDSCAPE,
                 margin: Margin::all(24.0),
@@ -243,7 +243,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->pageSize(PageSize::A5())
             ->margin(Margin::all(24.0))
             ->text('Page 1')
-            ->newPage(new PageOptions(
+            ->newPage(PageOptions::make(
                 orientation: PageOrientation::LANDSCAPE,
             ))
             ->text('Page 2')

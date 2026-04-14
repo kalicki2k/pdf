@@ -387,7 +387,7 @@ final readonly class TextFlow
             ? $this->page->contentArea()->right
             : $this->page->size->width();
 
-        return $rightBoundary - ($options?->right ?? 0.0);
+        return $rightBoundary - ($options->right ?? 0.0);
     }
 
     /**

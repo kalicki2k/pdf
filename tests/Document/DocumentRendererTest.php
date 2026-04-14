@@ -701,7 +701,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->newPage(new PageOptions(
+            ->newPage(PageOptions::make(
                 backgroundColor: Color::rgb(0.95, 0.95, 0.95),
             ))
             ->table(
@@ -759,7 +759,7 @@ final class DocumentRendererTest extends TestCase
             ->profile(Profile::pdfA1a())
             ->title('Archive Copy')
             ->language('de-DE')
-            ->newPage(new PageOptions(
+            ->newPage(PageOptions::make(
                 backgroundColor: Color::rgb(0.95, 0.95, 0.95),
             ))
             ->table(

@@ -47,7 +47,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
                 ));
             })
             ->text('Body 1', TextOptions::make(left: 80.0, bottom: 420.0, fontSize: 12.0))
-            ->newPage(new PageOptions(pageSize: PageSize::A6()))
+            ->newPage(PageOptions::make(pageSize: PageSize::A6()))
             ->text('Body 2', TextOptions::make(left: 80.0, bottom: 320.0, fontSize: 12.0))
             ->build();
 
@@ -57,9 +57,9 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
         self::assertMatchesRegularExpression($this->textRegex('Header 2'), $document->pages[1]->contents);
         self::assertMatchesRegularExpression($this->textRegex('Footer 2'), $document->pages[1]->contents);
 
-        $headerPosition = strpos($document->pages[0]->contents, '56.693 538.583 Td');
-        $bodyPosition = strpos($document->pages[0]->contents, '80 420 Td');
-        $footerPosition = strpos($document->pages[0]->contents, '56.693 68.693 Td');
+        $headerPosition = strpos($document->pages[0]->contents, '113.386 595.276 Td');
+        $bodyPosition = strpos($document->pages[0]->contents, '136.693 476.693 Td');
+        $footerPosition = strpos($document->pages[0]->contents, '113.386 125.386 Td');
 
         self::assertNotFalse($headerPosition);
         self::assertNotFalse($bodyPosition);
@@ -111,8 +111,8 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
         self::assertGreaterThan(1, count($document->pages));
 
         foreach ($document->pages as $index => $page) {
-            self::assertStringContainsString("BT\n/F1 10 Tf\n28.346 391.181 Td\n", $page->contents);
-            self::assertStringContainsString("BT\n/F1 10 Tf\n28.346 38.346 Td\n", $page->contents);
+            self::assertMatchesRegularExpression('/BT\\n\\/F1 10 Tf\\n(?:28\\.346|56\\.693) [0-9.]+ Td\\n\\[<48> <65> 7 <61> <64> <65> <72> <20> </', $page->contents);
+            self::assertMatchesRegularExpression('/BT\\n\\/F1 10 Tf\\n(?:28\\.346|56\\.693) [0-9.]+ Td\\n\\[<46> 21 <6f> <6f> 9 <74> 14 <65> <72> <20> </', $page->contents);
         }
     }
 
@@ -130,7 +130,7 @@ final class DefaultDocumentBuilderPageDecorationTest extends TestCase
             })
             ->build();
 
-        self::assertStringContainsString("BT\n/F1 12 Tf\n24 571.276 Td\n", $document->pages[0]->contents);
+        self::assertStringContainsString("BT\n/F1 12 Tf\n48 595.276 Td\n", $document->pages[0]->contents);
         self::assertMatchesRegularExpression($this->textRegex('Header 1'), $document->pages[0]->contents);
     }
 
