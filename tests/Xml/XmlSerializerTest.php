@@ -7,6 +7,7 @@ namespace Kalle\Pdf\Tests\Xml;
 use Kalle\Pdf\Xml\XmlDocument;
 use Kalle\Pdf\Xml\XmlElement;
 use Kalle\Pdf\Xml\XmlSerializer;
+use Kalle\Pdf\Xml\XmlText;
 use PHPUnit\Framework\TestCase;
 
 final class XmlSerializerTest extends TestCase
@@ -17,7 +18,7 @@ final class XmlSerializerTest extends TestCase
             new XmlElement('invoice', ['xmlns' => 'urn:demo'], [
                 new XmlElement('id')->withText('RE-2026-0415'),
                 new XmlElement('amount', ['currencyID' => 'EUR'], [
-                    new \Kalle\Pdf\Xml\XmlText('12.34'),
+                    new XmlText('12.34'),
                 ]),
             ]),
         );

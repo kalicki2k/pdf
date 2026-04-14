@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Xml;
 
-use InvalidArgumentException;
-
 use function array_key_exists;
+
+use InvalidArgumentException;
 
 final readonly class XmlElement implements XmlNode
 {
@@ -26,10 +26,6 @@ final readonly class XmlElement implements XmlNode
         foreach ($this->attributes as $attributeName => $attributeValue) {
             if ($attributeName === '') {
                 throw new InvalidArgumentException('XML attribute name must not be empty.');
-            }
-
-            if (!is_string($attributeValue)) {
-                throw new InvalidArgumentException('XML attribute values must be strings.');
             }
         }
     }

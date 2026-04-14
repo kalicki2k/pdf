@@ -13,14 +13,4 @@ final readonly class XmlDocument
         public bool $standalone = false,
     ) {
     }
-
-    public function withRoot(XmlElement $root): self
-    {
-        return new self(
-            root: $root,
-            version: $this->version,
-            encoding: $this->encoding,
-            standalone: $this->standalone,
-        );
-    }
 }

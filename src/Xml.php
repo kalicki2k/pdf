@@ -6,6 +6,7 @@ namespace Kalle\Pdf;
 
 use Kalle\Pdf\Xml\XmlDocument;
 use Kalle\Pdf\Xml\XmlElement;
+use Kalle\Pdf\Xml\XmlNode;
 use Kalle\Pdf\Xml\XmlSerializer;
 use Kalle\Pdf\Xml\XmlText;
 
@@ -17,7 +18,7 @@ final readonly class Xml
 
     /**
      * @param array<string, string> $attributes
-     * @param list<\Kalle\Pdf\Xml\XmlNode> $children
+     * @param list<XmlNode> $children
      */
     public static function element(string $name, array $attributes = [], array $children = []): XmlElement
     {

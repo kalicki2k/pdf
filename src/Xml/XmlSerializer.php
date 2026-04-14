@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Xml;
 
-use InvalidArgumentException;
-
 use function array_map;
 use function count;
 use function implode;
 use function str_repeat;
+
+use InvalidArgumentException;
 
 final readonly class XmlSerializer
 {
