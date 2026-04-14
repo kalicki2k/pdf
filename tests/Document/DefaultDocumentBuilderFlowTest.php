@@ -241,6 +241,56 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
         }
     }
 
+    public function testItSplitsFlowTextLinesAcrossOverflowPagesLineByLine(): void
+    {
+        $lines = [];
+
+        for ($index = 1; $index <= 20; $index++) {
+            $lines[] = 'Line ' . $index;
+        }
+
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->textLines($lines, TextOptions::make(
+                fontSize: 18.0,
+                lineHeight: 18.0,
+            ))
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertSame(10, substr_count($document->pages[0]->contents, "BT\n/F1 18 Tf\n"));
+        self::assertSame(10, substr_count($document->pages[1]->contents, "BT\n/F1 18 Tf\n"));
+        self::assertStringContainsString('<32> <30>] TJ', $document->pages[1]->contents);
+    }
+
+    public function testItCanDisableAutomaticFlowTextLinesPageBreaks(): void
+    {
+        $lines = [];
+
+        for ($index = 1; $index <= 20; $index++) {
+            $lines[] = 'Line ' . $index;
+        }
+
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A8())
+                ->margin(Margin::all(10.0))
+                ->disableAutoPageBreak()
+                ->textLines($lines, TextOptions::make(
+                    fontSize: 18.0,
+                    lineHeight: 18.0,
+                ));
+            self::fail('Expected coded text layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TEXT_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
+                $exception->getMessage(),
+            );
+        }
+    }
+
     public function testItAppliesSpacingBeforeToImplicitTextPlacement(): void
     {
         $document = DefaultDocumentBuilder::make()

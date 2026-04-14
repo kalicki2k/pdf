@@ -4875,6 +4875,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 'line_count' => count($wrappedLines),
                 'text_length' => strlen(implode('', $validatedLines)),
             ]);
+
+            if ($clone->shouldAutoPaginateFlowTextBlock($options, $taggedTextTag)) {
+                $clone->renderWrappedFlowTextBlockAcrossPages(implode("\n", $validatedLines), $wrappedLines, $options, $font, $artifact);
+
+                return $clone;
+            }
+
             $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
             $renderState = $clone->prepareTextRenderState(implode('', $validatedLines), $options, $font, $shapedLines);
             $textResult = $clone->buildWrappedTextContent(
