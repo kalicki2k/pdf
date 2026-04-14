@@ -6,6 +6,8 @@ namespace Kalle\Pdf\Tests\Document;
 
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\DefaultDocumentBuilder;
+use Kalle\Pdf\Document\DocumentBuildError;
+use Kalle\Pdf\Document\DocumentValidationException;
 use Kalle\Pdf\Document\Table;
 use Kalle\Pdf\Document\TableColumn;
 use Kalle\Pdf\Document\TableRow;
@@ -187,6 +189,56 @@ final class DefaultDocumentBuilderFlowTest extends TestCase
 
         self::assertStringContainsString("BT\n/F1 18 Tf\n56.693 498.183 Td\n[", $document->pages[0]->contents);
         self::assertStringNotContainsString("BT\n/F1 18 Tf\n56.693 516.183 Td\n[", $document->pages[0]->contents);
+    }
+
+    public function testItSplitsFlowTextAcrossOverflowPagesLineByLine(): void
+    {
+        $lines = [];
+
+        for ($index = 1; $index <= 20; $index++) {
+            $lines[] = 'Item ' . $index;
+        }
+
+        $document = DefaultDocumentBuilder::make()
+            ->pageSize(PageSize::A8())
+            ->margin(Margin::all(10.0))
+            ->text(implode("\n", $lines), TextOptions::make(
+                fontSize: 18.0,
+                lineHeight: 18.0,
+            ))
+            ->build();
+
+        self::assertCount(2, $document->pages);
+        self::assertSame(10, substr_count($document->pages[0]->contents, "BT\n/F1 18 Tf\n"));
+        self::assertSame(10, substr_count($document->pages[1]->contents, "BT\n/F1 18 Tf\n"));
+        self::assertStringContainsString('[<49> <74> 14 <65> <6d> <20> <32> <30>] TJ', $document->pages[1]->contents);
+    }
+
+    public function testItCanDisableAutomaticFlowTextPageBreaks(): void
+    {
+        $lines = [];
+
+        for ($index = 1; $index <= 20; $index++) {
+            $lines[] = 'Item ' . $index;
+        }
+
+        try {
+            DefaultDocumentBuilder::make()
+                ->pageSize(PageSize::A8())
+                ->margin(Margin::all(10.0))
+                ->disableAutoPageBreak()
+                ->text(implode("\n", $lines), TextOptions::make(
+                    fontSize: 18.0,
+                    lineHeight: 18.0,
+                ));
+            self::fail('Expected coded text layout validation error.');
+        } catch (DocumentValidationException $exception) {
+            self::assertSame(DocumentBuildError::TEXT_LAYOUT_INVALID, $exception->error);
+            self::assertSame(
+                'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
+                $exception->getMessage(),
+            );
+        }
     }
 
     public function testItAppliesSpacingBeforeToImplicitTextPlacement(): void

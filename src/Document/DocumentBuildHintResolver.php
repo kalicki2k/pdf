@@ -30,6 +30,7 @@ final class DocumentBuildHintResolver
             DocumentBuildError::TABLE_OF_CONTENTS_PAGE_COUNT_UNRESOLVED => 'Keep the table-of-contents layout deterministic; avoid configuration that changes page count between estimation and rendering.',
             DocumentBuildError::TAGGED_STRUCTURE_UNCLOSED => 'Close every beginStructure() call with a matching endStructure() before building the document.',
             DocumentBuildError::TABLE_LAYOUT_INVALID => 'Adjust table placement, margins, caption/header/footer size or row content so the table can fit within the available page content area.',
+            DocumentBuildError::TEXT_LAYOUT_INVALID => 'Adjust text size, spacing, width or page margins so the text can fit within the available page content area, or enable automatic page breaks.',
             DocumentBuildError::BUILD_STATE_INVALID => 'This indicates an internal document build-state mismatch; rebuild the serialization plan from the validated builder path instead of reusing partial state.',
             DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID => 'Keep tagged content, form widgets and structure parents on the validated tagged-PDF builder path so structure objects can be allocated consistently.',
             DocumentBuildError::PDFA_EMBEDDED_FONTS_REQUIRED => $document->profile->isPdfA()

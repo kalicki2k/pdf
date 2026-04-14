@@ -2928,9 +2928,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->advanceToOverflowPage();
     }
 
+    private function startOverflowPageForAutoTextBreak(): void
+    {
+        if (!$this->autoPageBreak) {
+            throw new DocumentValidationException(
+                DocumentBuildError::TEXT_LAYOUT_INVALID,
+                'Automatic page breaks are disabled and the text block does not fit in the remaining page space.',
+            );
+        }
+
+        $this->advanceToOverflowPage();
+    }
+
     private function currentPageOptions(): PageOptions
     {
-        return new PageOptions(
+        return PageOptions::make(
             pageSize: $this->currentPageSize,
             margin: $this->currentPageMargin,
             backgroundColor: $this->currentPageBackgroundColor,
@@ -4682,6 +4694,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'line_count' => count($wrappedLines),
             'text_length' => strlen($text),
         ]);
+
+        if ($clone->shouldAutoPaginateFlowTextBlock($options, $taggedTextTag)) {
+            $clone->renderWrappedFlowTextBlockAcrossPages($text, $wrappedLines, $options, $font, $artifact);
+
+            return $clone;
+        }
+
         $shapedLines = $clone->shapeWrappedTextLines($wrappedLines, $options, $font);
         $renderState = $clone->prepareTextRenderState($text, $options, $font, $shapedLines);
         $markedContentTag = $taggedTextTag !== null && $clone->requiresTaggedStructure()
@@ -4718,6 +4737,77 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $clone;
+    }
+
+    /**
+     * @param list<string> $wrappedLines
+     */
+    private function renderWrappedFlowTextBlockAcrossPages(
+        string $text,
+        array $wrappedLines,
+        TextOptions $options,
+        StandardFontDefinition | EmbeddedFontDefinition $font,
+        bool $artifact,
+    ): void {
+        $remainingLines = $wrappedLines;
+        $isContinuation = false;
+
+        while ($remainingLines !== []) {
+            $textFlow = $this->textFlow();
+            $chunkOptions = $this->flowTextChunkOptions($options, $isContinuation, false);
+            $placement = $textFlow->placement($chunkOptions, $font);
+            $lineCapacity = $this->flowTextLineCapacity($placement['y'], $chunkOptions, $textFlow);
+
+            if ($lineCapacity < 1) {
+                if ($this->currentPageCursorY !== null) {
+                    $this->startOverflowPageForAutoTextBreak();
+                    $isContinuation = true;
+
+                    continue;
+                }
+
+                throw new DocumentValidationException(
+                    DocumentBuildError::TEXT_LAYOUT_INVALID,
+                    'Text block does not fit within the available page content area.',
+                );
+            }
+
+            $chunkLines = array_slice($remainingLines, 0, $lineCapacity);
+            $isFinalChunk = count($chunkLines) === count($remainingLines);
+            $chunkOptions = $this->flowTextChunkOptions($options, $isContinuation, $isFinalChunk);
+            $shapedLines = $this->shapeWrappedTextLines($chunkLines, $chunkOptions, $font);
+            $renderState = $this->prepareTextRenderState(implode("\n", $chunkLines), $chunkOptions, $font, $shapedLines);
+            $textResult = $this->buildWrappedTextContent(
+                $chunkLines,
+                $shapedLines,
+                $chunkOptions,
+                $textFlow,
+                $placement['x'],
+                $placement['y'],
+                $renderState['fontAlias'],
+                $font,
+                $renderState['embeddedPageFont'],
+                $renderState['useHexString'],
+                ($this->profile ?? Profile::standard())->version(),
+                null,
+                null,
+                $artifact,
+            );
+
+            $this->currentPageContents = $this->appendPageContent(
+                $this->currentPageContents,
+                $textResult['contents'],
+            );
+            $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
+            $this->currentPageCursorY = $textFlow->nextCursorY($chunkOptions, $placement['y'], count($chunkLines));
+            $this->currentPageCursorYIsTopBoundary = false;
+            $remainingLines = array_slice($remainingLines, count($chunkLines));
+
+            if ($remainingLines !== []) {
+                $this->startOverflowPageForAutoTextBreak();
+                $isContinuation = true;
+            }
+        }
     }
 
     /**
@@ -5505,6 +5595,55 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private function textFlow(): TextFlow
     {
         return new TextFlow($this->buildCurrentPage(), $this->currentPageCursorY, $this->currentPageCursorYIsTopBoundary);
+    }
+
+    private function shouldAutoPaginateFlowTextBlock(TextOptions $options, ?string $taggedTextTag): bool
+    {
+        return $taggedTextTag === null
+            && $options->top === null
+            && $options->bottom === null;
+    }
+
+    private function flowTextLineCapacity(float $firstLineY, TextOptions $options, TextFlow $textFlow): int
+    {
+        $bottomBoundary = $this->buildCurrentPage()->contentArea()->bottom;
+
+        if ($firstLineY < $bottomBoundary) {
+            return 0;
+        }
+
+        return (int) floor((($firstLineY - $bottomBoundary) / $textFlow->lineHeight($options)) + 1);
+    }
+
+    private function flowTextChunkOptions(TextOptions $options, bool $continuation, bool $finalChunk): TextOptions
+    {
+        if (!$continuation && $finalChunk) {
+            return $options;
+        }
+
+        return TextOptions::make(
+            left: $options->left,
+            right: $options->right,
+            positionMode: $options->positionMode,
+            width: $options->width,
+            maxWidth: $options->maxWidth,
+            fontSize: $options->fontSize,
+            lineHeight: $options->lineHeight,
+            spacingBefore: $continuation ? null : $options->spacingBefore,
+            spacingAfter: $finalChunk ? $options->spacingAfter : null,
+            fontName: $options->fontName,
+            embeddedFont: $options->embeddedFont,
+            fontEncoding: $options->fontEncoding,
+            color: $options->color,
+            kerning: $options->kerning,
+            baseDirection: $options->baseDirection,
+            align: $options->align,
+            firstLineIndent: $continuation ? $options->hangingIndent : $options->firstLineIndent,
+            hangingIndent: $options->hangingIndent,
+            link: $options->link,
+            tag: $options->tag,
+            semantic: $options->semantic,
+        );
     }
 
     private function tableLayoutCalculator(): TableLayoutCalculator
