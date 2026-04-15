@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
-use function array_last;
-use function array_map;
-use function array_values;
 use function count;
-use function preg_match;
 use function sprintf;
 
-use Kalle\Pdf\Document\Form\RadioButtonGroup;
-use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\TaggedPdf\ParentTree;
 use Kalle\Pdf\Document\TaggedPdf\StructElem;
 use Kalle\Pdf\Document\TaggedPdf\StructTreeRoot;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
-use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 final readonly class DocumentTaggedPdfObjectBuilder
 {
     public function __construct(
-        private TaggedPageAnnotationResolver $taggedPageAnnotationResolver = new TaggedPageAnnotationResolver(),
+        private TaggedLinkStructureCollector $taggedLinkStructureCollector = new TaggedLinkStructureCollector(),
+        private TaggedPageAnnotationStructureCollector $taggedPageAnnotationStructureCollector = new TaggedPageAnnotationStructureCollector(),
+        private TaggedFormStructureCollector $taggedFormStructureCollector = new TaggedFormStructureCollector(),
         private TaggedStructureLayoutPolicy $taggedStructureLayoutPolicy = new TaggedStructureLayoutPolicy(),
     ) {
     }
@@ -46,86 +41,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
      */
     public function collectTaggedLinkStructure(Document $document, int $nextStructParentId): array
     {
-        if (!$document->profile->requiresTaggedLinkAnnotations()) {
-            return [
-                'linkEntries' => [],
-                'parentTreeEntries' => [],
-                'structParentIds' => [],
-                'nextStructParentId' => $nextStructParentId,
-            ];
-        }
-
-        /** @var array<string, array{
-         *   key: string,
-         *   pageIndex: int,
-         *   annotationIndices: list<int>,
-         *   altTextParts: list<string>,
-         *   markedContentIds: list<int>
-         * }> $groupedLinkEntries
-         */
-        $groupedLinkEntries = [];
-        $structParentRegistry = new TaggedAnnotationStructParentRegistry($nextStructParentId);
-
-        foreach ($document->pages as $pageIndex => $page) {
-            foreach ($page->annotations as $annotationIndex => $annotation) {
-                if (!$annotation instanceof LinkAnnotation) {
-                    continue;
-                }
-
-                $annotationKey = $pageIndex . ':' . $annotationIndex;
-                // Link groups stay page-local in the current model because the
-                // StructElem uses a single /Pg entry and plain MCID kids.
-                $groupKey = $pageIndex . ':' . ($annotation->taggedGroupKey ?? $annotationKey);
-
-                if (!isset($groupedLinkEntries[$groupKey])) {
-                    $groupedLinkEntries[$groupKey] = [
-                        'key' => $groupKey,
-                        'pageIndex' => $pageIndex,
-                        'annotationIndices' => [],
-                        'altTextParts' => [],
-                        'markedContentIds' => [],
-                    ];
-                }
-
-                $groupedLinkEntries[$groupKey]['annotationIndices'][] = $annotationIndex;
-
-                $accessibleLabel = $annotation->accessibleLabelOrContents();
-
-                if ($accessibleLabel !== null && $accessibleLabel !== '') {
-                    $lastAltTextPart = $groupedLinkEntries[$groupKey]['altTextParts'] === []
-                        ? null
-                        : array_last($groupedLinkEntries[$groupKey]['altTextParts']);
-
-                    if ($lastAltTextPart !== $accessibleLabel) {
-                        $groupedLinkEntries[$groupKey]['altTextParts'][] = $accessibleLabel;
-                    }
-                }
-
-                if ($annotation->markedContentId() !== null) {
-                    $groupedLinkEntries[$groupKey]['markedContentIds'][] = $annotation->markedContentId();
-                }
-
-                $structParentRegistry->register($annotationKey, $groupKey);
-            }
-        }
-
-        $linkEntries = array_map(
-            fn (array $entry): array => [
-                'key' => $entry['key'],
-                'pageIndex' => $entry['pageIndex'],
-                'annotationIndices' => $entry['annotationIndices'],
-                'altText' => $this->joinTaggedLinkAltText($entry['altTextParts']),
-                'markedContentIds' => $entry['markedContentIds'],
-            ],
-            array_values($groupedLinkEntries),
-        );
-
-        return [
-            'linkEntries' => $linkEntries,
-            'parentTreeEntries' => $structParentRegistry->parentTreeEntries(),
-            'structParentIds' => $structParentRegistry->stringStructParentIds(),
-            'nextStructParentId' => $structParentRegistry->nextStructParentId(),
-        ];
+        return $this->taggedLinkStructureCollector->collect($document, $nextStructParentId);
     }
 
     /**
@@ -144,48 +60,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
      */
     public function collectTaggedPageAnnotationStructure(Document $document, int $nextStructParentId): array
     {
-        if (!$document->profile->requiresTaggedPageAnnotations()) {
-            return [
-                'entries' => [],
-                'parentTreeEntries' => [],
-                'structParentIds' => [],
-                'nextStructParentId' => $nextStructParentId,
-            ];
-        }
-
-        $entries = [];
-        $structParentRegistry = new TaggedAnnotationStructParentRegistry($nextStructParentId);
-
-        foreach ($document->pages as $pageIndex => $page) {
-            foreach ($page->annotations as $annotationIndex => $annotation) {
-                if ($annotation instanceof LinkAnnotation || !$this->taggedPageAnnotationResolver->supports($document, $annotation)) {
-                    continue;
-                }
-
-                $altText = $this->taggedPageAnnotationResolver->altText($document, $annotation);
-
-                if ($altText === null || $altText === '') {
-                    continue;
-                }
-
-                $entryKey = 'annotation:' . $pageIndex . ':' . $annotationIndex;
-                $entries[] = [
-                    'key' => $entryKey,
-                    'pageIndex' => $pageIndex,
-                    'annotationIndex' => $annotationIndex,
-                    'altText' => $altText,
-                    'tag' => $this->taggedPageAnnotationResolver->structureTag($document, $annotation) ?? 'Annot',
-                ];
-                $structParentRegistry->register($pageIndex . ':' . $annotationIndex, $entryKey);
-            }
-        }
-
-        return [
-            'entries' => $entries,
-            'parentTreeEntries' => $structParentRegistry->parentTreeEntries(),
-            'structParentIds' => $structParentRegistry->stringStructParentIds(),
-            'nextStructParentId' => $structParentRegistry->nextStructParentId(),
-        ];
+        return $this->taggedPageAnnotationStructureCollector->collect($document, $nextStructParentId);
     }
 
     /**
@@ -203,80 +78,12 @@ final readonly class DocumentTaggedPdfObjectBuilder
         array $acroFormFieldRelatedObjectIds,
         int $nextStructParentId,
     ): array {
-        if (!$document->profile->requiresTaggedFormFields() || $document->acroForm === null) {
-            return [
-                'entries' => [],
-                'parentTreeEntries' => [],
-                'structParentIds' => [],
-            ];
-        }
-
-        $entries = [];
-        $structParentRegistry = new TaggedAnnotationStructParentRegistry($nextStructParentId);
-
-        foreach ($document->acroForm->fields as $fieldIndex => $field) {
-            if ($field instanceof RadioButtonGroup) {
-                foreach ($field->choices as $choiceIndex => $choice) {
-                    $annotationObjectId = $acroFormFieldRelatedObjectIds[$fieldIndex][$choiceIndex * 3] ?? null;
-
-                    if ($annotationObjectId === null) {
-                        throw new DocumentValidationException(DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID, sprintf(
-                            'Tagged form structure requires a widget annotation object for radio button group "%s" choice %d.',
-                            $field->name,
-                            $choiceIndex + 1,
-                        ));
-                    }
-
-                    $entryKey = 'form:' . $field->name . ':choice:' . $choiceIndex;
-                    $entries[] = [
-                        'key' => $entryKey,
-                        'pageIndex' => $choice->pageNumber - 1,
-                        'annotationObjectId' => $annotationObjectId,
-                        'altText' => $choice->alternativeName ?? $field->alternativeName ?? $field->name,
-                    ];
-                    $structParentRegistry->register($annotationObjectId, $entryKey);
-                }
-
-                continue;
-            }
-
-            if (!$field instanceof WidgetFormField) {
-                continue;
-            }
-
-            $annotationObjectIdsByPage = $field->pageAnnotationObjectIds(
-                $acroFormFieldObjectIds[$fieldIndex],
-                $acroFormFieldRelatedObjectIds[$fieldIndex] ?? [],
-            );
-            $annotationObjectIds = [];
-
-            foreach ($annotationObjectIdsByPage as $pageAnnotationObjectIds) {
-                $annotationObjectIds = [...$annotationObjectIds, ...$pageAnnotationObjectIds];
-            }
-
-            if (count($annotationObjectIds) !== 1) {
-                throw new DocumentValidationException(DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID, sprintf(
-                    'Tagged PDF/UA form support currently requires exactly one widget annotation for field "%s".',
-                    $field->name,
-                ));
-            }
-
-            $entryKey = 'form:' . $field->name;
-            $annotationObjectId = $annotationObjectIds[0];
-            $entries[] = [
-                'key' => $entryKey,
-                'pageIndex' => $field->pageNumber - 1,
-                'annotationObjectId' => $annotationObjectId,
-                'altText' => $field->alternativeName ?? $field->name,
-            ];
-            $structParentRegistry->register($annotationObjectId, $entryKey);
-        }
-
-        return [
-            'entries' => $entries,
-            'parentTreeEntries' => $structParentRegistry->parentTreeEntries(),
-            'structParentIds' => $structParentRegistry->intStructParentIds(),
-        ];
+        return $this->taggedFormStructureCollector->collect(
+            $document,
+            $acroFormFieldObjectIds,
+            $acroFormFieldRelatedObjectIds,
+            $nextStructParentId,
+        );
     }
 
     /**
@@ -670,30 +477,6 @@ final readonly class DocumentTaggedPdfObjectBuilder
                 DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
                 sprintf('Unknown tagged structure parent key "%s".', $parentKey),
             );
-    }
-
-    /**
-     * @param list<string> $parts
-     */
-    private function joinTaggedLinkAltText(array $parts): string
-    {
-        $altText = '';
-
-        foreach ($parts as $part) {
-            if ($altText !== '' && $this->shouldInsertWhitespaceBetweenLinkAltTextParts($altText, $part)) {
-                $altText .= ' ';
-            }
-
-            $altText .= $part;
-        }
-
-        return $altText;
-    }
-
-    private function shouldInsertWhitespaceBetweenLinkAltTextParts(string $left, string $right): bool
-    {
-        return preg_match('/[\pL\pN]$/u', $left) === 1
-            && preg_match('/^[\pL\pN]/u', $right) === 1;
     }
 
     /**
