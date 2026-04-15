@@ -19,6 +19,8 @@ final readonly class TaggedStructElemObjectBuilder
     public function __construct(
         private TaggedStructureLayoutPolicy $taggedStructureLayoutPolicy = new TaggedStructureLayoutPolicy(),
         private TaggedTableStructElemObjectBuilder $taggedTableStructElemObjectBuilder = new TaggedTableStructElemObjectBuilder(),
+        private TaggedListStructElemObjectBuilder $taggedListStructElemObjectBuilder = new TaggedListStructElemObjectBuilder(),
+        private TaggedAnnotationStructElemObjectBuilder $taggedAnnotationStructElemObjectBuilder = new TaggedAnnotationStructElemObjectBuilder(),
     ) {
     }
 
@@ -100,7 +102,12 @@ final readonly class TaggedStructElemObjectBuilder
         }
 
         foreach ($state->taggedStructure->listEntries as $listEntry) {
-            $objects = [...$objects, ...$this->buildListObjects($listEntry, $state)];
+            $objects = [...$objects, ...$this->taggedListStructElemObjectBuilder->buildObjects(
+                $listEntry,
+                $state,
+                $this->resolveParentObjectId($listEntry['key'], $state),
+                $this->taggedMarkedContentKidEntries(...),
+            )];
         }
 
         foreach ($document->taggedTables as $taggedTable) {
@@ -113,155 +120,26 @@ final readonly class TaggedStructElemObjectBuilder
         }
 
         foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
-            $objects[] = $this->buildLinkObject($linkEntry, $state);
+            $objects[] = $this->taggedAnnotationStructElemObjectBuilder->buildLinkObject(
+                $linkEntry,
+                $state,
+                $this->resolveParentObjectId($linkEntry['key'], $state),
+            );
         }
 
         foreach ($state->taggedPageAnnotationStructure['entries'] as $annotationEntry) {
-            $objects[] = $this->buildPageAnnotationObject($annotationEntry, $state);
+            $objects[] = $this->taggedAnnotationStructElemObjectBuilder->buildPageAnnotationObject(
+                $annotationEntry,
+                $state,
+                $this->documentStructElemObjectId($state),
+            );
         }
 
         foreach ($state->taggedFormStructure['entries'] as $formEntry) {
-            $objects[] = $this->buildFormObject($formEntry, $state);
-        }
-
-        return $objects;
-    }
-
-    /**
-     * @param array{key: string, pageIndex: int, annotationIndices: list<int>, altText: string, markedContentIds: list<int>} $linkEntry
-     */
-    private function buildLinkObject(array $linkEntry, DocumentSerializationPlanBuildState $state): IndirectObject
-    {
-        $pageObjectId = $state->pageObjectIds[$linkEntry['pageIndex']];
-        $kidEntries = [];
-
-        foreach ($linkEntry['markedContentIds'] as $markedContentId) {
-            $kidEntries[] = (string) $markedContentId;
-        }
-
-        foreach ($linkEntry['annotationIndices'] as $annotationIndex) {
-            $annotationObjectId = $state->pageAnnotationObjectIds[$linkEntry['pageIndex']][$annotationIndex];
-            $kidEntries[] = '<< /Type /OBJR /Obj ' . $annotationObjectId . ' 0 R /Pg ' . $pageObjectId . ' 0 R >>';
-        }
-
-        return IndirectObject::plain(
-            $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']],
-            new StructElem(
-                'Link',
-                $this->resolveParentObjectId($linkEntry['key'], $state),
-                pageObjectId: $pageObjectId,
-                altText: $linkEntry['altText'],
-                kidEntries: $kidEntries,
-            )->objectContents(),
-        );
-    }
-
-    /**
-     * @param array{key: string, pageIndex: int, annotationIndex: int, altText: string, tag: string} $annotationEntry
-     */
-    private function buildPageAnnotationObject(array $annotationEntry, DocumentSerializationPlanBuildState $state): IndirectObject
-    {
-        $pageObjectId = $state->pageObjectIds[$annotationEntry['pageIndex']];
-        $annotationObjectId = $state->pageAnnotationObjectIds[$annotationEntry['pageIndex']][$annotationEntry['annotationIndex']];
-
-        return IndirectObject::plain(
-            $state->taggedStructureObjectIds->annotationStructElemObjectIds[$annotationEntry['key']],
-            new StructElem(
-                $annotationEntry['tag'],
+            $objects[] = $this->taggedAnnotationStructElemObjectBuilder->buildFormObject(
+                $formEntry,
+                $state,
                 $this->documentStructElemObjectId($state),
-                pageObjectId: $pageObjectId,
-                altText: $annotationEntry['altText'],
-                kidEntries: [
-                    '<< /Type /OBJR /Obj '
-                    . $annotationObjectId
-                    . ' 0 R /Pg '
-                    . $pageObjectId
-                    . ' 0 R >>',
-                ],
-            )->objectContents(),
-        );
-    }
-
-    /**
-     * @param array{key: string, pageIndex: int, annotationObjectId: int, altText: string} $formEntry
-     */
-    private function buildFormObject(array $formEntry, DocumentSerializationPlanBuildState $state): IndirectObject
-    {
-        $pageObjectId = $state->pageObjectIds[$formEntry['pageIndex']];
-
-        return IndirectObject::plain(
-            $state->taggedFormStructElemObjectIds[$formEntry['key']],
-            new StructElem(
-                'Form',
-                $this->documentStructElemObjectId($state),
-                pageObjectId: $pageObjectId,
-                altText: $formEntry['altText'],
-                kidEntries: [
-                    '<< /Type /OBJR /Obj '
-                    . $formEntry['annotationObjectId']
-                    . ' 0 R /Pg '
-                    . $pageObjectId
-                    . ' 0 R >>',
-                ],
-            )->objectContents(),
-        );
-    }
-
-    /**
-     * @param array{
-     *   key: string,
-     *   itemEntries: list<array{
-     *     key: string,
-     *     labelKey: string,
-     *     bodyKey: string,
-     *     labelReference: object{pageIndex: int, markedContentId: int},
-     *     bodyReference: object{pageIndex: int, markedContentId: int}
-     *   }>
-     * } $listEntry
-     * @return list<IndirectObject>
-     */
-    private function buildListObjects(array $listEntry, DocumentSerializationPlanBuildState $state): array
-    {
-        $listKidObjectIds = [];
-
-        foreach ($listEntry['itemEntries'] as $itemEntry) {
-            $listKidObjectIds[] = $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']];
-        }
-
-        $objects = [
-            new IndirectObject(
-                $state->taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']],
-                new StructElem('L', $this->resolveParentObjectId($listEntry['key'], $state), $listKidObjectIds)->objectContents(),
-            ),
-        ];
-
-        foreach ($listEntry['itemEntries'] as $itemEntry) {
-            $objects[] = new IndirectObject(
-                $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
-                new StructElem(
-                    'LI',
-                    $state->taggedStructureObjectIds->listStructElemObjectIds[$listEntry['key']],
-                    [
-                        $state->taggedStructureObjectIds->listLabelStructElemObjectIds[$itemEntry['labelKey']],
-                        $state->taggedStructureObjectIds->listBodyStructElemObjectIds[$itemEntry['bodyKey']],
-                    ],
-                )->objectContents(),
-            );
-            $objects[] = new IndirectObject(
-                $state->taggedStructureObjectIds->listLabelStructElemObjectIds[$itemEntry['labelKey']],
-                new StructElem(
-                    'Lbl',
-                    $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
-                    kidEntries: $this->taggedMarkedContentKidEntries([$itemEntry['labelReference']], $state->pageObjectIds),
-                )->objectContents(),
-            );
-            $objects[] = new IndirectObject(
-                $state->taggedStructureObjectIds->listBodyStructElemObjectIds[$itemEntry['bodyKey']],
-                new StructElem(
-                    'LBody',
-                    $state->taggedStructureObjectIds->listItemStructElemObjectIds[$itemEntry['key']],
-                    kidEntries: $this->taggedMarkedContentKidEntries([$itemEntry['bodyReference']], $state->pageObjectIds),
-                )->objectContents(),
             );
         }
 
