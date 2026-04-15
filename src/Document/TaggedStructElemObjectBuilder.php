@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Kalle\Pdf\Document;
 
 use function array_map;
-use function count;
 
-use Kalle\Pdf\Document\TaggedPdf\StructElem;
 use Kalle\Pdf\Writer\IndirectObject;
 
 final readonly class TaggedStructElemObjectBuilder
 {
     public function __construct(
         private TaggedStructTreeScaffoldObjectBuilder $taggedStructTreeScaffoldObjectBuilder = new TaggedStructTreeScaffoldObjectBuilder(),
+        private TaggedMarkedContentStructElemObjectBuilder $taggedMarkedContentStructElemObjectBuilder = new TaggedMarkedContentStructElemObjectBuilder(),
         private TaggedTableStructElemObjectBuilder $taggedTableStructElemObjectBuilder = new TaggedTableStructElemObjectBuilder(),
         private TaggedListStructElemObjectBuilder $taggedListStructElemObjectBuilder = new TaggedListStructElemObjectBuilder(),
         private TaggedAnnotationStructElemObjectBuilder $taggedAnnotationStructElemObjectBuilder = new TaggedAnnotationStructElemObjectBuilder(),
@@ -28,37 +27,19 @@ final readonly class TaggedStructElemObjectBuilder
         $objects = $this->taggedStructTreeScaffoldObjectBuilder->buildObjects($state);
 
         foreach ($state->taggedStructure->figureEntries as $figureEntry) {
-            $objects[] = new IndirectObject(
-                $state->taggedStructureObjectIds->figureStructElemObjectIds[$figureEntry['key']],
-                new StructElem(
-                    'Figure',
-                    $this->resolveParentObjectId($figureEntry['key'], $state),
-                    pageObjectId: $state->pageObjectIds[$figureEntry['pageIndex']],
-                    altText: $figureEntry['altText'],
-                    markedContentId: $figureEntry['markedContentId'],
-                )->objectContents(),
+            $objects[] = $this->taggedMarkedContentStructElemObjectBuilder->buildFigureObject(
+                $figureEntry,
+                $state,
+                $this->resolveParentObjectId($figureEntry['key'], $state),
             );
         }
 
         foreach ($state->taggedStructure->textEntries as $textEntry) {
-            $references = $textEntry['references'];
-            $objects[] = new IndirectObject(
-                $state->taggedStructureObjectIds->textStructElemObjectIds[$textEntry['key']],
-                new StructElem(
-                    $textEntry['tag'],
-                    $this->resolveParentObjectId($textEntry['key'], $state),
-                    pageObjectId: count($references) === 1 ? $state->pageObjectIds[$references[0]['pageIndex']] : null,
-                    markedContentId: count($references) === 1 ? $references[0]['markedContentId'] : null,
-                    kidEntries: count($references) > 1
-                        ? $this->taggedMarkedContentKidEntries(
-                            array_map(
-                                static fn (array $reference): object => (object) $reference,
-                                $references,
-                            ),
-                            $state->pageObjectIds,
-                        )
-                        : null,
-                )->objectContents(),
+            $objects[] = $this->taggedMarkedContentStructElemObjectBuilder->buildTextObject(
+                $textEntry,
+                $state,
+                $this->resolveParentObjectId($textEntry['key'], $state),
+                $this->taggedMarkedContentKidEntries(...),
             );
         }
 
