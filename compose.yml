@@ -1,0 +1,32 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        APP_UID: ${UID:-1000}
+        APP_GID: ${GID:-1000}
+    working_dir: /app
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      HOME: /home/app
+    volumes:
+      - .:/app
+    tty: true
+    stdin_open: true
+#
+#  qpdf:
+#    build:
+#      context: .
+#      dockerfile: docker/qpdf/Dockerfile
+#    working_dir: /app
+#    user: "${UID:-1000}:${GID:-1000}"
+#    volumes:
+#      - .:/app
+#
+#  verapdf:
+#    image: verapdf/cli:v1.28.2
+#    working_dir: /app
+#    user: "${UID:-1000}:${GID:-1000}"
+#    volumes:
+#      - .:/app
