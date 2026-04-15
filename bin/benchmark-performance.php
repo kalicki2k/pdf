@@ -361,7 +361,7 @@ final class PerformanceBenchmark
                     $x = 48 + ($column * 120);
                     $y = 720 - ($row * 96);
                     $source = (($row + $column) % 2) === 0 ? $jpeg : $png;
-                    $builder = $builder->image($source, ImagePlacement::at($x, $y, width: 72));
+                    $builder = $builder->image($source, ImagePlacement::absolute(left: $x, bottom: $y, width: 72));
                 }
             }
         }

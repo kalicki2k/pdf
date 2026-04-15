@@ -45,16 +45,16 @@ function createPdfA2aMinimalFixture(): Document
 {
     return regressionBuilder('PDF/A-2a Minimal Regression', 'Minimal PDF/A-2a regression fixture')
         ->text('PDF/A-2a Regression Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath(regressionFontPath()),
             color: Color::rgb(0.08, 0.16, 0.35),
             tag: TaggedStructureTag::P,
         ))
         ->text('Getaggter Absatz fuer den PDF/A-2a-Pfad. Привет.', TextOptions::make(
-            x: 72,
-            y: 724,
+            left: 72,
+            bottom: 724,
             width: 360,
             lineHeight: 15,
             embeddedFont: EmbeddedFontSource::fromPath(regressionFontPath()),
@@ -67,16 +67,16 @@ function createPdfA2aLinkFixture(): Document
 {
     return regressionBuilder('PDF/A-2a Link Regression', 'PDF/A-2a link regression fixture')
         ->text('PDF/A-2a Link Regression Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath(regressionFontPath()),
             color: Color::rgb(0.08, 0.16, 0.35),
             tag: TaggedStructureTag::P,
         ))
         ->text('Spezifikation Привет', TextOptions::make(
-            x: 72,
-            y: 700,
+            left: 72,
+            bottom: 700,
             embeddedFont: EmbeddedFontSource::fromPath(regressionFontPath()),
             link: \Kalle\Pdf\Page\LinkTarget::externalUrl('https://example.com/spec'),
         ))

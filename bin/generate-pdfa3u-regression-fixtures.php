@@ -51,8 +51,8 @@ function createPdfA3uPackageFixture(): Document
         ->creator('Regression Fixture')
         ->creatorTool('bin/generate-pdfa3u-regression-fixtures.php')
         ->text('PDF/A-3u Package Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath(regressionFontPath()),
             color: Color::rgb(0.08, 0.16, 0.35),

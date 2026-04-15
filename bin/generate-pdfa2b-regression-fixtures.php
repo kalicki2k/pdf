@@ -45,8 +45,8 @@ function createPdfA2bMinimalFixture(): Document
 {
     return regressionBuilder('PDF/A-2b Minimal Regression', 'Minimal PDF/A-2b regression fixture')
         ->text('PDF/A-2b Regression', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath(regressionFontPath()),
             color: Color::rgb(0.08, 0.16, 0.35),
@@ -58,8 +58,8 @@ function createPdfA2bLinkAnnotationFixture(): Document
 {
     return regressionBuilder('PDF/A-2b Link Annotation Regression', 'PDF/A-2b link annotation regression fixture')
         ->text('PDF/A-2b Link Regression', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath(regressionFontPath()),
             color: Color::rgb(0.08, 0.16, 0.35),
@@ -72,8 +72,8 @@ function createPdfA2bTextAnnotationFixture(): Document
 {
     return regressionBuilder('PDF/A-2b Text Annotation Regression', 'PDF/A-2b text annotation regression fixture')
         ->text('PDF/A-2b Comment Regression', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath(regressionFontPath()),
             color: Color::rgb(0.08, 0.16, 0.35),

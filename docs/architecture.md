@@ -160,6 +160,4 @@ Fuer Wartung und Diagnose existieren neben Tests mehrere Skripte:
 Beim Lesen des Repos faellt auf:
 
 - `src/Writer/` ist der aktive Low-level-Pfad, auf den `DocumentRenderer` und `Pdf` zeigen.
-- Parallel dazu existiert auch `src/Render/` mit sehr aehnlichen Klassen. Im durchsuchten Codepfad wird dieser Namespace aktuell nicht von der Public API verwendet.
-
-Das ist keine Dokumentationsspekulation, sondern eine Beobachtung aus dem aktuellen Codebestand. Ob `Render/` ein Altpfad, Kompatibilitaetslayer oder Vorstufe ist, ist aus der vorhandenen Doku nicht eindeutig ableitbar.
+- die Regressionen sind zahlreich und profilstark, daher ist ein Make-Sammelziel fuer den gesamten Regressionslauf wichtig, um lokale Validierung und CI konsistent zu halten.

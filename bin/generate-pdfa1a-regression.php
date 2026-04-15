@@ -34,23 +34,23 @@ $document = DefaultDocumentBuilder::make()
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-regression.php')
     ->text('Einleitung Привет', TextOptions::make(
-        x: 72,
-        y: 760,
+        left: 72,
+        bottom: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
     ->text('Erster Absatz mit strukturiertem Inhalt. Привет.', TextOptions::make(
-        x: 72,
-        y: 720,
+        left: 72,
+        bottom: 720,
         width: 360,
         fontSize: 12,
         lineHeight: 16,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
     ))
     ->text('Zweiter Absatz fuer den Minimalpfad von PDF/A-1a. Привет.', TextOptions::make(
-        x: 72,
-        y: 680,
+        left: 72,
+        bottom: 680,
         width: 360,
         fontSize: 12,
         lineHeight: 16,

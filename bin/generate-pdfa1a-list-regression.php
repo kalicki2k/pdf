@@ -33,16 +33,16 @@ $document = DefaultDocumentBuilder::make()
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-list-regression.php')
     ->text('Liste Привет', TextOptions::make(
-        x: 72,
-        y: 760,
+        left: 72,
+        bottom: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
     ))
     ->list(
         ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
         text: TextOptions::make(
-            x: 72,
-            y: 720,
+            left: 72,
+            bottom: 720,
             width: 360,
             fontSize: 12,
             lineHeight: 16,

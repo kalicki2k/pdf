@@ -38,15 +38,15 @@ $document = DefaultDocumentBuilder::make()
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-multipage-regression.php')
     ->text('Kapitel Eins Привет', TextOptions::make(
-        x: 72,
-        y: 760,
+        left: 72,
+        bottom: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
     ->text('Die erste Seite prueft die strukturierte Lesereihenfolge mit Ueberschrift, Absatz und Liste. Привет.', TextOptions::make(
-        x: 72,
-        y: 724,
+        left: 72,
+        bottom: 724,
         width: 360,
         fontSize: 12,
         lineHeight: 16,
@@ -55,8 +55,8 @@ $document = DefaultDocumentBuilder::make()
     ->list(
         ['Erster Punkt Привет', 'Zweiter Punkt Привет', 'Dritter Punkt Привет'],
         text: TextOptions::make(
-            x: 72,
-            y: 668,
+            left: 72,
+            bottom: 668,
             width: 280,
             fontSize: 12,
             lineHeight: 16,
@@ -65,15 +65,15 @@ $document = DefaultDocumentBuilder::make()
     )
     ->newPage()
     ->text('Kapitel Zwei Привет', TextOptions::make(
-        x: 72,
-        y: 760,
+        left: 72,
+        bottom: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
     ->text('Die zweite Seite fuehrt den Strukturbaum mit Absatz, Bild und Link fort. Привет.', TextOptions::make(
-        x: 72,
-        y: 724,
+        left: 72,
+        bottom: 724,
         width: 360,
         fontSize: 12,
         lineHeight: 16,
@@ -81,7 +81,7 @@ $document = DefaultDocumentBuilder::make()
     ))
     ->image(
         ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-        ImagePlacement::at(72, 600, width: 140),
+        ImagePlacement::absolute(left: 72, bottom: 600, width: 140),
         ImageAccessibility::alternativeText('Projektgrafik Seite zwei'),
     )
     ->linkToPage(1, 72, 540, 180, 16, 'Spezifikation oeffnen')

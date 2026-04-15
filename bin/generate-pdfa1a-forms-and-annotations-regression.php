@@ -34,8 +34,8 @@ $document = DefaultDocumentBuilder::make()
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-forms-and-annotations-regression.php')
     ->text('Archivformular mit Kommentar. Привет.', TextOptions::make(
-        x: 72,
-        y: 760,
+        left: 72,
+        bottom: 760,
         width: 360,
         fontSize: 12,
         lineHeight: 16,

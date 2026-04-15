@@ -1,6 +1,36 @@
 UID := $(shell id -u)
 GID := $(shell id -g)
 DOCKER_COMPOSE := env UID=$(UID) GID=$(GID) docker compose
+REGRESSION_TARGETS := \
+	test-encryption-permissions-regression \
+	test-pdfa1a-regression \
+	test-pdfa1a-list-regression \
+	test-pdfa1a-table-regression \
+	test-pdfa1a-mixed-regression \
+	test-pdfa1a-multipage-regression \
+	test-pdfa1a-forms-and-annotations-regression \
+	test-pdfa1a-radio-regression \
+	test-pdfa1a-choice-fields-regression \
+	test-pdfa1a-negative-regressions \
+	test-pdfa1b-regression \
+	test-pdfa1b-regressions \
+	test-pdfa2u-regression \
+	test-pdfa2u-link-regression \
+	test-pdfa2u-regressions \
+	test-pdfa2u-negative-regressions \
+	test-pdfa2b-regressions \
+	test-pdfa2a-regressions \
+	test-pdfa2a-negative-regressions \
+	test-pdfa3u-regression \
+	test-pdfa3a-regressions \
+	test-pdfa3a-negative-regressions \
+	test-pdfa3b-negative-regressions \
+	test-pdfa4-regressions \
+	test-pdfa4-negative-regressions \
+	test-pdfa4e-regressions \
+	test-pdfa4e-negative-regressions \
+	test-pdfa4f-regressions \
+	test-pdfa4f-negative-regressions
 
 build:
 	$(DOCKER_COMPOSE) build php
@@ -28,6 +58,11 @@ rector-check:
 
 test:
 	$(DOCKER_COMPOSE) run --rm php composer test
+
+regression:
+	@for target in $(REGRESSION_TARGETS); do \
+		$(MAKE) $$target || exit $$?; \
+	done
 
 coverage:
 	$(DOCKER_COMPOSE) run --rm -e XDEBUG_MODE=coverage php composer test:coverage
@@ -62,6 +97,9 @@ validate-pdfa:
 validate-pdfua:
 	@if [ -z "$(PDF)" ]; then echo "Usage: make validate-pdfua PDF=path/to/file.pdf"; exit 1; fi
 	$(DOCKER_COMPOSE) run --rm verapdf --format text --verbose --defaultflavour ua1 --flavour ua1 "/app/$(PDF)"
+
+test-encryption-permissions-regression:
+	sh bin/test-encryption-permissions-regression.sh
 
 test-pdfa1b-regression:
 	sh bin/test-pdfa1b-regression.sh

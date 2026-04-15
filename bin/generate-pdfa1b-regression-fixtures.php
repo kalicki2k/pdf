@@ -58,15 +58,15 @@ function createPdfA1bMinimalFixture(): Document
 
     return regressionBuilder('PDF/A-1b Minimal Regression', 'Minimal PDF/A-1b regression fixture')
         ->text('PDF/A-1b Regression Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
             color: Color::rgb(0.08, 0.16, 0.35),
         ))
         ->text('Dieses Dokument sichert den minimalen PDF/A-1b-Grundpfad mit eingebettetem Repo-Font und OutputIntent ab. Привет.', TextOptions::make(
-            x: 72,
-            y: 724,
+            left: 72,
+            bottom: 724,
             width: 420,
             fontSize: 11,
             lineHeight: 15,
@@ -81,19 +81,19 @@ function createPdfA1bGrayJpegFixture(): Document
 
     return regressionBuilder('PDF/A-1b Gray JPEG Regression', 'PDF/A-1b gray JPEG image regression fixture')
         ->text('PDF/A-1b Gray JPEG Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
             color: Color::rgb(0.08, 0.16, 0.35),
         ))
         ->image(
             imageSourceFromBytes(JpegFixture::tinyGrayJpegBytes(), 'jpg'),
-            ImagePlacement::at(72, 620, width: 96),
+            ImagePlacement::absolute(left: 72, bottom: 620, width: 96),
         )
         ->text('Graustufen-JPEG ohne Transparenz oder Sonderfarbraum. Привет.', TextOptions::make(
-            x: 72,
-            y: 590,
+            left: 72,
+            bottom: 590,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -108,19 +108,19 @@ function createPdfA1bRgbPngFixture(): Document
 
     return regressionBuilder('PDF/A-1b RGB PNG Regression', 'PDF/A-1b RGB PNG image regression fixture')
         ->text('PDF/A-1b RGB PNG Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
             color: Color::rgb(0.08, 0.16, 0.35),
         ))
         ->image(
             imageSourceFromBytes(PngFixture::tinyRgbPngBytes(), 'png'),
-            ImagePlacement::at(72, 620, width: 96),
+            ImagePlacement::absolute(left: 72, bottom: 620, width: 96),
         )
         ->text('RGB-PNG ohne Alpha, damit kein SoftMask-Pfad im PDF/A-1b-Dokument entsteht. Привет.', TextOptions::make(
-            x: 72,
-            y: 590,
+            left: 72,
+            bottom: 590,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -135,19 +135,19 @@ function createPdfA1bRgbJpegFixture(): Document
 
     return regressionBuilder('PDF/A-1b RGB JPEG Regression', 'PDF/A-1b RGB JPEG image regression fixture')
         ->text('PDF/A-1b RGB JPEG Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         ))
         ->image(
             imageSourceFromBytes(JpegFixture::tinyRgbJpegBytes(), 'jpg'),
-            ImagePlacement::at(72, 620, width: 96),
+            ImagePlacement::absolute(left: 72, bottom: 620, width: 96),
             ImageAccessibility::alternativeText('RGB JPEG image'),
         )
         ->text('RGB-JPEG im DeviceRGB-Pfad mit passendem sRGB-OutputIntent. Привет.', TextOptions::make(
-            x: 72,
-            y: 590,
+            left: 72,
+            bottom: 590,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -163,19 +163,19 @@ function createPdfA1bCmykJpegFixture(): Document
     return regressionBuilder('PDF/A-1b CMYK JPEG Regression', 'PDF/A-1b CMYK JPEG image regression fixture')
         ->pdfaOutputIntent(PdfAOutputIntent::defaultCmyk())
         ->text('PDF/A-1b CMYK JPEG Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         ))
         ->image(
             imageSourceFromBytes(JpegFixture::tinyCmykJpegBytes(), 'jpg'),
-            ImagePlacement::at(72, 620, width: 96),
+            ImagePlacement::absolute(left: 72, bottom: 620, width: 96),
             ImageAccessibility::alternativeText('CMYK JPEG image'),
         )
         ->text('CMYK-JPEG mit passendem CMYK-OutputIntent statt dem Standard-sRGB-Profil. Привет.', TextOptions::make(
-            x: 72,
-            y: 590,
+            left: 72,
+            bottom: 590,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -190,19 +190,19 @@ function createPdfA1bGrayFlateFixture(): Document
 
     return regressionBuilder('PDF/A-1b Gray Flate Regression', 'PDF/A-1b gray flate image regression fixture')
         ->text('PDF/A-1b Gray Flate Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         ))
         ->image(
             ImageSource::flate("\x66", 1, 1, ImageColorSpace::GRAY),
-            ImagePlacement::at(72, 620, width: 96),
+            ImagePlacement::absolute(left: 72, bottom: 620, width: 96),
             ImageAccessibility::alternativeText('Gray flate image'),
         )
         ->text('Graues Flate-Bild ohne Transparenz und ohne Custom-Colorspace. Привет.', TextOptions::make(
-            x: 72,
-            y: 590,
+            left: 72,
+            bottom: 590,
             width: 360,
             fontSize: 11,
             lineHeight: 15,
@@ -217,19 +217,19 @@ function createPdfA1bRgbFlateFixture(): Document
 
     return regressionBuilder('PDF/A-1b RGB Flate Regression', 'PDF/A-1b RGB flate image regression fixture')
         ->text('PDF/A-1b RGB Flate Привет', TextOptions::make(
-            x: 72,
-            y: 760,
+            left: 72,
+            bottom: 760,
             fontSize: 18,
             embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         ))
         ->image(
             ImageSource::flate("\xFF\x00\x00", 1, 1, ImageColorSpace::RGB),
-            ImagePlacement::at(72, 620, width: 96),
+            ImagePlacement::absolute(left: 72, bottom: 620, width: 96),
             ImageAccessibility::alternativeText('RGB flate image'),
         )
         ->text('RGB-Flate-Bild im DeviceRGB-Pfad mit passendem sRGB-OutputIntent. Привет.', TextOptions::make(
-            x: 72,
-            y: 590,
+            left: 72,
+            bottom: 590,
             width: 360,
             fontSize: 11,
             lineHeight: 15,

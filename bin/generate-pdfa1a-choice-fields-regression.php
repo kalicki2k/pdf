@@ -34,8 +34,8 @@ $document = DefaultDocumentBuilder::make()
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-choice-fields-regression.php')
     ->text('Formularauswahl pruefen. Привет.', TextOptions::make(
-        x: 72,
-        y: 760,
+        left: 72,
+        bottom: 760,
         width: 360,
         fontSize: 12,
         lineHeight: 16,

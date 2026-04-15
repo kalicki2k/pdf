@@ -41,15 +41,15 @@ $baseDocument = DefaultDocumentBuilder::make()
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa3a-negative-regression-fixtures.php')
     ->text('PDF/A-3a Negative Regression Привет', TextOptions::make(
-        x: 72,
-        y: 760,
+        left: 72,
+        bottom: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
     ->text('Getaggter Absatz mit zugeordnetem Datenpaket. Привет.', TextOptions::make(
-        x: 72,
-        y: 724,
+        left: 72,
+        bottom: 724,
         width: 360,
         lineHeight: 15,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),

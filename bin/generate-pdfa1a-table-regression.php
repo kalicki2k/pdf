@@ -39,7 +39,7 @@ $table = Table::define(
 )
     ->withOptions(
         TableOptions::make()
-            ->withPlacement(TablePlacement::at(72.0, 700.0, 360.0))
+            ->withPlacement(TablePlacement::absolute(left: 72.0, top: 700.0, width: 360.0))
             ->withCaption(TableCaption::text('Quartalsübersicht Привет'))
             ->withTextOptions(TextOptions::make(
                 fontSize: 12,

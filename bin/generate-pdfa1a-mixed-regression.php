@@ -38,15 +38,15 @@ $document = DefaultDocumentBuilder::make()
     ->creator('Regression Fixture')
     ->creatorTool('bin/generate-pdfa1a-mixed-regression.php')
     ->text('Projektübersicht Привет', TextOptions::make(
-        x: 72,
-        y: 760,
+        left: 72,
+        bottom: 760,
         fontSize: 18,
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
         color: Color::rgb(0.08, 0.16, 0.35),
     ))
     ->text('Dieses Dokument kombiniert Überschrift, Absatz, Liste, Bild und Link in einem PDF/A-1a-Fall. Привет.', TextOptions::make(
-        x: 72,
-        y: 724,
+        left: 72,
+        bottom: 724,
         width: 360,
         fontSize: 12,
         lineHeight: 16,
@@ -55,8 +55,8 @@ $document = DefaultDocumentBuilder::make()
     ->list(
         ['Erster Prüfpunkt Привет', 'Zweiter Prüfpunkt Привет'],
         text: TextOptions::make(
-            x: 72,
-            y: 670,
+            left: 72,
+            bottom: 670,
             width: 260,
             fontSize: 12,
             lineHeight: 16,
@@ -65,7 +65,7 @@ $document = DefaultDocumentBuilder::make()
     )
     ->image(
         ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
-        ImagePlacement::at(340, 610, width: 140),
+        ImagePlacement::absolute(left: 340, bottom: 610, width: 140),
         ImageAccessibility::alternativeText('Projektgrafik'),
     )
     ->linkToPage(1, 72, 560, 180, 16, 'Spezifikation öffnen')
