@@ -338,7 +338,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
         );
 
         self::assertSame(
-            ['H1', 'P', 'P', 'Link', 'L', 'Table', 'Figure'],
+            ['H1', 'P', 'P', 'L', 'Table', 'Figure'],
             $this->documentChildTags(iterator_to_array($plan->objects)),
         );
     }
@@ -379,10 +379,10 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
         );
 
         self::assertSame(
-            ['Link', 'Link'],
+            ['P', 'P'],
             array_values(array_filter(
                 $this->documentChildTags(iterator_to_array($plan->objects)),
-                static fn (string $tag): bool => $tag === 'Link',
+                static fn (string $tag): bool => $tag === 'P',
             )),
         );
     }

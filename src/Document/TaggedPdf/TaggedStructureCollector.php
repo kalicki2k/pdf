@@ -81,6 +81,20 @@ final class TaggedStructureCollector
                 'pageIndex' => $textBlock->pageIndex,
                 'markedContentId' => $textBlock->markedContentId,
             ];
+
+            if ($textBlock->parentKey !== null) {
+                if (isset($explicitParentKeys[$key]) && $explicitParentKeys[$key] !== $textBlock->parentKey) {
+                    throw new DocumentValidationException(
+                        DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
+                        sprintf(
+                            'Tagged structure child "%s" is assigned to more than one parent container.',
+                            $key,
+                        ),
+                    );
+                }
+
+                $explicitParentKeys[$key] = $textBlock->parentKey;
+            }
         }
 
         foreach ($document->taggedLists as $taggedList) {
@@ -155,7 +169,7 @@ final class TaggedStructureCollector
             ];
 
             foreach ($element->childKeys as $childKey) {
-                if (isset($explicitParentKeys[$childKey])) {
+                if (isset($explicitParentKeys[$childKey]) && $explicitParentKeys[$childKey] !== $element->key) {
                     throw new DocumentValidationException(
                         DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
                         sprintf(
@@ -171,9 +185,9 @@ final class TaggedStructureCollector
 
         $documentChildKeysInOrder = $document->taggedDocumentChildKeys !== []
             ? $document->taggedDocumentChildKeys
-            : $this->collectDocumentChildKeysInReadingOrder($pageMarkedContentKeys);
+            : $this->collectDocumentChildKeysInReadingOrder($pageMarkedContentKeys, $explicitParentKeys);
 
-        foreach ($this->collectDocumentChildKeysInReadingOrder($pageMarkedContentKeys) as $key) {
+        foreach ($this->collectDocumentChildKeysInReadingOrder($pageMarkedContentKeys, $explicitParentKeys) as $key) {
             if (!in_array($key, $documentChildKeysInOrder, true) && !isset($explicitParentKeys[$key])) {
                 $documentChildKeysInOrder[] = $key;
             }
@@ -192,9 +206,10 @@ final class TaggedStructureCollector
 
     /**
      * @param array<int, array<int, string>> $pageMarkedContentKeys
+     * @param array<string, string> $explicitParentKeys
      * @return list<string>
      */
-    private function collectDocumentChildKeysInReadingOrder(array $pageMarkedContentKeys): array
+    private function collectDocumentChildKeysInReadingOrder(array $pageMarkedContentKeys, array $explicitParentKeys): array
     {
         $keys = [];
         $seenKeys = [];
@@ -205,7 +220,7 @@ final class TaggedStructureCollector
             foreach ($markedContentKeys as $markedContentId => $key) {
                 $documentChildKey = $this->documentChildKey($key);
 
-                if (isset($seenKeys[$documentChildKey])) {
+                if (isset($seenKeys[$documentChildKey]) || isset($explicitParentKeys[$documentChildKey])) {
                     continue;
                 }
 

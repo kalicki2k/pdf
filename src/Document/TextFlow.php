@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function array_last;
 use function max;
 use function preg_split;
 use function trim;

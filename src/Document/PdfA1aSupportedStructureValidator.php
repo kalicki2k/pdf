@@ -17,6 +17,7 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedTableCell;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableContentReference;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTextBlock;
+use Kalle\Pdf\Page\LinkAnnotation;
 
 final readonly class PdfA1aSupportedStructureValidator
 {
@@ -91,6 +92,15 @@ final readonly class PdfA1aSupportedStructureValidator
                 }
 
                 $knownKeys[$image->structureKey ?? 'figure:image:' . $pageIndex . ':' . $imageIndex] = 'Figure';
+            }
+
+            foreach ($page->annotations as $annotationIndex => $annotation) {
+                if (!$annotation instanceof LinkAnnotation) {
+                    continue;
+                }
+
+                $annotationKey = $pageIndex . ':' . $annotationIndex;
+                $knownKeys[$pageIndex . ':' . ($annotation->taggedGroupKey ?? $annotationKey)] = 'Link';
             }
         }
 

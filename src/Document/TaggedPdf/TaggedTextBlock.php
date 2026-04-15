@@ -11,6 +11,7 @@ final readonly class TaggedTextBlock
         public int $pageIndex,
         public int $markedContentId,
         public ?string $key = null,
+        public ?string $parentKey = null,
     ) {
     }
 }

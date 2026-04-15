@@ -913,7 +913,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
         self::assertStringContainsString('/Tabs /S', $serialized);
         self::assertSame(2, substr_count($serialized, '/Type /StructElem /S /Form'));
         self::assertStringContainsString('/StructParent 0', $serialized);
-        self::assertStringContainsString('/StructParent 1', $serialized);
+        self::assertStringContainsString('/StructParent 0', $serialized);
         self::assertStringContainsString('/Alt (Customer name)', $serialized);
         self::assertStringContainsString('/Alt (Accept terms)', $serialized);
         self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
@@ -940,7 +940,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
 
         self::assertSame(2, substr_count($serialized, '/Type /StructElem /S /Form'));
         self::assertStringContainsString('/StructParent 0', $serialized);
-        self::assertStringContainsString('/StructParent 1', $serialized);
+        self::assertStringContainsString('/StructParent 0', $serialized);
         self::assertStringContainsString('/Alt (Standard delivery)', $serialized);
         self::assertStringContainsString('/Alt (Express delivery)', $serialized);
         self::assertSame(2, substr_count($serialized, '/Type /OBJR /Obj'));
@@ -2668,9 +2668,10 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             iterator_to_array($plan->objects),
         ));
 
-        self::assertStringContainsString('/P << /MCID 0 >> BDC', $serialized);
+        self::assertStringNotContainsString('/P << /MCID', $serialized);
+        self::assertStringContainsString('/Type /StructElem /S /P', $serialized);
         self::assertStringContainsString('/Link << /MCID 1 >> BDC', $serialized);
-        self::assertStringContainsString('/StructParent 1', $serialized);
+        self::assertStringContainsString('/StructParent 0', $serialized);
         self::assertStringContainsString('/K [1 << /Type /OBJR /Obj', $serialized);
     }
 

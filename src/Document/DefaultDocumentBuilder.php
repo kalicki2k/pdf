@@ -8,6 +8,7 @@ use function count;
 use function file_exists;
 use function file_get_contents;
 use function implode;
+use function in_array;
 use function is_readable;
 use function is_resource;
 use function mb_ord;
@@ -133,6 +134,7 @@ use Kalle\Pdf\Text\TextSemantic;
 use Kalle\Pdf\Writer\FileOutput;
 use Kalle\Pdf\Writer\StreamOutput;
 use Kalle\Pdf\Writer\StringOutput;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -163,7 +165,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     private array $taggedTables = [];
     /** @var list<array{key: string, pageIndex: int, markedContentId: int, altText: ?string}> */
     private array $taggedFigures = [];
-    /** @var list<array{key: string, tag: string, pageIndex: int, markedContentId: int}> */
+    /** @var list<array{key: string, tag: string, pageIndex: int, markedContentId: int, parentKey: ?string}> */
     private array $taggedTextBlocks = [];
     /** @var array<int, list<array{label: array{pageIndex: int, markedContentId: int}, body: array{pageIndex: int, markedContentId: int}}>> */
     private array $taggedLists = [];
@@ -586,6 +588,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'markedContentTag' => $markedContentTag,
         ] = $clone->resolveFlowTextRenderContext($options, $markedContentTag);
         $wrappedSegmentLines = $textFlow->wrapSegmentLines($segments, $options, $font, $placement['x']);
+        $inlineContainerKey = $clone->taggedInlineContainerKey(
+            $markedContentTag,
+            $clone->containsLinkedTextSegments($wrappedSegmentLines),
+        );
 
         if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
             $clone->renderWrappedFlowTextSegmentsAcrossPages(
@@ -594,6 +600,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $font,
                 $artifact,
                 $markedContentTag,
+                $inlineContainerKey,
             );
 
             return $clone;
@@ -607,7 +614,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $placement,
             $markedContentTag,
             $markedContentId,
-            static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact): array {
+            $inlineContainerKey,
+            static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $inlineContainerKey): array {
                 /** @var list<list<TextSegment>> $wrappedLines */
 
                 return $builder->buildWrappedTextSegmentsContent(
@@ -619,6 +627,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     ($builder->profile ?? Profile::standard())->version(),
                     $markedContentTag,
                     $markedContentId,
+                    $inlineContainerKey,
                     $artifact,
                 );
             },
@@ -628,7 +637,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     }
 
     /**
-     * @param array{contents: string, annotations: list<PageAnnotation>} $textResult
+     * @param array{contents: string, annotations: list<PageAnnotation>, textMarkedContentIds: list<int>} $textResult
      */
     private function applyRenderedFlowTextResult(
         array $textResult,
@@ -637,7 +646,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $startY,
         int $lineCount,
         ?string $markedContentTag,
-        ?int $markedContentId,
+        ?string $inlineContainerKey = null,
         ?string $taggedTextKey = null,
     ): ?string {
         $this->currentPageContents = $this->appendPageContent(
@@ -648,11 +657,19 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageCursorY = $textFlow->nextCursorY($options, $startY, $lineCount);
         $this->currentPageCursorYIsTopBoundary = false;
 
-        if ($markedContentTag === null || $markedContentId === null || $textResult['contents'] === '') {
+        if ($inlineContainerKey !== null) {
+            return $inlineContainerKey;
+        }
+
+        if ($markedContentTag === null || $textResult['contents'] === '' || $textResult['textMarkedContentIds'] === []) {
             return $taggedTextKey;
         }
 
-        return $this->registerTaggedTextBlock($markedContentTag, $markedContentId, $taggedTextKey);
+        return $this->registerTaggedTextBlocks(
+            $markedContentTag,
+            $textResult['textMarkedContentIds'],
+            $taggedTextKey,
+        );
     }
 
     /**
@@ -666,7 +683,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
      *   array{x: float, y: float},
      *   ?string,
      *   ?int
-     * ): array{contents: string, annotations: list<PageAnnotation>} $renderer
+     * ): array{contents: string, annotations: list<PageAnnotation>, textMarkedContentIds: list<int>} $renderer
      */
     private function renderFlowTextWithoutOverflow(
         array $wrappedLines,
@@ -675,6 +692,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         array $placement,
         ?string $markedContentTag,
         ?int $markedContentId,
+        ?string $inlineContainerKey,
         callable $renderer,
     ): void {
         $textResult = $renderer(
@@ -694,7 +712,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $placement['y'],
             count($wrappedLines),
             $markedContentTag,
-            $markedContentId,
+            $inlineContainerKey,
         );
     }
 
@@ -707,13 +725,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
         StandardFontDefinition | EmbeddedFontDefinition $font,
         bool $artifact,
         ?string $markedContentTag = null,
+        ?string $inlineContainerKey = null,
     ): void {
         $this->renderWrappedFlowTextAcrossPages(
             $wrappedSegmentLines,
             $options,
             $font,
             $markedContentTag,
-            static function (self $builder, array $chunkLines, TextOptions $chunkOptions, TextFlow $textFlow, array $placement, StandardFontDefinition | EmbeddedFontDefinition $font, ?string $markedContentTag, ?int $markedContentId) use ($artifact): array {
+            $inlineContainerKey,
+            static function (self $builder, array $chunkLines, TextOptions $chunkOptions, TextFlow $textFlow, array $placement, StandardFontDefinition | EmbeddedFontDefinition $font, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $inlineContainerKey): array {
                 /** @var list<list<TextSegment>> $chunkLines */
 
                 return $builder->buildWrappedTextSegmentsContent(
@@ -725,6 +745,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     ($builder->profile ?? Profile::standard())->version(),
                     $markedContentTag,
                     $markedContentId,
+                    $inlineContainerKey,
                     $artifact,
                 );
             },
@@ -3105,7 +3126,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /**
      * @param list<string> $wrappedLines
      * @param list<list<ShapedTextRun>> $shapedLines
-     * @return array{contents: string, annotations: list<PageAnnotation>}
+     * @return array{contents: string, annotations: list<PageAnnotation>, textMarkedContentIds: list<int>}
      */
     private function buildWrappedTextContent(
         array $wrappedLines,
@@ -3121,13 +3142,20 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $pdfVersion,
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
+        ?string $inlineContainerKey = null,
         bool $artifact = false,
     ): array {
         $contents = [];
         $annotations = [];
+        $textMarkedContentIds = [];
         $availableWidth = $textFlow->availableTextWidthFrom($x, $options);
+        $currentPageIndex = count($this->pages);
         $fontRunMapper = $this->fontRunMapper();
         $textBlockBuilder = $this->textBlockBuilder();
+        $containsTaggedLinkText = $inlineContainerKey !== null;
+        $taggedLinkGroupKey = $options->link !== null
+            ? $this->linkGroupKey($options->link) ?? ('page-' . $currentPageIndex . '-text-link-' . count($this->currentPageAnnotations))
+            : null;
         $scope = $this->debugger()->startPerformanceScope('text.content', [
             'line_count' => count($shapedLines),
             'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
@@ -3203,7 +3231,9 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $mappedRun->width,
                         $textFlow->lineHeight($options),
                         $font->ascent($options->fontSize),
-                        $this->linkGroupKey($options->link),
+                        $taggedLinkGroupKey,
+                        $currentPageIndex,
+                        $inlineContainerKey,
                     );
                     $textBlockContent = $linkResult['contents'];
                     $annotations[] = $linkResult['annotation'];
@@ -3218,8 +3248,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         if ($contentsString !== '' && $artifact && $this->requiresTaggedPdfProfile()) {
             $contentsString = $this->wrapArtifactGraphics($contentsString);
-        } elseif ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
+        } elseif (
+            $contentsString !== ''
+            && $markedContentTag !== null
+            && $markedContentId !== null
+            && !$containsTaggedLinkText
+        ) {
             $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
+            $textMarkedContentIds[] = $markedContentId;
         }
 
         $scope->stop([
@@ -3232,12 +3268,13 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return [
             'contents' => $contentsString,
             'annotations' => $annotations,
+            'textMarkedContentIds' => $textMarkedContentIds,
         ];
     }
 
     /**
      * @param list<list<TextSegment>> $wrappedSegmentLines
-     * @return array{contents: string, annotations: list<PageAnnotation>}
+     * @return array{contents: string, annotations: list<PageAnnotation>, textMarkedContentIds: list<int>}
      */
     private function buildWrappedTextSegmentsContent(
         array $wrappedSegmentLines,
@@ -3248,10 +3285,12 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $pdfVersion,
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
+        ?string $inlineContainerKey = null,
         bool $artifact = false,
     ): array {
         $contents = [];
         $annotations = [];
+        $textMarkedContentIds = [];
         $availableWidth = $textFlow->availableTextWidthFrom($x, $options);
         $currentPageIndex = count($this->pages);
         $nextLinkGroupId = 0;
@@ -3267,6 +3306,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $scope = $this->debugger()->startPerformanceScope('text.content.segments', [
             'line_count' => count($wrappedSegmentLines),
         ]);
+        $containsTaggedLinkText = $inlineContainerKey !== null;
 
         foreach ($wrappedSegmentLines as $index => $lineSegments) {
             if ($lineSegments === []) {
@@ -3460,6 +3500,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $textFlow->lineHeight($renderedEntry['options']),
                         $renderedEntry['font']->ascent($renderedEntry['options']->fontSize),
                         $groupKey,
+                        $currentPageIndex,
+                        $inlineContainerKey,
                     );
                     $textBlockContent = $linkResult['contents'];
                     $annotations[] = $linkResult['annotation'];
@@ -3468,6 +3510,26 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         'link' => $link,
                     ];
                 } else {
+                    if ($containsTaggedLinkText && $renderedEntry['width'] > 0.0) {
+                        /** @var string $markedContentTag */
+                        $entryMarkedContentId = $this->nextTaggedMarkedContentId();
+
+                        if ($entryMarkedContentId === null) {
+                            throw new LogicException('Tagged text segments require marked-content ids.');
+                        }
+
+                        $textBlockContent = $this->wrapMarkedContent(
+                            $markedContentTag,
+                            $entryMarkedContentId,
+                            $textBlockContent,
+                        );
+                        $this->registerTaggedTextBlock(
+                            'Span',
+                            $entryMarkedContentId,
+                            parentKey: $inlineContainerKey,
+                        );
+                    }
+
                     $lastLinkedGroupOnLine = null;
                 }
 
@@ -3485,8 +3547,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         if ($contentsString !== '' && $artifact && $this->requiresTaggedPdfProfile()) {
             $contentsString = $this->wrapArtifactGraphics($contentsString);
-        } elseif ($contentsString !== '' && $markedContentTag !== null && $markedContentId !== null) {
+        } elseif (
+            $contentsString !== ''
+            && $markedContentTag !== null
+            && $markedContentId !== null
+            && !$containsTaggedLinkText
+        ) {
             $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
+            $textMarkedContentIds[] = $markedContentId;
         }
 
         $scope->stop([
@@ -3498,6 +3566,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return [
             'contents' => $contentsString,
             'annotations' => $annotations,
+            'textMarkedContentIds' => $textMarkedContentIds,
         ];
     }
 
@@ -3507,6 +3576,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
      */
     private function mergeRenderedSegmentEntries(array $renderedEntries): array
     {
+        /** @var list<array{link: LinkTarget|TextLink|null, font: StandardFontDefinition|EmbeddedFontDefinition, options: TextOptions, x: float, width: float, text: string, textBlockContent: string}> $mergedEntries */
         $mergedEntries = [];
 
         foreach ($renderedEntries as $renderedEntry) {
@@ -3514,26 +3584,43 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $mappedRun = $renderedEntry['mappedRun'];
             /** @var LinkTarget|TextLink|null $link */
             $link = $renderedEntry['link'];
-            $lastIndex = array_key_last($mergedEntries);
+            $lastIndex = $mergedEntries === [] ? null : count($mergedEntries) - 1;
 
-            if (
-                $lastIndex !== null
-                && $link !== null
-                && $mergedEntries[$lastIndex]['link'] !== null
-                && $this->canMergeTextLinks($mergedEntries[$lastIndex]['link'], $link)
-            ) {
-                $mergedEntries[$lastIndex]['width'] += $mappedRun->width;
-                $mergedEntries[$lastIndex]['text'] .= $mappedRun->text;
-                $mergedEntries[$lastIndex]['textBlockContent'] .= "\n" . $renderedEntry['textBlockContent'];
-                if ($renderedEntry['font']->ascent($renderedEntry['options']->fontSize) > $mergedEntries[$lastIndex]['font']->ascent($mergedEntries[$lastIndex]['options']->fontSize)) {
-                    $mergedEntries[$lastIndex]['font'] = $renderedEntry['font'];
-                    $mergedEntries[$lastIndex]['options'] = $renderedEntry['options'];
+            if ($lastIndex !== null) {
+                /** @var array{link: LinkTarget|TextLink|null, font: StandardFontDefinition|EmbeddedFontDefinition, options: TextOptions, x: float, width: float, text: string, textBlockContent: string} $lastEntry */
+                $lastEntry = $mergedEntries[$lastIndex];
+
+                if (
+                    $link !== null
+                    && $lastEntry['link'] !== null
+                    && $this->canMergeTextLinks($lastEntry['link'], $link)
+                ) {
+                    $mergedFont = $lastEntry['font'];
+                    $mergedOptions = $lastEntry['options'];
+
+                    if ($renderedEntry['font']->ascent($renderedEntry['options']->fontSize) > $lastEntry['font']->ascent($lastEntry['options']->fontSize)) {
+                        $mergedFont = $renderedEntry['font'];
+                        $mergedOptions = $renderedEntry['options'];
+                    }
+
+                    /** @var array{link: LinkTarget|TextLink|null, font: StandardFontDefinition|EmbeddedFontDefinition, options: TextOptions, x: float, width: float, text: string, textBlockContent: string} $mergedEntry */
+                    $mergedEntry = [
+                        'link' => $lastEntry['link'],
+                        'font' => $mergedFont,
+                        'options' => $mergedOptions,
+                        'x' => $lastEntry['x'],
+                        'width' => $lastEntry['width'] + $mappedRun->width,
+                        'text' => $lastEntry['text'] . $mappedRun->text,
+                        'textBlockContent' => $lastEntry['textBlockContent'] . "\n" . $renderedEntry['textBlockContent'],
+                    ];
+                    $mergedEntries[$lastIndex] = $mergedEntry;
+
+                    continue;
                 }
-
-                continue;
             }
 
-            $mergedEntries[] = [
+            /** @var array{link: LinkTarget|TextLink|null, font: StandardFontDefinition|EmbeddedFontDefinition, options: TextOptions, x: float, width: float, text: string, textBlockContent: string} $mergedEntry */
+            $mergedEntry = [
                 'link' => $link,
                 'font' => $renderedEntry['font'],
                 'options' => $renderedEntry['options'],
@@ -3542,9 +3629,35 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 'text' => $mappedRun->text,
                 'textBlockContent' => $renderedEntry['textBlockContent'],
             ];
+            $mergedEntries[] = $mergedEntry;
         }
 
         return $mergedEntries;
+    }
+
+    /**
+     * @param list<list<TextSegment>> $wrappedSegmentLines
+     */
+    private function containsLinkedTextSegments(array $wrappedSegmentLines): bool
+    {
+        foreach ($wrappedSegmentLines as $lineSegments) {
+            foreach ($lineSegments as $segment) {
+                if ($segment->link !== null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function taggedInlineContainerKey(?string $markedContentTag, bool $containsLinks, ?string $existingKey = null): ?string
+    {
+        if ($markedContentTag === null || !$containsLinks || !$this->requiresTaggedLinkAnnotations()) {
+            return null;
+        }
+
+        return $this->registerTaggedInlineContainer($markedContentTag, $existingKey);
     }
 
     private function canMergeTextLinks(LinkTarget | TextLink $left, LinkTarget | TextLink $right): bool
@@ -3790,6 +3903,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $markedContentId !== null ? 'Caption' : null,
             $markedContentId,
+            null,
         );
 
         $this->currentPageContents = $this->appendPageContent($this->currentPageContents, $textResult['contents']);
@@ -3814,6 +3928,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
         float $lineHeight,
         float $ascent,
         ?string $taggedGroupKey = null,
+        ?int $pageIndex = null,
+        ?string $inlineContainerKey = null,
     ): array {
         $scope = $this->debugger()->startPerformanceScope('text.content.link', [
             'width' => round($width, 3),
@@ -3829,6 +3945,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $textBlockContent,
                 'EMC',
             ]);
+
+            if ($inlineContainerKey !== null && $pageIndex !== null && $taggedGroupKey !== null) {
+                $this->attachTaggedStructureChildKeyTo($inlineContainerKey, $pageIndex . ':' . $taggedGroupKey);
+            }
         }
 
         $result = [
@@ -4240,6 +4360,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
+            null,
         );
     }
 
@@ -4312,6 +4433,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
+            null,
         );
     }
 
@@ -4561,6 +4683,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 pageIndex: $block['pageIndex'],
                 markedContentId: $block['markedContentId'],
                 key: $block['key'],
+                parentKey: $block['parentKey'],
             ),
             $this->taggedTextBlocks,
         );
@@ -4596,17 +4719,47 @@ class DefaultDocumentBuilder implements DocumentBuilder
         return $taggedLists;
     }
 
-    private function registerTaggedTextBlock(string $tag, int $markedContentId, ?string $key = null): string
+    private function registerTaggedTextBlock(string $tag, int $markedContentId, ?string $key = null, ?string $parentKey = null): string
     {
-        $attachToStructure = $key === null;
+        $attachToStructure = $key === null && $parentKey === null;
         $key ??= 'text:' . count($this->taggedTextBlocks);
         $this->taggedTextBlocks[] = [
             'key' => $key,
             'tag' => $tag,
+            'parentKey' => $parentKey,
             ...$this->taggedContentReference($markedContentId),
         ];
 
         if ($attachToStructure) {
+            $this->attachTaggedStructureChildKey($key);
+        } elseif ($parentKey !== null) {
+            $this->attachTaggedStructureChildKeyTo($parentKey, $key);
+        }
+
+        return $key;
+    }
+
+    /**
+     * @param list<int> $markedContentIds
+     */
+    private function registerTaggedTextBlocks(string $tag, array $markedContentIds, ?string $key = null, ?string $parentKey = null): string
+    {
+        foreach ($markedContentIds as $markedContentId) {
+            $key = $this->registerTaggedTextBlock($tag, $markedContentId, $key, $parentKey);
+        }
+
+        return $key ?? 'text:' . count($this->taggedTextBlocks);
+    }
+
+    private function registerTaggedInlineContainer(string $tag, ?string $key = null): string
+    {
+        $key ??= 'struct:' . $this->nextTaggedStructureElementId++;
+
+        if (!isset($this->taggedStructureElements[$key])) {
+            $this->taggedStructureElements[$key] = [
+                'tag' => $tag,
+                'childKeys' => [],
+            ];
             $this->attachTaggedStructureChildKey($key);
         }
 
@@ -4664,7 +4817,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
             return;
         }
 
-        $this->taggedStructureElements[$containerKey]['childKeys'][] = $key;
+        $this->attachTaggedStructureChildKeyTo($containerKey, $key);
+    }
+
+    private function attachTaggedStructureChildKeyTo(string $containerKey, string $childKey): void
+    {
+        if (!$this->requiresTaggedStructure()) {
+            return;
+        }
+
+        $existingChildKeys = $this->taggedStructureElements[$containerKey]['childKeys'];
+
+        if (in_array($childKey, $existingChildKeys, true)) {
+            return;
+        }
+
+        $this->taggedStructureElements[$containerKey]['childKeys'][] = $childKey;
     }
 
     private function resolveTaggedTextTag(?TextOptions $options, ?string $defaultTag = null): ?string
@@ -4822,9 +4990,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
             'markedContentTag' => $markedContentTag,
         ] = $clone->resolveFlowTextRenderContext($options, $taggedTextTag);
         $wrappedLines = $clone->wrapTextBlockWithDebug($text, $options, $font, $textFlow, $placement['x']);
+        $inlineContainerKey = $clone->taggedInlineContainerKey($markedContentTag, $options->link !== null);
 
         if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
-            $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact, $markedContentTag);
+            $clone->renderWrappedFlowTextBlockAcrossPages(
+                $wrappedLines,
+                $options,
+                $font,
+                $artifact,
+                $markedContentTag,
+                $inlineContainerKey,
+            );
 
             return $clone;
         }
@@ -4838,7 +5014,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $placement,
             $markedContentTag,
             $markedContentId,
-            static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $font, $text): array {
+            $inlineContainerKey,
+            static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $font, $text, $inlineContainerKey): array {
                 /** @var list<string> $wrappedLines */
 
                 return $builder->buildWrappedStringTextContent(
@@ -4851,6 +5028,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $font,
                     $markedContentTag,
                     $markedContentId,
+                    $inlineContainerKey,
                     $artifact,
                 );
             },
@@ -4868,13 +5046,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
         StandardFontDefinition | EmbeddedFontDefinition $font,
         bool $artifact,
         ?string $markedContentTag = null,
+        ?string $inlineContainerKey = null,
     ): void {
         $this->renderWrappedFlowTextAcrossPages(
             $wrappedLines,
             $options,
             $font,
             $markedContentTag,
-            static function (self $builder, array $chunkLines, TextOptions $chunkOptions, TextFlow $textFlow, array $placement, StandardFontDefinition | EmbeddedFontDefinition $font, ?string $markedContentTag, ?int $markedContentId) use ($artifact): array {
+            $inlineContainerKey,
+            static function (self $builder, array $chunkLines, TextOptions $chunkOptions, TextFlow $textFlow, array $placement, StandardFontDefinition | EmbeddedFontDefinition $font, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $inlineContainerKey): array {
                 /** @var list<string> $chunkLines */
 
                 return $builder->buildWrappedStringTextContent(
@@ -4887,6 +5067,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $font,
                     $markedContentTag,
                     $markedContentId,
+                    $inlineContainerKey,
                     $artifact,
                 );
             },
@@ -4904,13 +5085,14 @@ class DefaultDocumentBuilder implements DocumentBuilder
      *   StandardFontDefinition|EmbeddedFontDefinition,
      *   ?string,
      *   ?int
-     * ): array{contents: string, annotations: list<PageAnnotation>} $renderer
+     * ): array{contents: string, annotations: list<PageAnnotation>, textMarkedContentIds: list<int>} $renderer
      */
     private function renderWrappedFlowTextAcrossPages(
         array $wrappedLines,
         TextOptions $options,
         StandardFontDefinition | EmbeddedFontDefinition $font,
         ?string $markedContentTag,
+        ?string $inlineContainerKey,
         callable $renderer,
     ): void {
         $remainingLines = $wrappedLines;
@@ -4962,7 +5144,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $placement['y'],
                 count($chunkLines),
                 $markedContentTag,
-                $markedContentId,
+                $inlineContainerKey,
                 $taggedTextKey,
             );
 
@@ -5018,6 +5200,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         if ($containsSegments) {
             $wrappedSegmentLines = $clone->wrapExplicitTextSegmentLines($validatedSegments, $options, $font, $textFlow, $placement['x']);
+            $inlineContainerKey = $clone->taggedInlineContainerKey(
+                $markedContentTag,
+                $clone->containsLinkedTextSegments($wrappedSegmentLines),
+            );
 
             if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
                 $clone->renderWrappedFlowTextSegmentsAcrossPages(
@@ -5026,6 +5212,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                     $font,
                     $artifact,
                     $markedContentTag,
+                    $inlineContainerKey,
                 );
 
                 return $clone;
@@ -5038,7 +5225,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $placement,
                 $markedContentTag,
                 $markedContentId,
-                static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact): array {
+                $inlineContainerKey,
+                static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $inlineContainerKey): array {
                     /** @var list<list<TextSegment>> $wrappedLines */
 
                     return $builder->buildWrappedTextSegmentsContent(
@@ -5050,6 +5238,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         ($builder->profile ?? Profile::standard())->version(),
                         $markedContentTag,
                         $markedContentId,
+                        $inlineContainerKey,
                         $artifact,
                     );
                 },
@@ -5058,9 +5247,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
             return $clone;
         } else {
             $wrappedLines = $clone->wrapTextLinesWithDebug($validatedLines, $options, $font, $textFlow, $placement['x']);
+            $inlineContainerKey = $clone->taggedInlineContainerKey($markedContentTag, $options->link !== null);
 
             if ($clone->shouldAutoPaginateFlowTextBlock($options)) {
-                $clone->renderWrappedFlowTextBlockAcrossPages($wrappedLines, $options, $font, $artifact, $markedContentTag);
+                $clone->renderWrappedFlowTextBlockAcrossPages(
+                    $wrappedLines,
+                    $options,
+                    $font,
+                    $artifact,
+                    $markedContentTag,
+                    $inlineContainerKey,
+                );
 
                 return $clone;
             }
@@ -5072,7 +5269,8 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 $placement,
                 $markedContentTag,
                 $markedContentId,
-                static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $font, $validatedLines): array {
+                $inlineContainerKey,
+                static function (self $builder, array $wrappedLines, TextOptions $options, TextFlow $textFlow, array $placement, ?string $markedContentTag, ?int $markedContentId) use ($artifact, $font, $validatedLines, $inlineContainerKey): array {
                     /** @var list<string> $wrappedLines */
 
                     return $builder->buildWrappedStringTextContent(
@@ -5085,6 +5283,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         $font,
                         $markedContentTag,
                         $markedContentId,
+                        $inlineContainerKey,
                         $artifact,
                     );
                 },
@@ -5174,7 +5373,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     /**
      * @param list<string> $wrappedLines
-     * @return array{contents: string, annotations: list<PageAnnotation>}
+     * @return array{contents: string, annotations: list<PageAnnotation>, textMarkedContentIds: list<int>}
      */
     private function buildWrappedStringTextContent(
         string $text,
@@ -5186,6 +5385,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         StandardFontDefinition | EmbeddedFontDefinition $font,
         ?string $markedContentTag = null,
         ?int $markedContentId = null,
+        ?string $inlineContainerKey = null,
         bool $artifact = false,
         bool $forceUnicodeEmbeddedFont = false,
     ): array {
@@ -5212,6 +5412,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             ($this->profile ?? Profile::standard())->version(),
             $markedContentTag,
             $markedContentId,
+            $inlineContainerKey,
             $artifact,
         );
     }
@@ -5249,6 +5450,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $font,
             $markedContentTag,
             $markedContentId,
+            null,
             $artifact,
             forceUnicodeEmbeddedFont: ($this->profile ?? Profile::standard())->isPdfA() && $font instanceof EmbeddedFontDefinition,
         );

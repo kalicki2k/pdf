@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalle\Pdf\Document;
 
+use function array_last;
 use function array_map;
 use function array_values;
 use function count;
@@ -544,7 +545,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
                 $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']],
                 new StructElem(
                     'Link',
-                    $state->documentStructElemObjectId,
+                    $this->resolveParentObjectId($linkEntry['key'], $state),
                     pageObjectId: $pageObjectId,
                     altText: $linkEntry['altText'],
                     kidEntries: $kidEntries,
@@ -637,6 +638,10 @@ final readonly class DocumentTaggedPdfObjectBuilder
         }
 
         foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
+            if (isset($state->taggedStructure->explicitParentKeys[$linkEntry['key']])) {
+                continue;
+            }
+
             $entries[] = [
                 'key' => $linkEntry['key'],
                 'pageIndex' => $linkEntry['pageIndex'],
@@ -687,6 +692,13 @@ final readonly class DocumentTaggedPdfObjectBuilder
             ksort($pageKeys);
 
             foreach ($pageKeys as $markedContentId => $key) {
+                if (!isset($positions[$key])) {
+                    $positions[$key] = [
+                        'pageIndex' => $pageIndex,
+                        'orderIndex' => $markedContentId,
+                    ];
+                }
+
                 $documentChildKey = $this->documentChildKey($key);
 
                 if (isset($positions[$documentChildKey])) {
@@ -698,6 +710,56 @@ final readonly class DocumentTaggedPdfObjectBuilder
                     'orderIndex' => $markedContentId,
                 ];
             }
+        }
+
+        foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
+            if (isset($positions[$linkEntry['key']])) {
+                continue;
+            }
+
+            $positions[$linkEntry['key']] = [
+                'pageIndex' => $linkEntry['pageIndex'],
+                'orderIndex' => $linkEntry['markedContentIds'] !== []
+                    ? min($linkEntry['markedContentIds'])
+                    : 1000000 + ($linkEntry['annotationIndices'][0] ?? 0),
+            ];
+        }
+
+        $pendingContainers = $state->taggedStructure->containerEntries;
+
+        while ($pendingContainers !== []) {
+            $remainingContainers = [];
+            $resolvedContainer = false;
+
+            foreach ($pendingContainers as $containerEntry) {
+                $childPositions = [];
+
+                foreach ($containerEntry['childKeys'] as $childKey) {
+                    if (isset($positions[$childKey])) {
+                        $childPositions[] = $positions[$childKey];
+                    }
+                }
+
+                if ($childPositions === []) {
+                    $remainingContainers[] = $containerEntry;
+
+                    continue;
+                }
+
+                usort(
+                    $childPositions,
+                    static fn (array $left, array $right): int => [$left['pageIndex'], $left['orderIndex']]
+                        <=> [$right['pageIndex'], $right['orderIndex']],
+                );
+                $positions[$containerEntry['key']] = $childPositions[0];
+                $resolvedContainer = true;
+            }
+
+            if (!$resolvedContainer) {
+                break;
+            }
+
+            $pendingContainers = $remainingContainers;
         }
 
         return $positions;

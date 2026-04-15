@@ -467,7 +467,7 @@ final class PdfA1aTaggedStructureValidator
             $objectId = $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']];
             $contents = $this->requireObjectContents($objectsById, $objectId, sprintf('link StructElem "%s"', $linkEntry['key']));
 
-            $this->assertStructElemTagAndParent($contents, 'Link', $state->documentStructElemObjectId);
+            $this->assertStructElemTagAndParent($contents, 'Link', $this->expectedParentObjectId($linkEntry['key'], $state));
 
             $pageObjectId = $state->pageObjectIds[$linkEntry['pageIndex']];
             $actualPageObjectId = $this->extractSingleReference($contents, '/Pg');
@@ -691,6 +691,10 @@ final class PdfA1aTaggedStructureValidator
         }
 
         foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
+            if (isset($state->taggedStructure->explicitParentKeys[$linkEntry['key']])) {
+                continue;
+            }
+
             $entries[] = [
                 'objectId' => $state->taggedStructureObjectIds->linkStructElemObjectIds[$linkEntry['key']],
                 'pageIndex' => $linkEntry['pageIndex'],
@@ -742,6 +746,13 @@ final class PdfA1aTaggedStructureValidator
             ksort($pageKeys);
 
             foreach ($pageKeys as $markedContentId => $key) {
+                if (!isset($positions[$key])) {
+                    $positions[$key] = [
+                        'pageIndex' => $pageIndex,
+                        'orderIndex' => $markedContentId,
+                    ];
+                }
+
                 $documentChildKey = $this->documentChildKey($key);
 
                 if (isset($positions[$documentChildKey])) {
@@ -753,6 +764,56 @@ final class PdfA1aTaggedStructureValidator
                     'orderIndex' => $markedContentId,
                 ];
             }
+        }
+
+        foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
+            if (isset($positions[$linkEntry['key']])) {
+                continue;
+            }
+
+            $positions[$linkEntry['key']] = [
+                'pageIndex' => $linkEntry['pageIndex'],
+                'orderIndex' => $linkEntry['markedContentIds'] !== []
+                    ? min($linkEntry['markedContentIds'])
+                    : 1000000 + ($linkEntry['annotationIndices'][0] ?? 0),
+            ];
+        }
+
+        $pendingContainers = $state->taggedStructure->containerEntries;
+
+        while ($pendingContainers !== []) {
+            $remainingContainers = [];
+            $resolvedContainer = false;
+
+            foreach ($pendingContainers as $containerEntry) {
+                $childPositions = [];
+
+                foreach ($containerEntry['childKeys'] as $childKey) {
+                    if (isset($positions[$childKey])) {
+                        $childPositions[] = $positions[$childKey];
+                    }
+                }
+
+                if ($childPositions === []) {
+                    $remainingContainers[] = $containerEntry;
+
+                    continue;
+                }
+
+                usort(
+                    $childPositions,
+                    static fn (array $left, array $right): int => [$left['pageIndex'], $left['orderIndex']]
+                        <=> [$right['pageIndex'], $right['orderIndex']],
+                );
+                $positions[$containerEntry['key']] = $childPositions[0];
+                $resolvedContainer = true;
+            }
+
+            if (!$resolvedContainer) {
+                break;
+            }
+
+            $pendingContainers = $remainingContainers;
         }
 
         return $positions;

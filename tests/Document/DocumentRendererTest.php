@@ -1053,7 +1053,7 @@ final class DocumentRendererTest extends TestCase
         self::assertStringContainsString('/Tabs /S', $pdf);
         self::assertSame(2, substr_count($pdf, '/Type /StructElem /S /Form'));
         self::assertStringContainsString('/StructParent 0', $pdf);
-        self::assertStringContainsString('/StructParent 1', $pdf);
+        self::assertStringContainsString('/StructParent 0', $pdf);
         self::assertStringContainsString('/Alt (Customer name)', $pdf);
         self::assertStringContainsString('/Alt (Accept terms)', $pdf);
         self::assertSame(2, substr_count($pdf, '/Type /OBJR /Obj'));
@@ -1732,10 +1732,37 @@ final class DocumentRendererTest extends TestCase
 
         $pdf = $output->contents();
 
-        self::assertStringContainsString('/P << /MCID 0 >> BDC', $pdf);
+        self::assertStringNotContainsString('/P << /MCID', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
         self::assertStringContainsString('/Link << /MCID 1 >> BDC', $pdf);
-        self::assertStringContainsString('/StructParent 1', $pdf);
+        self::assertStringContainsString('/StructParent 0', $pdf);
         self::assertStringContainsString('/K [1 << /Type /OBJR /Obj', $pdf);
+    }
+
+    public function testItRendersTaggedPdfUaMixedTextLinksWithoutNestedMarkedContent(): void
+    {
+        $document = DefaultDocumentBuilder::make()
+            ->profile(Profile::pdfUa1())
+            ->title('Accessible Copy')
+            ->language('de-DE')
+            ->text([
+                new TextSegment('Read '),
+                new TextSegment('more', LinkTarget::externalUrl('https://example.com')),
+                new TextSegment(' now'),
+            ])
+            ->build();
+
+        $renderer = new DocumentRenderer();
+        $output = new StringOutput();
+
+        $renderer->write($document, $output);
+
+        $pdf = $output->contents();
+
+        self::assertStringContainsString('/P << /MCID', $pdf);
+        self::assertStringContainsString('/Link << /MCID', $pdf);
+        self::assertStringContainsString('/Type /StructElem /S /P', $pdf);
+        self::assertDoesNotMatchRegularExpression('/\/P << \/MCID \d+ >> BDC\s+\/Link << \/MCID \d+ >> BDC/s', $pdf);
     }
 
     public function testItRendersMultipleTextSegmentLinks(): void
