@@ -446,12 +446,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         $clone = clone $this;
-        $key = 'struct:' . $clone->nextTaggedStructureElementId++;
-        $clone->taggedStructureElements[$key] = [
-            'tag' => $tag,
-            'childKeys' => [],
-        ];
-        $clone->attachTaggedStructureChildKey($key);
+        $key = $clone->registerTaggedInlineContainer($tag);
         $clone->taggedStructureStack[] = $key;
 
         return $clone;
@@ -4784,22 +4779,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function registerTaggedTextBlock(string $tag, int $markedContentId, ?string $key = null, ?string $parentKey = null): string
     {
-        $attachToStructure = $key === null && $parentKey === null;
-        $key ??= 'text:' . count($this->taggedTextBlocks);
-        $this->taggedTextBlocks[] = [
-            'key' => $key,
-            'tag' => $tag,
-            'parentKey' => $parentKey,
-            ...$this->taggedContentReference($markedContentId),
-        ];
-
-        if ($attachToStructure) {
-            $this->attachTaggedStructureChildKey($key);
-        } elseif ($parentKey !== null) {
-            $this->attachTaggedStructureChildKeyTo($parentKey, $key);
-        }
-
-        return $key;
+        return $this->taggedStructureRegistrar()->registerTextBlock($tag, $markedContentId, $key, $parentKey);
     }
 
     /**
@@ -4807,49 +4787,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
      */
     private function registerTaggedTextBlocks(string $tag, array $markedContentIds, ?string $key = null, ?string $parentKey = null): string
     {
-        foreach ($markedContentIds as $markedContentId) {
-            $key = $this->registerTaggedTextBlock($tag, $markedContentId, $key, $parentKey);
-        }
-
-        return $key ?? 'text:' . count($this->taggedTextBlocks);
+        return $this->taggedStructureRegistrar()->registerTextBlocks($tag, $markedContentIds, $key, $parentKey);
     }
 
     private function registerTaggedInlineContainer(string $tag, ?string $key = null): string
     {
-        $key ??= 'struct:' . $this->nextTaggedStructureElementId++;
-
-        if (!isset($this->taggedStructureElements[$key])) {
-            $this->taggedStructureElements[$key] = [
-                'tag' => $tag,
-                'childKeys' => [],
-            ];
-            $this->attachTaggedStructureChildKey($key);
-        }
-
-        return $key;
+        return $this->taggedStructureRegistrar()->registerInlineContainer($tag, $key);
     }
 
     private function registerTaggedFigure(int $markedContentId, ?string $altText): void
     {
-        $key = 'figure:graphics:' . count($this->taggedFigures);
-        $this->taggedFigures[] = [
-            'key' => $key,
-            ...$this->taggedContentReference($markedContentId),
-            'altText' => $altText,
-        ];
-        $this->attachTaggedStructureChildKey($key);
+        $this->taggedStructureRegistrar()->registerFigure($markedContentId, $altText);
     }
 
     private function registerTaggedListItem(int $listId, int $labelMarkedContentId, int $bodyMarkedContentId): void
     {
-        if (!isset($this->taggedLists[$listId])) {
-            $this->attachTaggedStructureChildKey('list:' . $listId);
-        }
-
-        $this->taggedLists[$listId][] = [
-            'label' => $this->taggedContentReference($labelMarkedContentId),
-            'body' => $this->taggedContentReference($bodyMarkedContentId),
-        ];
+        $this->taggedStructureRegistrar()->registerListItem($listId, $labelMarkedContentId, $bodyMarkedContentId);
     }
 
     /**
@@ -4868,34 +4821,27 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function attachTaggedStructureChildKey(string $key): void
     {
-        if (!$this->requiresTaggedStructure()) {
-            return;
-        }
-
-        $containerKey = $this->taggedStructureStack[count($this->taggedStructureStack) - 1] ?? null;
-
-        if ($containerKey === null) {
-            $this->taggedDocumentChildKeys[] = $key;
-
-            return;
-        }
-
-        $this->attachTaggedStructureChildKeyTo($containerKey, $key);
+        $this->taggedStructureRegistrar()->attachStructureChildKey($key);
     }
 
     private function attachTaggedStructureChildKeyTo(string $containerKey, string $childKey): void
     {
-        if (!$this->requiresTaggedStructure()) {
-            return;
-        }
+        $this->taggedStructureRegistrar()->attachStructureChildKeyTo($containerKey, $childKey);
+    }
 
-        $existingChildKeys = $this->taggedStructureElements[$containerKey]['childKeys'];
-
-        if (in_array($childKey, $existingChildKeys, true)) {
-            return;
-        }
-
-        $this->taggedStructureElements[$containerKey]['childKeys'][] = $childKey;
+    private function taggedStructureRegistrar(): TaggedStructureRegistrar
+    {
+        return new TaggedStructureRegistrar(
+            $this->taggedTextBlocks,
+            $this->taggedFigures,
+            $this->taggedLists,
+            $this->taggedStructureElements,
+            $this->taggedDocumentChildKeys,
+            $this->taggedStructureStack,
+            $this->nextTaggedStructureElementId,
+            $this->requiresTaggedStructure(),
+            $this->taggedContentReference(...),
+        );
     }
 
     private function resolveTaggedTextTag(?TextOptions $options, ?string $defaultTag = null): ?string

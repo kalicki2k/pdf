@@ -64,8 +64,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
          * }> $groupedLinkEntries
          */
         $groupedLinkEntries = [];
-        $parentTreeEntries = [];
-        $structParentIds = [];
+        $structParentRegistry = new TaggedAnnotationStructParentRegistry($nextStructParentId);
 
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
@@ -106,9 +105,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
                     $groupedLinkEntries[$groupKey]['markedContentIds'][] = $annotation->markedContentId();
                 }
 
-                $structParentIds[$annotationKey] = $nextStructParentId;
-                $parentTreeEntries[$nextStructParentId] = [$groupKey];
-                $nextStructParentId++;
+                $structParentRegistry->register($annotationKey, $groupKey);
             }
         }
 
@@ -125,9 +122,9 @@ final readonly class DocumentTaggedPdfObjectBuilder
 
         return [
             'linkEntries' => $linkEntries,
-            'parentTreeEntries' => $parentTreeEntries,
-            'structParentIds' => $structParentIds,
-            'nextStructParentId' => $nextStructParentId,
+            'parentTreeEntries' => $structParentRegistry->parentTreeEntries(),
+            'structParentIds' => $structParentRegistry->stringStructParentIds(),
+            'nextStructParentId' => $structParentRegistry->nextStructParentId(),
         ];
     }
 
@@ -157,8 +154,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
         }
 
         $entries = [];
-        $parentTreeEntries = [];
-        $structParentIds = [];
+        $structParentRegistry = new TaggedAnnotationStructParentRegistry($nextStructParentId);
 
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
@@ -180,17 +176,15 @@ final readonly class DocumentTaggedPdfObjectBuilder
                     'altText' => $altText,
                     'tag' => $this->taggedPageAnnotationResolver->structureTag($document, $annotation) ?? 'Annot',
                 ];
-                $structParentIds[$pageIndex . ':' . $annotationIndex] = $nextStructParentId;
-                $parentTreeEntries[$nextStructParentId] = [$entryKey];
-                $nextStructParentId++;
+                $structParentRegistry->register($pageIndex . ':' . $annotationIndex, $entryKey);
             }
         }
 
         return [
             'entries' => $entries,
-            'parentTreeEntries' => $parentTreeEntries,
-            'structParentIds' => $structParentIds,
-            'nextStructParentId' => $nextStructParentId,
+            'parentTreeEntries' => $structParentRegistry->parentTreeEntries(),
+            'structParentIds' => $structParentRegistry->stringStructParentIds(),
+            'nextStructParentId' => $structParentRegistry->nextStructParentId(),
         ];
     }
 
@@ -218,8 +212,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
         }
 
         $entries = [];
-        $parentTreeEntries = [];
-        $structParentIds = [];
+        $structParentRegistry = new TaggedAnnotationStructParentRegistry($nextStructParentId);
 
         foreach ($document->acroForm->fields as $fieldIndex => $field) {
             if ($field instanceof RadioButtonGroup) {
@@ -241,9 +234,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
                         'annotationObjectId' => $annotationObjectId,
                         'altText' => $choice->alternativeName ?? $field->alternativeName ?? $field->name,
                     ];
-                    $structParentIds[$annotationObjectId] = $nextStructParentId;
-                    $parentTreeEntries[$nextStructParentId] = [$entryKey];
-                    $nextStructParentId++;
+                    $structParentRegistry->register($annotationObjectId, $entryKey);
                 }
 
                 continue;
@@ -278,15 +269,13 @@ final readonly class DocumentTaggedPdfObjectBuilder
                 'annotationObjectId' => $annotationObjectId,
                 'altText' => $field->alternativeName ?? $field->name,
             ];
-            $structParentIds[$annotationObjectId] = $nextStructParentId;
-            $parentTreeEntries[$nextStructParentId] = [$entryKey];
-            $nextStructParentId++;
+            $structParentRegistry->register($annotationObjectId, $entryKey);
         }
 
         return [
             'entries' => $entries,
-            'parentTreeEntries' => $parentTreeEntries,
-            'structParentIds' => $structParentIds,
+            'parentTreeEntries' => $structParentRegistry->parentTreeEntries(),
+            'structParentIds' => $structParentRegistry->intStructParentIds(),
         ];
     }
 
