@@ -8,12 +8,24 @@ use InvalidArgumentException;
 
 final readonly class ListOptions
 {
-    public function __construct(
+    public static function make(
+        ListType $type = ListType::BULLET,
+        ?string $marker = null,
+        int $start = 1,
+    ): self {
+        return new self(
+            type: $type,
+            marker: $marker,
+            start: $start,
+        );
+    }
+
+    private function __construct(
         public ListType $type = ListType::BULLET,
         public ?string $marker = null,
         public int $start = 1,
     ) {
-        if ($this->marker !== null && $this->marker === '') {
+        if ($this->marker === '') {
             throw new InvalidArgumentException('List marker must not be empty.');
         }
 

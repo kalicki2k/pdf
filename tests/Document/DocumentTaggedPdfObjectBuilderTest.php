@@ -132,7 +132,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                 ))
                 ->list(
                     ['List item Привет'],
-                    text: TextOptions::make(
+                    textOptions: TextOptions::make(
                         embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                         width: 220,
                     ),
@@ -313,7 +313,7 @@ final class DocumentTaggedPdfObjectBuilderTest extends TestCase
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                     link: LinkTarget::externalUrl('https://example.com/docs'),
                 ))
-                ->list(['Item'], text: TextOptions::make(
+                ->list(['Item'], textOptions: TextOptions::make(
                     width: 220,
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                 ))

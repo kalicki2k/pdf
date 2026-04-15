@@ -818,7 +818,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: TextOptions::make(
+                textOptions: TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     width: 240,
                 ),
@@ -873,7 +873,7 @@ final class DefaultDocumentBuilderTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                new ListOptions(type: ListType::NUMBERED, start: 7),
+                ListOptions::make(type: ListType::NUMBERED, start: 7),
                 TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     width: 240,

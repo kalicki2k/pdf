@@ -123,7 +123,7 @@ interface DocumentBuilder
     /**
      * @param list<string> $items
      */
-    public function list(array $items, ?ListOptions $list = null, ?TextOptions $text = null): self;
+    public function list(array $items, ?ListOptions $listOptions = null, ?TextOptions $textOptions = null): self;
 
     public function table(Table $table): self;
 

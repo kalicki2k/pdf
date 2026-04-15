@@ -14,6 +14,7 @@ use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontDefinition;
 use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Page\Page;
+use Kalle\Pdf\PdfDefaults;
 use Kalle\Pdf\Text\TextDirection;
 use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Text\TextSegment;
@@ -203,7 +204,7 @@ final readonly class TextFlow
 
     public function lineHeight(TextOptions $options): float
     {
-        return $options->lineHeight ?? ($options->fontSize * 1.2);
+        return $options->lineHeight ?? ($options->fontSize * PdfDefaults::DEFAULT_LINE_HEIGHT);
     }
 
     public function availableTextWidthFrom(float $x, ?TextOptions $options = null): float
@@ -216,12 +217,12 @@ final readonly class TextFlow
         return $x + $this->lineIndent($options, $isFirstLine);
     }
 
-    private function spacingAfter(TextOptions $options): float
+    public function spacingAfter(TextOptions $options): float
     {
-        return $options->spacingAfter ?? 0.0;
+        return $options->spacingAfter ?? ($options->fontSize * PdfDefaults::DEFAULT_SPACING_AFTER_MULTIPLIER);
     }
 
-    private function spacingBefore(TextOptions $options): float
+    public function spacingBefore(TextOptions $options): float
     {
         return $options->spacingBefore ?? 0.0;
     }

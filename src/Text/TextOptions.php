@@ -8,21 +8,16 @@ use InvalidArgumentException;
 use Kalle\Pdf\Color\Color;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureTag;
 use Kalle\Pdf\Font\EmbeddedFontSource;
-use Kalle\Pdf\Font\StandardFont;
 use Kalle\Pdf\Font\StandardFontEncoding;
 use Kalle\Pdf\Layout\PositionMode;
 use Kalle\Pdf\Page\LinkTarget;
+use Kalle\Pdf\PdfDefaults;
 
 /**
  * Describes the layout, font and semantic defaults for a rendered text block.
  */
 final readonly class TextOptions
 {
-    /**
-     * Default font size for generic text blocks created via `make()`.
-     */
-    public const float DEFAULT_FONT_SIZE = 18.0;
-
     /**
      * Default font size for regular body copy presets.
      */
@@ -64,11 +59,6 @@ final readonly class TextOptions
     public const float HEADING_LINE_HEIGHT = 28.0;
 
     /**
-     * Standard PDF font used when no embedded font is configured.
-     */
-    public const string DEFAULT_FONT_NAME = StandardFont::HELVETICA->value;
-
-    /**
      * Creates a generic text option object for block rendering.
      *
      * @param ?float $left Absolute left text position. When omitted, the current flow cursor or page margin is used.
@@ -96,18 +86,18 @@ final readonly class TextOptions
      * @param TextSemantic $semantic Whether the text should be treated as logical content or as an artifact.
      */
     public static function make(
+        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $left = null,
         ?float $right = null,
         ?float $top = null,
         ?float $bottom = null,
-        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $width = null,
         ?float $maxWidth = null,
-        float $fontSize = self::DEFAULT_FONT_SIZE,
+        float $fontSize = PdfDefaults::DEFAULT_FONT_SIZE,
         ?float $lineHeight = null,
         ?float $spacingBefore = null,
         ?float $spacingAfter = null,
-        string $fontName = self::DEFAULT_FONT_NAME,
+        string $fontName = PdfDefaults::DEFAULT_FONT_NAME,
         ?EmbeddedFontSource $embeddedFont = null,
         ?StandardFontEncoding $fontEncoding = null,
         ?Color $color = null,
@@ -121,11 +111,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return new self(
+            positionMode: $positionMode,
             left: $left,
             right: $right,
             top: $top,
             bottom: $bottom,
-            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -153,18 +143,18 @@ final readonly class TextOptions
      * Accepts the same overrides as `make()`, but starts from the body preset size and line height.
      */
     public static function body(
+        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $left = null,
         ?float $right = null,
         ?float $top = null,
         ?float $bottom = null,
-        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::BODY_FONT_SIZE,
         ?float $lineHeight = self::BODY_LINE_HEIGHT,
         ?float $spacingBefore = null,
         ?float $spacingAfter = null,
-        string $fontName = self::DEFAULT_FONT_NAME,
+        string $fontName = PdfDefaults::DEFAULT_FONT_NAME,
         ?EmbeddedFontSource $embeddedFont = null,
         ?StandardFontEncoding $fontEncoding = null,
         ?Color $color = null,
@@ -178,11 +168,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return self::make(
+            positionMode: $positionMode,
             left: $left,
             right: $right,
             top: $top,
             bottom: $bottom,
-            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -210,18 +200,18 @@ final readonly class TextOptions
      * Accepts the same overrides as `make()`, but starts from the small preset size and line height.
      */
     public static function small(
+        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $left = null,
         ?float $right = null,
         ?float $top = null,
         ?float $bottom = null,
-        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::SMALL_FONT_SIZE,
         ?float $lineHeight = self::SMALL_LINE_HEIGHT,
         ?float $spacingBefore = null,
         ?float $spacingAfter = null,
-        string $fontName = self::DEFAULT_FONT_NAME,
+        string $fontName = PdfDefaults::DEFAULT_FONT_NAME,
         ?EmbeddedFontSource $embeddedFont = null,
         ?StandardFontEncoding $fontEncoding = null,
         ?Color $color = null,
@@ -235,11 +225,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return self::make(
+            positionMode: $positionMode,
             left: $left,
             right: $right,
             top: $top,
             bottom: $bottom,
-            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -267,18 +257,18 @@ final readonly class TextOptions
      * Accepts the same overrides as `make()`, but starts from the caption preset size and line height.
      */
     public static function caption(
+        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $left = null,
         ?float $right = null,
         ?float $top = null,
         ?float $bottom = null,
-        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::CAPTION_FONT_SIZE,
         ?float $lineHeight = self::CAPTION_LINE_HEIGHT,
         ?float $spacingBefore = null,
         ?float $spacingAfter = null,
-        string $fontName = self::DEFAULT_FONT_NAME,
+        string $fontName = PdfDefaults::DEFAULT_FONT_NAME,
         ?EmbeddedFontSource $embeddedFont = null,
         ?StandardFontEncoding $fontEncoding = null,
         ?Color $color = null,
@@ -292,11 +282,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return self::make(
+            positionMode: $positionMode,
             left: $left,
             right: $right,
             top: $top,
             bottom: $bottom,
-            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -324,18 +314,18 @@ final readonly class TextOptions
      * Accepts the same overrides as `make()`, but starts from the heading preset size and line height.
      */
     public static function heading(
+        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $left = null,
         ?float $right = null,
         ?float $top = null,
         ?float $bottom = null,
-        PositionMode $positionMode = PositionMode::RELATIVE,
         ?float $width = null,
         ?float $maxWidth = null,
         float $fontSize = self::HEADING_FONT_SIZE,
         ?float $lineHeight = self::HEADING_LINE_HEIGHT,
         ?float $spacingBefore = null,
         ?float $spacingAfter = null,
-        string $fontName = self::DEFAULT_FONT_NAME,
+        string $fontName = PdfDefaults::DEFAULT_FONT_NAME,
         ?EmbeddedFontSource $embeddedFont = null,
         ?StandardFontEncoding $fontEncoding = null,
         ?Color $color = null,
@@ -349,11 +339,11 @@ final readonly class TextOptions
         TextSemantic $semantic = TextSemantic::CONTENT,
     ): self {
         return self::make(
+            positionMode: $positionMode,
             left: $left,
             right: $right,
             top: $top,
             bottom: $bottom,
-            positionMode: $positionMode,
             width: $width,
             maxWidth: $maxWidth,
             fontSize: $fontSize,
@@ -376,18 +366,18 @@ final readonly class TextOptions
     }
 
     private function __construct(
+        public PositionMode $positionMode = PositionMode::RELATIVE,
         public ?float $left = null,
         public ?float $right = null,
         public ?float $top = null,
         public ?float $bottom = null,
-        public PositionMode $positionMode = PositionMode::RELATIVE,
         public ?float $width = null,
         public ?float $maxWidth = null,
-        public float $fontSize = self::DEFAULT_FONT_SIZE,
+        public float $fontSize = PdfDefaults::DEFAULT_FONT_SIZE,
         public ?float $lineHeight = null,
         public ?float $spacingBefore = null,
         public ?float $spacingAfter = null,
-        public string $fontName = self::DEFAULT_FONT_NAME,
+        public string $fontName = PdfDefaults::DEFAULT_FONT_NAME,
         public ?EmbeddedFontSource $embeddedFont = null,
         public ?StandardFontEncoding $fontEncoding = null,
         public ?Color $color = null,

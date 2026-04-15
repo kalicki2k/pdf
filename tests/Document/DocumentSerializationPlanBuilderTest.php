@@ -2956,7 +2956,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: TextOptions::make(
+                textOptions: TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     width: 260,
                 ),
@@ -2987,7 +2987,7 @@ final class DocumentSerializationPlanBuilderTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                new ListOptions(type: ListType::NUMBERED, start: 5),
+                ListOptions::make(type: ListType::NUMBERED, start: 5),
                 TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath(dirname(__DIR__, 2) . '/assets/fonts/noto-sans/NotoSans-Regular.ttf'),
                     width: 260,

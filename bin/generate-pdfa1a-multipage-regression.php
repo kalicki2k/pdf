@@ -55,7 +55,7 @@ $document = DefaultDocumentBuilder::make()
     ))
     ->list(
         ['Erster Punkt Привет', 'Zweiter Punkt Привет', 'Dritter Punkt Привет'],
-        text: TextOptions::make(
+            textOptions: TextOptions::make(
             left: 72,
             bottom: 668,
             width: 280,

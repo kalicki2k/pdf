@@ -13,7 +13,7 @@ final class ListOptionsTest extends TestCase
 {
     public function testItDefaultsToABulletList(): void
     {
-        $options = new ListOptions();
+        $options = ListOptions::make();
 
         self::assertSame(ListType::BULLET, $options->type);
         self::assertNull($options->marker);
@@ -25,7 +25,7 @@ final class ListOptionsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('List marker must not be empty.');
 
-        new ListOptions(marker: '');
+        ListOptions::make(marker: '');
     }
 
     public function testItRejectsANonPositiveNumberingStart(): void
@@ -33,7 +33,7 @@ final class ListOptionsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('List numbering start must be greater than or equal to 1.');
 
-        new ListOptions(type: ListType::NUMBERED, start: 0);
+        ListOptions::make(type: ListType::NUMBERED, start: 0);
     }
 
     public function testItRejectsANumberedMarkerWithoutPlaceholder(): void
@@ -41,6 +41,6 @@ final class ListOptionsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Numbered list marker must contain a "%d" placeholder.');
 
-        new ListOptions(type: ListType::NUMBERED, marker: ')');
+        ListOptions::make(type: ListType::NUMBERED, marker: ')');
     }
 }

@@ -238,7 +238,7 @@ final class PdfA1aTaggedStructureValidatorTest extends TestCase
             ))
             ->list(
                 ['List item Привет'],
-                text: TextOptions::make(
+                textOptions: TextOptions::make(
                     embeddedFont: EmbeddedFontSource::fromPath($this->fontPath()),
                     width: 220,
                 ),

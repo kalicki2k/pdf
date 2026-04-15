@@ -466,26 +466,26 @@ class DefaultDocumentBuilder implements DocumentBuilder
     /**
      * @param list<string> $items
      */
-    public function list(array $items, ?ListOptions $list = null, ?TextOptions $text = null): DocumentBuilder
+    public function list(array $items, ?ListOptions $listOptions = null, ?TextOptions $textOptions = null): DocumentBuilder
     {
         $clone = clone $this;
-        $list ??= new ListOptions();
-        $text ??= TextOptions::make();
+        $listOptions ??= ListOptions::make();
+        $textOptions ??= TextOptions::make();
 
         if ($items === []) {
             return $clone;
         }
 
-        $font = $text->embeddedFont !== null
-            ? EmbeddedFontDefinition::fromSource($text->embeddedFont)
-            : StandardFontDefinition::from($text->fontName);
+        $font = $textOptions->embeddedFont !== null
+            ? EmbeddedFontDefinition::fromSource($textOptions->embeddedFont)
+            : StandardFontDefinition::from($textOptions->fontName);
         $textFlow = $clone->textFlow();
-        $placement = $textFlow->placement($text, $font);
+        $placement = $textFlow->placement($textOptions, $font);
         $baseX = $placement['x'];
         $currentY = $placement['y'];
-        $lineHeight = $textFlow->lineHeight($text);
-        $indent = max($text->fontSize * 1.5, 18.0);
-        $markerGap = max($text->fontSize * 0.5, 6.0);
+        $lineHeight = $textFlow->lineHeight($textOptions);
+        $indent = max($textOptions->fontSize * 1.5, 18.0);
+        $markerGap = max($textOptions->fontSize * 0.5, 6.0);
         $markerWidth = max($indent - $markerGap, 0.0);
         $taggedListId = $clone->requiresTaggedStructure() ? $clone->nextTaggedListId++ : null;
 
@@ -500,26 +500,22 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $labelMarkedContentId = $taggedListId !== null ? $clone->nextTaggedMarkedContentId() : null;
             $bodyMarkedContentId = $taggedListId !== null ? $clone->nextTaggedMarkedContentId() : null;
             $labelOptions = $this->copyTextOptions(
-                $text,
+                $textOptions,
                 left: $baseX,
                 bottom: $currentY,
                 width: $markerWidth > 0.0 ? $markerWidth : null,
-                spacingBefore: null,
-                spacingAfter: null,
             );
-            $bodyWidth = $text->width !== null
-                ? max($text->width - $indent, 0.0)
+            $bodyWidth = $textOptions->width !== null
+                ? max($textOptions->width - $indent, 0.0)
                 : null;
             $bodyOptions = $this->copyTextOptions(
-                $text,
+                $textOptions,
                 left: $baseX + $indent,
                 bottom: $currentY,
                 width: $bodyWidth,
-                spacingBefore: null,
-                spacingAfter: null,
             );
             $labelResult = $clone->renderTextBlockAt(
-                $this->listItemLabel($list, $index),
+                $this->listItemLabel($listOptions, $index),
                 $labelOptions,
                 $font,
                 $textFlow,
@@ -556,7 +552,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $currentY -= $lineHeight * max($bodyResult['lineCount'], 1);
         }
 
-        $clone->currentPageCursorY = $currentY - ($text->spacingAfter ?? 0.0);
+        $clone->currentPageCursorY = $currentY - $textFlow->spacingAfter($textOptions);
         $clone->currentPageCursorYIsTopBoundary = false;
 
         return $clone;

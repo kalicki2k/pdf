@@ -521,7 +521,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: TextOptions::make(
+                textOptions: TextOptions::make(
                     left: 72,
                     bottom: 760,
                     width: 320,
@@ -555,7 +555,7 @@ final class DocumentRendererTest extends TestCase
             ->language('de-DE')
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                new ListOptions(type: ListType::NUMBERED, start: 3, marker: '%d)'),
+                ListOptions::make(type: ListType::NUMBERED, start: 3, marker: '%d)'),
                 TextOptions::make(
                     left: 72,
                     bottom: 760,
@@ -663,7 +663,7 @@ final class DocumentRendererTest extends TestCase
             ))
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: TextOptions::make(
+                textOptions: TextOptions::make(
                     left: 72,
                     bottom: 676,
                     width: 220,
@@ -847,7 +847,7 @@ final class DocumentRendererTest extends TestCase
             ))
             ->list(
                 ['Erster Punkt Привет', 'Zweiter Punkt Привет'],
-                text: TextOptions::make(
+                textOptions: TextOptions::make(
                     left: 72,
                     bottom: 676,
                     width: 220,
