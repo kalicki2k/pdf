@@ -19,8 +19,6 @@ use Kalle\Pdf\Document\Form\WidgetFormField;
 use Kalle\Pdf\Document\TaggedPdf\TaggedStructureCollector;
 use Kalle\Pdf\Page\LinkAnnotation;
 use Kalle\Pdf\Page\Page;
-use Kalle\Pdf\Page\PageAnnotation;
-use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 
 final readonly class DocumentSerializationPlanValidator
 {
@@ -30,7 +28,7 @@ final readonly class DocumentSerializationPlanValidator
         private PdfAColorPolicyValidator $pdfAColorPolicyValidator = new PdfAColorPolicyValidator(),
         private PdfALowLevelPolicyValidator $pdfALowLevelPolicyValidator = new PdfALowLevelPolicyValidator(),
         private PdfA1aSupportedStructureValidator $pdfA1aSupportedStructureValidator = new PdfA1aSupportedStructureValidator(),
-        private PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
+        private TaggedPageAnnotationResolver $taggedPageAnnotationResolver = new TaggedPageAnnotationResolver(),
         private PdfA1aFormFieldPolicy $pdfA1aFormFieldPolicy = new PdfA1aFormFieldPolicy(),
         private PdfA23aFormFieldPolicy $pdfA23aFormFieldPolicy = new PdfA23aFormFieldPolicy(),
         private PdfA4FormFieldPolicy $pdfA4FormFieldPolicy = new PdfA4FormFieldPolicy(),
@@ -114,18 +112,13 @@ final readonly class DocumentSerializationPlanValidator
     {
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
+                $supportsTaggedPageAnnotation = $this->taggedPageAnnotationResolver->supports($document, $annotation);
                 $supportsCurrentAnnotation = (
                     !$document->profile->requiresTaggedPageAnnotations()
                         && $document->profile->supportsCurrentPageAnnotationsImplementation()
                 )
                     || ($annotation instanceof LinkAnnotation && $document->profile->requiresTaggedLinkAnnotations())
-                    || (
-                        $document->profile->requiresTaggedPageAnnotations()
-                        && (
-                            ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $this->pdfA1aPageAnnotationPolicy->supports($annotation))
-                            || $annotation instanceof PdfUaTaggedPageAnnotation
-                        )
-                    );
+                    || $supportsTaggedPageAnnotation;
 
                 if (
                     !$supportsCurrentAnnotation
@@ -353,7 +346,7 @@ final readonly class DocumentSerializationPlanValidator
             foreach ($page->annotations as $annotation) {
                 if (
                     !$annotation instanceof LinkAnnotation
-                    && $this->supportsTaggedPageAnnotation($document, $annotation)
+                    && $this->taggedPageAnnotationResolver->supports($document, $annotation)
                 ) {
                     return true;
                 }
@@ -367,33 +360,9 @@ final readonly class DocumentSerializationPlanValidator
         return true;
     }
 
-    private function supportsTaggedPageAnnotation(Document $document, object $annotation): bool
-    {
-        if (!$document->profile->requiresTaggedPageAnnotations()) {
-            return false;
-        }
-
-        if ($annotation instanceof LinkAnnotation) {
-            return false;
-        }
-
-        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A') {
-            return $annotation instanceof PageAnnotation
-                && $this->pdfA1aPageAnnotationPolicy->supports($annotation);
-        }
-
-        return $annotation instanceof PdfUaTaggedPageAnnotation;
-    }
-
     private function pageAnnotationAltText(Document $document, object $annotation): ?string
     {
-        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof PageAnnotation) {
-            return $this->pdfA1aPageAnnotationPolicy->altText($annotation);
-        }
-
-        return $annotation instanceof PdfUaTaggedPageAnnotation
-            ? $annotation->taggedAnnotationAltText()
-            : null;
+        return $this->taggedPageAnnotationResolver->altText($document, $annotation);
     }
 
     private function assertAcroFormRequirements(Document $document): void

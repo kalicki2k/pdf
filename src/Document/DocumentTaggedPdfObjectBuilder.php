@@ -20,14 +20,12 @@ use Kalle\Pdf\Document\TaggedPdf\TaggedStructureObjectIds;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTable;
 use Kalle\Pdf\Document\TaggedPdf\TaggedTableRow;
 use Kalle\Pdf\Page\LinkAnnotation;
-use Kalle\Pdf\Page\PageAnnotation;
-use Kalle\Pdf\Page\PdfUaTaggedPageAnnotation;
 use Kalle\Pdf\Writer\IndirectObject;
 
 final readonly class DocumentTaggedPdfObjectBuilder
 {
     public function __construct(
-        private PdfA1aPageAnnotationPolicy $pdfA1aPageAnnotationPolicy = new PdfA1aPageAnnotationPolicy(),
+        private TaggedPageAnnotationResolver $taggedPageAnnotationResolver = new TaggedPageAnnotationResolver(),
     ) {
     }
 
@@ -163,11 +161,11 @@ final readonly class DocumentTaggedPdfObjectBuilder
 
         foreach ($document->pages as $pageIndex => $page) {
             foreach ($page->annotations as $annotationIndex => $annotation) {
-                if ($annotation instanceof LinkAnnotation || !$this->supportsTaggedPageAnnotation($document, $annotation)) {
+                if ($annotation instanceof LinkAnnotation || !$this->taggedPageAnnotationResolver->supports($document, $annotation)) {
                     continue;
                 }
 
-                $altText = $this->taggedPageAnnotationAltText($document, $annotation);
+                $altText = $this->taggedPageAnnotationResolver->altText($document, $annotation);
 
                 if ($altText === null || $altText === '') {
                     continue;
@@ -179,7 +177,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
                     'pageIndex' => $pageIndex,
                     'annotationIndex' => $annotationIndex,
                     'altText' => $altText,
-                    'tag' => $this->taggedPageAnnotationStructureTag($document, $annotation) ?? 'Annot',
+                    'tag' => $this->taggedPageAnnotationResolver->structureTag($document, $annotation) ?? 'Annot',
                 ];
                 $structParentIds[$pageIndex . ':' . $annotationIndex] = $nextStructParentId;
                 $parentTreeEntries[$nextStructParentId] = [$entryKey];
@@ -193,42 +191,6 @@ final readonly class DocumentTaggedPdfObjectBuilder
             'structParentIds' => $structParentIds,
             'nextStructParentId' => $nextStructParentId,
         ];
-    }
-
-    private function supportsTaggedPageAnnotation(Document $document, object $annotation): bool
-    {
-        if (!$document->profile->requiresTaggedPageAnnotations() || $annotation instanceof LinkAnnotation) {
-            return false;
-        }
-
-        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A') {
-            return $annotation instanceof PageAnnotation
-                && $this->pdfA1aPageAnnotationPolicy->supports($annotation);
-        }
-
-        return $annotation instanceof PdfUaTaggedPageAnnotation;
-    }
-
-    private function taggedPageAnnotationAltText(Document $document, object $annotation): ?string
-    {
-        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof PageAnnotation) {
-            return $this->pdfA1aPageAnnotationPolicy->altText($annotation);
-        }
-
-        return $annotation instanceof PdfUaTaggedPageAnnotation
-            ? $annotation->taggedAnnotationAltText()
-            : null;
-    }
-
-    private function taggedPageAnnotationStructureTag(Document $document, object $annotation): ?string
-    {
-        if ($document->profile->isPdfA1() && $document->profile->pdfaConformance() === 'A' && $annotation instanceof PageAnnotation) {
-            return $this->pdfA1aPageAnnotationPolicy->structureTag($annotation);
-        }
-
-        return $annotation instanceof PdfUaTaggedPageAnnotation
-            ? $annotation->taggedAnnotationStructureTag()
-            : null;
     }
 
     /**
