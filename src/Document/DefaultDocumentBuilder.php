@@ -651,16 +651,10 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $this->currentPageCursorY = $textFlow->nextCursorY($options, $startY, $lineCount);
         $this->currentPageCursorYIsTopBoundary = false;
 
-        if ($inlineContainerKey !== null) {
-            return $inlineContainerKey;
-        }
-
-        if ($markedContentTag === null || $textResult['contents'] === '' || $textResult['textMarkedContentIds'] === []) {
-            return $taggedTextKey;
-        }
-
-        return $this->registerTaggedTextBlocks(
+        return $this->taggedTextStructureCoordinator()->resolveTaggedTextKey(
+            $inlineContainerKey,
             $markedContentTag,
+            $textResult['contents'],
             $textResult['textMarkedContentIds'],
             $taggedTextKey,
         );
@@ -3639,11 +3633,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
     private function taggedInlineContainerKey(?string $markedContentTag, bool $containsLinks, ?string $existingKey = null): ?string
     {
-        if ($markedContentTag === null || !$containsLinks || !$this->requiresTaggedLinkAnnotations()) {
-            return null;
-        }
-
-        return $this->registerTaggedInlineContainer($markedContentTag, $existingKey);
+        return $this->taggedTextStructureCoordinator()->resolveInlineContainerKey(
+            $markedContentTag,
+            $containsLinks,
+            $existingKey,
+        );
     }
 
     private function taggedTextLinkGroupKey(LinkTarget | TextLink | null $link, int $pageIndex, int $fallbackIndex): ?string
@@ -4006,6 +4000,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
             function (int $markedContentId, string $inlineContainerKey): void {
                 $this->registerTaggedTextBlock('Span', $markedContentId, parentKey: $inlineContainerKey);
             },
+        );
+    }
+
+    private function taggedTextStructureCoordinator(): TaggedTextStructureCoordinator
+    {
+        return new TaggedTextStructureCoordinator(
+            $this->requiresTaggedLinkAnnotations(),
+            $this->registerTaggedInlineContainer(...),
+            $this->registerTaggedTextBlocks(...),
         );
     }
 
