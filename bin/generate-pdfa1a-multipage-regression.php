@@ -16,6 +16,7 @@ use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
+require __DIR__ . '/regression-image-fixtures.php';
 
 if ($argc !== 2) {
     fwrite(STDERR, "Usage: bin/generate-pdfa1a-multipage-regression.php <output-pdf>\n");
@@ -80,7 +81,7 @@ $document = DefaultDocumentBuilder::make()
         embeddedFont: EmbeddedFontSource::fromPath($fontPath),
     ))
     ->image(
-        ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+        ImageSource::jpeg(tinyRgbJpegRegressionBytes(), 1, 1, ImageColorSpace::RGB),
         ImagePlacement::absolute(left: 72, bottom: 600, width: 140),
         ImageAccessibility::alternativeText('Projektgrafik Seite zwei'),
     )

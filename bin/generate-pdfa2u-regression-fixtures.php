@@ -16,6 +16,7 @@ use Kalle\Pdf\Text\TextOptions;
 use Kalle\Pdf\Writer\FileOutput;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
+require __DIR__ . '/regression-image-fixtures.php';
 
 if ($argc !== 2) {
     fwrite(STDERR, "Usage: bin/generate-pdfa2u-regression-fixtures.php <output-dir>\n");
@@ -84,7 +85,7 @@ function createPdfA2uImageFixture(): Document
             color: Color::rgb(0.08, 0.16, 0.35),
         ))
         ->image(
-            ImageSource::jpeg('jpeg-bytes', 200, 100, ImageColorSpace::RGB),
+            ImageSource::jpeg(tinyRgbJpegRegressionBytes(), 1, 1, ImageColorSpace::RGB),
             ImagePlacement::absolute(left: 72, bottom: 610, width: 160),
         )
         ->text('RGB-JPEG ohne Transparenz. Подробнее.', TextOptions::make(
