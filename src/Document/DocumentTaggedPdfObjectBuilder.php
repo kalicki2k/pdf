@@ -10,7 +10,6 @@ use function array_values;
 use function count;
 use function preg_match;
 use function sprintf;
-use function usort;
 
 use Kalle\Pdf\Document\Form\RadioButtonGroup;
 use Kalle\Pdf\Document\Form\WidgetFormField;
@@ -27,6 +26,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
 {
     public function __construct(
         private TaggedPageAnnotationResolver $taggedPageAnnotationResolver = new TaggedPageAnnotationResolver(),
+        private TaggedStructureLayoutPolicy $taggedStructureLayoutPolicy = new TaggedStructureLayoutPolicy(),
     ) {
     }
 
@@ -599,172 +599,6 @@ final readonly class DocumentTaggedPdfObjectBuilder
         return $objects;
     }
 
-    /**
-     * @return list<array{key: string, pageIndex: int, orderIndex: int, sequence: int}>
-     */
-    private function documentChildEntriesInReadingOrder(DocumentSerializationPlanBuildState $state): array
-    {
-        $entries = [];
-        $sequence = 0;
-        $documentChildPositions = $this->documentChildPositions($state);
-
-        if ($state->taggedStructure->documentChildKeysInOrder !== []) {
-            foreach ($state->taggedStructure->documentChildKeysInOrder as $key) {
-                $position = $documentChildPositions[$key] ?? [
-                    'pageIndex' => 0,
-                    'orderIndex' => 1000000 + $sequence,
-                ];
-
-                $entries[] = [
-                    'key' => $key,
-                    'pageIndex' => $position['pageIndex'],
-                    'orderIndex' => $position['orderIndex'],
-                    'sequence' => $sequence++,
-                ];
-            }
-        } else {
-            foreach ($state->taggedStructure->pageMarkedContentKeys as $pageIndex => $pageKeys) {
-                ksort($pageKeys);
-
-                foreach ($pageKeys as $markedContentId => $key) {
-                    $entries[] = [
-                        'key' => $this->documentChildKey($key),
-                        'pageIndex' => $pageIndex,
-                        'orderIndex' => $markedContentId,
-                        'sequence' => $sequence++,
-                    ];
-                }
-            }
-        }
-
-        foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
-            if (isset($state->taggedStructure->explicitParentKeys[$linkEntry['key']])) {
-                continue;
-            }
-
-            $entries[] = [
-                'key' => $linkEntry['key'],
-                'pageIndex' => $linkEntry['pageIndex'],
-                'orderIndex' => $linkEntry['markedContentIds'] !== []
-                    ? min($linkEntry['markedContentIds'])
-                    : 1000000 + ($linkEntry['annotationIndices'][0] ?? 0),
-                'sequence' => $sequence++,
-            ];
-        }
-
-        foreach ($state->taggedPageAnnotationStructure['entries'] as $annotationEntry) {
-            $entries[] = [
-                'key' => $annotationEntry['key'],
-                'pageIndex' => $annotationEntry['pageIndex'],
-                'orderIndex' => 1500000 + $annotationEntry['annotationIndex'],
-                'sequence' => $sequence++,
-            ];
-        }
-
-        foreach ($state->taggedFormStructure['entries'] as $formEntry) {
-            $entries[] = [
-                'key' => $formEntry['key'],
-                'pageIndex' => $formEntry['pageIndex'],
-                // Widget annotations do not currently expose MCID-based content
-                // positions, so keep them after marked page content on the same page.
-                'orderIndex' => 2000000,
-                'sequence' => $sequence++,
-            ];
-        }
-
-        usort(
-            $entries,
-            static fn (array $left, array $right): int => [$left['pageIndex'], $left['orderIndex'], $left['sequence']]
-                <=> [$right['pageIndex'], $right['orderIndex'], $right['sequence']],
-        );
-
-        return $entries;
-    }
-
-    /**
-     * @return array<string, array{pageIndex: int, orderIndex: int}>
-     */
-    private function documentChildPositions(DocumentSerializationPlanBuildState $state): array
-    {
-        $positions = [];
-
-        foreach ($state->taggedStructure->pageMarkedContentKeys as $pageIndex => $pageKeys) {
-            ksort($pageKeys);
-
-            foreach ($pageKeys as $markedContentId => $key) {
-                if (!isset($positions[$key])) {
-                    $positions[$key] = [
-                        'pageIndex' => $pageIndex,
-                        'orderIndex' => $markedContentId,
-                    ];
-                }
-
-                $documentChildKey = $this->documentChildKey($key);
-
-                if (isset($positions[$documentChildKey])) {
-                    continue;
-                }
-
-                $positions[$documentChildKey] = [
-                    'pageIndex' => $pageIndex,
-                    'orderIndex' => $markedContentId,
-                ];
-            }
-        }
-
-        foreach ($state->taggedLinkStructure['linkEntries'] as $linkEntry) {
-            if (isset($positions[$linkEntry['key']])) {
-                continue;
-            }
-
-            $positions[$linkEntry['key']] = [
-                'pageIndex' => $linkEntry['pageIndex'],
-                'orderIndex' => $linkEntry['markedContentIds'] !== []
-                    ? min($linkEntry['markedContentIds'])
-                    : 1000000 + ($linkEntry['annotationIndices'][0] ?? 0),
-            ];
-        }
-
-        $pendingContainers = $state->taggedStructure->containerEntries;
-
-        while ($pendingContainers !== []) {
-            $remainingContainers = [];
-            $resolvedContainer = false;
-
-            foreach ($pendingContainers as $containerEntry) {
-                $childPositions = [];
-
-                foreach ($containerEntry['childKeys'] as $childKey) {
-                    if (isset($positions[$childKey])) {
-                        $childPositions[] = $positions[$childKey];
-                    }
-                }
-
-                if ($childPositions === []) {
-                    $remainingContainers[] = $containerEntry;
-
-                    continue;
-                }
-
-                usort(
-                    $childPositions,
-                    static fn (array $left, array $right): int => [$left['pageIndex'], $left['orderIndex']]
-                        <=> [$right['pageIndex'], $right['orderIndex']],
-                );
-                $positions[$containerEntry['key']] = $childPositions[0];
-                $resolvedContainer = true;
-            }
-
-            if (!$resolvedContainer) {
-                break;
-            }
-
-            $pendingContainers = $remainingContainers;
-        }
-
-        return $positions;
-    }
-
     private function resolveDocumentKidObjectId(string $key, DocumentSerializationPlanBuildState $state): int
     {
         return $state->taggedFormStructElemObjectIds[$key] ?? $state->taggedStructureObjectIds->resolveStructElemObjectId($key);
@@ -777,8 +611,8 @@ final readonly class DocumentTaggedPdfObjectBuilder
     {
         $objectIds = [];
 
-        foreach ($this->documentChildEntriesInReadingOrder($state) as $entry) {
-            $objectIds[] = $this->resolveDocumentKidObjectId($entry['key'], $state);
+        foreach ($this->taggedStructureLayoutPolicy->orderedDocumentChildKeys($state) as $key) {
+            $objectIds[] = $this->resolveDocumentKidObjectId($key, $state);
         }
 
         return $objectIds;
@@ -832,7 +666,7 @@ final readonly class DocumentTaggedPdfObjectBuilder
 
     private function resolveParentObjectId(string $key, DocumentSerializationPlanBuildState $state): int
     {
-        $parentKey = $state->taggedStructure->explicitParentKeys[$key] ?? null;
+        $parentKey = $this->taggedStructureLayoutPolicy->explicitParentKey($key, $state);
 
         if ($parentKey === null) {
             return $state->documentStructElemObjectId
@@ -847,23 +681,6 @@ final readonly class DocumentTaggedPdfObjectBuilder
                 DocumentBuildError::TAGGED_STRUCTURE_BUILD_INVALID,
                 sprintf('Unknown tagged structure parent key "%s".', $parentKey),
             );
-    }
-
-    private function documentChildKey(string $key): string
-    {
-        if (str_starts_with($key, 'list:') && str_contains($key, ':item:')) {
-            [$prefix, $listId] = explode(':', $key, 3);
-
-            return $prefix . ':' . $listId;
-        }
-
-        if (str_starts_with($key, 'table:')) {
-            [$prefix, $tableId] = explode(':', $key, 3);
-
-            return $prefix . ':' . $tableId;
-        }
-
-        return $key;
     }
 
     /**

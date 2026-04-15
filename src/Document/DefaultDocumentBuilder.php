@@ -3153,9 +3153,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
         $fontRunMapper = $this->fontRunMapper();
         $textBlockBuilder = $this->textBlockBuilder();
         $containsTaggedLinkText = $inlineContainerKey !== null;
-        $taggedLinkGroupKey = $options->link !== null
-            ? $this->linkGroupKey($options->link) ?? ('page-' . $currentPageIndex . '-text-link-' . count($this->currentPageAnnotations))
-            : null;
+        $taggedLinkGroupKey = $this->taggedTextLinkGroupKey(
+            $options->link,
+            $currentPageIndex,
+            count($this->currentPageAnnotations),
+        );
         $scope = $this->debugger()->startPerformanceScope('text.content', [
             'line_count' => count($shapedLines),
             'font_type' => $font instanceof EmbeddedFontDefinition ? 'embedded' : 'standard',
@@ -3246,17 +3248,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $contentsString = implode("\n", $contents);
 
-        if ($contentsString !== '' && $artifact && $this->requiresTaggedPdfProfile()) {
-            $contentsString = $this->wrapArtifactGraphics($contentsString);
-        } elseif (
-            $contentsString !== ''
-            && $markedContentTag !== null
-            && $markedContentId !== null
-            && !$containsTaggedLinkText
-        ) {
-            $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
-            $textMarkedContentIds[] = $markedContentId;
-        }
+        [
+            'contents' => $contentsString,
+            'textMarkedContentIds' => $textMarkedContentIds,
+        ] = $this->finalizeTaggedTextContents(
+            $contentsString,
+            $artifact,
+            $markedContentTag,
+            $markedContentId,
+            $containsTaggedLinkText,
+            $textMarkedContentIds,
+        );
 
         $scope->stop([
             'line_count' => count($shapedLines),
@@ -3488,7 +3490,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                         && $continuingLinkGroup !== null
                         && $this->canMergeTextLinks($continuingLinkGroup['link'], $link)
                         ? $continuingLinkGroup['key']
-                        : $this->linkGroupKey($link) ?? ('page-' . $currentPageIndex . '-text-link-' . $nextLinkGroupId++);
+                        : $this->taggedTextLinkGroupKey($link, $currentPageIndex, $nextLinkGroupId++);
                     $linkResult = $this->buildLinkedTextRunContent(
                         $this->linkTarget($link),
                         $this->linkContents($link, $renderedEntry['text']),
@@ -3512,21 +3514,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 } else {
                     if ($containsTaggedLinkText && $renderedEntry['width'] > 0.0) {
                         /** @var string $markedContentTag */
-                        $entryMarkedContentId = $this->nextTaggedMarkedContentId();
-
-                        if ($entryMarkedContentId === null) {
-                            throw new LogicException('Tagged text segments require marked-content ids.');
-                        }
-
-                        $textBlockContent = $this->wrapMarkedContent(
-                            $markedContentTag,
-                            $entryMarkedContentId,
+                        /** @var string $inlineContainerKey */
+                        $textBlockContent = $this->wrapTaggedInlineSpanContent(
                             $textBlockContent,
-                        );
-                        $this->registerTaggedTextBlock(
-                            'Span',
-                            $entryMarkedContentId,
-                            parentKey: $inlineContainerKey,
+                            $markedContentTag,
+                            $inlineContainerKey,
                         );
                     }
 
@@ -3545,17 +3537,17 @@ class DefaultDocumentBuilder implements DocumentBuilder
 
         $contentsString = implode("\n", $contents);
 
-        if ($contentsString !== '' && $artifact && $this->requiresTaggedPdfProfile()) {
-            $contentsString = $this->wrapArtifactGraphics($contentsString);
-        } elseif (
-            $contentsString !== ''
-            && $markedContentTag !== null
-            && $markedContentId !== null
-            && !$containsTaggedLinkText
-        ) {
-            $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
-            $textMarkedContentIds[] = $markedContentId;
-        }
+        [
+            'contents' => $contentsString,
+            'textMarkedContentIds' => $textMarkedContentIds,
+        ] = $this->finalizeTaggedTextContents(
+            $contentsString,
+            $artifact,
+            $markedContentTag,
+            $markedContentId,
+            $containsTaggedLinkText,
+            $textMarkedContentIds,
+        );
 
         $scope->stop([
             'line_count' => count($wrappedSegmentLines),
@@ -3658,6 +3650,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
         }
 
         return $this->registerTaggedInlineContainer($markedContentTag, $existingKey);
+    }
+
+    private function taggedTextLinkGroupKey(LinkTarget | TextLink | null $link, int $pageIndex, int $fallbackIndex): ?string
+    {
+        if ($link === null) {
+            return null;
+        }
+
+        return $this->linkGroupKey($link) ?? ('page-' . $pageIndex . '-text-link-' . $fallbackIndex);
     }
 
     private function canMergeTextLinks(LinkTarget | TextLink $left, LinkTarget | TextLink $right): bool
@@ -3946,9 +3947,7 @@ class DefaultDocumentBuilder implements DocumentBuilder
                 'EMC',
             ]);
 
-            if ($inlineContainerKey !== null && $pageIndex !== null && $taggedGroupKey !== null) {
-                $this->attachTaggedStructureChildKeyTo($inlineContainerKey, $pageIndex . ':' . $taggedGroupKey);
-            }
+            $this->attachTaggedInlineLinkChild($inlineContainerKey, $pageIndex, $taggedGroupKey);
         }
 
         $result = [
@@ -3972,6 +3971,70 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ]);
 
         return $result;
+    }
+
+    private function wrapTaggedInlineSpanContent(
+        string $textBlockContent,
+        string $markedContentTag,
+        string $inlineContainerKey,
+    ): string {
+        $entryMarkedContentId = $this->nextTaggedMarkedContentId();
+
+        if ($entryMarkedContentId === null) {
+            throw new LogicException('Tagged text segments require marked-content ids.');
+        }
+
+        $textBlockContent = $this->wrapMarkedContent(
+            $markedContentTag,
+            $entryMarkedContentId,
+            $textBlockContent,
+        );
+        $this->registerTaggedTextBlock(
+            'Span',
+            $entryMarkedContentId,
+            parentKey: $inlineContainerKey,
+        );
+
+        return $textBlockContent;
+    }
+
+    /**
+     * @param list<int> $textMarkedContentIds
+     * @return array{contents: string, textMarkedContentIds: list<int>}
+     */
+    private function finalizeTaggedTextContents(
+        string $contentsString,
+        bool $artifact,
+        ?string $markedContentTag,
+        ?int $markedContentId,
+        bool $containsTaggedLinkText,
+        array $textMarkedContentIds,
+    ): array {
+        if ($contentsString !== '' && $artifact && $this->requiresTaggedPdfProfile()) {
+            $contentsString = $this->wrapArtifactGraphics($contentsString);
+        } elseif (
+            $contentsString !== ''
+            && $markedContentTag !== null
+            && $markedContentId !== null
+            && !$containsTaggedLinkText
+        ) {
+            $contentsString = $this->wrapMarkedContent($markedContentTag, $markedContentId, $contentsString);
+            $textMarkedContentIds[] = $markedContentId;
+        }
+
+        return [
+            'contents' => $contentsString,
+            'textMarkedContentIds' => $textMarkedContentIds,
+        ];
+    }
+
+    private function attachTaggedInlineLinkChild(?string $inlineContainerKey, ?int $pageIndex, ?string $taggedGroupKey): void
+    {
+        if ($inlineContainerKey === null || $pageIndex === null || $taggedGroupKey === null) {
+            return;
+        }
+
+        $this->attachTaggedStructureChildKeyTo($inlineContainerKey, $pageIndex . ':' . $taggedGroupKey);
     }
 
     private function textOptionsWithLink(TextOptions $options, LinkTarget | TextLink | null $link): TextOptions
