@@ -42,7 +42,6 @@ $startedAt = microtime(true);
 
 $left = Units::mm(20);
 $right = Units::mm(190);
-$contentWidth = $right - $left;
 
 $headlineColor = Color::material(MaterialColor::RED, 700);
 $textColor = Color::material(MaterialColor::BLUE_GREY, 800);
@@ -79,7 +78,9 @@ $lineItems = [
 ];
 
 $formatAmount = static fn (float $amount): string => number_format($amount, 2, ',', '.') . ' EUR';
-$formatQuantity = static fn (float $quantity): string => rtrim(rtrim(number_format($quantity, 2, ',', '.'), '0'), ',');
+$formatQuantity = static fn (float $quantity): string => number_format($quantity, 2, ',', '.')
+        |> (fn ($x) => rtrim($x, '0'))
+        |> (fn ($x) => rtrim($x, ','));
 $formatDecimal = static fn (float $value): string => number_format($value, 2, '.', '');
 
 $subtotal = 0.0;
@@ -447,7 +448,6 @@ $document = Pdf::document()
     ->text(
         "Sehr geehrte Frau Mueller,\n\nanbei die visuelle Darstellung der XRechnung fuer die im Leistungsmonat erbrachten Betriebs-, Optimierungs- und Projektleistungen.",
         TextOptions::make(
-            width: $contentWidth,
             fontSize: 9,
             lineHeight: 13,
             embeddedFont: $fontRegular,
