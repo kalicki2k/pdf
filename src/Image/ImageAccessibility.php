@@ -16,7 +16,7 @@ final readonly class ImageAccessibility
             throw new InvalidArgumentException('Decorative images cannot define alternative text.');
         }
 
-        if ($this->altText !== null && $this->altText === '') {
+        if ($this->altText === '') {
             throw new InvalidArgumentException('Alternative text must not be empty.');
         }
     }
