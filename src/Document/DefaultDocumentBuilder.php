@@ -643,13 +643,21 @@ class DefaultDocumentBuilder implements DocumentBuilder
         ?string $inlineContainerKey = null,
         ?string $taggedTextKey = null,
     ): ?string {
-        $this->currentPageContents = $this->appendPageContent(
+        [
+            'contents' => $this->currentPageContents,
+            'annotations' => $this->currentPageAnnotations,
+            'cursorY' => $this->currentPageCursorY,
+            'cursorYIsTopBoundary' => $this->currentPageCursorYIsTopBoundary,
+        ] = $this->flowTextPageStateCoordinator()->applyFlowTextResult(
             $this->currentPageContents,
-            $textResult['contents'],
+            $this->currentPageAnnotations,
+            $textFlow,
+            $options,
+            $startY,
+            $lineCount,
+            $textResult,
+            $this->appendPageContent(...),
         );
-        $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
-        $this->currentPageCursorY = $textFlow->nextCursorY($options, $startY, $lineCount);
-        $this->currentPageCursorYIsTopBoundary = false;
 
         return $this->taggedTextStructureCoordinator()->resolveTaggedTextKey(
             $inlineContainerKey,
@@ -3891,8 +3899,15 @@ class DefaultDocumentBuilder implements DocumentBuilder
             null,
         );
 
-        $this->currentPageContents = $this->appendPageContent($this->currentPageContents, $textResult['contents']);
-        $this->currentPageAnnotations = [...$this->currentPageAnnotations, ...$textResult['annotations']];
+        [
+            'contents' => $this->currentPageContents,
+            'annotations' => $this->currentPageAnnotations,
+        ] = $this->flowTextPageStateCoordinator()->appendRenderedText(
+            $this->currentPageContents,
+            $this->currentPageAnnotations,
+            $textResult,
+            $this->appendPageContent(...),
+        );
 
         if ($taggedTableId !== null && $markedContentId !== null) {
             $this->addTaggedTableCaptionReference($taggedTableId, $markedContentId);
@@ -4010,6 +4025,11 @@ class DefaultDocumentBuilder implements DocumentBuilder
             $this->registerTaggedInlineContainer(...),
             $this->registerTaggedTextBlocks(...),
         );
+    }
+
+    private function flowTextPageStateCoordinator(): FlowTextPageStateCoordinator
+    {
+        return new FlowTextPageStateCoordinator();
     }
 
     private function textOptionsWithLink(TextOptions $options, LinkTarget | TextLink | null $link): TextOptions
