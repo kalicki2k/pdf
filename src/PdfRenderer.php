@@ -11,6 +11,7 @@ use Kalle\Pdf\Contents\ContentsWriter;
 use Kalle\Pdf\Document\Document;
 use Kalle\Pdf\Font\Font;
 use Kalle\Pdf\Font\FontWriter;
+use Kalle\Pdf\Font\StandardFont\StandardFont;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageRenderer;
 use Kalle\Pdf\Page\PageWriter;
@@ -69,7 +70,7 @@ final readonly class PdfRenderer
 
         $pages = Pages::make($pageObjectIds);
 
-        $font = Font::type1('Helvetica');
+        $font = Font::type1(StandardFont::HELVETICA);
 
         $objects[$catalogObjectId] = $this->catalogWriter->write($catalog);
         $objects[$pagesObjectId] = $this->pagesWriter->write($pages);

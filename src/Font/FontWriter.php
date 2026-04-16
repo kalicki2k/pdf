@@ -11,7 +11,7 @@ final readonly class FontWriter
     {
         return '<< /Type /Font'
             . ' /Subtype /' . $font->subtype
-            . ' /BaseFont /' . $font->baseFont
+            . ' /BaseFont /' . $font->name
             . ' >>';
     }
 }
