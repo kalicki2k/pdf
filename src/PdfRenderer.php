@@ -1,48 +1,95 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf;
 
+use Kalle\Pdf\Catalog\Catalog;
+use Kalle\Pdf\Catalog\CatalogWriter;
+use Kalle\Pdf\Contents\Contents;
+use Kalle\Pdf\Contents\ContentsWriter;
 use Kalle\Pdf\Document\Document;
+use Kalle\Pdf\Font\Font;
+use Kalle\Pdf\Font\FontWriter;
 use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageRenderer;
+use Kalle\Pdf\Page\PageWriter;
+use Kalle\Pdf\Pages\Pages;
+use Kalle\Pdf\Pages\PagesWriter;
+use Kalle\Pdf\Resources\Resources;
 
 /**
  * Renders a document model into a minimal PDF file.
  */
 final readonly class PdfRenderer
 {
+    public static function make(): self
+    {
+        return new self(
+            catalogWriter: new CatalogWriter(),
+            pagesWriter: new PagesWriter(),
+            pageWriter: new PageWriter(),
+            contentsWriter: new ContentsWriter(),
+            fontWriter: new FontWriter(),
+            pageRenderer: new PageRenderer(),
+        );
+    }
+
     public function __construct(
-        private PageRenderer $pageRenderer = new PageRenderer(),
+        private CatalogWriter $catalogWriter,
+        private PagesWriter $pagesWriter,
+        private PageWriter $pageWriter,
+        private ContentsWriter $contentsWriter,
+        private FontWriter $fontWriter,
+        private PageRenderer $pageRenderer,
     ) {
     }
+
 
     public function render(Document $document): string
     {
         $objects = [];
-        $pageCount = count($document->pages);
 
-        $objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
-        $objects[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+        $catalogObjectId = 1;
+        $pagesObjectId = 2;
+        $fontObjectId = 3;
 
-        $pageObjectNumbers = [];
-        $contentObjectNumbers = [];
-        $nextObjectNumber = 4;
+        $pageObjectIds = [];
+        $contentsObjectIds = [];
+        $nextObjectId = 4;
 
-        foreach ($document->pages as $page) {
-            $pageObjectNumbers[] = $nextObjectNumber++;
-            $contentObjectNumbers[] = $nextObjectNumber++;
+        foreach ($document->pages as $documentPage) {
+            $pageObjectIds[] = $nextObjectId++;
+            $contentsObjectIds[] = $nextObjectId++;
         }
 
-        $objects[2] = $this->renderPagesObject($pageObjectNumbers, $pageCount);
+        $catalog = Catalog::make(
+            pagesObjectId: $pagesObjectId,
+        );
 
-        foreach ($document->pages as $index => $page) {
-            $pageObjectNumber = $pageObjectNumbers[$index];
-            $contentObjectNumber = $contentObjectNumbers[$index];
+        $pages = Pages::make($pageObjectIds);
 
-            $contentStream = $this->pageRenderer->render($page);
+        $font = Font::type1('Helvetica');
 
-            $objects[$pageObjectNumber] = $this->renderPageObject($page, $contentObjectNumber);
-            $objects[$contentObjectNumber] = $this->renderContentObject($contentStream);
+        $objects[$catalogObjectId] = $this->catalogWriter->write($catalog);
+        $objects[$pagesObjectId] = $this->pagesWriter->write($pages);
+        $objects[$fontObjectId] = $this->fontWriter->write($font);
+
+        foreach ($document->pages as $index => $documentPage) {
+            $contentStream = $this->pageRenderer->render($documentPage);
+            $contents = Contents::make($contentStream);
+
+            $page = Page::make(
+                parentObjectId: $pagesObjectId,
+                mediaBox: $documentPage->pageSize,
+                resources: Resources::make([
+                    'F1' => $fontObjectId,
+                ]),
+                contentsObjectId: $contentsObjectIds[$index],
+            );
+
+            $objects[$pageObjectIds[$index]] = $this->pageWriter->write($page);
+            $objects[$contentsObjectIds[$index]] = $this->contentsWriter->write($contents);
         }
 
         ksort($objects);
@@ -71,43 +118,5 @@ final readonly class PdfRenderer
         $pdf .= '%%EOF';
 
         return $pdf;
-    }
-
-    /**
-     * @param list<int> $pageObjectNumbers
-     */
-    private function renderPagesObject(array $pageObjectNumbers, int $pageCount): string
-    {
-        $kids = implode(' ', array_map(
-            static fn (int $objectNumber): string => $objectNumber . ' 0 R',
-            $pageObjectNumbers,
-        ));
-
-        return "<< /Type /Pages /Kids [{$kids}] /Count {$pageCount} >>";
-    }
-
-    private function renderPageObject(Page $page, int $contentObjectNumber): string
-    {
-        $mediaBox = sprintf(
-            '[0 0 %s %s]',
-            $this->formatNumber($page->pageSize->width()),
-            $this->formatNumber($page->pageSize->height()),
-        );
-
-        return "<< /Type /Page /Parent 2 0 R /MediaBox {$mediaBox} /Resources << /Font << /F1 3 0 R >> >> /Contents {$contentObjectNumber} 0 R >>";
-    }
-
-    private function renderContentObject(string $contentStream): string
-    {
-        return '<< /Length ' . strlen($contentStream) . " >>\nstream\n" . $contentStream . "\nendstream";
-    }
-
-    private function formatNumber(float $value): string
-    {
-        $formatted = sprintf('%.3F', $value)
-                |> (fn ($x) => rtrim($x, '0'))
-                |> (fn ($x) => rtrim($x, '.'));
-
-        return $formatted === '' ? '0' : $formatted;
     }
 }

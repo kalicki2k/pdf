@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf;
 
 use Kalle\Pdf\Document\DocumentBuilder;

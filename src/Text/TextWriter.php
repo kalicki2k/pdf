@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf\Text;
 
 /**
  * Serializes positioned text values into a minimal PDF text content block.
  */
-class TextWriter
+final readonly class TextWriter
 {
     /**
      * Renders a single text instruction at the given page coordinates.

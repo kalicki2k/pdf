@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf\Document;
 
 use Kalle\Pdf\Page\PageContent;
-use Kalle\Pdf\Page\Page;
 use Kalle\Pdf\Page\PageSize;
 use Kalle\Pdf\Text\Text;
 
@@ -19,13 +20,14 @@ class DocumentBuilder
     private ?string $language = null;
     private ?string $creator = null;
     private ?string $creatorTool = null;
-    /** @var list<Page> */
+    /** @var list<DocumentPage> */
     private array $pages = [];
     private ?PageSize $pageSize = null;
-    private ?PageSize $defaultPageSize = null;
+    private PageSize $defaultPageSize;
     /** @var list<PageContent> */
     private array $pageContents = [];
-
+    private ?string $pageLabel = null;
+    private ?string $pageName = null;
     /**
      * Creates a new document builder with default page settings.
      */
@@ -94,6 +96,20 @@ class DocumentBuilder
         ]);
     }
 
+    public function withPageName(string $pageName): self
+    {
+        return clone ($this, [
+            'pageName' => $pageName,
+        ]);
+    }
+
+    public function withPageLabel(string $pageLabel): self
+    {
+        return clone($this, [
+            'pageLabel' => $pageLabel,
+        ]);
+    }
+
     /**
      * Appends a positioned text entry to the current open page.
      */
@@ -142,16 +158,18 @@ class DocumentBuilder
 
     private function __construct()
     {
-        $this->defaultPageSize ??= PageSize::A4();
+        $this->defaultPageSize = PageSize::A4();
     }
 
     /**
      * Creates the current page snapshot from the open page state.
      */
-    private function createPage(): Page
+    private function createPage(): DocumentPage
     {
-        return Page::make(
+        return DocumentPage::make(
             pageSize: $this->pageSize ?? $this->defaultPageSize,
+            name: $this->pageName,
+            label: $this->pageLabel,
             contents: $this->pageContents,
         );
     }
@@ -162,6 +180,8 @@ class DocumentBuilder
     private function resetPage(?PageSize $pageSize): void
     {
         $this->pageSize = $pageSize ?? $this->defaultPageSize;
+        $this->pageName = null;
+        $this->pageLabel = null;
         $this->pageContents = [];
     }
 }

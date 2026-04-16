@@ -1,8 +1,8 @@
 <?php
 
-namespace Kalle\Pdf\Document;
+declare(strict_types=1);
 
-use Kalle\Pdf\Page\Page;
+namespace Kalle\Pdf\Document;
 
 /**
  * Immutable document model produced by the document builder.
@@ -10,7 +10,7 @@ use Kalle\Pdf\Page\Page;
 final readonly class Document
 {
     /**
-     * @param list<Page> $pages Ordered pages of the document.
+     * @param list<DocumentPage> $pages Ordered pages of the document.
      */
     public static function make(
         array $pages,
@@ -35,7 +35,7 @@ final readonly class Document
     }
 
     /**
-     * @param list<Page> $pages Ordered pages of the document.
+     * @param list<DocumentPage> $pages Ordered pages of the document.
      */
     private function __construct(
         public array $pages,

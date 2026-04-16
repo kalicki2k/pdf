@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kalle\Pdf\Page;
 
 use InvalidArgumentException;
+use Kalle\Pdf\Document\DocumentPage;
 use Kalle\Pdf\Text\Text;
 use Kalle\Pdf\Text\TextWriter;
 
@@ -24,7 +27,7 @@ final class PageRenderer
      *
      * @throws InvalidArgumentException When the page contains an unsupported content type.
      */
-    public function render(Page $page): string
+    public function render(DocumentPage $page): string
     {
         $chunks = [];
 
